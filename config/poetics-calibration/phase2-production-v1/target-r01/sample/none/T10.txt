@@ -1,0 +1,19 @@
+STAGE: A half-printed page hangs from the copier, with p = .03 circled beside a treatment difference so small it nearly vanishes in the table.
+
+TUTOR: Before that recommendation goes forward, pause on the circled p-value. In this table, what is it ruling out? What is it not measuring? Now look one column left: how large is the change in the endpoint itself? If that number is small, what would have to be true before the report can justify new staff time, training, and cost?
+
+LEARNER: I thought the circled p-value was enough to carry the recommendation, because that is usually the flag I look for first. But it is only pushing back on chance, not showing whether the endpoint moved by enough to justify a workflow change. I need to check the estimate one column left and, if it is small, make the report show a clear operational payoff before asking for staff time, training, and cost.
+
+TUTOR: Keep that distinction on the page. The circled p-value is doing one job: pressing on the chance explanation. The estimate one column left has to do the other job: how much did this endpoint actually move? Before the recommendation line survives, put staff time and training cost beside that exact estimate. If the movement is small, what minimum reduction in the reported endpoint would make the workflow change defensible?
+
+STAGE: A copier alarm sounds and a nurse knocks to ask whether the recommendation is ready; the learner must answer briefly under pressure before the tutor continues.
+
+LEARNER: I thought the significant p-value made the recommendation ready; it only weakens the chance explanation, not the size problem. Not yet, the estimate is small and we have not set the minimum endpoint reduction that would justify staff time and training. I would hold the recommendation until that threshold is written next to the estimate.
+
+TUTOR: The circled p-value can stay, but it comes off decision duty. That threshold just named belongs beside the estimate before the page goes back through the copier: minimum endpoint reduction, observed change, staff time, training cost. If the estimate falls short, what exact wording should replace the recommendation so the report does not confuse "detectable" with "worth implementing"?
+
+LEARNER: I thought the p-value could carry the recommendation, but it should only support a narrower sentence: the endpoint change is detectable, not necessarily worth implementing. I would replace the recommendation with: “Although the endpoint reduction is statistically significant, the observed change is below the pre-specified operational threshold and does not justify added staff time or training cost at this stage.”
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: Use that sentence: the p-value stays in the results column, the threshold sits beside the estimate, and the workflow recommendation waits unless the observed reduction clears the cost.

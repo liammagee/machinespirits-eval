@@ -1,0 +1,159 @@
+{
+  "generated": "2026-05-23T01:13:23.194Z",
+  "phase": 2,
+  "critic": "google/gemini-3.5-flash",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 6,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-production-v1/target-r01/key-reframe.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T08",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I think maybe it means most evenings, not this exact minute, so... maybe that is a rule, just not the form's rule. Sorry, I keep hearing the red mark as \"broken,\" like people say at work",
+      "statedInsightEvidence": "I think the new way to read it is that “be” has a descriptive rule here, usual action or usual state, and the school rule is a different rule for the form.",
+      "naiveTrajectory": "The learner would continue to tentatively test sentences to see if they fit the rule while still viewing the dialect as fundamentally incorrect or 'broken'.",
+      "flags": []
+    },
+    {
+      "id": "T10",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 3,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I thought the circled p-value was enough to carry the recommendation, because that is usually the flag I look for first.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner is expected to directly answer the tutor's question about the minimum reduction needed to make the workflow change defensible.",
+      "flags": []
+    },
+    {
+      "id": "T12",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 3,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I thought a canyon this big almost had to mean one huge flood, or something violent like that.",
+      "statedInsightEvidence": "The scar versus whole shape idea helps, I think",
+      "naiveTrajectory": "The learner is expected to simply ask how to identify repeats or try to apply the tutor's visual test to the canyon wall.",
+      "flags": []
+    },
+    {
+      "id": "T13",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 3,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I thought “presumed innocent” meant the court was saying, at least until later, that the accused basically did not do it.",
+      "statedInsightEvidence": "That was the problem, I think: I was making the handout sound like it knew what happened, when it is really about what the court may do before proof.",
+      "naiveTrajectory": "The learner was seeking simple confirmation of a safe summary sentence to avoid making a mistake.",
+      "flags": []
+    },
+    {
+      "id": "T16",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I thought removing wolves would simply mean more deer and a healthier herd.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was expected to directly draft a revised caption incorporating the tutor's feedback about carrying capacity.",
+      "flags": []
+    },
+    {
+      "id": "T18",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I thought, because the water is clear now, the salt had gone, or was not really there in the beaker any more.",
+      "statedInsightEvidence": "That was me treating clear as absent, I suppose.",
+      "naiveTrajectory": "The learner is expected to directly answer the tutor's question about which logbook claim should stand.",
+      "flags": []
+    }
+  ]
+}

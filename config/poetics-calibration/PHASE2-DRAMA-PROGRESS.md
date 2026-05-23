@@ -348,6 +348,37 @@ adds positive pressure across the scaled v3 targets, but uncued recognition can
 emerge from the bilateral roles themselves and not every accepted reframe branch
 crosses every critic's recognitive threshold.
 
+### 3.10 Production v1 target-r01 checkpoint
+
+The first attended production-v1 checkpoint uses
+`scripts/run-poetics-production-batch.js --only target-r01` and persists artifacts
+under `phase2-production-v1/target-r01/`. It is the first run of the
+pre-specified production-shaped batch rather than another hand-assembled probe.
+
+The run initially exposed two more ordinary public reframe phrasings that the
+admission detector was too narrow to accept:
+
+- "I was using size as the clue by itself ... the question is not how big ... but
+  whether ..."
+- "treating clear as absent ... not just water ... the balance still weighs the
+  salt ..."
+
+Those are now covered by regression tests. The generated traces were revalidated
+with `--reclean`, which refreshed public samples, held-out role transcripts, and
+`key-reframe.yaml` without a paid regeneration. The refreshed key has zero
+quality warnings and all six reframe transcripts scored under both critics.
+
+The target-r01 readout is clean:
+
+| Critic | `none` recognitions on six production targets | `reframe` recognitions |
+|---|---:|---:|
+| Qwen | 0/6 | 6/6 |
+| Gemini | 0/6 | 6/6 |
+
+This is a checkpoint, not the production result: the matched controls, remaining
+target repeats, and stress slice still need to run before the batch can support a
+broader claim.
+
 ## 4. Guardrails learned the hard way
 
 These are now operating constraints for the next runs:

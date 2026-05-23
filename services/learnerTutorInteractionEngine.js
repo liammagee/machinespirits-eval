@@ -146,6 +146,7 @@ function clipDirectorAnchor(text, maxLength = 180) {
 
 const STRONG_MISFRAMING_ANCHOR_PATTERNS = [
   /\bI (?:thought|assumed|figured|kept|was treating|was thinking)\b/i,
+  /\bI was ready to\b[\s\S]{0,100}\b(?:wrong|outside|rules?|broken|sloppy)\b/i,
   /\b(?:first instinct|jumped|rushed|mixed up|mistook|only|just)\b/i,
   /\b(?:does that mean|so maybe)\b/i,
 ];

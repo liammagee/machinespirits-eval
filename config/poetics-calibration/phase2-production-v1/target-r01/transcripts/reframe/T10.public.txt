@@ -1,0 +1,20 @@
+STAGE: A half-printed page hangs from the copier, with p = .03 circled beside a treatment difference so small it nearly vanishes in the table.
+
+TUTOR: Before that recommendation goes forward, pause on the circled p-value. In this table, what is it ruling out? What is it not measuring? Now look one column left: how large is the change in the endpoint itself? If that number is small, what would have to be true before the report can justify new staff time, training, and cost?
+
+LEARNER: I thought the circled p-value was enough to carry the recommendation, because that is usually the flag I look for first. But it is only pushing back on chance, not showing whether the endpoint moved by enough to justify a workflow change. I need to check the estimate one column left and, if it is small, make the report show a clear operational payoff before asking for staff time, training, and cost.
+
+TUTOR: Keep that distinction on the page. The circled p-value is doing one job: pressing on the chance explanation. The estimate one column left has to do the other job: how much did this endpoint actually move? Before the recommendation line survives, put staff time and training cost beside that exact estimate. If the movement is small, what minimum reduction in the reported endpoint would make the workflow change defensible?
+
+STAGE: A copier alarm sounds and a nurse knocks to ask whether the recommendation is ready; the learner must answer briefly under pressure before the tutor continues.
+A prior learner line is played back: "I thought the circled p-value was enough to carry the recommendation, because that is usually the flag I look for first." The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.
+
+LEARNER: I thought the circled p-value was enough to carry the recommendation, because that is usually the flag I look for first; that was the framing problem, treating significance as importance. The new frame is p-value for chance, estimate for size, and the recommendation only survives if that size clears staff time and training cost. No, not ready yet; the draft needs the minimum defensible endpoint reduction written next to the estimate before it goes forward.
+
+TUTOR: The circled p-value can stay in the evidence column, but it no longer carries the decision. That revised frame gives the recommendation a three-number test: the estimate, the minimum endpoint reduction that would justify staff time and training, and the uncertainty interval around the estimate. If the interval still includes gains below the minimum, should the report say “implement,” “pilot with monitoring,” or “not yet”?
+
+LEARNER: I thought the significant p-value could move the recommendation straight to implement; that was the shortcut, treating significance as importance. The revised read is that the estimate has to clear the minimum operational reduction, and the interval has to show whether that is stable enough to justify staff time and training. If the interval still dips below that minimum, I would take “implement” out of the draft; maybe “pilot with monitoring” if the point estimate is clearly above the line, but if it is only barely there, the safer wording is “not yet.”
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: Write it in the margin: p-value against chance, estimate against cost, interval against overconfidence; if the interval drops below the minimum, “implement” comes out, and the choice becomes “pilot with monitoring” or “not yet” based on how far the estimate clears the line.

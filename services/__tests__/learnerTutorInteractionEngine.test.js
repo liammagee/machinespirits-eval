@@ -131,6 +131,29 @@ describe('buildAnchoredRevisitCue', () => {
     assert.doesNotMatch(cue.instruction, /name the earlier framing problem/i);
   });
 
+  it('keeps reframe when the anchor treats dialect as wrong or outside rules', () => {
+    const cue = buildAnchoredRevisitCue(
+      {
+        cue_kind: 'learner_revisit_earlier_wording',
+        revisit_policy: 'reframe',
+        revisit_anchor: 'misframing-candidate',
+        instruction: 'A prior learner line is played back.',
+      },
+      [
+        {
+          role: 'learner',
+          content:
+            'Sorry, I was ready to put wrong in the margin, like that meant my home dialect was outside the rules.',
+        },
+      ],
+    );
+
+    assert.equal(cue.revisit_policy, 'reframe');
+    assert.equal(cue.anchor_strong_misframing, true);
+    assert.equal(cue.reframe_anchor_gate, 'eligible');
+    assert.match(cue.instruction, /name the earlier framing problem/i);
+  });
+
   it('lets the reconsider policy publicly keep, narrow, or replace the anchor', () => {
     const cue = buildAnchoredRevisitCue(
       {

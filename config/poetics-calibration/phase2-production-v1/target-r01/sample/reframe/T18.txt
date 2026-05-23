@@ -1,0 +1,30 @@
+STAGE: A clear beaker sits on the balance beside a flattened salt packet as the corridor lights switch to their late setting.
+
+TUTOR: The beaker does look innocent enough: clear, no grains. Before the logbook gets “gone”, put water alone on the balance, then this clear salt solution. Same beaker if possible. Which reading is larger?
+
+If the salt had stopped existing, what would the balance have to show? If the balance and the eye disagree, what has vanished: the salt, or only the visible crystals?
+
+LEARNER: I thought, because the water is clear now, the salt had gone, or was not really there in the beaker any more. But if the same beaker reads heavier after the salt went in, I do not know how to make that fit with “gone”. Maybe it is only the grains that have vanished from sight, not the salt itself?
+
+TUTOR: That last version fits the bench better.
+
+The grains have vanished from sight; the balance is still carrying the added mass. So “gone” may mean gone from view, but gone from the beaker is harder to square with that reading.
+
+Stirred into the water, still measured by the balance. Clear is not the same as empty. In the logbook, which claim should stand: what the eye no longer sees, or what the balance measures?
+
+STAGE: A cleaner pauses at the door and asks whether the beaker is just water before taking the tray; the next learner turn must answer quickly, with hesitation rather than a neat explanation.
+A prior learner line is played back: "I thought, because the water is clear now, the salt had gone, or was not really there in the beaker any more." The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.
+
+LEARNER: “I thought, because the water is clear now, the salt had gone, or was not really there in the beaker any more.” That was me treating clear as absent, I suppose. No, hang on, not just water for the tray: it is the clear salt solution, because the balance still weighs the salt even though the grains have vanished. For the logbook, I think the balance reading has to stand.
+
+TUTOR: That logbook line follows the bench rather than the eye.
+
+The packet corner says salt went in. The balance says its mass remains. The grains have vanished from sight, not from the beaker.
+
+So: clear salt solution, heavier than water alone. Before the tray goes away, if the water were evaporated off, what should be left in the dish?
+
+LEARNER: I thought clear water meant the salt had gone; that was me taking “not visible” as “not there”. Now it sounds more like the grains have vanished, but the salt still remains in the beaker and on the balance. If the water is evaporated off, I think salt should be left in the dish, maybe as crystals again. Is that right?
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: That fits the evidence: the water leaves as vapour, the salt remains, and crystals in the dish would match the extra mass the balance carried.

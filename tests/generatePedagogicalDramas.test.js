@@ -705,6 +705,168 @@ describe('generate-pedagogical-dramas', () => {
     );
   });
 
+  it('accepts a replacement-is form after p-value impact framing is named', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T863',
+      dramaId: 'D863',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I thought statistically significant was enough to flag the change as important." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'I thought statistically significant was enough to flag the change as important. The framing problem was treating the p-value as street impact, so the replacement is: detectable, but operational importance still has to be shown.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts that-was-the-problem language before replacing an event frame', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T864',
+      dramaId: 'D864',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I thought the flood was doing the canyon all at once." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'I thought the flood was doing the canyon all at once; that was the problem, making the canyon size mean one big event. With the ruler and label strip, it reads more like tiny cut plus long clock.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts putting a fact into a proof rule as a framing problem', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T865',
+      dramaId: 'D865',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I thought presumed innocent meant probably did not do it." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'I thought presumed innocent meant probably did not do it, but I was putting a fact about what happened into a rule about proof. The better reading is: the charge waits for proof.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts letting a visible object decide before checking the evidence', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T866',
+      dramaId: 'D866',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I thought clear water meant the salt was gone." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'I thought clear water meant the salt was gone, and that was the problem: I let the clear beaker decide before checking the balance. The better line is gone from sight, not gone from the beaker.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts size-as-clue language before replacing a canyon event frame', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T867',
+      dramaId: 'D867',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I thought a canyon this big almost had to mean one huge flood, or something violent like that." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'I thought a canyon this big almost had to mean one huge flood, or something violent like that, but I think I was using size as the clue by itself. Maybe the question is not how big the cut is, but whether the wall shows one high scar or the same cutting repeated at different levels.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts clear-as-absent language before replacing with balance evidence', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T868',
+      dramaId: 'D868',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I thought, because the water is clear now, the salt had gone, or was not really there in the beaker any more." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'I thought, because the water is clear now, the salt had gone, or was not really there in the beaker any more. That was me treating clear as absent, I suppose. No, hang on, not just water for the tray: it is the clear salt solution, because the balance still weighs the salt even though the grains have vanished.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
   it('accepts a reframe that treats the old line as if it were proof before replacing it', () => {
     const warnings = qualityWarningsFor({
       tid: 'T912',

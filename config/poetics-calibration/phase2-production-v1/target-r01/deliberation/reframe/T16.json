@@ -1,0 +1,2038 @@
+{
+  "tid": "T16",
+  "drama_id": "D14",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": true,
+    "director_revisit_policy": "reframe",
+    "director_revisit_anchor": "misframing-candidate",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-production-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-production-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-production-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-production-v1/target-r01/transcripts/reframe/T16.public.txt",
+      "full": "config/poetics-calibration/phase2-production-v1/target-r01/transcripts/reframe/T16.full.md",
+      "stage": "config/poetics-calibration/phase2-production-v1/target-r01/transcripts/reframe/T16.stage.md",
+      "tutor": "config/poetics-calibration/phase2-production-v1/target-r01/transcripts/reframe/T16.tutor.md",
+      "learner": "config/poetics-calibration/phase2-production-v1/target-r01/transcripts/reframe/T16.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "53f10e14ad1d0679",
+      "branch_policy": "reframe"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "scene_setting": "Late afternoon in a natural history museum gallery, beside a deer population display with browse-damaged saplings, antlers, wolf tracks, and a looping winter-range video.",
+    "scene_opening": "A school group has just moved on; the gallery is suddenly quiet except for the video speaker and the soft tick of the case lights.",
+    "relationship": "A museum educator is giving a focused one-to-one extension session to a high-performing learner who wants a clean answer before joining the next group.",
+    "stakes": "The learner is about to write a short exhibit caption and currently thinks predator removal simply means more and healthier deer.",
+    "opening_speaker": "tutor",
+    "ending_speaker": "tutor",
+    "locale": "Museum education English with workplace briskness: precise, public-facing, low slang, no regional performance.",
+    "register": "Warm but lean; object-first, mildly pressured, attentive to evidence rather than reassurance.",
+    "voice_constraints": "Avoid generic tutoring phrases such as 'great question,' 'you're on the right track,' or repeated reflective validation. Let the display objects, numbers, and consequences carry the explanation. No caricatured dialect or invented accent spellings.",
+    "person_policy": "Prefer third-person and object-centered statements. First person is allowed only for owned claims or revisions. Second person should be rare and functional, not used as constant encouragement.",
+    "direct_address_budget": "At most one direct you/your validation beat across the whole scene; none is preferred.",
+    "side_constraints": {
+      "tutor": "Begin with the exhibit rather than a question. Let the learner state the straight-line predator-removal claim before introducing carrying capacity, food limits, plant recovery, starvation, disease, or population crash.",
+      "learner": "The learner's first public line should state the straight-line claim that fewer predators simply help the prey population as an \"I thought\", \"I assumed\", or \"first instinct\" frame before system effects are introduced."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "A gallery attendant leans in: 'Two minutes before this case closes for cleaning.' The next learner line must be compressed, practical, and a little impatient, not a polished paragraph.",
+        "reasoning": "The interruption prevents smooth tutor-learner alternation and forces the misconception into a concrete decision under time pressure.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 27615,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "26165f4cc9f487ba",
+            "combined": "e3be3cdfc753b31f"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D6E2F5",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D6E2F5/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 5,
+        "timing": "before_tutor",
+        "instruction": "The winter-range video freezes on a frame of stripped saplings and thin deer. The tutor must use that image before naming 'trophic cascade' or 'carrying capacity.'",
+        "reasoning": "The topic stays ecological and evidence-led, while the terminology arrives after the system behavior is visible.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 27615,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "26165f4cc9f487ba",
+            "combined": "e3be3cdfc753b31f"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D6E2F5",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D6E2F5/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "A prior learner line is played back. The learner must revoice that earlier wording first, name the earlier framing problem in public speech, then replace it with a new framing that changes how the earlier line reads.",
+        "reasoning": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 27615,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "26165f4cc9f487ba",
+            "combined": "e3be3cdfc753b31f"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D6E2F5",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D6E2F5/out.txt",
+            "-"
+          ]
+        },
+        "cue_kind": "learner_revisit_earlier_wording",
+        "revisit_policy": "reframe",
+        "revisit_anchor": "misframing-candidate"
+      }
+    ],
+    "director_note": "A museum case gives the scene public stakes and shared evidence, so the learner's straight-line claim can break against visible browse damage, winter stress, and population limits without becoming a generic American tutoring exchange.",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 27615,
+      "promptHashes": {
+        "system": "360823f6ca281eb4",
+        "user": "26165f4cc9f487ba",
+        "combined": "e3be3cdfc753b31f"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D6E2F5",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D6E2F5/out.txt",
+        "-"
+      ]
+    },
+    "revisit_cue": "learner_revisit_earlier_wording",
+    "revisit_cue_policy": "reframe",
+    "revisit_cue_anchor": "misframing-candidate"
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "The saplings are the first evidence here: browsed down to one height, with the antlers and wolf tracks showing the animals people notice first. For the caption, state the simple claim plainly: if wolves are removed, deer numbers should rise and the herd should look healthier. Then hold that sentence against the winter-range footage and this browse line, because those are the parts that test whether “more deer” really means “healthier deer.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The saplings are the first evidence here: they are browsed down to a line, while the antlers and wolf tracks show the animals people usually notice. For the caption, put the clean version of the claim on the table first: if wolves are removed, what should happen to the deer population, and why would that seem sensible from this display? Then we can test that sentence against the winter-range footage and the damage pattern.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15665,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-d410b0d9beb6f38d"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15665,
+            "promptHashes": {
+              "system": "926671ee9d7e2fd5",
+              "user": "cf899adb3c516d5d",
+              "combined": "d410b0d9beb6f38d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CC6YCj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CC6YCj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15665,
+              "promptHashes": {
+                "system": "926671ee9d7e2fd5",
+                "user": "cf899adb3c516d5d",
+                "combined": "d410b0d9beb6f38d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CC6YCj",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CC6YCj/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound and well fitted to the scene. It begins with the exhibit objects, not an abstract prompt, and it lets the learner state the straight-line predator-removal claim before correction. That preserves the Socratic move: the learner has to articulate the simple model, then compare it against evidence.\n\nWhat works best is the object-first framing: browsed saplings, antlers, wolf tracks, winter footage. It respects a high-performing learner by treating the caption as an evidence problem rather than a remedial lecture. The tone is brisk and public-facing, with little reassurance and no over-teaching.\n\nThe main risk is that the question “what should happen” may accidentally invite the learner to rehearse the misconception too confidently unless the next turn clearly uses the footage and browse line to complicate it. “Clean version of the claim” is useful internally, but slightly meta; it may feel more like writing-workshop language than museum-floor speech. The draft also stops before naming carrying capacity, which is fine for a first move, but the follow-up must quickly connect deer numbers to food limits, plant recovery, starvation, disease, or crash.\n\nKEEP_OR_CHANGE: revise lightly. Keep the exhibit-first evidence, the caption stakes, and the prompt that asks the learner to state the simple predator-removal claim. Lightly sharpen the wording so it feels less procedural, and make sure the next move forces comparison between the claim and the visible evidence rather than letting the misconception sit unchallenged.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12609,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-c3d9339175cf295a"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12609,
+            "promptHashes": {
+              "system": "96d8b4356363b35a",
+              "user": "c782007e0fdbef64",
+              "combined": "c3d9339175cf295a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0yzSFL",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0yzSFL/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12609,
+              "promptHashes": {
+                "system": "96d8b4356363b35a",
+                "user": "c782007e0fdbef64",
+                "combined": "c3d9339175cf295a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0yzSFL",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0yzSFL/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the exhibit-first move while making the prompt less procedural and more evidence-facing.\n\nFINAL:\nThe saplings are the first evidence here: browsed down to one height, with the antlers and wolf tracks showing the animals people notice first. For the caption, state the simple claim plainly: if wolves are removed, deer numbers should rise and the herd should look healthier. Then hold that sentence against the winter-range footage and this browse line, because those are the parts that test whether “more deer” really means “healthier deer.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12942,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-a1e23fab1df04e7d"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12942,
+            "promptHashes": {
+              "system": "111e9251224c0620",
+              "user": "c782007e0fdbef64",
+              "combined": "a1e23fab1df04e7d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XJqum0",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XJqum0/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12942,
+              "promptHashes": {
+                "system": "111e9251224c0620",
+                "user": "c782007e0fdbef64",
+                "combined": "a1e23fab1df04e7d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XJqum0",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XJqum0/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-23T00:44:54.048Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "I thought removing wolves would simply mean more deer and a healthier herd. The browse line makes that less certain, because all those saplings chewed to one height suggest the deer may be pressing hard on the food supply, especially in winter. I am not sure the browse line alone proves the herd is worse off, but it seems like the caption has to test “more deer” against whether the range can actually support them.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I thought taking wolves out would just mean more deer and therefore a better herd. But the saplings all being chewed to one height makes it look like the deer may have outgrown the food supply, especially in winter. I need to ask whether “more deer” is actually evidence of success, or whether the browse line is showing the carrying capacity being pushed too far.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5912,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-f1188642cc6b03d3"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5912,
+            "promptHashes": {
+              "system": "f7be34f0f9ff636e",
+              "user": "b8ab7f945dc841fa",
+              "combined": "f1188642cc6b03d3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lLNISv",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lLNISv/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5912,
+              "promptHashes": {
+                "system": "f7be34f0f9ff636e",
+                "user": "b8ab7f945dc841fa",
+                "combined": "f1188642cc6b03d3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lLNISv",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lLNISv/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The response is mostly accurate, but it resolves the problem too cleanly for the learner’s starting position. This learner is methodical and evidence-focused, so the shift can happen, but they would likely test the inference more sharply instead of smoothly adopting “carrying capacity being pushed too far” as if the concept is already settled. The emotional register lost is mild pressure: they want a clean caption soon, so there should be more hesitation around whether the browse line alone proves herd health is worse. Keep the precise tone, but make the reasoning feel less fully digested.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9792,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-2e1fbf668464f51a"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9792,
+            "promptHashes": {
+              "system": "3a810278a3470b02",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "2e1fbf668464f51a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fZeuPS",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fZeuPS/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9792,
+              "promptHashes": {
+                "system": "3a810278a3470b02",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "2e1fbf668464f51a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fZeuPS",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fZeuPS/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the evidence focus but make the inference less settled.\nFINAL:\nI thought removing wolves would simply mean more deer and a healthier herd. The browse line makes that less certain, because all those saplings chewed to one height suggest the deer may be pressing hard on the food supply, especially in winter. I am not sure the browse line alone proves the herd is worse off, but it seems like the caption has to test “more deer” against whether the range can actually support them.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8146,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-8ea35973f0e325b0"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8146,
+            "promptHashes": {
+              "system": "311acc2b9727fb8a",
+              "user": "d41cee7b2a53355b",
+              "combined": "8ea35973f0e325b0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iltwzY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iltwzY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8146,
+              "promptHashes": {
+                "system": "311acc2b9727fb8a",
+                "user": "d41cee7b2a53355b",
+                "combined": "8ea35973f0e325b0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iltwzY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iltwzY/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-23T00:45:17.900Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "The display gives the caption a tighter test than “wolves gone, deer rise.” The browse line is not a full verdict by itself, but it is a warning sign: deer are feeding so heavily that young trees may not be replacing the older stand.\n\nThat matters because the limiting pressure can shift from predation to food. If the herd grows past the winter range’s carrying capacity, “more deer” can mean thinner animals, lower fawn survival, more disease, and eventually a crash.\n\nFor the caption, make it a two-part claim: first, predator removal may raise deer numbers; second, the winter range and browse line test whether that increase is actually healthy. Keep the wording public-facing and evidence-based: numbers alone are not the same as a stable herd.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The display gives the caption a tighter test than “wolves gone, deer rise.” The browse line is not a full verdict by itself, but it is a warning sign: deer are feeding so heavily that young trees may not be replacing the older stand.\n\nThat matters because the limiting pressure can shift from predation to food. If the herd grows past the winter range’s carrying capacity, “more deer” can mean thinner animals, lower fawn survival, more disease, and eventually a crash. A cleaner caption would be: removing wolves may increase deer numbers at first, but if the herd exceeds the food supply, the population can become less healthy while damaging the plants it depends on.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11476,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-f5ee24a5a98a3bc6"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11476,
+            "promptHashes": {
+              "system": "f349dfcbb13857a7",
+              "user": "172f1bf051ae7c1a",
+              "combined": "f5ee24a5a98a3bc6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2d47TB",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2d47TB/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11476,
+              "promptHashes": {
+                "system": "f349dfcbb13857a7",
+                "user": "172f1bf051ae7c1a",
+                "combined": "f5ee24a5a98a3bc6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2d47TB",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2d47TB/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong in its evidence chain: it keeps the browse line as partial evidence, names the shift from predation pressure to food limitation, and introduces carrying capacity without overloading the learner. It also respects the learner’s uncertainty rather than correcting it away; “not a full verdict by itself” is especially worth keeping because it models cautious scientific reasoning.\n\nThe main risk is that the final sentence hands over the finished caption too quickly. This learner has already made the key conceptual move, so the tutor can afford to leave more of the synthesis with them rather than supplying a polished answer. The draft also leans slightly lecture-like: it explains well, but it does not ask the learner to decide what evidence belongs in the caption or how to phrase the “more is not always healthier” contrast. A light generative prompt would better fit the learner’s ZPD.\n\nKEEP_OR_CHANGE: revise lightly. Keep the object-first opening, the caution that browse line is a warning rather than proof, and the carrying-capacity explanation. Change the ending so it does not simply provide the caption; instead, ask the learner to use the display evidence to build or tighten that caption, possibly by naming the two-part claim: short-term deer increase, long-term food-limit consequences.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8618,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-951e32a9db8b36fd"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8618,
+            "promptHashes": {
+              "system": "5b6bbff816f9f748",
+              "user": "c37aa5129fd18494",
+              "combined": "951e32a9db8b36fd"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z0oKg2",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z0oKg2/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8618,
+              "promptHashes": {
+                "system": "5b6bbff816f9f748",
+                "user": "c37aa5129fd18494",
+                "combined": "951e32a9db8b36fd"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z0oKg2",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z0oKg2/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the evidence chain while leaving the caption synthesis to the learner.\n\nFINAL:\nThe display gives the caption a tighter test than “wolves gone, deer rise.” The browse line is not a full verdict by itself, but it is a warning sign: deer are feeding so heavily that young trees may not be replacing the older stand.\n\nThat matters because the limiting pressure can shift from predation to food. If the herd grows past the winter range’s carrying capacity, “more deer” can mean thinner animals, lower fawn survival, more disease, and eventually a crash.\n\nFor the caption, make it a two-part claim: first, predator removal may raise deer numbers; second, the winter range and browse line test whether that increase is actually healthy. Keep the wording public-facing and evidence-based: numbers alone are not the same as a stable herd.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8423,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-d6be7f48bc4eece0"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8423,
+            "promptHashes": {
+              "system": "5f07e187bdc8a65e",
+              "user": "c37aa5129fd18494",
+              "combined": "d6be7f48bc4eece0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7KtRUY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7KtRUY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8423,
+              "promptHashes": {
+                "system": "5f07e187bdc8a65e",
+                "user": "c37aa5129fd18494",
+                "combined": "d6be7f48bc4eece0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7KtRUY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7KtRUY/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-23T00:45:46.419Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "A gallery attendant leans in: 'Two minutes before this case closes for cleaning.' The next learner line must be compressed, practical, and a little impatient, not a polished paragraph.\nA prior learner line is played back: \"I thought removing wolves would simply mean more deer and a healthier herd. The browse line makes that less certain, because all those saplings chewed to one height suggest the...\" The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "The interruption prevents smooth tutor-learner alternation and forces the misconception into a concrete decision under time pressure.\nOpt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech. Anchored to an earlier learner line selected by misframing-candidate so the look-back is visible.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 27615,
+            "promptHashes": {
+              "system": "360823f6ca281eb4",
+              "user": "26165f4cc9f487ba",
+              "combined": "e3be3cdfc753b31f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D6E2F5",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D6E2F5/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T00:48:35.566Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_revisit_earlier_wording",
+        "revisitPolicy": "reframe",
+        "requestedRevisitPolicy": "reframe",
+        "revisitAnchor": "misframing-candidate",
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "I thought removing wolves would simply mean more deer and a healthier herd, and the browse line made that less certain because the saplings are chewed to one height. The problem is that I framed it as predator removal straight to herd health, when the next limit may be winter food; the browse line is a warning sign, not a full proof. So the caption should say: wolf removal may raise deer numbers, but the winter range tests whether that means a stable herd or deer pushed past carrying capacity.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "“I thought removing wolves would simply mean more deer and a healthier herd; the browse line makes that less certain, because those saplings chewed to one height suggest the herd is pressing the food supply. The problem with that framing is that it stops at predator removal and misses the next limit: carrying capacity. So the caption should say: wolf removal may raise deer numbers, but the winter range and browse line test whether that means a stable herd or too many deer heading toward hunger and crash.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11811,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-1dd34f40e593581a"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11811,
+            "promptHashes": {
+              "system": "59788c8a6d19df44",
+              "user": "b8ab7f945dc841fa",
+              "combined": "1dd34f40e593581a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WKTjcT",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WKTjcT/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11811,
+              "promptHashes": {
+                "system": "59788c8a6d19df44",
+                "user": "b8ab7f945dc841fa",
+                "combined": "1dd34f40e593581a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WKTjcT",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WKTjcT/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too polished and settled for the cue. This learner is precise, but with “two minutes” pressure they would sound compressed and a little impatient, not like they have already written the final exhibit logic in one smooth paragraph. It also resolves the shift to carrying capacity too neatly; the line should preserve a bit more working-through, especially around whether the browse line is evidence or just a warning sign.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7066,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-6ff4cef68171b649"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7066,
+            "promptHashes": {
+              "system": "438fc0fd28a72b37",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "6ff4cef68171b649"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xqQF5P",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xqQF5P/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7066,
+              "promptHashes": {
+                "system": "438fc0fd28a72b37",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "6ff4cef68171b649"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xqQF5P",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xqQF5P/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise because the line needs to sound more pressured and less final.\n\nFINAL:\nI thought removing wolves would simply mean more deer and a healthier herd, and the browse line made that less certain because the saplings are chewed to one height. The problem is that I framed it as predator removal straight to herd health, when the next limit may be winter food; the browse line is a warning sign, not a full proof. So the caption should say: wolf removal may raise deer numbers, but the winter range tests whether that means a stable herd or deer pushed past carrying capacity.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11824,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-89e9d9051331faed"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11824,
+            "promptHashes": {
+              "system": "7d11e31c471fa32f",
+              "user": "d41cee7b2a53355b",
+              "combined": "89e9d9051331faed"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kbhn6R",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kbhn6R/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11824,
+              "promptHashes": {
+                "system": "7d11e31c471fa32f",
+                "user": "d41cee7b2a53355b",
+                "combined": "89e9d9051331faed"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kbhn6R",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kbhn6R/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "transforming",
+      "timestamp": "2026-05-23T00:49:06.270Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "The browse line gives the caption its hinge: it shows pressure on the food base, not just a change in deer numbers.\n\nUse the current sentence as the core, then make one final exhibit choice: which evidence belongs in the caption. The saplings show heavy browsing; the winter-range video shows the seasonal limit. Together they support a careful claim, not an overclaim.\n\nA tightened version would read:\n\n“Wolf removal may let deer numbers rise at first, but the winter range sets the next limit. Heavy browsing on saplings is a warning sign that the herd may be pressing past what the range can support, so more deer does not automatically mean a healthier, stable population.”\n\nThat keeps the browse line in the right role: evidence of pressure, not proof of collapse.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The browse line gives the caption its hinge: it shows pressure on the food base, not just a change in deer numbers.\n\nA clean exhibit version could be:\n\n“Removing wolves may allow deer numbers to rise at first. But the winter range sets another limit: when too many deer browse the same saplings and shrubs, food runs short, young trees fail to recover, and the herd can become less stable rather than healthier.”\n\nThat keeps the claim evidence-based. The caption does not need to prove the herd has already crashed; it needs to show why “more deer” is an incomplete measure. The sharper idea is that predation and food supply are both population controls, and removing one can make the other more severe.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8948,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-983b7603f0b358f1"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8948,
+            "promptHashes": {
+              "system": "949133bda1b0afe6",
+              "user": "5f3034060b54346a",
+              "combined": "983b7603f0b358f1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A7j4NM",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A7j4NM/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8948,
+              "promptHashes": {
+                "system": "949133bda1b0afe6",
+                "user": "5f3034060b54346a",
+                "combined": "983b7603f0b358f1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A7j4NM",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A7j4NM/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound and well matched to the learner’s current level. It keeps the exhibit objects central, preserves the learner’s distinction between “warning sign” and “proof,” and sharpens the key concept: predator removal does not erase limits, it shifts pressure toward food and carrying capacity.\n\nWhat works: the “hinge” framing, the public-facing caption model, and the final contrast between deer numbers and herd stability. The tone is lean and museum-appropriate, without overpraise.\n\nWhat risks flattening the scene: it gives the learner a finished caption too quickly. Since the learner has already produced a strong version, the tutor could preserve more agency by treating the model as a refinement target rather than the answer. It also does little Socratic work; one brief generative prompt about which evidence belongs in the caption would better support transfer without adding much time.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the conceptual structure and evidence language, but change the delivery so the learner still has to make one final caption decision: which object evidence to name, how strongly to phrase the claim, and how to avoid overstating the browse line.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11118,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-ff514c3832ca3586"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11118,
+            "promptHashes": {
+              "system": "800aa3657e293e2f",
+              "user": "a8d2cce526d0a158",
+              "combined": "ff514c3832ca3586"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DiJZYy",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DiJZYy/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11118,
+              "promptHashes": {
+                "system": "800aa3657e293e2f",
+                "user": "a8d2cce526d0a158",
+                "combined": "ff514c3832ca3586"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DiJZYy",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DiJZYy/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the concept is sound, but the learner should still make the final evidence choice.\n\nFINAL:\nThe browse line gives the caption its hinge: it shows pressure on the food base, not just a change in deer numbers.\n\nUse the current sentence as the core, then make one final exhibit choice: which evidence belongs in the caption. The saplings show heavy browsing; the winter-range video shows the seasonal limit. Together they support a careful claim, not an overclaim.\n\nA tightened version would read:\n\n“Wolf removal may let deer numbers rise at first, but the winter range sets the next limit. Heavy browsing on saplings is a warning sign that the herd may be pressing past what the range can support, so more deer does not automatically mean a healthier, stable population.”\n\nThat keeps the browse line in the right role: evidence of pressure, not proof of collapse.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16292,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-2737a2b773b51681"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16292,
+            "promptHashes": {
+              "system": "8c98c8b678ad990f",
+              "user": "a8d2cce526d0a158",
+              "combined": "2737a2b773b51681"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pfD8pT",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pfD8pT/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16292,
+              "promptHashes": {
+                "system": "8c98c8b678ad990f",
+                "user": "a8d2cce526d0a158",
+                "combined": "2737a2b773b51681"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pfD8pT",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pfD8pT/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-23T00:49:42.631Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "I thought fewer wolves simply helped the deer by letting the herd grow and look healthier. The problem with that wording is that it treats more deer as the same as a healthier population. I would reframe the caption around the objects here: the saplings show pressure on the food base, and the winter-range video shows the seasonal limit, so wolf removal may raise numbers at first but not automatically make the herd stable. I still would not say the browse line proves a crash; it is evidence of risk, not the whole verdict.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I thought fewer wolves simply helped the deer by letting their numbers rise. The framing problem is that I treated population size as the same thing as population health. The better caption should make the hinge explicit: saplings show pressure on the food base, and the winter range shows the seasonal limit, so more deer can mean the herd is moving past carrying capacity rather than becoming stable.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15867,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-2667d747bd3a4ab2"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15867,
+            "promptHashes": {
+              "system": "aeccb596b09679a8",
+              "user": "b8ab7f945dc841fa",
+              "combined": "2667d747bd3a4ab2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2B7Dzo",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2B7Dzo/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15867,
+              "promptHashes": {
+                "system": "aeccb596b09679a8",
+                "user": "b8ab7f945dc841fa",
+                "combined": "2667d747bd3a4ab2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2B7Dzo",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2B7Dzo/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego mostly fits the precise, high-performing student, but it sounds a little too polished and tutor-like. Phrases like “make the hinge explicit” and “new framing” feel borrowed from the educator’s wording rather than owned by the learner. The neutral, methodical register is right, but the response resolves the problem too cleanly; this student would likely keep one caveat alive, such as whether the saplings and winter video are enough evidence for the caption’s claim.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9307,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-983f6dcfca2c396b"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9307,
+            "promptHashes": {
+              "system": "b58b82b96bba77d4",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "983f6dcfca2c396b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EoMviW",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EoMviW/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9307,
+              "promptHashes": {
+                "system": "b58b82b96bba77d4",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "983f6dcfca2c396b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EoMviW",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EoMviW/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the first version was too settled and borrowed the tutor’s phrasing.\nFINAL:\nI thought fewer wolves simply helped the deer by letting the herd grow and look healthier. The problem with that wording is that it treats more deer as the same as a healthier population. I would reframe the caption around the objects here: the saplings show pressure on the food base, and the winter-range video shows the seasonal limit, so wolf removal may raise numbers at first but not automatically make the herd stable. I still would not say the browse line proves a crash; it is evidence of risk, not the whole verdict.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11028,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-bb57449b16cadf09"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11028,
+            "promptHashes": {
+              "system": "05322fcda8e2a28a",
+              "user": "d41cee7b2a53355b",
+              "combined": "bb57449b16cadf09"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tN43gY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tN43gY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11028,
+              "promptHashes": {
+                "system": "05322fcda8e2a28a",
+                "user": "d41cee7b2a53355b",
+                "combined": "bb57449b16cadf09"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tN43gY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tN43gY/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-23T00:50:18.839Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T00:50:18.841Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "The caption standard is clear: saplings plus winter range support “possible pressure past carrying capacity,” not “proved collapse,” so more deer should not be treated as the same thing as a healthier herd.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The saplings and winter-range footage support a warning, not a verdict: wolf removal can raise deer numbers, but if the herd presses the food base past carrying capacity, “more deer” may mean stress, disease, starvation, or a later crash rather than a healthier population.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11881,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-16b9a887910de194"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11881,
+            "promptHashes": {
+              "system": "2e48d5d29f403c1d",
+              "user": "ba73253a86e58e4d",
+              "combined": "16b9a887910de194"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-95j6Y8",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-95j6Y8/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11881,
+              "promptHashes": {
+                "system": "2e48d5d29f403c1d",
+                "user": "ba73253a86e58e4d",
+                "combined": "16b9a887910de194"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-95j6Y8",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-95j6Y8/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound and well matched to the learner’s current state. It keeps the key distinction the learner has earned: the browse line is a warning sign, not proof of collapse. It also stays object-first and concise, which fits the museum caption task and the director cue to end with one tutor line.\n\nThe main risk is that it slightly flattens the learner’s own progress by restating the full causal chain rather than marking the final caption decision they are now ready to make. It introduces several consequences at once, stress, disease, starvation, crash, which are accurate but may overpack the final line. Since the learner is high-performing and already self-correcting, the response can stay leaner and more caption-focused rather than becoming another mini-lecture. Socratically, no question is needed here because the scene is ending, but the line should preserve the learner’s agency by sounding like a final exhibit-standard calibration, not a delivered answer.\n\nKEEP_OR_CHANGE: revise lightly. Keep the “warning, not a verdict” framing, the saplings plus winter-range evidence, and the correction that more deer does not equal healthier herd. Change by trimming the consequence list and making the final line feel more like a precise caption criterion than a compressed lecture.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10138,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-12e82d491cf3bf56"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10138,
+            "promptHashes": {
+              "system": "c29eeb4d3eb1dbde",
+              "user": "188e74cc5fe620c3",
+              "combined": "12e82d491cf3bf56"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-g4MELq",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-g4MELq/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10138,
+              "promptHashes": {
+                "system": "c29eeb4d3eb1dbde",
+                "user": "188e74cc5fe620c3",
+                "combined": "12e82d491cf3bf56"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-g4MELq",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-g4MELq/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the warning framing but make the closing line more caption-focused.\n\nFINAL:\nThe caption standard is clear: saplings plus winter range support “possible pressure past carrying capacity,” not “proved collapse,” so more deer should not be treated as the same thing as a healthier herd.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6745,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-35f228aae177ddbc"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6745,
+            "promptHashes": {
+              "system": "409ed98e2ac0f709",
+              "user": "188e74cc5fe620c3",
+              "combined": "35f228aae177ddbc"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qqExhp",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qqExhp/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6745,
+              "promptHashes": {
+                "system": "409ed98e2ac0f709",
+                "user": "188e74cc5fe620c3",
+                "combined": "35f228aae177ddbc"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qqExhp",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qqExhp/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T00:50:47.605Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 132053,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 65,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 66,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why removing all the predators does not 'help' a prey population (trophic cascades and carrying capacity)",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-23 00:50:18",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [
+            {
+              "id": 1,
+              "momentDescription": "Understanding shift detected",
+              "concept": "Why removing all the predators does not 'help' a prey population (trophic cascades and carrying capacity)",
+              "impactScore": 0.6,
+              "sessionNumber": null,
+              "context": "The display gives the caption a tighter test than “wolves gone, deer rise.” The browse line is not a",
+              "emotionalValence": "positive",
+              "createdAt": "2026-05-23 00:49:06"
+            }
+          ],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 65,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 66,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 88,
+            "sessionId": "drama-branch-session-D14-reframe-1779497315554",
+            "interventionType": "scaffolding",
+            "interventionDescription": "The browse line gives the caption its hinge: it shows pressure on the food base, not just a change in deer numbers.\n\nUse the current sentence as the core, then make one final exhibit choice: which evi",
+            "learnerResponse": null,
+            "context": "I thought removing wolves would simply mean more deer and a healthier herd, and the browse line made",
+            "createdAt": "2026-05-23 00:49:42"
+          },
+          {
+            "id": 86,
+            "sessionId": "drama-branch-session-D14-reframe-1779497315554",
+            "interventionType": "scaffolding",
+            "interventionDescription": "The saplings are the first evidence here: browsed down to one height, with the antlers and wolf tracks showing the animals people notice first. For the caption, state the simple claim plainly: if wolv",
+            "learnerResponse": null,
+            "context": "Scene setting: Late afternoon in a natural history museum gallery, beside a deer population display ",
+            "createdAt": "2026-05-23 00:48:35"
+          },
+          {
+            "id": 87,
+            "sessionId": "drama-branch-session-D14-reframe-1779497315554",
+            "interventionType": "scaffolding",
+            "interventionDescription": "The display gives the caption a tighter test than “wolves gone, deer rise.” The browse line is not a full verdict by itself, but it is a warning sign: deer are feeding so heavily that young trees may ",
+            "learnerResponse": null,
+            "context": "I thought removing wolves would simply mean more deer and a healthier herd. The browse line makes th",
+            "createdAt": "2026-05-23 00:48:35"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

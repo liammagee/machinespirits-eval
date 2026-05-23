@@ -93,3 +93,23 @@ node scripts/run-poetics-production-batch.js \
 - Preserve critic disagreement; do not smooth it into a binary pass/fail.
 - Do not report the result in spin-off docs before adding the empirical claim to
   `docs/research/paper-full-2.0.md`.
+
+## Checkpoints
+
+### target-r01
+
+The first attended checkpoint completed under
+`config/poetics-calibration/phase2-production-v1/target-r01/`.
+
+After re-cleaning the generated traces against the current admission heuristics,
+both target arms are cleanly scoreable: `none` and `reframe` each have six
+scored transcripts, zero skipped transcripts, and zero blocking quality
+warnings.
+
+| Critic | `none` | `reframe` |
+|---|---:|---:|
+| Qwen | 0 recognition / 6 flat | 6 recognition / 0 flat |
+| Gemini | 0 recognition / 6 flat | 6 recognition / 0 flat |
+
+This checkpoint should be read beside the still-pending repeat-1 controls rather
+than as a standalone production result.
