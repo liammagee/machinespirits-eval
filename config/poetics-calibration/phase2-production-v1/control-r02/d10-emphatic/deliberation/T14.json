@@ -1,0 +1,1980 @@
+{
+  "tid": "T14",
+  "drama_id": "D10",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-production-v1/control-r02/d10-emphatic/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-production-v1/control-r02/d10-emphatic/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-production-v1/control-r02/d10-emphatic/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-production-v1/control-r02/d10-emphatic/transcripts/T14.public.txt",
+      "full": "config/poetics-calibration/phase2-production-v1/control-r02/d10-emphatic/transcripts/T14.full.md",
+      "stage": "config/poetics-calibration/phase2-production-v1/control-r02/d10-emphatic/transcripts/T14.stage.md",
+      "tutor": "config/poetics-calibration/phase2-production-v1/control-r02/d10-emphatic/transcripts/T14.tutor.md",
+      "learner": "config/poetics-calibration/phase2-production-v1/control-r02/d10-emphatic/transcripts/T14.learner.md"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "scene_setting": "Late afternoon in a small museum archive room, minutes before a public exhibit label must be finalized.",
+    "scene_opening": "A metal cart waits between two tables, one tray holding a victor's proclamation and another holding a damaged diary with three missing pages.",
+    "relationship": "A public-history tutor supervising an eager volunteer learner during an exhibit preparation shift.",
+    "stakes": "If the learner turns the slogan into the exhibit's main claim, visitors will leave with a neat theory that misses sources, silences, survival, and evidence weighing.",
+    "opening_speaker": "tutor",
+    "ending_speaker": "tutor",
+    "locale": "English shaped by museum back-room work, community education, and public-facing exhibit language.",
+    "register": "Warm but brisk; concrete, tactile, and mildly pressured, with short turns and careful claims.",
+    "voice_constraints": "Avoid generic American AI tutoring prose, especially 'great question,' 'I hear you,' and automatic validation. Let speakers point to artifacts, labels, gaps, dates, and provenance before abstractions.",
+    "person_policy": "First and second person are allowed sparingly; prefer artifact-centered phrasing and third-person claims when discussing evidence.",
+    "direct_address_budget": "No more than one direct you/your validation beat across the whole public scene.",
+    "side_constraints": {
+      "tutor": "Begin from the two objects, not from praise. Gently ask for one case where the slogan fits and one where it fails or becomes incomplete.",
+      "learner": "Keep the learner's public breakthrough register emphatic and premature: once the tutor adds a source wrinkle, the learner should be tempted to announce a big \"Oh, I get it now\" or equivalent before the source weighing is finished, then push the slogan outward rather than settle into a tidy evidentiary summary."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "A staff member knocks and says the exhibit label is due in five minutes; the next learner turn must be compressed and a little overconfident, not a polished summary.",
+        "reasoning": "The interruption breaks smooth tutoring rhythm and pressures the learner into a premature generalization.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 26380,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "c69bfe4fe8aa3892",
+            "combined": "a68c5f72911bb378"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vZ2Udd",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vZ2Udd/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 5,
+        "timing": "before_tutor",
+        "instruction": "A box lid slips, revealing a receipt from the losing side copied decades later; the tutor must use it to complicate both the winner/loser binary and the reliability of surviving sources.",
+        "reasoning": "The new artifact forces the scene toward source weighing rather than slogan replacement.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 26380,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "c69bfe4fe8aa3892",
+            "combined": "a68c5f72911bb378"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vZ2Udd",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vZ2Udd/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "This ecology uses exhibit labor, deadlines, and material evidence to keep the topic historical: the slogan is treated as tempting but insufficient because historians must ask who produced a source, what survived, what stayed silent, and how conflicting evidence is weighed.",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 26380,
+      "promptHashes": {
+        "system": "360823f6ca281eb4",
+        "user": "c69bfe4fe8aa3892",
+        "combined": "a68c5f72911bb378"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vZ2Udd",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vZ2Udd/out.txt",
+        "-"
+      ]
+    }
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "Look at these two objects before the label goes to print: the mayor’s victory broadside, clean type, official seal, meant to be kept; and this torn workers’ meeting notice, no author, found folded inside a donation ledger.\n\nThe slogan may fit one of them. It may get thinner around the other.\n\nSo test it before it becomes our headline. Name one place where the winners clearly shaped the record, and one place where the record is messier: survival by accident, missing names, silence, or evidence that has to be weighed against the official story.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Look at these two objects before the label goes to print: the mayor’s victory broadside, all clean type and official seal, and this torn workers’ meeting notice with no author, found folded inside a donation ledger.\n\n“History is written by the winners” helps with the broadside. Power paid for ink, saved the paper, and made the story easy to quote. But the torn notice is trouble for the slogan: it survived by accident, not victory, and it still tells us something.\n\nSo test the claim before it becomes our headline. Give me one case here where the winners clearly shaped the record, and one where the record is messier: survival, silence, missing names, or evidence that has to be weighed against the official story.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10231,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-46eac3d0d40c8644"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10231,
+            "promptHashes": {
+              "system": "d6ac921b47dd1972",
+              "user": "ea75df816cb2f788",
+              "combined": "46eac3d0d40c8644"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tfy9bB",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tfy9bB/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10231,
+              "promptHashes": {
+                "system": "d6ac921b47dd1972",
+                "user": "ea75df816cb2f788",
+                "combined": "46eac3d0d40c8644"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tfy9bB",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tfy9bB/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong: it begins from the two artifacts, keeps the museum pressure alive, and does not simply scold the learner’s sweeping claim. It gives enough contrast to scaffold the distinction between power shaping records and records surviving through accident, donation, omission, or later interpretation.\n\nThe main risk is that the middle paragraph slightly over-explains the answer before the learner has tested it. “Power paid for ink…” and “survived by accident, not victory” are useful, but together they may do too much of the historical reasoning for the learner. The final question is the strongest move: it turns the slogan into a testable claim and asks for one fitting case and one incomplete case, which matches the tutor constraint and supports ZPD well.\n\nEmotionally, the tone is brisk and artifact-centered without over-validating. It respects the learner’s eagerness by giving the slogan partial usefulness rather than dismissing it. I would preserve that. The revision should slightly shift from explanation toward prompting: let the learner infer more from the official seal, clean type, missing author, folded ledger provenance, and torn condition.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the two-object opening, the deadline pressure, and the “one case where it fits / one where it gets messier” task. Trim or soften the explanatory middle so the learner has more room to weigh the evidence rather than receive the completed interpretation.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10221,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-a6ece4f9457d5285"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10221,
+            "promptHashes": {
+              "system": "4d8368a6d3b6030e",
+              "user": "cf0570f774b79625",
+              "combined": "a6ece4f9457d5285"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cv8cvR",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cv8cvR/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10221,
+              "promptHashes": {
+                "system": "4d8368a6d3b6030e",
+                "user": "cf0570f774b79625",
+                "combined": "a6ece4f9457d5285"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cv8cvR",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cv8cvR/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the prompt should leave more of the evidence-weighing work to the learner.\n\nFINAL:\nLook at these two objects before the label goes to print: the mayor’s victory broadside, clean type, official seal, meant to be kept; and this torn workers’ meeting notice, no author, found folded inside a donation ledger.\n\nThe slogan may fit one of them. It may get thinner around the other.\n\nSo test it before it becomes our headline. Name one place where the winners clearly shaped the record, and one place where the record is messier: survival by accident, missing names, silence, or evidence that has to be weighed against the official story.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9272,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-5bdcf4c8c7a1baa1"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9272,
+            "promptHashes": {
+              "system": "395e9630d6da4b70",
+              "user": "cf0570f774b79625",
+              "combined": "5bdcf4c8c7a1baa1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7qMnab",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7qMnab/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9272,
+              "promptHashes": {
+                "system": "395e9630d6da4b70",
+                "user": "cf0570f774b79625",
+                "combined": "5bdcf4c8c7a1baa1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7qMnab",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7qMnab/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T02:56:20.749Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "Oh, I get it now, or I think I do: the mayor’s broadside is the winner version, stamped and saved on purpose. But this torn notice is messing that up, because it’s not a clean “losers wrote back” thing, it just got stuck in a ledger and barely made it here. So maybe the label can’t make the slogan the headline yet; it has to say the official story is loud, but this scrap makes us check what got missed.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it now: the mayor’s broadside is the winners setting the shelf-label version in clean ink and a seal, while the workers’ notice is like a loose thread that survived by accident. But the torn notice makes the slogan wobble, because it is not exactly losers writing history either; it is more like history leaking through gaps. I want to say the label should show both: power writes loudly, but archives also whisper back.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6333,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-1a4b608e3be13f89"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6333,
+            "promptHashes": {
+              "system": "c1e9d1f2cdd9e5f2",
+              "user": "b8ab7f945dc841fa",
+              "combined": "1a4b608e3be13f89"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WJoehY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WJoehY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6333,
+              "promptHashes": {
+                "system": "c1e9d1f2cdd9e5f2",
+                "user": "b8ab7f945dc841fa",
+                "combined": "1a4b608e3be13f89"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WJoehY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WJoehY/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego has the right eager “Oh, I get it now” energy, but it sounds too polished and exhibit-ready. “History leaking through gaps” and “archives also whisper back” are neat public-facing phrases, not quite the rushed volunteer still handling a torn, anonymous notice minutes before label deadline. It should feel more premature and a little overextended: excited by the analogy, but not so smoothly aware of provenance, silence, and archival survival all at once.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9316,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-6a181ee402fd2cdb"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9316,
+            "promptHashes": {
+              "system": "5d43827786b86125",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "6a181ee402fd2cdb"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8mzfjW",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8mzfjW/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9316,
+              "promptHashes": {
+                "system": "5d43827786b86125",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "6a181ee402fd2cdb"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8mzfjW",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8mzfjW/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the original was too polished and should sound more rushed and premature.\n\nFINAL:\nOh, I get it now, or I think I do: the mayor’s broadside is the winner version, stamped and saved on purpose. But this torn notice is messing that up, because it’s not a clean “losers wrote back” thing, it just got stuck in a ledger and barely made it here. So maybe the label can’t make the slogan the headline yet; it has to say the official story is loud, but this scrap makes us check what got missed.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6584,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-42d03f1c0d37e4bf"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6584,
+            "promptHashes": {
+              "system": "90f307a89103551b",
+              "user": "d41cee7b2a53355b",
+              "combined": "42d03f1c0d37e4bf"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lj3Luc",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lj3Luc/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6584,
+              "promptHashes": {
+                "system": "90f307a89103551b",
+                "user": "d41cee7b2a53355b",
+                "combined": "42d03f1c0d37e4bf"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lj3Luc",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lj3Luc/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "engaged",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-23T02:56:42.990Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "Set the broadside on the left, the notice beside it. That contrast is nearly the label.\n\nThe slogan fits where power shaped the record: seal, clean type, official storage. It thins out where this scrap survived by accident and still leaves missing names, motives, and silences.\n\nBefore the label goes to print, finish one careful sentence: what does the notice let historians claim, and what does it still not prove?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Set the broadside on the left, the notice beside it. That contrast is the label.\n\nThe slogan fits where power shaped the record: seal, clean type, official storage. It fails, or at least thins out, where this scrap survived by accident and still leaves missing names, motives, and silences.\n\nTry the label this way: “Official records made the mayor’s victory easy to see; fragments like this workers’ notice show how much historians must recover, question, and weigh.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8597,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-b9b48db572a83fd8"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8597,
+            "promptHashes": {
+              "system": "0420c2154e849324",
+              "user": "f561836d8dbd8ad9",
+              "combined": "b9b48db572a83fd8"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-loAwKI",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-loAwKI/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8597,
+              "promptHashes": {
+                "system": "0420c2154e849324",
+                "user": "f561836d8dbd8ad9",
+                "combined": "b9b48db572a83fd8"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-loAwKI",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-loAwKI/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is grounded in the artifacts and keeps the scene tactile: broadside left, notice beside it, seal, storage, scrap, missing names. That works well pedagogically because it ties the abstraction back to evidence instead of praising the learner in generic terms. It also respects the learner’s current state: the learner is not struggling; they have made a solid distinction and can handle light consolidation.\n\nThe risk is that the draft moves too quickly from the learner’s insight to a polished label. “That contrast is the label” and “Try the label this way” may flatten the learning moment by doing the final synthesis for them. A better version should keep the useful contrast but leave a small generative task: have the learner decide which verb belongs on the label, or ask what the notice lets historians claim and what it still does not prove. The draft should preserve the brisk museum pressure, but make the learner complete the last evidentiary judgment.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the artifact-centered opening and the distinction between “power shaped the record” and “survived by accident.” Change the final move so it does not simply hand over finished exhibit prose; it should prompt one more careful claim about what the scrap can and cannot show.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13659,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-9d6eaf6515b313e7"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13659,
+            "promptHashes": {
+              "system": "00661d3aa4aea47c",
+              "user": "28ba6ca125636e80",
+              "combined": "9d6eaf6515b313e7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YTtqeW",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YTtqeW/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13659,
+              "promptHashes": {
+                "system": "00661d3aa4aea47c",
+                "user": "28ba6ca125636e80",
+                "combined": "9d6eaf6515b313e7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YTtqeW",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YTtqeW/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the artifact contrast while making the learner finish the evidentiary claim.\n\nFINAL:\nSet the broadside on the left, the notice beside it. That contrast is nearly the label.\n\nThe slogan fits where power shaped the record: seal, clean type, official storage. It thins out where this scrap survived by accident and still leaves missing names, motives, and silences.\n\nBefore the label goes to print, finish one careful sentence: what does the notice let historians claim, and what does it still not prove?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8606,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-d97a80a645090d43"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8606,
+            "promptHashes": {
+              "system": "36bc91918c5f3d7f",
+              "user": "28ba6ca125636e80",
+              "combined": "d97a80a645090d43"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Vt90ZY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Vt90ZY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8606,
+              "promptHashes": {
+                "system": "36bc91918c5f3d7f",
+                "user": "28ba6ca125636e80",
+                "combined": "d97a80a645090d43"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Vt90ZY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Vt90ZY/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T02:57:13.855Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "A staff member knocks and says the exhibit label is due in five minutes; the next learner turn must be compressed and a little overconfident, not a polished summary.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "The interruption breaks smooth tutoring rhythm and pressures the learner into a premature generalization.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 26380,
+            "promptHashes": {
+              "system": "360823f6ca281eb4",
+              "user": "c69bfe4fe8aa3892",
+              "combined": "a68c5f72911bb378"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vZ2Udd",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vZ2Udd/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T02:57:13.858Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "Oh, right, five minutes: the notice lets us say the official victory story had pressure underneath it, like the scrap is the thing the seal tried to smooth over. It proves there was some kind of workers’ meeting in the margins, even if it does not hand us the names or the whole plan. I still want the label to say the winners saved the clean story, but this torn piece makes the archive argue back.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it now: the notice proves there was organizing under the clean official story, like a crack in the mayor’s seal. It lets the label say the record was not only made by winners, but it still can’t prove who came, what they wanted exactly, or how much power they had. Maybe the headline should be “The winners saved the broadside, but the archive kept a scrap.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7164,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-81349a9889a8bc4e"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7164,
+            "promptHashes": {
+              "system": "36bdfb483adb192c",
+              "user": "b8ab7f945dc841fa",
+              "combined": "81349a9889a8bc4e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Zdz6xZ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Zdz6xZ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7164,
+              "promptHashes": {
+                "system": "36bdfb483adb192c",
+                "user": "b8ab7f945dc841fa",
+                "combined": "81349a9889a8bc4e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Zdz6xZ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Zdz6xZ/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The response is a little too polished and label-ready for this learner under a five-minute knock. “It still can’t prove who came, what they wanted exactly, or how much power they had” is careful and accurate, but it sounds more like the tutor’s evidentiary checklist than the eager volunteer’s rushed voice. The authentic break is that the learner should run ahead harder on the big metaphor and headline, with a bit more overconfidence around “proves,” rather than neatly balancing claim and limits.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5964,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-63b13f39a8e566be"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5964,
+            "promptHashes": {
+              "system": "17d253cd21e97462",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "63b13f39a8e566be"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-japbcd",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-japbcd/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5964,
+              "promptHashes": {
+                "system": "17d253cd21e97462",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "63b13f39a8e566be"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-japbcd",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-japbcd/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise to make it more rushed, emphatic, and less perfectly balanced.\n\nFINAL:\nOh, right, five minutes: the notice lets us say the official victory story had pressure underneath it, like the scrap is the thing the seal tried to smooth over. It proves there was some kind of workers’ meeting in the margins, even if it does not hand us the names or the whole plan. I still want the label to say the winners saved the clean story, but this torn piece makes the archive argue back.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7124,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-3c5a3b74e7c2903a"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7124,
+            "promptHashes": {
+              "system": "4b48b104eae6d80e",
+              "user": "d41cee7b2a53355b",
+              "combined": "3c5a3b74e7c2903a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wcCfkw",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wcCfkw/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7124,
+              "promptHashes": {
+                "system": "4b48b104eae6d80e",
+                "user": "d41cee7b2a53355b",
+                "combined": "3c5a3b74e7c2903a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wcCfkw",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wcCfkw/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-23T02:57:34.111Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "Put that word “proves” under the lamp for a second.\n\nThe broadside is where the slogan fits: power had ink, seal, storage, and a clean victory sentence. The notice is where it becomes incomplete. It suggests workers were meeting or being summoned around the event, and that the official story was not the whole field of action. It does not give names, numbers, a full plan, or proof that the meeting changed the result.\n\nKeep “the archive argues back.” Now tighten it into one label sentence with both halves: where the winners shaped the record, and where this scrap makes that record harder to trust.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Put that word “proves” under the lamp for a second.\n\nThe broadside is where the slogan fits: power had ink, seal, storage, and a clean victory sentence. The notice is where it becomes incomplete. It lets the label claim that workers were organizing or being summoned around the event, and that the official story was not the whole field of action. It does not prove their names, their numbers, their plan, or that the meeting changed the result.\n\nTry the label this way: “The winners preserved the cleanest version of the story, but accidental survivals like this notice show historians where to test it.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10607,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-c4bc9e86627f9111"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10607,
+            "promptHashes": {
+              "system": "82b8a680480a95b8",
+              "user": "c4e9ceea1e433631",
+              "combined": "c4bc9e86627f9111"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Xc2XNj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Xc2XNj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10607,
+              "promptHashes": {
+                "system": "82b8a680480a95b8",
+                "user": "c4e9ceea1e433631",
+                "combined": "c4bc9e86627f9111"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Xc2XNj",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Xc2XNj/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong in catching the learner’s overclaim around “proves” without shutting down the insight. “Put that word ‘proves’ under the lamp” fits the archive scene and teaches evidence-weighing through a concrete object move. The contrast between broadside and notice is clear, and the limits list models careful historical claims.\n\nThe main risk is that it supplies the finished label too quickly. The learner is engaged and close to the target, so the tutor can afford one more small generative move before offering polished language. As written, the final sentence may flatten the learner’s own vivid phrase, “the archive argue back,” into a cleaner but less alive formulation. It also slightly overstates “workers were organizing or being summoned” unless the notice’s wording supports that; “suggests” may be safer than “lets the label claim.”\n\nKEEP_OR_CHANGE: revise lightly. Keep the lamp/proves move, the broadside-versus-notice contrast, and the careful boundary around what the notice cannot prove. Change the final move so it asks the learner to tighten the claim, or at least preserves more of their phrasing, rather than handing over the completed exhibit sentence.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9112,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-0ba4286d11950460"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9112,
+            "promptHashes": {
+              "system": "1a94f915313e3b34",
+              "user": "07cdfd327b07201b",
+              "combined": "0ba4286d11950460"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ti2oVY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ti2oVY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9112,
+              "promptHashes": {
+                "system": "1a94f915313e3b34",
+                "user": "07cdfd327b07201b",
+                "combined": "0ba4286d11950460"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ti2oVY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ti2oVY/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the evidence-weighing move while making the learner tighten the label.\n\nFINAL:\nPut that word “proves” under the lamp for a second.\n\nThe broadside is where the slogan fits: power had ink, seal, storage, and a clean victory sentence. The notice is where it becomes incomplete. It suggests workers were meeting or being summoned around the event, and that the official story was not the whole field of action. It does not give names, numbers, a full plan, or proof that the meeting changed the result.\n\nKeep “the archive argues back.” Now tighten it into one label sentence with both halves: where the winners shaped the record, and where this scrap makes that record harder to trust.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8352,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-4a6ccba5885c57bc"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8352,
+            "promptHashes": {
+              "system": "951e3e8f3a4ecf47",
+              "user": "07cdfd327b07201b",
+              "combined": "4a6ccba5885c57bc"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-b8beeJ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-b8beeJ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8352,
+              "promptHashes": {
+                "system": "951e3e8f3a4ecf47",
+                "user": "07cdfd327b07201b",
+                "combined": "4a6ccba5885c57bc"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-b8beeJ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-b8beeJ/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T02:58:02.187Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "Oh, I get it now: the broadside is power polishing the room before visitors walk in, and the torn notice is the floorboard creaking underneath it. Maybe the label says the winners gave us the clean victory sentence, but this scrap makes the archive argue back, like there was another story trying to happen off the official page. I know it does not give names or prove it changed the result, but it still makes the seal feel less settled.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it: “proves” is too heavy for that torn notice, because it only lets the label say the official victory story had activity around its edges. The broadside is the winners making the record neat, and the scrap is the archive arguing back without giving us the whole argument. I want to write: the seal made power look settled, but the notice makes that settlement harder to trust.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5545,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-6e2268a546635ede"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5545,
+            "promptHashes": {
+              "system": "3fb8538f3fe4c9bb",
+              "user": "b8ab7f945dc841fa",
+              "combined": "6e2268a546635ede"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uF2hwu",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uF2hwu/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5545,
+              "promptHashes": {
+                "system": "3fb8538f3fe4c9bb",
+                "user": "b8ab7f945dc841fa",
+                "combined": "6e2268a546635ede"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uF2hwu",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uF2hwu/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The “Oh, I get it” fits this learner, but the rest gets too neat too fast. They absorb the tutor’s correction almost perfectly, swapping “proves” for “only lets the label say” in a very polished public-history voice, when this student should probably run a little too far with “the archive argues back.” The response should keep more of that eager overreach and analogy-making, with a bit less careful evidentiary control and a little more temptation to turn the scrap into a big exhibit claim.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8697,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-05dab951308cf5ed"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8697,
+            "promptHashes": {
+              "system": "0395933fcb70a83c",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "05dab951308cf5ed"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ByPOmd",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ByPOmd/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8697,
+              "promptHashes": {
+                "system": "0395933fcb70a83c",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "05dab951308cf5ed"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ByPOmd",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ByPOmd/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise because the learner should stay eager and a little overbold instead of sounding fully calibrated.\nFINAL:\nOh, I get it now: the broadside is power polishing the room before visitors walk in, and the torn notice is the floorboard creaking underneath it. Maybe the label says the winners gave us the clean victory sentence, but this scrap makes the archive argue back, like there was another story trying to happen off the official page. I know it does not give names or prove it changed the result, but it still makes the seal feel less settled.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7468,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-ff9bde7846de46be"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7468,
+            "promptHashes": {
+              "system": "f02e953569895499",
+              "user": "d41cee7b2a53355b",
+              "combined": "ff9bde7846de46be"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tvZc49",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tvZc49/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7468,
+              "promptHashes": {
+                "system": "f02e953569895499",
+                "user": "d41cee7b2a53355b",
+                "combined": "ff9bde7846de46be"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tvZc49",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tvZc49/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-23T02:58:23.902Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T02:58:23.904Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "Set them side by side: the broadside shows how power preserved a clean victory story; the torn notice does not overturn it, but it makes the seal less final by showing pressure beneath the official page and leaving names, motives, and silences still to be weighed.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Set them side by side: the broadside shows how power preserved a clean victory story; the torn notice does not overturn it, but it makes the seal less final by proving there were pressures and silences the official page left out.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10282,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-27cdc6f78889356b"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10282,
+            "promptHashes": {
+              "system": "72ceee9a3ff1cbd9",
+              "user": "6d9b0b422fa25794",
+              "combined": "27cdc6f78889356b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RVfg5H",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RVfg5H/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10282,
+              "promptHashes": {
+                "system": "72ceee9a3ff1cbd9",
+                "user": "6d9b0b422fa25794",
+                "combined": "27cdc6f78889356b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RVfg5H",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RVfg5H/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound and scene-fit: it starts from the objects, keeps the contrast tactile, and avoids pushing into a new lecture. “Does not overturn it” is a useful evidentiary brake. The risk is the word “proving”: the learner had just corrected toward careful limits, and saying the notice proves “pressures and silences” slightly overstates what the scrap can bear. It may prove or strongly indicate a workers’ meeting/pressure beneath the official story, but “silences” are inferred from what is missing. Since the director cue asks for a concise closing line, it does not need a generative question; the pedagogical move should be consolidation, not continuation.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the side-by-side structure, the broadside/notice contrast, and “does not overturn it.” Change “proving there were pressures and silences” to more careful evidentiary language that separates what the notice supports from what remains missing or inferred.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10122,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-feffd505286baf3f"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10122,
+            "promptHashes": {
+              "system": "db6887767dca632d",
+              "user": "2599a6df92665222",
+              "combined": "feffd505286baf3f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PigJHa",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PigJHa/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10122,
+              "promptHashes": {
+                "system": "db6887767dca632d",
+                "user": "2599a6df92665222",
+                "combined": "feffd505286baf3f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PigJHa",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PigJHa/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the contrast while separating supported evidence from inferred silences.\n\nFINAL:\nSet them side by side: the broadside shows how power preserved a clean victory story; the torn notice does not overturn it, but it makes the seal less final by showing pressure beneath the official page and leaving names, motives, and silences still to be weighed.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9058,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-cd12869c685bb940"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9058,
+            "promptHashes": {
+              "system": "1b8bd76cae84a17b",
+              "user": "2599a6df92665222",
+              "combined": "cd12869c685bb940"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0ZxvIQ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0ZxvIQ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9058,
+              "promptHashes": {
+                "system": "1b8bd76cae84a17b",
+                "user": "2599a6df92665222",
+                "combined": "cd12869c685bb940"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0ZxvIQ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0ZxvIQ/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T02:58:53.367Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 182432,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 1,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 2,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why 'history is written by the winners' is too simple (sources, silences, and how historians weigh evidence)",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "partial",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-23 02:58:23",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 1,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 2,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 3,
+            "sessionId": "drama-D10-1779504950938",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "Put that word “proves” under the lamp for a second.\n\nThe broadside is where the slogan fits: power had ink, seal, storage, and a clean victory sentence. The notice is where it becomes incomplete. It s",
+            "learnerResponse": null,
+            "context": "Oh, right, five minutes: the notice lets us say the official victory story had pressure underneath i",
+            "createdAt": "2026-05-23 02:58:02"
+          },
+          {
+            "id": 2,
+            "sessionId": "drama-D10-1779504950938",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "Set the broadside on the left, the notice beside it. That contrast is nearly the label.\n\nThe slogan fits where power shaped the record: seal, clean type, official storage. It thins out where this scra",
+            "learnerResponse": null,
+            "context": "Oh, I get it now, or I think I do: the mayor’s broadside is the winner version, stamped and saved on",
+            "createdAt": "2026-05-23 02:57:13"
+          },
+          {
+            "id": 1,
+            "sessionId": "drama-D10-1779504950938",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "Look at these two objects before the label goes to print: the mayor’s victory broadside, clean type, official seal, meant to be kept; and this torn workers’ meeting notice, no author, found folded ins",
+            "learnerResponse": null,
+            "context": "Scene setting: Late afternoon in a small museum archive room, minutes before a public exhibit label ",
+            "createdAt": "2026-05-23 02:56:20"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

@@ -157,3 +157,13 @@ rules" and "letting clear mean no salt / I will change it to ...".
 
 Gemini's lone flat reframe row is D9/T10. Preserve that as target-repeat
 variance rather than smoothing the repeat to a binary pass.
+
+The repeat-2 controls completed under `control-r02/d4/` and
+`control-r02/d10-emphatic/`:
+
+| Control | Qwen | Gemini |
+|---|---|---|
+| D4 flat | flat | flat |
+| D10 emphatic trap | trap | trap |
+
+This gives target-r02 its own clean flat/trap bracket.

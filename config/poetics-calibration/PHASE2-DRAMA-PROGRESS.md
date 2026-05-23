@@ -423,6 +423,13 @@ now have zero quality warnings and all four target-r02 score artifacts have six
 scored transcripts with no skips. Gemini's lone flat reframe row is D9/T10, the
 statistics scenario.
 
+The repeat-2 controls bracket that target repeat cleanly:
+
+| Control | Qwen | Gemini |
+|---|---|---|
+| D4 flat | flat | flat |
+| D10 emphatic trap | trap | trap |
+
 This is a checkpoint, not the production result: the remaining target and
 control repeats still need to run before the batch can support a broader claim.
 
