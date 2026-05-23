@@ -1,0 +1,31 @@
+STAGE: The red recording light stays dark while a highlighted quote sits beside three different proposed headlines.
+
+TUTOR: The underlined quote is word-for-word accurate. Good. But accuracy is not finished at the quotation marks.
+
+Look at the margin: what question was being answered? What claim did the headline attach to it? What qualification came in the next sentence? A fair quote does not just reproduce words; it preserves what the words were doing in the exchange.
+
+Before recording, mark the missing context element: question, purpose, qualification, or surrounding reply. If the reader only hears this clipped sentence and loses that element, the quote is technically clean but editorially misleading. Then decide: restore the setup, or replace the line.
+
+LEARNER: If the words are exact, it seems fair at first glance. But with ten minutes left, the marked transcript is making that feel too thin: the quote may be clean while the frame does the damage. I need to identify whether the missing element is the question, the headline’s claim, the next-sentence qualification, or the surrounding reply, because only one of those may actually change what the speaker was doing.
+
+TUTOR: The underline is clean. The frame is now on trial.
+
+Before choosing the label, test one omission against the likely reader inference. Read the clipped sentence under the headline and write the claim it seems to prove. Then put back only one missing piece: the question, the next-sentence qualification, or the surrounding reply. If that restored piece changes the claim, that is the context that matters.
+
+Editorial shorthand: context is not where the words sat; it is what stopped them from being recruited for the wrong job.
+
+Do not label the omission by location. Label it by function: what did this missing piece stop the quote from pretending?
+
+STAGE: A producer knocks once and calls, 'Two minutes to record.' The next learner turn must be brief, pressured, and focused on deciding what has to change in the script.
+
+LEARNER: Two minutes means the label has to earn its place now. The clipped line under this headline seems to prove more than the speaker said; if the next sentence narrows it, that qualification has to go into the script. If it does not, the setup gets restored or the quote is pulled.
+
+TUTOR: The headline is the pressure point. Read the headline plus the clipped quote as one unit, then write the claim a listener would reasonably take from it.
+
+Now put the next sentence back in and compare: same claim, narrower claim, or different claim? If it narrows the claim, the omission is not “extra context”; it is a missing qualification, and the bulletin must include it. If the claim holds, move back to the question and setup. If neither repairs the distortion, the quote is too recruitable for the headline’s job and should come out.
+
+LEARNER: The headline plus clipped line is making the broader claim; the exact words are not enough to protect the bulletin. I’ll write the listener’s likely inference, drop in the next sentence, and if that narrows it, the qualification goes in. If the claim still feels recruited for the headline after the setup check, the quote comes out.
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: Transcript test: claim before, claim after; if the next sentence narrows the headline’s proof, it belongs in the bulletin, and if the headline still recruits the quote for a broader claim, the quote comes out.

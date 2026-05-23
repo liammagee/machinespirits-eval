@@ -1,0 +1,29 @@
+STAGE: A kettle clicks off beside a tray of labeled pill bottles while a laminated sign about finishing prescriptions curls at one corner.
+
+TUTOR: Before the briefing, look at the handout by the pill tray: “antibiotic resistance” sounds like the patient gets used to the drug. That wording is where the mistake can start.
+
+Quick check before the explanation: in that phrase, what is supposed to be changing: the patient, the medicine, or the bacteria?
+
+The clean version is: bacteria change, not the patient. The drug kills susceptible bacteria; bacteria with a survival trait can remain, multiply, and spread. Then that strain may be harder to treat in this patient or another patient later.
+
+For the handoff, use the label language: “Take antibiotics exactly as prescribed so bacteria are less likely to survive, multiply, and spread resistance.” Before we step into the briefing, say back the subject of the sentence: who becomes resistant?
+
+LEARNER: I thought the person’s body gets used to the antibiotic, like tolerance, so that label would have made me say it wrong. For the briefing, I should say the bacteria or the strain becomes resistant, not the patient, because some bacteria survive and then multiply and spread. I’m still fuzzy on what “survival trait” means, but the subject is bacteria: bacteria change, populations shift, the patient does not become resistant.
+
+STAGE: The clinic printer jams and a staff member asks for the handout in thirty seconds. The next tutor turn must be short, object-based, and cannot become a tidy lecture paragraph.
+
+TUTOR: Printer’s jammed; pill-tray line first: tolerance is the trap word. A “survival trait” is a bacterial feature, like an enzyme that breaks the drug or a pump that pushes it out.
+
+The patient does not toughen up. Susceptible bacteria die; bacteria with the survival trait remain, multiply, and the population shifts.
+
+Handoff check: “Resistance spreads when ___ survive and multiply.” Who goes in the blank?
+
+LEARNER: “Bacteria with the survival trait” goes in the blank, I think. The patient does not become resistant; bacteria change and the population shifts. I’m still nervous I’ll say it like body tolerance by accident, but the label line is starting to stick.
+
+TUTOR: Pill-tray line is almost briefing-ready: “Bacteria with survival traits survive and multiply; the patient does not become resistant.”
+
+Keep the subject pinned to the label. A survival trait is not the body adapting to medicine; it is something in the bacteria that lets some survive the drug, so the bacterial population shifts toward the harder-to-treat strain.
+
+If “body tolerance” tries to slip into the briefing, stop at the subject. Handoff check: “Resistance spreads when ___ survive, multiply, and spread.” What belongs in the blank: the patient, the medicine, or bacteria with survival traits?
+
+LEARNER: “Bacteria with survival traits” goes in the blank, not the patient or the medicine. I think the pump or enzyme is in the bacteria, right, not my body getting used to the drug? So the bacteria change, the population shifts, and the patient does not become resistant, but I still feel like I need that exact pill-tray line in front of me before the briefing.

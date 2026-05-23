@@ -458,6 +458,7 @@ function namesEarlierFramingProblem(text) {
     /\b(?:earlier|old|first)\s+(?:framing|frame|reading)\b[\s\S]{0,100}\b(?:made it sound|sounded|treated|put|reduced|jumped|mistook|too)\b/i;
   const ordinarySelfCorrection = [
     /\bthat\s+was\s+the\s+problem\b/i,
+    /\b(?:the\s+)?mistake\s+(?:was|is)\s+that\b/i,
     /\b(?:that|it)\s+(?:was|put|made)\b[\s\S]{0,90}\b(?:too\s+\w+|mood first|sound like|ahead|early)\b/i,
     /\bI\s+(?:was still|was putting|was making|kept|went straight|made|put)\b[\s\S]{0,90}\b(?:sound like|too\s+\w+|mood first|before|ahead|again|into|mean)\b/i,
     /\bI\s+was\s+still\s+acting\s+like\b/i,
@@ -506,6 +507,7 @@ function replacesEarlierFraming(text) {
     /\bbetter\s+way\s+is\b/i,
     /\bI\s+(?:would|should|need to|can|will)\s+(?:frame|read|say|put|treat|write|claim|change|call)\b/i,
     /\b(?:the|this)\s+(?:form|line|label|claim|sentence|answer)\s+should\s+(?:say|read|show)\b/i,
+    /\b(?:introduction|question|sentence|clipboard|chart|table)\s+should\s+(?:say|ask|read|show|make|prompt|stay|remain)\b/i,
     /\b(?:line|claim|proof|equation|step)\b[\s\S]{0,40}\b(?:is|starts?|reads?|works?|shows?|means?|puts?|becomes?|tests?)\b/i,
     /\b(?:image|word)\s+(?:now\s+)?(?:starts?|reads?|works?|shows?|means?|puts?|becomes?)\b/i,
     /\b(?:it|that|this)\s+(?:now\s+)?(?:means?|reads?|becomes?)\b/i,

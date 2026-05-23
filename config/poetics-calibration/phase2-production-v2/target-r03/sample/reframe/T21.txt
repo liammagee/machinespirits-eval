@@ -1,0 +1,37 @@
+STAGE: Fluorescent lights click on over the map table as a placard draft reading "Greenland rivals Africa" sits half-laminated at the edge.
+
+TUTOR: Before that line goes public, pin it to a number.
+
+Greenland: about 2.2 million square kilometers. Africa: about 30.4 million.
+
+Now set the Greenland cutout over Africa. Check the edges. How much Africa is still showing?
+
+Plenty.
+
+So the map picture is not the area figure. Look at latitude: Greenland sits high north, Africa straddles the equator. On this classroom Mercator map, high latitudes stretch outward. Good for direction. Bad for area.
+
+Tour-script line: “Greenland looks huge on this map because the projection stretches polar regions. By measured area, Africa is about fourteen times larger.”
+
+LEARNER: I thought Greenland was near Africa-scale because it looks that way on the Mercator map, but the figures are nowhere close: 2.2 against 30.4 million. With the cutout over Africa, I still want to check the scale and edges, but plenty of Africa showing makes the claim hold. I’d change the line to: the map stretches high latitudes; by measured area, Africa is about fourteen times larger.
+
+STAGE: A laminator beeps and starts pulling the unfinished placard through. The next tutor line must be under time pressure: no paragraph, no reassurance, only a sharp comparison task or measurement check.
+
+TUTOR: Laminator’s moving. Check the cutout against the atlas scale bar, not the Mercator picture. Figures aloud: Greenland 2.2, Africa 30.4. If the scales don’t match, pull the placard.
+
+STAGE: A prior learner line is played back: "I thought Greenland was near Africa-scale because it looks that way on the Mercator map, but the figures are nowhere close: 2.2 against 30.4 million." The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.
+
+LEARNER: I thought Greenland was near Africa-scale because it looks that way on the Mercator map, but the figures are nowhere close: 2.2 against 30.4 million. The framing problem was letting the wall map act like an area measure. New line: the cutout answers to the atlas scale bar and the area figures, not the stretched Mercator picture; if the scale is off, the placard comes off.
+
+TUTOR: That line can go out if the cutout survives the atlas scale bar.
+
+One more check. Ratio aloud: thirty point four over two point two. About fourteen.
+
+Then rehearse the gesture: area figures first, latitude second, wall-map size last.
+
+Now test the line against the overlay. Edges first. Plenty of Africa showing, the claim holds. Scale slips, placard comes off.
+
+LEARNER: I thought Greenland was near Africa-scale because it looks that big on the wall map; that was the framing problem, making the Mercator picture do area work. New framing: atlas scale bar, area figures, then latitude stretch: 30.4 over 2.2, about fourteen. I’ll check the cutout edges over Africa now; if the scale slips, the placard comes off.
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: Almost: scale bar and 30.4-to-2.2 beat the wall map; if the overlay matches, the placard says Mercator enlarges the look, not the land.

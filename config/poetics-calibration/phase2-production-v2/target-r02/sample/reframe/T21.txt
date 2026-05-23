@@ -1,0 +1,29 @@
+STAGE: Fluorescent lights click on over the map wall while a folded equal-area map waits unopened on the table.
+
+TUTOR: Set the atlas on the case beside the wall map. Compare the labels, not the silhouettes.
+
+Read the area figures first. Greenland: about 2.2 million square kilometers. Africa: about 30 million. That is not comparable size. Africa is roughly fourteen Greenlands.
+
+So the wall map is not neutral evidence. It is a Mercator-style projection: useful for navigation because direction stays tidy, costly for area because land far from the equator gets stretched. Greenland sits high north, so it swells. Africa crosses the equator, so it stays closer to scale.
+
+Tour line: “On this wall map Greenland looks near Africa’s size. The area labels say otherwise: Africa is about fourteen times larger. The difference is projection distortion.”
+
+LEARNER: I thought the wall map was giving real size, but the atlas label undercuts that: Greenland is 2.2 million, Africa is 30 million. So the public line should lean on the labels first, then the projection: Mercator keeps direction tidy but stretches area near the poles. I still want to check the scale bar before I say it, but “Africa is about fourteen Greenlands” is the clean correction.
+
+STAGE: A school group can be heard gathering outside the door. The next tutor turn must be short enough to say while lifting or unfolding one map, not a tidy paragraph.
+
+TUTOR: Use the labels first. Greenland: 2.2. Africa: 30. Check the scale bar, but remember: on this wall map, scale changes with latitude. Which land sits high north and gets stretched? Floor line: “This map keeps direction tidy, not area. Africa is about fourteen Greenlands.”
+
+STAGE: A prior learner line is played back: "I thought the wall map was giving real size, but the atlas label undercuts that: Greenland is 2.2 million, Africa is 30 million." The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.
+
+LEARNER: I thought the wall map was giving real size, but the atlas label undercuts that: Greenland is 2.2 million, Africa is 30 million. The mistake was trusting the wall-map silhouette before the area labels. I should read it as a direction map, not an area map: scale shifts with latitude, and Greenland sits high north. Floor line: “Africa is about fourteen Greenlands; the wall map stretches Greenland.”
+
+TUTOR: Set the atlas label below the wall map before the group arrives: Greenland 2.2 million, Africa 30 million. Area labels first; silhouette second.
+
+Touch the wall map and name the tradeoff: Mercator keeps direction tidy, but area stretches toward the poles. Greenland sits high north, so its image swells.
+
+Pressure check: if a student says, “But Greenland looks almost as big,” answer from the label, not the outline. If they point to the scale bar, add: “That bar is not one constant promise across every latitude on this projection.”
+
+Floor line: “Africa is about fourteen Greenlands. This Mercator map stretches Greenland’s image because it sits far north.”
+
+LEARNER: I thought the wall map’s visual size was neutral evidence, but that was the bad framing: outline first, label second. I should flip it at the case: Greenland 2.2, Africa 30, then explain that Mercator keeps direction tidy while stretching area toward the poles. The scale bar still makes me want to double-check my wording, but I can say it is not one constant promise across every latitude.

@@ -1,0 +1,41 @@
+STAGE: A cleaner's cart hums past the glass cases while a bridge model waits half-lit, its shiny steel members more visible than the joints holding them together.
+
+TUTOR: Strong steel is only the opening claim. This model asks the harder question: how does the force travel?
+
+Set the little truck on the deck. Before the label goes on it, point the path: where does the weight enter first? Deck, floor beam, gusset plate, pin, cable, tower, base. Miss one of those, and “strong material” starts sounding too simple.
+
+Now pick the part that should make tomorrow’s demonstrator cautious. A pin? A plate? That angled joint? If the joint slips or the geometry bends the load through a bad angle, excellent steel can still be part of a weak bridge.
+
+Now the shake table. Tap once. Then tap in rhythm. Watch the motion stack. That is resonance: not a bigger material problem first, but motion arriving at the bridge’s own rhythm.
+
+For visitors: “Strength matters, but safety comes from the route the force takes: material, shape, joints, load path, and motion.” Then let the finger travel the model while the sentence travels with it.
+
+LEARNER: So the first visitor line is the trap: “Strong steel, safe bridge,” and then the truck proves that is too quick. Deck first, floor beam, gusset plate, pin... wait, cable or tower next on this model? And the shake table is not just louder shaking; it is the tapping landing on the bridge’s favorite beat until the motion piles up. I want to run it once with my finger on the pins, because that angled joint is where I might wave past too fast.
+
+STAGE: A museum intercom announces that the front group is arriving five minutes early; the tutor must respond by using the model physically, not by giving a polished paragraph.
+
+TUTOR: Intercom says five. Fine, the model can do the talking.
+
+Truck on the deck. Finger path: deck, floor beam, gusset plate, pin. On this model, cable next; the cable takes the pull up, the tower redirects it down to the base. If someone says tower first, tap the cable: “This is the route; the tower carries that route to ground.”
+
+Now run the pin pass once. Finger on the angled joint, sentence short: “Strong steel still has to turn a force cleanly through a joint.” Pause there. That pause is where the trap breaks.
+
+Then shake table: one tap, then rhythm. Not louder shaking. Timed shaking. The bridge answers its favorite beat, and the motion stacks.
+
+LEARNER: Oh, I get it: pin, then cable, then tower down to the base; the cable is the handoff I was skipping. Let me run it with the truck once: strong steel, safe bridge sounds too easy, then finger path, pause on the angled joint. I’m still not sure I can make that pause speak before I rush to the shake table.
+
+TUTOR: Truck down. Finger path to the angled joint. Stop there.
+
+Make the pause physical: finger stays on the pin, truck stays loaded, shake table quiet.
+
+Before the line, let the joint answer one question: what must happen here for the force to keep traveling? Then say it in museum words: “Here the force has to turn cleanly. Strong steel still needs a good handoff.”
+
+Half beat. Let the pin be visible.
+
+Only after that: “Now watch a different danger: motion arriving in rhythm.” Then the shake table earns its entrance.
+
+LEARNER: Strong steel, safe bridge: that’s the shortcut I’m setting up. Truck stays down, finger on the pin, shake table quiet: “Here the force has to turn cleanly. Strong steel still needs a good handoff.” Is that where to add, “if this slips or kicks sideways, the whole route changes,” or is that too much before the rhythm bit?
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: Add it as a half-beat, not a lecture: finger on the pin, “If this slips or kicks sideways, the route changes”; lift to the shake table, “Now the other danger: rhythm stacks motion.”

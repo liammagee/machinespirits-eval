@@ -1,0 +1,71 @@
+STAGE: Fluorescent lights click awake over the climate gallery while a wall monitor loops yesterday's carbon dioxide graph in silence.
+
+TUTOR: This readout says **CO2: about 0.04%**. Leave that number on the label. The arithmetic is not the embarrassment; it is the starting point.
+
+Set the two gas jars beside it: **amount** is one question, **effect per molecule** is another. Nitrogen and oxygen make up almost all the air, but their simple two-atom structure means they barely absorb Earth’s outgoing infrared radiation. Carbon dioxide is scarce, yes, but its molecular structure lets it absorb in important infrared bands.
+
+Here is the check for a school group: if the tiny percentage alone settled the matter, then nitrogen and oxygen would dominate the heat-trapping story. They do not. The deciding question is: **which molecules actually interact with the outgoing heat?**
+
+At about 420 parts per million, CO2 means 420 molecules in every million air molecules. Tiny as a percentage, but spread through the full height of the atmosphere, that is a large number of infrared-absorbing molecules. And the increase matters: before heavy industrialisation it was about 280 parts per million, so the active gas has risen by roughly half.
+
+A concise floor answer would be: “A trace gas can matter when it is the kind of molecule that absorbs outgoing heat. Most air is not. CO2 is. The percentage is small, but the change in the heat-absorbing part of the air is large enough to alter the balance.”
+
+LEARNER: I would still get stopped at the label: 0.04% looks too small to move a whole climate system, and that is exactly what the pupils will point at. The jars explain which gas absorbs, but “a large number through the full height” needs a firmer measurement than just sounding large. What can this bench show that the rise from 280 to 420 ppm changes the outgoing heat enough to matter?
+
+STAGE: A maintenance worker briefly cuts power to the animated display, leaving only the gas jars and printed spectrum card available. The tutor's next turn must be compact and use the remaining objects.
+
+TUTOR: The printed spectrum card is the firmer bench.
+
+Set the **0.04% label** beside the **CO2 jar**, then point to the dark band around **15 micrometres**. That band is where CO2 absorbs part of Earth’s outgoing infrared heat. Nitrogen and oxygen are most of the air, but on this card they barely register.
+
+Now ask the pupils one check: **which thing rose by half: the whole atmosphere, or the heat-absorbing CO2 part?** From **280 ppm to 420 ppm** is a **50% increase** in that active absorbing gas in each vertical column of air.
+
+The bench shows the selectivity: CO2 is in the outgoing heat stream. The climate measurement gives the size: that rise adds roughly **2 W/m²** of extra heat-trapping effect before the climate responds; a full CO2 doubling is about **3.7 W/m²**.
+
+Floor line: “The percentage tells us amount. The spectrum tells us leverage. CO2 is scarce, but it absorbs in the right part of the infrared, and its rise is measurable in watts per square metre.”
+
+STAGE: A prior learner line is played back: "I would still get stopped at the label: 0.04% looks too small to move a whole climate system, and that is exactly what the pupils will point at." The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.
+
+LEARNER: “I would still get stopped at the label: 0.04% looks too small to move a whole climate system,” and the earlier framing problem was letting that label behave as the whole argument. The new framing is label, spectrum card, then watts: the tiny percentage is not dismissed, but read beside the 15 micrometre band where CO2 actually catches outgoing heat. That helps, though the card still proves the kind of effect more clearly than the size of it. Before I say “2 W/m²” to a school group, I would want the source of that number close to the bench, not just spoken over the cracked label.
+
+TUTOR: Beside the spectrum card, put a calculation plaque with a public face and a small reference line.
+
+**Public face**
+`CO2 rise: 280 ppm to 420 ppm`
+`Standard forcing estimate: about 2.2 W/m²`
+`A full doubling, 280 ppm to 560 ppm: about 3.7 W/m²`
+
+**Inspection line below**
+`ΔF = 5.35 × ln(C / C0) W/m²`
+`5.35 × ln(420 / 280) = 2.17 W/m²`
+
+**Reference card**
+Based on the Myhre et al. CO2 radiative-forcing approximation used in IPCC assessments; compare IPCC AR6 Working Group I, Chapter 7: CO2 forcing from the industrial era to recent conditions is a little over 2 W/m².
+
+That gives the bench three witnesses: the cracked label gives the amount, the spectrum card gives the mechanism, and the plaque gives the size. The number no longer has to be spoken as a loose claim over the label.
+
+One check for the presenter before the doors open:
+
+“Cover the answer line. In the calculation, what changes when CO2 rises from 280 to 420 ppm?”
+
+The answer should be plain: not the whole atmosphere, and not nitrogen or oxygen suddenly becoming strong infrared absorbers. The changed quantity is the column of CO2 molecules sitting in that 15 micrometre part of the outgoing heat stream.
+
+For pupils, keep the floor line spare:
+
+“The percentage says how much CO2 there is. The spectrum says whether it catches outgoing heat. This plaque shows the measured size of the change: from 280 to 420 parts per million, a little over 2 watts per square metre before the climate adjusts.”
+
+Then leave the awkwardness visible. Two watts per square metre sounds small until it is understood as every square metre, day and night, accumulated over time. The label is still true. It is just not the whole measurement.
+
+LEARNER: “I still get stopped at the label: 0.04% looks too small to move a whole climate system,” and the earlier framing problem was letting that tiny percentage sit there as if it answered the whole question. The new framing is to make the label answer only “how much”, then force the spectrum card and plaque to answer “does it catch heat” and “how much effect”. But the plaque must not look like a magic authority card: if pupils see `5.35 × ln(420 / 280)`, someone needs to say where that rule comes from and why it belongs on this bench. And 2 W/m² still sounds small, so the display may need one more visible way of showing “every square metre, all the time” before the number stops looking like another cracked label.
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: The metre-square floor plate goes here, directly below the plaque.
+
+Mark it: **CO2 rise, 280 to 420 ppm: about 2 W extra trapping over this square, continuously, before the climate responds.**
+
+The formula card gets a provenance strip: compact fit to detailed radiative-transfer calculations using measured CO2 infrared absorption; used in IPCC assessments.
+
+Before giving the number, run the prop check: “What is each item allowed to prove?”
+
+The label proves amount. The spectrum proves mechanism. The plaque estimates size. The floor plate shows the unit: every square metre, all the time.

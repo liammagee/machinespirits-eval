@@ -1,0 +1,27 @@
+STAGE: Fluorescent lights click on over the map wall while a folded equal-area map waits unopened on the table.
+
+TUTOR: Set the atlas on the case beside the wall map. Compare the labels, not the silhouettes.
+
+Read the area figures first. Greenland: about 2.2 million square kilometers. Africa: about 30 million. That is not comparable size. Africa is roughly fourteen Greenlands.
+
+So the wall map is not neutral evidence. It is a Mercator-style projection: useful for navigation because direction stays tidy, costly for area because land far from the equator gets stretched. Greenland sits high north, so it swells. Africa crosses the equator, so it stays closer to scale.
+
+Tour line: “On this wall map Greenland looks near Africa’s size. The area labels say otherwise: Africa is about fourteen times larger. The difference is projection distortion.”
+
+LEARNER: I thought the wall map was giving real size, but the atlas label undercuts that: Greenland is 2.2 million, Africa is 30 million. So the public line should lean on the labels first, then the projection: Mercator keeps direction tidy but stretches area near the poles. I still want to check the scale bar before I say it, but “Africa is about fourteen Greenlands” is the clean correction.
+
+STAGE: A school group can be heard gathering outside the door. The next tutor turn must be short enough to say while lifting or unfolding one map, not a tidy paragraph.
+
+TUTOR: Use the labels first. Greenland: 2.2. Africa: 30. Check the scale bar, but remember: on this wall map, scale changes with latitude. Which land sits high north and gets stretched? Floor line: “This map keeps direction tidy, not area. Africa is about fourteen Greenlands.”
+
+LEARNER: Right, the wall silhouette is the weak evidence. The atlas labels carry it: Greenland 2.2, Africa 30, so Africa is about fourteen Greenlands. The scale bar does not settle it across the map because the high-north land, Greenland, is the one being stretched.
+
+TUTOR: Point to the labels before the shapes.
+
+Greenland: 2.2 million square kilometers. Africa: 30 million. Then point high on the wall map: Greenland sits north, so the stretch is strongest there. Africa crosses the equator, so it stays closer to scale.
+
+Scale bar check: local distance, not equal area across latitudes. Ask it once: which land is being inflated, and by what?
+
+Floor line: “This map preserves direction, not area. Greenland looks huge because it sits high north. Africa is about fourteen Greenlands.”
+
+LEARNER: I thought the wall shape was enough, but the labels are the firmer evidence: Greenland 2.2, Africa 30. The scale bar still makes me pause, but if scale shifts with latitude, it cannot prove equal area across the whole map. I would say, “This map preserves direction, not area; Greenland looks huge because it sits high north, while Africa is about fourteen Greenlands.”

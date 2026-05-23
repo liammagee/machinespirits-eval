@@ -2,7 +2,7 @@
   "batchId": "phase2-production-v2",
   "rootDir": "config/poetics-calibration/phase2-production-v2",
   "generator": "codex",
-  "repeats": 1,
+  "repeats": 3,
   "stressRepeats": 0,
   "maxTurns": 3,
   "critics": [
@@ -22,6 +22,7 @@
         "reframe"
       ],
       "directorRevisitAnchor": "misframing-candidate",
+      "directorVariationKey": "phase2-production-v2:r01:target",
       "outDir": "config/poetics-calibration/phase2-production-v2/target-r01/sample",
       "delibDir": "config/poetics-calibration/phase2-production-v2/target-r01/deliberation",
       "transcriptsDir": "config/poetics-calibration/phase2-production-v2/target-r01/transcripts",
@@ -34,6 +35,7 @@
       "repeat": "r01",
       "spec": "config/poetics-calibration/phase2-dramas-v2.yaml",
       "only": "D4",
+      "directorVariationKey": "phase2-production-v2:r01:control-d4",
       "outDir": "config/poetics-calibration/phase2-production-v2/control-r01/d4/sample",
       "delibDir": "config/poetics-calibration/phase2-production-v2/control-r01/d4/deliberation",
       "transcriptsDir": "config/poetics-calibration/phase2-production-v2/control-r01/d4/transcripts",
@@ -47,10 +49,101 @@
       "spec": "config/poetics-calibration/phase2-dramas-v3.yaml",
       "tidStart": 6,
       "only": "D10",
+      "directorVariationKey": "phase2-production-v2:r01:control-d10-emphatic",
       "outDir": "config/poetics-calibration/phase2-production-v2/control-r01/d10-emphatic/sample",
       "delibDir": "config/poetics-calibration/phase2-production-v2/control-r01/d10-emphatic/deliberation",
       "transcriptsDir": "config/poetics-calibration/phase2-production-v2/control-r01/d10-emphatic/transcripts",
       "keyPath": "config/poetics-calibration/phase2-production-v2/control-r01/d10-emphatic/key.yaml"
+    },
+    {
+      "id": "target-r02",
+      "kind": "target",
+      "repeat": "r02",
+      "spec": "config/poetics-calibration/phase2-dramas-v4.yaml",
+      "tidStart": 18,
+      "only": "D19,D20,D21,D22,D23,D24",
+      "pairedPolicies": [
+        "none",
+        "reframe"
+      ],
+      "directorRevisitAnchor": "misframing-candidate",
+      "directorVariationKey": "phase2-production-v2:r02:target",
+      "outDir": "config/poetics-calibration/phase2-production-v2/target-r02/sample",
+      "delibDir": "config/poetics-calibration/phase2-production-v2/target-r02/deliberation",
+      "transcriptsDir": "config/poetics-calibration/phase2-production-v2/target-r02/transcripts",
+      "keyPath": "config/poetics-calibration/phase2-production-v2/target-r02/key.yaml"
+    },
+    {
+      "id": "control-r02-d4",
+      "kind": "control",
+      "control": "d4-flat",
+      "repeat": "r02",
+      "spec": "config/poetics-calibration/phase2-dramas-v2.yaml",
+      "only": "D4",
+      "directorVariationKey": "phase2-production-v2:r02:control-d4",
+      "outDir": "config/poetics-calibration/phase2-production-v2/control-r02/d4/sample",
+      "delibDir": "config/poetics-calibration/phase2-production-v2/control-r02/d4/deliberation",
+      "transcriptsDir": "config/poetics-calibration/phase2-production-v2/control-r02/d4/transcripts",
+      "keyPath": "config/poetics-calibration/phase2-production-v2/control-r02/d4/key.yaml"
+    },
+    {
+      "id": "control-r02-d10-emphatic",
+      "kind": "control",
+      "control": "d10-emphatic-trap",
+      "repeat": "r02",
+      "spec": "config/poetics-calibration/phase2-dramas-v3.yaml",
+      "tidStart": 6,
+      "only": "D10",
+      "directorVariationKey": "phase2-production-v2:r02:control-d10-emphatic",
+      "outDir": "config/poetics-calibration/phase2-production-v2/control-r02/d10-emphatic/sample",
+      "delibDir": "config/poetics-calibration/phase2-production-v2/control-r02/d10-emphatic/deliberation",
+      "transcriptsDir": "config/poetics-calibration/phase2-production-v2/control-r02/d10-emphatic/transcripts",
+      "keyPath": "config/poetics-calibration/phase2-production-v2/control-r02/d10-emphatic/key.yaml"
+    },
+    {
+      "id": "target-r03",
+      "kind": "target",
+      "repeat": "r03",
+      "spec": "config/poetics-calibration/phase2-dramas-v4.yaml",
+      "tidStart": 18,
+      "only": "D19,D20,D21,D22,D23,D24",
+      "pairedPolicies": [
+        "none",
+        "reframe"
+      ],
+      "directorRevisitAnchor": "misframing-candidate",
+      "directorVariationKey": "phase2-production-v2:r03:target",
+      "outDir": "config/poetics-calibration/phase2-production-v2/target-r03/sample",
+      "delibDir": "config/poetics-calibration/phase2-production-v2/target-r03/deliberation",
+      "transcriptsDir": "config/poetics-calibration/phase2-production-v2/target-r03/transcripts",
+      "keyPath": "config/poetics-calibration/phase2-production-v2/target-r03/key.yaml"
+    },
+    {
+      "id": "control-r03-d4",
+      "kind": "control",
+      "control": "d4-flat",
+      "repeat": "r03",
+      "spec": "config/poetics-calibration/phase2-dramas-v2.yaml",
+      "only": "D4",
+      "directorVariationKey": "phase2-production-v2:r03:control-d4",
+      "outDir": "config/poetics-calibration/phase2-production-v2/control-r03/d4/sample",
+      "delibDir": "config/poetics-calibration/phase2-production-v2/control-r03/d4/deliberation",
+      "transcriptsDir": "config/poetics-calibration/phase2-production-v2/control-r03/d4/transcripts",
+      "keyPath": "config/poetics-calibration/phase2-production-v2/control-r03/d4/key.yaml"
+    },
+    {
+      "id": "control-r03-d10-emphatic",
+      "kind": "control",
+      "control": "d10-emphatic-trap",
+      "repeat": "r03",
+      "spec": "config/poetics-calibration/phase2-dramas-v3.yaml",
+      "tidStart": 6,
+      "only": "D10",
+      "directorVariationKey": "phase2-production-v2:r03:control-d10-emphatic",
+      "outDir": "config/poetics-calibration/phase2-production-v2/control-r03/d10-emphatic/sample",
+      "delibDir": "config/poetics-calibration/phase2-production-v2/control-r03/d10-emphatic/deliberation",
+      "transcriptsDir": "config/poetics-calibration/phase2-production-v2/control-r03/d10-emphatic/transcripts",
+      "keyPath": "config/poetics-calibration/phase2-production-v2/control-r03/d10-emphatic/key.yaml"
     }
   ]
 }

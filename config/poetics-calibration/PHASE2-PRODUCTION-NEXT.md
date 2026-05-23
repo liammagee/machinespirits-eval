@@ -170,6 +170,45 @@ Do not pass `--allow-quality-warnings`. If warnings appear, inspect the public
 sample and full trace, then either regenerate the invalid transcript or extend
 the detector only for valid ordinary phrasing with regression coverage.
 
+**Completed, 2026-05-23.** Repeats r02 and r03 were generated with Codex using
+stable `director_variation_key` values per unit, then scored by Qwen
+`qwen/qwen3.5-plus-02-15` and Gemini `google/gemini-3.5-flash`.
+
+Two D21/T22 reframe branches initially tripped blocking quality warnings. Both
+public transcripts were valid ordinary reframe forms rather than invalid
+transcripts: one named the mistake as the chart leaning from aggregate evidence
+onto a person, and the other used a later learner turn to replace the table as a
+clipboard label with the table as a prompt for careful questioning. The detector
+was extended with regression coverage for those forms, then both reframe keys
+were re-cleaned to zero warnings and rescored at full N.
+
+Breadth-v2 three-repeat target result:
+
+| Critic | `none` recognitions | `reframe` recognitions |
+|---|---:|---:|
+| Qwen | 1/18 | 17/18 |
+| Gemini | 0/18 | 13/18 |
+
+Form counts:
+
+| Critic | `none` forms | `reframe` forms |
+|---|---|---|
+| Qwen | R1 T3 F14 | R17 T0 F1 |
+| Gemini | R0 T2 F16 | R13 T0 F5 |
+
+Control result: D4 remains flat for both critics in all three repeats. D10
+emphatic remains trap for Gemini in all three repeats, but Qwen reads D10 as
+recognition in r02 and r03. Treat this as a critic-sensitive control boundary:
+the target contrast transfers across the new scenario family, but emphatic-trap
+controls can cross into recognition for Qwen when the public sample contains
+enough later re-reading structure.
+
+The updated bounded claim has been folded into
+`docs/research/paper-full-2.0.md` §7.9 as v3.0.97. Steps 2 and 3 remain deferred:
+next reassessment should decide whether to integrate this apparatus into the
+main evaluation harness/database, and whether to promote it from calibration
+apparatus to a formal paper experiment.
+
 ## Reporting rule
 
 If the depth top-up or breadth slice changes the empirical interpretation, fold

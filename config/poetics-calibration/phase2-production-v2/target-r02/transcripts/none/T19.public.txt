@@ -1,0 +1,45 @@
+STAGE: Rain ticks against the glass roof while a heat lamp, a flask, and a dim infrared screen wait on a demonstration bench.
+
+TUTOR: The percentage is not being swept under the carpet. Carbon dioxide is about 0.04 per cent of the air: roughly four molecules in ten thousand. That is small as an amount.
+
+Now look at the infrared camera before the gallery closes. It is not measuring ordinary visible light; it is detecting heat radiation from warm objects. So the useful question is not only, “How many molecules are present?” It is, “Which molecules interact with this outgoing infrared?”
+
+Nitrogen and oxygen are almost all of the air, but for much of this infrared they are rather poor catchers. Carbon dioxide is rare, but it absorbs strongly in particular infrared bands. A small concentration can matter if it sits in the part of the process that controls how easily heat escapes.
+
+Try the arithmetic and the mechanism together: tiny percentage, yes. But not every molecule has the same job. The test is whether adding more of that infrared-absorbing gas changes the rate at which Earth loses heat to space. That is where the climate effect comes from.
+
+LEARNER: The four-in-ten-thousand figure is still the bit that makes this feel slippery. The infrared camera shows that some gases catch heat better than others, but that does not yet prove that adding a little more CO2 changes much if those bands are already crowded. I want the missing step: how much extra blockage comes from the next bit, not just that CO2 has the right kind of job.
+
+TUTOR: The missing step is marginal opacity, not mere presence.
+
+The CO2 band is not one doorway that becomes simply shut. It is more like this infrared display split into many neighbouring colours. At the centre of the main CO2 band, the air near the surface is already a poor escape route; adding more CO2 there changes little. At the edges, though, the route is only partly narrowed. Add CO2, and those edges thicken.
+
+Then comes the altitude step. If a wavelength can no longer escape from lower, warmer air, the effective escape point shifts upward. Higher air is colder; colder air radiates less heat to space. That is extra blockage from the next bit.
+
+The arithmetic follows that mechanism. Pre-industrial CO2 was about 280 parts per million; the present atmosphere is above 420. A full doubling gives roughly 3.7 watts per square metre of extra heat retention before feedbacks. The rise from 280 to 420 gives about two watts per square metre: not because four in ten thousand is secretly large, but because the added molecules widen the partly open edges and lift the heat-leak point to colder air.
+
+STAGE: A security attendant leans in: 'Five minutes, then this gallery closes.' The next line must be shorter, more pointed, and less polite.
+
+LEARNER: Four in ten thousand still sounds like a very small lever. The edge-and-altitude story is clearer, but with five minutes left, the watts are the real claim. Are those numbers seen in the world, or are they mainly what the calculation is built to produce?
+
+TUTOR: The watts are not read from one dial beside this infrared camera. They are a calculation checked against several dials that ought to agree.
+
+Start with the calculation. Laboratory spectroscopy measures how CO2 absorbs particular infrared wavelengths, line by line, before anyone asks what the planet has done. That gives the expected extra blockage: about 3.7 watts per square metre for a doubling.
+
+Now the falsifiable part. If CO2 were not the cause, the missing outgoing heat should not be especially missing in CO2 bands. Ground instruments should not see extra downward infrared in those same bands. And the ocean, the large heat ledger, should not show a continuing energy gain.
+
+But those checks point the same way: satellites see less outgoing infrared at CO2 wavelengths, surface instruments see more downward infrared there, and the oceans have been accumulating heat. So the watt figure is not a thermometer reading, and it is not fitted after the fact. It is a radiative-transfer prediction with the spectral fingerprints showing up in the real air.
+
+Four in ten thousand remains small as an amount. The causal leverage comes from where those molecules sit: at the heat-exit wavelengths, especially around the partly open edges.
+
+LEARNER: Four in ten thousand still makes me wary of a neat fingerprint claim. If water vapour, clouds, and weather keep shifting the infrared picture, how does the satellite know the CO2 smudge is not just being picked out after the fact? The ocean heat ledger matters, but it feels like a broad receipt, not yet proof that this tiny ingredient is the cashier.
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: Four in ten thousand is still the amount; the fingerprint claim is about pattern. Water vapour, clouds, and weather move the whole infrared picture around, rather like people crossing in front of this camera, but they do not draw the same barcode.
+
+CO2’s absorption lines are measured in the laboratory first, at specific infrared wavelengths. The satellite test is not “find a smudge somewhere”; it is “look at these pre-marked wavelengths, compare them with neighbouring wavelengths, and repeat that comparison across years, places, clear skies, and cloudier scenes.”
+
+The ocean ledger shows that heat is accumulating; the spectral barcode shows where part of the blockage is happening.
+
+The broad receipt matters; the pre-marked barcode names the cashier.

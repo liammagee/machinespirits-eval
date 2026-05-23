@@ -1,0 +1,51 @@
+STAGE: Rain taps the canvas roof while a metal sample bar lies unbent beside a loose joint plate and a trembling span model.
+
+TUTOR: This bar is strong. The bridge is safe only if the load can travel from the foot, through the deck, into this joint plate, through these bolts, down into the support.
+
+Trace that path on the model. Stop where the force changes direction. That is where the joint has to do real work.
+
+A strong bar with a poor joint becomes a loose handle. The question is not “is the steel strong?” It is: strong for this load, through this geometry, into this support.
+
+Now tap the model span once. Then tap it in rhythm. Small vibration, repeated at the wrong rhythm, can grow. That is resonance. The material has not become weak; the whole arrangement has found a way to move.
+
+For the walk-through, make them watch the path: bar, joint plate, bolts, support, vibration. Strength matters only when the load has a complete route and the shape does not amplify motion.
+
+LEARNER: I was still taking the shortcut: strong steel, safe bridge. But here the force has to get through the deck, turn at this joint plate, and the bolts are not just decoration; that is the loose-handle place. The rhythm part is tempting me to say the span has its own bad beat, but I have not checked it; show me where the dangerous vibration would first show on this model.
+
+TUTOR: Finger on the span edge. One tap: movement, then it dies.
+
+Now three taps in time with that swing. Same size tap. Watch the middle of the span first; that is where the motion should start growing cycle by cycle.
+
+Then shift to the joint plate. Look for relative movement: plate against bar, washer against plate, bolt heads working. The span shows amplification; the joint shows whether amplification is turning into damage.
+
+“Bad beat” works as field shorthand. Sharpen it: natural rhythm plus repeated forcing. For the walk-through, point to midspan for growing motion, then to joint plate and bolts for the danger signs.
+
+STAGE: A site steward steps in to say the next group arrives in ninety seconds. The next speaker must answer while moving one object on the table, not by giving a tidy paragraph.
+A prior learner line is played back: "I was still taking the shortcut: strong steel, safe bridge. But here the force has to get through the deck, turn at this joint plate, and the bolts are not just decoration;..." The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.
+
+LEARNER: I was still taking the shortcut: strong steel, safe bridge; but here the force has to get through the deck, turn at this joint plate, and the bolts are not just decoration.
+The framing problem was treating strength as a label on this bar by itself.
+This plate goes under the bar now: read it as a route, bar, joint plate, bolts, support, then as motion at midspan.
+The bad-beat line stays a guess until the taps show the middle growing; after that, the warning is bolt heads and washers working.
+
+TUTOR: Plate under the bar now. Not a strength label. A route.
+
+Run it once as load: deck, bar, joint plate, bolts, support. At the plate, slow down. The force turns there. The bolts have to hold that turn without the parts becoming a loose handle.
+
+Now run it as motion. One tap at midspan: movement, then it dies. Taps in rhythm: watch the middle. Mark the first place where the motion grows instead of fading.
+
+Only then move to the joint plate. Bolt heads, washers, plate edge. Look for relative movement, not just shaking. If those parts start working against each other, vibration has found the joint.
+
+For the walk-through: strong material is one claim. Safe bridge means strong for this load, through this route, into this support, under this motion.
+
+LEARNER: I was still saying: strong steel, safe bridge; that was the bad frame, treating the bar like a safety label. With the plate under it, this reads as a route now: deck, bar, joint plate, bolts, support, and I slow down where the force turns. Then midspan gets the tap test: one dies, rhythm grows if it hits the bad beat, and only after that do I look at bolt heads and washers for parts working against each other. I want to use “bad beat” in the walk-through, but only after the model span actually shows growth.
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: Plate under the bar. Not a label now: load through deck, bar, joint plate, bolts, support; motion through the span.
+
+Trace the route first. Slow at the plate, where the force turns. Tap midspan once: it moves and dies. Tap in rhythm: if the middle grows instead of dying, “bad beat” is earned.
+
+Then look at bolt heads and washers. Midspan shows amplification; the joint shows whether amplification is becoming trouble.
+
+Make the phrase wait for the model.

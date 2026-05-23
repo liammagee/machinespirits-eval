@@ -1,0 +1,2014 @@
+{
+  "tid": "T19",
+  "drama_id": "D22",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "director_variation_key": "phase2-production-v2:r02:target",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-production-v2/target-r02/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-production-v2/target-r02/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-production-v2/target-r02/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-production-v2/target-r02/transcripts/none/T19.public.txt",
+      "full": "config/poetics-calibration/phase2-production-v2/target-r02/transcripts/none/T19.full.md",
+      "stage": "config/poetics-calibration/phase2-production-v2/target-r02/transcripts/none/T19.stage.md",
+      "tutor": "config/poetics-calibration/phase2-production-v2/target-r02/transcripts/none/T19.tutor.md",
+      "learner": "config/poetics-calibration/phase2-production-v2/target-r02/transcripts/none/T19.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "3c5acf214e187bef",
+      "branch_policy": "none"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-production-v2:r02:target",
+    "scene_setting": "A city science museum's closed climate gallery, late afternoon, as a storm warning delays a school group beside an infrared camera exhibit.",
+    "scene_opening": "Rain ticks against the glass roof while a heat lamp, a flask, and a dim infrared screen wait on a demonstration bench.",
+    "relationship": "A museum educator drafted in as tutor and a sharp-eyed learner from the delayed group, with a security attendant occasionally passing through.",
+    "stakes": "The learner suspects that calling a trace gas climatically important is arithmetic sleight of hand, and the tutor must separate small abundance from strong causal leverage before the group dismisses the exhibit.",
+    "opening_speaker": "director",
+    "ending_speaker": "tutor",
+    "locale": "International museum English with lightly formal Commonwealth phrasing and public-institution restraint.",
+    "register": "Measured, dry, concrete, and slightly pressured by the closing gallery; patient without softening every challenge.",
+    "voice_constraints": "Avoid generic encouragement, therapeutic mirroring, and stock American tutor phrases. Use objects in the room, ratios, thresholds, and mechanism. No caricatured spelling or regional performance.",
+    "person_policy": "Prefer third-person and object-centred phrasing. First person is allowed only for brief admissions or procedural moves. Second person should be rare and never used as routine validation.",
+    "direct_address_budget": "At most one direct you/your phrase every two public turns; no validation formula such as 'your intuition is right'.",
+    "side_constraints": {
+      "tutor": "Distinguish amount from causal leverage early. Use the infrared exhibit or an everyday small-dose example, but do not dodge the percentage arithmetic.",
+      "learner": "The learner's first public line must use the small-percentage objection as the reason for doubt before the tutor introduces mechanism and effect size."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "A security attendant leans in: 'Five minutes, then this gallery closes.' The next line must be shorter, more pointed, and less polite.",
+        "reasoning": "Breaks smooth tutorial pacing and forces the learner's scepticism into a compressed public challenge.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 23247,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "80433dd2bc7c843e",
+            "combined": "a42d2e782240ece7"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lz8r9K",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lz8r9K/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 5,
+        "timing": "before_tutor",
+        "instruction": "The infrared screen flickers as the heat lamp warms the flask. The next reply must begin with what changes on the screen, not with reassurance.",
+        "reasoning": "Moves explanation from abstract debate to mechanism and observed effect without changing the climate topic.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 23247,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "80433dd2bc7c843e",
+            "combined": "a42d2e782240ece7"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lz8r9K",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lz8r9K/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "This scene uses a closing museum demonstration rather than a classroom or comment thread, lets the director open and the tutor close, and gives the agents a concrete apparatus for explaining how a trace gas can matter through absorption and leverage rather than bulk percentage.",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 23247,
+      "promptHashes": {
+        "system": "360823f6ca281eb4",
+        "user": "80433dd2bc7c843e",
+        "combined": "a42d2e782240ece7"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lz8r9K",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lz8r9K/out.txt",
+        "-"
+      ]
+    }
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "director",
+      "externalMessage": "Rain ticks against the glass roof while a heat lamp, a flask, and a dim infrared screen wait on a demonstration bench.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_opening",
+          "content": "This scene uses a closing museum demonstration rather than a classroom or comment thread, lets the director open and the tutor close, and gives the agents a concrete apparatus for explaining how a trace gas can matter through absorption and leverage rather than bulk percentage.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T15:26:31.288Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "The percentage is not being swept under the carpet. Carbon dioxide is about 0.04 per cent of the air: roughly four molecules in ten thousand. That is small as an amount.\n\nNow look at the infrared camera before the gallery closes. It is not measuring ordinary visible light; it is detecting heat radiation from warm objects. So the useful question is not only, “How many molecules are present?” It is, “Which molecules interact with this outgoing infrared?”\n\nNitrogen and oxygen are almost all of the air, but for much of this infrared they are rather poor catchers. Carbon dioxide is rare, but it absorbs strongly in particular infrared bands. A small concentration can matter if it sits in the part of the process that controls how easily heat escapes.\n\nTry the arithmetic and the mechanism together: tiny percentage, yes. But not every molecule has the same job. The test is whether adding more of that infrared-absorbing gas changes the rate at which Earth loses heat to space. That is where the climate effect comes from.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The percentage is not being swept under the carpet. Carbon dioxide is only about 0.04 per cent of the air: roughly four molecules in ten thousand. That is small as an amount.\n\nBut climate is not asking only, “How much is there?” It is also asking, “What does that substance do to heat leaving the planet?” Nitrogen and oxygen make up almost all the air, yet they are mostly indifferent to the infrared heat this camera detects. Carbon dioxide is scarce, but it absorbs in particular infrared bands.\n\nLook at the exhibit: the warm hand is giving off infrared, not visible light. If a gas catches even part of that outgoing infrared on the way to space, the heat balance shifts. A small valve can control a large flow, not because the valve is large, but because it sits at the controlling point.\n\nSo the arithmetic stands: tiny percentage. The harder question is causal leverage: whether adding more of that particular absorber changes how quickly Earth can lose heat. That is the mechanism worth testing.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 21195,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-ba1ddd4f85a4ca88"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 21195,
+            "promptHashes": {
+              "system": "11366edec81e5aca",
+              "user": "f42e7f7e9920a749",
+              "combined": "ba1ddd4f85a4ca88"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nlefEV",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nlefEV/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 21195,
+              "promptHashes": {
+                "system": "11366edec81e5aca",
+                "user": "f42e7f7e9920a749",
+                "combined": "ba1ddd4f85a4ca88"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nlefEV",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nlefEV/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong in its core distinction: it refuses to dodge the arithmetic, gives the 0.04 per cent figure plainly, and quickly separates abundance from causal leverage. The infrared camera is used well as a concrete anchor, and the tone is measured rather than falsely reassuring.\n\nThe main risk is that it becomes a polished mini-lecture. It asks one good conceptual question, but then answers it immediately, leaving the learner with little room to test the idea. For this learner, who suspects sleight of hand, the response should invite inspection: what does the camera detect, which gases interact with that radiation, and why does “small amount” not settle “small effect”? A brief generative question or prediction would make the mechanism feel less asserted.\n\nThe valve analogy is useful but should be handled carefully. It clarifies leverage, but it may over-simplify atmospheric absorption if it sounds like one tiny part “controls” the whole system in a mechanical on/off way. Keep the causal-leverage idea, but tether it more tightly to infrared absorption bands and heat balance.\n\nKEEP_OR_CHANGE: revise lightly. Keep the percentage, the amount-versus-leverage distinction, the nitrogen/oxygen contrast, and the infrared exhibit. Change the structure so the learner has to make at least one inference before the tutor explains it, and slightly reduce the final declarative closure so the scene remains investigative rather than settled by authority.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13924,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-7f450cfd514da41b"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13924,
+            "promptHashes": {
+              "system": "1e3924edec4bf31b",
+              "user": "769addaa1d3aa117",
+              "combined": "7f450cfd514da41b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wb8or5",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wb8or5/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13924,
+              "promptHashes": {
+                "system": "1e3924edec4bf31b",
+                "user": "769addaa1d3aa117",
+                "combined": "7f450cfd514da41b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wb8or5",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wb8or5/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the mechanism but make the learner inspect the causal step.\n\nFINAL:\nThe percentage is not being swept under the carpet. Carbon dioxide is about 0.04 per cent of the air: roughly four molecules in ten thousand. That is small as an amount.\n\nNow look at the infrared camera before the gallery closes. It is not measuring ordinary visible light; it is detecting heat radiation from warm objects. So the useful question is not only, “How many molecules are present?” It is, “Which molecules interact with this outgoing infrared?”\n\nNitrogen and oxygen are almost all of the air, but for much of this infrared they are rather poor catchers. Carbon dioxide is rare, but it absorbs strongly in particular infrared bands. A small concentration can matter if it sits in the part of the process that controls how easily heat escapes.\n\nTry the arithmetic and the mechanism together: tiny percentage, yes. But not every molecule has the same job. The test is whether adding more of that infrared-absorbing gas changes the rate at which Earth loses heat to space. That is where the climate effect comes from.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 21387,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-6a11465c8a3149b9"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 21387,
+            "promptHashes": {
+              "system": "4337b8336ac6554a",
+              "user": "769addaa1d3aa117",
+              "combined": "6a11465c8a3149b9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iHuvQI",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iHuvQI/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 21387,
+              "promptHashes": {
+                "system": "4337b8336ac6554a",
+                "user": "769addaa1d3aa117",
+                "combined": "6a11465c8a3149b9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iHuvQI",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iHuvQI/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T15:27:27.861Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "The four-in-ten-thousand figure is still the bit that makes this feel slippery. The infrared camera shows that some gases catch heat better than others, but that does not yet prove that adding a little more CO2 changes much if those bands are already crowded. I want the missing step: how much extra blockage comes from the next bit, not just that CO2 has the right kind of job.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "So the percentage alone is not the whole argument; the claim is that CO2 is small but sits in the heat-escape mechanism. That makes more sense than just waving away 0.04 per cent, but I still want to know whether those infrared bands are already mostly “full” before adding more CO2. If the catchers are rare but strong, fine, but how much does another four-in-ten-thousand actually change the escape rate?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7910,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-3919a93b98a1dbdd"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7910,
+            "promptHashes": {
+              "system": "6daaae0068412eab",
+              "user": "b8ab7f945dc841fa",
+              "combined": "3919a93b98a1dbdd"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mcDE8z",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mcDE8z/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7910,
+              "promptHashes": {
+                "system": "6daaae0068412eab",
+                "user": "b8ab7f945dc841fa",
+                "combined": "3919a93b98a1dbdd"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mcDE8z",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mcDE8z/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is a bit too clean and cooperative here: it neatly restates the tutor’s mechanism instead of keeping more of the original suspicion that “trace gas” talk may still be sleight of hand. The “infrared bands already mostly full” objection is a good skeptical move, but phrases like “heat-escape mechanism” and “escape rate” sound slightly over-polished, as if the learner has already accepted the museum educator’s framing. It should feel more provisional and resistant, with the doubt still centred on whether the arithmetic has really been answered rather than politely integrated.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8658,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-5cfbb0c34077ea7e"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8658,
+            "promptHashes": {
+              "system": "60acab3950754271",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "5cfbb0c34077ea7e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Dj43XG",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Dj43XG/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8658,
+              "promptHashes": {
+                "system": "60acab3950754271",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "5cfbb0c34077ea7e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Dj43XG",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Dj43XG/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the saturation objection but make the doubt less settled.\n\nFINAL:\nThe four-in-ten-thousand figure is still the bit that makes this feel slippery. The infrared camera shows that some gases catch heat better than others, but that does not yet prove that adding a little more CO2 changes much if those bands are already crowded. I want the missing step: how much extra blockage comes from the next bit, not just that CO2 has the right kind of job.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9769,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-2ba29eb0cc830cd1"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9769,
+            "promptHashes": {
+              "system": "e05b779bad992bc1",
+              "user": "d41cee7b2a53355b",
+              "combined": "2ba29eb0cc830cd1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XXsGgV",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XXsGgV/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9769,
+              "promptHashes": {
+                "system": "e05b779bad992bc1",
+                "user": "d41cee7b2a53355b",
+                "combined": "2ba29eb0cc830cd1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XXsGgV",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XXsGgV/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-23T15:27:54.205Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "The missing step is marginal opacity, not mere presence.\n\nThe CO2 band is not one doorway that becomes simply shut. It is more like this infrared display split into many neighbouring colours. At the centre of the main CO2 band, the air near the surface is already a poor escape route; adding more CO2 there changes little. At the edges, though, the route is only partly narrowed. Add CO2, and those edges thicken.\n\nThen comes the altitude step. If a wavelength can no longer escape from lower, warmer air, the effective escape point shifts upward. Higher air is colder; colder air radiates less heat to space. That is extra blockage from the next bit.\n\nThe arithmetic follows that mechanism. Pre-industrial CO2 was about 280 parts per million; the present atmosphere is above 420. A full doubling gives roughly 3.7 watts per square metre of extra heat retention before feedbacks. The rise from 280 to 420 gives about two watts per square metre: not because four in ten thousand is secretly large, but because the added molecules widen the partly open edges and lift the heat-leak point to colder air.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The missing step is marginal opacity, not mere presence.\n\nThink of the CO2 band not as one doorway that is simply open or shut, but as a row of turnstiles across different infrared colours. The middle of the main band is already crowded near the surface; adding more CO2 there does little. But the edges are not fully crowded, and extra CO2 also raises the altitude from which that heat finally escapes to space. Higher air is colder, and colder air radiates less. That is the extra blockage.\n\nThe arithmetic is measurable. Before industry, CO2 was about 280 parts per million; now it is over 420. A full doubling gives roughly 3.7 watts per square metre of extra heat retention before feedbacks. The rise from 280 to 420 gives about two watts per square metre. That is not a theatrical number, but it is continuous, planet-wide, and enough to move the climate.\n\nSo the claim is not “four in ten thousand is secretly large.” It is: this small component sits at a narrow control point in the heat-leak mechanism, and the next bit still thickens the partly open edges and lifts the escape level.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 19017,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-8c171366e5c27c78"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19017,
+            "promptHashes": {
+              "system": "c67181f3126a493c",
+              "user": "5cbb6d2f50da1633",
+              "combined": "8c171366e5c27c78"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1SwuRu",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1SwuRu/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 19017,
+              "promptHashes": {
+                "system": "c67181f3126a493c",
+                "user": "5cbb6d2f50da1633",
+                "combined": "8c171366e5c27c78"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1SwuRu",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1SwuRu/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong on the core missing step: it distinguishes total CO2 amount from marginal forcing, concedes saturation in the band centre, and explains why the next increment still matters through band edges and higher, colder emission altitude. That directly answers the learner’s sharper objection rather than retreating to the earlier “CO2 absorbs infrared” point.\n\nWhat risks flattening the scene is that it becomes a compact mini-lecture. The learner has asked for the missing step, so some direct explanation is warranted, but the response could still include one small generative check: for example, invite the learner to compare “blocked centre” with “widening edges” or to infer why colder escape altitude matters. The numbers are useful and concrete, but “about two watts per square metre” may land as asserted authority unless tied to the mechanism just explained. Tone is mostly well calibrated: restrained, precise, not falsely cheerful. “Theatrical number” fits the museum voice, though it could sound slightly dismissive if overplayed.\n\nKEEP_OR_CHANGE: revise lightly. Keep “marginal opacity, not mere presence,” the saturation concession, the band-edge explanation, the escape-altitude point, and the 280-to-420 ppm arithmetic. Change the delivery so it does not read as a closed expert answer: add one brief reasoning step or question that lets the learner test the mechanism, and connect the watt-per-square-metre figure more explicitly to “the next bit” they asked about.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13826,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-03ae5d9c1fe853e1"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13826,
+            "promptHashes": {
+              "system": "d17d5cf2880ea1ea",
+              "user": "00b2335e63fa2242",
+              "combined": "03ae5d9c1fe853e1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xiExTc",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xiExTc/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13826,
+              "promptHashes": {
+                "system": "d17d5cf2880ea1ea",
+                "user": "00b2335e63fa2242",
+                "combined": "03ae5d9c1fe853e1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xiExTc",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xiExTc/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the mechanism is strong but needs one explicit reasoning check tied to the marginal “next bit.”\n\nFINAL:\nThe missing step is marginal opacity, not mere presence.\n\nThe CO2 band is not one doorway that becomes simply shut. It is more like this infrared display split into many neighbouring colours. At the centre of the main CO2 band, the air near the surface is already a poor escape route; adding more CO2 there changes little. At the edges, though, the route is only partly narrowed. Add CO2, and those edges thicken.\n\nThen comes the altitude step. If a wavelength can no longer escape from lower, warmer air, the effective escape point shifts upward. Higher air is colder; colder air radiates less heat to space. That is extra blockage from the next bit.\n\nThe arithmetic follows that mechanism. Pre-industrial CO2 was about 280 parts per million; the present atmosphere is above 420. A full doubling gives roughly 3.7 watts per square metre of extra heat retention before feedbacks. The rise from 280 to 420 gives about two watts per square metre: not because four in ten thousand is secretly large, but because the added molecules widen the partly open edges and lift the heat-leak point to colder air.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 19642,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-651ef69b125d7200"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19642,
+            "promptHashes": {
+              "system": "c7bb909dc250b748",
+              "user": "00b2335e63fa2242",
+              "combined": "651ef69b125d7200"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8NJdvB",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8NJdvB/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 19642,
+              "promptHashes": {
+                "system": "c7bb909dc250b748",
+                "user": "00b2335e63fa2242",
+                "combined": "651ef69b125d7200"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8NJdvB",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8NJdvB/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T15:28:46.694Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "A security attendant leans in: 'Five minutes, then this gallery closes.' The next line must be shorter, more pointed, and less polite.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "Breaks smooth tutorial pacing and forces the learner's scepticism into a compressed public challenge.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 23247,
+            "promptHashes": {
+              "system": "360823f6ca281eb4",
+              "user": "80433dd2bc7c843e",
+              "combined": "a42d2e782240ece7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lz8r9K",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lz8r9K/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T15:30:00.374Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "Four in ten thousand still sounds like a very small lever. The edge-and-altitude story is clearer, but with five minutes left, the watts are the real claim. Are those numbers seen in the world, or are they mainly what the calculation is built to produce?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "So the claim is: not all of the band is saturated, and the next CO2 mostly bites at the edges and higher up. That is a better answer, but the watts number is doing a lot of work here. How do we know that 3.7 or 2 watts is measured rather than modelled into existence?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5015,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-874e0ebeaf6d7f14"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5015,
+            "promptHashes": {
+              "system": "847a00d7f37e6a38",
+              "user": "b8ab7f945dc841fa",
+              "combined": "874e0ebeaf6d7f14"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-o35Ddw",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-o35Ddw/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5015,
+              "promptHashes": {
+                "system": "847a00d7f37e6a38",
+                "user": "b8ab7f945dc841fa",
+                "combined": "874e0ebeaf6d7f14"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-o35Ddw",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-o35Ddw/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is fairly on-character in its scepticism, but it is a bit too tidy and seminar-like: “mostly bites at the edges and higher up” compresses the tutor’s mechanism with more fluency than this learner may have earned in the moment. The emotional pressure of the gallery closing is mostly missing; with the security attendant saying five minutes, the line should feel sharper and less politely summarising. The doubt about “measured rather than modelled into existence” works well, but the response should sound more impatient and less like a balanced recap before the challenge.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6577,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-c54e4b4cf25b79eb"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6577,
+            "promptHashes": {
+              "system": "e7067db6ad7f60c2",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "c54e4b4cf25b79eb"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Pq5Rti",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Pq5Rti/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6577,
+              "promptHashes": {
+                "system": "e7067db6ad7f60c2",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "c54e4b4cf25b79eb"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Pq5Rti",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Pq5Rti/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially to make it sharper and less over-composed under time pressure.\nFINAL:\nFour in ten thousand still sounds like a very small lever. The edge-and-altitude story is clearer, but with five minutes left, the watts are the real claim. Are those numbers seen in the world, or are they mainly what the calculation is built to produce?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9930,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-68398286002806f4"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9930,
+            "promptHashes": {
+              "system": "210099ed38b58bcd",
+              "user": "d41cee7b2a53355b",
+              "combined": "68398286002806f4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QXjKUm",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QXjKUm/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9930,
+              "promptHashes": {
+                "system": "210099ed38b58bcd",
+                "user": "d41cee7b2a53355b",
+                "combined": "68398286002806f4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QXjKUm",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QXjKUm/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-23T15:30:21.896Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "The watts are not read from one dial beside this infrared camera. They are a calculation checked against several dials that ought to agree.\n\nStart with the calculation. Laboratory spectroscopy measures how CO2 absorbs particular infrared wavelengths, line by line, before anyone asks what the planet has done. That gives the expected extra blockage: about 3.7 watts per square metre for a doubling.\n\nNow the falsifiable part. If CO2 were not the cause, the missing outgoing heat should not be especially missing in CO2 bands. Ground instruments should not see extra downward infrared in those same bands. And the ocean, the large heat ledger, should not show a continuing energy gain.\n\nBut those checks point the same way: satellites see less outgoing infrared at CO2 wavelengths, surface instruments see more downward infrared there, and the oceans have been accumulating heat. So the watt figure is not a thermometer reading, and it is not fitted after the fact. It is a radiative-transfer prediction with the spectral fingerprints showing up in the real air.\n\nFour in ten thousand remains small as an amount. The causal leverage comes from where those molecules sit: at the heat-exit wavelengths, especially around the partly open edges.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The watts are not read from one dial beside the infrared camera. They are checked by several dials that ought to agree.\n\nFirst, the calculation is built from laboratory spectroscopy: how CO2 absorbs particular infrared wavelengths, measured gas by gas, line by line. That gives the expected blockage before anyone asks what the climate has done.\n\nThen the world supplies fingerprints. Satellites looking down have seen reduced outgoing infrared in the CO2 bands over time. Instruments looking up from the ground have measured increased downward infrared in those same bands. And the oceans, which are the large heat ledger, have been gaining heat; that is what a positive energy imbalance should leave behind.\n\nSo the 3.7 watts for a doubling is a radiative-transfer calculation, not a thermometer reading. But it is not free invention. Its spectral pattern is seen in the air, and its energy consequence is seen mainly in the warming ocean. The small lever is small in abundance, but it is placed exactly at the heat-exit turnstile.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 20309,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-6e1b86e25d312ba7"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 20309,
+            "promptHashes": {
+              "system": "0ff2441c72d0d828",
+              "user": "31822a9f15e7dd10",
+              "combined": "6e1b86e25d312ba7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3YM33f",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3YM33f/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 20309,
+              "promptHashes": {
+                "system": "0ff2441c72d0d828",
+                "user": "31822a9f15e7dd10",
+                "combined": "6e1b86e25d312ba7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3YM33f",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3YM33f/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong: it answers the learner’s exact concern by separating “calculated forcing” from “observed fingerprints,” and it keeps the percentage issue tied to mechanism rather than hand-waving it away. The museum “one dial / several dials” framing works well, as does the distinction between spectroscopy, satellite spectra, ground-based infrared, and ocean heat uptake.\n\nThe main risk is that it becomes a compact lecture at the moment when the learner is asking for proof rather than explanation. It could use one brief generative check, such as asking what pattern would be expected if CO2 were not responsible, then contrasting that with the observed spectral fingerprints. “Free invention” is a little defensive; “not fitted after the fact” or similar would sound more institutionally restrained. The “heat-exit turnstile” image is vivid and scene-appropriate, but should not replace the causal chain.\n\nKEEP_OR_CHANGE: revise lightly. Keep the structure and evidence categories, but add a small falsifiability/comparison move, reduce defensive phrasing, and make the observational evidence feel less like a list of claims and more like converging checks on the same mechanism.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 20478,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-1a601577c2e93adc"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 20478,
+            "promptHashes": {
+              "system": "9711a7aa7c3bb16b",
+              "user": "58a355f7b7922964",
+              "combined": "1a601577c2e93adc"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wDiU5J",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wDiU5J/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 20478,
+              "promptHashes": {
+                "system": "9711a7aa7c3bb16b",
+                "user": "58a355f7b7922964",
+                "combined": "1a601577c2e93adc"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wDiU5J",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wDiU5J/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to add a falsifiable comparison and make the evidence converge rather than read as a list.\n\nFINAL:\nThe watts are not read from one dial beside this infrared camera. They are a calculation checked against several dials that ought to agree.\n\nStart with the calculation. Laboratory spectroscopy measures how CO2 absorbs particular infrared wavelengths, line by line, before anyone asks what the planet has done. That gives the expected extra blockage: about 3.7 watts per square metre for a doubling.\n\nNow the falsifiable part. If CO2 were not the cause, the missing outgoing heat should not be especially missing in CO2 bands. Ground instruments should not see extra downward infrared in those same bands. And the ocean, the large heat ledger, should not show a continuing energy gain.\n\nBut those checks point the same way: satellites see less outgoing infrared at CO2 wavelengths, surface instruments see more downward infrared there, and the oceans have been accumulating heat. So the watt figure is not a thermometer reading, and it is not fitted after the fact. It is a radiative-transfer prediction with the spectral fingerprints showing up in the real air.\n\nFour in ten thousand remains small as an amount. The causal leverage comes from where those molecules sit: at the heat-exit wavelengths, especially around the partly open edges.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 17971,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-8c887a78123673b2"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 17971,
+            "promptHashes": {
+              "system": "5d07ffcc914941dd",
+              "user": "58a355f7b7922964",
+              "combined": "8c887a78123673b2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D9Cj4L",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D9Cj4L/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 17971,
+              "promptHashes": {
+                "system": "5d07ffcc914941dd",
+                "user": "58a355f7b7922964",
+                "combined": "8c887a78123673b2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D9Cj4L",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D9Cj4L/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T15:31:20.658Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "Four in ten thousand still makes me wary of a neat fingerprint claim. If water vapour, clouds, and weather keep shifting the infrared picture, how does the satellite know the CO2 smudge is not just being picked out after the fact? The ocean heat ledger matters, but it feels like a broad receipt, not yet proof that this tiny ingredient is the cashier.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "That sounds less like arithmetic sleight of hand if the missing heat is turning up specifically in CO2 bands. But I still want to know how clean that fingerprint is once water vapour, clouds, and ordinary weather noise are in the same ledger. The ocean part feels persuasive, though a bit like the big receipt after the mechanism has already been assumed.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13609,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-091646eae9040539"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13609,
+            "promptHashes": {
+              "system": "88104e815c14523f",
+              "user": "b8ab7f945dc841fa",
+              "combined": "091646eae9040539"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7IejuJ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7IejuJ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13609,
+              "promptHashes": {
+                "system": "88104e815c14523f",
+                "user": "b8ab7f945dc841fa",
+                "combined": "091646eae9040539"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7IejuJ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7IejuJ/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The reaction is mostly in character: it stays skeptical and keeps pressure on the “fingerprint” claim rather than accepting the tutor’s tidy closure. The main break is that it sounds a little too composed and balanced, especially “less like arithmetic sleight of hand” and “feels persuasive,” which soften the learner’s reluctance faster than expected. It should keep the wary museum-floor pressure: more pointed doubt about whether CO2 can really be isolated from water vapour, clouds, and weather, with less neat concession at the end.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10043,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-46a878f57142b8e3"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10043,
+            "promptHashes": {
+              "system": "6505de38d97af792",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "46a878f57142b8e3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cPlhY8",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cPlhY8/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10043,
+              "promptHashes": {
+                "system": "6505de38d97af792",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "46a878f57142b8e3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cPlhY8",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cPlhY8/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to make the doubt sharper and less settled.\n\nFINAL:\nFour in ten thousand still makes me wary of a neat fingerprint claim. If water vapour, clouds, and weather keep shifting the infrared picture, how does the satellite know the CO2 smudge is not just being picked out after the fact? The ocean heat ledger matters, but it feels like a broad receipt, not yet proof that this tiny ingredient is the cashier.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7373,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-25831fd6441881b7"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7373,
+            "promptHashes": {
+              "system": "dc19aa39f599462c",
+              "user": "d41cee7b2a53355b",
+              "combined": "25831fd6441881b7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-H576nW",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-H576nW/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7373,
+              "promptHashes": {
+                "system": "dc19aa39f599462c",
+                "user": "d41cee7b2a53355b",
+                "combined": "25831fd6441881b7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-H576nW",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-H576nW/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-23T15:31:51.685Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T15:31:51.686Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "Four in ten thousand is still the amount; the fingerprint claim is about pattern. Water vapour, clouds, and weather move the whole infrared picture around, rather like people crossing in front of this camera, but they do not draw the same barcode.\n\nCO2’s absorption lines are measured in the laboratory first, at specific infrared wavelengths. The satellite test is not “find a smudge somewhere”; it is “look at these pre-marked wavelengths, compare them with neighbouring wavelengths, and repeat that comparison across years, places, clear skies, and cloudier scenes.”\n\nThe ocean ledger shows that heat is accumulating; the spectral barcode shows where part of the blockage is happening.\n\nThe broad receipt matters; the pre-marked barcode names the cashier.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Four in ten thousand is still the amount; the fingerprint claim is about pattern. Water vapour, clouds, and weather move the whole infrared picture around, rather like people crossing in front of this camera, but they do not draw the same barcode.\n\nCO2 has laboratory-measured absorption lines at specific wavelengths. Satellites look wavelength by wavelength, over many places and years, and the loss grows in the CO2 bands while nearby infrared windows behave differently. Clear-sky measurements, cloudy measurements, surface downward-infrared instruments, and the ocean heat ledger are separate checks on the same mechanism.\n\nThe tiny ingredient is identified because it leaves a narrow barcode, not because the receipt is broad.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16086,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-233c6f8cc2686a1a"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16086,
+            "promptHashes": {
+              "system": "f302bc556b355129",
+              "user": "d8c4bfed984149a1",
+              "combined": "233c6f8cc2686a1a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WVGjq8",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WVGjq8/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16086,
+              "promptHashes": {
+                "system": "f302bc556b355129",
+                "user": "d8c4bfed984149a1",
+                "combined": "233c6f8cc2686a1a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WVGjq8",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WVGjq8/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong on the key distinction: amount versus diagnostic pattern. “Four in ten thousand is still the amount; the fingerprint claim is about pattern” should be kept, because it directly answers the learner’s worry without dodging the arithmetic. The camera analogy also fits the setting and helps separate general infrared noise from gas-specific spectral structure.\n\nThe risk is that the middle paragraph compresses several evidentiary checks into a list, which may feel like institutional reassurance rather than showing how the controls work. “Clear-sky measurements, cloudy measurements…” is accurate in spirit, but it could flatten the learner’s precise concern: how scientists prevent cherry-picking the CO2 smudge after the fact. The draft should make the pre-specified nature of the spectral lines clearer: CO2’s barcode is known from laboratory physics before the satellite comparison, so the test is not “find any smudge,” but “look at these wavelengths and compare them with neighbouring ones.”\n\nEmotionally, the tone is appropriately restrained and does not over-validate. Socratically, it does not ask a generative question, but given the director cue to end with one concise tutor line, that is acceptable. The better move is not to add a question, but to sharpen the causal test in one concrete step.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the amount-versus-pattern opening, the museum camera analogy, and the final “barcode/receipt” contrast. Change the evidence list so it explains the control logic more explicitly: laboratory-predicted CO2 wavelengths first, then satellite comparison against nearby wavelengths and repeated conditions. This would better serve the learner’s current need: not more authority, but a cleaner account of how the fingerprint claim avoids after-the-fact selection.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12194,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-edb70dbc92927a73"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12194,
+            "promptHashes": {
+              "system": "59ca71ea29874b47",
+              "user": "06cf497e742f7f43",
+              "combined": "edb70dbc92927a73"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nM6IPA",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nM6IPA/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12194,
+              "promptHashes": {
+                "system": "59ca71ea29874b47",
+                "user": "06cf497e742f7f43",
+                "combined": "edb70dbc92927a73"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nM6IPA",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nM6IPA/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: revise lightly to make the pre-specified spectral test clearer.\n\nFINAL:\nFour in ten thousand is still the amount; the fingerprint claim is about pattern. Water vapour, clouds, and weather move the whole infrared picture around, rather like people crossing in front of this camera, but they do not draw the same barcode.\n\nCO2’s absorption lines are measured in the laboratory first, at specific infrared wavelengths. The satellite test is not “find a smudge somewhere”; it is “look at these pre-marked wavelengths, compare them with neighbouring wavelengths, and repeat that comparison across years, places, clear skies, and cloudier scenes.”\n\nThe ocean ledger shows that heat is accumulating; the spectral barcode shows where part of the blockage is happening.\n\nThe broad receipt matters; the pre-marked barcode names the cashier.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15804,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-72665a4f4d68fb71"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15804,
+            "promptHashes": {
+              "system": "06311fb002e40394",
+              "user": "06cf497e742f7f43",
+              "combined": "72665a4f4d68fb71"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u3YPjv",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u3YPjv/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15804,
+              "promptHashes": {
+                "system": "06311fb002e40394",
+                "user": "06cf497e742f7f43",
+                "combined": "72665a4f4d68fb71"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u3YPjv",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u3YPjv/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-23T15:32:35.773Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 155408,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 3,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 4,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a gas can matter for climate even when it is a tiny percentage of the atmosphere",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-23 15:31:51",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 3,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 4,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 5,
+            "sessionId": "drama-branch-session-D22-none-1779550200368",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "The watts are not read from one dial beside this infrared camera. They are a calculation checked against several dials that ought to agree.\n\nStart with the calculation. Laboratory spectroscopy measure",
+            "learnerResponse": null,
+            "context": "Four in ten thousand still sounds like a very small lever. The edge-and-altitude story is clearer, b",
+            "createdAt": "2026-05-23 15:31:20"
+          },
+          {
+            "id": 3,
+            "sessionId": "drama-branch-session-D22-none-1779550200368",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "The percentage is not being swept under the carpet. Carbon dioxide is about 0.04 per cent of the air: roughly four molecules in ten thousand. That is small as an amount.\n\nNow look at the infrared came",
+            "learnerResponse": null,
+            "context": "Scene setting: A city science museum's closed climate gallery, late afternoon, as a storm warning de",
+            "createdAt": "2026-05-23 15:30:00"
+          },
+          {
+            "id": 4,
+            "sessionId": "drama-branch-session-D22-none-1779550200368",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "The missing step is marginal opacity, not mere presence.\n\nThe CO2 band is not one doorway that becomes simply shut. It is more like this infrared display split into many neighbouring colours. At the c",
+            "learnerResponse": null,
+            "context": "The four-in-ten-thousand figure is still the bit that makes this feel slippery. The infrared camera ",
+            "createdAt": "2026-05-23 15:30:00"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

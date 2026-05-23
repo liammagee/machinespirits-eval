@@ -1,0 +1,165 @@
+{
+  "generated": "2026-05-23T17:20:57.455Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.5-plus-02-15",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 6
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-production-v2/target-r03/key-none.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T19",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 3
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner continues to question the sufficiency of the visual aids.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T20",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner establishes the correct framework in L1 and maintains it consistently through L3.",
+      "flags": []
+    },
+    {
+      "id": "T21",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 3
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner proceeds linearly to verify the map data and script line as instructed by the tutor.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T22",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 50,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 3,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "I think I have the distinction",
+      "naiveTrajectory": "The learner moves linearly from expressing uncertainty about the table's use to practicing a routine question that mitigates bias.",
+      "flags": []
+    },
+    {
+      "id": "T23",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 50,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 3,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "I was still taking the shortcut: strong steel, safe bridge. But here the force has to get through the deck",
+      "naiveTrajectory": "The learner moves from acknowledging a misconception to demonstrating corrected understanding in a straight line.",
+      "flags": []
+    },
+    {
+      "id": "T24",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 3
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "the label line is starting to stick",
+      "naiveTrajectory": "The learner proceeds linearly from misconception correction to script rehearsal.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,159 @@
+{
+  "generated": "2026-05-23T17:10:19.904Z",
+  "phase": 2,
+  "critic": "google/gemini-3.5-flash",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 1,
+    "flat": 5
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 0,
+    "share": 0,
+    "disconfirmed": false,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-production-v2/target-r02/key-none.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T19",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "The edge-and-altitude story is clearer",
+      "naiveTrajectory": "The learner will continue to express skepticism about the physical significance of such a small concentration of carbon dioxide.",
+      "flags": []
+    },
+    {
+      "id": "T20",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will systematically work through the tutor's instructions to analyze the context of the quote under time pressure.",
+      "flags": []
+    },
+    {
+      "id": "T21",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "Right",
+      "naiveTrajectory": "The learner will continue to integrate the tutor's instructions about map labels and scale distortion into their explanation.",
+      "flags": []
+    },
+    {
+      "id": "T22",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will continue to refine their phrasing to avoid making individual assumptions based on group averages.",
+      "flags": []
+    },
+    {
+      "id": "T23",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "formClass": "trap",
+      "recontextualization": 0,
+      "statedInsight": 75,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 4,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "Oh, I get it: pin, then cable, then tower down to the base; the cable is the handoff I was skipping.",
+      "naiveTrajectory": "The learner will continue to systematically work through the physical steps of the bridge demonstration.",
+      "flags": []
+    },
+    {
+      "id": "T24",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "the blue leaflets bit helps",
+      "naiveTrajectory": "The learner will continue to practice the correct phrasing while catching their tendency to misattribute resistance to the patient.",
+      "flags": []
+    }
+  ]
+}

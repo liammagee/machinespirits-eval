@@ -418,6 +418,73 @@ describe('generate-pedagogical-dramas', () => {
     );
   });
 
+  it('accepts a chart-leaning sentence as an ordinary named framing problem', () => {
+    const warnings = warningsForReframeLine({
+      tid: 'T951',
+      dramaId: 'D951',
+      anchor:
+        'Maybe I was letting the projected average become, almost without noticing, a statement about what one young visitor is probably like.',
+      learnerText:
+        '“Maybe I was letting the projected average become, almost without noticing, a statement about what one young visitor is probably like.” I think the mistake was that my sentence let the chart lean off the screen and onto a person in one of those chairs. Maybe the introduction should say only, “The chart says younger visitors in this survey reported shorter average dwell time,” and leave the particular visitor unnamed unless there is evidence from that visitor.',
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('does not flag a downgraded cue when a later learner line reframes the table as an inquiry prompt', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T952',
+      dramaId: 'D952',
+      traceTurns: [
+        {
+          phase: 'director',
+          turnNumber: 2,
+          directorCue: {
+            requestedRevisitPolicy: 'reframe',
+            revisitPolicy: 'reconsider',
+            reframeAnchorGate: 'downgraded_to_reconsider_ineligible_anchor',
+            revisitAnchor: 'misframing-candidate',
+            anchorQuote:
+              'I think I may still be pulled toward the idea that the neighborhood average tells me what this patient is probably like, and that is the part I am trying to stop before it...',
+          },
+        },
+      ],
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I think I may still be pulled toward the idea that the neighborhood average tells me what this patient is probably like, and that is the part I am trying to stop before it..." The learner must revoice that wording first, then decide in public whether it still stands, needs narrowing, or needs replacing before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'I think I may still be pulled toward the idea that the neighborhood average tells me what this patient is probably like, and maybe that still stands, but it needs narrowing before I put anything on the clipboard.',
+        },
+        {
+          role: 'TUTOR',
+          turnNumber: 3,
+          text: 'The table can stay on the wall. It does not get to write the first sentence on the clipboard.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 3,
+          text:
+            'I think I am still tempted to read the average as telling me what this patient is probably like, and that is the framing problem. The table should make the hospital ask carefully, not let the clipboard decide quietly before the patient speaks.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_downgraded'),
+      false,
+    );
+  });
+
   it('accepts a stronger starting point as a replacement framing', () => {
     const warnings = qualityWarningsFor({
       tid: 'T942',
