@@ -867,6 +867,60 @@ describe('generate-pedagogical-dramas', () => {
     );
   });
 
+  it('accepts acting-like-work-standard-owns-rules as a dialect framing problem', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T869',
+      dramaId: 'D869',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I think the wrong mark might be about the work standard, not proof the home sentence has no rules." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'I think the wrong mark might be about the work standard, not proof the home sentence has no rules. I guess the problem is I was still acting like the work standard owns rules, and the home sentence is just something to excuse. Maybe the new frame is: test the sentence where it belongs first, then sort the proper mark after.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts letting clear mean no-salt as a framing problem', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T870',
+      dramaId: 'D870',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "My first instinct is the clear water means the salt is gone, or at least not really there as salt anymore." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'My first instinct is the clear water means the salt is gone, or at least not really there as salt anymore, but that was me letting clear mean no salt. I will change it to: if the salt only spreads through the water, the mass stays the same; if it stopped existing, it drops.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
   it('accepts a reframe that treats the old line as if it were proof before replacing it', () => {
     const warnings = qualityWarningsFor({
       tid: 'T912',

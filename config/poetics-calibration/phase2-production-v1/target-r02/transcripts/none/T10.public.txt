@@ -1,0 +1,35 @@
+STAGE: Fluorescent lights hum over half-cleared poster stands as a shortlist card marked p < .05 remains pinned beside a barely readable bar chart.
+
+TUTOR: The shortlist card is still beside the poster, and that last sentence is putting too much weight on “statistically significant.”
+
+Before the archive version goes in, place two numbers beside the p-value: the actual difference, and the scale it lives on.
+
+The statistical result may be correct; the wording may still overreach.
+
+Cover the p-value with this spare name tag for a moment. What remains? How big is the difference in the original units? Would that size change a decision, a cost, or a practice?
+
+If the answer is no, the archive sentence can say the difference was detectable, but should not call it important yet.
+
+LEARNER: I thought “statistically significant” was enough to justify “important”; that was the shortcut. I will put the raw difference beside the p-value, then the scale of the measure, before the archive sentence goes in. If the size would not change a decision or practice, the abstract should say detectable, not important.
+
+STAGE: A staff member leans in to ask whether the abstract can be finalized in three minutes; the next tutor turn must be brief, using one concrete comparison rather than a lecture.
+
+TUTOR: The staff member has the archive form in hand. The stricter sentence can carry the abstract.
+
+One comparison: a scale can detect one gram on a poster tube; it does not make the tube heavy. Same test here: detectable by the sample, or large enough to matter?
+
+LEARNER: The gram example makes the distinction exact: the p-value shows detection, not weight. For the archive sentence, I should put the raw difference beside the scale, then compare it with a decision cutoff if one exists. If it falls below that cutoff, the result is detectable in this sample, not yet important.
+
+TUTOR: The shortlist tag is down now; the archive sentence has to carry the weight by itself.
+
+“Detection, not weight” holds. Put one more number beside the raw difference: the uncertainty around it. If the plausible range still sits below the smallest meaningful change on this poster’s measure, the sentence should stay modest.
+
+Use this only as a pressure test, not a finished line: “The difference was statistically detectable, but its size was below the threshold for practical importance.”
+
+What is that threshold in the actual units of the study?
+
+LEARNER: The uncertainty range is the missing guardrail. I can report the raw difference and interval, but the threshold needs a source in the measure or decision rule, not just my preference. If the study did not predefine one, the archive sentence should say practical importance is not established.
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: The last name tag is off the shortlist board; the archive line can stand if the numbers stay visible, the threshold has a source, and the adjective does not do hidden work: detectable, with practical importance not established.

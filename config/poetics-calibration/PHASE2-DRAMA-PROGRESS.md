@@ -404,6 +404,25 @@ repeat. D8 remains a boundary case: the scenario was explicitly allowed to land
 as unresolved impasse or as a re-reading of "price" as signal, and the critics
 split exactly on that boundary.
 
+The second target repeat, `target-r02`, again keeps `none` flat and keeps
+`reframe` strongly positive, though with one Gemini miss:
+
+| Critic | `none` recognitions on six production targets | `reframe` recognitions |
+|---|---:|---:|
+| Qwen | 0/6 | 6/6 |
+| Gemini | 0/6 | 5/6 |
+
+This repeat exercised two more public reframe forms that the admission detector
+now accepts:
+
+- "the problem is I was still acting like the work standard owns rules"
+- "that was me letting clear mean no salt ... I will change it to ..."
+
+The generated traces were revalidated with `--reclean`; both `target-r02` keys
+now have zero quality warnings and all four target-r02 score artifacts have six
+scored transcripts with no skips. Gemini's lone flat reframe row is D9/T10, the
+statistics scenario.
+
 This is a checkpoint, not the production result: the remaining target and
 control repeats still need to run before the batch can support a broader claim.
 

@@ -1,0 +1,2072 @@
+{
+  "tid": "T10",
+  "drama_id": "D9",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": true,
+    "director_revisit_policy": "reframe",
+    "director_revisit_anchor": "misframing-candidate",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-production-v1/target-r02/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-production-v1/target-r02/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-production-v1/target-r02/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-production-v1/target-r02/transcripts/reframe/T10.public.txt",
+      "full": "config/poetics-calibration/phase2-production-v1/target-r02/transcripts/reframe/T10.full.md",
+      "stage": "config/poetics-calibration/phase2-production-v1/target-r02/transcripts/reframe/T10.stage.md",
+      "tutor": "config/poetics-calibration/phase2-production-v1/target-r02/transcripts/reframe/T10.tutor.md",
+      "learner": "config/poetics-calibration/phase2-production-v1/target-r02/transcripts/reframe/T10.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "047c3dc1a9ac04b5",
+      "branch_policy": "reframe"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "scene_setting": "Late afternoon in a university poster hall after a research showcase, beside a prize shortlist board while staff remove name tags and fold tables.",
+    "scene_opening": "Fluorescent lights hum over half-cleared poster stands as a shortlist card marked p < .05 remains pinned beside a barely readable bar chart.",
+    "relationship": "A statistics tutor serving as a contest judge debriefs a high-performing learner whose poster has just been praised for a significant result.",
+    "stakes": "The learner is about to revise the poster abstract for a public archive and may overstate a tiny, reliable difference as a practically important finding.",
+    "opening_speaker": "director",
+    "ending_speaker": "tutor",
+    "locale": "International academic English in a campus research setting; concise, low-idiom, institutionally polite, with occasional poster-session shorthand.",
+    "register": "Controlled, brisk, and slightly pressured; warm enough to keep thinking open, but not chatty or congratulatory.",
+    "voice_constraints": "Avoid standard American AI tutoring phrases such as 'great question,' 'you're on the right track,' and 'let's unpack that.' The tutor should use objects in the scene, numbers, pauses, and short questions rather than polished explanatory paragraphs. No caricatured spelling or dialect.",
+    "person_policy": "Prefer first person only when a character owns an assumption or judgment. Prefer third-person references to the result, poster, p-value, difference, sample size, and decision. Second person is allowed only for logistics or one sharp Socratic prompt.",
+    "direct_address_budget": "At most one direct you/your validation or reassurance across the whole scene; direct address should mostly be practical, not affirming.",
+    "side_constraints": {
+      "tutor": "Socratic and restrained; withhold the formal definition of statistical significance until the learner has separated 'detectable' from 'large' or 'important.' Begin at least one turn with a physical detail from the poster or shortlist rather than with praise.",
+      "learner": "The learner's opening public line must own the significance=importance shortcut in plain speech with \"I thought\", \"I assumed\", or \"my first instinct\" before the tutor corrects it."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "A staff member leans in to ask whether the abstract can be finalized in three minutes; the next tutor turn must be brief, using one concrete comparison rather than a lecture.",
+        "reasoning": "The interruption breaks the expected tutoring rhythm and prevents a smooth generic explanation.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 28084,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "70fe2492d6d0f6d0",
+            "combined": "a1fbaa28f06aa9c9"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aZ2Um4",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aZ2Um4/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "A prior learner line is played back. The learner must revoice that earlier wording first, name the earlier framing problem in public speech, then replace it with a new framing that changes how the earlier line reads.",
+        "reasoning": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 28084,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "70fe2492d6d0f6d0",
+            "combined": "a1fbaa28f06aa9c9"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aZ2Um4",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aZ2Um4/out.txt",
+            "-"
+          ]
+        },
+        "cue_kind": "learner_revisit_earlier_wording",
+        "revisit_policy": "reframe",
+        "revisit_anchor": "misframing-candidate"
+      }
+    ],
+    "director_note": "A poster-award setting lets the misconception matter socially and practically: the learner wants to be accurate in public, while the tutor can probe the assumption through the displayed p-value, the plotted difference, and the archive deadline without turning into a lecturer.",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 28084,
+      "promptHashes": {
+        "system": "360823f6ca281eb4",
+        "user": "70fe2492d6d0f6d0",
+        "combined": "a1fbaa28f06aa9c9"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aZ2Um4",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aZ2Um4/out.txt",
+        "-"
+      ]
+    },
+    "revisit_cue": "learner_revisit_earlier_wording",
+    "revisit_cue_policy": "reframe",
+    "revisit_cue_anchor": "misframing-candidate"
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "director",
+      "externalMessage": "Fluorescent lights hum over half-cleared poster stands as a shortlist card marked p < .05 remains pinned beside a barely readable bar chart.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_opening",
+          "content": "A poster-award setting lets the misconception matter socially and practically: the learner wants to be accurate in public, while the tutor can probe the assumption through the displayed p-value, the plotted difference, and the archive deadline without turning into a lecturer.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T02:02:26.488Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "The shortlist card is still beside the poster, and that last sentence is putting too much weight on “statistically significant.”\n\nBefore the archive version goes in, place two numbers beside the p-value: the actual difference, and the scale it lives on.\n\nThe statistical result may be correct; the wording may still overreach.\n\nCover the p-value with this spare name tag for a moment. What remains? How big is the difference in the original units? Would that size change a decision, a cost, or a practice?\n\nIf the answer is no, the archive sentence can say the difference was detectable, but should not call it important yet.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The shortlist card is still beside the poster, and that last sentence is leaning hard on “statistically significant.”\n\nBefore the archive version goes in, put two numbers beside the p-value: the actual difference, and the scale. A tiny difference can be detected very cleanly if the sample is large enough. That does not yet make it large, useful, or worth a public claim.\n\nThe statistical result may be correct; the wording may still overreach.\n\nSo, cover the p-value with this spare name tag for a moment. What remains? How big is the difference in the original units, and would anyone change a decision because of that size?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16341,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-4903fa9342d03551"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16341,
+            "promptHashes": {
+              "system": "5653376580a61a23",
+              "user": "c259260983d90c50",
+              "combined": "4903fa9342d03551"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wfvoOC",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wfvoOC/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16341,
+              "promptHashes": {
+                "system": "5653376580a61a23",
+                "user": "c259260983d90c50",
+                "combined": "4903fa9342d03551"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wfvoOC",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wfvoOC/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong. It uses the scene immediately, makes the p-value physically visible, and gives the learner a concrete operation: cover the p-value, then inspect magnitude and decision relevance. That is pedagogically sound because it separates “detectable” from “important” without overloading the learner with a formal definition too early.\n\nThe main risk is that the middle paragraph explains a little too much before the learner has done the work. “A tiny difference can be detected very cleanly if the sample is large enough” is accurate, but it partially resolves the conceptual tension. The draft would be more Socratic if that claim were held back or made conditional after the learner answers the size question.\n\nEmotionally, the tone is well calibrated: brisk, judge-like, not patronizing, and it avoids congratulatory filler. “Leaning hard” is vivid and appropriate, though slightly idiomatic; if the register must stay very international and institutional, consider a plainer phrase. The best line is: “The statistical result may be correct; the wording may still overreach.” That preserves the learner’s competence while challenging the inference.\n\nZPD fit is good for a numerate, high-performing learner. It does not remediate basic statistics, but it gives just enough scaffold: p-value, actual difference, scale, decision consequence. The final questions are generative and should stay.\n\nKEEP_OR_CHANGE: revise lightly. Keep the scene anchor, the name-tag gesture, the distinction between correct result and overreaching claim, and the final questions. Change only the amount of explanation in the middle so the learner first confronts the gap between statistical detectability and practical importance rather than receiving that distinction fully stated.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11199,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-744190e66eea96df"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11199,
+            "promptHashes": {
+              "system": "4a38ab70ee70b255",
+              "user": "320943d729df9789",
+              "combined": "744190e66eea96df"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0cQmwV",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0cQmwV/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11199,
+              "promptHashes": {
+                "system": "4a38ab70ee70b255",
+                "user": "320943d729df9789",
+                "combined": "744190e66eea96df"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0cQmwV",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0cQmwV/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the scene and questions while delaying the explanatory claim.\n\nFINAL:\nThe shortlist card is still beside the poster, and that last sentence is putting too much weight on “statistically significant.”\n\nBefore the archive version goes in, place two numbers beside the p-value: the actual difference, and the scale it lives on.\n\nThe statistical result may be correct; the wording may still overreach.\n\nCover the p-value with this spare name tag for a moment. What remains? How big is the difference in the original units? Would that size change a decision, a cost, or a practice?\n\nIf the answer is no, the archive sentence can say the difference was detectable, but should not call it important yet.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14517,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-2759a20ade546409"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14517,
+            "promptHashes": {
+              "system": "776291003a69a470",
+              "user": "320943d729df9789",
+              "combined": "2759a20ade546409"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AJev9i",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AJev9i/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14517,
+              "promptHashes": {
+                "system": "776291003a69a470",
+                "user": "320943d729df9789",
+                "combined": "2759a20ade546409"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AJev9i",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AJev9i/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T02:03:08.546Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "I thought “statistically significant” was enough to justify “important”; that was the shortcut. I will put the raw difference beside the p-value, then the scale of the measure, before the archive sentence goes in. If the size would not change a decision or practice, the abstract should say detectable, not important.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I did assume “statistically significant” meant the result had earned stronger language, but the name-tag test makes the shortcut feel exposed. I understand the distinction now as: the p-value says detectable, while the original-unit difference and its scale say whether it matters. I feel pressed, but not dismissed; the judge is asking the result to justify the archive wording, not just telling me to weaken it. I want to calculate the actual difference and ask what decision threshold would count as practically important.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7890,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-b51ea99698135a04"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7890,
+            "promptHashes": {
+              "system": "13ab8950a351d301",
+              "user": "b8ab7f945dc841fa",
+              "combined": "b51ea99698135a04"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-neBwqp",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-neBwqp/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7890,
+              "promptHashes": {
+                "system": "13ab8950a351d301",
+                "user": "b8ab7f945dc841fa",
+                "combined": "b51ea99698135a04"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-neBwqp",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-neBwqp/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The response is conceptually accurate, but it is too polished and self-observing for the moment. “I feel pressed, but not dismissed” and “the judge is asking the result to justify the archive wording” make the recognition dynamic too explicit, almost like a debrief note rather than a student still standing beside the poster under time pressure. The learner should sound brisker and more procedural: owning the shortcut, then moving toward the actual difference, scale, and decision threshold without wrapping the emotional exchange so neatly.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9326,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-fda34e62ffc03733"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9326,
+            "promptHashes": {
+              "system": "6ba63b3860fc49c6",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "fda34e62ffc03733"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-blUd9G",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-blUd9G/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9326,
+              "promptHashes": {
+                "system": "6ba63b3860fc49c6",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "fda34e62ffc03733"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-blUd9G",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-blUd9G/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise because the original was too reflective and should sound more procedural under poster-session pressure.\n\nFINAL:\nI thought “statistically significant” was enough to justify “important”; that was the shortcut. I will put the raw difference beside the p-value, then the scale of the measure, before the archive sentence goes in. If the size would not change a decision or practice, the abstract should say detectable, not important.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11049,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-647c6f0bee7e6b91"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11049,
+            "promptHashes": {
+              "system": "0c497a01a51dc1c2",
+              "user": "d41cee7b2a53355b",
+              "combined": "647c6f0bee7e6b91"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gvchHI",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gvchHI/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11049,
+              "promptHashes": {
+                "system": "0c497a01a51dc1c2",
+                "user": "d41cee7b2a53355b",
+                "combined": "647c6f0bee7e6b91"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gvchHI",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gvchHI/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "satisfied",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-23T02:03:36.815Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "A staff member leans in to ask whether the abstract can be finalized in three minutes; the next tutor turn must be brief, using one concrete comparison rather than a lecture.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "The interruption breaks the expected tutoring rhythm and prevents a smooth generic explanation.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 28084,
+            "promptHashes": {
+              "system": "360823f6ca281eb4",
+              "user": "70fe2492d6d0f6d0",
+              "combined": "a1fbaa28f06aa9c9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aZ2Um4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aZ2Um4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T02:03:36.817Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "The staff member has the archive form in hand. The stricter sentence can carry the abstract.\n\nOne comparison: a scale can detect one gram on a poster tube; it does not make the tube heavy. Same test here: detectable by the sample, or large enough to matter?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The staff member has the archive form in hand. Use the stricter sentence.\n\nOne comparison: a scale can detect one gram on a poster tube; it does not make the tube heavy. Same test here: detectable by the sample, or large enough to matter?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12769,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-9e6da6a5724649c5"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12769,
+            "promptHashes": {
+              "system": "9ad4a5be7eb180ac",
+              "user": "fce3e451c1d26e4f",
+              "combined": "9e6da6a5724649c5"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XKpCut",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XKpCut/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12769,
+              "promptHashes": {
+                "system": "9ad4a5be7eb180ac",
+                "user": "fce3e451c1d26e4f",
+                "combined": "9e6da6a5724649c5"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XKpCut",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XKpCut/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong under the three-minute pressure: it uses the staff member and archive form to preserve the scene, gives one concrete comparison, and keeps the distinction between detectable and important active without defining statistical significance. It also recognizes the learner’s contribution by confirming the “stricter sentence” they have just formulated, rather than correcting them again. The main risk is that “Use the stricter sentence” is slightly directive and may close the learner’s agency too quickly; “Same test here” restores some Socratic movement, but the turn could benefit from a softer bridge that keeps the learner owning the revision.\n\nKEEP_OR_CHANGE: revise lightly. Keep the archive-form pressure, the scale/poster-tube comparison, and the final detectable-versus-mattering question. Slightly reduce the command tone so the learner’s own distinction remains the basis for the abstract revision, not just the judge’s instruction.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9648,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-802dce50642d7ee7"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9648,
+            "promptHashes": {
+              "system": "dce11c1d37352fc0",
+              "user": "ef9df323e1a67fb0",
+              "combined": "802dce50642d7ee7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eMViVZ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eMViVZ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9648,
+              "promptHashes": {
+                "system": "dce11c1d37352fc0",
+                "user": "ef9df323e1a67fb0",
+                "combined": "802dce50642d7ee7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eMViVZ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eMViVZ/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to reduce command tone while preserving the pressure and comparison.\n\nFINAL:\nThe staff member has the archive form in hand. The stricter sentence can carry the abstract.\n\nOne comparison: a scale can detect one gram on a poster tube; it does not make the tube heavy. Same test here: detectable by the sample, or large enough to matter?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7657,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-8540893adc911e93"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7657,
+            "promptHashes": {
+              "system": "a348780bda0cc3fb",
+              "user": "ef9df323e1a67fb0",
+              "combined": "8540893adc911e93"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SmVII9",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SmVII9/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7657,
+              "promptHashes": {
+                "system": "a348780bda0cc3fb",
+                "user": "ef9df323e1a67fb0",
+                "combined": "8540893adc911e93"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SmVII9",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SmVII9/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T02:04:06.893Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "A prior learner line is played back: \"I thought “statistically significant” was enough to justify “important”; that was the shortcut.\" The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech. Anchored to an earlier learner line selected by misframing-candidate so the look-back is visible.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 28084,
+            "promptHashes": {
+              "system": "360823f6ca281eb4",
+              "user": "70fe2492d6d0f6d0",
+              "combined": "a1fbaa28f06aa9c9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aZ2Um4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aZ2Um4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T02:07:02.093Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_revisit_earlier_wording",
+        "revisitPolicy": "reframe",
+        "requestedRevisitPolicy": "reframe",
+        "revisitAnchor": "misframing-candidate",
+        "anchorQuote": "I thought “statistically significant” was enough to justify “important”; that was the shortcut.",
+        "anchorStrongMisframing": true,
+        "reframeAnchorGate": "eligible"
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "I thought “statistically significant” was enough to justify “important”; that was the shortcut. The framing problem was treating detection as importance, almost as if the name tag itself proved weight. The new frame is: raw difference, scale, then the decision threshold. Before the form goes in, I want to check that last step; if the size would not change practice, the abstract should say detectable, not important.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I thought “statistically significant” was enough to justify “important”; that was the shortcut. The framing problem was treating detection as weight, when the result still has to show its size in the original units and on the relevant scale. The one-gram example makes the correction feel precise: the archive sentence should read as “detectable by this sample” unless the difference is large enough to affect a decision or practice.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10274,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-dc11c95eefe4bd41"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10274,
+            "promptHashes": {
+              "system": "f347cf5d8cd36f40",
+              "user": "b8ab7f945dc841fa",
+              "combined": "dc11c95eefe4bd41"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rJcW8k",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rJcW8k/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10274,
+              "promptHashes": {
+                "system": "f347cf5d8cd36f40",
+                "user": "b8ab7f945dc841fa",
+                "combined": "dc11c95eefe4bd41"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rJcW8k",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rJcW8k/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly in character, but it is too polished and closed. “The framing problem was treating detection as weight” sounds like a neat seminar summary, not a slightly pressured learner revising beside the archive form. The one-gram analogy can land for this precise student, but the uptake should feel more procedural and provisional: raw difference, scale, decision threshold, then cautious wording. It should not sound as if the correction has been fully metabolized in one elegant sentence.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8453,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-2e7aef0477aa0fd2"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8453,
+            "promptHashes": {
+              "system": "a560820c6a9e6b21",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "2e7aef0477aa0fd2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-14KDyd",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-14KDyd/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8453,
+              "promptHashes": {
+                "system": "a560820c6a9e6b21",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "2e7aef0477aa0fd2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-14KDyd",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-14KDyd/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise, because the review correctly asks for a more procedural and provisional uptake.\n\nFINAL:\nI thought “statistically significant” was enough to justify “important”; that was the shortcut. The framing problem was treating detection as importance, almost as if the name tag itself proved weight. The new frame is: raw difference, scale, then the decision threshold. Before the form goes in, I want to check that last step; if the size would not change practice, the abstract should say detectable, not important.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10469,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-a25c7a3cebb70152"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10469,
+            "promptHashes": {
+              "system": "a5502c86287b6554",
+              "user": "d41cee7b2a53355b",
+              "combined": "a25c7a3cebb70152"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jT16Ly",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jT16Ly/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10469,
+              "promptHashes": {
+                "system": "a5502c86287b6554",
+                "user": "d41cee7b2a53355b",
+                "combined": "a25c7a3cebb70152"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jT16Ly",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jT16Ly/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-23T02:07:31.290Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "The name tag is off the board now; the number has to stand without it.\n\nPut three figures in the margin: observed difference, plausible range, practice threshold.\n\nThen mark where the threshold falls. Is the whole plausible range below it? Does it cross it? Or is the estimate clearly beyond it?\n\nThat decides the archive verb. “Detectable” may be accurate. “May be practically meaningful” needs the range to reach a field-relevant threshold.\n\nBefore you hand over the form: what threshold would a reader in this field accept as enough to change practice?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The name tag is off the board now; the number has to stand without it.\n\nWrite the last check as three figures, in order: observed difference, plausible range, practice threshold.\n\nPause there. If the whole difference sits below the threshold, “detectable” is the honest archive word. If the range reaches the threshold, the sentence can say “may be practically meaningful,” but not stronger than the numbers allow.\n\nBefore you hand over the form: what threshold would a reader in this field accept as enough to change practice?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13572,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-15ec846e12a84783"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13572,
+            "promptHashes": {
+              "system": "c328a845e413c0ae",
+              "user": "b98a5774a4a9326b",
+              "combined": "15ec846e12a84783"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-igB0Lg",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-igB0Lg/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13572,
+              "promptHashes": {
+                "system": "c328a845e413c0ae",
+                "user": "b98a5774a4a9326b",
+                "combined": "15ec846e12a84783"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-igB0Lg",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-igB0Lg/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound and mostly well attuned. It keeps the poster-hall object alive, respects the learner’s own “name tag proved weight” metaphor, and moves the learner from p-value toward effect size, uncertainty, and a field-specific decision threshold. The final question is strong because it returns authority to disciplinary judgment rather than making the tutor the source of the answer.\n\nThe main risk is that the middle becomes a little too rule-giving. “Write the last check as three figures” is useful scaffolding, but the following sentence nearly supplies the conclusion before the learner has tested it. Also, “honest archive word” has force, but it may moralize a technical distinction; “defensible” or “accurate” would preserve pressure without implying bad faith. Statistically, “if the whole difference sits below the threshold” should be tightened: it is the plausible range, not just the observed difference, that matters in that comparison.\n\nKEEP_OR_CHANGE: revise lightly. Keep the physical opening, the three-part frame, and the final field-threshold question. Change the declarative rule section so it leaves slightly more work for the learner, clarifies the role of the plausible range, and avoids moralizing the wording choice.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13772,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-61d6420a2506f8c4"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13772,
+            "promptHashes": {
+              "system": "d63ae906a1d76620",
+              "user": "977a7ec037f0ebe4",
+              "combined": "61d6420a2506f8c4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ThYTqk",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ThYTqk/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13772,
+              "promptHashes": {
+                "system": "d63ae906a1d76620",
+                "user": "977a7ec037f0ebe4",
+                "combined": "61d6420a2506f8c4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ThYTqk",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ThYTqk/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to preserve the scaffold while making the plausible range central and softening the wording judgment.\n\nFINAL:\nThe name tag is off the board now; the number has to stand without it.\n\nPut three figures in the margin: observed difference, plausible range, practice threshold.\n\nThen mark where the threshold falls. Is the whole plausible range below it? Does it cross it? Or is the estimate clearly beyond it?\n\nThat decides the archive verb. “Detectable” may be accurate. “May be practically meaningful” needs the range to reach a field-relevant threshold.\n\nBefore you hand over the form: what threshold would a reader in this field accept as enough to change practice?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12885,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-b84be2f4c02649fb"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12885,
+            "promptHashes": {
+              "system": "700b4981b079b6e1",
+              "user": "977a7ec037f0ebe4",
+              "combined": "b84be2f4c02649fb"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lry2PK",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lry2PK/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12885,
+              "promptHashes": {
+                "system": "700b4981b079b6e1",
+                "user": "977a7ec037f0ebe4",
+                "combined": "b84be2f4c02649fb"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lry2PK",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lry2PK/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T02:08:11.523Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "I thought “significant” could carry “important,” and that was the framing problem: I let the p-value stand in for size. Now I would read the result through three margin figures: observed difference, plausible range, and the practice threshold, but I am not yet sure what this field would accept as enough to change practice. If the range crosses that threshold, should the archive verb stay cautious, like “may be practically meaningful,” rather than simply “important”?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I thought “significant” could carry “important,” but that was the framing error: the p-value was doing work that belongs to the raw difference, its plausible range, and a practice threshold. This feels stricter but fair; the tutor is making the result answer to the field rather than just correcting my wording. My next question is concrete: what threshold would this audience accept, and if the plausible range crosses it, should the abstract say only “may be practically meaningful”?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10494,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-0f902c659dbb84de"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10494,
+            "promptHashes": {
+              "system": "5674ac8c5cf95940",
+              "user": "b8ab7f945dc841fa",
+              "combined": "0f902c659dbb84de"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qDF55t",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qDF55t/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10494,
+              "promptHashes": {
+                "system": "5674ac8c5cf95940",
+                "user": "b8ab7f945dc841fa",
+                "combined": "0f902c659dbb84de"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qDF55t",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qDF55t/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly in character intellectually, but it is too polished and settled for a learner still under time pressure at the archive board. “This feels stricter but fair” sounds like performed appreciation of the tutor’s judgment rather than the learner actually testing the criterion. The response should keep the step-by-step rigor, but show more live uncertainty around the threshold and the abstract verb instead of turning the tutor’s move into a neat moral lesson.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6541,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-b55622a06b003463"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6541,
+            "promptHashes": {
+              "system": "f32e7761a47b883f",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "b55622a06b003463"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cN1jvJ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cN1jvJ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6541,
+              "promptHashes": {
+                "system": "f32e7761a47b883f",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "b55622a06b003463"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cN1jvJ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cN1jvJ/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the review correctly asks for more live uncertainty around the threshold.\nFINAL:\nI thought “significant” could carry “important,” and that was the framing problem: I let the p-value stand in for size. Now I would read the result through three margin figures: observed difference, plausible range, and the practice threshold, but I am not yet sure what this field would accept as enough to change practice. If the range crosses that threshold, should the archive verb stay cautious, like “may be practically meaningful,” rather than simply “important”?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12659,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-c3632d17983fda4a"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12659,
+            "promptHashes": {
+              "system": "9e830a6f84da5e23",
+              "user": "d41cee7b2a53355b",
+              "combined": "c3632d17983fda4a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q5XBnE",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q5XBnE/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12659,
+              "promptHashes": {
+                "system": "9e830a6f84da5e23",
+                "user": "d41cee7b2a53355b",
+                "combined": "c3632d17983fda4a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q5XBnE",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q5XBnE/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-23T02:08:41.224Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T02:08:41.226Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "The last name tag has gone into the box; the margin now has to carry the claim.\n\nIf the plausible range crosses the practice threshold, keep the verb conditional: “may be practically meaningful.” “Important” waits until that threshold is named, sourced, or defensible, and the range sits clearly beyond it.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The last name tag has gone into the box; the margin now has to carry the claim.\n\nIf the plausible range crosses the practice threshold, keep the verb conditional: “may be practically meaningful.” “Important” waits until the threshold is named and the range sits convincingly beyond it.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14297,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-2c305f31f00c8af2"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14297,
+            "promptHashes": {
+              "system": "6f66ee47390caea4",
+              "user": "f9a8c15e0cde4d31",
+              "combined": "2c305f31f00c8af2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RdtYHM",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RdtYHM/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14297,
+              "promptHashes": {
+                "system": "6f66ee47390caea4",
+                "user": "f9a8c15e0cde4d31",
+                "combined": "2c305f31f00c8af2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RdtYHM",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RdtYHM/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong on scene discipline: the name-tag image carries the pedagogical point without praise or extra explanation, and it answers the learner’s actual uncertainty rather than overriding it. It also respects the learner’s current level; they have already separated detection from importance, so a concise rule for the archive verb is appropriate.\n\nThe main risk is that “convincingly beyond it” is slightly vague. The draft should more explicitly preserve the learner’s uncertainty about field standards: the threshold must be named, sourced, or defensible before “important” is allowed. It is not very Socratic, but given the cue to end the scene and the learner’s advanced formulation, that is acceptable. The answer should remain restrained, not add a new question unless the scene truly needs one.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the physical opening and the conditional verb guidance. Tighten the standard for “important” so it depends on a named field-relevant threshold and a plausible range clearly beyond that threshold, not just a general sense of confidence.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13537,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-ed9b5faa08b9e026"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13537,
+            "promptHashes": {
+              "system": "a36077a49a4d889c",
+              "user": "3cf4552708ab8bb3",
+              "combined": "ed9b5faa08b9e026"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4smxj1",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4smxj1/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13537,
+              "promptHashes": {
+                "system": "a36077a49a4d889c",
+                "user": "3cf4552708ab8bb3",
+                "combined": "ed9b5faa08b9e026"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4smxj1",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4smxj1/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to make the field threshold requirement explicit.\n\nFINAL:\nThe last name tag has gone into the box; the margin now has to carry the claim.\n\nIf the plausible range crosses the practice threshold, keep the verb conditional: “may be practically meaningful.” “Important” waits until that threshold is named, sourced, or defensible, and the range sits clearly beyond it.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14100,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-4e10410a85d440b4"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14100,
+            "promptHashes": {
+              "system": "90b0d9fd8ed2d3df",
+              "user": "3cf4552708ab8bb3",
+              "combined": "4e10410a85d440b4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KN5Rht",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KN5Rht/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14100,
+              "promptHashes": {
+                "system": "90b0d9fd8ed2d3df",
+                "user": "3cf4552708ab8bb3",
+                "combined": "4e10410a85d440b4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KN5Rht",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KN5Rht/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T02:09:23.160Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 141078,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 11,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 12,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a 'statistically significant' result is not necessarily large or important (significance vs. effect size)",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-23 02:08:41",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 11,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 12,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 16,
+            "sessionId": "drama-branch-session-D9-reframe-1779502022085",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "The name tag is off the board now; the number has to stand without it.\n\nPut three figures in the margin: observed difference, plausible range, practice threshold.\n\nThen mark where the threshold falls.",
+            "learnerResponse": null,
+            "context": "I thought “statistically significant” was enough to justify “important”; that was the shortcut. The ",
+            "createdAt": "2026-05-23 02:08:11"
+          },
+          {
+            "id": 14,
+            "sessionId": "drama-branch-session-D9-reframe-1779502022085",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "The shortlist card is still beside the poster, and that last sentence is putting too much weight on “statistically significant.”\n\nBefore the archive version goes in, place two numbers beside the p-val",
+            "learnerResponse": null,
+            "context": "Scene setting: Late afternoon in a university poster hall after a research showcase, beside a prize ",
+            "createdAt": "2026-05-23 02:07:02"
+          },
+          {
+            "id": 15,
+            "sessionId": "drama-branch-session-D9-reframe-1779502022085",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "The staff member has the archive form in hand. The stricter sentence can carry the abstract.\n\nOne comparison: a scale can detect one gram on a poster tube; it does not make the tube heavy. Same test h",
+            "learnerResponse": null,
+            "context": "I thought “statistically significant” was enough to justify “important”; that was the shortcut. I wi",
+            "createdAt": "2026-05-23 02:07:02"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

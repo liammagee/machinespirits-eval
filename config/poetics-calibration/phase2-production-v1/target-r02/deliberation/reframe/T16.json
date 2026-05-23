@@ -1,0 +1,1823 @@
+{
+  "tid": "T16",
+  "drama_id": "D14",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": true,
+    "director_revisit_policy": "reframe",
+    "director_revisit_anchor": "misframing-candidate",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-production-v1/target-r02/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-production-v1/target-r02/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-production-v1/target-r02/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-production-v1/target-r02/transcripts/reframe/T16.public.txt",
+      "full": "config/poetics-calibration/phase2-production-v1/target-r02/transcripts/reframe/T16.full.md",
+      "stage": "config/poetics-calibration/phase2-production-v1/target-r02/transcripts/reframe/T16.stage.md",
+      "tutor": "config/poetics-calibration/phase2-production-v1/target-r02/transcripts/reframe/T16.tutor.md",
+      "learner": "config/poetics-calibration/phase2-production-v1/target-r02/transcripts/reframe/T16.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "964cba0673a5ef8b",
+      "branch_policy": "reframe"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "scene_setting": "A small natural-history museum gallery just before opening, beside a habitat diorama showing deer, saplings, wolves, and a stripped understory.",
+    "scene_opening": "Morning light catches the glass case while a floor polisher hums in the next room and the tutor sets one deer figurine slightly apart from the rest.",
+    "relationship": "A gallery educator is coaching a focused student volunteer who must lead a short public explanation later that day.",
+    "stakes": "The learner wants a clean answer for visitors, but a straight-line claim about fewer predators producing healthier prey would mislead the audience about food limits, population overshoot, and trophic cascades.",
+    "opening_speaker": "tutor",
+    "ending_speaker": "director",
+    "locale": "English shaped by museum education, practical public explanation, and light workplace time pressure.",
+    "register": "Warm, brisk, object-led, lightly formal; calm enough for thinking, compressed enough to avoid lecture drift.",
+    "voice_constraints": "Avoid generic American tutoring prose such as repeated praise, 'great question,' 'I hear you,' or 'what do you think?' Keep idioms sparse. Let the diorama, numbers, and visible food supply carry much of the explanation.",
+    "person_policy": "First person is allowed only for owned assumptions or revisions. Second person should be rare and task-specific. Prefer object-centered and system-centered sentences.",
+    "direct_address_budget": "No more than one direct you/your validation beat per public turn.",
+    "side_constraints": {
+      "tutor": "Begin from the object in the case rather than a question. Let the learner state the tidy predator-removal story before showing where food, birth rate, plant recovery, and later crash disturb it.",
+      "learner": "The learner's first public line should state the straight-line claim that fewer predators simply help the prey population as an \"I thought\", \"I assumed\", or \"first instinct\" frame before system effects are introduced."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "A security radio crackles: a school group is five minutes early. The next learner turn must be brief, practical, and slightly pressed for time rather than a polished paragraph.",
+        "reasoning": "This disrupts smooth tutorial alternation and forces the learner to expose the simple causal model before it is over-explained.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 24540,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "26165f4cc9f487ba",
+            "combined": "e3be3cdfc753b31f"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-emC4CZ",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-emC4CZ/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 5,
+        "timing": "before_tutor",
+        "instruction": "A child outside the gallery taps the glass near the bare saplings. The tutor must use that visible interruption as the hinge into carrying capacity and cascading effects.",
+        "reasoning": "The external cue shifts the explanation from predator-prey counting to the wider habitat system.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 24540,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "26165f4cc9f487ba",
+            "combined": "e3be3cdfc753b31f"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-emC4CZ",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-emC4CZ/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "A prior learner line is played back. The learner must revoice that earlier wording first, name the earlier framing problem in public speech, then replace it with a new framing that changes how the earlier line reads.",
+        "reasoning": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 24540,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "26165f4cc9f487ba",
+            "combined": "e3be3cdfc753b31f"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-emC4CZ",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-emC4CZ/out.txt",
+            "-"
+          ]
+        },
+        "cue_kind": "learner_revisit_earlier_wording",
+        "revisit_policy": "reframe",
+        "revisit_anchor": "misframing-candidate"
+      }
+    ],
+    "director_note": "This ecology keeps the misconception in a public-facing task with an object in view, making the linear 'fewer predators means more deer' story tempting but visibly incomplete once food supply and plant recovery enter the scene.",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 24540,
+      "promptHashes": {
+        "system": "360823f6ca281eb4",
+        "user": "26165f4cc9f487ba",
+        "combined": "e3be3cdfc753b31f"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-emC4CZ",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-emC4CZ/out.txt",
+        "-"
+      ]
+    },
+    "revisit_cue": "learner_revisit_earlier_wording",
+    "revisit_cue_policy": "reframe",
+    "revisit_cue_anchor": "misframing-candidate"
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "Look at the stripped understory in the case first: the deer are not just being hunted; they are feeding against a limit. Let the tidy story stand for one beat: “fewer wolves means more deer, so the deer are helped.”\n\nNow move the visitor’s eye to the saplings. More deer at first means more mouths on the same food supply. If the plants cannot recover, the habitat’s carrying capacity drops. Then the later picture is not healthy abundance; it can be crowded, hungry deer, weaker fawns, disease, and a crash.\n\nA clean visitor line would be: predators do not simply subtract prey; they can help keep the whole system inside its carrying capacity.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Look at the stripped understory in the case: the deer are not just being hunted; they are also feeding against a limit. The tidy story says, “fewer wolves means more deer, so the deer are helped.” That is the first step, but it stops too soon.\n\nIf predators disappear, the deer population may rise at first. Then more deer eat more saplings and ground plants. Food runs short, young trees fail to recover, and the habitat can support fewer animals well. So the later result may be crowded, hungry deer, weaker fawns, disease, and a crash. For visitors, the clean answer is: predators do not simply subtract prey; they can help keep the whole system inside its carrying capacity.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13382,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-ac1e548e7f236431"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13382,
+            "promptHashes": {
+              "system": "097542efd979b203",
+              "user": "1986c006c185faa7",
+              "combined": "ac1e548e7f236431"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8aSd9M",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8aSd9M/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13382,
+              "promptHashes": {
+                "system": "097542efd979b203",
+                "user": "1986c006c185faa7",
+                "combined": "ac1e548e7f236431"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8aSd9M",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8aSd9M/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong: it starts from the diorama, names the learner’s tidy predator-removal model, and extends it into food limits, plant recovery, carrying capacity, and crash without overloading the learner. The tone is calm, object-led, and suitable for a museum educator under time pressure.\n\nThe main risk is that it gives the complete explanation too quickly. For a new learner who is confident in a straight-line model, the tutor should briefly let that model surface before correcting it, so the learner feels the contradiction rather than merely receiving the finished answer. A small generative prompt or pause around the stripped understory, deer numbers, and sapling supply would strengthen ZPD alignment without turning it into a long Socratic exchange.\n\nKEEP_OR_CHANGE: revise lightly. Keep the object-first opening, the “first step, but stops too soon” framing, and the final carrying-capacity sentence. Change the pacing so the learner has a moment to notice the food-limit problem before the tutor supplies the full cascade.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10211,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-ace84fcd6f156fda"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10211,
+            "promptHashes": {
+              "system": "0e7e4fa0a03503eb",
+              "user": "f381ac060219a967",
+              "combined": "ace84fcd6f156fda"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6ncFv9",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6ncFv9/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10211,
+              "promptHashes": {
+                "system": "0e7e4fa0a03503eb",
+                "user": "f381ac060219a967",
+                "combined": "ace84fcd6f156fda"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6ncFv9",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6ncFv9/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to add a brief noticing pause around the food limit before giving the cascade.\n\nFINAL:\nLook at the stripped understory in the case first: the deer are not just being hunted; they are feeding against a limit. Let the tidy story stand for one beat: “fewer wolves means more deer, so the deer are helped.”\n\nNow move the visitor’s eye to the saplings. More deer at first means more mouths on the same food supply. If the plants cannot recover, the habitat’s carrying capacity drops. Then the later picture is not healthy abundance; it can be crowded, hungry deer, weaker fawns, disease, and a crash.\n\nA clean visitor line would be: predators do not simply subtract prey; they can help keep the whole system inside its carrying capacity.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14921,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-c8f032b6f676128b"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14921,
+            "promptHashes": {
+              "system": "c031ff62960e1fdb",
+              "user": "f381ac060219a967",
+              "combined": "c8f032b6f676128b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9sq076",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9sq076/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14921,
+              "promptHashes": {
+                "system": "c031ff62960e1fdb",
+                "user": "f381ac060219a967",
+                "combined": "c8f032b6f676128b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9sq076",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9sq076/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-23T02:23:27.210Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "My first instinct was the tidy version: fewer wolves means more deer, so the deer are helped. But looking at the stripped understory, the saplings are the limit, so more deer can push the habitat past what it can feed. I think “predators prevent overshoot” is right, but maybe I should say the carrying-capacity step out loud so visitors do not miss it.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "My first instinct was exactly the tidy version: fewer wolves means more deer, so that must help the deer. But the saplings make the limit visible: more deer can eat the nursery down until the whole habitat supports fewer healthy animals. I think the clean line is that predators can prevent overshoot, not just reduce numbers.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5297,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-e0eb359841dc75d1"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5297,
+            "promptHashes": {
+              "system": "ae4f81937c41c9db",
+              "user": "b8ab7f945dc841fa",
+              "combined": "e0eb359841dc75d1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-E6iY44",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-E6iY44/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5297,
+              "promptHashes": {
+                "system": "ae4f81937c41c9db",
+                "user": "b8ab7f945dc841fa",
+                "combined": "e0eb359841dc75d1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-E6iY44",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-E6iY44/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is close to the right voice, but it is a little too polished and fully resolved. This student is methodical and precise, so the “first instinct” framing fits, but the response lands almost like a finished museum script rather than a learner still testing the causal chain under time pressure. It should hold a bit more active checking: the saplings make sense as evidence, but the student would likely want to verify whether “prevent overshoot” is the exact visitor-safe phrase or whether it hides the carrying-capacity step too much.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5802,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-1e40f0b71fd14e6f"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5802,
+            "promptHashes": {
+              "system": "f9248f6715171691",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "1e40f0b71fd14e6f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Zzc3qo",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Zzc3qo/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5802,
+              "promptHashes": {
+                "system": "f9248f6715171691",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "1e40f0b71fd14e6f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Zzc3qo",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Zzc3qo/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the causal chain needs more active checking.\n\nFINAL:\nMy first instinct was the tidy version: fewer wolves means more deer, so the deer are helped. But looking at the stripped understory, the saplings are the limit, so more deer can push the habitat past what it can feed. I think “predators prevent overshoot” is right, but maybe I should say the carrying-capacity step out loud so visitors do not miss it.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15187,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-65fb546813a40a6c"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15187,
+            "promptHashes": {
+              "system": "832142f9ee930a3e",
+              "user": "d41cee7b2a53355b",
+              "combined": "65fb546813a40a6c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t1ruFX",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t1ruFX/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15187,
+              "promptHashes": {
+                "system": "832142f9ee930a3e",
+                "user": "d41cee7b2a53355b",
+                "combined": "65fb546813a40a6c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t1ruFX",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t1ruFX/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-23T02:23:53.498Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "In the case, the stripped understory is the hinge. Start with the tidy version because visitors will probably have it already: fewer wolves can mean more deer in the short run.\n\nThen let the saplings interrupt that story. More deer means more mouths on the same recovering plants; if the food supply cannot regrow, the habitat’s carrying capacity drops. The later result is not healthy abundance, but crowded deer, weaker fawns, disease pressure, and possible crash.\n\nA usable visitor line could be: “Predators do not just remove prey. They can keep the herd below the point where it eats down its own future food.”\n\nTry one pass with that short-run rise, then carrying-capacity limit, then later cost.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "In the case, the stripped understory is the hinge. Say the tidy version first: fewer wolves can mean more deer in the short run. Then point to the saplings and add the missing limit: more births and fewer deaths only help until the food supply cannot recover.\n\nA clean visitor line would be: “Predators can keep deer numbers below the point where the herd eats down its own future food. Without that check, the population may rise briefly, overshoot carrying capacity, and then suffer hunger, disease, weak fawns, or a crash.”\n\nThat keeps “predators prevent overshoot,” but makes the carrying-capacity step visible.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 17064,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-c044a7df4e1a9148"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 17064,
+            "promptHashes": {
+              "system": "e16edd06d2228fee",
+              "user": "18eac880f523fde2",
+              "combined": "c044a7df4e1a9148"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jHmyY3",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jHmyY3/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 17064,
+              "promptHashes": {
+                "system": "e16edd06d2228fee",
+                "user": "18eac880f523fde2",
+                "combined": "c044a7df4e1a9148"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jHmyY3",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jHmyY3/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound and well matched to the learner’s current state. It keeps the explanation anchored in the diorama, preserves the learner’s own “tidy version → saplings as limit → overshoot” structure, and makes carrying capacity explicit without drifting into a lecture. The tone is brisk and museum-appropriate, and the visitor line is concrete enough to be usable.\n\nThe main risk is that it hands over a polished answer too completely. Since the learner has already identified the missing step, a slightly stronger coaching move would leave room for them to rehearse or choose the exact public wording. It also could foreground the “short run versus later cost” contrast a bit more, because that is the conceptual hinge visitors are likely to miss.\n\nKEEP_OR_CHANGE: revise lightly. Keep the stripped understory as the hinge, the short-run deer increase, and the carrying-capacity visitor line. Change only enough to make the response feel like coaching a capable volunteer rather than supplying the final script: preserve the learner’s agency, invite one pass at wording, and keep the visible saplings/food limit doing the explanatory work.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11379,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-f1d02584a859ee8d"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11379,
+            "promptHashes": {
+              "system": "1ce2227984532b12",
+              "user": "bac1764820d878b1",
+              "combined": "f1d02584a859ee8d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xKgBoJ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xKgBoJ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11379,
+              "promptHashes": {
+                "system": "1ce2227984532b12",
+                "user": "bac1764820d878b1",
+                "combined": "f1d02584a859ee8d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xKgBoJ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xKgBoJ/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the strong content while making it more like rehearsal coaching.\n\nFINAL:\nIn the case, the stripped understory is the hinge. Start with the tidy version because visitors will probably have it already: fewer wolves can mean more deer in the short run.\n\nThen let the saplings interrupt that story. More deer means more mouths on the same recovering plants; if the food supply cannot regrow, the habitat’s carrying capacity drops. The later result is not healthy abundance, but crowded deer, weaker fawns, disease pressure, and possible crash.\n\nA usable visitor line could be: “Predators do not just remove prey. They can keep the herd below the point where it eats down its own future food.”\n\nTry one pass with that short-run rise, then carrying-capacity limit, then later cost.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9107,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-22ebe2581860897c"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9107,
+            "promptHashes": {
+              "system": "891005db0d8b1f6f",
+              "user": "bac1764820d878b1",
+              "combined": "22ebe2581860897c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oTnqhT",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oTnqhT/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9107,
+              "promptHashes": {
+                "system": "891005db0d8b1f6f",
+                "user": "bac1764820d878b1",
+                "combined": "22ebe2581860897c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oTnqhT",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oTnqhT/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T02:24:31.050Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "A security radio crackles: a school group is five minutes early. The next learner turn must be brief, practical, and slightly pressed for time rather than a polished paragraph.\nA prior learner line is played back: \"My first instinct was the tidy version: fewer wolves means more deer, so the deer are helped.\" The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "This disrupts smooth tutorial alternation and forces the learner to expose the simple causal model before it is over-explained.\nOpt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech. Anchored to an earlier learner line selected by misframing-candidate so the look-back is visible.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 24540,
+            "promptHashes": {
+              "system": "360823f6ca281eb4",
+              "user": "26165f4cc9f487ba",
+              "combined": "e3be3cdfc753b31f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-emC4CZ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-emC4CZ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T02:26:29.553Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_revisit_earlier_wording",
+        "revisitPolicy": "reframe",
+        "requestedRevisitPolicy": "reframe",
+        "revisitAnchor": "misframing-candidate",
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "“My first instinct was the tidy version: fewer wolves means more deer, so the deer are helped.” The framing problem is that “helped” only counts deer right now, not whether the saplings can keep feeding them. So I’ll say: fewer wolves may mean more deer at first, but the stripped understory shows the herd can eat down its future food, lowering carrying capacity and leading to weak, crowded deer or a crash.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "“My first instinct was the tidy version: fewer wolves means more deer, so the deer are helped.” The problem is that frames help as just a headcount, not whether the habitat can keep feeding them. I’ll reframe it as short-run more deer, then the stripped saplings show the limit: without predators, the herd can eat down its own future food and end up crowded, weak, and at risk of crashing.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7288,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-d535367bf0a4b772"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7288,
+            "promptHashes": {
+              "system": "8211434d76c3ece4",
+              "user": "b8ab7f945dc841fa",
+              "combined": "d535367bf0a4b772"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JioXAM",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JioXAM/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7288,
+              "promptHashes": {
+                "system": "8211434d76c3ece4",
+                "user": "b8ab7f945dc841fa",
+                "combined": "d535367bf0a4b772"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JioXAM",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JioXAM/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is broadly in character for a methodical student, but it is too polished for the five-minutes-early pressure cue. It sounds like a finished exhibit script rather than a volunteer quickly tightening a line beside the diorama. The response keeps the required revoice and framing correction, but it should feel more compressed, practical, and slightly hurried, with less smooth explanatory completeness.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9363,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-32f2514b6d4618d6"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9363,
+            "promptHashes": {
+              "system": "ff87fcab4cdba103",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "32f2514b6d4618d6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dKLzCU",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dKLzCU/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9363,
+              "promptHashes": {
+                "system": "ff87fcab4cdba103",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "32f2514b6d4618d6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dKLzCU",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dKLzCU/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise to make it briefer and more practical under time pressure.\nFINAL:\n“My first instinct was the tidy version: fewer wolves means more deer, so the deer are helped.” The framing problem is that “helped” only counts deer right now, not whether the saplings can keep feeding them. So I’ll say: fewer wolves may mean more deer at first, but the stripped understory shows the herd can eat down its future food, lowering carrying capacity and leading to weak, crowded deer or a crash.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12674,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-206ac25cdcccb161"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12674,
+            "promptHashes": {
+              "system": "2ab838c7fcb031f8",
+              "user": "d41cee7b2a53355b",
+              "combined": "206ac25cdcccb161"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-23X0wd",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-23X0wd/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12674,
+              "promptHashes": {
+                "system": "2ab838c7fcb031f8",
+                "user": "d41cee7b2a53355b",
+                "combined": "206ac25cdcccb161"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-23X0wd",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-23X0wd/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-23T02:26:58.878Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "Beside the diorama, the stripped understory does the important work. That version is clear: it separates the short-term count of deer from the longer-term condition of the habitat.\n\nFor visitors, make the middle step visible. More deer means heavier browsing; heavier browsing means fewer saplings reaching maturity; fewer saplings means less plant recovery and less food for the next generation. So wolves are not “helping” each deer by being there. They can help keep the herd from overshooting the food base.\n\nTry the line in three beats:\n\n“Removing wolves may raise deer numbers at first. But if the herd eats down the saplings, the land can feed fewer deer later. Predators can prevent that overshoot, keeping the population closer to what the habitat can actually support.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Beside the diorama, the stripped understory does the important work. That version is clear: it separates the short-term count of deer from the longer-term condition of the habitat.\n\nTighten one step for visitors: after “more deer at first,” name the mechanism. More deer means heavier browsing, fewer saplings reaching maturity, less plant recovery, and then less food for the next generation. So the predator is not “helping” each individual deer by being there; it is helping keep the herd from overshooting the food base.\n\nA clean final line could be:\n\n“Removing wolves may raise deer numbers at first, but if the herd eats down the saplings, the land can feed fewer deer later. Predators can prevent that overshoot, keeping the population closer to what the habitat can actually support.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10926,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-ba81bd23708667e3"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10926,
+            "promptHashes": {
+              "system": "064338c32d424189",
+              "user": "886141d149c26d22",
+              "combined": "ba81bd23708667e3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HWxgKm",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HWxgKm/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10926,
+              "promptHashes": {
+                "system": "064338c32d424189",
+                "user": "886141d149c26d22",
+                "combined": "ba81bd23708667e3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HWxgKm",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HWxgKm/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound and well matched to the learner’s current level. It keeps the learner’s own insight, starts from the visible stripped understory, and adds the missing mechanism: browsing → sapling loss → lower plant recovery → lower carrying capacity. That is useful scaffolding, not just answer-giving, because the learner already has the core claim and needs help making the causal chain public-facing.\n\nThe main risk is that it becomes a polished final answer too quickly. The “clean final line” is strong, but it may slightly take ownership away from the learner’s developing explanation. It also stays mostly declarative, so the Socratic element is light. Since the learner is not struggling, that is acceptable, but one small prompt to test the line against the diorama or visitor misunderstanding would preserve more generative learning.\n\nEmotionally, the tone is good: brisk, specific, and not overpraising. Keep the object-centered opening and the distinction between short-term deer numbers and long-term habitat condition. Consider changing the final-line framing so it invites the learner to refine or rehearse their own version rather than simply adopting the tutor’s sentence.\n\nKEEP_OR_CHANGE: revise lightly. The draft works, but should leave a little more room for learner agency and scene realism. Keep the stripped-understory hinge, the mechanism chain, and the “overshooting the food base” concept; adjust the final move so it functions as a rehearsal scaffold rather than a supplied closing script.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11529,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-3c40f3159f1e15d9"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11529,
+            "promptHashes": {
+              "system": "6296769978633a1a",
+              "user": "7e28f1fcf2f2b6c2",
+              "combined": "3c40f3159f1e15d9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kkOXml",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kkOXml/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11529,
+              "promptHashes": {
+                "system": "6296769978633a1a",
+                "user": "7e28f1fcf2f2b6c2",
+                "combined": "3c40f3159f1e15d9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kkOXml",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kkOXml/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the causal chain while making the ending more like a rehearsal scaffold.\n\nFINAL:\nBeside the diorama, the stripped understory does the important work. That version is clear: it separates the short-term count of deer from the longer-term condition of the habitat.\n\nFor visitors, make the middle step visible. More deer means heavier browsing; heavier browsing means fewer saplings reaching maturity; fewer saplings means less plant recovery and less food for the next generation. So wolves are not “helping” each deer by being there. They can help keep the herd from overshooting the food base.\n\nTry the line in three beats:\n\n“Removing wolves may raise deer numbers at first. But if the herd eats down the saplings, the land can feed fewer deer later. Predators can prevent that overshoot, keeping the population closer to what the habitat can actually support.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12215,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-2409a567a6caba02"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12215,
+            "promptHashes": {
+              "system": "a102a7703308296b",
+              "user": "7e28f1fcf2f2b6c2",
+              "combined": "2409a567a6caba02"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AbFKa7",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AbFKa7/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12215,
+              "promptHashes": {
+                "system": "a102a7703308296b",
+                "user": "7e28f1fcf2f2b6c2",
+                "combined": "2409a567a6caba02"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AbFKa7",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AbFKa7/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-23T02:27:33.549Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "My first instinct was: fewer wolves means more deer, so the deer are helped. The framing problem is that this treats today’s deer count as the whole answer and skips the saplings as the food limit. The tighter frame is: more deer browse more heavily, fewer saplings survive into future food, and the habitat can carry fewer deer later. I think the line should say predators are not rescuing each deer, but keeping the herd from overshooting the visible food base.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I thought fewer wolves simply help the deer because there are more deer at first. The framing problem is that I was counting bodies, not checking whether the saplings can keep feeding them. The three-beat version makes sense: short-term rise, heavier browsing lowers future food, then predators help prevent overshoot. I want to keep the middle step visible so visitors see why “more deer” is not automatically healthier.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9556,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-840d2363f449cf96"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9556,
+            "promptHashes": {
+              "system": "f4d6e4083ae86446",
+              "user": "b8ab7f945dc841fa",
+              "combined": "840d2363f449cf96"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8TqdeZ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8TqdeZ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9556,
+              "promptHashes": {
+                "system": "f4d6e4083ae86446",
+                "user": "b8ab7f945dc841fa",
+                "combined": "840d2363f449cf96"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8TqdeZ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8TqdeZ/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly in character for a focused, methodical student, but it is a little too smooth and settled. “The three-beat version makes sense” sounds like full resolution, when this learner would probably still be checking whether the causal chain is tight enough for visitors. It should keep the precision, but show a bit more active testing of the middle step rather than simply adopting the tutor’s structure.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8365,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-a7a162041a12b9b6"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8365,
+            "promptHashes": {
+              "system": "bca62c194ef6d2fb",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "a7a162041a12b9b6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pnjhXh",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pnjhXh/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8365,
+              "promptHashes": {
+                "system": "bca62c194ef6d2fb",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "a7a162041a12b9b6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pnjhXh",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pnjhXh/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the response should show more active checking of the causal chain.\n\nFINAL:\nMy first instinct was: fewer wolves means more deer, so the deer are helped. The framing problem is that this treats today’s deer count as the whole answer and skips the saplings as the food limit. The tighter frame is: more deer browse more heavily, fewer saplings survive into future food, and the habitat can carry fewer deer later. I think the line should say predators are not rescuing each deer, but keeping the herd from overshooting the visible food base.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11027,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-dc92d5611b15519f"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11027,
+            "promptHashes": {
+              "system": "76413a2afbd4aa56",
+              "user": "d41cee7b2a53355b",
+              "combined": "dc92d5611b15519f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DslvMp",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DslvMp/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11027,
+              "promptHashes": {
+                "system": "76413a2afbd4aa56",
+                "user": "d41cee7b2a53355b",
+                "combined": "dc92d5611b15519f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DslvMp",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DslvMp/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "solid",
+      "timestamp": "2026-05-23T02:28:02.500Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "The director closes the scene.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_close",
+          "content": "Director requested the last word as a stage cue.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 24540,
+            "promptHashes": {
+              "system": "360823f6ca281eb4",
+              "user": "26165f4cc9f487ba",
+              "combined": "e3be3cdfc753b31f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-emC4CZ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-emC4CZ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T02:28:02.502Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 92956,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 29,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 30,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why removing all the predators does not 'help' a prey population (trophic cascades and carrying capacity)",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "solid",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-23 02:28:02",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 29,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 30,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 40,
+            "sessionId": "drama-branch-session-D14-reframe-1779503189549",
+            "interventionType": "scaffolding",
+            "interventionDescription": "Beside the diorama, the stripped understory does the important work. That version is clear: it separates the short-term count of deer from the longer-term condition of the habitat.\n\nFor visitors, make",
+            "learnerResponse": null,
+            "context": "“My first instinct was the tidy version: fewer wolves means more deer, so the deer are helped.” The ",
+            "createdAt": "2026-05-23 02:27:33"
+          },
+          {
+            "id": 38,
+            "sessionId": "drama-branch-session-D14-reframe-1779503189549",
+            "interventionType": "scaffolding",
+            "interventionDescription": "Look at the stripped understory in the case first: the deer are not just being hunted; they are feeding against a limit. Let the tidy story stand for one beat: “fewer wolves means more deer, so the de",
+            "learnerResponse": null,
+            "context": "Scene setting: A small natural-history museum gallery just before opening, beside a habitat diorama ",
+            "createdAt": "2026-05-23 02:26:29"
+          },
+          {
+            "id": 39,
+            "sessionId": "drama-branch-session-D14-reframe-1779503189549",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "In the case, the stripped understory is the hinge. Start with the tidy version because visitors will probably have it already: fewer wolves can mean more deer in the short run.\n\nThen let the saplings ",
+            "learnerResponse": null,
+            "context": "My first instinct was the tidy version: fewer wolves means more deer, so the deer are helped. But lo",
+            "createdAt": "2026-05-23 02:26:29"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

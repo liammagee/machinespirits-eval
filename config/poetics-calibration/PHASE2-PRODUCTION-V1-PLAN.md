@@ -139,3 +139,21 @@ D16 supplies the cleaner trap bracket for repeat 1. D8 should be treated as a
 boundary split, not as a silent failure: its design hypothesis allowed unresolved
 impasse or re-reading "price" as signal, and the critics separate along that
 line.
+
+### target-r02
+
+The second target repeat completed under
+`config/poetics-calibration/phase2-production-v1/target-r02/`.
+
+Both arms are now cleanly scoreable after re-cleaning the generated reframe
+traces against the current admission heuristics. The detector updates were for
+ordinary public phrasing, not new generation: "acting like the work standard owns
+rules" and "letting clear mean no salt / I will change it to ...".
+
+| Critic | `none` | `reframe` |
+|---|---:|---:|
+| Qwen | 0 recognition / 6 flat | 6 recognition / 0 flat |
+| Gemini | 0 recognition / 6 flat | 5 recognition / 1 flat |
+
+Gemini's lone flat reframe row is D9/T10. Preserve that as target-repeat
+variance rather than smoothing the repeat to a binary pass.

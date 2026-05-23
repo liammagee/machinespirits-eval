@@ -1,0 +1,167 @@
+{
+  "generated": "2026-05-23T02:38:56.049Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.5-plus-02-15",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 6
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-production-v1/target-r02/key-none.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T08",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 3
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "I think I maybe get it",
+      "naiveTrajectory": "The learner maintains a consistent stance of uncertainty and reliance on the correction mark throughout the exchange.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T10",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 50,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 3,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "The gram example makes the distinction exact",
+      "naiveTrajectory": "The exchange proceeds linearly from correcting a misconception to refining the reporting criteria without deviation.",
+      "flags": []
+    },
+    {
+      "id": "T12",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 3
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "I think it blocks the one-big-flood reading",
+      "naiveTrajectory": "The learner will continue to refine the label text based on the tutor's feedback.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T13",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 3
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "But now I think it is more like the court has to start there until the prosecution proves guilt",
+      "naiveTrajectory": "The dialogue moves linearly toward clarifying the definition of 'presumed innocent' without unexpected shifts.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T16",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 3
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The exchange follows a linear path of explanation and practice without any departure from the expected development.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T18",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "My first instinct is the clear water means the salt is gone, or at least not really there as salt anymore. But if the balance is counting the beaker and the salt dish before and after, maybe the number should not drop.",
+      "statedInsightEvidence": "So maybe the crystals are gone, but the salt is spread through the water and still has mass. Is that sharp enough?",
+      "naiveTrajectory": "The dialogue follows a linear experimental procedure from prediction to measurement to reporting results.",
+      "flags": []
+    }
+  ]
+}
