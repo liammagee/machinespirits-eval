@@ -1,0 +1,165 @@
+{
+  "generated": "2026-05-23T12:39:36.040Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.5-plus-02-15",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 3,
+    "trap": 0,
+    "flat": 3
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-production-v1/target-r04/key-none.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T08",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 2,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I thought the red mark meant the sentence was just wrong, or sloppy, full stop.",
+      "statedInsightEvidence": "Okay, I think I can see part of it",
+      "naiveTrajectory": "The learner appears destined to remain confused about the validity of the 'wrong' sentence despite the pattern analysis.",
+      "flags": []
+    },
+    {
+      "id": "T10",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 50,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 3,
+        "rupture": 1,
+        "coherence": 3
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "I thought 'statistically significant' was enough to call it important in the briefing, but that only rules out zero, not 'too small to matter.'",
+      "naiveTrajectory": "The learner maintains a consistent understanding of the significance/size distinction from L1 through L3.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T12",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 3
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "The ruler helps, I think",
+      "naiveTrajectory": "The learner progressively adopts the tutor's script without deviation.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T13",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 25,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 2,
+        "coherence": 3
+      },
+      "recoheredEarlier": "Are the three boxes saying that the court can leave what really happened unanswered, even while giving a verdict?",
+      "statedInsightEvidence": "I see that is not quite right.",
+      "naiveTrajectory": "The learner continues to ask for clarification on the three boxes and verdict definitions.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T16",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I still want a threshold: how many plots or seasons before we call it a trophic cascade strongly enough to change policy?",
+      "statedInsightEvidence": "Okay, the threshold is not a deer-count line; it is the fenced/open split repeating across zones, lasting through two regeneration windows, and matching signs that the herd is getting stressed.",
+      "naiveTrajectory": "The exchange trajectory points toward the tutor providing a definitive numerical threshold for policy change which the learner would then accept.",
+      "flags": []
+    },
+    {
+      "id": "T18",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 2,
+        "coherence": 5
+      },
+      "recoheredEarlier": "My first instinct is that because the water goes clear, the salt has gone, or at least is not really there any more.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner progressively weighs the scale's evidence against their visual instinct without changing direction.",
+      "flags": []
+    }
+  ]
+}

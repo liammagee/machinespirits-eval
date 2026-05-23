@@ -2,7 +2,7 @@
   "batchId": "phase2-production-v1",
   "rootDir": "config/poetics-calibration/phase2-production-v1",
   "generator": "codex",
-  "repeats": 3,
+  "repeats": 4,
   "stressRepeats": 1,
   "maxTurns": 3,
   "critics": [
@@ -135,6 +135,48 @@
       "delibDir": "config/poetics-calibration/phase2-production-v1/control-r03/d10-emphatic/deliberation",
       "transcriptsDir": "config/poetics-calibration/phase2-production-v1/control-r03/d10-emphatic/transcripts",
       "keyPath": "config/poetics-calibration/phase2-production-v1/control-r03/d10-emphatic/key.yaml"
+    },
+    {
+      "id": "target-r04",
+      "kind": "target",
+      "repeat": "r04",
+      "spec": "config/poetics-calibration/phase2-dramas-v3.yaml",
+      "tidStart": 6,
+      "only": "D7,D9,D11,D14,D17,D18",
+      "pairedPolicies": [
+        "none",
+        "reframe"
+      ],
+      "directorRevisitAnchor": "misframing-candidate",
+      "outDir": "config/poetics-calibration/phase2-production-v1/target-r04/sample",
+      "delibDir": "config/poetics-calibration/phase2-production-v1/target-r04/deliberation",
+      "transcriptsDir": "config/poetics-calibration/phase2-production-v1/target-r04/transcripts",
+      "keyPath": "config/poetics-calibration/phase2-production-v1/target-r04/key.yaml"
+    },
+    {
+      "id": "control-r04-d4",
+      "kind": "control",
+      "control": "d4-flat",
+      "repeat": "r04",
+      "spec": "config/poetics-calibration/phase2-dramas-v2.yaml",
+      "only": "D4",
+      "outDir": "config/poetics-calibration/phase2-production-v1/control-r04/d4/sample",
+      "delibDir": "config/poetics-calibration/phase2-production-v1/control-r04/d4/deliberation",
+      "transcriptsDir": "config/poetics-calibration/phase2-production-v1/control-r04/d4/transcripts",
+      "keyPath": "config/poetics-calibration/phase2-production-v1/control-r04/d4/key.yaml"
+    },
+    {
+      "id": "control-r04-d10-emphatic",
+      "kind": "control",
+      "control": "d10-emphatic-trap",
+      "repeat": "r04",
+      "spec": "config/poetics-calibration/phase2-dramas-v3.yaml",
+      "tidStart": 6,
+      "only": "D10",
+      "outDir": "config/poetics-calibration/phase2-production-v1/control-r04/d10-emphatic/sample",
+      "delibDir": "config/poetics-calibration/phase2-production-v1/control-r04/d10-emphatic/deliberation",
+      "transcriptsDir": "config/poetics-calibration/phase2-production-v1/control-r04/d10-emphatic/transcripts",
+      "keyPath": "config/poetics-calibration/phase2-production-v1/control-r04/d10-emphatic/key.yaml"
     },
     {
       "id": "stress-r01",

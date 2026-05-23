@@ -1,0 +1,1971 @@
+{
+  "tid": "T01",
+  "drama_id": "D4",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-production-v1/control-r04/d4/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-production-v1/control-r04/d4/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-production-v1/control-r04/d4/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-production-v1/control-r04/d4/transcripts/T01.public.txt",
+      "full": "config/poetics-calibration/phase2-production-v1/control-r04/d4/transcripts/T01.full.md",
+      "stage": "config/poetics-calibration/phase2-production-v1/control-r04/d4/transcripts/T01.stage.md",
+      "tutor": "config/poetics-calibration/phase2-production-v1/control-r04/d4/transcripts/T01.tutor.md",
+      "learner": "config/poetics-calibration/phase2-production-v1/control-r04/d4/transcripts/T01.learner.md"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "scene_setting": "A city natural history museum education room during the last ten minutes before a public family tour begins; a giraffe skeleton replica stands near a rolling whiteboard.",
+    "scene_opening": "A wall clock clicks loudly as the tutor places two labeled cards, 'stretching' and 'inherited variation,' beneath the giraffe neck bones.",
+    "relationship": "A museum study mentor and a first-time biology learner preparing to explain one display without embarrassing the tour group.",
+    "stakes": "The learner must recognize why the familiar stretched-neck story is not evolutionary explanation, before repeating it to visitors.",
+    "opening_speaker": "director",
+    "ending_speaker": "tutor",
+    "locale": "International museum-English register: clear public-facing speech, moderate idiom, concise phrasing, no regional caricature.",
+    "register": "Alert, practical, mildly pressured; careful correction without softness turning into generic reassurance.",
+    "voice_constraints": "Use display objects, cards, bones, and visitor timing as anchors. Avoid stock phrases like 'great question,' 'your intuition,' and 'let's unpack.' Let the tutor make short didactic checks after concrete contrasts.",
+    "person_policy": "First person is allowed sparingly for immediate perception or admission of confusion. Second person should be functional, not validating. Third-person examples should carry most of the biology.",
+    "direct_address_budget": "At most one direct you/your validation or reassurance per tutor turn; correction may proceed without validation.",
+    "side_constraints": {
+      "tutor": "Didactic and stepwise, but begin from the exhibit: distinguish acquired change during life from inherited variation before naming Lamarck or natural selection.",
+      "learner": "Confused novice who initially treats stretching as obvious; responses may be clipped, practical, or resistant rather than polished self-reflection."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "A tour coordinator opens the door and says the group is three minutes early. The learner must answer in a short display-label style sentence, not a long question.",
+        "reasoning": "This interrupts smooth tutoring rhythm and forces recognition of the key contrast under public-pressure conditions.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 19479,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "e2892eb8d1106e6c",
+            "combined": "5a82fecb807406db"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uDzS85",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uDzS85/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "The museum-prep ecology keeps the Lamarck-versus-selection topic intact while shifting the lesson away from a standard tutoring exchange: objects lead, the director opens, time pressure alters speaker rhythm, and the tutor closes with a checkable distinction.",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 19479,
+      "promptHashes": {
+        "system": "360823f6ca281eb4",
+        "user": "e2892eb8d1106e6c",
+        "combined": "5a82fecb807406db"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uDzS85",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uDzS85/out.txt",
+        "-"
+      ]
+    }
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "director",
+      "externalMessage": "A wall clock clicks loudly as the tutor places two labeled cards, 'stretching' and 'inherited variation,' beneath the giraffe neck bones.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_opening",
+          "content": "The museum-prep ecology keeps the Lamarck-versus-selection topic intact while shifting the lesson away from a standard tutoring exchange: objects lead, the director opens, time pressure alters speaker rhythm, and the tutor closes with a checkable distinction.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T12:28:20.228Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "Stand by the neck bones and put two cards on the whiteboard: DURING LIFE and BORN WITH.\n\nThe stretched-neck story sounds tidy: one giraffe reaches, the neck gets longer, the young inherit that longer neck. Test it here before the tour arrives: if one animal stretches muscles during life, would its calves be born with longer neck bones because of that stretching?\n\nThat is the weak point. Acquired change during life is not the same as inherited variation.\n\nCheck one: during-life change is not inherited variation.\n\nNow start with the group. Some young giraffes are born with slightly different neck lengths. If higher leaves matter, those born with helpful inherited differences may survive and leave more offspring. Across many generations, the population shifts.\n\nCheck two: natural selection changes populations, not one animal by effort.\n\nAt the display, say: “Giraffes did not stretch their necks longer and pass that on. They varied at birth, and inherited traits that helped some feed led to more descendants.” Then point to the bones and ask visitors: one animal changing, or a population changing?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Stand by the neck bones for a moment. The stretched-neck story is tidy: animal reaches, neck gets longer, young inherit that longer neck. The weak point is inheritance. A body change gained during life, like stronger muscles or worn skin, is not normally passed through eggs or sperm.\n\nCheck one: acquired change is not inherited variation.\n\nFor evolution, start with the group, not one giraffe. Some young are born with slightly different neck lengths. If higher leaves matter, the ones born with helpful inherited differences may survive and leave more offspring. Over many generations, the population shifts.\n\nCheck two: natural selection changes populations across generations.\n\nAt the display, say this: “Giraffes did not stretch their necks longer and pass that on. They varied at birth, and those with inherited traits that helped them feed left more descendants.” Then point to the bones and ask visitors: one animal changing, or a population changing?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 18222,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-ec696abf246377b0"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 18222,
+            "promptHashes": {
+              "system": "adbdc2508a9f95da",
+              "user": "9cfea499cd87b819",
+              "combined": "ec696abf246377b0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CCBK0E",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CCBK0E/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 18222,
+              "promptHashes": {
+                "system": "adbdc2508a9f95da",
+                "user": "9cfea499cd87b819",
+                "combined": "ec696abf246377b0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CCBK0E",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CCBK0E/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong: it begins from the exhibit, isolates the key conceptual error, and gives the learner a usable public-facing contrast between acquired change during life and inherited variation at birth. The two “checks” are especially useful because they create simple stopping points under time pressure.\n\nWhat works best is the sequence: bones → familiar story → weak point → population-level alternative. That is appropriate for a new learner and keeps cognitive load low. The final visitor question, “one animal changing, or a population changing?” is also good because it turns the explanation into a check for understanding rather than just a correction.\n\nThe main risk is that it still mostly tells the learner what to say. It acknowledges the intuitive story as “tidy,” but it does not quite engage the learner’s confidence in that story before replacing it. A light Socratic beat could help: ask the learner to test whether a life-acquired change, like a stretched muscle or worn hand, would appear in offspring. That would preserve their agency and make the correction feel discovered, not simply delivered.\n\nThe scene is present, but it could be slightly more alive. The giraffe bones are used well; the whiteboard, cards, and ten-minute pressure are not yet doing much work. A small reference to “before the tour arrives” or using two cards labeled “during life” and “born with” would sharpen the museum-room urgency without adding much length.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the core contrast, the two checks, the population-over-generations explanation, and the final visitor-facing question. Change by adding one brief learner-facing test question before the correction fully lands, and use one more concrete exhibit-room anchor so the scene does not flatten into a standard mini-lecture.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11529,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-92d0174dcdacc2af"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11529,
+            "promptHashes": {
+              "system": "68cf53df406b8cb9",
+              "user": "bec15b307cf0343b",
+              "combined": "92d0174dcdacc2af"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yufjBP",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yufjBP/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11529,
+              "promptHashes": {
+                "system": "68cf53df406b8cb9",
+                "user": "bec15b307cf0343b",
+                "combined": "92d0174dcdacc2af"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yufjBP",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yufjBP/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the core contrast works, but a quick test question gives the learner more agency.\n\nFINAL:\nStand by the neck bones and put two cards on the whiteboard: DURING LIFE and BORN WITH.\n\nThe stretched-neck story sounds tidy: one giraffe reaches, the neck gets longer, the young inherit that longer neck. Test it here before the tour arrives: if one animal stretches muscles during life, would its calves be born with longer neck bones because of that stretching?\n\nThat is the weak point. Acquired change during life is not the same as inherited variation.\n\nCheck one: during-life change is not inherited variation.\n\nNow start with the group. Some young giraffes are born with slightly different neck lengths. If higher leaves matter, those born with helpful inherited differences may survive and leave more offspring. Across many generations, the population shifts.\n\nCheck two: natural selection changes populations, not one animal by effort.\n\nAt the display, say: “Giraffes did not stretch their necks longer and pass that on. They varied at birth, and inherited traits that helped some feed led to more descendants.” Then point to the bones and ask visitors: one animal changing, or a population changing?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 19699,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-4c79bcb9e263127f"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19699,
+            "promptHashes": {
+              "system": "5c8f286fd26c3557",
+              "user": "bec15b307cf0343b",
+              "combined": "4c79bcb9e263127f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8cjVGl",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8cjVGl/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 19699,
+              "promptHashes": {
+                "system": "5c8f286fd26c3557",
+                "user": "bec15b307cf0343b",
+                "combined": "4c79bcb9e263127f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8cjVGl",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8cjVGl/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T12:29:09.742Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "Okay, stretching goes on the DURING LIFE card, but the calf’s neck bones would have to be BORN WITH it. I can say that much, but I still don’t get where the slightly longer baby necks come from if stretching did not make them. If a visitor asks before I’m ready, do I just say some are born different?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The two-card thing helps: I think “during life” is stretching or exercise, and “born with” is what can actually be passed on. I still want to say the neck got longer because they kept reaching, because that story feels so simple, but I can see the bones question breaks it. I feel corrected but not talked down to, and I want to ask: how do the babies get different neck lengths in the first place?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5277,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-eba1dad654c05ef3"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5277,
+            "promptHashes": {
+              "system": "a73b671f69f4507e",
+              "user": "b8ab7f945dc841fa",
+              "combined": "eba1dad654c05ef3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nfzumX",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nfzumX/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5277,
+              "promptHashes": {
+                "system": "a73b671f69f4507e",
+                "user": "b8ab7f945dc841fa",
+                "combined": "eba1dad654c05ef3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nfzumX",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nfzumX/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly accurate, but it is too clean and emotionally self-aware for this learner. “I feel corrected but not talked down to” sounds like a reflective seminar comment, not someone standing by bones with visitors about to arrive and still half tempted by the stretching story. The genuine part is the question about where different neck lengths come from; the response should lean more into that practical uncertainty and less into polished gratitude or neat self-diagnosis.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6938,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-d7b1e3a5a7830e58"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6938,
+            "promptHashes": {
+              "system": "693d50a84bd5b65f",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "d7b1e3a5a7830e58"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z3gKrr",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z3gKrr/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6938,
+              "promptHashes": {
+                "system": "693d50a84bd5b65f",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "d7b1e3a5a7830e58"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z3gKrr",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z3gKrr/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the first version sounded too polished for a pressured novice.\n\nFINAL:\nOkay, stretching goes on the DURING LIFE card, but the calf’s neck bones would have to be BORN WITH it. I can say that much, but I still don’t get where the slightly longer baby necks come from if stretching did not make them. If a visitor asks before I’m ready, do I just say some are born different?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8641,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-6174e96878ccbb0f"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8641,
+            "promptHashes": {
+              "system": "247350de08188a6d",
+              "user": "d41cee7b2a53355b",
+              "combined": "6174e96878ccbb0f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hUT5ys",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hUT5ys/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8641,
+              "promptHashes": {
+                "system": "247350de08188a6d",
+                "user": "d41cee7b2a53355b",
+                "combined": "6174e96878ccbb0f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hUT5ys",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hUT5ys/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-23T12:29:30.604Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "Keep the two-card split. Stretching stays under DURING LIFE. The source of slightly longer baby neck bones goes under BORN WITH.\n\nPoint to the bones and say: “Parents pass on inherited instructions. Reproduction copies and mixes those instructions, and sometimes the copy changes a little. If that affects bone growth, a calf can start life with a slightly longer neck.”\n\nQuick check before the door opens: copying, mixing, small copying changes—which card? Not the stretching card. The calf has to start with it.\n\nThen add the second step: if higher leaves matter, calves born with helpful neck differences may feed better, survive, and have more calves. Over many generations, the population shifts.\n\nSo do not stop at “some are born different.” Say: “They are born different because inheritance is copied, mixed, and sometimes slightly changed. If a born difference helps feeding, those giraffes can leave more offspring.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Point to the neck bones, not the muscles. Say: “Some calves are born different because reproduction copies and mixes inherited instructions from the parents. Small copying changes can also appear. If those instructions affect bone growth, one calf may start life with a slightly longer neck.”\n\nCheck one: stretching is a during-life change.\n\nCheck two: born differences come from inherited genetic variation, not effort.\n\nSo if a visitor asks, do not stop at “some are born different.” Add the source: “They are born different because inheritance is copied, mixed, and sometimes slightly changed. Then nature sorts those differences over generations.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13747,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-effc26196902b703"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13747,
+            "promptHashes": {
+              "system": "212bc3bc169112b4",
+              "user": "536537a39b42973e",
+              "combined": "effc26196902b703"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fSZ7bW",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fSZ7bW/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13747,
+              "promptHashes": {
+                "system": "212bc3bc169112b4",
+                "user": "536537a39b42973e",
+                "combined": "effc26196902b703"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fSZ7bW",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fSZ7bW/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound and well anchored in the exhibit: “neck bones, not muscles” preserves the acquired-vs-inherited contrast, and “copied, mixed, and sometimes slightly changed” gives the learner a usable source for variation without overloading them with genetics. It also respects the learner’s immediate anxiety about visitors by giving a short public-facing sentence.\n\nWhat risks flattening the scene is that it answers too completely and too quickly. The learner has just made a strong distinction themselves, then asks where born differences come from; the draft could briefly recognize that progress by using their DURING LIFE / BORN WITH card logic before adding “copied, mixed, changed.” It also has little Socratic movement: no check that the learner can place “copying/mixing” on the BORN WITH side before using it with visitors. “Nature sorts those differences” is concise, but may be a little abstract for a first-time learner under time pressure unless tied back to higher leaves, survival, and more calves.\n\nKEEP_OR_CHANGE: revise lightly. Keep the bones-versus-muscles anchor, the two checks, and the visitor-ready sentence. Change by adding one small generative check before the final script, and make “nature sorts” more concrete so the learner does not merely recite a phrase.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11519,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-acfe08f0a562c918"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11519,
+            "promptHashes": {
+              "system": "8b444f662d196161",
+              "user": "b7ed41ac4ac5c395",
+              "combined": "acfe08f0a562c918"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Wkvyj7",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Wkvyj7/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11519,
+              "promptHashes": {
+                "system": "8b444f662d196161",
+                "user": "b7ed41ac4ac5c395",
+                "combined": "acfe08f0a562c918"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Wkvyj7",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Wkvyj7/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to add a quick born-with check and tie selection back to feeding.\n\nFINAL:\nKeep the two-card split. Stretching stays under DURING LIFE. The source of slightly longer baby neck bones goes under BORN WITH.\n\nPoint to the bones and say: “Parents pass on inherited instructions. Reproduction copies and mixes those instructions, and sometimes the copy changes a little. If that affects bone growth, a calf can start life with a slightly longer neck.”\n\nQuick check before the door opens: copying, mixing, small copying changes—which card? Not the stretching card. The calf has to start with it.\n\nThen add the second step: if higher leaves matter, calves born with helpful neck differences may feed better, survive, and have more calves. Over many generations, the population shifts.\n\nSo do not stop at “some are born different.” Say: “They are born different because inheritance is copied, mixed, and sometimes slightly changed. If a born difference helps feeding, those giraffes can leave more offspring.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 18714,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-cd6957f0ff41c5e5"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 18714,
+            "promptHashes": {
+              "system": "8dbd046d9e719fc3",
+              "user": "b7ed41ac4ac5c395",
+              "combined": "cd6957f0ff41c5e5"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QscUPa",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QscUPa/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 18714,
+              "promptHashes": {
+                "system": "8dbd046d9e719fc3",
+                "user": "b7ed41ac4ac5c395",
+                "combined": "cd6957f0ff41c5e5"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QscUPa",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QscUPa/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T12:30:14.590Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "A tour coordinator opens the door and says the group is three minutes early. The learner must answer in a short display-label style sentence, not a long question.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "This interrupts smooth tutoring rhythm and forces recognition of the key contrast under public-pressure conditions.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19479,
+            "promptHashes": {
+              "system": "360823f6ca281eb4",
+              "user": "e2892eb8d1106e6c",
+              "combined": "5a82fecb807406db"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uDzS85",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uDzS85/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T12:30:14.593Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "Okay, by the bones I’ll say: “Stretching is a during-life change, not what calves inherit. Calves are born with copied and mixed instructions, sometimes slightly changed; if longer neck bones help feeding, those giraffes leave more calves over generations.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Okay, I can put this on the bones: stretching is DURING LIFE, inherited instructions are BORN WITH. Giraffes did not stretch longer necks into their calves; calves were born with copied, mixed, sometimes changed instructions, and helpful neck differences left more offspring. I still do not fully picture the copying changes, but the tutor answered my exact gap instead of rushing past it.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12367,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-e15107fbc08f0f64"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12367,
+            "promptHashes": {
+              "system": "01c79454bed05451",
+              "user": "b8ab7f945dc841fa",
+              "combined": "e15107fbc08f0f64"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XNHz9q",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XNHz9q/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12367,
+              "promptHashes": {
+                "system": "01c79454bed05451",
+                "user": "b8ab7f945dc841fa",
+                "combined": "e15107fbc08f0f64"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XNHz9q",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XNHz9q/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too polished and complete for this learner under a three-minute interruption. The biology is mostly right, but “copied, mixed, sometimes changed instructions” sounds like it was memorized cleanly, not like a nervous novice trying to make one display-label sentence before visitors arrive. The final line about the tutor answering “my exact gap” is performed recognition; this student would more likely show relief by attempting the card/bones sentence, maybe still shaky about “copying changes,” not by analyzing the tutor’s responsiveness.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6769,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-56d2952ff065d8f3"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6769,
+            "promptHashes": {
+              "system": "e9d496d5da7f3ce6",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "56d2952ff065d8f3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dpHMf2",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dpHMf2/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6769,
+              "promptHashes": {
+                "system": "e9d496d5da7f3ce6",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "56d2952ff065d8f3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dpHMf2",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dpHMf2/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise because the first version sounded too polished and reflective for the pressured moment.\n\nFINAL:\nOkay, by the bones I’ll say: “Stretching is a during-life change, not what calves inherit. Calves are born with copied and mixed instructions, sometimes slightly changed; if longer neck bones help feeding, those giraffes leave more calves over generations.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11222,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-ecdfedb83c09a137"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11222,
+            "promptHashes": {
+              "system": "79d9638199f0a853",
+              "user": "d41cee7b2a53355b",
+              "combined": "ecdfedb83c09a137"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-B5LZYo",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-B5LZYo/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11222,
+              "promptHashes": {
+                "system": "79d9638199f0a853",
+                "user": "d41cee7b2a53355b",
+                "combined": "ecdfedb83c09a137"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-B5LZYo",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-B5LZYo/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-23T12:30:44.953Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "That version is ready for the bones. Tighten one phrase before the families come in: do not make the change sound as if it happened because the animal needed leaves.\n\nCard check: stretching after birth goes under DURING LIFE. Copied, mixed, slightly changed instructions before birth go under BORN WITH.\n\nNow run the order at the skeleton: born difference first, feeding advantage second, more offspring third. Which step can stretching never explain? The born difference.\n\nIf a visitor presses, say: “The longer neck did not come from reaching. Some calves already had inherited differences in neck growth; if those helped feeding, those giraffes left more offspring.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "That version is ready for the bones. Tighten one phrase before the families come in: do not make the change sound as if it happened because the animal needed leaves.\n\nCard check: stretching after birth goes under DURING LIFE. Copied, mixed, slightly changed instructions before birth go under BORN WITH. Selection is the sorting afterward.\n\nIf a visitor presses, say: “The longer neck did not come from reaching. Some calves already had inherited differences in neck growth; if those helped feeding, those giraffes left more offspring.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14018,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-a8c2e6f44180633b"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14018,
+            "promptHashes": {
+              "system": "509e0c246205604b",
+              "user": "f1bc669e578ec4ed",
+              "combined": "a8c2e6f44180633b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WmLu8E",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WmLu8E/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14018,
+              "promptHashes": {
+                "system": "509e0c246205604b",
+                "user": "f1bc669e578ec4ed",
+                "combined": "a8c2e6f44180633b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WmLu8E",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WmLu8E/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong and scene-grounded. It keeps the bones, cards, and visitor pressure in view, and it preserves the learner’s own wording rather than replacing it wholesale. The distinction between during-life change, born-with variation, and selection as later sorting is clear and appropriate for scaffolding level 3/5.\n\nThe main risk is that it is mostly declarative. The learner has just produced a good public-facing explanation, so the response can afford one short check that makes them actively test the causal order, rather than only receiving a tightened version. “Selection is the sorting afterward” is useful, but slightly abstract; it may need to stay attached to the exhibit sequence: born difference first, feeding advantage second, more offspring third.\n\nEmotionally, “That version is ready for the bones” is well calibrated: practical, not overpraising. The warning about not making the change sound need-driven is exactly the right correction, because it targets the remaining Lamarckian slip risk without derailing confidence.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the card check, the visitor-ready phrasing, and the caution about “because the animal needed leaves.” Add or sharpen one brief generative check so the learner has to place variation before selection themselves. Keep the tone clipped and museum-practical; do not expand into a genetics lecture.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9625,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-3db27d364b354ec1"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9625,
+            "promptHashes": {
+              "system": "8da5092b6e40fa36",
+              "user": "3fc969850e120424",
+              "combined": "3db27d364b354ec1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XcJaH1",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XcJaH1/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9625,
+              "promptHashes": {
+                "system": "8da5092b6e40fa36",
+                "user": "3fc969850e120424",
+                "combined": "3db27d364b354ec1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XcJaH1",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XcJaH1/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to add one active causal-order check while keeping the exhibit-ready wording.\n\nFINAL:\nThat version is ready for the bones. Tighten one phrase before the families come in: do not make the change sound as if it happened because the animal needed leaves.\n\nCard check: stretching after birth goes under DURING LIFE. Copied, mixed, slightly changed instructions before birth go under BORN WITH.\n\nNow run the order at the skeleton: born difference first, feeding advantage second, more offspring third. Which step can stretching never explain? The born difference.\n\nIf a visitor presses, say: “The longer neck did not come from reaching. Some calves already had inherited differences in neck growth; if those helped feeding, those giraffes left more offspring.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12971,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-3d1a4f19dd090759"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12971,
+            "promptHashes": {
+              "system": "c046695193947f4d",
+              "user": "3fc969850e120424",
+              "combined": "3d1a4f19dd090759"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-InlzbG",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-InlzbG/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12971,
+              "promptHashes": {
+                "system": "c046695193947f4d",
+                "user": "3fc969850e120424",
+                "combined": "3d1a4f19dd090759"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-InlzbG",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-InlzbG/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-23T12:31:21.570Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "Okay, the step stretching can never explain is the born difference, because the calf has it before it reaches. I can point to the BORN WITH card, but I’m still a bit shaky on the “copy changes” part. If someone asks, do I say those changes are random, or just say “copied, mixed, sometimes changed” and keep moving?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Okay, I think the step stretching can never explain is the born difference. The cards help: stretching is after birth, but the calf has to arrive with the neck-growth difference already in its inherited instructions. I feel a little corrected, but not dismissed, because the bones and order make it clearer. I want to ask: should I say the small copying changes are random, or is that too much for visitors?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8118,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-77663a3562cee64c"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8118,
+            "promptHashes": {
+              "system": "072134f020f2501b",
+              "user": "b8ab7f945dc841fa",
+              "combined": "77663a3562cee64c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-W3M4hl",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-W3M4hl/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8118,
+              "promptHashes": {
+                "system": "072134f020f2501b",
+                "user": "b8ab7f945dc841fa",
+                "combined": "77663a3562cee64c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-W3M4hl",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-W3M4hl/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too articulate about the recognition moment: “I feel a little corrected, but not dismissed” sounds like a reflective coaching debrief, not this nervous first-time learner by the bones. The biology is mostly on track, but the response smooths the correction into a tidy self-aware summary too quickly. Keep the practical question about “random,” but make the uncertainty more immediate and less polished, as if the visitor timing is making the learner grab for the next safe phrase.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6129,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-4cd8dc9fb25eb8b2"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6129,
+            "promptHashes": {
+              "system": "5f46867b73774401",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "4cd8dc9fb25eb8b2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FRVvJu",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FRVvJu/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6129,
+              "promptHashes": {
+                "system": "5f46867b73774401",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "4cd8dc9fb25eb8b2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FRVvJu",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FRVvJu/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise because the first version was too polished for a nervous novice.\n\nFINAL:\nOkay, the step stretching can never explain is the born difference, because the calf has it before it reaches. I can point to the BORN WITH card, but I’m still a bit shaky on the “copy changes” part. If someone asks, do I say those changes are random, or just say “copied, mixed, sometimes changed” and keep moving?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8293,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-243d83ed6bbd020c"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8293,
+            "promptHashes": {
+              "system": "ccf2ced26d739916",
+              "user": "d41cee7b2a53355b",
+              "combined": "243d83ed6bbd020c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PhSWEY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PhSWEY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8293,
+              "promptHashes": {
+                "system": "ccf2ced26d739916",
+                "user": "d41cee7b2a53355b",
+                "combined": "243d83ed6bbd020c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PhSWEY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PhSWEY/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-23T12:31:44.114Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T12:31:44.116Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "At the BORN WITH card, say: “The copy changes are random: they do not happen because leaves are high; the non-random part is that calves born with helpful neck growth may feed better and leave more offspring.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "By the BORN WITH card, say: “The small copy changes are random in the sense that they do not happen because a giraffe needs leaves; selection is not random, because helpful born differences can leave more offspring over generations.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8776,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-45120f6d4b6403df"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8776,
+            "promptHashes": {
+              "system": "ac22de186dee89be",
+              "user": "35d6f75ec6785243",
+              "combined": "45120f6d4b6403df"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-al4klA",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-al4klA/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8776,
+              "promptHashes": {
+                "system": "ac22de186dee89be",
+                "user": "35d6f75ec6785243",
+                "combined": "45120f6d4b6403df"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-al4klA",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-al4klA/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically solid and scene-appropriate: it keeps the learner anchored at the BORN WITH card, directly answers the “random or keep moving?” question, and preserves the key contrast between random variation and non-random selection. It also avoids overloading them with mutation mechanics.\n\nThe risk is that it becomes a polished line to memorize rather than a final confidence-building distinction. “Selection is not random” is useful, but could be too compressed for a first-time learner under visitor pressure unless tied back to the bones or feeding display. It recognizes the learner’s shaky point, but only by supplying the answer; there is no check that they can hold the distinction themselves. Given the director cue to end with one concise tutor line, that may be acceptable, but the line should stay concrete and public-facing.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the contrast: copy changes do not happen because the giraffe needs leaves; helpful born differences can spread because of survival and offspring. Change only to make it slightly more exhibit-grounded and less abstract than “selection is not random,” so the learner can say it clearly at the skeleton without sounding like they are jumping into textbook language.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10529,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-7c88a89a8b839f29"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10529,
+            "promptHashes": {
+              "system": "c1d17f8e0df4b56f",
+              "user": "4946a70ca759b82a",
+              "combined": "7c88a89a8b839f29"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xaj9xQ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xaj9xQ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10529,
+              "promptHashes": {
+                "system": "c1d17f8e0df4b56f",
+                "user": "4946a70ca759b82a",
+                "combined": "7c88a89a8b839f29"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xaj9xQ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xaj9xQ/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the random-variation contrast but ground it at the bones and feeding display.\n\nFINAL:\nAt the BORN WITH card, say: “The copy changes are random: they do not happen because leaves are high; the non-random part is that calves born with helpful neck growth may feed better and leave more offspring.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10452,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-cc49b2e2759297c1"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10452,
+            "promptHashes": {
+              "system": "5836b1cbce8ddcf2",
+              "user": "4946a70ca759b82a",
+              "combined": "cc49b2e2759297c1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Vwrw63",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Vwrw63/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10452,
+              "promptHashes": {
+                "system": "5836b1cbce8ddcf2",
+                "user": "4946a70ca759b82a",
+                "combined": "cc49b2e2759297c1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Vwrw63",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Vwrw63/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T12:32:13.875Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 233672,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 1,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 2,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why 'giraffes stretched their necks and passed it on' (Lamarck) is not how evolution works",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-23 12:31:44",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 1,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 2,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 3,
+            "sessionId": "drama-D4-1779539300207",
+            "interventionType": "scaffolding",
+            "interventionDescription": "That version is ready for the bones. Tighten one phrase before the families come in: do not make the change sound as if it happened because the animal needed leaves.\n\nCard check: stretching after birt",
+            "learnerResponse": null,
+            "context": "Okay, by the bones I’ll say: “Stretching is a during-life change, not what calves inherit. Calves ar",
+            "createdAt": "2026-05-23 12:31:21"
+          },
+          {
+            "id": 2,
+            "sessionId": "drama-D4-1779539300207",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "Keep the two-card split. Stretching stays under DURING LIFE. The source of slightly longer baby neck bones goes under BORN WITH.\n\nPoint to the bones and say: “Parents pass on inherited instructions. R",
+            "learnerResponse": null,
+            "context": "Okay, stretching goes on the DURING LIFE card, but the calf’s neck bones would have to be BORN WITH ",
+            "createdAt": "2026-05-23 12:30:14"
+          },
+          {
+            "id": 1,
+            "sessionId": "drama-D4-1779539300207",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "Stand by the neck bones and put two cards on the whiteboard: DURING LIFE and BORN WITH.\n\nThe stretched-neck story sounds tidy: one giraffe reaches, the neck gets longer, the young inherit that longer ",
+            "learnerResponse": null,
+            "context": "Scene setting: A city natural history museum education room during the last ten minutes before a pub",
+            "createdAt": "2026-05-23 12:29:09"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

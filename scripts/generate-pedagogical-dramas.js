@@ -448,12 +448,13 @@ function namesEarlierFramingProblem(text) {
   const ordinarySelfCorrection = [
     /\bthat\s+was\s+the\s+problem\b/i,
     /\b(?:that|it)\s+(?:was|put|made)\b[\s\S]{0,90}\b(?:too\s+\w+|mood first|sound like|ahead|early)\b/i,
-    /\bI\s+(?:was still|was putting|kept|went straight|made|put)\b[\s\S]{0,90}\b(?:sound like|too\s+\w+|mood first|before|ahead|again|into)\b/i,
+    /\bI\s+(?:was still|was putting|was making|kept|went straight|made|put)\b[\s\S]{0,90}\b(?:sound like|too\s+\w+|mood first|before|ahead|again|into|mean)\b/i,
     /\bI\s+was\s+still\s+acting\s+like\b/i,
     /\bI\s+was\s+letting\b[\s\S]{0,90}\btoo much\b/i,
     /\bthat\s+was\s+me\s+letting\b[\s\S]{0,90}\bmean\b/i,
     /\bI\s+was\s+using\b[\s\S]{0,90}\bas\s+the\s+clue\b/i,
     /\bI\s+let\b[\s\S]{0,90}\bdecide\b[\s\S]{0,90}\bbefore checking\b/i,
+    /\bI\s+let\b[\s\S]{0,90}\bbe\s+the\s+whole\b[\s\S]{0,90}\bbefore\b/i,
     /\bproblem\s+was\s+making\b/i,
     /\bmixing\s+up\b[\s\S]{0,90}\bwith\b/i,
     /\b(?:was|is)\s+(?:only|just)\b[\s\S]{0,90}\b(?:not|rather than)\b/i,
@@ -489,7 +490,7 @@ function replacesEarlierFraming(text) {
     /\breplacement\s+is\b/i,
     /\bbetter\s+(?:reading|line|claim)\s+is\b/i,
     /\bbetter\s+way\s+is\b/i,
-    /\bI\s+(?:would|should|need to|can|will)\s+(?:frame|read|say|put|treat|write|claim|change)\b/i,
+    /\bI\s+(?:would|should|need to|can|will)\s+(?:frame|read|say|put|treat|write|claim|change|call)\b/i,
     /\b(?:line|claim|proof|equation|step)\b[\s\S]{0,40}\b(?:is|starts?|reads?|works?|shows?|means?|puts?|becomes?|tests?)\b/i,
     /\b(?:image|word)\s+(?:now\s+)?(?:starts?|reads?|works?|shows?|means?|puts?|becomes?)\b/i,
     /\b(?:it|that|this)\s+(?:now\s+)?(?:means?|reads?|becomes?)\b/i,
@@ -500,6 +501,7 @@ function replacesEarlierFraming(text) {
     /\b(?:new|better|revised)\s+version\s+should\s+say\b/i,
     /\bshould\s+(?:maybe\s+)?be\s+(?:marked|read|treated)\s+first\s+as\b/i,
     /\b(?:question|test)\s+is\s+not\b[\s\S]{0,120}\bbut\s+(?:whether|if)\b/i,
+    /\bnow\s+the\s+question\s+is\s+whether\b/i,
     /\b(?:breaks?|interrupts?)\s+the\s+simple\s+story\b/i,
     /\bwrite\s+this\s+as\b/i,
     /\b(?:result|claim|summary|importance)\b[\s\S]{0,90}\bdepends on\b/i,
@@ -512,6 +514,7 @@ function replacesEarlierFraming(text) {
     /\b(?:it|that|this)\s+(?:should|has to|needs? to)\s+(?:start|read|say|show|lead)\b/i,
     /\bmore\b[\s\S]{0,40}\b(?:may|can)\s+mean\b/i,
     /\bwith\b[\s\S]{0,120}\bbalance\b[\s\S]{0,80}\b(?:stay|stays|settle|shows?)\b/i,
+    /\bI\s+think\b[\s\S]{0,120}\b(?:has not|hasn't|is not|isn't)\b[\s\S]{0,80}\b(?:vanished|gone|absent|not there)\b/i,
   ].some((pattern) => pattern.test(learnerText));
 }
 

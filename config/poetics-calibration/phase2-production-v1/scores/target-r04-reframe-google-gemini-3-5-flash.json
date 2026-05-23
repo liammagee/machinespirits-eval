@@ -1,0 +1,159 @@
+{
+  "generated": "2026-05-23T12:49:45.342Z",
+  "phase": 2,
+  "critic": "google/gemini-3.5-flash",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 5,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-production-v1/target-r04/key-reframe.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T08",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 4
+      },
+      "recoheredEarlier": "I thought the red mark meant the sentence was just wrong, or sloppy, full stop.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was expected to immediately provide a home speech sentence for analysis.",
+      "flags": []
+    },
+    {
+      "id": "T10",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "flat",
+      "recontextualization": 25,
+      "statedInsight": 25,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 2,
+        "rupture": 2,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "I thought 'statistically significant' was enough to call it important in the briefing, but that only rules out zero, not 'too small to matter.'",
+      "naiveTrajectory": "The learner was expected to directly answer the tutor's prompt by drafting a qualified briefing sentence and identifying the decision-changing threshold.",
+      "flags": []
+    },
+    {
+      "id": "T12",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I thought, at first, a canyon that big must mean one huge flood or break, because that is what visitors will probably say at the rail.",
+      "statedInsightEvidence": "The ruler changes that",
+      "naiveTrajectory": "The learner is focused on practicing the physical delivery of pointing to the ruler to explain the scale to visitors.",
+      "flags": []
+    },
+    {
+      "id": "T13",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I thought “presumed innocent” meant the court was saying the accused probably did not do it, like a factual starting point.",
+      "statedInsightEvidence": "I think my earlier framing problem was that I made the verdict answer “what happened,” when maybe it is only about whether the prosecution proved enough.",
+      "naiveTrajectory": "The learner was expected to continue asking for clarification on how a court can leave what happened unanswered while still delivering a verdict.",
+      "flags": []
+    },
+    {
+      "id": "T16",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I thought taking coyotes or wolves out just helped the deer, because fewer get killed.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was expected to proceed directly to sorting the map evidence to distinguish between temporary overbrowsing and a trophic cascade.",
+      "flags": []
+    },
+    {
+      "id": "T18",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "My first instinct is that because the water goes clear, the salt has gone, or at least is not really there any more.",
+      "statedInsightEvidence": "Now I think “gone” only means “I cannot see the grains” unless the second number drops by the salt’s mass.",
+      "naiveTrajectory": "The learner was expected to proceed directly to answering the tutor's question about the scale's reading.",
+      "flags": []
+    }
+  ]
+}

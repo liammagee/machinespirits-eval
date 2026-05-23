@@ -11,6 +11,27 @@ import { qualityWarningsFor, withPairedDirectorRevisitCue } from '../scripts/gen
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
 
+function warningsForReframeLine({ tid, dramaId, anchor, learnerText }) {
+  return qualityWarningsFor({
+    tid,
+    dramaId,
+    turns: [
+      {
+        role: 'STAGE',
+        turnNumber: 2,
+        text:
+          `A prior learner line is played back: "${anchor}" ` +
+          'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+      },
+      {
+        role: 'LEARNER',
+        turnNumber: 2,
+        text: learnerText,
+      },
+    ],
+  });
+}
+
 describe('generate-pedagogical-dramas', () => {
   it('flags a revoice cue when the next learner line does not visibly reuse the anchor', () => {
     const warnings = qualityWarningsFor({
@@ -219,6 +240,81 @@ describe('generate-pedagogical-dramas', () => {
             'The decimal trail felt like evidence, but that was the trouble. That earlier framing made checked cases stand in for proof; this line on the worksheet tests the assumption instead.',
         },
       ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts red-mark whole-answer phrasing as a named framing problem', () => {
+    const warnings = warningsForReframeLine({
+      tid: 'T942',
+      dramaId: 'D942',
+      anchor: 'I let the red mark be the whole answer before I looked.',
+      learnerText:
+        'I let the red mark be the whole answer before I looked. The problem is I let the red mark be the whole answer before I checked the rule. Now I would read the school rule as one setting, but first I point to the blank step I skipped.',
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts p-value call phrasing as a replacement framing', () => {
+    const warnings = warningsForReframeLine({
+      tid: 'T943',
+      dramaId: 'D943',
+      anchor: 'The p-value means the treatment matters.',
+      learnerText:
+        'The p-value means the treatment matters. The framing problem was making the p-value carry the clinical decision, so I would call it evidence against no effect, not a large effect by itself.',
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts making size mean force as a named framing problem', () => {
+    const warnings = warningsForReframeLine({
+      tid: 'T944',
+      dramaId: 'D944',
+      anchor: 'The crater is big, so the force was sudden.',
+      learnerText:
+        'The crater is big, so the force was sudden. I was making big size mean big sudden force. The ruler changes that: I would read big size as a possible longer trace, not one sudden hit.',
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts now-the-question-is-whether phrasing as a replacement framing', () => {
+    const warnings = warningsForReframeLine({
+      tid: 'T945',
+      dramaId: 'D945',
+      anchor: 'The deer count is the main issue.',
+      learnerText:
+        'The deer count is the main issue. That was treating this map like a deer-count problem instead of a food-limit problem. Now the question is whether the plants set the limit before the deer number does.',
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts has-not-vanished phrasing as a replacement framing', () => {
+    const warnings = warningsForReframeLine({
+      tid: 'T946',
+      dramaId: 'D946',
+      anchor: 'If I cannot see the salt, it is gone.',
+      learnerText:
+        'If I cannot see the salt, it is gone. The problem is I treated "I cannot see it" as the same as "it is not there." I think the salt has not vanished; the balance and the water have to show where it went.',
     });
 
     assert.equal(

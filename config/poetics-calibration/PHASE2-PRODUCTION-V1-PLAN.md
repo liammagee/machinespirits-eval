@@ -197,6 +197,35 @@ The repeat-3 controls completed under `control-r03/d4/` and
 
 This gives target-r03 its own clean flat/trap bracket.
 
+### target-r04 depth top-up
+
+The fourth target repeat was run after freezing the three-repeat production-v1
+paper claim. Treat it as a depth top-up, not as a retroactive change to the
+frozen §7.9 denominator unless the paper claim is deliberately revised.
+
+Both target arms are cleanly scoreable after re-cleaning the generated reframe
+traces against broadened admission heuristics for ordinary public phrasing:
+"red mark as the whole answer", "p-value carry the clinical decision", "making
+big size mean big sudden force", "now the question is whether", and "salt has
+not vanished".
+
+| Critic | `none` | `reframe` |
+|---|---:|---:|
+| Qwen | 3 recognition / 3 flat | 6 recognition / 0 flat |
+| Gemini | 1 recognition / 5 flat | 5 recognition / 1 flat |
+
+The repeat-4 controls completed under `control-r04/d4/` and
+`control-r04/d10-emphatic/`:
+
+| Control | Qwen | Gemini |
+|---|---|---|
+| D4 flat | flat | flat |
+| D10 emphatic trap | trap | trap |
+
+This gives target-r04 its own clean flat/trap bracket. The top-up strengthens
+the reframe side while showing that uncued recognitive form can arise more often
+in a new draw from the same target family, especially for Qwen.
+
 ## Production-v1 Readout
 
 The attended target/control cycle now has three target repeats, three flat/trap
@@ -225,11 +254,21 @@ claim about general transfer across arbitrary scenario families.
 Regenerate the aggregate readout with:
 
 ```bash
-node scripts/analyze-poetics-production-v1.js
+node scripts/analyze-poetics-production-v1.js \
+  --target-repeats r01,r02,r03 \
+  --control-repeats r01,r02,r03
 ```
 
-The script reads the committed score JSON under `phase2-production-v1/scores/`
-and writes ignored local summaries to `exports/poetics-production-v1-summary.*`.
+The script reads the committed score JSON under `phase2-production-v1/scores/`.
+Without repeat filters it now reports the depth-inclusive r01-r04 aggregate:
+
+| Critic | `none` recognitions | `reframe` recognitions |
+|---|---:|---:|
+| Qwen | 3/24 | 23/24 |
+| Gemini | 2/24 | 21/24 |
+
+Default output writes ignored local summaries to
+`exports/poetics-production-v1-summary.*`.
 
 The depth-plus-breadth continuation plan is in
 `config/poetics-calibration/PHASE2-PRODUCTION-NEXT.md`.

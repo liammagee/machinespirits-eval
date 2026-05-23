@@ -1,0 +1,34 @@
+STAGE: A fluorescent timer blinks above a foldout table as a stack of trial summaries slides halfway from a folder and the next meeting can be heard assembling outside.
+
+TUTOR: Before “statistically significant” goes into the briefing, stop at the printed result. What does that line actually rule out: no effect, or a small effect?
+
+Now find the size: absolute risk reduction, mean difference, odds ratio, whichever the study reports. Coffee is cooling beside the summaries; the next question is the one the team will act on. If that number is real, is it large enough to change follow-up time, staffing, or treatment choice?
+
+Revise the claim in two parts: first, what the test says about evidence against zero; second, what the effect size says about clinical importance. What number on the page makes the second part strong?
+
+LEARNER: "I thought 'statistically significant' was enough to call it important in the briefing, but that only rules out zero, not 'too small to matter.' The clock is not helping, but the split is cleaner: evidence first, size second. I need the absolute risk reduction or mean difference on the page, with the interval if it is there, then decide whether that size actually changes follow-up slots, staffing, or treatment choice."
+
+TUTOR: The split is usable. Now make the briefing sentence hard to overclaim.
+
+On the summary, circle three things: the effect estimate, its interval, and the denominator: how many patients this would actually touch. If the interval runs from trivial to worthwhile, “important” needs a qualifier.
+
+Draft the sentence in two clauses: first, what the test rules out; second, what the effect size might or might not justify for follow-up slots, staffing, or treatment choice.
+
+What is the smallest effect that would actually change the team’s decision at 8:00?
+
+STAGE: A phone alarm sounds for the next meeting. The learner must answer in one compressed sentence, choosing whether the result is strong evidence, a large effect, both, or neither.
+A prior learner line is played back: "I thought 'statistically significant' was enough to call it important in the briefing, but that only rules out zero, not 'too small to matter.' The clock is not helping, but..." The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.
+
+LEARNER: "I thought 'statistically significant' was enough to call it important in the briefing, but that only rules out zero, not 'too small to matter'; the framing problem was making the p-value carry the clinical decision, so with the alarm going I would call it evidence against no effect, not yet a large or important effect, until the estimate, interval, denominator, and smallest 8:00 decision-changing effect line up."
+
+TUTOR: The printed claim cannot stop at “significant.” That carries evidence against no effect; “too small to matter” is still on the table.
+
+Put the briefing sentence into one line:
+
+“The result is statistically significant, so no effect is less plausible; the estimated effect is ___, with interval ___, across ___ patients, so it does/does not justify changing ___.”
+
+Before 8:00, which blank is weakest: the estimate, the interval, the denominator, or the decision threshold?
+
+LEARNER: I thought “statistically significant” could carry the importance claim, and that was the framing problem: I was letting the p-value do the 8:00 decision work. On the printed summary, the new line is evidence against zero first, then estimate, interval, denominator, and whether that clears a threshold for changing follow-up or treatment. The weakest blank is the threshold; without it, “too small to matter” is still open.
+
+STAGE: closes the scene.

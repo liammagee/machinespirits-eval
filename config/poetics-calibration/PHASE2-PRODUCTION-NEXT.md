@@ -21,7 +21,9 @@ The frozen baseline is:
 Reproduce with:
 
 ```bash
-node scripts/analyze-poetics-production-v1.js
+node scripts/analyze-poetics-production-v1.js \
+  --target-repeats r01,r02,r03 \
+  --control-repeats r01,r02,r03
 ```
 
 ## Step 2: Small depth top-up
@@ -42,6 +44,32 @@ CODEX_REASONING_EFFORT=high node scripts/run-poetics-production-batch.js \
 Do not pass `--allow-quality-warnings` on real production artifacts. If the key
 records warnings, inspect and either re-clean valid ordinary phrasing or
 regenerate invalid transcripts.
+
+**Completed, 2026-05-23.** `target-r04`, `control-r04-d4`, and
+`control-r04-d10-emphatic` were generated with Codex and scored by Qwen
+`qwen/qwen3.5-plus-02-15` plus Gemini `google/gemini-3.5-flash`.
+
+The reframe arm initially tripped five blocking quality warnings, but inspection
+showed valid ordinary public phrasing rather than invalid transcripts. The
+quality detector was broadened with regression tests for those forms, then the
+reframe key was re-cleaned to zero warnings.
+
+Depth top-up result:
+
+| Critic | `none` recognitions | `reframe` recognitions |
+|---|---:|---:|
+| Qwen | 3/6 | 6/6 |
+| Gemini | 1/6 | 5/6 |
+
+The paired controls stayed clean: D4 was flat for both critics and D10 emphatic
+was trap for both critics. The depth-inclusive target aggregate is therefore
+Qwen 3/24 `none` versus 23/24 `reframe`, and Gemini 2/24 `none` versus 21/24
+`reframe`.
+
+Interpretation: the depth top-up supports the public reframe manipulation, but
+it also shows more uncued recognitive variance than the frozen three-repeat
+claim. Keep the §7.9 production-v1 paper claim bounded to r01-r03 unless the
+paper is deliberately revised to include the top-up.
 
 ## Step 3: Breadth production-v2
 

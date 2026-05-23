@@ -44,6 +44,8 @@ function parseArgs(argv) {
     rootDir: DEFAULT_RUN_ROOT,
     out: DEFAULT_JSON_OUT,
     markdown: DEFAULT_MD_OUT,
+    targetRepeats: null,
+    controlRepeats: null,
   };
 
   for (let i = 0; i < argv.length; i++) {
@@ -51,11 +53,14 @@ function parseArgs(argv) {
     if (token === '--root-dir') options.rootDir = path.resolve(argv[++i]);
     else if (token === '--out') options.out = path.resolve(argv[++i]);
     else if (token === '--markdown') options.markdown = path.resolve(argv[++i]);
+    else if (token === '--target-repeats') options.targetRepeats = parseRepeatList(argv[++i]);
+    else if (token === '--control-repeats') options.controlRepeats = parseRepeatList(argv[++i]);
     else if (token === '--no-markdown') options.markdown = null;
     else if (token === '--no-json') options.out = null;
     else if (token === '--help' || token === '-h') {
       console.log(`Usage:
   node scripts/analyze-poetics-production-v1.js [--root-dir DIR] [--out FILE] [--markdown FILE]
+      [--target-repeats r01,r02,r03] [--control-repeats r01,r02,r03]
   node scripts/analyze-poetics-production-v1.js --no-json --markdown exports/summary.md`);
       process.exit(0);
     } else {
@@ -64,6 +69,18 @@ function parseArgs(argv) {
   }
 
   return options;
+}
+
+function parseRepeatList(value) {
+  const repeats = String(value || '')
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+  if (repeats.length === 0) throw new Error('repeat list must not be empty');
+  for (const repeat of repeats) {
+    if (!/^r\d+$/.test(repeat)) throw new Error(`invalid repeat id: ${repeat}`);
+  }
+  return repeats;
 }
 
 function readJson(filePath) {
@@ -139,9 +156,12 @@ function discoverControlRepeats(rootDir) {
     .sort();
 }
 
-function summarizeTargets(rootDir) {
-  const targetRepeats = discoverTargetRepeats(rootDir);
+function summarizeTargets(rootDir, requestedRepeats = null) {
+  const discoveredRepeats = discoverTargetRepeats(rootDir);
+  const targetRepeats = requestedRepeats || discoveredRepeats;
   if (targetRepeats.length === 0) throw new Error(`No complete target repeats found under ${rootDir}`);
+  const missing = targetRepeats.filter((repeat) => !discoveredRepeats.includes(repeat));
+  if (missing.length > 0) throw new Error(`Missing complete target repeat(s): ${missing.join(', ')}`);
   const byCritic = {};
   for (const critic of CRITICS) {
     const arms = {};
@@ -173,8 +193,11 @@ function summarizeTargets(rootDir) {
   return byCritic;
 }
 
-function summarizeControls(rootDir) {
-  const controlRepeats = discoverControlRepeats(rootDir);
+function summarizeControls(rootDir, requestedRepeats = null) {
+  const discoveredRepeats = discoverControlRepeats(rootDir);
+  const controlRepeats = requestedRepeats || discoveredRepeats;
+  const missing = controlRepeats.filter((repeat) => !discoveredRepeats.includes(repeat));
+  if (missing.length > 0) throw new Error(`Missing complete control repeat(s): ${missing.join(', ')}`);
   const rows = [];
   for (const repeat of controlRepeats) {
     for (const control of CONTROLS) {
@@ -224,13 +247,15 @@ function summarizeStress(rootDir) {
   return stress;
 }
 
-function buildSummary(rootDir) {
-  const target = summarizeTargets(rootDir);
-  const controls = summarizeControls(rootDir);
+function buildSummary(rootDir, options = {}) {
+  const target = summarizeTargets(rootDir, options.targetRepeats);
+  const controls = summarizeControls(rootDir, options.controlRepeats);
   const stress = summarizeStress(rootDir);
   return {
     generatedAt: new Date().toISOString(),
     sourceRoot: path.relative(ROOT, rootDir),
+    targetRepeats: options.targetRepeats || discoverTargetRepeats(rootDir),
+    controlRepeats: options.controlRepeats || discoverControlRepeats(rootDir),
     critics: CRITICS.map(({ id, label }) => ({ id, label })),
     target,
     controls,
@@ -326,7 +351,7 @@ function writeArtifact(filePath, content) {
 
 function main() {
   const options = parseArgs(process.argv.slice(2));
-  const summary = buildSummary(options.rootDir);
+  const summary = buildSummary(options.rootDir, options);
   if (options.out) writeArtifact(options.out, `${JSON.stringify(summary, null, 2)}\n`);
   if (options.markdown) writeArtifact(options.markdown, renderMarkdown(summary));
   console.log(renderTargetTable(summary));

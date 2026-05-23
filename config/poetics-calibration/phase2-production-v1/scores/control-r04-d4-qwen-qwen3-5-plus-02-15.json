@@ -1,0 +1,56 @@
+{
+  "generated": "2026-05-23T12:43:24.460Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.5-plus-02-15",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-production-v1/control-r04/d4/key.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T01",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 3
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner moves from confusion to reciting the tutor's instructions without deviation.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    }
+  ]
+}

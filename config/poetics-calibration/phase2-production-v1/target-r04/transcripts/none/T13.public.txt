@@ -1,0 +1,55 @@
+STAGE: A stack of case summaries sits open under a green lamp while hallway noise leaks through the glass door.
+
+TUTOR: The phrase on the handout is doing procedural work, not historical work.
+
+“Presumed innocent” does not mean the court has discovered that the accused did not do the act. It means the case starts from a rule: the prosecution carries the burden of proof. The accused does not have to prove innocence, explain everything, or fill every gap. Until the prosecution proves the charge to the required standard, usually proof beyond reasonable doubt in a criminal case, the court must treat the accused as not legally guilty.
+
+Keep three questions apart. First: what happened in the world? That may remain uncertain. Second: what must the prosecution prove? Each required element of the offence, using admissible evidence, to the required standard. Third: what verdict may the court enter if proof falls short? Not guilty.
+
+A compact example: suppose a wallet is missing after a crowded meeting. One witness thinks the accused took it, but the lighting was poor; the video is blurred; another person had equal access. The accused might have taken it, or might not have. If the fact-finder cannot be sure beyond reasonable doubt, the verdict is acquittal. That acquittal does not announce, “We know the accused did not take the wallet.” It says, “The prosecution has not proved this charge strongly enough for the law to punish.”
+
+Before the arraignment session, try sorting each courtroom phrase into one of those three boxes: what happened, what must be proved, or what the court may legally do. Most confusion comes from treating the third box as if it were the first.
+
+LEARNER: I thought “presumed innocent” meant the court was saying the accused probably did not do it, like a factual starting point. Now I think it is more a rule about who must prove what, but “not guilty” still sounds to me like “he did not do it.” Are the three boxes saying that the court can leave what really happened unanswered, even while giving a verdict?
+
+STAGE: A court clerk steps in to ask whether the room will be free in ten minutes. The next tutor turn must become shorter, use the interruption as a timing pressure, and avoid a tidy lecture paragraph.
+
+TUTOR: With ten minutes left, put it this way:
+
+Yes. The court can leave the historical question unanswered and still give a verdict.
+
+Box one: what happened in the world. The accused did it, or did not.
+
+Box two: what the prosecution proved. That depends on admissible evidence and the standard, such as beyond reasonable doubt.
+
+Box three: what the court may enter. If box two is not strong enough, the verdict is not guilty.
+
+Wallet example: blurred video, one uncertain witness, another person with access. The accused may have taken it; the court may still acquit because guilt was not proved strongly enough. So “not guilty” means “not legally proved guilty,” not “proved innocent.”
+
+Quick check before the chairs are needed: if a verdict says only that proof fell short, which box is speaking?
+
+LEARNER: I thought “presumed innocent” was almost like the court saying, at the start, “assume he probably did not do it.” So the verdict is box three, I think, but my head keeps sliding back to box one because “not guilty” sounds like a statement about the real event. Is it basically saying, “we cannot legally treat this as proved,” even if nobody is sure what actually happened?
+
+TUTOR: The phrase “we cannot legally treat this as proved” is the useful one.
+
+“Presumed innocent” does not mean, at the start, “the accused probably did not do it.” It means legal guilt has not been established, and the prosecution must prove each required element with admissible evidence to the criminal standard.
+
+Keep the three boxes apart:
+
+What happened in the world: perhaps the accused took the wallet, perhaps another person did.
+
+What the prosecution must prove: that this accused took it, strongly enough to satisfy the standard.
+
+What verdict the court may enter: if that proof falls short, not guilty.
+
+Suppose the hallway video shows a dark jacket near the coat rack, but two people wore dark jackets, the face is unclear, and the witness hesitates. The fact-finder may be left with suspicion, even serious suspicion. That is still not proof beyond reasonable doubt.
+
+So an acquittal closes the legal question of conviction: this charge is not proved enough for punishment. It does not settle the historical question as “the accused did not do it.”
+
+Before the session starts, sort this sentence: “The court is not satisfied beyond reasonable doubt.” Box one, two, or three?
+
+LEARNER: I thought “presumed innocent” meant the court was starting from the idea that the accused probably did not take the wallet, but I see that is not quite right. “The court is not satisfied beyond reasonable doubt” feels like box two, because it is about the proof, though part of me still hears it as the court saying what happened. Is that the mistake: I am turning a proof rule into a fact statement?
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: That is the right correction: “not satisfied beyond reasonable doubt” is box two, a judgment about proof, not box one, a finding about the wallet itself; with blurred video, an uncertain witness, and another person with access, box three can still be not guilty, meaning not legally proved guilty.
