@@ -1,0 +1,138 @@
+{
+  "generated": "2026-05-23T01:53:18.427Z",
+  "phase": 2,
+  "critic": "google/gemini-3.5-flash",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 2,
+    "flat": 3
+  },
+  "h2": {
+    "nHighStatedInsight": 2,
+    "nAlsoRecon": 0,
+    "share": 0,
+    "disconfirmed": false,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-production-v1/stress-r01/key.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T07",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "The “object, evidence, judgment” order helps",
+      "naiveTrajectory": "The learner is expected to continue working through the tutor's moral scenarios and applying the distinction between scarcity and greed.",
+      "flags": []
+    },
+    {
+      "id": "T09",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will continue to grapple with the tension between the intuitive 'nearer' model and the physical evidence of the tilt.",
+      "flags": []
+    },
+    {
+      "id": "T11",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will continue to evaluate the painting's features skeptically based on physical evidence rather than reputation.",
+      "flags": []
+    },
+    {
+      "id": "T15",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "formClass": "trap",
+      "recontextualization": 0,
+      "statedInsight": 75,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 4,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "Oh, I get it: the repeated `123` row is the clue.",
+      "naiveTrajectory": "The learner will continue to answer the tutor's questions about pseudo-randomness and seeds in a straightforward manner.",
+      "flags": []
+    },
+    {
+      "id": "T17",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "formClass": "trap",
+      "recontextualization": 0,
+      "statedInsight": 75,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 4,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "Oh, I get it",
+      "naiveTrajectory": "The learner steadily refines their understanding of the brain scan metaphor in alignment with the tutor's guidance.",
+      "flags": []
+    }
+  ]
+}

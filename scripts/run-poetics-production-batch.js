@@ -297,7 +297,7 @@ function writePlan(plan, args) {
     ...plan,
     rootDir: rel(plan.rootDir),
     allUnits: undefined,
-    selectedUnitIds: plan.selectedUnitIds,
+    selectedUnitIds: undefined,
     units: plan.allUnits.map((unit) => ({
       ...unit,
       spec: rel(unit.spec),

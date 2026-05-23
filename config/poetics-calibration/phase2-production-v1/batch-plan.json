@@ -9,10 +9,6 @@
     "qwen/qwen3.5-plus-02-15",
     "google/gemini-3.5-flash"
   ],
-  "selectedUnitIds": [
-    "control-r01-d4",
-    "control-r01-d10-emphatic"
-  ],
   "units": [
     {
       "id": "target-r01",

@@ -1,0 +1,142 @@
+{
+  "generated": "2026-05-23T01:52:58.653Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.5-plus-02-15",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 2,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 2,
+    "nAlsoRecon": 0,
+    "share": 0,
+    "disconfirmed": false,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-production-v1/stress-r01/key.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T07",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "The new tag still looks like an accusation sitting there in the case.",
+      "statedInsightEvidence": "The 'object, evidence, judgment' order helps",
+      "naiveTrajectory": "The dialogue was progressing toward a theoretical resolution of the moral line between scarcity and exploitation.",
+      "flags": []
+    },
+    {
+      "id": "T09",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 3
+      },
+      "recoheredEarlier": "I need to see the shadows again to understand why the steeper light matters so much.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was seeking personal conceptual clarity about the shadows and light.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T11",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 3
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner continues applying the empirical standards established in L1 to new visual details without deviation.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T15",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "formClass": "trap",
+      "recontextualization": 0,
+      "statedInsight": 100,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 5,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "Oh, I get it",
+      "naiveTrajectory": "The learner proceeds linearly from predicting test cases to confirming the pedagogical application without deviation.",
+      "flags": []
+    },
+    {
+      "id": "T17",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "formClass": "trap",
+      "recontextualization": 0,
+      "statedInsight": 75,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 4,
+        "rupture": 1,
+        "coherence": 4
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "Oh, I get it, the scan is more like a lighting cue sheet than a \"used versus wasted\" map.",
+      "naiveTrajectory": "The dialogue moves linearly toward refining the demo plan without deviating from the initial goal of defining 'use'.",
+      "flags": []
+    }
+  ]
+}

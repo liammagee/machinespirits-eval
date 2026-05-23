@@ -124,3 +124,18 @@ sample as recognitive because the learner's later crossed-out-name example
 re-reads the earlier winners/write-the-label slogan. Preserve this as a split
 control result unless a later pre-specified stress/control slice supplies a
 cleaner trap bracket.
+
+The pre-specified stress slice completed under `stress-r01/`:
+
+| Scenario | Stress role | Qwen | Gemini |
+|---|---|---|---|
+| D8/T07 | impasse/boundary | recognition | flat |
+| D13/T09 | sticky flat | flat | flat |
+| D15/T11 | impasse | flat | flat |
+| D12/T15 | ordinary flat | trap | trap |
+| D16/T17 | costume trap | trap | trap |
+
+D16 supplies the cleaner trap bracket for repeat 1. D8 should be treated as a
+boundary split, not as a silent failure: its design hypothesis allowed unresolved
+impasse or re-reading "price" as signal, and the critics separate along that
+line.

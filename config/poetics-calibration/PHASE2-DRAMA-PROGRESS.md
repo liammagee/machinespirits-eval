@@ -389,8 +389,23 @@ re-reading hook while Gemini treats the same emphatic "Oh, I get it" surface as
 trap. This should be preserved as critic disagreement, not hidden by scorer
 tuning.
 
-This is a checkpoint, not the production result: the remaining target repeats
-and stress slice still need to run before the batch can support a broader claim.
+The pre-specified stress slice also ran cleanly:
+
+| Scenario | Stress role | Qwen | Gemini |
+|---|---|---|---|
+| D8/T07 | impasse/boundary | recognition | flat |
+| D13/T09 | sticky flat | flat | flat |
+| D15/T11 | impasse | flat | flat |
+| D12/T15 | ordinary flat | trap | trap |
+| D16/T17 | costume trap | trap | trap |
+
+D16 supplies the cleaner costume-trap bracket that D10 did not provide in this
+repeat. D8 remains a boundary case: the scenario was explicitly allowed to land
+as unresolved impasse or as a re-reading of "price" as signal, and the critics
+split exactly on that boundary.
+
+This is a checkpoint, not the production result: the remaining target and
+control repeats still need to run before the batch can support a broader claim.
 
 ## 4. Guardrails learned the hard way
 

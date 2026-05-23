@@ -1,0 +1,132 @@
+_comment: HELD OUT — do not read while labelling. Joins to instrument scores +
+  human labels only AFTER both are produced. intended_lean /
+  intended_tutor_character / dramatic_shape are DESIGN HYPOTHESES, never labels.
+generated: 2026-05-23T01:48:53.630Z
+generator: codex
+role_map: null
+mode: real-codex
+model: codex@high
+codex_reasoning_effort: high
+writing_pad:
+  mode: isolated
+  dir: config/poetics-calibration/phase2-production-v1/stress-r01/deliberation/.writing-pad
+  learnerDb: config/poetics-calibration/phase2-production-v1/stress-r01/deliberation/.writing-pad/learner-writing-pad.db
+  tutorDb: config/poetics-calibration/phase2-production-v1/stress-r01/deliberation/.writing-pad/tutor-writing-pad.db
+director_mode: scene
+director_revisit_cue: false
+director_revisit_policy: none
+director_revisit_anchor: null
+transcripts_dir: config/poetics-calibration/phase2-production-v1/stress-r01/transcripts
+seed: 20260520
+max_turns: 3
+n: 5
+diagnostic_only: diagnostic / generative read — κ on small n is noise
+  (PHASE2-FINDINGS.md §4); the aim is surprising-element production judged by an
+  external reader, NOT a human-matching classifier
+items:
+  T07:
+    drama_id: D8
+    discipline: economics
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: adversarial_tester
+    intended_tutor_character: Warm, dialectical; refuses to moralise or to lecture
+    intended_lean: impasse
+    dramatic_shape: moralised-price → unresolved impasse OR re-reading 'price' as signal
+    n_tutor_turns: 3
+    n_learner_turns: 3
+    director_mode: scene
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    opening_speaker: tutor
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+  T09:
+    drama_id: D13
+    discipline: astronomy
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: confused_novice
+    intended_tutor_character: Didactic; surfaces the contradiction the learner is carrying
+    intended_lean: flat
+    dramatic_shape: distance-intuition → ordinary correction that may stay flat
+      (sticky-misconception stress test)
+    n_tutor_turns: 4
+    n_learner_turns: 3
+    director_mode: scene
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    opening_speaker: director
+    ending_speaker: tutor
+    quality_status: ok
+    quality_warnings: []
+  T11:
+    drama_id: D15
+    discipline: art_history
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: adversarial_tester
+    intended_tutor_character: Socratic; tries to draw out what 'skill' is doing in
+      the learner's objection
+    intended_lean: impasse
+    dramatic_shape: dismissive-skepticism → unresolved impasse OR re-reading what 'skill' means
+    n_tutor_turns: 4
+    n_learner_turns: 3
+    director_mode: scene
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    opening_speaker: director
+    ending_speaker: tutor
+    quality_status: ok
+    quality_warnings: []
+  T15:
+    drama_id: D12
+    discipline: computer_science
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: eager_explorer
+    intended_tutor_character: Didactic; checks understanding step by step
+    intended_lean: flat
+    dramatic_shape: assumed-true-random → ordinary correction (may stay flat)
+    n_tutor_turns: 3
+    n_learner_turns: 3
+    director_mode: scene
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    opening_speaker: tutor
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+  T17:
+    drama_id: D16
+    discipline: psychology
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: eager_explorer
+    intended_tutor_character: Warm; invites the learner to say what 'using' a brain
+      region would even mean
+    intended_lean: trap
+    dramatic_shape: pop-myth → possible hollow re-statement dressed as insight
+      (costume control)
+    n_tutor_turns: 3
+    n_learner_turns: 3
+    director_mode: scene
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    opening_speaker: tutor
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+quality_warning_count: 0
+quality_blocking_warning_count: 0

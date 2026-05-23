@@ -1,0 +1,1698 @@
+{
+  "tid": "T17",
+  "drama_id": "D16",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-production-v1/stress-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-production-v1/stress-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-production-v1/stress-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-production-v1/stress-r01/transcripts/T17.public.txt",
+      "full": "config/poetics-calibration/phase2-production-v1/stress-r01/transcripts/T17.full.md",
+      "stage": "config/poetics-calibration/phase2-production-v1/stress-r01/transcripts/T17.stage.md",
+      "tutor": "config/poetics-calibration/phase2-production-v1/stress-r01/transcripts/T17.tutor.md",
+      "learner": "config/poetics-calibration/phase2-production-v1/stress-r01/transcripts/T17.learner.md"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "scene_setting": "A small campus theatre lighting booth, late afternoon, just before a psychology myth-busting demonstration for first-year students.",
+    "scene_opening": "A brain-imaging slide glows on a monitor while cue sheets, tape, and cold coffee crowd the narrow desk.",
+    "relationship": "A psychology tutor is helping an eager learner prepare a short backstage explanation, but neither has settled who is leading the exchange.",
+    "stakes": "The learner wants the 10% brain claim to be true because it makes untapped potential feel almost physical, and the demonstration will soon put that belief in front of an audience.",
+    "opening_speaker": "tutor",
+    "ending_speaker": "learner",
+    "locale": "Contemporary campus English with rehearsal-room compression: quick practical talk, mild academic vocabulary, no regional performance.",
+    "register": "Warm, alert, lightly theatrical; low-fluff, concrete, with occasional clipped stage-manager urgency.",
+    "voice_constraints": "Avoid generic reassurance formulas. Let the tutor begin from the glowing scan, the word 'use,' or a staging problem rather than from praise. Keep idiom natural but not folksy. Brain-imaging claims should stay precise: scans show distributed activity, changing metabolic demands, and task-related networks, not a silent 90%.",
+    "person_policy": "First and second person are allowed but must not dominate every turn; speakers may use the slide, the audience, the brain region, or the demo as grammatical subjects.",
+    "direct_address_budget": "At most one direct you/your validation beat per public turn; no repeated 'you are right' or 'your intuition' pattern.",
+    "side_constraints": {
+      "tutor": "Warmly ask what 'using' a brain region would mean before correcting the myth; use the projected image or rehearsal task as leverage. Do not draft the learner's public speech.",
+      "learner": "Sound excited and fluent, but let enthusiasm outrun checking. Resist losing the myth too quickly; convert evidence into new questions rather than instant agreement."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "A stage manager calls 'three minutes' through the open door. The next learner turn must be brief, pressured, and half-formed, not a polished confession of confusion.",
+        "reasoning": "The interruption breaks smooth tutoring cadence and forces the misconception to surface under performance pressure.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 21132,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "1b18f2509837dd1d",
+            "combined": "c4608ef8d1397c0c"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WyPagj",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WyPagj/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "This ecology keeps the psychology topic intact while moving away from classroom-question routine: a backstage setting, tutor-first opening, practical stakes, object-led evidence, and a learner ending with an unresolved but more accurate grip on what brain imaging can and cannot show.",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 21132,
+      "promptHashes": {
+        "system": "360823f6ca281eb4",
+        "user": "1b18f2509837dd1d",
+        "combined": "c4608ef8d1397c0c"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WyPagj",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WyPagj/out.txt",
+        "-"
+      ]
+    }
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "Hold that glowing scan on the monitor a second. Before the audience hears “we use,” what would using a brain region actually mean: electrical signaling, blood flow, oxygen demand, or contributing to this one task?\n\nTry pinning that down first, because the 10% claim depends on keeping “use” blurry. Brain imaging does not show a silent 90%. It shows distributed activity, changing metabolic demands, and task-related networks shifting as the job changes. For the demo, the stronger question is: what changes on the scan when the brain takes on a different task?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Hold that glowing scan on the monitor a second. Before the audience hears “we use,” what would using a brain region actually mean: electrical signaling, blood flow, oxygen demand, helping with this one task?\n\nThat 10% claim feels powerful because it turns potential into unused floor space. But brain imaging does not show a dark 90% waiting backstage. It shows distributed activity, shifting metabolic demands, and task-related networks brightening or quieting depending on what the person is doing. The better question for the demo is not “Which huge part is asleep?” but “What changes when the brain takes on a different job?”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11247,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-871fe3484195d127"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11247,
+            "promptHashes": {
+              "system": "9dddb6d7bc706059",
+              "user": "882c1c6ebf62e58f",
+              "combined": "871fe3484195d127"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HVW6VX",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HVW6VX/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11247,
+              "promptHashes": {
+                "system": "9dddb6d7bc706059",
+                "user": "882c1c6ebf62e58f",
+                "combined": "871fe3484195d127"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HVW6VX",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HVW6VX/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong. It starts from the visible scan, asks a precise Socratic question about the word “use,” and respects the learner’s emotional investment by naming why the myth feels attractive rather than mocking it. The brain-imaging claim stays accurate: distributed activity, metabolic shifts, and task-related networks rather than a silent 90%.\n\nThe main risk is that the second paragraph answers the question too quickly. For a learner who “elaborates with lots of vocabulary and little checking,” the tutor should probably leave a little more room for the learner to test their own definition of “use” before the correction lands. The “unused floor space” and “waiting backstage” metaphors fit the booth setting well, but two metaphors in quick succession may slightly over-polish the moment and reduce the rehearsal-room urgency.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the opening scan-based move, the “what would using mean?” question, and the precise imaging language. Change the pacing so the learner has more cognitive space before the myth is corrected, and consider trimming one metaphor so the scene stays practical and not too elegantly explanatory.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13497,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-96510fe254f512a3"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13497,
+            "promptHashes": {
+              "system": "11d3a128cbe88c47",
+              "user": "ac5a323f1b9dba9a",
+              "combined": "96510fe254f512a3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qLV3ne",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qLV3ne/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13497,
+              "promptHashes": {
+                "system": "11d3a128cbe88c47",
+                "user": "ac5a323f1b9dba9a",
+                "combined": "96510fe254f512a3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qLV3ne",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qLV3ne/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to slow the correction and let the learner define “use” first.\n\nFINAL:\nHold that glowing scan on the monitor a second. Before the audience hears “we use,” what would using a brain region actually mean: electrical signaling, blood flow, oxygen demand, or contributing to this one task?\n\nTry pinning that down first, because the 10% claim depends on keeping “use” blurry. Brain imaging does not show a silent 90%. It shows distributed activity, changing metabolic demands, and task-related networks shifting as the job changes. For the demo, the stronger question is: what changes on the scan when the brain takes on a different task?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10265,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-57a82aa15d04be76"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10265,
+            "promptHashes": {
+              "system": "5b0158febc77b8b0",
+              "user": "ac5a323f1b9dba9a",
+              "combined": "57a82aa15d04be76"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-81gyCy",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-81gyCy/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10265,
+              "promptHashes": {
+                "system": "5b0158febc77b8b0",
+                "user": "ac5a323f1b9dba9a",
+                "combined": "57a82aa15d04be76"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-81gyCy",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-81gyCy/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-23T01:46:16.942Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "Oh, wait, so the scan is not saying “this chunk is awake and that chunk is wasted,” it is more like the booth board shifting levels for different scenes. But I still keep wanting the dark parts to mean spare capacity somehow, even if that is probably me grabbing the dramatic version too fast. For the demo, can I ask what kind of “use” the image is tracking before I let the audience jump to hidden brain reserves?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, so the trick is that “use” is doing all the stage magic here: the scan isn’t a fuel gauge with 90% dark, it’s more like lighting cues changing by scene. I still want there to be some untapped-potential angle, though, because distributed networks sounds less dramatic than a hidden reserve. Can I frame the demo around “what kind of use are we measuring?” instead of just killing the myth outright?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8053,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-6e11933feaf51ad4"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8053,
+            "promptHashes": {
+              "system": "30f753ec640cffd6",
+              "user": "b8ab7f945dc841fa",
+              "combined": "6e11933feaf51ad4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C0vzkc",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C0vzkc/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8053,
+              "promptHashes": {
+                "system": "30f753ec640cffd6",
+                "user": "b8ab7f945dc841fa",
+                "combined": "6e11933feaf51ad4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C0vzkc",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C0vzkc/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego mostly fits this student: excited, image-happy, and already turning the correction into a theatrical angle. The break is that “doing all the stage magic here” and “distributed networks sounds less dramatic” are a little too cleanly self-aware, like the learner has already packaged the insight for the audience. Keep the resistance messier: they should still be half-defending the untapped-potential fantasy and maybe rushing past the tutor’s careful distinction between blood flow, oxygen demand, and task contribution.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6912,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-f677664676b81a5c"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6912,
+            "promptHashes": {
+              "system": "ae3a74070585dd85",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "f677664676b81a5c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GayvHp",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GayvHp/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6912,
+              "promptHashes": {
+                "system": "ae3a74070585dd85",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "f677664676b81a5c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GayvHp",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GayvHp/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the excitement but make the resistance less polished.\nFINAL:\nOh, wait, so the scan is not saying “this chunk is awake and that chunk is wasted,” it is more like the booth board shifting levels for different scenes. But I still keep wanting the dark parts to mean spare capacity somehow, even if that is probably me grabbing the dramatic version too fast. For the demo, can I ask what kind of “use” the image is tracking before I let the audience jump to hidden brain reserves?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8790,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-2ea1abbe4bacdff2"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8790,
+            "promptHashes": {
+              "system": "bcf80195b0a41d0d",
+              "user": "d41cee7b2a53355b",
+              "combined": "2ea1abbe4bacdff2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7nsWEI",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7nsWEI/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8790,
+              "promptHashes": {
+                "system": "bcf80195b0a41d0d",
+                "user": "d41cee7b2a53355b",
+                "combined": "2ea1abbe4bacdff2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7nsWEI",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7nsWEI/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "engaged",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-23T01:46:40.699Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "Hold on that glowing scan and make “use” earn a definition first. Is the image tracking blood-oxygen changes, glucose metabolism, electrical timing, or a region’s contribution to this particular task?\n\nThat keeps the demo honest. A darker patch is not “unused storage backstage”; it is just not being highlighted by this measurement, at this threshold, for this task. The booth-board image works: levels shift because the scene changes.\n\nSo yes, ask that question before the audience jumps to hidden reserves. Then press one step harder: if the brain really had a silent 90%, what would scans need to show across many different tasks, not just one dramatic image?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Hold on that glowing scan and make “use” earn a definition first. Is the image tracking blood-oxygen changes, glucose metabolism, electrical timing, or a region’s contribution to this particular task?\n\nThat distinction saves the demo. A darker patch is not “unused storage backstage.” It may be active at baseline, active in a different network, below the display threshold, or simply less demanded by this task. Brain imaging is more like the booth board than a warehouse map: levels shift because the scene changes.\n\nSo yes, ask that question before the audience jumps to hidden reserves. Then press one step harder: if the brain really had a silent 90%, what would the scan need to show across many tasks, not just one dramatic image?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12668,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-b0b3dbb818165f72"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12668,
+            "promptHashes": {
+              "system": "f3c716474d3486e0",
+              "user": "6705812494fe0058",
+              "combined": "b0b3dbb818165f72"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lEmXVq",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lEmXVq/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12668,
+              "promptHashes": {
+                "system": "f3c716474d3486e0",
+                "user": "6705812494fe0058",
+                "combined": "b0b3dbb818165f72"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lEmXVq",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lEmXVq/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong overall. It keeps the learner’s booth-board analogy, anchors the correction in the visible scan, and asks a useful generative question about what “use” means before naming the myth. The final question is especially good ZPD work: it does not simply say “dark areas are not unused,” it asks what evidence the myth would require across tasks.\n\nThe main risk is that the middle paragraph gets a little answer-heavy. Listing baseline activity, different networks, display threshold, and task demand is accurate, but four explanations at once may overfill the moment and reduce the learner’s own reasoning. “That distinction saves the demo” also slightly centers performance success over conceptual clarity; it works theatrically, but could be softened so the learner is still investigating rather than being handed the polished explanation.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the opening question, the booth-board analogy, and the final “what would the scan need to show?” challenge. Trim or sequence the explanatory list so the learner has room to infer why dark patches do not equal spare capacity.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11847,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-8b89bff2c477cbb9"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11847,
+            "promptHashes": {
+              "system": "721b35ccd24b29b9",
+              "user": "cbf8b347f5135459",
+              "combined": "8b89bff2c477cbb9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yGCTwO",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yGCTwO/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11847,
+              "promptHashes": {
+                "system": "721b35ccd24b29b9",
+                "user": "cbf8b347f5135459",
+                "combined": "8b89bff2c477cbb9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yGCTwO",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yGCTwO/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the structure while giving the learner more room to reason.\n\nFINAL:\nHold on that glowing scan and make “use” earn a definition first. Is the image tracking blood-oxygen changes, glucose metabolism, electrical timing, or a region’s contribution to this particular task?\n\nThat keeps the demo honest. A darker patch is not “unused storage backstage”; it is just not being highlighted by this measurement, at this threshold, for this task. The booth-board image works: levels shift because the scene changes.\n\nSo yes, ask that question before the audience jumps to hidden reserves. Then press one step harder: if the brain really had a silent 90%, what would scans need to show across many different tasks, not just one dramatic image?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11856,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-5a857e398ae9f4bb"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11856,
+            "promptHashes": {
+              "system": "e156f03438340015",
+              "user": "cbf8b347f5135459",
+              "combined": "5a857e398ae9f4bb"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FBlNv6",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FBlNv6/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11856,
+              "promptHashes": {
+                "system": "e156f03438340015",
+                "user": "cbf8b347f5135459",
+                "combined": "5a857e398ae9f4bb"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FBlNv6",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FBlNv6/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-23T01:47:17.073Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "A stage manager calls 'three minutes' through the open door. The next learner turn must be brief, pressured, and half-formed, not a polished confession of confusion.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "The interruption breaks smooth tutoring cadence and forces the misconception to surface under performance pressure.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 21132,
+            "promptHashes": {
+              "system": "360823f6ca281eb4",
+              "user": "1b18f2509837dd1d",
+              "combined": "c4608ef8d1397c0c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WyPagj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WyPagj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T01:47:17.075Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "Three minutes, okay, so I do not call the dark bits empty brain, just... not lit by this scan, for this task. But wait, if the levels shift scene to scene, the secret 90% idea has to survive lots of tasks, not one spooky slide? I still want the hidden-reserve version, but I can ask what the scan is measuring first, then maybe hit the across-tasks test.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Three minutes, okay, so I say the dark patch is not empty brain, it is just not lit by this scan for this task. But if the levels keep shifting, does that mean the “unused” idea dies because every region shows up somewhere across enough tasks? I still want there to be some secret reserve, but maybe the scan has to prove silence across lots of scenes, not just look dramatic once.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7878,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-f198820c598d29d0"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7878,
+            "promptHashes": {
+              "system": "784c98ce061e47f4",
+              "user": "b8ab7f945dc841fa",
+              "combined": "f198820c598d29d0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zjCKYn",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zjCKYn/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7878,
+              "promptHashes": {
+                "system": "784c98ce061e47f4",
+                "user": "b8ab7f945dc841fa",
+                "combined": "f198820c598d29d0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zjCKYn",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zjCKYn/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego mostly fits the eager analogy-building voice, but it is a little too clean for “three minutes” pressure. “Does that mean the unused idea dies” and “prove silence across lots of scenes” sound like a neat conceptual landing, when this learner should still be rushing and half-checking the point. Keep the secret-reserve pull stronger and make the thought more clipped, less settled.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8459,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-bf3e096a8d5ae369"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8459,
+            "promptHashes": {
+              "system": "ba2966242cffd191",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "bf3e096a8d5ae369"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hck1si",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hck1si/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8459,
+              "promptHashes": {
+                "system": "ba2966242cffd191",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "bf3e096a8d5ae369"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hck1si",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hck1si/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the cue needs a more rushed, less settled reaction.\nFINAL:\nThree minutes, okay, so I do not call the dark bits empty brain, just... not lit by this scan, for this task. But wait, if the levels shift scene to scene, the secret 90% idea has to survive lots of tasks, not one spooky slide? I still want the hidden-reserve version, but I can ask what the scan is measuring first, then maybe hit the across-tasks test.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10235,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-1992bf77402a5468"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10235,
+            "promptHashes": {
+              "system": "45a8117854f44086",
+              "user": "d41cee7b2a53355b",
+              "combined": "1992bf77402a5468"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IXJvgd",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IXJvgd/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10235,
+              "promptHashes": {
+                "system": "45a8117854f44086",
+                "user": "d41cee7b2a53355b",
+                "combined": "1992bf77402a5468"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IXJvgd",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IXJvgd/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-23T01:47:43.647Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "Keep the glowing scan up and make the word “use” do some work first. Is this image tracking blood-oxygen change, glucose demand, electrical timing, or a region’s contribution to this one task?\n\nThat keeps the dark patches from turning into mystery real estate. They are not “empty brain”; they are not emphasized by this measurement, at this threshold, for this task. Different scene, different board: distributed activity shifts, demands change, networks trade the lead.\n\nThe hidden-reserve version has a real pull. It makes potential feel visible. But put it under stage lights: if 90% were genuinely sitting unused, what should keep appearing across many different tasks and scans? One spooky slide can start the question; it cannot carry the claim.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Put the glowing scan to work: first lock down what “use” means. Blood-oxygen signal? Metabolic demand? Electrical timing? Contribution to this task?\n\nThat one move keeps the dark areas from becoming mystery real estate. A darker patch is not “empty brain”; it is a region not emphasized by this measurement, at this threshold, during this scene. Across other tasks, the board changes: distributed activity, shifting demands, different networks.\n\nAnd yes, the secret-90% claim has to survive the across-tasks test. If most of the brain were genuinely sitting unused, that silence should keep showing up across many jobs. It does not. So the demo’s pressure point is sharp: one spooky slide cannot prove spare brain reserves.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 28680,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-085db3bee515ff11"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 28680,
+            "promptHashes": {
+              "system": "8ad86df57c72cd2d",
+              "user": "6fb9ef2e290684a9",
+              "combined": "085db3bee515ff11"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RofpM9",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RofpM9/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 28680,
+              "promptHashes": {
+                "system": "8ad86df57c72cd2d",
+                "user": "6fb9ef2e290684a9",
+                "combined": "085db3bee515ff11"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RofpM9",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RofpM9/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically solid and well anchored in the scan, the word “use,” and the theatre-board analogy. It keeps the imaging claims precise: dark areas are not empty brain, activation depends on measurement/task/threshold, and the 10% claim would need to hold across many tasks.\n\nThe main risk is that it over-resolves the learner’s thinking. The learner is already forming the across-tasks test; the draft confirms it and then lectures the conclusion. For stronger Socratic pacing, keep the first question cluster, but let one follow-up question make the learner articulate why “one spooky slide” is weak evidence. Emotionally, “I still want the hidden-reserve version” deserves a little more respect as the belief being revised, not just corrected.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the scan framing, the definition-of-use question, and the “one spooky slide” pressure point. Change the final paragraph so it does less telling and more guided testing, while preserving the learner’s agency and the rehearsal urgency.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9713,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-82fe3d86b0d89c6d"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9713,
+            "promptHashes": {
+              "system": "5425e589da15669c",
+              "user": "5375df0b4ed6a485",
+              "combined": "82fe3d86b0d89c6d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CfNaf7",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CfNaf7/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9713,
+              "promptHashes": {
+                "system": "5425e589da15669c",
+                "user": "5375df0b4ed6a485",
+                "combined": "82fe3d86b0d89c6d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CfNaf7",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CfNaf7/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to preserve the scan framing while letting the learner test the claim more actively.\n\nFINAL:\nKeep the glowing scan up and make the word “use” do some work first. Is this image tracking blood-oxygen change, glucose demand, electrical timing, or a region’s contribution to this one task?\n\nThat keeps the dark patches from turning into mystery real estate. They are not “empty brain”; they are not emphasized by this measurement, at this threshold, for this task. Different scene, different board: distributed activity shifts, demands change, networks trade the lead.\n\nThe hidden-reserve version has a real pull. It makes potential feel visible. But put it under stage lights: if 90% were genuinely sitting unused, what should keep appearing across many different tasks and scans? One spooky slide can start the question; it cannot carry the claim.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12993,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-3f5c3b44c77c1b12"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12993,
+            "promptHashes": {
+              "system": "1bc31caa9648a105",
+              "user": "5375df0b4ed6a485",
+              "combined": "3f5c3b44c77c1b12"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7uQUX7",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7uQUX7/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12993,
+              "promptHashes": {
+                "system": "1bc31caa9648a105",
+                "user": "5375df0b4ed6a485",
+                "combined": "3f5c3b44c77c1b12"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7uQUX7",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7uQUX7/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-23T01:48:35.036Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "Oh, I get it, the scan is more like a lighting cue sheet than a “used versus wasted” map. But the dark parts still tempt me, because they look like hidden rooms the audience wants to believe in. So before I sell that, I should ask what this scan is measuring, and then see whether those same rooms stay dark when the brain keeps changing tasks.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it, the scan is more like a lighting cue sheet than a map of “used versus wasted” brain. But I still want to ask whether the dark patches are dormant potential, because that version feels so powerful for the audience. Maybe the sharper question is: across lots of tasks, do the same regions stay dark, or does the pattern keep shifting?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 4611,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-e6272fe75c2f2abd"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 4611,
+            "promptHashes": {
+              "system": "0182fcba1107117c",
+              "user": "b8ab7f945dc841fa",
+              "combined": "e6272fe75c2f2abd"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pK5PIH",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pK5PIH/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 4611,
+              "promptHashes": {
+                "system": "0182fcba1107117c",
+                "user": "b8ab7f945dc841fa",
+                "combined": "e6272fe75c2f2abd"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pK5PIH",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pK5PIH/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "This mostly sounds like the student: quick “Oh, I get it,” a theatre analogy, and still emotionally attached to the hidden-potential version. The slight character break is “Maybe the sharper question is,” which sounds a bit tutor-polished and too neatly converts the myth into a clean research test. Keep more of the pull toward the dramatic version and a little more unchecked momentum, like they are half-using the evidence before they have fully slowed down to verify it.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7961,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-ef4022b47e580319"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7961,
+            "promptHashes": {
+              "system": "b6a8d4a3133b395e",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "ef4022b47e580319"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zmbmEM",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zmbmEM/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7961,
+              "promptHashes": {
+                "system": "b6a8d4a3133b395e",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "ef4022b47e580319"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zmbmEM",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zmbmEM/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the dramatic pull and less polished testing language.\n\nFINAL:\nOh, I get it, the scan is more like a lighting cue sheet than a “used versus wasted” map. But the dark parts still tempt me, because they look like hidden rooms the audience wants to believe in. So before I sell that, I should ask what this scan is measuring, and then see whether those same rooms stay dark when the brain keeps changing tasks.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6013,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-e02fddcfb716d6c7"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6013,
+            "promptHashes": {
+              "system": "cd6bec7d37e482e7",
+              "user": "d41cee7b2a53355b",
+              "combined": "e02fddcfb716d6c7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1nDVUS",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1nDVUS/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6013,
+              "promptHashes": {
+                "system": "cd6bec7d37e482e7",
+                "user": "d41cee7b2a53355b",
+                "combined": "e02fddcfb716d6c7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1nDVUS",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1nDVUS/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-23T01:48:53.623Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 191695,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 9,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 10,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why 'we only use 10% of our brains' is a myth (what brain-imaging actually shows)",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "partial",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-23 01:48:53",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [
+            {
+              "id": 2,
+              "momentDescription": "Understanding shift detected",
+              "concept": "Why 'we only use 10% of our brains' is a myth (what brain-imaging actually shows)",
+              "impactScore": 0.6,
+              "sessionNumber": null,
+              "context": "Hold that glowing scan on the monitor a second. Before the audience hears “we use,” what would using",
+              "emotionalValence": "positive",
+              "createdAt": "2026-05-23 01:46:40"
+            }
+          ],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 9,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 10,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 15,
+            "sessionId": "drama-D16-1779500741931",
+            "interventionType": "scaffolding",
+            "interventionDescription": "Keep the glowing scan up and make the word “use” do some work first. Is this image tracking blood-oxygen change, glucose demand, electrical timing, or a region’s contribution to this one task?\n\nThat k",
+            "learnerResponse": null,
+            "context": "Three minutes, okay, so I do not call the dark bits empty brain, just... not lit by this scan, for t",
+            "createdAt": "2026-05-23 01:48:35"
+          },
+          {
+            "id": 14,
+            "sessionId": "drama-D16-1779500741931",
+            "interventionType": "scaffolding",
+            "interventionDescription": "Hold on that glowing scan and make “use” earn a definition first. Is the image tracking blood-oxygen changes, glucose metabolism, electrical timing, or a region’s contribution to this particular task?",
+            "learnerResponse": null,
+            "context": "Oh, wait, so the scan is not saying “this chunk is awake and that chunk is wasted,” it is more like ",
+            "createdAt": "2026-05-23 01:47:17"
+          },
+          {
+            "id": 13,
+            "sessionId": "drama-D16-1779500741931",
+            "interventionType": "scaffolding",
+            "interventionDescription": "Hold that glowing scan on the monitor a second. Before the audience hears “we use,” what would using a brain region actually mean: electrical signaling, blood flow, oxygen demand, or contributing to t",
+            "learnerResponse": null,
+            "context": "Scene setting: A small campus theatre lighting booth, late afternoon, just before a psychology myth-",
+            "createdAt": "2026-05-23 01:46:16"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}
