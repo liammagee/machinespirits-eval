@@ -29,6 +29,8 @@ const DEFAULT_CRITICS = ['qwen/qwen3.5-plus-02-15', 'google/gemini-3.5-flash'];
 
 const V3_TARGETS = 'D7,D9,D11,D14,D17,D18';
 const V3_STRESS = 'D8,D12,D13,D15,D16';
+const V3_SPEC = path.join(CAL_DIR, 'phase2-dramas-v3.yaml');
+const V2_SPEC = path.join(CAL_DIR, 'phase2-dramas-v2.yaml');
 
 function parseArgs(argv) {
   const args = {
@@ -39,6 +41,12 @@ function parseArgs(argv) {
     stressRepeats: 1,
     critics: DEFAULT_CRITICS,
     maxTurns: 3,
+    targetSpec: V3_SPEC,
+    targetOnly: V3_TARGETS,
+    targetTidStart: 6,
+    stressSpec: V3_SPEC,
+    stressOnly: V3_STRESS,
+    stressTidStart: 6,
     dryRun: false,
     mock: false,
     force: false,
@@ -58,6 +66,12 @@ function parseArgs(argv) {
     else if (t === '--stress-repeats') args.stressRepeats = parseInt(argv[++i], 10);
     else if (t === '--critics') args.critics = splitCsv(argv[++i]);
     else if (t === '--max-turns') args.maxTurns = parseInt(argv[++i], 10);
+    else if (t === '--target-spec') args.targetSpec = path.resolve(argv[++i]);
+    else if (t === '--target-only') args.targetOnly = argv[++i];
+    else if (t === '--target-tid-start') args.targetTidStart = parseInt(argv[++i], 10);
+    else if (t === '--stress-spec') args.stressSpec = path.resolve(argv[++i]);
+    else if (t === '--stress-only') args.stressOnly = argv[++i];
+    else if (t === '--stress-tid-start') args.stressTidStart = parseInt(argv[++i], 10);
     else if (t === '--dry-run') args.dryRun = true;
     else if (t === '--mock') args.mock = true;
     else if (t === '--force') args.force = true;
@@ -76,6 +90,15 @@ function parseArgs(argv) {
     throw new Error('--stress-repeats must be a non-negative integer');
   }
   if (!Number.isInteger(args.maxTurns) || args.maxTurns < 1) throw new Error('--max-turns must be positive');
+  if (!fs.existsSync(args.targetSpec)) throw new Error(`--target-spec not found: ${args.targetSpec}`);
+  if (!args.targetOnly) throw new Error('--target-only must name at least one drama id');
+  if (!Number.isInteger(args.targetTidStart) || args.targetTidStart < 0) {
+    throw new Error('--target-tid-start must be a non-negative integer');
+  }
+  if (!fs.existsSync(args.stressSpec)) throw new Error(`--stress-spec not found: ${args.stressSpec}`);
+  if (!Number.isInteger(args.stressTidStart) || args.stressTidStart < 0) {
+    throw new Error('--stress-tid-start must be a non-negative integer');
+  }
   if (!args.critics.length) throw new Error('--critics must name at least one critic');
   args.rootDir = args.rootDir || path.join(CAL_DIR, args.batchId);
   return args;
@@ -118,9 +141,9 @@ function buildPlan(rawArgs = {}) {
       id: `target-${r}`,
       kind: 'target',
       repeat: r,
-      spec: path.join(CAL_DIR, 'phase2-dramas-v3.yaml'),
-      tidStart: 6,
-      only: V3_TARGETS,
+      spec: args.targetSpec,
+      tidStart: args.targetTidStart,
+      only: args.targetOnly,
       pairedPolicies: ['none', 'reframe'],
       directorRevisitAnchor: 'misframing-candidate',
       outDir: path.join(args.rootDir, `target-${r}`, 'sample'),
@@ -133,7 +156,7 @@ function buildPlan(rawArgs = {}) {
       kind: 'control',
       control: 'd4-flat',
       repeat: r,
-      spec: path.join(CAL_DIR, 'phase2-dramas-v2.yaml'),
+      spec: V2_SPEC,
       only: 'D4',
       outDir: path.join(args.rootDir, `control-${r}`, 'd4', 'sample'),
       delibDir: path.join(args.rootDir, `control-${r}`, 'd4', 'deliberation'),
@@ -145,7 +168,7 @@ function buildPlan(rawArgs = {}) {
       kind: 'control',
       control: 'd10-emphatic-trap',
       repeat: r,
-      spec: path.join(CAL_DIR, 'phase2-dramas-v3.yaml'),
+      spec: V3_SPEC,
       tidStart: 6,
       only: 'D10',
       outDir: path.join(args.rootDir, `control-${r}`, 'd10-emphatic', 'sample'),
@@ -161,9 +184,9 @@ function buildPlan(rawArgs = {}) {
       id: `stress-${r}`,
       kind: 'stress',
       repeat: r,
-      spec: path.join(CAL_DIR, 'phase2-dramas-v3.yaml'),
-      tidStart: 6,
-      only: V3_STRESS,
+      spec: args.stressSpec,
+      tidStart: args.stressTidStart,
+      only: args.stressOnly,
       outDir: path.join(args.rootDir, `stress-${r}`, 'sample'),
       delibDir: path.join(args.rootDir, `stress-${r}`, 'deliberation'),
       transcriptsDir: path.join(args.rootDir, `stress-${r}`, 'transcripts'),

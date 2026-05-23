@@ -32,9 +32,7 @@ const CRITICS = [
   },
 ];
 
-const TARGET_REPEATS = ['r01', 'r02', 'r03'];
 const TARGET_ARMS = ['none', 'reframe'];
-const CONTROL_REPEATS = ['r01', 'r02', 'r03'];
 const CONTROLS = [
   { id: 'd4', label: 'D4 flat' },
   { id: 'd10-emphatic', label: 'D10 emphatic trap' },
@@ -79,6 +77,12 @@ function scorePath(rootDir, name) {
   return path.join(rootDir, 'scores', name);
 }
 
+function scoreFiles(rootDir) {
+  const dir = path.join(rootDir, 'scores');
+  if (!fs.existsSync(dir)) throw new Error(`Missing scores directory: ${dir}`);
+  return fs.readdirSync(dir).filter((file) => file.endsWith('.json'));
+}
+
 function emptyCounts() {
   return { recognition: 0, trap: 0, flat: 0 };
 }
@@ -97,14 +101,54 @@ function formFor(counts = {}) {
   return entries[0][0];
 }
 
+function discoverTargetRepeats(rootDir) {
+  const files = scoreFiles(rootDir);
+  const repeatsByCritic = CRITICS.map((critic) => {
+    const repeats = new Set();
+    for (const file of files) {
+      const match = file.match(new RegExp(`^target-(r\\d+)-none-${critic.slug}\\.json$`));
+      if (!match) continue;
+      const repeat = match[1];
+      const hasReframe = files.includes(`target-${repeat}-reframe-${critic.slug}.json`);
+      if (hasReframe) repeats.add(repeat);
+    }
+    return repeats;
+  });
+  if (repeatsByCritic.length === 0) return [];
+  return [...repeatsByCritic[0]]
+    .filter((repeat) => repeatsByCritic.every((set) => set.has(repeat)))
+    .sort();
+}
+
+function discoverControlRepeats(rootDir) {
+  const files = scoreFiles(rootDir);
+  const repeatsByCritic = CRITICS.map((critic) => {
+    const repeats = new Set();
+    for (const file of files) {
+      const match = file.match(new RegExp(`^control-(r\\d+)-d4-${critic.slug}\\.json$`));
+      if (!match) continue;
+      const repeat = match[1];
+      const hasTrap = files.includes(`control-${repeat}-d10-emphatic-${critic.slug}.json`);
+      if (hasTrap) repeats.add(repeat);
+    }
+    return repeats;
+  });
+  if (repeatsByCritic.length === 0) return [];
+  return [...repeatsByCritic[0]]
+    .filter((repeat) => repeatsByCritic.every((set) => set.has(repeat)))
+    .sort();
+}
+
 function summarizeTargets(rootDir) {
+  const targetRepeats = discoverTargetRepeats(rootDir);
+  if (targetRepeats.length === 0) throw new Error(`No complete target repeats found under ${rootDir}`);
   const byCritic = {};
   for (const critic of CRITICS) {
     const arms = {};
     for (const arm of TARGET_ARMS) {
       const totals = emptyCounts();
       const repeats = {};
-      for (const repeat of TARGET_REPEATS) {
+      for (const repeat of targetRepeats) {
         const filename = `target-${repeat}-${arm}-${critic.slug}.json`;
         const artifact = readJson(scorePath(rootDir, filename));
         const counts = artifact.formCounts || emptyCounts();
@@ -130,8 +174,9 @@ function summarizeTargets(rootDir) {
 }
 
 function summarizeControls(rootDir) {
+  const controlRepeats = discoverControlRepeats(rootDir);
   const rows = [];
-  for (const repeat of CONTROL_REPEATS) {
+  for (const repeat of controlRepeats) {
     for (const control of CONTROLS) {
       const row = {
         repeat,
@@ -159,6 +204,7 @@ function summarizeStress(rootDir) {
   const stress = {};
   for (const critic of CRITICS) {
     const filename = `${STRESS_ID}-${critic.slug}.json`;
+    if (!fs.existsSync(scorePath(rootDir, filename))) continue;
     const artifact = readJson(scorePath(rootDir, filename));
     stress[critic.id] = {
       label: critic.label,
@@ -229,6 +275,7 @@ function renderControlTable(summary) {
 }
 
 function renderStressTable(summary) {
+  if (Object.keys(summary.stress).length === 0) return 'No stress slice found for this production root.';
   const lines = ['| Critic | Recognition | Trap | Flat |', '|---|---:|---:|---:|'];
   for (const critic of CRITICS) {
     const row = summary.stress[critic.id];

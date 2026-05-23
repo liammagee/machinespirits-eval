@@ -230,3 +230,6 @@ node scripts/analyze-poetics-production-v1.js
 
 The script reads the committed score JSON under `phase2-production-v1/scores/`
 and writes ignored local summaries to `exports/poetics-production-v1-summary.*`.
+
+The depth-plus-breadth continuation plan is in
+`config/poetics-calibration/PHASE2-PRODUCTION-NEXT.md`.

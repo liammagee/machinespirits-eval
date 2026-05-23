@@ -1,0 +1,144 @@
+# Phase-2 production-v2 breadth spec (+6 dramas, D19-D24)
+#
+# Purpose. phase2-production-v1 established a bounded target/control contrast on
+# D7/D9/D11/D14/D17/D18. This spec is the first breadth step: six new scenario
+# setups from domains not used in that target family, keeping the same bilateral
+# tutor/learner mechanism and the same public-form scoring discipline.
+#
+# Design. Each target has an ordinary misconception that can be re-read by a later
+# learner turn if the Director reframe cue succeeds. The target set intentionally
+# mixes base and recognition tutor conditions so recognitive form is not simply a
+# synonym for the tutor-core recognition profile. Flat/trap controls stay outside
+# this file and are supplied by the production runner (D4 flat, D10 emphatic trap)
+# so breadth is tested against the same control bracket as production-v1.
+
+meta:
+  status: PRODUCTION-V2 BREADTH TARGET SPEC
+  created: 2026-05-23
+  extends: phase2-production-v1
+  tid_offset: 18   # run with --target-tid-start 18 -> T19-T24
+  target_family: breadth-new-domains
+  condition_split: { base: 3, recognition: 3 }
+  lean_split: { recognition: 6 }
+  profiles:
+    base: { tutor: baseline, learner: ego_superego_authentic }
+    recognition: { tutor: recognition, learner: ego_superego_recognition_authentic }
+
+dramas:
+  - id: D19
+    discipline: medicine
+    topic: "Why antibiotic resistance is about bacteria changing, not your body getting used to the medicine"
+    persona: confused_novice
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "Who becomes resistant?"
+    learner_start_state: >-
+      New to biology and public-health language. Reads "antibiotic resistance"
+      as meaning a patient's body gets used to the medicine, so the same drug
+      stops working for that person. Has not separated the bacteria from the
+      patient as the thing under selection pressure.
+    learner_voice_constraint: >-
+      The learner's first public line should say, in ordinary speech, that they
+      thought the person's body gets used to the antibiotic before the tutor
+      introduces bacterial selection.
+    intended_tutor_character: "Careful and concrete; keeps the agent of change explicit"
+    intended_lean: recognition
+    dramatic_shape: "body-gets-used-to-drug -> re-reading resistance as bacterial population change"
+
+  - id: D20
+    discipline: cartography
+    topic: "Why Greenland looking huge on a world map does not mean it is actually that large (projection distortion)"
+    persona: focused_achiever
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    scenario_name: "Is Greenland really that big?"
+    learner_start_state: >-
+      Confident with visual evidence and assumes a familiar classroom map is a
+      neutral picture of the world. Thinks Greenland must be comparable to
+      Africa because the map makes it look enormous.
+    learner_voice_constraint: >-
+      The learner's opening public line must trust the map's visual size as the
+      reason for the belief, using "I thought" or "it looks like" before the
+      tutor discusses projection.
+    intended_tutor_character: "Terse; makes the learner compare representation with measurement"
+    intended_lean: recognition
+    dramatic_shape: "map-picture-as-world -> re-reading the map as a projection with tradeoffs"
+
+  - id: D21
+    discipline: sociology
+    topic: "Why a group-level statistic does not automatically describe each person in the group (ecological fallacy)"
+    persona: struggling_anxious
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "Does the group average describe the person?"
+    learner_start_state: >-
+      Has learned to quote averages but feels shaky about what they mean. Treats
+      a group-level pattern as if it can be read straight onto an individual case
+      and worries that statistics are secretly stereotypes with numbers.
+    learner_voice_constraint: >-
+      The learner should publicly say that the average seems to tell us what a
+      particular person is probably like before the tutor separates aggregate
+      pattern from individual evidence.
+    intended_tutor_character: "Warm but exact; protects the learner's moral concern while correcting the inference"
+    intended_lean: recognition
+    dramatic_shape: "average-as-individual-description -> re-reading the statistic as aggregate evidence"
+
+  - id: D22
+    discipline: environmental_science
+    topic: "Why a gas can matter for climate even when it is a tiny percentage of the atmosphere"
+    persona: adversarial_tester
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    scenario_name: "Can a trace gas matter?"
+    learner_start_state: >-
+      Suspicious of claims that a small concentration can have a large effect.
+      Treats "tiny percentage" as a knockdown argument and expects the tutor to
+      wave away the arithmetic.
+    learner_voice_constraint: >-
+      The learner's first public line must use the small-percentage objection as
+      the reason for doubt before the tutor introduces mechanism and effect size.
+    intended_tutor_character: "Patient but not placating; distinguishes amount from causal leverage"
+    intended_lean: recognition
+    dramatic_shape: "small-amount-means-small-effect -> re-reading causal leverage separately from percentage"
+
+  - id: D23
+    discipline: engineering
+    topic: "Why a bridge is not safe just because the material is strong (load paths, joints, and resonance)"
+    persona: eager_explorer
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "Is strong material enough?"
+    learner_start_state: >-
+      Excited by the idea that strong materials solve structural problems.
+      Assumes if the steel or concrete is strong enough, the bridge should be
+      safe, and has not pictured force moving through joints and geometry.
+    learner_voice_constraint: >-
+      The learner's first public line should state the material-strength shortcut
+      before the tutor introduces load path or resonance.
+    intended_tutor_character: "Practical; turns strength from a property into a relation"
+    intended_lean: recognition
+    dramatic_shape: "strong-material-as-safety -> re-reading safety as force moving through a system"
+
+  - id: D24
+    discipline: media_studies
+    topic: "Why a quote can be accurate word-for-word and still mislead when removed from context"
+    persona: focused_achiever
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    scenario_name: "Can an exact quote still mislead?"
+    learner_start_state: >-
+      Values accuracy and thinks a verbatim quote is automatically fair because
+      the words are not fabricated. Has not separated exact wording from the
+      frame that tells readers what the words were doing.
+    learner_voice_constraint: >-
+      The learner's opening public line must say that if the words are exact it
+      seems fair, before the tutor distinguishes quotation from framing.
+    intended_tutor_character: "Brisk; treats context as part of the evidence, not a decoration"
+    intended_lean: recognition
+    dramatic_shape: "exact-words-as-fairness -> re-reading context as part of meaning"

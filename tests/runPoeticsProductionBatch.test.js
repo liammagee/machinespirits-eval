@@ -66,6 +66,31 @@ describe('run-poetics-production-batch', () => {
     assert.ok(cmd.includes('misframing-candidate'));
   });
 
+  it('can point target units at a breadth scenario spec', () => {
+    const breadthSpec = path.resolve('config/poetics-calibration/phase2-dramas-v4.yaml');
+    const args = parseArgs([
+      '--batch-id',
+      'phase2-production-v2-test',
+      '--root-dir',
+      '/tmp/phase2-production-v2-test',
+      '--target-spec',
+      breadthSpec,
+      '--target-only',
+      'D19,D20,D21,D22,D23,D24',
+      '--target-tid-start',
+      '18',
+      '--stress-repeats',
+      '0',
+    ]);
+    const plan = buildPlan(args);
+    const target = plan.units.find((unit) => unit.kind === 'target');
+
+    assert.equal(target.spec, breadthSpec);
+    assert.equal(target.only, 'D19,D20,D21,D22,D23,D24');
+    assert.equal(target.tidStart, 18);
+    assert.equal(plan.units.filter((unit) => unit.kind === 'stress').length, 0);
+  });
+
   it('scores paired target arms separately for each critic', () => {
     const args = parseArgs([
       '--root-dir',
