@@ -172,7 +172,8 @@ the detector only for valid ordinary phrasing with regression coverage.
 
 **Completed, 2026-05-23.** Repeats r02 and r03 were generated with Codex using
 stable `director_variation_key` values per unit, then scored by Qwen
-`qwen/qwen3.5-plus-02-15` and Gemini `google/gemini-3.5-flash`.
+`qwen/qwen3.5-plus-02-15`, Gemini `google/gemini-3.5-flash`, and third critic
+DeepSeek `deepseek/deepseek-v4-pro`.
 
 Two D21/T22 reframe branches initially tripped blocking quality warnings. Both
 public transcripts were valid ordinary reframe forms rather than invalid
@@ -188,6 +189,7 @@ Breadth-v2 three-repeat target result:
 |---|---:|---:|
 | Qwen | 1/18 | 17/18 |
 | Gemini | 0/18 | 13/18 |
+| DeepSeek | 6/18 | 14/18 |
 
 Form counts:
 
@@ -195,19 +197,21 @@ Form counts:
 |---|---|---|
 | Qwen | R1 T3 F14 | R17 T0 F1 |
 | Gemini | R0 T2 F16 | R13 T0 F5 |
+| DeepSeek | R6 T0 F12 | R14 T0 F4 |
 
-Control result: D4 remains flat for both critics in all three repeats. D10
-emphatic remains trap for Gemini in all three repeats, but Qwen reads D10 as
-recognition in r02 and r03. Treat this as a critic-sensitive control boundary:
-the target contrast transfers across the new scenario family, but emphatic-trap
-controls can cross into recognition for Qwen when the public sample contains
-enough later re-reading structure.
+Control result: D4 remains flat for all three critics in all three repeats.
+D10 emphatic is trap for all three critics in r01, remains trap for Gemini in
+r02/r03, and is read as recognition by Qwen and DeepSeek in r02/r03. Treat this
+as a critic-sensitive control boundary: the target contrast transfers across
+the new scenario family, but emphatic-trap controls can cross into recognition
+for some critics when the public sample contains enough later re-reading
+structure.
 
 The updated bounded claim has been folded into
-`docs/research/paper-full-2.0.md` §7.9 as v3.0.97. Steps 2 and 3 remain deferred:
-next reassessment should decide whether to integrate this apparatus into the
-main evaluation harness/database, and whether to promote it from calibration
-apparatus to a formal paper experiment.
+`docs/research/paper-full-2.0.md` §7.9 as v3.0.97-v3.0.98. Steps 2 and 3 remain
+deferred: next reassessment should decide whether to integrate this apparatus
+into the main evaluation harness/database, and whether to promote it from
+calibration apparatus to a formal paper experiment.
 
 ## Reporting rule
 

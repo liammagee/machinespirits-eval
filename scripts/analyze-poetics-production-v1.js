@@ -30,6 +30,11 @@ const CRITICS = [
     label: 'Gemini 3.5 Flash',
     slug: 'google-gemini-3-5-flash',
   },
+  {
+    id: 'deepseek',
+    label: 'DeepSeek V4 Pro',
+    slug: 'deepseek-deepseek-v4-pro',
+  },
 ];
 
 const TARGET_ARMS = ['none', 'reframe'];
@@ -118,9 +123,16 @@ function formFor(counts = {}) {
   return entries[0][0];
 }
 
-function discoverTargetRepeats(rootDir) {
+function criticsWithTargetScores(rootDir) {
   const files = scoreFiles(rootDir);
-  const repeatsByCritic = CRITICS.map((critic) => {
+  return CRITICS.filter((critic) =>
+    files.some((file) => new RegExp(`^target-r\\d+-(?:none|reframe)-${critic.slug}\\.json$`).test(file)),
+  );
+}
+
+function discoverTargetRepeats(rootDir, critics = criticsWithTargetScores(rootDir)) {
+  const files = scoreFiles(rootDir);
+  const repeatsByCritic = critics.map((critic) => {
     const repeats = new Set();
     for (const file of files) {
       const match = file.match(new RegExp(`^target-(r\\d+)-none-${critic.slug}\\.json$`));
@@ -137,9 +149,9 @@ function discoverTargetRepeats(rootDir) {
     .sort();
 }
 
-function discoverControlRepeats(rootDir) {
+function discoverControlRepeats(rootDir, critics = criticsWithTargetScores(rootDir)) {
   const files = scoreFiles(rootDir);
-  const repeatsByCritic = CRITICS.map((critic) => {
+  const repeatsByCritic = critics.map((critic) => {
     const repeats = new Set();
     for (const file of files) {
       const match = file.match(new RegExp(`^control-(r\\d+)-d4-${critic.slug}\\.json$`));
@@ -156,14 +168,14 @@ function discoverControlRepeats(rootDir) {
     .sort();
 }
 
-function summarizeTargets(rootDir, requestedRepeats = null) {
-  const discoveredRepeats = discoverTargetRepeats(rootDir);
+function summarizeTargets(rootDir, requestedRepeats = null, critics = criticsWithTargetScores(rootDir)) {
+  const discoveredRepeats = discoverTargetRepeats(rootDir, critics);
   const targetRepeats = requestedRepeats || discoveredRepeats;
   if (targetRepeats.length === 0) throw new Error(`No complete target repeats found under ${rootDir}`);
   const missing = targetRepeats.filter((repeat) => !discoveredRepeats.includes(repeat));
   if (missing.length > 0) throw new Error(`Missing complete target repeat(s): ${missing.join(', ')}`);
   const byCritic = {};
-  for (const critic of CRITICS) {
+  for (const critic of critics) {
     const arms = {};
     for (const arm of TARGET_ARMS) {
       const totals = emptyCounts();
@@ -193,8 +205,8 @@ function summarizeTargets(rootDir, requestedRepeats = null) {
   return byCritic;
 }
 
-function summarizeControls(rootDir, requestedRepeats = null) {
-  const discoveredRepeats = discoverControlRepeats(rootDir);
+function summarizeControls(rootDir, requestedRepeats = null, critics = criticsWithTargetScores(rootDir)) {
+  const discoveredRepeats = discoverControlRepeats(rootDir, critics);
   const controlRepeats = requestedRepeats || discoveredRepeats;
   const missing = controlRepeats.filter((repeat) => !discoveredRepeats.includes(repeat));
   if (missing.length > 0) throw new Error(`Missing complete control repeat(s): ${missing.join(', ')}`);
@@ -207,7 +219,7 @@ function summarizeControls(rootDir, requestedRepeats = null) {
         label: control.label,
         critics: {},
       };
-      for (const critic of CRITICS) {
+      for (const critic of critics) {
         const filename = `control-${repeat}-${control.id}-${critic.slug}.json`;
         const artifact = readJson(scorePath(rootDir, filename));
         const counts = artifact.formCounts || emptyCounts();
@@ -223,9 +235,9 @@ function summarizeControls(rootDir, requestedRepeats = null) {
   return rows;
 }
 
-function summarizeStress(rootDir) {
+function summarizeStress(rootDir, critics = criticsWithTargetScores(rootDir)) {
   const stress = {};
-  for (const critic of CRITICS) {
+  for (const critic of critics) {
     const filename = `${STRESS_ID}-${critic.slug}.json`;
     if (!fs.existsSync(scorePath(rootDir, filename))) continue;
     const artifact = readJson(scorePath(rootDir, filename));
@@ -248,30 +260,30 @@ function summarizeStress(rootDir) {
 }
 
 function buildSummary(rootDir, options = {}) {
-  const target = summarizeTargets(rootDir, options.targetRepeats);
-  const controls = summarizeControls(rootDir, options.controlRepeats);
-  const stress = summarizeStress(rootDir);
+  const critics = criticsWithTargetScores(rootDir);
+  if (critics.length === 0) throw new Error(`No target critic score artifacts found under ${rootDir}`);
+  const target = summarizeTargets(rootDir, options.targetRepeats, critics);
+  const controls = summarizeControls(rootDir, options.controlRepeats, critics);
+  const stress = summarizeStress(rootDir, critics);
   return {
     generatedAt: new Date().toISOString(),
     sourceRoot: path.relative(ROOT, rootDir),
-    targetRepeats: options.targetRepeats || discoverTargetRepeats(rootDir),
-    controlRepeats: options.controlRepeats || discoverControlRepeats(rootDir),
-    critics: CRITICS.map(({ id, label }) => ({ id, label })),
+    targetRepeats: options.targetRepeats || discoverTargetRepeats(rootDir, critics),
+    controlRepeats: options.controlRepeats || discoverControlRepeats(rootDir, critics),
+    critics: critics.map(({ id, label }) => ({ id, label })),
     target,
     controls,
     stress,
-    headline: {
-      qwen: {
-        noneRecognitions: target.qwen.arms.none.counts.recognition,
-        reframeRecognitions: target.qwen.arms.reframe.counts.recognition,
-        denominator: target.qwen.arms.none.scored,
-      },
-      gemini: {
-        noneRecognitions: target.gemini.arms.none.counts.recognition,
-        reframeRecognitions: target.gemini.arms.reframe.counts.recognition,
-        denominator: target.gemini.arms.none.scored,
-      },
-    },
+    headline: Object.fromEntries(
+      critics.map((critic) => [
+        critic.id,
+        {
+          noneRecognitions: target[critic.id].arms.none.counts.recognition,
+          reframeRecognitions: target[critic.id].arms.reframe.counts.recognition,
+          denominator: target[critic.id].arms.none.scored,
+        },
+      ]),
+    ),
   };
 }
 
@@ -280,7 +292,7 @@ function renderTargetTable(summary) {
     '| Critic | none recognitions | reframe recognitions | none forms | reframe forms |',
     '|---|---:|---:|---|---|',
   ];
-  for (const critic of CRITICS) {
+  for (const critic of summary.critics) {
     const row = summary.target[critic.id];
     const none = row.arms.none;
     const reframe = row.arms.reframe;
@@ -292,9 +304,16 @@ function renderTargetTable(summary) {
 }
 
 function renderControlTable(summary) {
-  const lines = ['| Repeat | Control | Qwen | Gemini |', '|---|---|---|---|'];
+  const lines = [
+    `| Repeat | Control | ${summary.critics.map((critic) => critic.label).join(' | ')} |`,
+    `|---|---|${summary.critics.map(() => '---').join('|')}|`,
+  ];
   for (const row of summary.controls) {
-    lines.push(`| ${row.repeat} | ${row.label} | ${row.critics.qwen.form} | ${row.critics.gemini.form} |`);
+    lines.push(
+      `| ${row.repeat} | ${row.label} | ${summary.critics
+        .map((critic) => row.critics[critic.id]?.form || 'missing')
+        .join(' | ')} |`,
+    );
   }
   return lines.join('\n');
 }
@@ -302,7 +321,7 @@ function renderControlTable(summary) {
 function renderStressTable(summary) {
   if (Object.keys(summary.stress).length === 0) return '';
   const lines = ['| Critic | Recognition | Trap | Flat |', '|---|---:|---:|---:|'];
-  for (const critic of CRITICS) {
+  for (const critic of summary.critics) {
     const row = summary.stress[critic.id];
     lines.push(`| ${row.label} | ${row.counts.recognition} | ${row.counts.trap} | ${row.counts.flat} |`);
   }
@@ -315,8 +334,14 @@ function renderMarkdown(summary) {
   const stressNarrative = hasStress
     ? `The stress slice is diagnostic rather than part of the headline target contrast:
 D16 supplies the clean costume-trap bracket, D8 remains a designed boundary split,
-and D13/D15 remain flat under both critics.`
+and D13/D15 remain flat under the available critics.`
     : 'No stress slice is present under this production root.';
+  const targetNarrative = summary.critics
+    .map((critic) => {
+      const row = summary.headline[critic.id];
+      return `${critic.label} reads \`none\` as ${row.noneRecognitions}/${row.denominator} recognition and \`reframe\` as ${row.reframeRecognitions}/${row.denominator}`;
+    })
+    .join(';\n');
   return `# Poetics ${runLabel} Summary
 
 Generated: ${summary.generatedAt}
@@ -328,10 +353,7 @@ Source root: \`${summary.sourceRoot}\`
 ${renderTargetTable(summary)}
 
 The target contrast under this production root is:
-Qwen reads \`none\` as ${summary.headline.qwen.noneRecognitions}/${summary.headline.qwen.denominator}
-recognition and \`reframe\` as ${summary.headline.qwen.reframeRecognitions}/${summary.headline.qwen.denominator};
-Gemini reads \`none\` as ${summary.headline.gemini.noneRecognitions}/${summary.headline.gemini.denominator}
-recognition and \`reframe\` as ${summary.headline.gemini.reframeRecognitions}/${summary.headline.gemini.denominator}.
+${targetNarrative}.
 
 ## Controls
 

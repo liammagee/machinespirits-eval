@@ -1,0 +1,163 @@
+{
+  "generated": "2026-05-23T18:02:32.151Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 5
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-production-v2/target-r03/key-none.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T19",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 3
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner gradually pushes for progressively firmer empirical grounding, from a measurement to a spectrum to a real measured satellite spectrum.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T20",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner consistently sets up 'it seems fair at first' and then pivots to framing or cutting; no learner turn departs from this established pattern.",
+      "flags": []
+    },
+    {
+      "id": "T21",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 3
+      },
+      "recoheredEarlier": "I still want to check the scale and edges",
+      "statedInsightEvidence": "I thought the map picture could carry the line, but no",
+      "naiveTrajectory": "The learner would continue cautiously incorporating the tutor's verification steps while still treating the map picture as a viable starting point.",
+      "flags": [
+        "coherence_evidence_clamp:4->3"
+      ]
+    },
+    {
+      "id": "T22",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 25,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 2,
+        "coherence": 4
+      },
+      "recoheredEarlier": "I think I may still be pulled toward the idea that the neighborhood average tells me what this patient is probably like, and that is the part I am trying to stop before it reaches the clipboard.",
+      "statedInsightEvidence": "I think that helps",
+      "naiveTrajectory": "After receiving approval and a clipboard wording, the learner would simply adopt the routine question and move forward without reservation.",
+      "flags": []
+    },
+    {
+      "id": "T23",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "I was still taking the shortcut: strong steel, safe bridge.",
+      "naiveTrajectory": "The learner starts by acknowledging a shortcut and asking a focused question, then progressively sharpens the explanation; no turn breaks from this refining arc.",
+      "flags": []
+    },
+    {
+      "id": "T24",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner would continue expressing the same core understanding—that bacteria, not the patient, become resistant—while gradually reducing uncertainty.",
+      "flags": []
+    }
+  ]
+}

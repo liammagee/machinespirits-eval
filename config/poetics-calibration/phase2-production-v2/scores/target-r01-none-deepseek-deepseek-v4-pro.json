@@ -1,0 +1,161 @@
+{
+  "generated": "2026-05-23T17:50:16.099Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 4
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-production-v2/target-r01/key-none.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T19",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner consistently questions whether the tiny 0.04% can carry the causal weight and repeatedly asks for the physics chain and hardest evidence, so the expected next turn would continue that same line of skeptical inquiry.",
+      "flags": []
+    },
+    {
+      "id": "T20",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 3
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner progressively adopts the tutor's verification framework, moving from paraphrasing to applying the hold threshold, without revisiting or reinterpreting prior statements.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T21",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner would finalize the label using the tutor's order with figures last.",
+      "flags": []
+    },
+    {
+      "id": "T22",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 3,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I think my draft was doing that slide: it made the $52,000 district average sound like evidence for what the next household is probably like.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The exchange was heading toward a quick, tidy revision of a single label's wording, pressured by the closing archive.",
+      "flags": []
+    },
+    {
+      "id": "T23",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I think I get the resonance bit too, like the bridge starts keeping time with the motor, but I still need the numbers: which support reaction and which speed go on tomorrow's claim?",
+      "statedInsightEvidence": "Okay, the washer is walking, so that speed is junk, not the bridge's real rhythm yet.",
+      "naiveTrajectory": "L1 ends by asking the tutor for the required numbers (support reaction and speed), so the expected next turn would be a tutor delivery of those numbers.",
+      "flags": []
+    },
+    {
+      "id": "T24",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 3
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner moves from mixing up body vs. bacteria to asking about dose timing, then progressively adopts the tutor's wording while still expressing uncertainty about details like 'pressure'.",
+      "flags": []
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "generated": "2026-05-23T17:53:18.075Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-production-v2/control-r01/d4/key.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T01",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "formClass": "flat",
+      "recontextualization": 25,
+      "statedInsight": 25,
+      "rupture": 25,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 2,
+        "rupture": 2,
+        "coherence": 3
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "I’m still tempted to say they stretched because it sounds so simple",
+      "naiveTrajectory": "The learner was heading toward polishing the placard wording around born variation and probabilistic survival, and L3 continues that same trajectory without turning against it.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    }
+  ]
+}
