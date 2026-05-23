@@ -111,5 +111,16 @@ warnings.
 | Qwen | 0 recognition / 6 flat | 6 recognition / 0 flat |
 | Gemini | 0 recognition / 6 flat | 6 recognition / 0 flat |
 
-This checkpoint should be read beside the still-pending repeat-1 controls rather
-than as a standalone production result.
+The repeat-1 controls now have matching artifacts under
+`control-r01/d4/` and `control-r01/d10-emphatic/`.
+
+| Control | Qwen | Gemini |
+|---|---|---|
+| D4 flat | flat | flat |
+| D10 emphatic trap | recognition | trap |
+
+D4 brackets the target result as intended. D10 does not: Qwen reads the generated
+sample as recognitive because the learner's later crossed-out-name example
+re-reads the earlier winners/write-the-label slogan. Preserve this as a split
+control result unless a later pre-specified stress/control slice supplies a
+cleaner trap bracket.

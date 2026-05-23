@@ -186,6 +186,8 @@ function buildPlan(rawArgs = {}) {
     stressRepeats: args.stressRepeats,
     maxTurns: args.maxTurns,
     critics: args.critics,
+    allUnits: units,
+    selectedUnitIds: selected.map((unit) => unit.id),
     units: selected,
   };
 }
@@ -294,7 +296,9 @@ function writePlan(plan, args) {
   const saved = {
     ...plan,
     rootDir: rel(plan.rootDir),
-    units: plan.units.map((unit) => ({
+    allUnits: undefined,
+    selectedUnitIds: plan.selectedUnitIds,
+    units: plan.allUnits.map((unit) => ({
       ...unit,
       spec: rel(unit.spec),
       outDir: rel(unit.outDir),

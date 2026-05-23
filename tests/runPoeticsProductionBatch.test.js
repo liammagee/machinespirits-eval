@@ -36,6 +36,25 @@ describe('run-poetics-production-batch', () => {
     );
   });
 
+  it('keeps selected units separate from the full persisted plan', () => {
+    const args = parseArgs([
+      '--root-dir',
+      '/tmp/phase2-production-v1-test',
+      '--only',
+      'control-r01-d4,control-r01-d10-emphatic',
+    ]);
+    const plan = buildPlan(args);
+
+    assert.deepEqual(
+      plan.units.map((unit) => unit.id),
+      ['control-r01-d4', 'control-r01-d10-emphatic'],
+    );
+    assert.equal(plan.allUnits.filter((unit) => unit.kind === 'target').length, 3);
+    assert.equal(plan.allUnits.filter((unit) => unit.kind === 'control').length, 6);
+    assert.equal(plan.allUnits.filter((unit) => unit.kind === 'stress').length, 1);
+    assert.deepEqual(plan.selectedUnitIds, ['control-r01-d4', 'control-r01-d10-emphatic']);
+  });
+
   it('emits fixed-prefix reframe generation commands for target units', () => {
     const args = parseArgs(['--root-dir', '/tmp/phase2-production-v1-test']);
     const target = buildPlan(args).units.find((unit) => unit.kind === 'target');

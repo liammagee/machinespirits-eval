@@ -375,9 +375,22 @@ The target-r01 readout is clean:
 | Qwen | 0/6 | 6/6 |
 | Gemini | 0/6 | 6/6 |
 
-This is a checkpoint, not the production result: the matched controls, remaining
-target repeats, and stress slice still need to run before the batch can support a
-broader claim.
+The repeat-1 controls partly bracket the target result:
+
+| Control | Qwen | Gemini |
+|---|---|---|
+| D4 flat | flat | flat |
+| D10 emphatic trap | recognition | trap |
+
+D4 is stable. D10 is not a clean trap draw in this repeat: the public transcript
+lets the learner move from "winners write the big label" to a crossed-out
+daughter's name prying up the category "laborers", which gives Qwen a real
+re-reading hook while Gemini treats the same emphatic "Oh, I get it" surface as
+trap. This should be preserved as critic disagreement, not hidden by scorer
+tuning.
+
+This is a checkpoint, not the production result: the remaining target repeats
+and stress slice still need to run before the batch can support a broader claim.
 
 ## 4. Guardrails learned the hard way
 
