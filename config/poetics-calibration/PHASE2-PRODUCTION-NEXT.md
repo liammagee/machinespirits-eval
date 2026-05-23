@@ -127,6 +127,49 @@ emphatic is trap for both critics. This is the first positive transfer check
 outside the original target family, but it is still one repeat over one new
 scenario family, not a general-transfer claim.
 
+## Step 4: Breadth repeats plus variation hardening
+
+**Decision, 2026-05-23:** proceed now with more breadth repeats and director
+variation hardening. Defer two larger moves until the next reassessment:
+integrating these artifacts into the main evaluation database/harness, and
+deciding whether the apparatus becomes a formal paper experiment rather than a
+calibration/diagnostic mechanism.
+
+The immediate risk is that additional repeats merely redraw the same scene
+ecology and house voice. The generator therefore accepts a
+`--director-variation-key` and the production batch runner supplies a stable key
+per repeat/unit, for example `phase2-production-v2:r02:target`. This key is
+persisted in the director plan, trace JSON, and scoring key. It should vary
+scene/register defaults without changing condition labels, target/control
+assignment, paired-prefix mechanics, critic models, or scoring policy.
+
+Run the next breadth repeats only, retaining the v2 scenario family and the same
+D4/D10 controls:
+
+```bash
+CODEX_REASONING_EFFORT=high node scripts/run-poetics-production-batch.js \
+  --batch-id phase2-production-v2 \
+  --target-spec config/poetics-calibration/phase2-dramas-v4.yaml \
+  --target-only D19,D20,D21,D22,D23,D24 \
+  --target-tid-start 18 \
+  --repeats 3 \
+  --stress-repeats 0 \
+  --only target-r02,control-r02-d4,control-r02-d10-emphatic,target-r03,control-r03-d4,control-r03-d10-emphatic
+```
+
+Summarise the expanded v2 slice with:
+
+```bash
+node scripts/analyze-poetics-production-v1.js \
+  --root-dir config/poetics-calibration/phase2-production-v2 \
+  --out exports/poetics-production-v2-summary.json \
+  --markdown exports/poetics-production-v2-summary.md
+```
+
+Do not pass `--allow-quality-warnings`. If warnings appear, inspect the public
+sample and full trace, then either regenerate the invalid transcript or extend
+the detector only for valid ordinary phrasing with regression coverage.
+
 ## Reporting rule
 
 If the depth top-up or breadth slice changes the empirical interpretation, fold

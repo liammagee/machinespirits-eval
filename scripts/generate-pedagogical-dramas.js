@@ -60,6 +60,7 @@
  *        --generator claude|codex · --role-map "tutor=codex,learner=claude" (mixed)
  *        --director-revisit-cue (anchor shorthand) · --director-revisit-policy none|anchor|revoice|reconsider|reframe
  *        --director-revisit-anchor latest|opening|misframing-candidate
+ *        --director-variation-key <repeat-or-batch-id>
  *        --paired-continuation-policies none,revoice,reconsider,reframe
  * Env:   CODEX_REASONING_EFFORT (default xhigh) · CODEX_MODEL (default: codex config)
  */
@@ -106,6 +107,7 @@ function parseArgs(argv) {
     directorMode: 'scene',
     directorRevisitPolicy: 'none',
     directorRevisitAnchor: 'latest',
+    directorVariationKey: null,
     pairedContinuationPolicies: null,
   };
   for (let i = 0; i < argv.length; i++) {
@@ -131,6 +133,7 @@ function parseArgs(argv) {
     else if (t === '--director-revisit-cue') a.directorRevisitPolicy = 'anchor';
     else if (t === '--director-revisit-policy') a.directorRevisitPolicy = argv[++i];
     else if (t === '--director-revisit-anchor') a.directorRevisitAnchor = argv[++i];
+    else if (t === '--director-variation-key') a.directorVariationKey = argv[++i];
     else if (t === '--paired-continuation-policies') {
       a.pairedContinuationPolicies = String(argv[++i] || '')
         .split(',')
@@ -635,6 +638,7 @@ function keyItemFor(d, nTutor, nLearner, qualityWarnings = []) {
     n_tutor_turns: nTutor,
     n_learner_turns: nLearner,
     director_mode: d._directorMode || null,
+    director_variation_key: d._directorVariationKey || null,
     director_revisit_cue: Boolean(d._directorRevisitPolicy && d._directorRevisitPolicy !== 'none'),
     director_revisit_policy: d._directorRevisitPolicy || 'none',
     director_revisit_anchor:
@@ -1158,18 +1162,26 @@ const SETTINGS = [
   'a lab bench conversation while equipment is being packed away',
 ];
 
-function variantIndex(dramaId, offset = 0) {
-  const n = Number(String(dramaId || '').replace(/\D/g, '')) || 0;
-  return Math.abs(n + offset) % VOICE_VARIANTS.length;
+function variationOffset(key = '') {
+  return String(key || '')
+    .split('')
+    .reduce((sum, char, index) => sum + char.charCodeAt(0) * (index + 1), 0);
 }
 
-function fallbackDirectorPlan(d, reason = 'fallback') {
-  const voice = VOICE_VARIANTS[variantIndex(d.id)];
-  const setting = d.scene_setting || SETTINGS[variantIndex(d.id, 2)];
-  const opensWithTutor = variantIndex(d.id, 1) % 3 === 0;
-  const endsWithTutor = variantIndex(d.id, 2) % 4 === 0;
+function variantIndex(dramaId, offset = 0, variationKey = '') {
+  const n = Number(String(dramaId || '').replace(/\D/g, '')) || 0;
+  return Math.abs(n + offset + variationOffset(variationKey)) % VOICE_VARIANTS.length;
+}
+
+function fallbackDirectorPlan(d, reason = 'fallback', args = {}) {
+  const variationKey = d.director_variation_key || d._directorVariationKey || args.directorVariationKey || '';
+  const voice = VOICE_VARIANTS[variantIndex(d.id, 0, variationKey)];
+  const setting = d.scene_setting || SETTINGS[variantIndex(d.id, 2, variationKey)];
+  const opensWithTutor = variantIndex(d.id, 1, variationKey) % 3 === 0;
+  const endsWithTutor = variantIndex(d.id, 2, variationKey) % 4 === 0;
   return {
     parse_status: reason,
+    variation_key: variationKey || null,
     scene_setting: setting,
     scene_opening: `The scene opens ${setting}; the misconception is already present in the learner's situation, not only in a direct question.`,
     relationship: d.relationship || 'a tutor and learner who do not yet share a stable register',
@@ -1194,7 +1206,7 @@ function fallbackDirectorPlan(d, reason = 'fallback') {
     interventions: [
       {
         after_turn: 2,
-        timing: variantIndex(d.id, 3) % 2 === 0 ? 'before_tutor' : 'before_learner',
+        timing: variantIndex(d.id, 3, variationKey) % 2 === 0 ? 'before_tutor' : 'before_learner',
         instruction:
           d.director_intervention ||
           'A small external interruption changes the rhythm. The next speaker must answer under time pressure and avoid a tidy explanatory paragraph.',
@@ -1203,7 +1215,7 @@ function fallbackDirectorPlan(d, reason = 'fallback') {
     ],
     director_note:
       d.director_note ||
-      'The director varies scene ecology and voice; this is not a hidden label for recognition, flatness, trap, or impasse.',
+      'The director varies scene ecology and voice; variation keys change draw-level style without changing labels.',
   };
 }
 
@@ -1332,7 +1344,8 @@ async function buildDirectorPlan(d, llmCall, args) {
   if (args.directorMode === 'off') return null;
   const revisitPolicy = d._directorRevisitPolicy ?? args.directorRevisitPolicy;
   const revisitAnchor = d._directorRevisitAnchor ?? args.directorRevisitAnchor;
-  const fallback = fallbackDirectorPlan(d, 'fallback-not-called');
+  const variationKey = d.director_variation_key || d._directorVariationKey || args.directorVariationKey || null;
+  const fallback = fallbackDirectorPlan(d, 'fallback-not-called', args);
   const userPrompt = yaml.stringify({
     drama_id: d.id,
     discipline: d.discipline,
@@ -1342,12 +1355,14 @@ async function buildDirectorPlan(d, llmCall, args) {
     learner_start_state: d.learner_start_state,
     persona: d.persona,
     intended_tutor_character: d.intended_tutor_character,
+    director_variation_key: variationKey,
     forbidden_failure_modes: [
       'every turn in first/second person',
       'standard American AI tutor voice',
       'learner always starts and always has the last word',
       'scenario only begins in medias res as a direct learner question',
       'superego drafts public speech',
+      'repeat draw uses the same scene ecology and voice as another repeat',
     ],
     opt_in_revisit_cue:
       revisitPolicy !== 'none' &&
@@ -1372,6 +1387,7 @@ async function buildDirectorPlan(d, llmCall, args) {
         applySpecDirectorOverrides(d, {
           ...fallback,
           ...parsed,
+          variation_key: variationKey,
           interventions:
             Array.isArray(parsed.interventions) && parsed.interventions.length ? parsed.interventions : fallback.interventions,
           parse_status: 'ok',
@@ -1385,7 +1401,7 @@ async function buildDirectorPlan(d, llmCall, args) {
     return withDirectorCueProvenance(
       withDirectorRevisitCue(
         applySpecDirectorOverrides(d, {
-          ...fallbackDirectorPlan(d, `fallback-parse-failed:${error.message}`),
+          ...fallbackDirectorPlan(d, `fallback-parse-failed:${error.message}`, args),
           raw_director_response: String(response.content || '').slice(0, 2000),
           provenance: response.provenance || response.apiPayload?.provenance || null,
         }),
@@ -1659,6 +1675,7 @@ function writeGeneratedDramaArtifacts({
           director_revisit_cue: d._directorRevisitPolicy !== 'none',
           director_revisit_policy: d._directorRevisitPolicy,
           director_revisit_anchor: d._directorRevisitAnchor,
+          director_variation_key: d._directorVariationKey || null,
           model: args.generator === 'codex' ? `codex@${CODEX_REASONING_EFFORT}` : args.model,
           codex_reasoning_effort: CODEX_REASONING_EFFORT,
           writing_pad: runtime.writingPad,
@@ -1703,6 +1720,7 @@ function baseKeyObject({ args, runtime, directorPolicy, directorAnchor, transcri
     codex_reasoning_effort: CODEX_REASONING_EFFORT,
     writing_pad: runtime.writingPad,
     director_mode: args.directorMode,
+    director_variation_key: args.directorVariationKey || null,
     director_revisit_cue: directorPolicy !== 'none',
     director_revisit_policy: directorPolicy,
     director_revisit_anchor: directorPolicy === 'none' ? null : directorAnchor,
@@ -1763,6 +1781,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
 
   console.log(`\n── paired continuations: fixed prefix through tutor turn 2 · policies=${policies.join(',')} ──`);
   for (const d of order) {
+    d._directorVariationKey = d.director_variation_key || args.directorVariationKey || null;
     console.log(`\n  ${d._tid} (${d.id}) — generating shared prefix …`);
     const prefixDrama = {
       ...d,
@@ -1805,6 +1824,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
         ...d,
         _directorMode: args.directorMode,
         _directorPlan: branchDirectorPlan,
+        _directorVariationKey: d._directorVariationKey || null,
         _directorRevisitPolicy: policy,
         _directorRevisitAnchor: policy === 'none' ? null : args.directorRevisitAnchor,
       };
@@ -2051,6 +2071,7 @@ async function main() {
                 traceJson.run?.director_revisit_policy ||
                 (traceJson.run?.director_revisit_cue ? 'anchor' : 'none'),
               _directorRevisitAnchor: traceJson.run?.director_revisit_anchor || 'latest',
+              _directorVariationKey: traceJson.run?.director_variation_key || null,
               _directorPlan: traceJson.directorPlan || null,
             },
             t.filter((x) => x.role === 'TUTOR').length,
@@ -2067,6 +2088,7 @@ async function main() {
     }
     console.log(`\n  ${d._tid} (${d.id}) — generating ${d.discipline}/${d.condition} …`);
     const t0 = Date.now();
+    d._directorVariationKey = d.director_variation_key || args.directorVariationKey || null;
     const directorPlan = await buildDirectorPlan(d, llmCall, args);
     d._directorMode = args.directorMode;
     d._directorPlan = directorPlan;
@@ -2138,6 +2160,7 @@ async function main() {
             director_revisit_cue: d._directorRevisitPolicy !== 'none',
             director_revisit_policy: d._directorRevisitPolicy,
             director_revisit_anchor: d._directorRevisitAnchor,
+            director_variation_key: d._directorVariationKey || null,
             model: args.generator === 'codex' ? `codex@${CODEX_REASONING_EFFORT}` : args.model,
             codex_reasoning_effort: CODEX_REASONING_EFFORT,
             writing_pad: runtime.writingPad,

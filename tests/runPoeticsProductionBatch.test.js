@@ -34,6 +34,11 @@ describe('run-poetics-production-batch', () => {
         ['none', 'reframe'],
       ],
     );
+    assert.deepEqual(
+      plan.units.filter((unit) => unit.kind === 'target').map((unit) => unit.directorVariationKey),
+      ['phase2-production-v1-test:r01:target', 'phase2-production-v1-test:r02:target'],
+    );
+    assert.equal(new Set(plan.units.map((unit) => unit.directorVariationKey)).size, plan.units.length);
   });
 
   it('keeps selected units separate from the full persisted plan', () => {
@@ -64,6 +69,8 @@ describe('run-poetics-production-batch', () => {
     assert.ok(cmd.includes('none,reframe'));
     assert.ok(cmd.includes('--director-revisit-anchor'));
     assert.ok(cmd.includes('misframing-candidate'));
+    assert.ok(cmd.includes('--director-variation-key'));
+    assert.ok(cmd.includes('phase2-production-v1:r01:target'));
   });
 
   it('can point target units at a breadth scenario spec', () => {

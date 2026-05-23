@@ -1379,6 +1379,8 @@ describe('generate-pedagogical-dramas', () => {
         '--role-map',
         'tutor=claude,learner=codex',
         '--director-revisit-cue',
+        '--director-variation-key',
+        'phase2-production-v2:r02:target',
         '--out-dir',
         sampleDir,
         '--delib-dir',
@@ -1401,6 +1403,8 @@ describe('generate-pedagogical-dramas', () => {
     assert.equal(trace.run.director_revisit_cue, true);
     assert.equal(trace.run.director_revisit_policy, 'anchor');
     assert.equal(trace.run.director_revisit_anchor, 'latest');
+    assert.equal(trace.run.director_variation_key, 'phase2-production-v2:r02:target');
+    assert.equal(trace.directorPlan.variation_key, 'phase2-production-v2:r02:target');
     assert.equal(trace.directorPlan.revisit_cue, 'learner_revisit_earlier_wording');
     assert.equal(trace.directorPlan.revisit_cue_policy, 'anchor');
     assert.equal(trace.directorPlan.revisit_cue_anchor, 'latest');
@@ -1471,11 +1475,13 @@ describe('generate-pedagogical-dramas', () => {
     assert.equal(key.director_revisit_cue, true);
     assert.equal(key.director_revisit_policy, 'anchor');
     assert.equal(key.director_revisit_anchor, 'latest');
+    assert.equal(key.director_variation_key, 'phase2-production-v2:r02:target');
     assert.equal(key.transcripts_dir, path.relative(ROOT, transcriptsDir));
     assert.equal(key.items[tid].quality_status, trace.quality_status);
     assert.equal(key.items[tid].director_revisit_cue, true);
     assert.equal(key.items[tid].director_revisit_policy, 'anchor');
     assert.equal(key.items[tid].director_revisit_anchor, 'latest');
+    assert.equal(key.items[tid].director_variation_key, 'phase2-production-v2:r02:target');
     assert.equal(key.quality_warning_count, key.items[tid].quality_warnings.length);
 
     const scorePath = path.join(tmp, 'score.json');

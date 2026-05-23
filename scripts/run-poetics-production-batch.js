@@ -32,6 +32,10 @@ const V3_STRESS = 'D8,D12,D13,D15,D16';
 const V3_SPEC = path.join(CAL_DIR, 'phase2-dramas-v3.yaml');
 const V2_SPEC = path.join(CAL_DIR, 'phase2-dramas-v2.yaml');
 
+function variationKeyFor(args, repeat, unitKind) {
+  return `${args.batchId}:${repeat}:${unitKind}`;
+}
+
 function parseArgs(argv) {
   const args = {
     batchId: DEFAULT_BATCH_ID,
@@ -146,6 +150,7 @@ function buildPlan(rawArgs = {}) {
       only: args.targetOnly,
       pairedPolicies: ['none', 'reframe'],
       directorRevisitAnchor: 'misframing-candidate',
+      directorVariationKey: variationKeyFor(args, r, 'target'),
       outDir: path.join(args.rootDir, `target-${r}`, 'sample'),
       delibDir: path.join(args.rootDir, `target-${r}`, 'deliberation'),
       transcriptsDir: path.join(args.rootDir, `target-${r}`, 'transcripts'),
@@ -158,6 +163,7 @@ function buildPlan(rawArgs = {}) {
       repeat: r,
       spec: V2_SPEC,
       only: 'D4',
+      directorVariationKey: variationKeyFor(args, r, 'control-d4'),
       outDir: path.join(args.rootDir, `control-${r}`, 'd4', 'sample'),
       delibDir: path.join(args.rootDir, `control-${r}`, 'd4', 'deliberation'),
       transcriptsDir: path.join(args.rootDir, `control-${r}`, 'd4', 'transcripts'),
@@ -171,6 +177,7 @@ function buildPlan(rawArgs = {}) {
       spec: V3_SPEC,
       tidStart: 6,
       only: 'D10',
+      directorVariationKey: variationKeyFor(args, r, 'control-d10-emphatic'),
       outDir: path.join(args.rootDir, `control-${r}`, 'd10-emphatic', 'sample'),
       delibDir: path.join(args.rootDir, `control-${r}`, 'd10-emphatic', 'deliberation'),
       transcriptsDir: path.join(args.rootDir, `control-${r}`, 'd10-emphatic', 'transcripts'),
@@ -187,6 +194,7 @@ function buildPlan(rawArgs = {}) {
       spec: args.stressSpec,
       tidStart: args.stressTidStart,
       only: args.stressOnly,
+      directorVariationKey: variationKeyFor(args, r, 'stress'),
       outDir: path.join(args.rootDir, `stress-${r}`, 'sample'),
       delibDir: path.join(args.rootDir, `stress-${r}`, 'deliberation'),
       transcriptsDir: path.join(args.rootDir, `stress-${r}`, 'transcripts'),
@@ -241,6 +249,7 @@ function generationCommand(unit, args) {
     cmd.push('--paired-continuation-policies', unit.pairedPolicies.join(','));
     cmd.push('--director-revisit-anchor', unit.directorRevisitAnchor);
   }
+  if (unit.directorVariationKey) cmd.push('--director-variation-key', unit.directorVariationKey);
   if (args.mock) cmd.push('--mock');
   if (args.force) cmd.push('--force');
   return cmd;
