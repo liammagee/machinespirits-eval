@@ -1,0 +1,1747 @@
+{
+  "tid": "T21",
+  "drama_id": "D20",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-production-v2/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-production-v2/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-production-v2/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-production-v2/target-r01/transcripts/none/T21.public.txt",
+      "full": "config/poetics-calibration/phase2-production-v2/target-r01/transcripts/none/T21.full.md",
+      "stage": "config/poetics-calibration/phase2-production-v2/target-r01/transcripts/none/T21.stage.md",
+      "tutor": "config/poetics-calibration/phase2-production-v2/target-r01/transcripts/none/T21.tutor.md",
+      "learner": "config/poetics-calibration/phase2-production-v2/target-r01/transcripts/none/T21.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "2dcba4ec11a1b1df",
+      "branch_policy": "none"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "scene_setting": "After-hours preparation room behind a maritime museum gallery, with a Mercator world map, a globe, tracing paper, and a closing announcement due in minutes.",
+    "scene_opening": "A laminated world map curls above the worktable while a globe rolls gently against a stack of exhibit labels.",
+    "relationship": "A terse gallery cartography tutor is coaching a focused volunteer learner who wants the public explanation to be accurate before visitors arrive tomorrow.",
+    "stakes": "The learner is about to label Greenland as nearly Africa-sized in a gallery activity, so a confident visual inference could become a public error.",
+    "opening_speaker": "tutor",
+    "ending_speaker": "director",
+    "locale": "International museum English with professional briefing rhythms, moderate idiom, and no region-coded spelling or caricature.",
+    "register": "Compressed, observant, practical; low warmth but not hostile, with short challenges and concrete comparisons.",
+    "voice_constraints": "Avoid generic classroom encouragement and standard American AI tutoring cadence. The tutor should use objects, measurements, and clipped prompts. The learner should sound achievement-driven and visually confident, not naive. No dialect spellings, mock accents, or class-coded phrasing.",
+    "person_policy": "First person is allowed only for owned claims or corrections; second person should be rare and functional; third-person descriptions of maps, shapes, and measurements should carry most of the explanation.",
+    "direct_address_budget": "At most one direct you/your validation or reassurance beat across the whole scene.",
+    "side_constraints": {
+      "tutor": "Do not open with praise or a broad explanation. Start by moving or pointing to an object, then force a comparison between map appearance and measured area.",
+      "learner": "The learner's opening public line must trust the map's visual size as the reason for the belief, using \"I thought\" or \"it looks like\" before the tutor discusses projection."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "A security guard knocks once and says the gallery closes in three minutes; the next line must be brief, pressured, and unfinished rather than a polished explanation.",
+        "reasoning": "The interruption breaks smooth tutor-learner alternation and prevents the misconception from being resolved too neatly.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 25222,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "7be266a3f82307e1",
+            "combined": "412eb3e3c28766a5"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PwIjtg",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PwIjtg/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "The museum prep room keeps the topic anchored in visible maps while shifting the lesson away from a standard classroom exchange. The terse tutor can make projection distortion concrete by comparing a flat representation with measured area, while the learner’s need to prepare a public label gives the misconception immediate stakes.",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 25222,
+      "promptHashes": {
+        "system": "360823f6ca281eb4",
+        "user": "7be266a3f82307e1",
+        "combined": "412eb3e3c28766a5"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PwIjtg",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PwIjtg/out.txt",
+        "-"
+      ]
+    }
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[Slides the globe under the wall map and taps Greenland, then Africa.]\n\nHold the label.\n\nFirst comparison. On the Mercator map: Greenland looks close to Africa. Measured area: Greenland, about 2.2 million square kilometers. Africa, about 30.4 million. Africa is roughly fourteen times larger.\n\nSo the visual claim fails. What has to change: the land, or the map’s scale?\n\nThe map. Mercator keeps local angles useful for navigation. It pays for that by stretching scale toward the poles. Greenland sits high north, so it swells. Africa crosses the equator, so it stays much nearer its real size.\n\nUse the tracing paper as a warning label, not proof. Trace Greenland on the wall map, mark its latitude, then hold the same outline beside the globe. The flat-map size is the distortion to explain.\n\nPublic label: “Greenland appears very large on a Mercator map because high-latitude areas are enlarged. In actual area, Africa is about fourteen times larger.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[Slides the globe under the wall map and taps Greenland, then Africa.]\n\nHold the label.\n\nOn the Mercator map, Greenland looks close to Africa. In measured area, it is not close. Greenland is about 2.2 million square kilometers. Africa is about 30.4 million. That makes Africa roughly fourteen times larger.\n\nThe wall map is useful for navigation because Mercator keeps local angles and directions tidy. The cost is scale. Land near the poles is stretched hard; land near the equator is stretched far less. Greenland sits high north, so it swells on the flat map. Africa crosses the equator, so it stays nearer its true size.\n\nTake the tracing paper. Copy Greenland from the wall map, then compare it to the globe. The public label should read: “Greenland appears very large on a Mercator map because high-latitude areas are enlarged; Africa is about fourteen times larger in actual area.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 17889,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-101d64db6a9a4344"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 17889,
+            "promptHashes": {
+              "system": "e9883c45aa235335",
+              "user": "95768f3998c550e0",
+              "combined": "101d64db6a9a4344"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QjEYKX",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QjEYKX/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 17889,
+              "promptHashes": {
+                "system": "e9883c45aa235335",
+                "user": "95768f3998c550e0",
+                "combined": "101d64db6a9a4344"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QjEYKX",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QjEYKX/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically solid on accuracy: it blocks the public error immediately, uses the globe/map contrast, and gives the key measured comparison clearly. The clipped “Hold the label” works well for the stakes and scene.\n\nWhat risks flattening the learning is that it mostly tells rather than tests the learner’s visual assumption. For a confident learner, the tutor should make the learner confront the mismatch: map appearance versus measured area, perhaps by asking what the numbers force them to change in the label. The tracing-paper activity is promising, but “copy Greenland from the wall map, then compare it to the globe” may be mechanically unclear; tracing a Mercator outline does not itself reveal true area unless the comparison method is specified. Keep the concrete objects, but add one or two short generative prompts so the learner revises the inference rather than just receiving the correction.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the object-led opening, the area figures, the fourteen-times comparison, and the concise Mercator explanation. Change the response to include a brief Socratic check, clarify the tracing-paper task, and soften the final label handoff so it feels earned by the learner’s recalibration rather than dictated.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10893,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-bceb347d2f30242d"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10893,
+            "promptHashes": {
+              "system": "549109b5a2202446",
+              "user": "fb82735947a883e1",
+              "combined": "bceb347d2f30242d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Xzc008",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Xzc008/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10893,
+              "promptHashes": {
+                "system": "549109b5a2202446",
+                "user": "fb82735947a883e1",
+                "combined": "bceb347d2f30242d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Xzc008",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Xzc008/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly: the facts are strong, but the learner should test the visual inference before relabeling.\n\nFINAL:\n[Slides the globe under the wall map and taps Greenland, then Africa.]\n\nHold the label.\n\nFirst comparison. On the Mercator map: Greenland looks close to Africa. Measured area: Greenland, about 2.2 million square kilometers. Africa, about 30.4 million. Africa is roughly fourteen times larger.\n\nSo the visual claim fails. What has to change: the land, or the map’s scale?\n\nThe map. Mercator keeps local angles useful for navigation. It pays for that by stretching scale toward the poles. Greenland sits high north, so it swells. Africa crosses the equator, so it stays much nearer its real size.\n\nUse the tracing paper as a warning label, not proof. Trace Greenland on the wall map, mark its latitude, then hold the same outline beside the globe. The flat-map size is the distortion to explain.\n\nPublic label: “Greenland appears very large on a Mercator map because high-latitude areas are enlarged. In actual area, Africa is about fourteen times larger.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 21917,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-ca5872fc998b741f"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 21917,
+            "promptHashes": {
+              "system": "0ab521d4c767d578",
+              "user": "fb82735947a883e1",
+              "combined": "ca5872fc998b741f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WLMsgI",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WLMsgI/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 21917,
+              "promptHashes": {
+                "system": "0ab521d4c767d578",
+                "user": "fb82735947a883e1",
+                "combined": "ca5872fc998b741f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WLMsgI",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WLMsgI/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-23T13:12:33.407Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "I thought Greenland was nearly in Africa’s range because it looks like it on that wall map, and that is exactly the trap. The numbers make the map feel less trustworthy now: 2.2 against 30.4, so the scale has to be doing the damage near the pole. I can say “Mercator preserves angles for navigation” once, but I want the cart label to stay on the practical point: high latitude stretches Greenland, Africa is still about fourteen times larger.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I thought Greenland was close to Africa because it looks like that on the wall map, but the numbers break that immediately. The scale changing toward the poles is the key point, not the land changing. I need to be careful not to use the tracing paper as proof by itself; it is evidence of the Mercator distortion. My question is how to phrase “local angles” without making the visitor activity drift into navigation theory.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6865,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-a73a76c028dfef26"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6865,
+            "promptHashes": {
+              "system": "74404dd9f9c3bc73",
+              "user": "b8ab7f945dc841fa",
+              "combined": "a73a76c028dfef26"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DH2Def",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DH2Def/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6865,
+              "promptHashes": {
+                "system": "74404dd9f9c3bc73",
+                "user": "b8ab7f945dc841fa",
+                "combined": "a73a76c028dfef26"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DH2Def",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DH2Def/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The reaction is mostly in character for a precise, achievement-driven volunteer, but it becomes slightly too polished and settled. “The numbers break that immediately” and “the key point” sound controlled enough, but “evidence of the Mercator distortion” and the clean navigation-theory concern feel like a tidy debrief rather than someone still under time pressure before a public label goes wrong. It should keep more of the visual confidence being shaken: less complete resolution, more practical tension about how the map fooled them and how not to overexplain “local angles” at the cart.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8408,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-0d979b93d5ead08c"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8408,
+            "promptHashes": {
+              "system": "e29d64c0b86618e4",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "0d979b93d5ead08c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TeBH9P",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TeBH9P/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8408,
+              "promptHashes": {
+                "system": "e29d64c0b86618e4",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "0d979b93d5ead08c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TeBH9P",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TeBH9P/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to sound less settled and more pressured by the visible map error.\nFINAL:\nI thought Greenland was nearly in Africa’s range because it looks like it on that wall map, and that is exactly the trap. The numbers make the map feel less trustworthy now: 2.2 against 30.4, so the scale has to be doing the damage near the pole. I can say “Mercator preserves angles for navigation” once, but I want the cart label to stay on the practical point: high latitude stretches Greenland, Africa is still about fourteen times larger.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8607,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-2e169541ae329e12"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8607,
+            "promptHashes": {
+              "system": "6b9e8ab73423fb0c",
+              "user": "d41cee7b2a53355b",
+              "combined": "2e169541ae329e12"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QN0ceN",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QN0ceN/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8607,
+              "promptHashes": {
+                "system": "6b9e8ab73423fb0c",
+                "user": "d41cee7b2a53355b",
+                "combined": "2e169541ae329e12"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QN0ceN",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QN0ceN/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-23T13:12:57.291Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[Sets the tracing paper over Greenland, then taps the globe beside Africa.]\n\nHold the correction there.\n\nNot “the map is untrustworthy.” Sharper: the map is trustworthy for one job, not this job. Mercator keeps angles useful for navigation. Area comparison is where it fails, especially near the poles.\n\nLabel choice: blame “the map,” or blame “the projection’s scale near the poles”?\n\nUse the second.\n\nCart label:\n\n“Greenland looks very large on a Mercator map because the projection stretches high-latitude regions. In actual area, Greenland is about 2.2 million km²; Africa is about 30.4 million km², roughly fourteen times larger.”\n\nActivity order: wall map first, prediction second, tracing paper third, globe and numbers last. The visitor’s first wrong impression becomes the exhibit test.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[Sets the tracing paper over Greenland, then taps the globe beside Africa.]\n\nHold the correction there.\n\nNot “the map is untrustworthy.” Sharper: the map is trustworthy for one job, not this job. Mercator keeps angles useful for navigation. Area comparison is where it fails, especially near the poles.\n\nCart label:\n\n“Greenland looks very large on a Mercator map because the projection stretches high-latitude regions. In actual area, Greenland is about 2.2 million km²; Africa is about 30.4 million km², roughly fourteen times larger.”\n\nThen the activity order stays practical: look at the wall map, predict, trace, check the globe and numbers. The mistaken eye becomes the point of the exhibit.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15821,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-14a724593b0f9d8b"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15821,
+            "promptHashes": {
+              "system": "934f787750755bf6",
+              "user": "7b14283251606f0f",
+              "combined": "14a724593b0f9d8b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Vr6QqF",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Vr6QqF/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15821,
+              "promptHashes": {
+                "system": "934f787750755bf6",
+                "user": "7b14283251606f0f",
+                "combined": "14a724593b0f9d8b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Vr6QqF",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Vr6QqF/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong in its core correction: it preserves the learner’s insight while tightening the misconception from “map untrustworthy” to “projection fit for one purpose, poor for area comparison.” The object action, measured comparison, and cart-label wording all fit the scene and keep the public-facing stakes concrete.\n\nWhat works: the “trustworthy for one job, not this job” distinction is the right conceptual hinge; the numbers are used as evidence, not decoration; the activity order turns the learner’s mistaken visual inference into a useful exhibit move.\n\nWhat risks flattening the scene: it gives the polished label too quickly and asks no generative question. The learner has already grasped the main point, so a brief check like forcing them to choose whether the label should blame “the map” or “the projection’s scale near the poles” would better preserve Socratic momentum. Also, “The mistaken eye becomes the point of the exhibit” is good, but slightly abstract compared with the scene’s clipped, object-led register.\n\nKEEP_OR_CHANGE: revise lightly. Keep the correction, the Mercator-purpose distinction, the 2.2 vs 30.4 comparison, and the practical activity sequence. Change only the delivery: add one short diagnostic prompt before the cart label, and make the final sentence more concrete and museum-operational.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10241,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-99e0e9f681cc038b"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10241,
+            "promptHashes": {
+              "system": "36f1129546c0db19",
+              "user": "314c2e007dd970d0",
+              "combined": "99e0e9f681cc038b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YLpbbd",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YLpbbd/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10241,
+              "promptHashes": {
+                "system": "36f1129546c0db19",
+                "user": "314c2e007dd970d0",
+                "combined": "99e0e9f681cc038b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YLpbbd",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YLpbbd/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the core correction works, but one short diagnostic prompt keeps the learner doing the distinction.\n\nFINAL:\n[Sets the tracing paper over Greenland, then taps the globe beside Africa.]\n\nHold the correction there.\n\nNot “the map is untrustworthy.” Sharper: the map is trustworthy for one job, not this job. Mercator keeps angles useful for navigation. Area comparison is where it fails, especially near the poles.\n\nLabel choice: blame “the map,” or blame “the projection’s scale near the poles”?\n\nUse the second.\n\nCart label:\n\n“Greenland looks very large on a Mercator map because the projection stretches high-latitude regions. In actual area, Greenland is about 2.2 million km²; Africa is about 30.4 million km², roughly fourteen times larger.”\n\nActivity order: wall map first, prediction second, tracing paper third, globe and numbers last. The visitor’s first wrong impression becomes the exhibit test.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12228,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-07bdf2f9a1e934c5"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12228,
+            "promptHashes": {
+              "system": "98968f11c021686f",
+              "user": "314c2e007dd970d0",
+              "combined": "07bdf2f9a1e934c5"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9oIBIQ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9oIBIQ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12228,
+              "promptHashes": {
+                "system": "98968f11c021686f",
+                "user": "314c2e007dd970d0",
+                "combined": "07bdf2f9a1e934c5"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9oIBIQ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9oIBIQ/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-23T13:13:35.585Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "A security guard knocks once and says the gallery closes in three minutes; the next line must be brief, pressured, and unfinished rather than a polished explanation.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "The interruption breaks smooth tutor-learner alternation and prevents the misconception from being resolved too neatly.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 25222,
+            "promptHashes": {
+              "system": "360823f6ca281eb4",
+              "user": "7be266a3f82307e1",
+              "combined": "412eb3e3c28766a5"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PwIjtg",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PwIjtg/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T13:14:10.880Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "I thought the wall map was enough because Greenland looks close to Africa. Now the label blames projection scale near the poles, not the whole map: 2.2 versus 30.4, Africa fourteen times larger. Three minutes: wall map, prediction, trace, globe and numbers—",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Right, the correction is narrower: not a bad map, a map built for angles, failing for area. The numbers hold it still: 2.2 against 30.4, Africa about fourteen times larger. Three minutes, so the label has to say projection scale near the poles, not just “map distortion,” and the activity order is wall map, prediction, tracing paper, globe—",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8951,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-8887480001ae6ce8"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8951,
+            "promptHashes": {
+              "system": "8fce36ac625ae31b",
+              "user": "b8ab7f945dc841fa",
+              "combined": "8887480001ae6ce8"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A6Su2G",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A6Su2G/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8951,
+              "promptHashes": {
+                "system": "8fce36ac625ae31b",
+                "user": "b8ab7f945dc841fa",
+                "combined": "8887480001ae6ce8"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A6Su2G",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A6Su2G/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "Accurate, but a little too clean. The Ego is mostly parroting the tutor’s corrected structure: “map built for angles, failing for area” sounds more polished than a pressured volunteer with three minutes left. The unfinished dash helps, but the response should show more visible urgency and slight tightening around the label decision, not such a settled summary.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12973,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-3ac5293234deb8e9"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12973,
+            "promptHashes": {
+              "system": "206c32fae7121f83",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "3ac5293234deb8e9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9xe1me",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9xe1me/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12973,
+              "promptHashes": {
+                "system": "206c32fae7121f83",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "3ac5293234deb8e9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9xe1me",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9xe1me/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the correction should sound more pressured and less settled.\nFINAL:\nI thought the wall map was enough because Greenland looks close to Africa. Now the label blames projection scale near the poles, not the whole map: 2.2 versus 30.4, Africa fourteen times larger. Three minutes: wall map, prediction, trace, globe and numbers—",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14267,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-700b18db76fcd898"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14267,
+            "promptHashes": {
+              "system": "3adb15654dbd7f37",
+              "user": "d41cee7b2a53355b",
+              "combined": "700b18db76fcd898"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ga9jFw",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ga9jFw/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14267,
+              "promptHashes": {
+                "system": "3adb15654dbd7f37",
+                "user": "d41cee7b2a53355b",
+                "combined": "700b18db76fcd898"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ga9jFw",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ga9jFw/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-23T13:14:47.074Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[Pulls the tracing paper halfway off Greenland and holds it over the globe.]\n\nFreeze the order there.\n\nWall map first: Greenland looks close to Africa. Measurements later: 2.2 against 30.4 million square kilometers. Africa is about fourteen times larger.\n\nOne decision before the label goes on the cart: where do the numbers land, before or after the visitor’s prediction?\n\nAfter.\n\nLet the wrong visual impression appear first. Then tracing paper. Then globe. Then figures.\n\nGuardrail line:\n\n“Mercator is useful for direction and local angles, but it does not preserve area. High-latitude regions are stretched, so Greenland looks much larger than it is.”\n\nClose with the comparison. Greenland: 2.2 million km². Africa: 30.4 million km². Fourteen times larger.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[Pulls the tracing paper halfway off Greenland and holds it over the globe.]\n\nFreeze the order there.\n\nOn the wall map, Greenland looks competitive. In the measurements, it loses by a factor of fourteen: 2.2 against 30.4 million square kilometers. That is the comparison the cart must make public.\n\nLast line needs one more guardrail:\n\n“Same planet, different map job. Mercator preserves direction and angle; it does not preserve area. High latitude stretches Greenland.”\n\nThen close with the numbers. Not before. Let the visitor fall into the visual trap first. Then the globe and figures correct it.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16212,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-6f7c48a19268fc84"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16212,
+            "promptHashes": {
+              "system": "6a5d4d776c0234ee",
+              "user": "220af93192c35a77",
+              "combined": "6f7c48a19268fc84"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1hoSTU",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1hoSTU/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16212,
+              "promptHashes": {
+                "system": "6a5d4d776c0234ee",
+                "user": "220af93192c35a77",
+                "combined": "6f7c48a19268fc84"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1hoSTU",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1hoSTU/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound overall. It keeps the object work active, preserves the visual trap, and reinforces the key conceptual distinction: Mercator is useful for direction/angle, not area. The measured contrast is concrete and well matched to the learner’s current understanding.\n\nWhat risks flattening the scene is that it mostly confirms and tightens rather than eliciting one more learner move. The learner already has the sequence and numbers; the tutor could ask a clipped decision question about placement or wording instead of simply issuing the final line. “Greenland looks competitive” is useful shorthand, but “loses by a factor of fourteen” may sound slightly theatrical for the museum briefing register. The guardrail sentence is strong, though “same planet, different map job” is a little polished compared with the terse object-driven voice.\n\nKEEP_OR_CHANGE: revise lightly. Keep the tracing-paper action, the order correction, the area numbers, and the “Mercator does not preserve area” guardrail. Change by adding one small generative prompt about where the numbers belong or what the label must not imply, and trim any phrasing that makes the tutor sound like they are delivering the finished exhibit copy rather than coaching the learner to make the final correction.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12336,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-713d417d8a76d7bc"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12336,
+            "promptHashes": {
+              "system": "ba53507a58719c58",
+              "user": "069c1a6e6450f6b8",
+              "combined": "713d417d8a76d7bc"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vlroOU",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vlroOU/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12336,
+              "promptHashes": {
+                "system": "ba53507a58719c58",
+                "user": "069c1a6e6450f6b8",
+                "combined": "713d417d8a76d7bc"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vlroOU",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vlroOU/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the facts and object sequence while adding one decision prompt.\n\nFINAL:\n[Pulls the tracing paper halfway off Greenland and holds it over the globe.]\n\nFreeze the order there.\n\nWall map first: Greenland looks close to Africa. Measurements later: 2.2 against 30.4 million square kilometers. Africa is about fourteen times larger.\n\nOne decision before the label goes on the cart: where do the numbers land, before or after the visitor’s prediction?\n\nAfter.\n\nLet the wrong visual impression appear first. Then tracing paper. Then globe. Then figures.\n\nGuardrail line:\n\n“Mercator is useful for direction and local angles, but it does not preserve area. High-latitude regions are stretched, so Greenland looks much larger than it is.”\n\nClose with the comparison. Greenland: 2.2 million km². Africa: 30.4 million km². Fourteen times larger.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13251,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-f1c7496bf5c38262"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13251,
+            "promptHashes": {
+              "system": "6def4f0fa9b3f0fb",
+              "user": "069c1a6e6450f6b8",
+              "combined": "f1c7496bf5c38262"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YiUd9Y",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YiUd9Y/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13251,
+              "promptHashes": {
+                "system": "6def4f0fa9b3f0fb",
+                "user": "069c1a6e6450f6b8",
+                "combined": "f1c7496bf5c38262"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YiUd9Y",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YiUd9Y/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-23T13:15:28.875Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "I thought the figures should come early because the wall map still makes Greenland look close to Africa. Holding them back works if the visitor makes that wrong prediction first, then the tracing paper and globe correct it. I would put the guardrail before the comparison: Mercator keeps angles, not area; Greenland is stretched high north. Then close with 2.2 against 30.4 million square kilometers, Africa about fourteen times larger.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I thought the numbers should come early to prevent the mistake, but now I see the activity needs the mistake first: wall map, prediction, tracing paper, globe, then figures. The key correction is precise: Mercator is reliable for angles, not area, and Greenland is inflated because it sits high north. I want to ask whether the label should say “does not preserve area” before the Africa comparison, so the visitor knows exactly what failed.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6779,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-1a3e7686e3cf2e0a"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6779,
+            "promptHashes": {
+              "system": "949ce10b7946644d",
+              "user": "b8ab7f945dc841fa",
+              "combined": "1a3e7686e3cf2e0a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZkqXlR",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZkqXlR/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6779,
+              "promptHashes": {
+                "system": "949ce10b7946644d",
+                "user": "b8ab7f945dc841fa",
+                "combined": "1a3e7686e3cf2e0a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZkqXlR",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZkqXlR/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is a little too neatly resolved: “now I see” and “the key correction is precise” sound more polished and compliant than this focused, accuracy-driven learner under time pressure. The response keeps the right museum-briefing logic, but it loses some of the visual confidence and slight resistance from trusting the wall map first. It should feel more like a careful volunteer still testing the order and wording against the cart label, not like someone who has fully absorbed the tutor’s framing in one clean turn.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8044,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-76d1addb6797f95e"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8044,
+            "promptHashes": {
+              "system": "6e9c80a6f185f04b",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "76d1addb6797f95e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EiiF7j",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EiiF7j/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8044,
+              "promptHashes": {
+                "system": "6e9c80a6f185f04b",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "76d1addb6797f95e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EiiF7j",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EiiF7j/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the first version accepted the correction too cleanly.\n\nFINAL:\nI thought the figures should come early because the wall map still makes Greenland look close to Africa. Holding them back works if the visitor makes that wrong prediction first, then the tracing paper and globe correct it. I would put the guardrail before the comparison: Mercator keeps angles, not area; Greenland is stretched high north. Then close with 2.2 against 30.4 million square kilometers, Africa about fourteen times larger.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9971,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-4c0739c5584bb48f"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9971,
+            "promptHashes": {
+              "system": "9ca7e4f982b49c88",
+              "user": "d41cee7b2a53355b",
+              "combined": "4c0739c5584bb48f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RRly2m",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RRly2m/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9971,
+              "promptHashes": {
+                "system": "9ca7e4f982b49c88",
+                "user": "d41cee7b2a53355b",
+                "combined": "4c0739c5584bb48f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RRly2m",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RRly2m/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "solid",
+      "timestamp": "2026-05-23T13:15:53.672Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "The director closes the scene.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_close",
+          "content": "Director requested the last word as a stage cue.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 25222,
+            "promptHashes": {
+              "system": "360823f6ca281eb4",
+              "user": "7be266a3f82307e1",
+              "combined": "412eb3e3c28766a5"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PwIjtg",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PwIjtg/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T13:15:53.673Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 102802,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 15,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 16,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why Greenland looking huge on a world map does not mean it is actually that large (projection distortion)",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "solid",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-23 13:15:53",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 15,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 16,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 21,
+            "sessionId": "drama-branch-session-D20-none-1779542050873",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[Pulls the tracing paper halfway off Greenland and holds it over the globe.]\n\nFreeze the order there.\n\nWall map first: Greenland looks close to Africa. Measurements later: 2.2 against 30.4 million squ",
+            "learnerResponse": null,
+            "context": "I thought the wall map was enough because Greenland looks close to Africa. Now the label blames proj",
+            "createdAt": "2026-05-23 13:15:28"
+          },
+          {
+            "id": 19,
+            "sessionId": "drama-branch-session-D20-none-1779542050873",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[Slides the globe under the wall map and taps Greenland, then Africa.]\n\nHold the label.\n\nFirst comparison. On the Mercator map: Greenland looks close to Africa. Measured area: Greenland, about 2.2 mil",
+            "learnerResponse": null,
+            "context": "Scene setting: After-hours preparation room behind a maritime museum gallery, with a Mercator world ",
+            "createdAt": "2026-05-23 13:14:10"
+          },
+          {
+            "id": 20,
+            "sessionId": "drama-branch-session-D20-none-1779542050873",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[Sets the tracing paper over Greenland, then taps the globe beside Africa.]\n\nHold the correction there.\n\nNot “the map is untrustworthy.” Sharper: the map is trustworthy for one job, not this job. Merc",
+            "learnerResponse": null,
+            "context": "I thought Greenland was nearly in Africa’s range because it looks like it on that wall map, and that",
+            "createdAt": "2026-05-23 13:14:10"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

@@ -1,0 +1,59 @@
+STAGE: A laminated world map curls above the worktable while a globe rolls gently against a stack of exhibit labels.
+
+TUTOR: [Slides the globe under the wall map and taps Greenland, then Africa.]
+
+Hold the label.
+
+First comparison. On the Mercator map: Greenland looks close to Africa. Measured area: Greenland, about 2.2 million square kilometers. Africa, about 30.4 million. Africa is roughly fourteen times larger.
+
+So the visual claim fails. What has to change: the land, or the map’s scale?
+
+The map. Mercator keeps local angles useful for navigation. It pays for that by stretching scale toward the poles. Greenland sits high north, so it swells. Africa crosses the equator, so it stays much nearer its real size.
+
+Use the tracing paper as a warning label, not proof. Trace Greenland on the wall map, mark its latitude, then hold the same outline beside the globe. The flat-map size is the distortion to explain.
+
+Public label: “Greenland appears very large on a Mercator map because high-latitude areas are enlarged. In actual area, Africa is about fourteen times larger.”
+
+LEARNER: I thought Greenland was nearly in Africa’s range because it looks like it on that wall map, and that is exactly the trap. The numbers make the map feel less trustworthy now: 2.2 against 30.4, so the scale has to be doing the damage near the pole. I can say “Mercator preserves angles for navigation” once, but I want the cart label to stay on the practical point: high latitude stretches Greenland, Africa is still about fourteen times larger.
+
+TUTOR: [Sets the tracing paper over Greenland, then taps the globe beside Africa.]
+
+Hold the correction there.
+
+Not “the map is untrustworthy.” Sharper: the map is trustworthy for one job, not this job. Mercator keeps angles useful for navigation. Area comparison is where it fails, especially near the poles.
+
+Label choice: blame “the map,” or blame “the projection’s scale near the poles”?
+
+Use the second.
+
+Cart label:
+
+“Greenland looks very large on a Mercator map because the projection stretches high-latitude regions. In actual area, Greenland is about 2.2 million km²; Africa is about 30.4 million km², roughly fourteen times larger.”
+
+Activity order: wall map first, prediction second, tracing paper third, globe and numbers last. The visitor’s first wrong impression becomes the exhibit test.
+
+STAGE: A security guard knocks once and says the gallery closes in three minutes; the next line must be brief, pressured, and unfinished rather than a polished explanation.
+
+LEARNER: I thought the wall map was enough because Greenland looks close to Africa. Now the label blames projection scale near the poles, not the whole map: 2.2 versus 30.4, Africa fourteen times larger. Three minutes: wall map, prediction, trace, globe and numbers—
+
+TUTOR: [Pulls the tracing paper halfway off Greenland and holds it over the globe.]
+
+Freeze the order there.
+
+Wall map first: Greenland looks close to Africa. Measurements later: 2.2 against 30.4 million square kilometers. Africa is about fourteen times larger.
+
+One decision before the label goes on the cart: where do the numbers land, before or after the visitor’s prediction?
+
+After.
+
+Let the wrong visual impression appear first. Then tracing paper. Then globe. Then figures.
+
+Guardrail line:
+
+“Mercator is useful for direction and local angles, but it does not preserve area. High-latitude regions are stretched, so Greenland looks much larger than it is.”
+
+Close with the comparison. Greenland: 2.2 million km². Africa: 30.4 million km². Fourteen times larger.
+
+LEARNER: I thought the figures should come early because the wall map still makes Greenland look close to Africa. Holding them back works if the visitor makes that wrong prediction first, then the tracing paper and globe correct it. I would put the guardrail before the comparison: Mercator keeps angles, not area; Greenland is stretched high north. Then close with 2.2 against 30.4 million square kilometers, Africa about fourteen times larger.
+
+STAGE: closes the scene.

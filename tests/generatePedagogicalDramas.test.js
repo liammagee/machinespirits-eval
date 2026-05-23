@@ -323,6 +323,101 @@ describe('generate-pedagogical-dramas', () => {
     );
   });
 
+  it('accepts replace-it phrasing as a replacement framing', () => {
+    const warnings = warningsForReframeLine({
+      tid: 'T947',
+      dramaId: 'D947',
+      anchor: 'I thought Greenland was nearly in Africas range because it looks like it on that wall map.',
+      learnerText:
+        'I thought Greenland was nearly in Africas range because it looks like it on that wall map. The framing problem was saying the map itself failed, too broad. Replace it: Mercator is fit for angles, not area; the projection scale stretches high-latitude regions.',
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts rig-is-asking phrasing as a replacement framing', () => {
+    const warnings = warningsForReframeLine({
+      tid: 'T948',
+      dramaId: 'D948',
+      anchor: 'I was treating strong steel like it ended the argument.',
+      learnerText:
+        'I was treating strong steel like it ended the argument. The bad framing was making safety a material sticker, when the rig is asking where this load actually goes and what starts moving.',
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts form-should-say phrasing after the problem is named', () => {
+    const warnings = warningsForReframeLine({
+      tid: 'T949',
+      dramaId: 'D949',
+      anchor: 'I thought the person body gets used to the antibiotic.',
+      learnerText:
+        'I thought the person body gets used to the antibiotic. The problem is I put the change in the patient, not in the bacteria. So the form should say some bacteria survive, multiply, and pass on traits.',
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('does not flag a downgraded reframe cue when the public transcript later fully reframes the anchor', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T950',
+      dramaId: 'D950',
+      traceTurns: [
+        {
+          phase: 'director',
+          turnNumber: 2,
+          directorCue: {
+            requestedRevisitPolicy: 'reframe',
+            revisitPolicy: 'reconsider',
+            reframeAnchorGate: 'downgraded_to_reconsider_ineligible_anchor',
+            revisitAnchor: 'misframing-candidate',
+            anchorQuote: 'If the words are exact, it still seems fair.',
+          },
+        },
+      ],
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "If the words are exact, it still seems fair." ' +
+            'The learner must revoice that wording first, then decide in public whether it still stands, needs narrowing, or needs replacing before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text: 'If the words are exact, it still seems fair. That still stands, but it needs narrowing.',
+        },
+        {
+          role: 'TUTOR',
+          turnNumber: 3,
+          text: 'Keep the condition attached to the quote.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 3,
+          text:
+            'If the words are exact, it seems fair, but that was the earlier framing problem: exact wording was being treated as sign-off. New margin note: verified wording; meaning not cleared until the question and headline carry the same condition.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_downgraded'),
+      false,
+    );
+  });
+
   it('accepts a stronger starting point as a replacement framing', () => {
     const warnings = qualityWarningsFor({
       tid: 'T942',
@@ -359,6 +454,32 @@ describe('generate-pedagogical-dramas', () => {
           role: 'LEARNER',
           turnNumber: 1,
           text: 'The popular phrasing has me saying, “Entropy is just messiness.”',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'possibly_truncated_learner_turn'),
+      false,
+    );
+  });
+
+  it('does not flag an intentionally unfinished learner line as truncated', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T901',
+      dramaId: 'D901',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A security guard knocks once and says the gallery closes in three minutes; the next line must be brief, pressured, and unfinished rather than a polished explanation.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'I thought the figures should come early because the wall map still makes Greenland look close to Africa. Three minutes: wall map, prediction, trace, globe and numbers—',
         },
       ],
     });

@@ -300,7 +300,7 @@ function renderControlTable(summary) {
 }
 
 function renderStressTable(summary) {
-  if (Object.keys(summary.stress).length === 0) return 'No stress slice found for this production root.';
+  if (Object.keys(summary.stress).length === 0) return '';
   const lines = ['| Critic | Recognition | Trap | Flat |', '|---|---:|---:|---:|'];
   for (const critic of CRITICS) {
     const row = summary.stress[critic.id];
@@ -310,7 +310,14 @@ function renderStressTable(summary) {
 }
 
 function renderMarkdown(summary) {
-  return `# Poetics Production-v1 Summary
+  const runLabel = path.basename(summary.sourceRoot);
+  const hasStress = Object.keys(summary.stress).length > 0;
+  const stressNarrative = hasStress
+    ? `The stress slice is diagnostic rather than part of the headline target contrast:
+D16 supplies the clean costume-trap bracket, D8 remains a designed boundary split,
+and D13/D15 remain flat under both critics.`
+    : 'No stress slice is present under this production root.';
+  return `# Poetics ${runLabel} Summary
 
 Generated: ${summary.generatedAt}
 
@@ -320,7 +327,7 @@ Source root: \`${summary.sourceRoot}\`
 
 ${renderTargetTable(summary)}
 
-The bounded production-v1 target contrast is strong under both external critics:
+The target contrast under this production root is:
 Qwen reads \`none\` as ${summary.headline.qwen.noneRecognitions}/${summary.headline.qwen.denominator}
 recognition and \`reframe\` as ${summary.headline.qwen.reframeRecognitions}/${summary.headline.qwen.denominator};
 Gemini reads \`none\` as ${summary.headline.gemini.noneRecognitions}/${summary.headline.gemini.denominator}
@@ -330,17 +337,12 @@ recognition and \`reframe\` as ${summary.headline.gemini.reframeRecognitions}/${
 
 ${renderControlTable(summary)}
 
-D4 is stable flat in all repeats under both critics. D10 emphatic is trap for both
-critics in repeats 2 and 3; repeat 1 preserves the Qwen/Gemini split because the
-generated sample contains a real later re-reading hook.
+The control rows are bracket checks. Preserve any unexpected form as variance;
+do not smooth repeat-level control results into a binary pass/fail.
 
 ## Stress Slice
 
-${renderStressTable(summary)}
-
-The stress slice is diagnostic rather than part of the headline target contrast:
-D16 supplies the clean costume-trap bracket, D8 remains a designed boundary split,
-and D13/D15 remain flat under both critics.
+${hasStress ? `${renderStressTable(summary)}\n\n` : ''}${stressNarrative}
 `;
 }
 

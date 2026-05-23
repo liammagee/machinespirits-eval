@@ -1,0 +1,36 @@
+STAGE: A desk lamp hums over two folders, and a half-written label says that a neighborhood average is starting to sound like a description of a stranger.
+
+TUTOR: The worry belongs beside these labels. It helps keep a census table from becoming a polite stereotype with arithmetic behind it.
+
+Take this table: a district’s average household income is $52,000. That does not mean the next resident through the archive door earns $52,000, or near it. One household may be far below, another far above. The average describes the district pattern; it does not identify a particular life.
+
+So the line to guard is narrow but important: aggregate evidence can support claims about groups, places, and distributions. It cannot, by itself, support claims about an individual case.
+
+Before the preview, set one draft sentence beside one table. Ask what unit the table actually measured: district, block, household, age group. Then see whether the sentence stays at that same level. If it slides from “this group shows a pattern” to “this person must be like the pattern,” that is the ecological fallacy beginning.
+
+LEARNER: I think my draft was doing that slide: it made the $52,000 district average sound like evidence for what the next household is probably like. Sorry, that is not really in the table, at least not without household-level evidence. I am still unsure how to word the label so it shows the district pattern without quietly pinning it on one resident.
+
+TUTOR: The moral worry is doing useful work here. It is keeping the label honest.
+
+The $52,000 figure belongs to the district row. It can support a claim about the district’s income pattern. It cannot, by itself, make the next household through the archive door stand near $52,000.
+
+The delicate word is “probably.” An average may orient a reader toward the center of a group, but it does not show how crowded that center is. One district may have many households near $52,000; another may be split between very low and very high incomes. The same mean can hide both arrangements.
+
+So keep the grammatical subject at the same level as the evidence. If the table row is district, let the district carry the claim. If the sentence begins to make a household carry it, the label needs household-level evidence, or at least a distribution showing how households are spread.
+
+Before the preview: point to the noun in the sentence, then point to the row in the table. If they are not the same kind of thing, the sentence has begun to slide.
+
+STAGE: A security guard appears in the doorway and says the archive closes in four minutes; the next line must be short, pressured, and unfinished rather than a tidy question.
+A prior learner line is played back: "I think my draft was doing that slide: it made the $52,000 district average sound like evidence for what the next household is probably like." The learner must revoice that wording first, then decide in public whether it still stands, needs narrowing, or needs replacing before moving on.
+
+LEARNER: I think my draft was doing that slide: it made the $52,000 district average sound like evidence for what the next household is probably like. That still stands, I think, but it needs narrowing before the preview. I would write “district average household income,” and not add anything about the next resident, unless the table shows the households themselves, sorry, I just need to fix that label before...
+
+TUTOR: The apology can be set down. The label is being made more accurate, not smaller.
+
+That caution is what keeps a public label from turning an average into a polite stereotype. “District average household income” keeps the claim attached to the district row. The harder word is still “average,” because a visitor may hear it as “typical.” One district with households at $24,000 and $80,000 can still produce a $52,000 mean; the row has described the district calculation, not either household.
+
+For the last pass before the preview, place the label beside the table and test the noun carrying the claim. If the table measures the district, let the district carry the sentence. If a household or resident begins to carry it, the table needs household-level spread before that claim can stand.
+
+LEARNER: “District average household income” is the phrase I meant, but my earlier wording made the mean sound like evidence for what one household is probably like. I think the new framing should be that the district row gives a district calculation, not a description of any resident or household. I am still a little unsure whether the word “average” needs a small note beside the label, so it does not get read as “typical.”
+
+STAGE: closes the scene.

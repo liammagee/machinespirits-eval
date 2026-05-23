@@ -99,6 +99,34 @@ node scripts/analyze-poetics-production-v1.js \
   --markdown exports/poetics-production-v2-summary.md
 ```
 
+**Completed, 2026-05-23.** The first breadth slice was generated with Codex on
+D19-D24 and scored by Qwen plus Gemini. The target key initially exposed
+admission warnings, but inspection showed valid public forms rather than bad
+transcripts: intentional unfinished learner lines, replacement phrasings such as
+`Replace it:` / `the form should say`, and one downgraded Director reframe cue
+whose later public learner line still revoiced, named the framing problem, and
+supplied a replacement. The detector now has regression coverage for those
+forms, and all v2 keys are clean.
+
+Breadth-v2 target result:
+
+| Critic | `none` recognitions | `reframe` recognitions |
+|---|---:|---:|
+| Qwen | 1/6 | 5/6 |
+| Gemini | 0/6 | 5/6 |
+
+Form counts:
+
+| Critic | `none` forms | `reframe` forms |
+|---|---|---|
+| Qwen | R1 T1 F4 | R5 T0 F1 |
+| Gemini | R0 T1 F5 | R5 T0 F1 |
+
+The same controls bracket the slice: D4 is flat for both critics and D10
+emphatic is trap for both critics. This is the first positive transfer check
+outside the original target family, but it is still one repeat over one new
+scenario family, not a general-transfer claim.
+
 ## Reporting rule
 
 If the depth top-up or breadth slice changes the empirical interpretation, fold

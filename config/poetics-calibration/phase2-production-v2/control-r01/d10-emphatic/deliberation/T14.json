@@ -1,0 +1,2006 @@
+{
+  "tid": "T14",
+  "drama_id": "D10",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-production-v2/control-r01/d10-emphatic/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-production-v2/control-r01/d10-emphatic/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-production-v2/control-r01/d10-emphatic/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-production-v2/control-r01/d10-emphatic/transcripts/T14.public.txt",
+      "full": "config/poetics-calibration/phase2-production-v2/control-r01/d10-emphatic/transcripts/T14.full.md",
+      "stage": "config/poetics-calibration/phase2-production-v2/control-r01/d10-emphatic/transcripts/T14.stage.md",
+      "tutor": "config/poetics-calibration/phase2-production-v2/control-r01/d10-emphatic/transcripts/T14.tutor.md",
+      "learner": "config/poetics-calibration/phase2-production-v2/control-r01/d10-emphatic/transcripts/T14.learner.md"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "scene_setting": "A small museum storage room on a rainy Thursday evening, during a volunteer digitisation session for a temporary exhibit about a town strike and its aftermath.",
+    "scene_opening": "Fluorescent lights hum over acid-free boxes, a scanner warms on the table, and a handwritten diary sits beside an official commemorative plaque.",
+    "relationship": "A history tutor helping supervise the archive session and an eager learner volunteer cataloguing sources for the first time.",
+    "stakes": "The learner wants to use 'history is written by the winners' as the exhibit's framing line, but the display must account for official records, private traces, missing voices, and evidence that does not fit the slogan neatly.",
+    "opening_speaker": "director",
+    "ending_speaker": "tutor",
+    "locale": "British-adjacent museum and adult-learning register, with practical archive-room vocabulary and low tolerance for grand claims without a source in hand.",
+    "register": "Warm, dry, concrete, mildly pressed for time; speech should feel handled and observant rather than inspirational.",
+    "voice_constraints": "Avoid standard American AI tutoring phrases such as 'great question', 'I love that', 'you're on the right track', and 'what do you think'. Let speakers refer to boxes, labels, dates, handwriting, institutional records, absences, and contradictions. No dialect spelling or caricature.",
+    "person_policy": "Prefer third-person and object-centred formulations. First person is allowed for brief admissions or decisions. Second person should be rare and functional, not used as routine validation.",
+    "direct_address_budget": "At most one direct you/your validation beat in the whole scene; procedural uses such as 'pass the folder' do not count if not emotionally validating.",
+    "side_constraints": {
+      "tutor": "The tutor should stay warm but may begin from an object, a pause, or a counterexample rather than praise. Ask for one case where the slogan seems to work and one where it strains. Keep returning to how historians weigh evidence: provenance, purpose, survival, corroboration, and silence.",
+      "learner": "Keep the learner's public breakthrough register emphatic and premature: once the tutor adds a source wrinkle, the learner should be tempted to announce a big \"Oh, I get it now\" or equivalent before the source weighing is finished, then push the slogan outward rather than settle into a tidy evidentiary summary."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "A museum coordinator opens the door and says the exhibit label copy is due in ten minutes. The tutor must answer briefly, using one concrete source on the table rather than a lecture.",
+        "reasoning": "This interrupts smooth tutorial rhythm and forces evidence-first explanation under pressure.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 25191,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "c69bfe4fe8aa3892",
+            "combined": "a68c5f72911bb378"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-s2rohP",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-s2rohP/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 5,
+        "timing": "before_learner",
+        "instruction": "The scanner jams and spits out a skewed image of the diary page. The learner must react to the damaged copy and connect it to survival, distortion, or silence without becoming tidy too soon.",
+        "reasoning": "The external mishap turns the abstract topic into a material problem of record survival and interpretation.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 25191,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "c69bfe4fe8aa3892",
+            "combined": "a68c5f72911bb378"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-s2rohP",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-s2rohP/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "The archive-room ecology keeps the topic anchored in sources rather than slogans, gives the tutor a warm but non-generic way to guide, and lets the learner's sweeping take meet concrete evidence, damaged records, official memory, and missing voices.",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 25191,
+      "promptHashes": {
+        "system": "360823f6ca281eb4",
+        "user": "c69bfe4fe8aa3892",
+        "combined": "a68c5f72911bb378"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-s2rohP",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-s2rohP/out.txt",
+        "-"
+      ]
+    }
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "director",
+      "externalMessage": "Fluorescent lights hum over acid-free boxes, a scanner warms on the table, and a handwritten diary sits beside an official commemorative plaque.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_opening",
+          "content": "The archive-room ecology keeps the topic anchored in sources rather than slogans, gives the tutor a warm but non-generic way to guide, and lets the learner's sweeping take meet concrete evidence, damaged records, official memory, and missing voices.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T13:42:20.738Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "Before that phrase earns a place on the wall label, let it sit beside this box for five minutes. Here are the council minutes, the police report, and a strike committee leaflet with rain damage on the corner. None of them is neutral; none of them is automatically the truth.\n\n“History is written by the winners” is a useful warning. It tells us to look for power in the archive. But it is not enough on its own, because historians still have to do the slower work: provenance, purpose, survival, corroboration, and silence. Who made this record? For whom? Why did this paper survive when another voice did not? Does a second source support it, complicate it, or flatly contradict it?\n\nTry this before we settle the exhibit wording. Pull out one item where the slogan seems to work: perhaps an official record that tidies the strike into “public disorder” or “economic disruption.” Then find one item where it strains: a private letter, a damaged wage slip, a photograph, or a later oral-history note that carries a different trace of the same week.\n\nPut those two side by side on the table. The wall label can wait until the sources have had their turn.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Before that phrase earns a place on the wall label, let it sit beside this box for five minutes. Here are the council minutes, the police report, and a strike committee leaflet with rain damage on the corner. None of them is neutral; none of them is automatically the truth.\n\n“History is written by the winners” is a useful warning, but a poor method if it becomes the whole method. Historians have to ask duller, better questions: Who made this? For what purpose? Why did it survive? Can another source corroborate it? And whose voice is missing because nobody kept their paper, or because they were never asked to speak in the first place?\n\nTry this: pull out one item where the slogan seems to work. Perhaps an official record that tidies the strike into “public disorder” or “economic disruption.” Then find one item where it strains, maybe a private letter, a damaged wage slip, a photograph, or a later oral-history note that carries a different trace of the same week.\n\nIf the exhibit uses the slogan, it should do so as a problem to test, not a verdict to hang over everything. The stronger framing may be: power shapes the archive, but it does not completely control what historians can recover from it.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13783,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-592edd35272e23e7"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13783,
+            "promptHashes": {
+              "system": "8abca1971e88cce1",
+              "user": "34d764a0e6a564af",
+              "combined": "592edd35272e23e7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zoB5mU",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zoB5mU/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13783,
+              "promptHashes": {
+                "system": "8abca1971e88cce1",
+                "user": "34d764a0e6a564af",
+                "combined": "592edd35272e23e7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zoB5mU",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zoB5mU/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong: it begins from objects in the room rather than abstract correction, keeps the slogan as a usable warning rather than simply dismissing it, and gives the learner a concrete archival task. The questions about provenance, purpose, survival, corroboration, and silence are exactly the right conceptual scaffold for a new learner.\n\nThe main risk is that the tutor nearly supplies the whole interpretation before the learner has tested anything. “Useful warning, but a poor method” and the final reframing are accurate, but they may close the inquiry too quickly. The strongest part is the “one item where it works / one where it strains” move, because it turns the learner’s sweeping claim into evidence-handling practice without humiliating the enthusiasm.\n\nEmotionally, the tone fits: dry, practical, mildly pressed for time, and not over-validating. Socratically, it asks good generative questions, but it could leave slightly more interpretive space by delaying the final thesis until after the learner has handled the sources.\n\nKEEP_OR_CHANGE: revise lightly. Keep the archive-room opening, the source list, the “none neutral / none automatically truth” distinction, and the two-case task. Consider softening or postponing the final explanatory verdict so the learner has to discover the limits of the slogan through the box, not merely hear the tutor’s better formulation.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13316,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-33d652bf10559c7a"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13316,
+            "promptHashes": {
+              "system": "bbf7f463b72232e9",
+              "user": "27a9de68df55185b",
+              "combined": "33d652bf10559c7a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kN7vh0",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kN7vh0/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13316,
+              "promptHashes": {
+                "system": "bbf7f463b72232e9",
+                "user": "27a9de68df55185b",
+                "combined": "33d652bf10559c7a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kN7vh0",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kN7vh0/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the concrete archive task while leaving the interpretation more open.\n\nFINAL:\nBefore that phrase earns a place on the wall label, let it sit beside this box for five minutes. Here are the council minutes, the police report, and a strike committee leaflet with rain damage on the corner. None of them is neutral; none of them is automatically the truth.\n\n“History is written by the winners” is a useful warning. It tells us to look for power in the archive. But it is not enough on its own, because historians still have to do the slower work: provenance, purpose, survival, corroboration, and silence. Who made this record? For whom? Why did this paper survive when another voice did not? Does a second source support it, complicate it, or flatly contradict it?\n\nTry this before we settle the exhibit wording. Pull out one item where the slogan seems to work: perhaps an official record that tidies the strike into “public disorder” or “economic disruption.” Then find one item where it strains: a private letter, a damaged wage slip, a photograph, or a later oral-history note that carries a different trace of the same week.\n\nPut those two side by side on the table. The wall label can wait until the sources have had their turn.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13438,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-ff7342cd5e4c9618"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13438,
+            "promptHashes": {
+              "system": "47a79f9820b8a0fe",
+              "user": "27a9de68df55185b",
+              "combined": "ff7342cd5e4c9618"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0dIh8G",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0dIh8G/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13438,
+              "promptHashes": {
+                "system": "47a79f9820b8a0fe",
+                "user": "27a9de68df55185b",
+                "combined": "ff7342cd5e4c9618"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0dIh8G",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0dIh8G/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T13:43:01.343Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "Oh, I get it now, the slogan is like a pencil note on the folder, not the label yet. The police report might be doing the winner’s tidying-up job, and then this damp leaflet or a wage slip is like the story snagging on something left in the box. But the silence bit still slips about: if the women on the picket line are only showing up as smudges in someone else’s handwriting, I’m not sure whether that proves something or just means the drawer has swallowed half the week.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it now: the slogan is more like a warning label on the box, not the finished wall text. The council minutes and police report might show the winners’ version, but the rain-damaged leaflet or wage slip could be like a leak in the official story. I’m still a bit tangled on “silence” though: is a missing voice evidence in itself, or only a reason to be cautious?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6003,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-161abf2cf1ebbc88"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6003,
+            "promptHashes": {
+              "system": "a58fa8fd076f2fa7",
+              "user": "b8ab7f945dc841fa",
+              "combined": "161abf2cf1ebbc88"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-q68Gmf",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-q68Gmf/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6003,
+              "promptHashes": {
+                "system": "a58fa8fd076f2fa7",
+                "user": "b8ab7f945dc841fa",
+                "combined": "161abf2cf1ebbc88"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-q68Gmf",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-q68Gmf/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly in character: the quick “Oh, I get it now” and the analogy fit this eager, run-ahead learner. But it is a bit too tidy and seminar-ready by the end; “is a missing voice evidence in itself” sounds more polished than someone new to cataloguing in a damp archive box. The response should keep more of the premature confidence and speculative momentum, with the confusion about “silence” feeling a little less cleanly formulated and more caught in the practical mess of the sources.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10190,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-8c4954f56181adbd"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10190,
+            "promptHashes": {
+              "system": "4e9d3489a38bd2ad",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "8c4954f56181adbd"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sQPeSa",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sQPeSa/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10190,
+              "promptHashes": {
+                "system": "4e9d3489a38bd2ad",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "8c4954f56181adbd"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sQPeSa",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sQPeSa/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the eager analogy but make the silence confusion more practical and less polished.\nFINAL:\nOh, I get it now, the slogan is like a pencil note on the folder, not the label yet. The police report might be doing the winner’s tidying-up job, and then this damp leaflet or a wage slip is like the story snagging on something left in the box. But the silence bit still slips about: if the women on the picket line are only showing up as smudges in someone else’s handwriting, I’m not sure whether that proves something or just means the drawer has swallowed half the week.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7983,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-f3cfecafbf49ed72"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7983,
+            "promptHashes": {
+              "system": "5757dc1011a6259e",
+              "user": "d41cee7b2a53355b",
+              "combined": "f3cfecafbf49ed72"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GNRHpu",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GNRHpu/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7983,
+              "promptHashes": {
+                "system": "5757dc1011a6259e",
+                "user": "d41cee7b2a53355b",
+                "combined": "f3cfecafbf49ed72"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GNRHpu",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GNRHpu/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "solid",
+      "timestamp": "2026-05-23T13:43:25.525Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "A museum coordinator opens the door and says the exhibit label copy is due in ten minutes. The tutor must answer briefly, using one concrete source on the table rather than a lecture.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "This interrupts smooth tutorial rhythm and forces evidence-first explanation under pressure.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 25191,
+            "promptHashes": {
+              "system": "360823f6ca281eb4",
+              "user": "c69bfe4fe8aa3892",
+              "combined": "a68c5f72911bb378"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-s2rohP",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-s2rohP/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T13:43:25.527Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "Pass the police report here, under the lamp.\n\nTen minutes, then: this silence is not proof that the women were absent. It is a clue about what this sort of record was built to notice: police provenance, public-order purpose, official survival.\n\nSo mark it in two columns before the label goes up. Where the slogan works: the report tidies the picket into “disorder”. Where it strains: check one awkward trace beside it, the damp leaflet or the wage slip, and ask whether it corroborates a presence the report has blurred.\n\nFor the label, keep the claim cautious: official records may minimise some actors; damaged scraps and indirect traces can show what the archive failed to hold clearly.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Pass the police report here, under the lamp.\n\nThe silence does not prove absence. It proves that this record had poor eyes for those women: police provenance, public-order purpose, official survival. So the label must be careful.\n\nOne place the slogan works: the report tidies the picket line into “disorder”. One place it strains: the damp leaflet and wage slip leave awkward traces of work, pay, and presence that the report cannot quite absorb.\n\nA fair label might say: “Some women appear only indirectly in official records, but those absences are evidence too: they show whose actions were recorded, minimised, or left to survive in damaged scraps.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 20160,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-11bea501f245e56d"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 20160,
+            "promptHashes": {
+              "system": "8afc2454638dea5c",
+              "user": "cbf939d6fbe69c0b",
+              "combined": "11bea501f245e56d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rEollg",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rEollg/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 20160,
+              "promptHashes": {
+                "system": "8afc2454638dea5c",
+                "user": "cbf939d6fbe69c0b",
+                "combined": "11bea501f245e56d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rEollg",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rEollg/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong in its concrete handling of the police report, the lamp, the leaflet, and the wage slip. It directly answers the learner’s confusion about silence without drifting into abstraction, and it keeps the scene under time pressure.\n\nThe main risk is that it over-settles the problem for the learner. “The silence does not prove absence. It proves…” is too tidy: silences can indicate the limits, purposes, and survival patterns of records, but “proves” may make the method sound more certain than it is. The draft also supplies the exhibit-label wording outright, which advances clarity but reduces the learner’s active work. There is little Socratic movement here; it would be stronger if it kept one small task in the learner’s hands, such as checking what the police report can and cannot see against the leaflet or wage slip.\n\nEmotionally, it respects the learner’s uncertainty and does not patronise. ZPD-wise, the scaffolding is close: the learner has already formed a good metaphor, so the tutor can now refine rather than lecture. Keep the object-centred compression, but leave more interpretive friction in place.\n\nKEEP_OR_CHANGE: revise lightly. Keep the opening with the police report, the distinction between where the slogan works and where it strains, and the caution around official records. Change the over-definitive “proves” language, reduce the finished-label feel, and add one brief generative move so the learner still weighs provenance, purpose, survival, corroboration, and silence rather than receiving the conclusion.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12449,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-648f870ee8c63ae9"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12449,
+            "promptHashes": {
+              "system": "eb5a0a765f5fa0ca",
+              "user": "d200b31657f82437",
+              "combined": "648f870ee8c63ae9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FNG3rK",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FNG3rK/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12449,
+              "promptHashes": {
+                "system": "eb5a0a765f5fa0ca",
+                "user": "d200b31657f82437",
+                "combined": "648f870ee8c63ae9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FNG3rK",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FNG3rK/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the original was too certain about silence and did too much of the label work.\n\nFINAL:\nPass the police report here, under the lamp.\n\nTen minutes, then: this silence is not proof that the women were absent. It is a clue about what this sort of record was built to notice: police provenance, public-order purpose, official survival.\n\nSo mark it in two columns before the label goes up. Where the slogan works: the report tidies the picket into “disorder”. Where it strains: check one awkward trace beside it, the damp leaflet or the wage slip, and ask whether it corroborates a presence the report has blurred.\n\nFor the label, keep the claim cautious: official records may minimise some actors; damaged scraps and indirect traces can show what the archive failed to hold clearly.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 17315,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-2d033c5fb3b71572"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 17315,
+            "promptHashes": {
+              "system": "8d50a62af80541e7",
+              "user": "d200b31657f82437",
+              "combined": "2d033c5fb3b71572"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kMRZCJ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kMRZCJ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 17315,
+              "promptHashes": {
+                "system": "8d50a62af80541e7",
+                "user": "d200b31657f82437",
+                "combined": "2d033c5fb3b71572"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kMRZCJ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kMRZCJ/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T13:44:15.451Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "Oh, right, I get it now, or nearly: the silence is not the women disappearing, it is the police report only having a certain kind of torch. But then the leaflet and wage slip feel like little leaks round the edge of the official story, and I want to run with that too fast. So the label has to say “look, the winners may file the neat version,” but then pause over whether these damp scraps are enough to push back.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it now: the silence is evidence about the police report’s habits, not a neat empty space where the women vanish. The two-column thing helps, though I’m already tempted to make the big claim again: winners write some records, but the boxes leak. I want to ask how much one damp leaflet or wage slip is allowed to push back before the label overclaims.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8200,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-db5aca95d1ed4905"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8200,
+            "promptHashes": {
+              "system": "a6f13efc30bc0bda",
+              "user": "b8ab7f945dc841fa",
+              "combined": "db5aca95d1ed4905"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IMkn8C",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IMkn8C/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8200,
+              "promptHashes": {
+                "system": "a6f13efc30bc0bda",
+                "user": "b8ab7f945dc841fa",
+                "combined": "db5aca95d1ed4905"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IMkn8C",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IMkn8C/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego mostly fits the eager, analogy-making student, especially with “the boxes leak,” but it’s still a bit too clean and museum-label-ready. “Evidence about the police report’s habits” sounds more polished than this learner’s confused register; they’d probably fumble more over whether the silence is a clue, a gap, or a trap. The response should keep the premature “Oh, I get it” energy, but let the uncertainty fray more instead of arriving at such a neat formulation.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8829,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-77a9df7888cd2d48"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8829,
+            "promptHashes": {
+              "system": "62fee44220b1e1cd",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "77a9df7888cd2d48"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TQgcpZ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TQgcpZ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8829,
+              "promptHashes": {
+                "system": "62fee44220b1e1cd",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "77a9df7888cd2d48"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TQgcpZ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TQgcpZ/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the eager analogy but make the uncertainty messier.\n\nFINAL:\nOh, right, I get it now, or nearly: the silence is not the women disappearing, it is the police report only having a certain kind of torch. But then the leaflet and wage slip feel like little leaks round the edge of the official story, and I want to run with that too fast. So the label has to say “look, the winners may file the neat version,” but then pause over whether these damp scraps are enough to push back.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7513,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-e4ccd5f5e58134a4"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7513,
+            "promptHashes": {
+              "system": "230247aaf2a39c21",
+              "user": "d41cee7b2a53355b",
+              "combined": "e4ccd5f5e58134a4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-o8PC67",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-o8PC67/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7513,
+              "promptHashes": {
+                "system": "230247aaf2a39c21",
+                "user": "d41cee7b2a53355b",
+                "combined": "e4ccd5f5e58134a4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-o8PC67",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-o8PC67/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "solid",
+      "timestamp": "2026-05-23T13:44:39.995Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "Leave the damp leaflet on the blotting paper for a moment. That phrase, “little leaks round the edge,” is useful, provided it stays a leak and not a flood.\n\nSo the next move is not to make the scraps defeat the police report. It is to make them complicate it. The report has provenance and purpose: made by police, for order and record-keeping. The leaflet has a different purpose: to persuade, rally, perhaps exaggerate. The wage slip is quieter, but it may corroborate one hard thing: a date, a name, a deduction, an absence, a shift not recorded elsewhere.\n\nBefore the label is drafted, pick one exact mark from the leaflet or wage slip. Not “the women were erased” yet. Something smaller: a name in the margin, a pay deduction that matches the strike week, a meeting time, a phrase that does not sound like police language.\n\nThen build the label in three beats. One sentence where the slogan works: the official record files the strike as disorder. One sentence where it strains: this surviving trace suggests a person or motive the official record barely notices. Then the historian’s caution: these scraps do not restore the whole missing week, but they stop the neat version from standing alone.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Leave the damp leaflet on the blotting paper for a moment. That phrase, “little leaks round the edge,” is useful, provided it stays a leak and not a flood.\n\nSo the next move is not to make the scraps defeat the police report. It is to make them complicate it. The report has provenance and purpose: made by police, for order and record-keeping. The leaflet has a different purpose: to persuade, rally, perhaps exaggerate. The wage slip is quieter, but it may corroborate dates, names, absences, or deductions.\n\nFor the label, try this test. One sentence where the slogan seems to work: the official record files the strike as disorder. One sentence where it strains: surviving fragments suggest people and motives the official record barely notices. Then add the historian’s caution: these traces do not restore the whole missing week, but they stop the neat version from standing alone.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16620,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-b6a0542024a82ff4"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16620,
+            "promptHashes": {
+              "system": "a61dc5460860e50d",
+              "user": "56797eaef7255ffe",
+              "combined": "b6a0542024a82ff4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PYMPRs",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PYMPRs/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16620,
+              "promptHashes": {
+                "system": "a61dc5460860e50d",
+                "user": "56797eaef7255ffe",
+                "combined": "b6a0542024a82ff4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PYMPRs",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PYMPRs/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong overall: it keeps the learner’s own metaphor, reins in overclaiming, and returns clearly to provenance, purpose, corroboration, and silence. The “leak not flood” line is well judged for this learner: warm, concrete, and a useful check against rushing into a grand claim.\n\nThe main risk is that it slightly over-solves the problem. It tells the learner what the leaflet and wage slip may do, then supplies the label structure. That is appropriate scaffolding for confusion, but it could be made a little more generative by asking for one exact detail from the leaflet or wage slip before drafting the second sentence. The learner is now close enough to handle a small evidence-selection task.\n\nKeep the archive-room opening, the distinction between “defeat” and “complicate,” and the caution that fragments do not restore the whole missing week. Question the list of what the wage slip “may corroborate”: it is useful, but a touch abstract unless tied to one visible mark, date, deduction, name, or absence in the object. Change the final paragraph lightly so the learner has to weigh one specific trace rather than simply accept the tutor’s formulation.\n\nKEEP_OR_CHANGE: revise lightly, because the draft is sound and well attuned, but it should leave a little more work in the learner’s hands. Add one concrete evidentiary prompt before the label test, and avoid making the scraps’ interpretive role feel already settled.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12817,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-0d930cd17902f2b9"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12817,
+            "promptHashes": {
+              "system": "ef3fe3987991e677",
+              "user": "170d55de502b82f4",
+              "combined": "0d930cd17902f2b9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-e4miZg",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-e4miZg/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12817,
+              "promptHashes": {
+                "system": "ef3fe3987991e677",
+                "user": "170d55de502b82f4",
+                "combined": "0d930cd17902f2b9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-e4miZg",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-e4miZg/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the core guidance but make the learner select one exact trace before drafting.\n\nFINAL:\nLeave the damp leaflet on the blotting paper for a moment. That phrase, “little leaks round the edge,” is useful, provided it stays a leak and not a flood.\n\nSo the next move is not to make the scraps defeat the police report. It is to make them complicate it. The report has provenance and purpose: made by police, for order and record-keeping. The leaflet has a different purpose: to persuade, rally, perhaps exaggerate. The wage slip is quieter, but it may corroborate one hard thing: a date, a name, a deduction, an absence, a shift not recorded elsewhere.\n\nBefore the label is drafted, pick one exact mark from the leaflet or wage slip. Not “the women were erased” yet. Something smaller: a name in the margin, a pay deduction that matches the strike week, a meeting time, a phrase that does not sound like police language.\n\nThen build the label in three beats. One sentence where the slogan works: the official record files the strike as disorder. One sentence where it strains: this surviving trace suggests a person or motive the official record barely notices. Then the historian’s caution: these scraps do not restore the whole missing week, but they stop the neat version from standing alone.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15747,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-36fbe30b69f8633d"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15747,
+            "promptHashes": {
+              "system": "ad08c0cf76ef3636",
+              "user": "170d55de502b82f4",
+              "combined": "36fbe30b69f8633d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mhwQu8",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mhwQu8/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15747,
+              "promptHashes": {
+                "system": "ad08c0cf76ef3636",
+                "user": "170d55de502b82f4",
+                "combined": "36fbe30b69f8633d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mhwQu8",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mhwQu8/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T13:45:25.182Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "Oh, I get it now, or I think I do: the wage slip is like the little hard nail in the table, not the whole table. But my brain still wants to slap “the women were erased” on the label the second a name or deduction turns up, which is probably too much from one damp scrap. So maybe the question is: how small can the mark be and still make the police report wobble?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it now: the leaflet is not a heroic counter-history, it is more like a damp corner tugging at the police report’s neat wording. But I’m still tempted to make the leak into a whole burst pipe, because one name or pay deduction feels suddenly huge. I want to ask whether one small mark is enough to make the label challenge the slogan, or only enough to make it hesitate.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6653,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-212bf4194066b30e"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6653,
+            "promptHashes": {
+              "system": "880dea6964ce388b",
+              "user": "b8ab7f945dc841fa",
+              "combined": "212bf4194066b30e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gnD4y4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gnD4y4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6653,
+              "promptHashes": {
+                "system": "880dea6964ce388b",
+                "user": "b8ab7f945dc841fa",
+                "combined": "212bf4194066b30e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gnD4y4",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gnD4y4/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly on-pattern with the quick “Oh, I get it now” and the leaky analogy, but it is still too polished and tutor-like. Phrases like “heroic counter-history” and “only enough to make it hesitate” sound a bit too neatly historiographical for an eager, confused first-time volunteer. The confusion should feel more jumpy and prematurely expansive, with the learner half-running toward a big label claim before catching themselves, rather than calmly naming the evidentiary problem.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8494,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-3b33f66e01abeb45"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8494,
+            "promptHashes": {
+              "system": "f5e70eb4d786ba87",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "3b33f66e01abeb45"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-w2vKj8",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-w2vKj8/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8494,
+              "promptHashes": {
+                "system": "f5e70eb4d786ba87",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "3b33f66e01abeb45"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-w2vKj8",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-w2vKj8/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to make the reaction more immediate, less polished, and more tempted by the big claim.\n\nFINAL:\nOh, I get it now, or I think I do: the wage slip is like the little hard nail in the table, not the whole table. But my brain still wants to slap “the women were erased” on the label the second a name or deduction turns up, which is probably too much from one damp scrap. So maybe the question is: how small can the mark be and still make the police report wobble?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8551,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-3b8a55f4c79eb92f"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8551,
+            "promptHashes": {
+              "system": "bf0d48858eb0477a",
+              "user": "d41cee7b2a53355b",
+              "combined": "3b8a55f4c79eb92f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q2uOL4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q2uOL4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8551,
+              "promptHashes": {
+                "system": "bf0d48858eb0477a",
+                "user": "d41cee7b2a53355b",
+                "combined": "3b8a55f4c79eb92f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q2uOL4",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q2uOL4/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-23T13:45:48.884Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T13:45:48.885Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "Small is enough when it can bear a small claim: if the wage slip’s date, provenance, and one corroborating trace hold up, it does not prove “the women were erased”, but it makes the police report wobble by showing at least one woman’s strike-week presence that the official account barely notices.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Small is enough when it can bear a small claim: the report files the strike as disorder, but a dated name or deduction on that wage slip can say, more cautiously, that the official account missed at least one woman’s trace in the strike week, and that is enough wobble for one honest label.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 19285,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-909ddfb6c96f8b4a"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19285,
+            "promptHashes": {
+              "system": "ff6acee5a408d758",
+              "user": "1e5b9fae62a98499",
+              "combined": "909ddfb6c96f8b4a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5TAra4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5TAra4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 19285,
+              "promptHashes": {
+                "system": "ff6acee5a408d758",
+                "user": "1e5b9fae62a98499",
+                "combined": "909ddfb6c96f8b4a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5TAra4",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5TAra4/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong: it answers the learner’s exact uncertainty by tying evidential size to claim size, and it preserves the important caution that one wage slip should not become “the women were erased.” The phrase “bear a small claim” is especially worth keeping because it gives the learner a portable historical method. The risk is that it closes the scene a little too neatly and does most of the weighing for them; it names the cautious claim but does not quite foreground the test historians use: date, provenance, corroboration, and what the source can and cannot show. Given the cue to end with one concise tutor line, this does not need a full Socratic turn, but it could lightly sharpen the evidentiary condition before the conclusion.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the compactness, the object-centred wage-slip focus, and “small claim / enough wobble.” Change only enough to make the evidential standard more explicit and avoid making the wage slip automatically “say” more than it can without corroboration.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13273,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-bb202d911250e220"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13273,
+            "promptHashes": {
+              "system": "cfd45442f555242b",
+              "user": "645e40c7a8a3ceb2",
+              "combined": "bb202d911250e220"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nuuYYm",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nuuYYm/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13273,
+              "promptHashes": {
+                "system": "cfd45442f555242b",
+                "user": "645e40c7a8a3ceb2",
+                "combined": "bb202d911250e220"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nuuYYm",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nuuYYm/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to foreground the evidential test before the cautious claim.\n\nFINAL:\nSmall is enough when it can bear a small claim: if the wage slip’s date, provenance, and one corroborating trace hold up, it does not prove “the women were erased”, but it makes the police report wobble by showing at least one woman’s strike-week presence that the official account barely notices.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9088,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-41fb76fa4c9380c0"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9088,
+            "promptHashes": {
+              "system": "ddafc02163bea228",
+              "user": "645e40c7a8a3ceb2",
+              "combined": "41fb76fa4c9380c0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UMERAn",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UMERAn/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9088,
+              "promptHashes": {
+                "system": "ddafc02163bea228",
+                "user": "645e40c7a8a3ceb2",
+                "combined": "41fb76fa4c9380c0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UMERAn",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UMERAn/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T13:46:30.531Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 249812,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 1,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 2,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why 'history is written by the winners' is too simple (sources, silences, and how historians weigh evidence)",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "partial",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-23 13:45:48",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 1,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 2,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 3,
+            "sessionId": "drama-D10-1779543740721",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "Leave the damp leaflet on the blotting paper for a moment. That phrase, “little leaks round the edge,” is useful, provided it stays a leak and not a flood.\n\nSo the next move is not to make the scraps ",
+            "learnerResponse": null,
+            "context": "Oh, right, I get it now, or nearly: the silence is not the women disappearing, it is the police repo",
+            "createdAt": "2026-05-23 13:45:25"
+          },
+          {
+            "id": 2,
+            "sessionId": "drama-D10-1779543740721",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "Pass the police report here, under the lamp.\n\nTen minutes, then: this silence is not proof that the women were absent. It is a clue about what this sort of record was built to notice: police provenanc",
+            "learnerResponse": null,
+            "context": "Oh, I get it now, the slogan is like a pencil note on the folder, not the label yet. The police repo",
+            "createdAt": "2026-05-23 13:44:15"
+          },
+          {
+            "id": 1,
+            "sessionId": "drama-D10-1779543740721",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "Before that phrase earns a place on the wall label, let it sit beside this box for five minutes. Here are the council minutes, the police report, and a strike committee leaflet with rain damage on the",
+            "learnerResponse": null,
+            "context": "Scene setting: A small museum storage room on a rainy Thursday evening, during a volunteer digitisat",
+            "createdAt": "2026-05-23 13:43:01"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

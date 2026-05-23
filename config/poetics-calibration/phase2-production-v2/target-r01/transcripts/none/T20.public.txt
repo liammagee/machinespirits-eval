@@ -1,0 +1,37 @@
+STAGE: A marked transcript, a glowing time stamp, and a nearly empty coffee cup sit between two chairs while the closing lights blink once overhead.
+
+TUTOR: Pull the transcript three lines above the quote and one line below it. The words may be exact; the problem is what the article makes them do.
+
+Before this goes to editorial review, run one test: write the question the speaker was answering in the margin. Then check whether the paragraph frame, headline, and placement still fit that question.
+
+A quote needs five checks: exact wording, framing, placement, omitted setup, and the question being answered. If the speaker said, “That policy could fail,” in answer to “What is the worst-case risk if funding is cut?”, a headline saying *Minister admits policy will fail* uses true words and false framing.
+
+So the note should not stop at “Did they say this?” It should record the timestamp, question, surrounding sentence, and what the speaker was qualifying, resisting, or limiting. Context is evidence, not decoration.
+
+LEARNER: If the words are exact, it still seems fair, but the paused clip and the headline make me less ready to sign off. The timestamp, three lines above, one line below, and the cut paragraph have to be checked against the actual question before editorial review. If those do not fit, the quote is accurate but the article may be making it prove more than the speaker was saying.
+
+STAGE: The archive desk phone rings once; a staff member says the room closes in six minutes. The next tutor turn must be compressed into a practical test the learner can apply to the quote, not a tidy explanatory paragraph.
+
+TUTOR: Phone says six minutes. Put the note in two columns: **words verified** and **meaning not yet verified**.
+
+Now line up four items: the question asked, the quoted sentence, the paragraph using it, and the headline above it. Check five points: exact wording, headline frame, paragraph placement, omitted setup, and the question answered.
+
+Compact test: if the question was “What is the worst-case risk if funding is cut?”, then “It could fail” cannot fairly carry “Official says it will fail.”
+
+Until those items point in the same direction, the safe editorial line is: **accurate words, unresolved framing**.
+
+LEARNER: Exact words go in the verified column; the meaning stays open until the transcript question, cut paragraph, and headline point the same way. The difficulty is the hold threshold: if the headline shifts “worst-case risk” into “will fail,” that seems clearly unresolved framing. I would mark the note: accurate wording, timestamp checked, but publication should wait until the omitted setup and headline frame are reconciled.
+
+TUTOR: Mark **HOLD: accurate words, unresolved use** beside the headline.
+
+The timestamp verifies wording only. Framing is a separate claim: the question answered, the omitted setup, the paragraph placement, and what the headline asks the audience to believe.
+
+Run one threshold check before sign-off: does the headline add **certainty**, **scope**, or **causation** beyond the source answer?
+
+If the source says, “It could fail” inside a worst-case answer, the article cannot promote that into “will fail” without stronger evidence. Exact wording passes; meaning stays unresolved.
+
+The note can stand as: **Quote verified word-for-word. Hold publication unless the transcript question, omitted setup, paragraph placement, and headline frame all support the same meaning.**
+
+LEARNER: If the words are exact, it still seems fair at first, but the paused headline may be making them carry more than the answer supports. I can mark **HOLD: accurate words, unresolved use**, though I am not fully sure where the threshold falls until the transcript question and omitted setup are beside it. The check is whether the headline has added certainty, scope, or causation beyond “could fail” in a worst-case answer.
+
+STAGE: closes the scene.

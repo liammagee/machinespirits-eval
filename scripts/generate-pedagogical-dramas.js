@@ -323,6 +323,14 @@ function isTruncated(text) {
   return !/[.?!…"”'’)\]]$/.test(text.trim());
 }
 
+function previousStageAllowsFragment(turns, index) {
+  for (let i = index - 1; i >= 0; i--) {
+    if (turns[i]?.role !== 'STAGE') continue;
+    return /\bunfinished\b/i.test(turns[i].text);
+  }
+  return false;
+}
+
 const REVOICE_STOPWORDS = new Set([
   'about',
   'after',
@@ -455,6 +463,7 @@ function namesEarlierFramingProblem(text) {
     /\bI\s+was\s+using\b[\s\S]{0,90}\bas\s+the\s+clue\b/i,
     /\bI\s+let\b[\s\S]{0,90}\bdecide\b[\s\S]{0,90}\bbefore checking\b/i,
     /\bI\s+let\b[\s\S]{0,90}\bbe\s+the\s+whole\b[\s\S]{0,90}\bbefore\b/i,
+    /\bproblem\s+is\s+I\s+(?:put|placed|located|made|treated)\b/i,
     /\bproblem\s+was\s+making\b/i,
     /\bmixing\s+up\b[\s\S]{0,90}\bwith\b/i,
     /\b(?:was|is)\s+(?:only|just)\b[\s\S]{0,90}\b(?:not|rather than)\b/i,
@@ -487,10 +496,13 @@ function replacesEarlierFraming(text) {
     /\b(?:instead|rather|now)\b[\s\S]{0,100}\b(?:frame|read|say|put|treat|write|claim)\b/i,
     /\b(?:frame|read|say|put|treat|write|claim)\b[\s\S]{0,80}\b(?:instead|rather|now)\b/i,
     /\b(?:new|better|revised|replacement)\s+(?:frame|framing|reading)\b/i,
+    /\bnew\s+(?:margin\s+note|mark|label|line|frame)\s*:/i,
     /\breplacement\s+is\b/i,
+    /\breplace\s+it\s*:/i,
     /\bbetter\s+(?:reading|line|claim)\s+is\b/i,
     /\bbetter\s+way\s+is\b/i,
     /\bI\s+(?:would|should|need to|can|will)\s+(?:frame|read|say|put|treat|write|claim|change|call)\b/i,
+    /\b(?:the|this)\s+(?:form|line|label|claim|sentence|answer)\s+should\s+(?:say|read|show)\b/i,
     /\b(?:line|claim|proof|equation|step)\b[\s\S]{0,40}\b(?:is|starts?|reads?|works?|shows?|means?|puts?|becomes?|tests?)\b/i,
     /\b(?:image|word)\s+(?:now\s+)?(?:starts?|reads?|works?|shows?|means?|puts?|becomes?)\b/i,
     /\b(?:it|that|this)\s+(?:now\s+)?(?:means?|reads?|becomes?)\b/i,
@@ -498,6 +510,7 @@ function replacesEarlierFraming(text) {
     /\b(?:better|instead)\s+to\s+(?:suppose|start|frame|read|treat|ask|follow)\b/i,
     /\b(?:better|stronger|sharper)\s+(?:start|starting point)\s+(?:is|uses?)\b/i,
     /\b(?:better|sharper)\s+(?:split|test|question|frame|framing|reading)\s+(?:is|asks?)\b/i,
+    /\b(?:rig|case|map|table|model|problem|scene)\s+is\s+asking\b[\s\S]{0,120}\b(?:where|whether|how|what)\b/i,
     /\b(?:new|better|revised)\s+version\s+should\s+say\b/i,
     /\bshould\s+(?:maybe\s+)?be\s+(?:marked|read|treated)\s+first\s+as\b/i,
     /\b(?:question|test)\s+is\s+not\b[\s\S]{0,120}\bbut\s+(?:whether|if)\b/i,
@@ -633,7 +646,12 @@ function keyItemFor(d, nTutor, nLearner, qualityWarnings = []) {
   };
 }
 
-function reframeDowngradeFailures(traceTurns = []) {
+function transcriptReframesAnchor(anchor, turns = []) {
+  if (!anchor) return false;
+  return turns.some((turn) => turn.role === 'LEARNER' && reframeMatchStats(anchor, turn.text).compliant);
+}
+
+function reframeDowngradeFailures(traceTurns = [], turns = []) {
   return traceTurns.flatMap((turn, idx) => {
     const cue = turn?.directorCue;
     if (
@@ -643,6 +661,7 @@ function reframeDowngradeFailures(traceTurns = []) {
     ) {
       return [];
     }
+    if (transcriptReframesAnchor(cue.anchorQuote, turns)) return [];
     return [
       {
         stage_turn_number: turn.turnNumber ?? idx + 1,
@@ -673,7 +692,7 @@ function qualityWarningsFor({ tid, dramaId, turns, removedNotes = [], traceTurns
   }
   const truncatedLearnerTurns = turns
     .map((t, idx) => ({ ...t, ordinal: idx + 1 }))
-    .filter((t) => t.role === 'LEARNER' && isTruncated(t.text));
+    .filter((t, idx) => t.role === 'LEARNER' && isTruncated(t.text) && !previousStageAllowsFragment(turns, idx));
   if (truncatedLearnerTurns.length) {
     warnings.push({
       code: 'possibly_truncated_learner_turn',
@@ -715,7 +734,7 @@ function qualityWarningsFor({ tid, dramaId, turns, removedNotes = [], traceTurns
       recommended_action: 'regenerate_or_exclude_before_scoring',
     });
   }
-  const downgradedReframes = reframeDowngradeFailures(traceTurns);
+  const downgradedReframes = reframeDowngradeFailures(traceTurns, turns);
   if (downgradedReframes.length) {
     warnings.push({
       code: 'reframe_cue_downgraded',
