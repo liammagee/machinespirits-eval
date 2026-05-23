@@ -186,3 +186,38 @@ not seeing ... with absence".
 
 Both critics leave D9/T10 flat in the reframe arm. Gemini's uncued recognition is
 D7/T18; preserve it as bilateral dialogue variance, not a cue leak.
+
+The repeat-3 controls completed under `control-r03/d4/` and
+`control-r03/d10-emphatic/`:
+
+| Control | Qwen | Gemini |
+|---|---|---|
+| D4 flat | flat | flat |
+| D10 emphatic trap | trap | trap |
+
+This gives target-r03 its own clean flat/trap bracket.
+
+## Production-v1 Readout
+
+The attended target/control cycle now has three target repeats, three flat/trap
+control repeats, and the pre-specified stress slice.
+
+| Critic | `none` recognitions | `reframe` recognitions |
+|---|---:|---:|
+| Qwen | 0/18 | 17/18 |
+| Gemini | 1/18 | 16/18 |
+
+Control summary:
+
+- D4 flat control: flat for both critics in all three repeats.
+- D10 emphatic trap control: trap for both critics in repeats 2 and 3; repeat 1
+  remains a preserved Qwen/Gemini split because the sample contained a later
+  re-reading hook.
+- Stress slice: D16 is the cleaner costume trap, D8 remains a designed boundary
+  split, and D13/D15 remain flat for both critics.
+
+The result is strong enough for a bounded Paper 2.0 claim about the current
+dramatic mechanism: explicit Director reframing sharply increases critic-rated
+recognitive form against the same target family, while stable controls show that
+the critics are not merely rewarding emphatic insight language. It is not yet a
+claim about general transfer across arbitrary scenario families.

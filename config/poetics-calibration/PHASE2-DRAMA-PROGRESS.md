@@ -445,8 +445,25 @@ eyes to catch" to "not absent, just not visible while it was spread through the
 water." That is real variance in the uncued bilateral dialogue, not a hidden
 Director cue.
 
-This is a checkpoint, not the production result: the repeat-3 controls still
-need to run before the batch can support a broader claim.
+The repeat-3 controls bracket the target repeat cleanly:
+
+| Control | Qwen | Gemini |
+|---|---|---|
+| D4 flat | flat | flat |
+| D10 emphatic trap | trap | trap |
+
+That closes the attended production-v1 target/control cycle. Across the three
+target repeats, the current critic totals are:
+
+| Critic | `none` recognitions | `reframe` recognitions |
+|---|---:|---:|
+| Qwen | 0/18 | 17/18 |
+| Gemini | 1/18 | 16/18 |
+
+The control readout is also usable but more nuanced. D4 is flat for both critics
+in all three repeats. D10 emphatic is trap for both critics in repeats 2 and 3;
+repeat 1 keeps its Qwen/Gemini split because that generated sample contained a
+real later re-reading hook rather than only a decorative "Oh, I get it" surface.
 
 ## 4. Guardrails learned the hard way
 
@@ -468,16 +485,15 @@ These are now operating constraints for the next runs:
 
 ## 5. What remains to do
 
-The next work now has a pre-specified production shape in
-`PHASE2-PRODUCTION-V1-PLAN.md` and `scripts/run-poetics-production-batch.js`.
-The broad run should use that runner rather than hand-assembling another probe:
+The attended production-v1 target/control cycle is now complete. The next work
+should use the same runner rather than hand-assembling another probe:
 
-1. Run `phase2-production-v1`, or run `--only target-r01` first if quota/runtime
-   needs an attended checkpoint.
-2. Keep `none` versus `reframe` as the first scaled target contrast and keep
-   `revoice` as an exploratory weak arm.
-3. Keep explicit flat and trap controls in each scored batch; do not infer
-   control behavior from the uncued target arm alone.
+1. Promote the production-v1 readout into the canonical Paper 2.0 source before
+   any spin-off claim uses the numbers.
+2. Decide whether to scale depth first (more repeats of the same target/control
+   units) or breadth first (a larger scenario family with the same accepted
+   `none`/`reframe` contrast).
+3. Keep `revoice` as exploratory until it has its own control-stable contrast.
 4. Regenerate or exclude arms that quality warnings mark as downgraded,
    unrevoiced, unreframed, leaked, truncated, or too short.
 5. Decide how the original Phase-2 human transfer gate should coexist with the
