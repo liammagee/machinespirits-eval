@@ -921,6 +921,114 @@ describe('generate-pedagogical-dramas', () => {
     );
   });
 
+  it('accepts a revoice after a content-light opening sentence', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T871',
+      dramaId: 'D871',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "Okay. Pencil down. I think I was treating the whole home-speech pattern as sloppy, sorry, instead of checking one sentence." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'Okay. Pencil down. I think I was treating the whole home-speech pattern as sloppy, sorry, instead of checking one sentence. That framing was too fast: the style guide got to judge the whole voice before the sentence showed its pattern. So it should maybe be marked first as the same third-person slot rule showing up again, not as broken agreement.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts problem-was-making language before a legal rule replacement', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T872',
+      dramaId: 'D872',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I thought presumed innocent meant probably did not do it." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'I thought presumed innocent meant probably did not do it. My earlier problem was making that sound like a guess about what happened, when it is more like a trial rule. The new version should say the charge is not proved until the prosecution meets the burden.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts an ecology replacement that breaks the simple story', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T873',
+      dramaId: 'D873',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I thought fewer predators simply meant more deer survive, so removal helps the herd." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'I thought fewer predators simply meant more deer survive, so removal helps the herd. The framing problem is that the winter count is only the bump, not the system test. The seedling recruitment breaks the simple story, so I would write this as overshoot risk and reduced habitat recovery.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts mixing-up visibility with absence as a framing problem', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T874',
+      dramaId: 'D874',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "My first instinct is that because the water has gone clear, the salt has sort of gone as well." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'My first instinct is that because the water has gone clear, the salt has sort of gone as well, but that was me mixing up not seeing the crystals with the salt being absent. The better way is: the crystals have gone from sight, but the extra mass is still on the balance.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
   it('accepts a reframe that treats the old line as if it were proof before replacing it', () => {
     const warnings = qualityWarningsFor({
       tid: 'T912',

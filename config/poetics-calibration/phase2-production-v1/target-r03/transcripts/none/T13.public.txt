@@ -1,0 +1,29 @@
+STAGE: A projector hums over a frozen slide reading PRESUMPTION OF INNOCENCE while a learner keeps one finger on a witness statement and frowns at the word innocent.
+
+TUTOR: The case packet leaves the factual question open: what actually happened is one matter. The legal presumption is a second matter: the accused is treated as not guilty for trial purposes unless and until the state proves the charge. The burden is a third matter: the prosecution must carry that proof to the required standard, at trial usually beyond a reasonable doubt.
+
+So the phrase is not the law saying, “this person did not do it.” It is the law refusing to make the accused disprove guilt.
+
+For the reflection, test the sentence this way: does it describe the accused as factually innocent, or does it describe the prosecution’s obligation under the standard of proof? The stronger revision will keep those apart.
+
+LEARNER: I thought “presumed innocent” meant the court was sort of saying he probably did not do it, or at least starting from that story. But now I am not sure if “not guilty” is just courtroom language for “we cannot treat him as guilty yet,” not the same as knowing what happened. So in my reflection, should I say the packet does not prove innocence either, but the prosecution still has to prove guilt?
+
+STAGE: A librarian leans in to say the room is booked in eight minutes; the tutor must answer with a compact analogy or contrast, not a tidy mini-lecture.
+
+TUTOR: Yes, with that adjustment. Since the room is nearly booked, use the margin test: **what happened** is a factual question; **presumed innocent** is a trial rule; **beyond a reasonable doubt** is the prosecution’s burden.
+
+A possible spine for the revision is: “The packet does not prove factual innocence, but it also does not shift the burden to the accused. Until the prosecution proves guilt beyond a reasonable doubt, the court must treat the charge as not proved.”
+
+LEARNER: I assumed “presumed innocent” meant the court was almost saying the person probably did not do it, but now it sounds more like a rule for how the case has to be handled. I still feel stuck on “not proved,” because in ordinary language that feels close to “maybe innocent,” even if legally it is not the same. So should my revision say the packet does not settle what happened, and the prosecution still has to prove guilt beyond a reasonable doubt?
+
+TUTOR: Yes. On the packet margin, mark three separate lines: **what actually happened** remains unsettled; **presumed innocent** is a trial rule, not a factual prediction; **beyond a reasonable doubt** is the prosecution’s burden.
+
+A clean revision could say: “The case packet leaves the facts unresolved. Presumed innocent does not mean the accused has been shown to be factually innocent; it means the court cannot treat the charge as proved unless the prosecution meets its burden beyond a reasonable doubt.”
+
+Quick check before submitting: if the sentence “not proved” answers “who had to prove guilt, and did they meet that standard?”, it works. If it sounds like “therefore he probably did not do it,” revise it.
+
+LEARNER: So I should say the packet still does not really answer what happened, only whether the prosecution has done enough? I still get pulled toward reading “not proved” as “probably innocent,” even though I think that is the mistake. Is it okay if I use almost that wording and just avoid saying the court has found he did not do it?
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: Yes; that wording works. The packet leaves what happened unresolved; the presumption is a trial rule; and “not proved” means the prosecution has not carried its burden beyond a reasonable doubt, not that the court has found factual innocence.

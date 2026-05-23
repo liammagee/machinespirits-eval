@@ -392,12 +392,15 @@ function revoiceMatchStats(anchor, learnerText) {
   const anchorTerms = revoiceTerms(anchor);
   const normalizedLearner = String(learnerText || '').replace(/\s+/g, ' ').trim();
   const learnerOpeningProbe = normalizedLearner.replace(/\.{2,}/g, '…');
+  const firstSentence = learnerOpeningProbe.match(/^.*?[.!?](?=\s|$)/)?.[0] || '';
+  const minimumSharedTerms = Math.min(3, anchorTerms.length);
   const learnerOpening =
-    learnerOpeningProbe.match(/^.*?[.!?](?=\s|$)/)?.[0] || normalizedLearner.slice(0, 220);
+    firstSentence && revoiceTerms(firstSentence).length >= minimumSharedTerms
+      ? firstSentence
+      : normalizedLearner.slice(0, 220);
   const learnerTerms = new Set(revoiceTerms(learnerOpening));
   const sharedTerms = anchorTerms.filter((term) => learnerTerms.has(term));
   const overlapRatio = anchorTerms.length ? sharedTerms.length / anchorTerms.length : 0;
-  const minimumSharedTerms = Math.min(3, anchorTerms.length);
   return {
     anchor_terms: anchorTerms.length,
     learner_opening_terms: learnerTerms.size,
@@ -451,6 +454,8 @@ function namesEarlierFramingProblem(text) {
     /\bthat\s+was\s+me\s+letting\b[\s\S]{0,90}\bmean\b/i,
     /\bI\s+was\s+using\b[\s\S]{0,90}\bas\s+the\s+clue\b/i,
     /\bI\s+let\b[\s\S]{0,90}\bdecide\b[\s\S]{0,90}\bbefore checking\b/i,
+    /\bproblem\s+was\s+making\b/i,
+    /\bmixing\s+up\b[\s\S]{0,90}\bwith\b/i,
     /\b(?:was|is)\s+(?:only|just)\b[\s\S]{0,90}\b(?:not|rather than)\b/i,
     /\btreat(?:ed|ing)\b[\s\S]{0,90}\bas\s+(?:absent|gone|empty|not\s+there)\b/i,
     /\btreat(?:ed|ing)\b[\s\S]{0,90}\bas if\b/i,
@@ -483,6 +488,7 @@ function replacesEarlierFraming(text) {
     /\b(?:new|better|revised|replacement)\s+(?:frame|framing|reading)\b/i,
     /\breplacement\s+is\b/i,
     /\bbetter\s+(?:reading|line|claim)\s+is\b/i,
+    /\bbetter\s+way\s+is\b/i,
     /\bI\s+(?:would|should|need to|can|will)\s+(?:frame|read|say|put|treat|write|claim|change)\b/i,
     /\b(?:line|claim|proof|equation|step)\b[\s\S]{0,40}\b(?:is|starts?|reads?|works?|shows?|means?|puts?|becomes?|tests?)\b/i,
     /\b(?:image|word)\s+(?:now\s+)?(?:starts?|reads?|works?|shows?|means?|puts?|becomes?)\b/i,
@@ -491,7 +497,11 @@ function replacesEarlierFraming(text) {
     /\b(?:better|instead)\s+to\s+(?:suppose|start|frame|read|treat|ask|follow)\b/i,
     /\b(?:better|stronger|sharper)\s+(?:start|starting point)\s+(?:is|uses?)\b/i,
     /\b(?:better|sharper)\s+(?:split|test|question|frame|framing|reading)\s+(?:is|asks?)\b/i,
+    /\b(?:new|better|revised)\s+version\s+should\s+say\b/i,
+    /\bshould\s+(?:maybe\s+)?be\s+(?:marked|read|treated)\s+first\s+as\b/i,
     /\b(?:question|test)\s+is\s+not\b[\s\S]{0,120}\bbut\s+(?:whether|if)\b/i,
+    /\b(?:breaks?|interrupts?)\s+the\s+simple\s+story\b/i,
+    /\bwrite\s+this\s+as\b/i,
     /\b(?:result|claim|summary|importance)\b[\s\S]{0,90}\bdepends on\b/i,
     /\b(?:clear|visible|visibility)\b[\s\S]{0,80}\b(?:mean|means?)\b[\s\S]{0,80}\b(?:absent|present|visible)\b/i,
     /\bnot\s+just\s+water\b[\s\S]{0,120}\b(?:solution|balance|salt)\b/i,

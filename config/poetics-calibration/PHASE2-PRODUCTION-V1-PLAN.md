@@ -167,3 +167,22 @@ The repeat-2 controls completed under `control-r02/d4/` and
 | D10 emphatic trap | trap | trap |
 
 This gives target-r02 its own clean flat/trap bracket.
+
+### target-r03
+
+The third target repeat completed under
+`config/poetics-calibration/phase2-production-v1/target-r03/`.
+
+Both arms are cleanly scoreable after re-cleaning the generated reframe traces
+against the current admission heuristics. The detector updates were for ordinary
+public revoice/reframe forms: content-light openings such as "Okay.", "problem
+was making ...", "breaks the simple story / write this as ...", and "mixing up
+not seeing ... with absence".
+
+| Critic | `none` | `reframe` |
+|---|---:|---:|
+| Qwen | 0 recognition / 6 flat | 5 recognition / 1 flat |
+| Gemini | 1 recognition / 5 flat | 5 recognition / 1 flat |
+
+Both critics leave D9/T10 flat in the reframe arm. Gemini's uncued recognition is
+D7/T18; preserve it as bilateral dialogue variance, not a cue leak.

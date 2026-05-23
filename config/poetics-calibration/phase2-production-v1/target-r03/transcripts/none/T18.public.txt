@@ -1,0 +1,19 @@
+STAGE: The balance wakes with a green zero while one clear beaker waits beside another that has swallowed a measured spoon of salt.
+
+TUTOR: Set the water beaker on the balance and note the mass. Tip in the salt from the torn sachet. Before stirring, what should the reading do? Now stir until the crystals are no longer visible. The liquid may look like plain water, but should the balance return to the mass of plain water, or stay higher? If nothing has spilled, the claim “the salt is gone” has to explain that number.
+
+LEARNER: My first instinct is that because the water has gone clear, the salt has sort of gone as well. But if the balance stays higher, then I suppose it cannot have stopped existing, unless some reading is wrong or something spilled. Is it more that the salt is still in the beaker, just broken up too small for my eyes to catch?
+
+STAGE: A caretaker knocks once and says the visitors are two minutes early; the next tutor turn must be short, procedural, and question-shaped, using the balance as the focus.
+
+TUTOR: Two minutes, then: leave the beaker on the balance. If the liquid is clear but the reading stays higher, what has gone from sight, and what still has to be accounted for?
+
+LEARNER: So the crystals have gone from sight, I think, but the extra mass still has to be the salt in the beaker somehow. I am not sure if “broken up too small to see” is quite right, because that sounds like powder floating about. Is it more that the salt is spread through the water even though my eyes cannot pick it out?
+
+TUTOR: Keep the beaker on the balance. The claim is getting sharper: not powder floating about, but the crystal form gone while the salt is spread through the water beyond what eyes can pick out. The balance still has to account for that salt. If this clear liquid were evaporated later, what should be left in the beaker?
+
+LEARNER: Then there should be salt left in the beaker again, maybe as crystals or a white crust, once the water has gone. So it was not absent, just not visible while it was spread through the water. I think that fits the balance reading, but I am still unsure whether dissolved salt is still properly salt, or whether it has changed until the water evaporates.
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: The balance and the later crust point to this: the salt has changed its form and arrangement, from visible crystals to dispersed particles, but the evidence does not show it becoming absent or a different substance.

@@ -1,0 +1,29 @@
+STAGE: A stapler jams, the corridor printer keeps clicking, and a one-page results table lies between two half-empty mugs.
+
+TUTOR: Before that sentence hardens in the steering packet, pause on “significant.”
+
+On the printout, is the p-value telling the committee how many minutes, errors, or workload units changed, or how surprising this result would be if the pilot had no real effect?
+
+Now put a finger on the actual change. If the reduction is 0.3 minutes per discharge with p < .01, that may be real and still not worth moving staff. If it is 18 minutes, the same p-value lands differently.
+
+So the report sentence cannot stop at “statistically significant.” What exact effect-size number from the table would make the operational case?
+
+LEARNER: I thought “statistically significant” was enough to make the line decisive, but that is too loose for the steering packet. The p-value says the result is unlikely under no real effect; it does not say whether the change is big enough to justify moving staff. Let me put the actual minutes-per-discharge reduction, and probably the confidence interval, into the sentence before this goes upstairs.
+
+STAGE: The meeting-room door opens and someone asks whether the headline can be approved in five minutes. The next tutor turn must be short, pointed, and built around one number from the table rather than a tidy lecture.
+
+TUTOR: Five minutes, then. Circle the table’s **0.3 minutes per discharge**: does that survive as a staffing headline once its interval is beside it, or does `p < .01` belong in the evidence line?
+
+STAGE: A prior learner line is played back: "I thought “statistically significant” was enough to make the line decisive, but that is too loose for the steering packet." The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.
+
+LEARNER: I thought “statistically significant” was enough to make the line decisive, but that is too loose for the steering packet. The framing problem was letting `p < .01` carry a staffing claim; the new line should lead with `0.3 minutes per discharge` and its interval, with the p-value in the evidence line. On that number, I would not make it the staffing headline unless the committee already treats 0.3 minutes as operationally meaningful.
+
+TUTOR: The line is starting to separate two jobs: `p < .01` can say the pilot result is statistically detectable; it cannot, by itself, authorize a staffing move.
+
+Before the binders close, test the sentence against one number: what is the smallest minutes-per-discharge change the committee would actually staff around? If the table says `0.3` and no threshold has been named, can the staffing sentence honestly sound settled, or should that result sit in the evidence line with its interval and p-value?
+
+LEARNER: I thought “statistically significant” made the line meeting-ready, and that was the shortcut in my draft. The framing problem was letting `p < .01` sound like approval to move staff when the table is only showing `0.3 minutes per discharge`. Without a staffing threshold on the page, I need to walk back the headline before the binders go in: evidence line only, with the interval and p-value, unless someone can name the cutoff the committee actually uses.
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: Binder language: evidence only - `0.3 minutes per discharge` with its interval, `p < .01` as detectability, and no staffing headline until the committee names a threshold.

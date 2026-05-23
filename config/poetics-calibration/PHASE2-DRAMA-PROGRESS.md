@@ -430,8 +430,23 @@ The repeat-2 controls bracket that target repeat cleanly:
 | D4 flat | flat | flat |
 | D10 emphatic trap | trap | trap |
 
-This is a checkpoint, not the production result: the remaining target and
-control repeats still need to run before the batch can support a broader claim.
+The third target repeat, `target-r03`, is cleanly scoreable after another
+re-clean of ordinary reframe phrasing. It is less perfect than r01/r02 but keeps
+the same direction:
+
+| Critic | `none` recognitions on six production targets | `reframe` recognitions |
+|---|---:|---:|
+| Qwen | 0/6 | 5/6 |
+| Gemini | 1/6 | 5/6 |
+
+The shared miss in the reframe arm is again D9/T10. Gemini's lone uncued
+recognition is D7/T18, where the learner moves from "broken up too small for my
+eyes to catch" to "not absent, just not visible while it was spread through the
+water." That is real variance in the uncued bilateral dialogue, not a hidden
+Director cue.
+
+This is a checkpoint, not the production result: the repeat-3 controls still
+need to run before the batch can support a broader claim.
 
 ## 4. Guardrails learned the hard way
 

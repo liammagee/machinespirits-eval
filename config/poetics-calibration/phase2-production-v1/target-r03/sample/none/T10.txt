@@ -1,0 +1,29 @@
+STAGE: A stapler jams, the corridor printer keeps clicking, and a one-page results table lies between two half-empty mugs.
+
+TUTOR: Before that sentence hardens in the steering packet, pause on “significant.”
+
+On the printout, is the p-value telling the committee how many minutes, errors, or workload units changed, or how surprising this result would be if the pilot had no real effect?
+
+Now put a finger on the actual change. If the reduction is 0.3 minutes per discharge with p < .01, that may be real and still not worth moving staff. If it is 18 minutes, the same p-value lands differently.
+
+So the report sentence cannot stop at “statistically significant.” What exact effect-size number from the table would make the operational case?
+
+LEARNER: I thought “statistically significant” was enough to make the line decisive, but that is too loose for the steering packet. The p-value says the result is unlikely under no real effect; it does not say whether the change is big enough to justify moving staff. Let me put the actual minutes-per-discharge reduction, and probably the confidence interval, into the sentence before this goes upstairs.
+
+STAGE: The meeting-room door opens and someone asks whether the headline can be approved in five minutes. The next tutor turn must be short, pointed, and built around one number from the table rather than a tidy lecture.
+
+TUTOR: Five minutes, then. Circle the table’s **0.3 minutes per discharge**: does that survive as a staffing headline once its interval is beside it, or does `p < .01` belong in the evidence line?
+
+LEARNER: I thought `p < .01` would make the sentence strong enough for the steering packet, but with 0.3 minutes circled, that is not a staffing headline. The table is saying the effect is probably real, not that it matters operationally. I would move the p-value into the evidence line and make the headline say the observed reduction is small, with the interval shown beside it.
+
+TUTOR: Hold that split.
+
+Keep the proposed move: `p < .01` belongs in the evidence line, then the headline has to face the operational number: **0.3 minutes is about 18 seconds per discharge**. Against what staffing threshold does that matter?
+
+If the unit has 40 discharges a week, that is one kind of claim. If it has 800, the sentence changes. Before this goes upstairs, what volume number and confidence interval would keep the headline honest?
+
+LEARNER: My first instinct was to let `p < .01` carry the headline, but 18 seconds per discharge is too small to call a staffing win by itself. The headline needs the weekly discharge volume, the confidence interval around 0.3 minutes, and the staffing threshold, so the committee can see whether the aggregate minutes actually clear a decision line. If those numbers are not in the table, this should read as evidence of a detectable process change, not a resource recommendation.
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: Then let the headline carry that discipline: detectable process change, not a staffing win, until volume, interval, and threshold put those 18 seconds on a decision scale.
