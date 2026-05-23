@@ -221,3 +221,12 @@ dramatic mechanism: explicit Director reframing sharply increases critic-rated
 recognitive form against the same target family, while stable controls show that
 the critics are not merely rewarding emphatic insight language. It is not yet a
 claim about general transfer across arbitrary scenario families.
+
+Regenerate the aggregate readout with:
+
+```bash
+node scripts/analyze-poetics-production-v1.js
+```
+
+The script reads the committed score JSON under `phase2-production-v1/scores/`
+and writes ignored local summaries to `exports/poetics-production-v1-summary.*`.
