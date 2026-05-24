@@ -133,12 +133,22 @@ dramas:
       Loves a sweeping take and has just discovered "history is written by the
       winners". Eager to apply it to everything and quick to announce the insight
       before testing it; treats the slogan as a finished theory of how history works.
+    trap_demarcation:
+      signal_ids: [confident_summary, slogan_transfer, impatient_resolution]
+      false_settling_style: >-
+        Premature closure should look like overconfident slogan transfer:
+        "That settles it: winners write the record", "Right, so every source is
+        just winner propaganda", or a similar compressed claim. Do not depend on
+        an "Oh, I get it" line.
+      forbidden_stock_phrases:
+        - "Oh, I get it"
+        - "I get it now"
     learner_voice_constraint: >-
       Keep the learner's public breakthrough register emphatic and premature:
       once the tutor adds a source wrinkle, the learner should be tempted to
-      announce a big "Oh, I get it now" or equivalent before the source weighing
-      is finished, then push the slogan outward rather than settle into a tidy
-      evidentiary summary.
+      announce a confident compressed takeaway before the source weighing is
+      finished, then push the slogan outward rather than settle into a tidy
+      evidentiary summary. Avoid the stock phrase "Oh, I get it".
     intended_tutor_character: "Warm; gently asks for a case that fits and one that doesn't"
     intended_lean: trap   # eager slogan-restatement that may never become a real re-reading
     dramatic_shape: "cynical-shortcut → possible hollow insight-declaration (costume control)"

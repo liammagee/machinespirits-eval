@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import yaml from 'yaml';
 import {
   attachApproaches,
+  intrusiveStageDirectionFailures,
   loadApproachDatabases,
   noCueReframeLeakageFailures,
   qualityWarningsFor,
@@ -53,6 +54,23 @@ describe('generate-pedagogical-dramas', () => {
       assert.equal(drama._pedagogicalApproach.id, drama.pedagogical_approach);
       assert.equal(drama._dialogueApproach.id, drama.dialogue_approach);
     }
+  });
+
+  it('warns when public stage direction reads as fourth-wall instruction text', () => {
+    const turns = [
+      {
+        role: 'STAGE',
+        turnNumber: 2,
+        text: 'The next speaker must explain the answer and do not let the learner wander.',
+      },
+      { role: 'LEARNER', turnNumber: 1, text: 'I thought the graph proves the cause.' },
+      { role: 'LEARNER', turnNumber: 3, text: 'The graph only shows a pattern.' },
+    ];
+    const directFailures = intrusiveStageDirectionFailures(turns);
+    assert.equal(directFailures.length, 1);
+
+    const warnings = qualityWarningsFor({ tid: 'T99', dramaId: 'D99', turns });
+    assert.ok(warnings.some((warning) => warning.code === 'intrusive_stage_direction'));
   });
 
   it('adds an anti-reframe guard to paired no-cue branch plans', () => {
@@ -1707,7 +1725,11 @@ describe('generate-pedagogical-dramas', () => {
     }
     const publicSample = fs.readFileSync(path.join(sampleDir, `${tid}.txt`), 'utf8');
     assert.match(publicSample, /^STAGE:/m, 'public drama sample should expose visible stage directions');
-    assert.match(publicSample, /prior learner line is played back: "/i, 'public sample should quote a revisit anchor');
+    assert.match(
+      publicSample,
+      /earlier learner line returns to the table: "/i,
+      'public sample should quote a revisit anchor',
+    );
     const fullTranscript = fs.readFileSync(path.join(transcriptsDir, `${tid}.full.md`), 'utf8');
     assert.match(fullTranscript, /Director Scene Card/);
     assert.match(fullTranscript, /Tutor Ego \(adjudication\/final authority\)/);
@@ -1881,6 +1903,8 @@ describe('generate-pedagogical-dramas', () => {
     assert.equal(revisitCues.length, 1);
     assert.equal(revisitCues[0].revisit_policy, 'reframe');
     assert.equal(revisitCues[0].revisit_anchor, 'misframing-candidate');
+    assert.match(revisitCues[0].instruction, /visible object in the scene/i);
+    assert.doesNotMatch(revisitCues[0].instruction, /\bmust\b/i);
   });
 
   it('forks paired continuation arms from one fixed prefix', () => {
@@ -1959,8 +1983,8 @@ describe('generate-pedagogical-dramas', () => {
     const tid = noneTraceFile.replace(/\.json$/, '');
     const noneSample = fs.readFileSync(path.join(sampleDir, 'none', `${tid}.txt`), 'utf8');
     const reframeSample = fs.readFileSync(path.join(sampleDir, 'reframe', `${tid}.txt`), 'utf8');
-    assert.doesNotMatch(noneSample, /prior learner line is played back:/i);
-    assert.match(reframeSample, /prior learner line is played back:/i);
+    assert.doesNotMatch(noneSample, /earlier learner line returns to the table:/i);
+    assert.match(reframeSample, /earlier learner line returns to the table:/i);
 
     const noneKey = yaml.parse(fs.readFileSync(path.join(tmp, 'key-none.yaml'), 'utf8'));
     const reframeKey = yaml.parse(fs.readFileSync(path.join(tmp, 'key-reframe.yaml'), 'utf8'));

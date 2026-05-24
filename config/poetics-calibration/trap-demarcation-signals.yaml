@@ -1,0 +1,67 @@
+version: 0.1
+status: PROVISIONAL SIDEcar DESIGN DATABASE
+purpose: >-
+  Reusable false-settling signals for hard trap and boundary trap dramas. These
+  keep trap demarcation from collapsing into one repeated "Oh, I get it" phrase.
+
+signals:
+  - id: stock_insight_claim
+    family: explicit_understanding_claim
+    public_markers:
+      - "Oh, I get it"
+      - "I get it now"
+    use: >-
+      Allow sparingly as one surface form of a trap, never as the default test of
+      trapness.
+    risk: >-
+      Critics may over-reward the phrase as recognition unless the learner does
+      not re-read an earlier line.
+
+  - id: procedural_compliance
+    family: rule_following
+    public_markers:
+      - "Right, so the rule is..."
+      - "For the mark, write..."
+      - "I can put that in the answer."
+    use: >-
+      The learner closes by applying the latest rule, without revisiting why the
+      earlier frame made the rule necessary.
+
+  - id: impatient_resolution
+    family: affective_closure
+    public_markers:
+      - "Fine, then..."
+      - "Right, move on..."
+      - "So just..."
+    use: >-
+      The learner wants the interruption to end and accepts a rule as a way out.
+
+  - id: confident_summary
+    family: overconfident_compression
+    public_markers:
+      - "That settles it:"
+      - "So the answer is..."
+      - "The safe line is..."
+    use: >-
+      The learner compresses the correction into a polished summary that hides
+      whether the earlier claim was transformed.
+
+  - id: slogan_transfer
+    family: memorized_slogan
+    public_markers:
+      - "Correlation is not causation"
+      - "Antibiotics are for bacteria"
+      - "Primary does not always mean true"
+    use: >-
+      The learner adopts a portable slogan while leaving the original evidence
+      relation or category mistake unworked.
+
+  - id: grade_seeking_closure
+    family: assessment_strategy
+    public_markers:
+      - "Will that get the mark?"
+      - "So I write this and stop?"
+      - "That's the examiner wording."
+    use: >-
+      The learner optimizes for an answer token or mark scheme rather than a new
+      relation to the earlier reasoning.

@@ -89,7 +89,7 @@ describe('buildAnchoredRevisitCue', () => {
     );
 
     assert.match(cue.instruction, /"I kept treating the decimal as the proof\."/);
-    assert.match(cue.instruction, /must revoice that wording first/i);
+    assert.match(cue.instruction, /takes up that wording/i);
   });
 
   it('makes the reframe policy demand a visible replacement framing', () => {
@@ -103,8 +103,8 @@ describe('buildAnchoredRevisitCue', () => {
     );
 
     assert.match(cue.instruction, /"I kept treating the decimal as the proof\."/);
-    assert.match(cue.instruction, /name the earlier framing problem/i);
-    assert.match(cue.instruction, /replace it with a new framing/i);
+    assert.match(cue.instruction, /names what its old frame hid/i);
+    assert.match(cue.instruction, /offers a replacement frame/i);
   });
 
   it('downgrades reframe to reconsider when the selected learner anchor is only procedural', () => {
@@ -128,7 +128,7 @@ describe('buildAnchoredRevisitCue', () => {
     assert.equal(cue.anchor_strong_misframing, false);
     assert.equal(cue.reframe_anchor_gate, 'downgraded_to_reconsider_ineligible_anchor');
     assert.match(cue.instruction, /still stands, needs narrowing, or needs replacing/i);
-    assert.doesNotMatch(cue.instruction, /name the earlier framing problem/i);
+    assert.doesNotMatch(cue.instruction, /old frame hid/i);
   });
 
   it('keeps reframe when the anchor treats dialect as wrong or outside rules', () => {
@@ -151,7 +151,7 @@ describe('buildAnchoredRevisitCue', () => {
     assert.equal(cue.revisit_policy, 'reframe');
     assert.equal(cue.anchor_strong_misframing, true);
     assert.equal(cue.reframe_anchor_gate, 'eligible');
-    assert.match(cue.instruction, /name the earlier framing problem/i);
+    assert.match(cue.instruction, /old frame hid/i);
   });
 
   it('lets the reconsider policy publicly keep, narrow, or replace the anchor', () => {
@@ -164,7 +164,7 @@ describe('buildAnchoredRevisitCue', () => {
       [{ role: 'learner', content: 'I think the threat is just another cause.' }],
     );
 
-    assert.match(cue.instruction, /must revoice that wording first/i);
+    assert.match(cue.instruction, /decides whether that wording/i);
     assert.match(cue.instruction, /still stands, needs narrowing, or needs replacing/i);
   });
 
@@ -553,7 +553,9 @@ describe('learner output sanitization', () => {
     assert.strictEqual(result.externalMessage, 'Could you give me a concrete example?');
 
     const egoInitial = result.internalDeliberation.find((entry) => entry.role === 'ego' && entry.stage === 'initial');
-    const egoRevision = result.internalDeliberation.find((entry) => entry.role === 'ego' && entry.stage === 'adjudication');
+    const egoRevision = result.internalDeliberation.find(
+      (entry) => entry.role === 'ego' && entry.stage === 'adjudication',
+    );
 
     assert.ok(egoInitial?.inputMessages, 'ego initial should capture the sanitized external history');
     assert.ok(egoRevision?.inputMessages, 'ego revision should capture the sanitized reuse chain');
@@ -586,7 +588,10 @@ describe('learner output sanitization', () => {
     const replies = [
       { content: 'I said the decimal settled it.' },
       { content: 'Keep the learner public and concrete.' },
-      { content: 'FINAL:\nI said the decimal settled it. The framing problem is that I made evidence do proof work. Instead I would frame the equation as the proof pressure.' },
+      {
+        content:
+          'FINAL:\nI said the decimal settled it. The framing problem is that I made evidence do proof work. Instead I would frame the equation as the proof pressure.',
+      },
     ];
     let callIndex = 0;
 

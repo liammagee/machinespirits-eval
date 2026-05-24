@@ -1,0 +1,59 @@
+_comment: HELD OUT — do not read while labelling. Joins to instrument scores +
+  human labels only AFTER both are produced. intended_lean /
+  intended_tutor_character / dramatic_shape are DESIGN HYPOTHESES, never labels.
+generated: 2026-05-24T13:07:12.609Z
+generator: codex
+role_map: null
+mode: real-codex
+model: codex@high
+codex_reasoning_effort: high
+writing_pad:
+  mode: isolated
+  dir: config/poetics-calibration/phase2-sonnet-pilot-v1/control-r01/d26-hard-trap/deliberation/.writing-pad
+  learnerDb: config/poetics-calibration/phase2-sonnet-pilot-v1/control-r01/d26-hard-trap/deliberation/.writing-pad/learner-writing-pad.db
+  tutorDb: config/poetics-calibration/phase2-sonnet-pilot-v1/control-r01/d26-hard-trap/deliberation/.writing-pad/tutor-writing-pad.db
+director_mode: scene
+director_variation_key: phase2-sonnet-pilot-v1:r01:control-d26-hard-trap
+director_revisit_cue: false
+director_revisit_policy: none
+director_revisit_anchor: null
+approach_databases:
+  pedagogical: config/poetics-calibration/pedagogical-approaches.yaml
+  dialogue: config/poetics-calibration/dialogue-approaches.yaml
+transcripts_dir: config/poetics-calibration/phase2-sonnet-pilot-v1/control-r01/d26-hard-trap/transcripts
+seed: 20260520
+max_turns: 3
+n: 1
+diagnostic_only: diagnostic / generative read — κ on small n is noise
+  (PHASE2-FINDINGS.md §4); the aim is surprising-element production judged by an
+  external reader, NOT a human-matching classifier
+items:
+  T01:
+    drama_id: D26
+    discipline: statistics
+    condition: base
+    pedagogical_approach: null
+    pedagogical_family: null
+    dialogue_approach: null
+    dialogue_family: null
+    stage_direction_policy: null
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: focused_achiever
+    intended_tutor_character: Exam-oriented; checks the rule rather than the learner's self-relation
+    intended_lean: hard_trap
+    dramatic_shape: cause-from-correlation shortcut -> slogan-level insight
+      declaration without recohering
+    n_tutor_turns: 3
+    n_learner_turns: 4
+    director_mode: scene
+    director_variation_key: phase2-sonnet-pilot-v1:r01:control-d26-hard-trap
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    opening_speaker: learner
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+quality_warning_count: 0
+quality_blocking_warning_count: 0

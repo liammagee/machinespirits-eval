@@ -79,6 +79,7 @@
     "poetics:ingest": "node scripts/ingest-poetics-artifacts.js",
     "poetics:report": "node scripts/report-poetics-sidecar.js",
     "poetics:audit": "node scripts/audit-poetics-disagreements.js",
+    "poetics:flag-review": "node scripts/flag-poetics-review-cases.js",
     "poetics:browse": "node scripts/browse-poetics-scripts.js",
     "audit:message-chain": "node scripts/audit-message-chain.js",
     "audit:message-chain:json": "node scripts/audit-message-chain.js --json",

@@ -4,9 +4,22 @@ import os from 'node:os';
 import path from 'node:path';
 import { describe, it } from 'node:test';
 import { loadAuditRows } from '../scripts/audit-poetics-disagreements.js';
-import { getBlindItem, getItem, listItems, listRuns, saveBrowserLabel } from '../scripts/browse-poetics-scripts.js';
+import {
+  getBlindItem,
+  getItem,
+  listItems,
+  listRuns,
+  saveBrowserLabel,
+  saveBrowserReviewFlag,
+} from '../scripts/browse-poetics-scripts.js';
 import { buildPoeticsReport, renderCsv, renderMarkdown } from '../scripts/report-poetics-sidecar.js';
-import { openPoeticsStore, upsertPoeticsItem, upsertPoeticsRun, upsertPoeticsScore } from '../services/poeticsStore.js';
+import {
+  openPoeticsStore,
+  upsertPoeticsItem,
+  upsertPoeticsReviewFlag,
+  upsertPoeticsRun,
+  upsertPoeticsScore,
+} from '../services/poeticsStore.js';
 
 function withDb(fn) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-report-browser-'));
@@ -117,6 +130,14 @@ function seed(db) {
     recontextualization: 50,
     statedInsight: 25,
   });
+  upsertPoeticsReviewFlag(db, {
+    itemId: 'poetics-test-run:control-r01-d25-hard-trap:default:T02',
+    flaggerId: 'codex',
+    flagType: 'human_review',
+    priority: 'normal',
+    reason: 'critic disagreement needs human perspective',
+    metadata: {},
+  });
 }
 
 describe('poetics sidecar report and browser', () => {
@@ -137,15 +158,18 @@ describe('poetics sidecar report and browser', () => {
       const runs = listRuns(db);
       const run = runs.find((entry) => entry.id === 'poetics-test-run');
       assert.equal(run.itemCount, 2);
+      assert.equal(run.reviewFlagCount, 1);
 
       const hardTraps = listItems(db, { runId: 'poetics-test-run', role: 'hard_trap_control' });
       assert.equal(hardTraps.length, 1);
       assert.equal(hardTraps[0].dramaId, 'D25');
       assert.equal(hardTraps[0].criticForms.length, 2);
+      assert.equal(hardTraps[0].reviewFlagCount, 1);
 
       const detail = getItem(db, 'poetics-test-run:control-r01-d25-hard-trap:default:T02');
       assert.equal(detail.item.controlRole, 'hard_trap_control');
       assert.equal(detail.scores.length, 2);
+      assert.equal(detail.reviewFlags.length, 1);
     }));
 
   it('supports blind browser labels without exposing critic scores', () =>
@@ -166,7 +190,35 @@ describe('poetics sidecar report and browser', () => {
 
       const blindDetail = getBlindItem(db, 'poetics-test-run:target-r01:none:T01', { labellerId: 'reader-a' });
       assert.equal(blindDetail.scores, undefined);
+      assert.equal(blindDetail.reviewFlags, undefined);
       assert.equal(blindDetail.label.form_class, 'flat');
+    }));
+
+  it('persists review flags and serves them as a blind review queue', () =>
+    withDb((db) => {
+      const flagged = listItems(db, {
+        runIds: ['poetics-test-run', 'poetics-second-run'],
+        queue: 'review',
+        blind: true,
+      });
+      assert.equal(flagged.length, 1);
+      assert.equal(flagged[0].id, 'poetics-test-run:control-r01-d25-hard-trap:default:T02');
+      assert.equal(flagged[0].criticForms, undefined);
+      assert.equal(flagged[0].reviewFlagCount, 1);
+
+      const saved = saveBrowserReviewFlag(db, {
+        itemId: 'poetics-second-run:target-r01:reframe:T03',
+        flaggerId: 'codex',
+        reason: 'second disagreement for comparison',
+      });
+      assert.equal(saved.reviewFlags.length, 1);
+
+      const queue = listItems(db, {
+        runIds: ['poetics-test-run', 'poetics-second-run'],
+        queue: 'review',
+        blind: true,
+      });
+      assert.equal(queue.length, 2);
     }));
 
   it('builds a blind cross-run disagreement queue', () =>

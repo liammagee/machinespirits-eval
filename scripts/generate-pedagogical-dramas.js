@@ -322,6 +322,14 @@ function publicStageDirectionText(text) {
     .replace(/^The director (?:sets|opens) (?:the )?scene:?\s*/i, '')
     .replace(/^The director\s+/i, '')
     .replace(/\bscene card\b/gi, 'scene')
+    .replace(/\bthe next (tutor|learner) line must be\b/gi, 'the next $1 line is')
+    .replace(/\bthe next speaker must\b/gi, 'the next reply has to')
+    .replace(/\bthe learner must\b/gi, 'the learner has to')
+    .replace(/\bthe tutor must\b/gi, 'the tutor has to')
+    .replace(
+      /\bEnd the scene with one concise tutor line\. Do not ask the learner to continue unless the scene genuinely needs it\./gi,
+      'A final tutor line closes the scene.',
+    )
     .trim();
 }
 
@@ -398,7 +406,37 @@ function revoiceTerms(text) {
 }
 
 function extractRevisitAnchor(text) {
-  return String(text || '').match(/A prior learner line is played back:\s*"([\s\S]*?)"\s*The learner must/i)?.[1] || '';
+  return (
+    String(text || '').match(
+      /(?:A prior learner line is played back|An earlier learner line returns to the table):\s*"([\s\S]*?)"\s*(?:The learner must|The pause holds|The next response|The learner has to)/i,
+    )?.[1] || ''
+  );
+}
+
+function isAnchoredRevisitCueText(text) {
+  return /(?:A prior learner line is played back|An earlier learner line returns to the table):/i.test(
+    String(text || ''),
+  );
+}
+
+function isReframeCueText(text) {
+  const cueText = String(text || '');
+  return (
+    /The learner must revoice that wording first,\s*name the earlier framing problem/i.test(cueText) ||
+    (isAnchoredRevisitCueText(cueText) && /\bold frame\b[\s\S]{0,120}\breplacement frame\b/i.test(cueText))
+  );
+}
+
+function isRevoiceOrReconsiderCueText(text) {
+  const cueText = String(text || '');
+  if (!isAnchoredRevisitCueText(cueText)) return false;
+  if (isReframeCueText(cueText)) return false;
+  return (
+    /The learner must revoice that wording/i.test(cueText) ||
+    /The learner must answer that wording/i.test(cueText) ||
+    /what (?:it|that wording) now misses, keeps, or changes/i.test(cueText) ||
+    /still stands, needs narrowing, or needs replacing/i.test(cueText)
+  );
 }
 
 function revoiceMatchStats(anchor, learnerText) {
@@ -429,11 +467,7 @@ function revoiceComplianceFailures(turns) {
   const failures = [];
   for (let i = 0; i < turns.length; i++) {
     const cue = turns[i];
-    if (
-      cue.role !== 'STAGE' ||
-      !/The learner must revoice that wording first/i.test(cue.text) ||
-      /name the earlier framing problem/i.test(cue.text)
-    ) {
+    if (cue.role !== 'STAGE' || !isRevoiceOrReconsiderCueText(cue.text)) {
       continue;
     }
     const anchor = extractRevisitAnchor(cue.text);
@@ -466,6 +500,7 @@ function namesEarlierFramingProblem(text) {
     /\b(?:earlier|old|first)\s+(?:framing|frame|reading)\b[\s\S]{0,100}\b(?:made it sound|sounded|treated|put|reduced|jumped|mistook|too)\b/i;
   const ordinarySelfCorrection = [
     /\bthat\s+was\s+the\s+problem\b/i,
+    /\bbad\s+wording\b[\s\S]{0,90}\b(?:counted|treated|missed|hid|made|put)\b/i,
     /\b(?:the\s+)?mistake\s+(?:was|is)\s+that\b/i,
     /\b(?:that|it)\s+(?:was|put|made)\b[\s\S]{0,90}\b(?:too\s+\w+|mood first|sound like|ahead|early)\b/i,
     /\bI\s+(?:was still|was putting|was making|kept|went straight|made|put)\b[\s\S]{0,90}\b(?:sound like|too\s+\w+|mood first|before|ahead|again|into|mean)\b/i,
@@ -514,6 +549,7 @@ function replacesEarlierFraming(text) {
     /\b(?:new|better|revised|replacement)\s+(?:frame|framing|reading)\b/i,
     /\b(?:new|better|revised)\s+(?:check|test|claim|question)\s+(?:is|starts?|uses?|asks?)\b/i,
     /\bnew\s+(?:margin\s+note|mark|label|line|frame)\s*:/i,
+    /\bnew\s+(?:read|reading)\s*:/i,
     /\breplacement\s+is\b/i,
     /\breplace\s+it\s*:/i,
     /\bI[’']d\s+change\s+it\s+to\b/i,
@@ -546,6 +582,7 @@ function replacesEarlierFraming(text) {
     /\bsplit\s+(?:tag|frame|claim|reading)\b/i,
     /\bpart\b[\s\S]{0,80}\bpart\b/i,
     /\b(?:maybe|now)\b[\s\S]{0,100}\b(?:is|becomes?)\s+the\s+(?:pattern|rule)\b/i,
+    /\barea\s+is\b[\s\S]{0,100}\bacross\b[\s\S]{0,100}\bdown\b/i,
     /\b(?:effect size|estimate|interval)\b[\s\S]{0,120}\b(?:has|have|needs?|need)\s+to\s+show\b/i,
     /\b(?:it|that|this)\s+(?:should|has to|needs? to)\s+(?:start|read|say|show|lead)\b/i,
     /\bmore\b[\s\S]{0,40}\b(?:may|can)\s+mean\b/i,
@@ -571,10 +608,7 @@ function reframeComplianceFailures(turns) {
   const failures = [];
   for (let i = 0; i < turns.length; i++) {
     const cue = turns[i];
-    if (
-      cue.role !== 'STAGE' ||
-      !/The learner must revoice that wording first,\s*name the earlier framing problem/i.test(cue.text)
-    ) {
+    if (cue.role !== 'STAGE' || !isReframeCueText(cue.text)) {
       continue;
     }
     const anchor = extractRevisitAnchor(cue.text);
@@ -724,6 +758,34 @@ const NO_CUE_REFRAME_LEAK_PATTERNS = [
   /\breplacement framing\b/i,
 ];
 
+const INTRUSIVE_STAGE_DIRECTION_PATTERNS = [
+  /\b(?:the learner|the tutor|the next speaker)\s+must\b/i,
+  /\b(?:the learner|the tutor|the next reply)\s+has to\b/i,
+  /\b(?:do not|don't)\s+(?:let|have|ask|allow)\b/i,
+  /\b(?:must|should)\s+(?:revoice|respond|answer|name|replace|quote)\b/i,
+  /\bpublic speech\b/i,
+  /\b(?:generator|generated|hidden review|role labels?|scene card|recognition label)\b/i,
+  /\b(?:the director|director)\b[\s\S]{0,80}\b(?:intends|wants|requires|forces|instructs)\b/i,
+];
+
+function intrusiveStageDirectionFailures(turns) {
+  return turns
+    .map((turn, idx) => ({ ...turn, ordinal: idx + 1 }))
+    .filter((turn) => turn.role === 'STAGE')
+    .flatMap((turn) => {
+      if (isAnchoredRevisitCueText(turn.text)) return [];
+      const matched = INTRUSIVE_STAGE_DIRECTION_PATTERNS.find((pattern) => pattern.test(turn.text));
+      if (!matched) return [];
+      return [
+        {
+          turn_number: turn.turnNumber ?? turn.ordinal,
+          matched_pattern: String(matched),
+          excerpt: turn.text.slice(0, 240),
+        },
+      ];
+    });
+}
+
 function noCueReframeLeakageFailures(turns) {
   const learnerTurns = turns
     .map((turn, idx) => ({ ...turn, ordinal: idx + 1 }))
@@ -760,6 +822,17 @@ function qualityWarningsFor({ tid, dramaId, turns, removedNotes = [], traceTurns
       count: leakedTurns.length,
       turn_numbers: leakedTurns.map((t) => t.turnNumber ?? t.ordinal),
       recommended_action: 'inspect_full_transcript_and_regenerate_before_scoring',
+    });
+  }
+  const intrusiveStageDirections = intrusiveStageDirectionFailures(turns);
+  if (intrusiveStageDirections.length) {
+    warnings.push({
+      code: 'intrusive_stage_direction',
+      severity: 'warning',
+      count: intrusiveStageDirections.length,
+      failures: intrusiveStageDirections,
+      turn_numbers: intrusiveStageDirections.map((failure) => failure.turn_number),
+      recommended_action: 'regenerate_with_sparser_diegetic_stage_direction',
     });
   }
   const truncatedLearnerTurns = turns
@@ -854,6 +927,9 @@ function formatQualityWarning(warning) {
   }
   if (warning.code === 'possible_internal_process_leak') {
     return `${warning.tid} (${warning.drama_id}): ${warning.count} public turn(s) may leak internal process — inspect/regenerate before scoring`;
+  }
+  if (warning.code === 'intrusive_stage_direction') {
+    return `${warning.tid} (${warning.drama_id}): ${warning.count} stage direction(s) read as instruction rather than scene action — regenerate or reclean before scoring`;
   }
   if (warning.code === 'revoice_cue_not_revoiced') {
     return `${warning.tid} (${warning.drama_id}): ${warning.count} revoice cue(s) were not visibly revoiced — regenerate or exclude before scoring`;
@@ -1415,7 +1491,7 @@ function fallbackDirectorPlan(d, reason = 'fallback', args = {}) {
         timing: variantIndex(d.id, 3, variationKey) % 2 === 0 ? 'before_tutor' : 'before_learner',
         instruction:
           d.director_intervention ||
-          'A small external interruption changes the rhythm. The next speaker must answer under time pressure and avoid a tidy explanatory paragraph.',
+          'A small external interruption changes the rhythm; the next reply comes under time pressure and cannot settle into a tidy explanatory paragraph.',
         reasoning: 'Scheduled director cue to prevent smooth alternation from becoming routine.',
       },
     ],
@@ -1453,12 +1529,12 @@ function withDirectorRevisitCue(plan, policy, anchorPolicy) {
   if (!plan || !policy || policy === 'none') return plan;
   const cueText =
     policy === 'reframe'
-      ? 'A prior learner line is played back. The learner must revoice that earlier wording first, name the earlier framing problem in public speech, then replace it with a new framing that changes how the earlier line reads.'
+      ? 'An earlier learner line will return as a visible object in the scene. Keep the cue brief and diegetic; the learner response should take up the wording, name what its old frame hid, and offer a replacement frame.'
       : policy === 'reconsider'
-        ? 'A prior learner line is played back. The learner must revoice that earlier wording first, then decide in public whether it still stands, needs narrowing, or needs replacing before moving on.'
+        ? 'An earlier learner line will return as a visible object in the scene. Keep the cue brief and diegetic; the learner response should decide whether that wording still stands, needs narrowing, or needs replacing.'
         : policy === 'revoice'
-          ? 'A prior learner line is played back. The learner must revoice that earlier wording before moving on, then say exactly what it now misses, keeps, or changes.'
-          : 'A prior learner line is played back or pointed to. The next learner line must repeat or close-paraphrase one earlier phrase they used, then say what that phrase now misses, keeps, or changes.';
+          ? 'An earlier learner line will return as a visible object in the scene. Keep the cue brief and diegetic; the learner response should take up that wording and say what it now misses, keeps, or changes.'
+          : 'An earlier learner line will return as a visible object in the scene. Keep the cue brief and diegetic; the learner response should answer what that wording now misses, keeps, or changes.';
   const cueReasoning =
     policy === 'reframe'
       ? 'Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.'
@@ -1551,7 +1627,7 @@ function buildDirectorSystemPrompt() {
 Create a hidden scene card that will guide separate tutor and learner agents. Your job is to break routine: vary setting, relation, voice, speaker order, and occasional external intervention while preserving the learning topic.
 
 Do not stereotype dialect, nationality, class, or region. Locale/register constraints should affect rhythm, idiom density, directness, and situation, not caricatured spelling.
-Write visible stage directions as play text. Do not start them with "The director..." and do not explain your intention inside them.
+Write visible stage directions as diegetic play text, not instruction text. Usually use at most a scene opening plus one short pressure cue. Do not start them with "The director...", do not explain your intention inside them, and do not tell the learner or tutor what they must say.
 
 Return exactly one JSON object with:
 {
@@ -1586,6 +1662,11 @@ async function buildDirectorPlan(d, llmCall, args) {
     condition: d.condition,
     scenario_name: d.scenario_name,
     learner_start_state: d.learner_start_state,
+    trap_demarcation: d.trap_demarcation || d.trap_signal_style || null,
+    trap_instruction:
+      d.trap_demarcation || d.trap_signal_style
+        ? 'If this is a trap or boundary control, use the supplied trap demarcation as a style of premature closure. Do not rely on a stock "Oh, I get it" phrase unless the spec explicitly requires it.'
+        : null,
     persona: d.persona,
     intended_tutor_character: d.intended_tutor_character,
     pedagogical_approach: approachSummaryForPrompt(d._pedagogicalApproach),
@@ -2513,6 +2594,7 @@ if (path.resolve(process.argv[1] || '') === __filename) {
 
 export {
   attachApproaches,
+  intrusiveStageDirectionFailures,
   loadApproachDatabases,
   noCueReframeLeakageFailures,
   qualityWarningsFor,

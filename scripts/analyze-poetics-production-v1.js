@@ -197,17 +197,13 @@ function discoverTargetRepeats(rootDir, critics = criticsWithTargetScores(rootDi
 
 function discoverControlRepeats(rootDir, critics = criticsWithTargetScores(rootDir)) {
   const files = scoreFiles(rootDir);
-  const requiredControls = CONTROLS.filter((control) => control.required);
+  const knownControls = new Set(CONTROLS.map((control) => control.id));
   const repeatsByCritic = critics.map((critic) => {
     const repeats = new Set();
     for (const file of files) {
-      const match = file.match(new RegExp(`^control-(r\\d+)-${requiredControls[0].id}-${critic.slug}\\.json$`));
+      const match = file.match(new RegExp(`^control-(r\\d+)-([a-z0-9-]+)-${critic.slug}\\.json$`));
       if (!match) continue;
-      const repeat = match[1];
-      const hasRequired = requiredControls.every((control) =>
-        files.includes(`control-${repeat}-${control.id}-${critic.slug}.json`),
-      );
-      if (hasRequired) repeats.add(repeat);
+      if (knownControls.has(match[2])) repeats.add(match[1]);
     }
     return repeats;
   });
@@ -340,7 +336,8 @@ function buildSummary(rootDir, options = {}) {
         {
           noneRecognitions: target[critic.id].arms.none.counts.recognition,
           reframeRecognitions: target[critic.id].arms.reframe.counts.recognition,
-          denominator: target[critic.id].arms.none.scored,
+          noneScored: target[critic.id].arms.none.scored,
+          reframeScored: target[critic.id].arms.reframe.scored,
         },
       ]),
     ),
@@ -400,7 +397,7 @@ and D13/D15 remain flat under the available critics.`
   const targetNarrative = summary.critics
     .map((critic) => {
       const row = summary.headline[critic.id];
-      return `${critic.label} reads \`none\` as ${row.noneRecognitions}/${row.denominator} recognition and \`reframe\` as ${row.reframeRecognitions}/${row.denominator}`;
+      return `${critic.label} reads \`none\` as ${row.noneRecognitions}/${row.noneScored} recognition and \`reframe\` as ${row.reframeRecognitions}/${row.reframeScored}`;
     })
     .join(';\n');
   return `# Poetics ${runLabel} Summary

@@ -96,6 +96,21 @@ export function migratePoeticsStore(db) {
     );
     CREATE INDEX IF NOT EXISTS idx_poetics_labels_item ON poetics_labels(item_id);
     CREATE INDEX IF NOT EXISTS idx_poetics_labels_labeller ON poetics_labels(labeller_id);
+
+    CREATE TABLE IF NOT EXISTS poetics_review_flags (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      item_id TEXT NOT NULL REFERENCES poetics_items(id) ON DELETE CASCADE,
+      flagger_id TEXT NOT NULL,
+      flag_type TEXT NOT NULL DEFAULT 'human_review',
+      priority TEXT NOT NULL DEFAULT 'normal',
+      reason TEXT,
+      metadata TEXT,
+      resolved_at TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(item_id, flagger_id, flag_type)
+    );
+    CREATE INDEX IF NOT EXISTS idx_poetics_review_flags_item ON poetics_review_flags(item_id);
+    CREATE INDEX IF NOT EXISTS idx_poetics_review_flags_flagger ON poetics_review_flags(flagger_id);
   `);
 }
 
@@ -248,5 +263,40 @@ export function upsertPoeticsLabel(db, label) {
     rationale: label.rationale ?? null,
     metadata: encodeJson(label.metadata ?? null),
     labelled_at: label.labelledAt ?? null,
+  });
+}
+
+export function upsertPoeticsReviewFlag(db, flag) {
+  db.prepare(
+    `INSERT INTO poetics_review_flags
+      (item_id, flagger_id, flag_type, priority, reason, metadata, resolved_at)
+     VALUES
+      (@item_id, @flagger_id, @flag_type, @priority, @reason, @metadata, @resolved_at)
+     ON CONFLICT(item_id, flagger_id, flag_type) DO UPDATE SET
+      priority = excluded.priority,
+      reason = excluded.reason,
+      metadata = excluded.metadata,
+      resolved_at = excluded.resolved_at`,
+  ).run({
+    item_id: flag.itemId,
+    flagger_id: flag.flaggerId,
+    flag_type: flag.flagType || 'human_review',
+    priority: flag.priority || 'normal',
+    reason: flag.reason ?? null,
+    metadata: encodeJson(flag.metadata ?? null),
+    resolved_at: flag.resolvedAt ?? null,
+  });
+}
+
+export function resolvePoeticsReviewFlag(db, flag) {
+  db.prepare(
+    `UPDATE poetics_review_flags
+     SET resolved_at = @resolved_at
+     WHERE item_id = @item_id AND flagger_id = @flagger_id AND flag_type = @flag_type`,
+  ).run({
+    item_id: flag.itemId,
+    flagger_id: flag.flaggerId,
+    flag_type: flag.flagType || 'human_review',
+    resolved_at: flag.resolvedAt || new Date().toISOString(),
   });
 }

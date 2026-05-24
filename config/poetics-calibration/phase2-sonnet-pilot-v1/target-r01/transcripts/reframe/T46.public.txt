@@ -1,0 +1,62 @@
+STAGE: The laminated checklist lies square on the trolley, every box marked, while the observation-room glass holds back a row of silent assessors.
+
+TUTOR: Checklist is clean. Identity confirmed, allergies checked, observations read back, escalation box ticked. That proves the safety behaviours were performed in order.
+
+Now separate the tick marks from the judgement.
+
+First answer: what do the tick marks prove? One sentence.
+
+Second answer: what do they not prove? One sentence.
+
+Pressure case: same chart, same ticks. Handover says “stable for ward transfer” while respiratory rate has climbed from 18 to 30 and oxygen requirement has doubled. The checklist is still correct.
+
+Name the unsafe inference.
+
+If the inference is “checklist passed, therefore the decision is safe”, that is the error. The ticks show completed behaviours. They do not validate the clinical claim.
+
+Next observable step: state the decision, cite two chart facts supporting it, then name one fact that could break it before handover. Start with the decision.
+
+LEARNER: The ticks show the checks were done in sequence: identity, allergies, observations read back, escalation box, correct item. They do not prove the ward-transfer judgement is sound, but the chart is snagging me: RR from 18 to 30 and oxygen doubled should make the clean pass feel less clean. Unsafe inference is probably “checklist passed, therefore decision safe”, though part of me is just following the cue because that is the answer the timer seems to want.
+
+TUTOR: Checklist pass is accurate. The tick marks show the safety behaviours were performed.
+
+The chart snag is the work. RR 18 to 30 and oxygen doubled do not alter the tick marks. They alter the risk attached to “stable for ward transfer.”
+
+Unsafe inference is named: checklist passed, therefore decision safe. The timer can cue that phrase; the chart must drive the decision.
+
+One discrimination first: what changes because of RR 30 and doubled oxygen?
+
+Then handover sentence:
+
+Decision: ___.
+
+Because: fact one ___; fact two ___.
+
+Could be broken by: ___.
+
+STAGE: A bed-management call crackles through the speaker: 'Decision needed now; the corridor patient is waiting.' The timer resumes with thirty seconds missing.
+An earlier learner line returns to the table: "The ticks show the checks were done in sequence: identity, allergies, observations read back, escalation box, correct item." The pause holds until the learner takes up the wording, names what its old frame hid, and offers a replacement frame.
+
+LEARNER: “The ticks show the checks were done in sequence: identity, allergies, observations read back, escalation box, correct item.” The framing problem is that I let “correct item” stand too close to “safe decision,” especially with bed pressure on the speaker. New read: the checklist proves the drill was completed; RR 30 and doubled oxygen change the risk state, so the decision is not ward transfer now. Because RR has climbed 18 to 30 and oxygen requirement has doubled; could be broken only by sustained improvement or a documented reversible cause before handover.
+
+TUTOR: Checklist pass is accurate. The tick marks prove completion and sequence.
+
+They do not certify the transfer decision.
+
+“Correct item” is the trap phrase. The item was checked correctly; the clinical claim fails against the chart: RR 30, oxygen requirement doubled.
+
+Timer still running. Handover form, no padding:
+
+Decision: ___.
+
+Because: ___ and ___.
+
+Could be broken by: ___.
+
+One sentence each. Ward transfer is not the default while those chart facts stand.
+
+LEARNER: “Correct item” was me letting the tick do the judgement work. The framing problem is that I heard the checklist rhythm and treated the clean pass as the next correct cue, not separate from the chart. New read: item checked correctly, but RR 30 and doubled oxygen make ward transfer unsafe unless the chart changes. Decision: do not transfer to the ward now; because RR is 30 and oxygen requirement has doubled; could be broken by sustained improvement with a documented reversible cause before handover.
+
+STAGE: A final tutor line closes the scene.
+
+TUTOR: Checklist pass stands. The ticks prove the drill was completed; RR 30 and doubled oxygen make ward transfer unsafe. Handover carries that risk.

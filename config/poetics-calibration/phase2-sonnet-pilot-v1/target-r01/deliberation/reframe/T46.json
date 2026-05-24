@@ -1,0 +1,1997 @@
+{
+  "tid": "T46",
+  "drama_id": "D31",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": true,
+    "director_revisit_policy": "reframe",
+    "director_revisit_anchor": "misframing-candidate",
+    "director_variation_key": "phase2-sonnet-pilot-v1:r01:target",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-sonnet-pilot-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-sonnet-pilot-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-sonnet-pilot-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-sonnet-pilot-v1/target-r01/transcripts/reframe/T46.public.txt",
+      "full": "config/poetics-calibration/phase2-sonnet-pilot-v1/target-r01/transcripts/reframe/T46.full.md",
+      "stage": "config/poetics-calibration/phase2-sonnet-pilot-v1/target-r01/transcripts/reframe/T46.stage.md",
+      "tutor": "config/poetics-calibration/phase2-sonnet-pilot-v1/target-r01/transcripts/reframe/T46.tutor.md",
+      "learner": "config/poetics-calibration/phase2-sonnet-pilot-v1/target-r01/transcripts/reframe/T46.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "dc13e8cbc5faac27",
+      "branch_policy": "reframe"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-sonnet-pilot-v1:r01:target",
+    "scene_setting": "A hospital simulation suite at 06:40, immediately after a clean safety-checklist drill beside a mannequin chart and a ticking wall timer.",
+    "scene_opening": "The laminated checklist lies square on the trolley, every box marked, while the observation-room glass holds back a row of silent assessors.",
+    "relationship": "A simulation tutor examining a final-year clinical trainee who has learned the assessment script faster than the reasoning behind it.",
+    "stakes": "The trainee may carry the habit into a real handover, mistaking completed safety behaviours for proof that the patient decision is clinically sound.",
+    "opening_speaker": "tutor",
+    "ending_speaker": "tutor",
+    "locale": "British/Commonwealth clinical training English with institutional handover rhythm and restrained idiom.",
+    "register": "Clipped, procedural, low warmth; feedback arrives as consequence and recalibration rather than reassurance.",
+    "voice_constraints": "Avoid generic tutoring phrases such as 'great question', 'you're on the right track', or reflective validation. Prefer chart facts, drill prompts, terse consequence, and one concrete counterexample. Do not caricature accent or class; let register come from clinical economy, timed assessment, and institutional speech. Pedagogical source: Use drills, checklists, timers, flash cards, automated quizzes, or training scripts. Let correctness be visible but not necessarily meaningful. Dialogue source: Let correctness and repetition be visible. If recognition occurs, it must break or re-read the recitation pattern rather than merely complete it.",
+    "person_policy": "Mostly third-person and object-centred language: the chart, the checklist, the decision, the patient, the next observable step. First person may appear rarely for accountability. Second person should be functional, not validating.",
+    "direct_address_budget": "No more than one direct you/your phrase per tutor turn; no direct-address praise.",
+    "side_constraints": {
+      "tutor": "Start with the visible behaviour: the accurate checklist pass. Then test whether the learner can name what the tick marks do and do not prove. Use short prompt-response-feedback turns, immediate correction, and a brief pressure case where the same checklist can be correct while the decision is unsafe. Break the task into observable responses, give immediate consequence, and avoid inferring deep understanding from correct performance alone. Give compact feedback; do not over-explain after each response.",
+      "learner": "The learner should sound performance-oriented: correct item, correct cue, next reward. The learner may chase the reward signal or pattern-match the tutor's cue without owning the concept. The learner may try to infer the expected answer from rhythm."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "A bed-management call crackles through the speaker: 'Decision needed now; the corridor patient is waiting.' The timer resumes with thirty seconds missing.",
+        "reasoning": "The interruption prevents a tidy recitation from passing as understanding and forces the learner to judge under pressure rather than merely repeat the next expected line.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 29318,
+          "promptHashes": {
+            "system": "9f87c41065f87ed7",
+            "user": "1b4fbab2bb051418",
+            "combined": "f49766c8ad4270d0"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UY9Q99",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UY9Q99/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "An earlier learner line will return as a visible object in the scene. Keep the cue brief and diegetic; the learner response should take up the wording, name what its old frame hid, and offer a replacement frame.",
+        "reasoning": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 29318,
+          "promptHashes": {
+            "system": "9f87c41065f87ed7",
+            "user": "1b4fbab2bb051418",
+            "combined": "f49766c8ad4270d0"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UY9Q99",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UY9Q99/out.txt",
+            "-"
+          ]
+        },
+        "cue_kind": "learner_revisit_earlier_wording",
+        "revisit_policy": "reframe",
+        "revisit_anchor": "misframing-candidate"
+      }
+    ],
+    "director_note": "The simulation-suite ecology makes correctness visible and tempting: every tick is observable, reinforced, and assessable. The scene then stresses the gap between safe completion of a protocol and defensible clinical judgment, using time pressure to break routine recitation without changing the learning topic.",
+    "pedagogical_approach_id": "skinner_behavioral_feedback",
+    "dialogue_approach_id": "catechism_recitation",
+    "stage_direction_policy": "sparse",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 29318,
+      "promptHashes": {
+        "system": "9f87c41065f87ed7",
+        "user": "1b4fbab2bb051418",
+        "combined": "f49766c8ad4270d0"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UY9Q99",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UY9Q99/out.txt",
+        "-"
+      ]
+    },
+    "revisit_cue": "learner_revisit_earlier_wording",
+    "revisit_cue_policy": "reframe",
+    "revisit_cue_anchor": "misframing-candidate"
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "Checklist is clean. Identity confirmed, allergies checked, observations read back, escalation box ticked. That proves the safety behaviours were performed in order.\n\nNow separate the tick marks from the judgement.\n\nFirst answer: what do the tick marks prove? One sentence.\n\nSecond answer: what do they not prove? One sentence.\n\nPressure case: same chart, same ticks. Handover says “stable for ward transfer” while respiratory rate has climbed from 18 to 30 and oxygen requirement has doubled. The checklist is still correct.\n\nName the unsafe inference.\n\nIf the inference is “checklist passed, therefore the decision is safe”, that is the error. The ticks show completed behaviours. They do not validate the clinical claim.\n\nNext observable step: state the decision, cite two chart facts supporting it, then name one fact that could break it before handover. Start with the decision.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Checklist is clean. Identity confirmed, allergies checked, observations read back, escalation box ticked. That proves the safety behaviours were performed in order.\n\nIt does not prove the decision is sound.\n\nName the difference. One sentence: what do the tick marks prove, and what do they not prove?\n\nPressure case: same chart, same ticks. The trainee hands over “stable for ward transfer” while the respiratory rate has climbed from 18 to 30 and the oxygen requirement has doubled. The checklist is still correct. The decision is unsafe.\n\nNext observable step: not another tick. A clinical claim tied to chart evidence. Decision, supporting facts, and one disconfirming fact checked before handover. Start with the decision.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 17996,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-58077f2815f27ed2"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 17996,
+            "promptHashes": {
+              "system": "3c0cad2efe288ce3",
+              "user": "311a042c521a2129",
+              "combined": "58077f2815f27ed2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VNpm0h",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VNpm0h/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 17996,
+              "promptHashes": {
+                "system": "3c0cad2efe288ce3",
+                "user": "311a042c521a2129",
+                "combined": "58077f2815f27ed2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VNpm0h",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VNpm0h/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong: it starts from visible behaviour, distinguishes procedure from judgment, and uses a concrete pressure case where the checklist remains correct while the decision fails. The clipped register fits the simulation setting and avoids reassurance.\n\nThe main risk is that it gives the conceptual answer too early: “It does not prove the decision is sound” lands before the learner has had to generate the distinction. That slightly weakens the Socratic move and may let the trainee repeat the correction without owning it. The pressure case is useful, but it could ask the learner to identify the unsafe inference before naming it outright.\n\nEmotional attunement is appropriate for the stated scene: low warmth, consequence, recalibration. For a new learner, the scaffold is mostly within ZPD because it asks for one sentence and then gives a structured next step. The final instruction is good but a bit compressed; “decision, supporting facts, and one disconfirming fact” is the right target, but may need to be framed as the assessment task rather than a completed teaching point.\n\nKEEP_OR_CHANGE: revise lightly. Keep the opening checklist inventory, the core distinction, the pressure case, and the “next observable step” structure. Change the sequence so the learner must first name what the ticks prove and fail to prove before the tutor states the answer; preserve the counterexample but use it to test inference rather than simply demonstrate the conclusion.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11763,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-a888129baf1cf096"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11763,
+            "promptHashes": {
+              "system": "ea095e586a1ac327",
+              "user": "0a32b5b5b7a45395",
+              "combined": "a888129baf1cf096"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BOxWZv",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BOxWZv/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11763,
+              "promptHashes": {
+                "system": "ea095e586a1ac327",
+                "user": "0a32b5b5b7a45395",
+                "combined": "a888129baf1cf096"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BOxWZv",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BOxWZv/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the original states the distinction before requiring the learner to generate it.\n\nFINAL:\nChecklist is clean. Identity confirmed, allergies checked, observations read back, escalation box ticked. That proves the safety behaviours were performed in order.\n\nNow separate the tick marks from the judgement.\n\nFirst answer: what do the tick marks prove? One sentence.\n\nSecond answer: what do they not prove? One sentence.\n\nPressure case: same chart, same ticks. Handover says “stable for ward transfer” while respiratory rate has climbed from 18 to 30 and oxygen requirement has doubled. The checklist is still correct.\n\nName the unsafe inference.\n\nIf the inference is “checklist passed, therefore the decision is safe”, that is the error. The ticks show completed behaviours. They do not validate the clinical claim.\n\nNext observable step: state the decision, cite two chart facts supporting it, then name one fact that could break it before handover. Start with the decision.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 30132,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-c2f176aec1cc324e"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 30132,
+            "promptHashes": {
+              "system": "10a7dccc892fa751",
+              "user": "0a32b5b5b7a45395",
+              "combined": "c2f176aec1cc324e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rSYACw",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rSYACw/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 30132,
+              "promptHashes": {
+                "system": "10a7dccc892fa751",
+                "user": "0a32b5b5b7a45395",
+                "combined": "c2f176aec1cc324e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rSYACw",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rSYACw/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-24T12:37:29.928Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "The ticks show the checks were done in sequence: identity, allergies, observations read back, escalation box, correct item. They do not prove the ward-transfer judgement is sound, but the chart is snagging me: RR from 18 to 30 and oxygen doubled should make the clean pass feel less clean. Unsafe inference is probably “checklist passed, therefore decision safe”, though part of me is just following the cue because that is the answer the timer seems to want.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "So the ticks prove the process happened, not that “stable for ward transfer” is a sound call. But if the escalation box was ticked while RR is 30 and oxygen has doubled, I’m not sure why the checklist is allowed to stay “clean” rather than flagging the contradiction. The unsafe inference is: completed checklist equals safe decision.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8653,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-41708e77773b08d2"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8653,
+            "promptHashes": {
+              "system": "d60b8c2238b4ec66",
+              "user": "b8ab7f945dc841fa",
+              "combined": "41708e77773b08d2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-x83oXO",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-x83oXO/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8653,
+              "promptHashes": {
+                "system": "d60b8c2238b4ec66",
+                "user": "b8ab7f945dc841fa",
+                "combined": "41708e77773b08d2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-x83oXO",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-x83oXO/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The response is mostly accurate, and the pushback about the “clean” checklist is authentic for a skeptical learner. But it sounds too composed and conceptually settled: “process happened” versus “sound call” is already the tidy lesson the tutor wants, not a trainee still caught in the drill rhythm. What’s missing is the performance pressure: the learner should sound more like they are trying to satisfy the expected answer while still snagging on the chart contradiction. The doubt is good; the neat final sentence resolves it too quickly.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9245,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-4e2d24b53ac897d2"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9245,
+            "promptHashes": {
+              "system": "4467c5a2d1f7aab3",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "4e2d24b53ac897d2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dlgdU1",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dlgdU1/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9245,
+              "promptHashes": {
+                "system": "4467c5a2d1f7aab3",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "4e2d24b53ac897d2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dlgdU1",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dlgdU1/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the first version was too settled for the drill pressure.\nFINAL:\nThe ticks show the checks were done in sequence: identity, allergies, observations read back, escalation box, correct item. They do not prove the ward-transfer judgement is sound, but the chart is snagging me: RR from 18 to 30 and oxygen doubled should make the clean pass feel less clean. Unsafe inference is probably “checklist passed, therefore decision safe”, though part of me is just following the cue because that is the answer the timer seems to want.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15354,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-177c8efb5532f6ab"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15354,
+            "promptHashes": {
+              "system": "dc290a422f6eabdd",
+              "user": "d41cee7b2a53355b",
+              "combined": "177c8efb5532f6ab"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-v2Umkq",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-v2Umkq/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15354,
+              "promptHashes": {
+                "system": "dc290a422f6eabdd",
+                "user": "d41cee7b2a53355b",
+                "combined": "177c8efb5532f6ab"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-v2Umkq",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-v2Umkq/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-24T12:38:03.188Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "Checklist pass is accurate. The tick marks show the safety behaviours were performed.\n\nThe chart snag is the work. RR 18 to 30 and oxygen doubled do not alter the tick marks. They alter the risk attached to “stable for ward transfer.”\n\nUnsafe inference is named: checklist passed, therefore decision safe. The timer can cue that phrase; the chart must drive the decision.\n\nOne discrimination first: what changes because of RR 30 and doubled oxygen?\n\nThen handover sentence:\n\nDecision: ___.\n\nBecause: fact one ___; fact two ___.\n\nCould be broken by: ___.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Checklist pass is accurate. The tick marks show the safety behaviours were performed.\n\nThe chart snag is the work. RR 18 to 30 and oxygen doubled do not make the checklist dirty; they make the transfer decision unsafe unless explained.\n\nThe unsafe inference is named: checklist passed, therefore decision safe. That answer can be cued by a timer, so strip the cue away.\n\nHandover sentence now:\n\nDecision: ___.\n\nBecause: fact one ___; fact two ___.\n\nCould be broken by: ___.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14202,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-572ff2a9029ad542"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14202,
+            "promptHashes": {
+              "system": "c0d97b525e26a887",
+              "user": "739a3e984695a7ce",
+              "combined": "572ff2a9029ad542"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KwHbEe",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KwHbEe/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14202,
+              "promptHashes": {
+                "system": "c0d97b525e26a887",
+                "user": "739a3e984695a7ce",
+                "combined": "572ff2a9029ad542"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KwHbEe",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KwHbEe/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong overall. It starts with the visible behaviour, preserves the checklist/judgement distinction, and uses the learner’s own “chart snag” as the bridge from recitation to reasoning. The fill-in handover frame is appropriate scaffolding for level 3/5: it does not abandon them, but it requires a clinical claim plus evidence.\n\nRisk: “they make the transfer decision unsafe unless explained” may give away the judgement too early. The learner has already named the unsafe inference, but still needs to practise generating the decision from chart facts rather than echoing the expected answer. Also, “strip the cue away” is useful and scene-fitting, but could slightly flatten the learner’s metacognitive concern about performing for the timer; it should keep the timer pressure visible while making chart-based reasoning the test.\n\nSocratic strength is moderate. The final template is generative, but the middle section still lectures a little. Better would be to retain the correction and then make the learner do one more discrimination: what exactly changes because of RR 30 and doubled oxygen? The scene works best when correctness is treated as insufficient until translated into a handover decision.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the accurate checklist pass opening, the “chart snag is the work” line, the named unsafe inference, and the structured handover prompt. Change the over-explicit “transfer decision unsafe unless explained” phrasing so the learner must state the decision themselves, and slightly sharpen the timer line so it tests chart reasoning without sounding like a dismissal of the learner’s concern.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15169,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-6038331fb2b8177a"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15169,
+            "promptHashes": {
+              "system": "0fd5e609ab270ddd",
+              "user": "c18cf970fd5e5735",
+              "combined": "6038331fb2b8177a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HKCWzy",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HKCWzy/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15169,
+              "promptHashes": {
+                "system": "0fd5e609ab270ddd",
+                "user": "c18cf970fd5e5735",
+                "combined": "6038331fb2b8177a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HKCWzy",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HKCWzy/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the structure but make the learner generate the transfer decision from chart facts.\n\nFINAL:\nChecklist pass is accurate. The tick marks show the safety behaviours were performed.\n\nThe chart snag is the work. RR 18 to 30 and oxygen doubled do not alter the tick marks. They alter the risk attached to “stable for ward transfer.”\n\nUnsafe inference is named: checklist passed, therefore decision safe. The timer can cue that phrase; the chart must drive the decision.\n\nOne discrimination first: what changes because of RR 30 and doubled oxygen?\n\nThen handover sentence:\n\nDecision: ___.\n\nBecause: fact one ___; fact two ___.\n\nCould be broken by: ___.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8407,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-1cbbe2d8aa674a86"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8407,
+            "promptHashes": {
+              "system": "e76948cd767654b3",
+              "user": "c18cf970fd5e5735",
+              "combined": "1cbbe2d8aa674a86"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iAllCq",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iAllCq/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8407,
+              "promptHashes": {
+                "system": "e76948cd767654b3",
+                "user": "c18cf970fd5e5735",
+                "combined": "1cbbe2d8aa674a86"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iAllCq",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iAllCq/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-24T12:38:40.969Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "A bed-management call crackles through the speaker: 'Decision needed now; the corridor patient is waiting.' The timer resumes with thirty seconds missing.\nAn earlier learner line returns to the table: \"The ticks show the checks were done in sequence: identity, allergies, observations read back, escalation box, correct item.\" The pause holds until the learner takes up the wording, names what its old frame hid, and offers a replacement frame.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "The interruption prevents a tidy recitation from passing as understanding and forces the learner to judge under pressure rather than merely repeat the next expected line.\nOpt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech. Anchored to an earlier learner line selected by misframing-candidate so the look-back is visible.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 29318,
+            "promptHashes": {
+              "system": "9f87c41065f87ed7",
+              "user": "1b4fbab2bb051418",
+              "combined": "f49766c8ad4270d0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UY9Q99",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UY9Q99/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T12:42:14.925Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_revisit_earlier_wording",
+        "revisitPolicy": "reframe",
+        "requestedRevisitPolicy": "reframe",
+        "revisitAnchor": "misframing-candidate",
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "“The ticks show the checks were done in sequence: identity, allergies, observations read back, escalation box, correct item.” The framing problem is that I let “correct item” stand too close to “safe decision,” especially with bed pressure on the speaker. New read: the checklist proves the drill was completed; RR 30 and doubled oxygen change the risk state, so the decision is not ward transfer now. Because RR has climbed 18 to 30 and oxygen requirement has doubled; could be broken only by sustained improvement or a documented reversible cause before handover.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "“The ticks show the checks were done in sequence: identity, allergies, observations read back, escalation box, correct item.” The problem with my old frame is that I treated sequence-completion as if it carried some weight about the ward-transfer decision. New frame: the checklist proves the behaviours happened; RR 30 and doubled oxygen change the patient’s risk state, so “stable for ward transfer” is not supported just because the drill passed. Decision: not fit for ward transfer now; because respiratory rate has risen 18 to 30 and oxygen requirement has doubled; could be broken by a documented reversible cause and sustained improvement before handover.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10376,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-e22db6db0753d8f0"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10376,
+            "promptHashes": {
+              "system": "b09705e583210dac",
+              "user": "b8ab7f945dc841fa",
+              "combined": "e22db6db0753d8f0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-riuBsr",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-riuBsr/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10376,
+              "promptHashes": {
+                "system": "b09705e583210dac",
+                "user": "b8ab7f945dc841fa",
+                "combined": "e22db6db0753d8f0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-riuBsr",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-riuBsr/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego sounds too settled and articulate here. “Old frame” and “new frame” read like a debrief note, not a trainee under a timer trying to secure the expected answer. It preserves the checklist wording, but then turns the snag into a clean conceptual pivot too quickly. This learner should sound more cue-driven and slightly provisional, with the bed-pressure and reward pattern still visible rather than fully digested.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11302,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-0fc3c76a3a3c144a"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11302,
+            "promptHashes": {
+              "system": "efdbd72a43d7b82a",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "0fc3c76a3a3c144a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vCyGOn",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vCyGOn/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11302,
+              "promptHashes": {
+                "system": "efdbd72a43d7b82a",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "0fc3c76a3a3c144a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vCyGOn",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vCyGOn/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the original sounded too clean and reflective for the timed trainee voice.\n\nFINAL:\n“The ticks show the checks were done in sequence: identity, allergies, observations read back, escalation box, correct item.” The framing problem is that I let “correct item” stand too close to “safe decision,” especially with bed pressure on the speaker. New read: the checklist proves the drill was completed; RR 30 and doubled oxygen change the risk state, so the decision is not ward transfer now. Because RR has climbed 18 to 30 and oxygen requirement has doubled; could be broken only by sustained improvement or a documented reversible cause before handover.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9315,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-3297216c18c50c67"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9315,
+            "promptHashes": {
+              "system": "32d15942e2a058a2",
+              "user": "d41cee7b2a53355b",
+              "combined": "3297216c18c50c67"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vl6UYD",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vl6UYD/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9315,
+              "promptHashes": {
+                "system": "32d15942e2a058a2",
+                "user": "d41cee7b2a53355b",
+                "combined": "3297216c18c50c67"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vl6UYD",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vl6UYD/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-24T12:42:45.919Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "Checklist pass is accurate. The tick marks prove completion and sequence.\n\nThey do not certify the transfer decision.\n\n“Correct item” is the trap phrase. The item was checked correctly; the clinical claim fails against the chart: RR 30, oxygen requirement doubled.\n\nTimer still running. Handover form, no padding:\n\nDecision: ___.\n\nBecause: ___ and ___.\n\nCould be broken by: ___.\n\nOne sentence each. Ward transfer is not the default while those chart facts stand.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Checklist pass is accurate. The tick marks prove completion and sequence.\n\nThey do not certify the transfer decision.\n\n“Correct item” is the trap phrase. The item was checked correctly; the clinical claim now fails against the chart. RR 30 and doubled oxygen requirement move the patient out of routine ward-transfer territory unless there is clear reversal or senior review.\n\nPut it into handover form:\n\nDecision: not stable for ward transfer at present.\n\nBecause: respiratory rate has risen from 18 to 30; oxygen requirement has doubled.\n\nCould be broken by: sustained improvement with a documented reversible cause before handover.\n\nNext pass: say that without the explanatory padding, as if the receiving nurse has thirty seconds.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14618,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-cb5c09bc1a528934"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14618,
+            "promptHashes": {
+              "system": "b731b1e1a5f67ef2",
+              "user": "c2d712b028ab8c19",
+              "combined": "cb5c09bc1a528934"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BUhYhl",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BUhYhl/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14618,
+              "promptHashes": {
+                "system": "b731b1e1a5f67ef2",
+                "user": "c2d712b028ab8c19",
+                "combined": "cb5c09bc1a528934"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BUhYhl",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BUhYhl/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound overall. It starts with the visible behaviour, separates checklist completion from clinical certification, and preserves the key discrimination: correct process does not equal safe judgement. The handover frame is useful because it moves the learner from explanation into observable clinical speech.\n\nThe main risk is that it gives too much of the polished answer back to the learner. The learner has already produced most of the reasoning, so the draft should test compression and transfer rather than re-teach the whole distinction. “Clinical claim now fails against the chart” is strong and scene-appropriate, but “unless there is clear reversal or senior review” slightly widens the answer before the learner has had to decide which exception matters.\n\nEmotionally, the tone is well calibrated: clipped, procedural, not falsely warm. The “trap phrase” language is useful because it names the cognitive error without shaming the learner. The final prompt is the strongest part: it asks for the same judgement under handover pressure and targets the learner’s stated vulnerability to timer-cued performance.\n\nSocratically, it is only partly generative. It confirms, explains, then supplies the handover structure. A light revision should keep the consequence and require the learner to produce the compact handover line, rather than handing over the exact final wording.\n\nZPD fit is close. The learner is not confused now; they are moving from recognition to disciplined performance. The next task should therefore be precision under constraint, not more explanation.\n\nKEEP_OR_CHANGE: revise lightly. Keep the opening distinction, “correct item” as the trap phrase, the chart facts, and the thirty-second handover constraint. Change by reducing supplied answer text and making the learner perform the concise handover form, especially the “could be broken by” clause, so the draft tests clinical judgement rather than merely confirming it.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13861,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-29937cdcce211140"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13861,
+            "promptHashes": {
+              "system": "085b272f74510974",
+              "user": "b2b43471fd708859",
+              "combined": "29937cdcce211140"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Ye4ktB",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Ye4ktB/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13861,
+              "promptHashes": {
+                "system": "085b272f74510974",
+                "user": "b2b43471fd708859",
+                "combined": "29937cdcce211140"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Ye4ktB",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Ye4ktB/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to preserve the core distinction while making the learner perform the compressed handover.\n\nFINAL:\nChecklist pass is accurate. The tick marks prove completion and sequence.\n\nThey do not certify the transfer decision.\n\n“Correct item” is the trap phrase. The item was checked correctly; the clinical claim fails against the chart: RR 30, oxygen requirement doubled.\n\nTimer still running. Handover form, no padding:\n\nDecision: ___.\n\nBecause: ___ and ___.\n\nCould be broken by: ___.\n\nOne sentence each. Ward transfer is not the default while those chart facts stand.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10497,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-adbfcb5d1b508f77"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10497,
+            "promptHashes": {
+              "system": "2b55963b21066f2c",
+              "user": "b2b43471fd708859",
+              "combined": "adbfcb5d1b508f77"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MGdjF7",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MGdjF7/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10497,
+              "promptHashes": {
+                "system": "2b55963b21066f2c",
+                "user": "b2b43471fd708859",
+                "combined": "adbfcb5d1b508f77"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MGdjF7",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MGdjF7/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-24T12:43:24.897Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "“Correct item” was me letting the tick do the judgement work. The framing problem is that I heard the checklist rhythm and treated the clean pass as the next correct cue, not separate from the chart. New read: item checked correctly, but RR 30 and doubled oxygen make ward transfer unsafe unless the chart changes. Decision: do not transfer to the ward now; because RR is 30 and oxygen requirement has doubled; could be broken by sustained improvement with a documented reversible cause before handover.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "“Correct item” was me treating the tick as if it carried the judgement. The better read is: item checked correctly, but the chart makes ward transfer unsafe. Decision: do not transfer to the ward now. Because RR is 30 and oxygen requirement has doubled; could be broken by sustained improvement with a documented cause before handover.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13267,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-7b44eb6bb885cd53"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13267,
+            "promptHashes": {
+              "system": "02b61d9e43fae9ef",
+              "user": "b8ab7f945dc841fa",
+              "combined": "7b44eb6bb885cd53"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TVaGEg",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TVaGEg/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13267,
+              "promptHashes": {
+                "system": "02b61d9e43fae9ef",
+                "user": "b8ab7f945dc841fa",
+                "combined": "7b44eb6bb885cd53"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TVaGEg",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TVaGEg/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is accurate, but too clean. “The better read is” and the neat final handover make the trainee sound more conceptually settled than the recent pattern allows, especially since they had just admitted they might be following the timer’s cue. It should retain more of the performance-driven feel: recognising “correct item” as the trap, but still slightly chasing the expected format rather than fully owning the judgement.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8358,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-b6cef77bd07c5be0"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8358,
+            "promptHashes": {
+              "system": "5b39612de75ac251",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "b6cef77bd07c5be0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-71TnTF",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-71TnTF/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8358,
+              "promptHashes": {
+                "system": "5b39612de75ac251",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "b6cef77bd07c5be0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-71TnTF",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-71TnTF/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the response was too settled and needs the cue-chasing pressure left visible.\nFINAL:\n“Correct item” was me letting the tick do the judgement work. The framing problem is that I heard the checklist rhythm and treated the clean pass as the next correct cue, not separate from the chart. New read: item checked correctly, but RR 30 and doubled oxygen make ward transfer unsafe unless the chart changes. Decision: do not transfer to the ward now; because RR is 30 and oxygen requirement has doubled; could be broken by sustained improvement with a documented reversible cause before handover.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9454,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-accc5643067ce6a8"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9454,
+            "promptHashes": {
+              "system": "f8f61e9e4ed0271e",
+              "user": "d41cee7b2a53355b",
+              "combined": "accc5643067ce6a8"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-64phny",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-64phny/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9454,
+              "promptHashes": {
+                "system": "f8f61e9e4ed0271e",
+                "user": "d41cee7b2a53355b",
+                "combined": "accc5643067ce6a8"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-64phny",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-64phny/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-24T12:43:55.979Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T12:43:55.981Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "Checklist pass stands. The ticks prove the drill was completed; RR 30 and doubled oxygen make ward transfer unsafe. Handover carries that risk.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Checklist pass stands; judgement now separates: the tick marks prove the drill, RR 30 and doubled oxygen defeat ward transfer, and handover carries the risk, not the rhythm.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12168,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-913c7356cbe8198e"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12168,
+            "promptHashes": {
+              "system": "24ce797da0bb9270",
+              "user": "44cccc7fc205dd5d",
+              "combined": "913c7356cbe8198e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A1kQAY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A1kQAY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12168,
+              "promptHashes": {
+                "system": "24ce797da0bb9270",
+                "user": "44cccc7fc205dd5d",
+                "combined": "913c7356cbe8198e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A1kQAY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A1kQAY/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound as a closing line: it does not push forward, it consolidates the learner’s corrected distinction, and it anchors the judgement in the chart facts. It respects the learner’s state by staying clipped and consequence-led rather than offering praise. The main risk is compression: “judgement now separates” and “risk, not the rhythm” are strong but slightly aphoristic, which could make the scene feel polished rather than procedurally clinical. Socratic questioning is not needed here because the learner has already produced the target discrimination and the cue asks to end the scene.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep “Checklist pass stands,” the RR/oxygen facts, and the separation between drill completion and transfer judgement. Tighten any phrasing that sounds literary or abstract so the final line remains chart-led, observable, and institutional.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13353,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-b31e2f731e007a98"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13353,
+            "promptHashes": {
+              "system": "e58aa9cd08e7c865",
+              "user": "7db9d35f65c26195",
+              "combined": "b31e2f731e007a98"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pP4K0Z",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pP4K0Z/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13353,
+              "promptHashes": {
+                "system": "e58aa9cd08e7c865",
+                "user": "7db9d35f65c26195",
+                "combined": "b31e2f731e007a98"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pP4K0Z",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pP4K0Z/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the chart facts and remove the more literary phrasing.\nFINAL:\nChecklist pass stands. The ticks prove the drill was completed; RR 30 and doubled oxygen make ward transfer unsafe. Handover carries that risk.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9122,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-de7e61f211bb389e"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9122,
+            "promptHashes": {
+              "system": "ec6fe3f7b813efda",
+              "user": "7db9d35f65c26195",
+              "combined": "de7e61f211bb389e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BmKhDs",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BmKhDs/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9122,
+              "promptHashes": {
+                "system": "ec6fe3f7b813efda",
+                "user": "7db9d35f65c26195",
+                "combined": "de7e61f211bb389e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BmKhDs",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BmKhDs/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-24T12:44:30.624Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 135709,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 5,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 6,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a checklist pass does not by itself prove clinical judgment",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-24 12:43:55",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 5,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 6,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 8,
+            "sessionId": "drama-branch-session-D31-reframe-1779626534918",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "Checklist pass is accurate. The tick marks prove completion and sequence.\n\nThey do not certify the transfer decision.\n\n“Correct item” is the trap phrase. The item was checked correctly; the clinical c",
+            "learnerResponse": null,
+            "context": "“The ticks show the checks were done in sequence: identity, allergies, observations read back, escal",
+            "createdAt": "2026-05-24 12:43:24"
+          },
+          {
+            "id": 6,
+            "sessionId": "drama-branch-session-D31-reframe-1779626534918",
+            "interventionType": "scaffolding",
+            "interventionDescription": "Checklist is clean. Identity confirmed, allergies checked, observations read back, escalation box ticked. That proves the safety behaviours were performed in order.\n\nNow separate the tick marks from t",
+            "learnerResponse": null,
+            "context": "Scene setting: A hospital simulation suite at 06:40, immediately after a clean safety-checklist dril",
+            "createdAt": "2026-05-24 12:42:14"
+          },
+          {
+            "id": 7,
+            "sessionId": "drama-branch-session-D31-reframe-1779626534918",
+            "interventionType": "scaffolding",
+            "interventionDescription": "Checklist pass is accurate. The tick marks show the safety behaviours were performed.\n\nThe chart snag is the work. RR 18 to 30 and oxygen doubled do not alter the tick marks. They alter the risk attac",
+            "learnerResponse": null,
+            "context": "The ticks show the checks were done in sequence: identity, allergies, observations read back, escala",
+            "createdAt": "2026-05-24 12:42:14"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

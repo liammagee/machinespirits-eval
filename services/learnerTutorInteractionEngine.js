@@ -151,10 +151,7 @@ const STRONG_MISFRAMING_ANCHOR_PATTERNS = [
   /\b(?:does that mean|so maybe)\b/i,
 ];
 
-const MISFRAMING_ANCHOR_PATTERNS = [
-  ...STRONG_MISFRAMING_ANCHOR_PATTERNS,
-  /\bI think\b/i,
-];
+const MISFRAMING_ANCHOR_PATTERNS = [...STRONG_MISFRAMING_ANCHOR_PATTERNS, /\bI think\b/i];
 
 function priorLearnerMessages(conversationHistory) {
   return (conversationHistory || []).filter(
@@ -216,17 +213,19 @@ function buildAnchoredRevisitCue(cue, conversationHistory) {
     requested_revisit_policy: reframeIneligible ? requestedPolicy : cue.requested_revisit_policy || null,
     reframe_anchor_gate: reframeIneligible ? 'downgraded_to_reconsider_ineligible_anchor' : 'eligible',
     instruction:
-      `A prior learner line is played back: "${anchor.text}" ` +
+      `An earlier learner line returns to the table: "${anchor.text}" ` +
       (policy === 'reframe'
-        ? 'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.'
+        ? 'The pause holds until the learner takes up the wording, names what its old frame hid, and offers a replacement frame.'
         : policy === 'reconsider'
-          ? 'The learner must revoice that wording first, then decide in public whether it still stands, needs narrowing, or needs replacing before moving on.'
-        : policy === 'revoice'
-          ? 'The learner must revoice that wording first, then say one concrete thing it now misses, keeps, or changes before moving on.'
-          : 'The learner must answer that wording before moving on, saying what it now misses, keeps, or changes.'),
+          ? 'The pause holds while the learner decides whether that wording still stands, needs narrowing, or needs replacing.'
+          : policy === 'revoice'
+            ? 'The pause holds while the learner takes up that wording and says one concrete thing it now misses, keeps, or changes.'
+            : 'The pause holds on what that wording now misses, keeps, or changes.'),
     reasoning:
       `${cue.reasoning || 'Opt-in rehearsal mirror.'} Anchored to an earlier learner line selected by ${anchorPolicy} so the look-back is visible.` +
-      (reframeIneligible ? ' Strong reframe was downgraded because that selected anchor did not show a misframing marker.' : ''),
+      (reframeIneligible
+        ? ' Strong reframe was downgraded because that selected anchor did not show a misframing marker.'
+        : ''),
     anchor_quote: anchor.text,
     anchor_policy: anchorPolicy,
     anchor_strong_misframing: anchor.strongMisframing,
@@ -241,9 +240,16 @@ function combineDirectorCues(matches, timing) {
   return {
     timing,
     instruction: matches.map(cueText).filter(Boolean).join('\n'),
-    reasoning: matches.map((cue) => cue.reasoning || cueText(cue)).filter(Boolean).join('\n'),
+    reasoning: matches
+      .map((cue) => cue.reasoning || cueText(cue))
+      .filter(Boolean)
+      .join('\n'),
     provenance: matches.find((cue) => cue.provenance)?.provenance || null,
-    cue_kind: matches.map((cue) => cue.cue_kind).filter(Boolean).join('+') || 'combined',
+    cue_kind:
+      matches
+        .map((cue) => cue.cue_kind)
+        .filter(Boolean)
+        .join('+') || 'combined',
     revisit_policy: matches.find((cue) => cue.revisit_policy)?.revisit_policy || null,
     revisit_anchor: matches.find((cue) => cue.revisit_anchor)?.revisit_anchor || null,
     combined_cues: matches,
@@ -341,13 +347,12 @@ function resumeStateFromTrace(trace, directorPlan, scenario, topic) {
       content: turn.externalMessage,
       internalDeliberation: Array.isArray(turn.internalDeliberation) ? turn.internalDeliberation : null,
     })),
-    currentLearnerMessage:
-      responseFromTraceTurn(latestLearnerTurn) || {
-        externalMessage: buildOpeningContextMessage(directorPlan, scenario, topic),
-        internalDeliberation: [],
-        emotionalState: 'scene_context',
-        understandingLevel: 'initial',
-      },
+    currentLearnerMessage: responseFromTraceTurn(latestLearnerTurn) || {
+      externalMessage: buildOpeningContextMessage(directorPlan, scenario, topic),
+      internalDeliberation: [],
+      emotionalState: 'scene_context',
+      understandingLevel: 'initial',
+    },
     latestTutorResponse: responseFromTraceTurn(latestTutorTurn),
     nextPhase: latestSpeechTurn.phase === 'tutor' ? 'learner' : 'tutor',
     turnCount: Number(latestSpeechTurn.turnNumber) || 0,
@@ -434,7 +439,10 @@ export function extractAdjudicatedExternalMessage(text, fallback = '') {
   const finalMatch = sanitized.match(/\bFINAL:\s*([\s\S]*)/i);
   if (finalMatch?.[1]?.trim()) return finalMatch[1].trim();
 
-  const parts = sanitized.split(/\n\s*-{3,}\s*\n/g).map((p) => p.trim()).filter(Boolean);
+  const parts = sanitized
+    .split(/\n\s*-{3,}\s*\n/g)
+    .map((p) => p.trim())
+    .filter(Boolean);
   if (parts.length > 1) return parts[parts.length - 1];
 
   return sanitized;
@@ -670,15 +678,12 @@ export async function runInteraction(config, llmCall, options = {}) {
       interactionContinues = false;
       break;
     }
-
   }
 
   if (directorPlan?.ending_speaker === 'tutor' && interactionTrace.turns.at(-1)?.phase === 'learner') {
     const closingCue = {
       timing: 'before_tutor',
-      instruction:
-        directorPlan.closing_move ||
-        'End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.',
+      instruction: directorPlan.closing_move || 'A final tutor line closes the scene.',
       reasoning: 'Director requested a tutor closing beat.',
     };
     recordDirectorCue(interactionTrace, turnCount + 1, closingCue);
@@ -711,7 +716,8 @@ export async function runInteraction(config, llmCall, options = {}) {
   } else if (directorPlan?.ending_speaker === 'director' && interactionTrace.turns.at(-1)?.phase !== 'director') {
     recordDirectorCue(interactionTrace, turnCount + 1, {
       timing: 'scene_close',
-      instruction: directorPlan.closing_move || directorPlan.director_closing || 'The director closes the scene.',
+      instruction:
+        directorPlan.closing_move || directorPlan.director_closing || 'The room settles on the final exchange.',
       reasoning: 'Director requested the last word as a stage cue.',
       provenance: directorPlan.provenance || null,
     });
@@ -1048,7 +1054,12 @@ Provide ONLY your draft response text (it will be reviewed by your pedagogical c
 
   const egoDraft = egoResponse.content || '';
   internalDeliberation.push(
-    makeDeliberationEntry('ego', egoResponse, { model: tutorModel, provider: egoConfig?.provider }, { stage: 'initial' }),
+    makeDeliberationEntry(
+      'ego',
+      egoResponse,
+      { model: tutorModel, provider: egoConfig?.provider },
+      { stage: 'initial' },
+    ),
   );
 
   // ===== T.SUPEREGO: Critique only (skip when superego is null) =====

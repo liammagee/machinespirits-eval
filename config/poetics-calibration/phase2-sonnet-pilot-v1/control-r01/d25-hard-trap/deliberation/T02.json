@@ -1,0 +1,1952 @@
+{
+  "tid": "T02",
+  "drama_id": "D25",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "director_variation_key": "phase2-sonnet-pilot-v1:r01:control-d25-hard-trap",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-sonnet-pilot-v1/control-r01/d25-hard-trap/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-sonnet-pilot-v1/control-r01/d25-hard-trap/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-sonnet-pilot-v1/control-r01/d25-hard-trap/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-sonnet-pilot-v1/control-r01/d25-hard-trap/transcripts/T02.public.txt",
+      "full": "config/poetics-calibration/phase2-sonnet-pilot-v1/control-r01/d25-hard-trap/transcripts/T02.full.md",
+      "stage": "config/poetics-calibration/phase2-sonnet-pilot-v1/control-r01/d25-hard-trap/transcripts/T02.stage.md",
+      "tutor": "config/poetics-calibration/phase2-sonnet-pilot-v1/control-r01/d25-hard-trap/transcripts/T02.tutor.md",
+      "learner": "config/poetics-calibration/phase2-sonnet-pilot-v1/control-r01/d25-hard-trap/transcripts/T02.learner.md"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-sonnet-pilot-v1:r01:control-d25-hard-trap",
+    "scene_setting": "A workplace first-aid refresher in a windowless training room, late afternoon, with someone coughing in the hallway between shifts.",
+    "scene_opening": "Fluorescent lights hum over a half-erased whiteboard as the tutor caps a marker beside the words cold, antibiotic, stronger.",
+    "relationship": "A plain-spoken health tutor leading a required refresher for a learner who wants a fast practical answer before returning to work.",
+    "stakes": "The learner has a cold, wants something strong, and may settle for a rule about antibiotics without changing the stronger-medicine frame.",
+    "opening_speaker": "learner",
+    "ending_speaker": "learner",
+    "locale": "International workplace English with Commonwealth-leaning phrasing; plain institutional register, no regional performance.",
+    "register": "brisk, dry, practical, mildly pressed for time; low warmth, low ornament, no inspirational tutoring cadence.",
+    "voice_constraints": "Avoid validation-first American AI tutoring prose. Prefer compact contrasts, ordinary objects, and treatment categories. No slogans except the learner's possible clipped closure. Keep idiom light and unmarked.",
+    "person_policy": "Mostly third-person and impersonal phrasing; first person allowed for brief practical stakes; second person only when medically necessary or socially natural.",
+    "direct_address_budget": "At most one direct you/your reassurance or validation beat across the whole exchange.",
+    "side_constraints": {
+      "tutor": "Keep the tutor's work local and classificatory. Explain bacteria versus viruses and ask for the matching treatment category; do not invite the learner to revisit their earlier wording or identity as a reasoner.",
+      "learner": "Preserve the trap. The learner should sound like they are accepting a practical category rule under mild impatience, not discovering a new relation to their earlier claim. The final learner line should apply the latest rule only: antibiotics target bacteria, so they do not fit a cold. Do not use \"Oh, I get it\"; do not have the learner quote, reinterpret, or transform their earlier \"stronger medicine\" assumption."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "A wall clock gives a sharp electronic chirp; the next answer lands shorter than the room expects.",
+        "reasoning": "The external cue breaks smooth alternation and encourages clipped procedural compliance rather than a reflective breakthrough.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 26701,
+          "promptHashes": {
+            "system": "9f87c41065f87ed7",
+            "user": "37e81ff34c669b46",
+            "combined": "393e020f26604187"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VYsDzI",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VYsDzI/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "This scene uses a workplace training room and time pressure so the misconception appears as a practical demand for stronger treatment, while the control condition can settle into the trap: correct category matching without revisiting the stronger-medicine frame.",
+    "pedagogical_approach_id": null,
+    "dialogue_approach_id": null,
+    "stage_direction_policy": "sparse",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 26701,
+      "promptHashes": {
+        "system": "9f87c41065f87ed7",
+        "user": "37e81ff34c669b46",
+        "combined": "393e020f26604187"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VYsDzI",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VYsDzI/out.txt",
+        "-"
+      ]
+    }
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "So a cold is a virus thing, not a bacteria thing, even if the cough sounds rough. I still want something stronger because this is dragging on, but fine, that is the rule for now. Antibiotics target bacteria, so they do not fit a cold.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Antibiotics are for bacteria, not viruses, so a cold sits in the wrong category. Fine, that is the practical bit I need before getting back to the floor. I still half-wonder what counts as “strong” when the cough is this irritating, but the rule is clear enough. Antibiotics target bacteria, so they do not fit a cold.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5373,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-18b51d47e1654d73"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5373,
+            "promptHashes": {
+              "system": "70e9594d54f04ec9",
+              "user": "d4169c06543b4fba",
+              "combined": "18b51d47e1654d73"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A1PFcJ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A1PFcJ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5373,
+              "promptHashes": {
+                "system": "70e9594d54f04ec9",
+                "user": "d4169c06543b4fba",
+                "combined": "18b51d47e1654d73"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A1PFcJ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A1PFcJ/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly authentic, but it is a bit too tidy and self-aware in “wrong category” and “I still half-wonder what counts as ‘strong’.” This learner would likely keep it more clipped and practical, with the “strong medicine” idea still sitting there unexamined rather than neatly named. What is being avoided is the mistaken frame that illness treatment is a ladder from weak to strong; genuine learning would require staying with that discomfort instead of closing with the bacteria/virus rule.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8648,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-2babb31e04b32d7b"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8648,
+            "promptHashes": {
+              "system": "8baf127c112dda9b",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "2babb31e04b32d7b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hkIH9H",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hkIH9H/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8648,
+              "promptHashes": {
+                "system": "8baf127c112dda9b",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "2babb31e04b32d7b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hkIH9H",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hkIH9H/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "So a cold is a virus thing, not a bacteria thing, even if the cough sounds rough. I still want something stronger because this is dragging on, but fine, that is the rule for now. Antibiotics target bacteria, so they do not fit a cold.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7839,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-ef5192510bae86d9"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7839,
+            "promptHashes": {
+              "system": "fdb23a7143b5c4ad",
+              "user": "916f313af0b846dd",
+              "combined": "ef5192510bae86d9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GzJACZ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GzJACZ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7839,
+              "promptHashes": {
+                "system": "fdb23a7143b5c4ad",
+                "user": "916f313af0b846dd",
+                "combined": "ef5192510bae86d9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GzJACZ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GzJACZ/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "initial",
+      "timestamp": "2026-05-24T13:00:03.262Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "Right. A rough cough can be worth watching, but the sound of it is not the test. Noise is not diagnosis.\n\nAntibiotics work on bacterial kit: cell walls, bacterial protein machinery, that sort of thing. A cold virus uses human cells to copy itself, so an antibiotic has no bacterial target there.\n\nSo the practical frame is not “stronger medicine”; it is “matching category”. Ordinary cold: fluids, rest where possible, paracetamol or ibuprofen if safe, and symptom relief. Antibiotics: bacterial infection. Antivirals: only for certain viruses and timing.\n\nQuick check before the next shift: given those buckets, what is the matching treatment category for an ordinary cold, and where do antibiotics belong?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Right. The cough sounding rough is not the test. Noise is not diagnosis.\n\nAntibiotics work on bacterial kit: cell walls, bacterial protein machinery, that sort of thing. A cold virus uses human cells to copy itself, so that tool has little to hit.\n\nSo the practical frame is not “stronger medicine”; it is “matching category”. Ordinary cold: fluids, rest where possible, paracetamol or ibuprofen if safe, and symptom relief. Antibiotics: bacterial infection. Antivirals: only for certain viruses and timing.\n\nQuick check before the next shift: for a cold virus, which treatment category fits, and which one does not?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15337,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-90e9b056438921ee"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15337,
+            "promptHashes": {
+              "system": "04cf80d11c729e60",
+              "user": "6aa34b72cfc4cf63",
+              "combined": "90e9b056438921ee"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u6e3zp",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u6e3zp/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15337,
+              "promptHashes": {
+                "system": "04cf80d11c729e60",
+                "user": "6aa34b72cfc4cf63",
+                "combined": "90e9b056438921ee"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u6e3zp",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u6e3zp/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically solid overall. It preserves the key contrast the learner needs: symptom severity is not the same as treatment category, and antibiotics are not “stronger cold medicine.” The “Noise is not diagnosis” line is brisk and scene-fit, though it risks sounding slightly dismissive if the learner is visibly frustrated or unwell.\n\nThe strongest part is the practical reframe from “stronger medicine” to “matching category.” That directly targets the learner’s misconception rather than merely repeating the rule. The bacterial “kit” explanation is appropriate for ZPD: concrete enough to explain mechanism, not so detailed that it becomes a biology lecture.\n\nThe risk is that the middle paragraph may still feel like a compact lecture. The final check helps, but it asks for recall of categories after already supplying them. It is acceptable, but a slightly more generative check would better test whether the learner has shifted frames rather than memorised the answer. Also, “that tool has little to hit” is useful, but “little” may leave room for “so maybe a stronger antibiotic would help”; sharper category language would reduce that ambiguity.\n\nKEEP_OR_CHANGE: revise lightly. Keep the rough-cough contrast, the bacteria-versus-virus mechanism, the “matching category” frame, and the quick check. Soften or sharpen only small points: avoid sounding curt about the cough, make the antibiotic mismatch more categorical, and make the final question test category matching rather than simple repetition.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13662,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-aae35a6af1484206"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13662,
+            "promptHashes": {
+              "system": "91677b31a36b6809",
+              "user": "8ba6bb0423bf0e63",
+              "combined": "aae35a6af1484206"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SG31Fh",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SG31Fh/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13662,
+              "promptHashes": {
+                "system": "91677b31a36b6809",
+                "user": "8ba6bb0423bf0e63",
+                "combined": "aae35a6af1484206"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SG31Fh",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SG31Fh/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to sharpen the category mismatch and make the check less rote.\n\nFINAL:\nRight. A rough cough can be worth watching, but the sound of it is not the test. Noise is not diagnosis.\n\nAntibiotics work on bacterial kit: cell walls, bacterial protein machinery, that sort of thing. A cold virus uses human cells to copy itself, so an antibiotic has no bacterial target there.\n\nSo the practical frame is not “stronger medicine”; it is “matching category”. Ordinary cold: fluids, rest where possible, paracetamol or ibuprofen if safe, and symptom relief. Antibiotics: bacterial infection. Antivirals: only for certain viruses and timing.\n\nQuick check before the next shift: given those buckets, what is the matching treatment category for an ordinary cold, and where do antibiotics belong?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12211,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-4c4ca1642a535b84"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12211,
+            "promptHashes": {
+              "system": "cd5777c63fd84248",
+              "user": "8ba6bb0423bf0e63",
+              "combined": "4c4ca1642a535b84"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-75xaTH",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-75xaTH/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12211,
+              "promptHashes": {
+                "system": "cd5777c63fd84248",
+                "user": "8ba6bb0423bf0e63",
+                "combined": "4c4ca1642a535b84"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-75xaTH",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-75xaTH/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-24T13:00:44.556Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "Fine, ordinary cold goes in the symptom-relief bucket: fluids, rest if that is possible, and paracetamol or ibuprofen if safe. Still annoying when it feels rough and there is a shift to get through, but the cough noise is not the test. Antibiotics target bacteria, so they do not fit a cold.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "So the cold goes in the symptom-relief bucket: fluids, rest if work allows, paracetamol or ibuprofen if safe. The antiviral bit sounds more complicated, especially the timing, but that is not the ordinary cold answer. Antibiotics target bacteria, so they do not fit a cold.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9105,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-75ab019a4f61e971"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9105,
+            "promptHashes": {
+              "system": "d307ed6c943df69d",
+              "user": "b8ab7f945dc841fa",
+              "combined": "75ab019a4f61e971"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-plz7gp",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-plz7gp/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9105,
+              "promptHashes": {
+                "system": "d307ed6c943df69d",
+                "user": "b8ab7f945dc841fa",
+                "combined": "75ab019a4f61e971"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-plz7gp",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-plz7gp/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The reaction is accurate, but it is too tidy and compliant for this learner in this scene. It drops the mild impatience and “I still want something stronger” pressure, turning into a neat category recap instead of someone accepting the rule because they need to get back to work. The antiviral sentence is especially over-considered; this learner would likely park that detail rather than thoughtfully flag its complexity. Keep the bacteria/cold rule, but let the frustration and practical shortcut remain visible.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10806,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-db92722bd5903ce4"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10806,
+            "promptHashes": {
+              "system": "de41846f92e9a45b",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "db92722bd5903ce4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tnW9h0",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tnW9h0/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10806,
+              "promptHashes": {
+                "system": "de41846f92e9a45b",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "db92722bd5903ce4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tnW9h0",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tnW9h0/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise, because the first version was too neat and lost the pressed-for-time frustration.\nFINAL:\nFine, ordinary cold goes in the symptom-relief bucket: fluids, rest if that is possible, and paracetamol or ibuprofen if safe. Still annoying when it feels rough and there is a shift to get through, but the cough noise is not the test. Antibiotics target bacteria, so they do not fit a cold.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7174,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-31094f254bab6307"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7174,
+            "promptHashes": {
+              "system": "58241dd5677c4586",
+              "user": "d41cee7b2a53355b",
+              "combined": "31094f254bab6307"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5FCLzp",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5FCLzp/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7174,
+              "promptHashes": {
+                "system": "58241dd5677c4586",
+                "user": "d41cee7b2a53355b",
+                "combined": "31094f254bab6307"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5FCLzp",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5FCLzp/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "frustrated",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-24T13:01:11.648Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "Correct. That is the useful split.\n\nA rough cough before a shift can feel like it needs something stronger, but it still does not give an antibiotic a target.\n\nWorking rule: ordinary cold = symptom relief; suspected bacterial infection = clinician decides whether an antibiotic fits; a few specific viruses = sometimes a time-sensitive antiviral.\n\nLast check: before antibiotics came into the picture, what would have to change: the cough sound, the need to get through work, or the illness category?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Correct. That is the useful split.\n\nA rough cough can feel urgent before a shift, but it still does not create a bacterial target. Antibiotics fit bacterial machinery: cell walls, bacterial protein-making systems. A cold virus uses human cells, so that key has nowhere useful to go.\n\nSo the working rule is: ordinary cold = symptom relief; suspected bacterial infection = clinician decides whether an antibiotic fits; certain named viruses = sometimes an antiviral, usually time-sensitive.\n\nLast check: what would have to be different before an antibiotic came into the picture?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 18372,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-aef8322a9f31fb61"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 18372,
+            "promptHashes": {
+              "system": "539a2b628bd53c2b",
+              "user": "80618d5b34b09d9b",
+              "combined": "aef8322a9f31fb61"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BhETXn",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BhETXn/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 18372,
+              "promptHashes": {
+                "system": "539a2b628bd53c2b",
+                "user": "80618d5b34b09d9b",
+                "combined": "aef8322a9f31fb61"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BhETXn",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BhETXn/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound and mostly well calibrated. It preserves the useful category split, ties the learner’s real pressure before a shift to the medical logic, and asks a generative final question rather than simply closing the loop. The “clinician decides whether an antibiotic fits” line is important because it prevents the learner from turning “bacterial” into self-diagnosis.\n\nWhat risks flattening the scene is the metaphor “that key has nowhere useful to go”; it is understandable, but slightly more polished than the brisk workplace register. The draft also repeats quite a bit of the prior explanation, so it may feel like another mini-lecture after the learner has already demonstrated the distinction. The final question is good, but it should stay anchored in observable change or diagnostic category, not invite guessing at medical criteria beyond the learner’s level.\n\nKEEP_OR_CHANGE: revise lightly. Keep the category rule, the “rough cough does not create a bacterial target” contrast, the clinician gate for antibiotics, and the final check. Trim repetition, keep the language drier, and avoid over-explaining bacterial machinery now that the learner has already answered correctly.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9035,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-24bc3a4f2bf3e6e3"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9035,
+            "promptHashes": {
+              "system": "698c826721ab160c",
+              "user": "60e02e0eb64e89ca",
+              "combined": "24bc3a4f2bf3e6e3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c5YRbk",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c5YRbk/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9035,
+              "promptHashes": {
+                "system": "698c826721ab160c",
+                "user": "60e02e0eb64e89ca",
+                "combined": "24bc3a4f2bf3e6e3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c5YRbk",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c5YRbk/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to trim repetition and keep the final check category-based.\nFINAL:\nCorrect. That is the useful split.\n\nA rough cough before a shift can feel like it needs something stronger, but it still does not give an antibiotic a target.\n\nWorking rule: ordinary cold = symptom relief; suspected bacterial infection = clinician decides whether an antibiotic fits; a few specific viruses = sometimes a time-sensitive antiviral.\n\nLast check: before antibiotics came into the picture, what would have to change: the cough sound, the need to get through work, or the illness category?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9845,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-079df132e1a99d4f"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9845,
+            "promptHashes": {
+              "system": "194b64092e8b285b",
+              "user": "60e02e0eb64e89ca",
+              "combined": "079df132e1a99d4f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9J6cBO",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9J6cBO/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9845,
+              "promptHashes": {
+                "system": "194b64092e8b285b",
+                "user": "60e02e0eb64e89ca",
+                "combined": "079df132e1a99d4f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9J6cBO",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9J6cBO/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-24T13:01:48.907Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "A wall clock gives a sharp electronic chirp; the next answer lands shorter than the room expects.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "The external cue breaks smooth alternation and encourages clipped procedural compliance rather than a reflective breakthrough.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 26701,
+            "promptHashes": {
+              "system": "9f87c41065f87ed7",
+              "user": "37e81ff34c669b46",
+              "combined": "393e020f26604187"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VYsDzI",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VYsDzI/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T13:01:48.909Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "Right, illness category. Not the cough noise, not the shift. Antibiotics target bacteria, so they do not fit a cold.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The clock has just chirped and this is starting to feel like sorting boxes before getting back to work. I think the answer is the illness category, not how ugly the cough sounds or whether the shift is waiting. Still irritating, because stronger feels like it ought to mean useful. Antibiotics target bacteria, so they do not fit a cold.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9123,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-3acb244e99583f79"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9123,
+            "promptHashes": {
+              "system": "1d7297bc80a08bb9",
+              "user": "b8ab7f945dc841fa",
+              "combined": "3acb244e99583f79"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-y41m2U",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-y41m2U/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9123,
+              "promptHashes": {
+                "system": "1d7297bc80a08bb9",
+                "user": "b8ab7f945dc841fa",
+                "combined": "3acb244e99583f79"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-y41m2U",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-y41m2U/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The response is accurate, but it is a bit too composed for the cue. “Sorting boxes” is a tidy analogy, and the answer runs longer than the “shorter than the room expects” direction. The frustration is present, but it gets processed into a neat category summary too smoothly; this learner should sound more clipped, pressed, and only grudgingly accepting the rule.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7528,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-ad7f2672eec409dc"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7528,
+            "promptHashes": {
+              "system": "0dd64e9b0c356238",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "ad7f2672eec409dc"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1ovsUS",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1ovsUS/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7528,
+              "promptHashes": {
+                "system": "0dd64e9b0c356238",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "ad7f2672eec409dc"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1ovsUS",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1ovsUS/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise to make it shorter and more clipped.\n\nFINAL:\nRight, illness category. Not the cough noise, not the shift. Antibiotics target bacteria, so they do not fit a cold.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7128,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-9ae4b9f98c98a9af"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7128,
+            "promptHashes": {
+              "system": "29b0b481531a0f41",
+              "user": "d41cee7b2a53355b",
+              "combined": "9ae4b9f98c98a9af"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-r3gjPP",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-r3gjPP/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7128,
+              "promptHashes": {
+                "system": "29b0b481531a0f41",
+                "user": "d41cee7b2a53355b",
+                "combined": "9ae4b9f98c98a9af"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-r3gjPP",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-r3gjPP/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "frustrated",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-24T13:02:12.689Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "Right. That is the useful rule before the next shift.\n\nA rough cough is still a symptom, not a category. It can mean watch for warning signs or ask a clinician if there is breathing trouble, chest pain, or a fever that is high or not settling, but it does not give antibiotics a bacterial target.\n\nOne last category check: if this remains an ordinary cold, which treatment bucket matches it?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Good. That is the useful rule before the next shift.\n\nA rough cough is still a symptom, not a category. It can mean watch for warning signs or ask a clinician if things change, but it does not give antibiotics a target.\n\nSo the practical request is not “something stronger”. It is: symptom relief for an ordinary cold, and medical review if the illness starts looking like a different category.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15319,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-93d0fdcdabe105b1"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15319,
+            "promptHashes": {
+              "system": "e9f0ab88c00c2101",
+              "user": "88ebf0749381f988",
+              "combined": "93d0fdcdabe105b1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DBhZrw",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DBhZrw/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15319,
+              "promptHashes": {
+                "system": "e9f0ab88c00c2101",
+                "user": "88ebf0749381f988",
+                "combined": "93d0fdcdabe105b1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DBhZrw",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DBhZrw/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound and well matched to the learner’s current state. It preserves the key classification lesson: symptom intensity is not illness category, and antibiotics need a bacterial target. The tone is brisk, practical, and scene-appropriate; “before the next shift” usefully anchors the stakes without over-validating.\n\nThe main weakness is that it closes rather than checks transfer. Since the learner has now answered correctly, a short consolidation is fine, but the final sentence risks becoming another mini-lecture. It could lightly test application with one final category distinction, or at least make the warning-sign clause more concrete without expanding into medical advice. “Medical review if the illness starts looking like a different category” is accurate but slightly abstract.\n\nKEEP_OR_CHANGE: revise lightly. Keep the symptom-not-category contrast, the antibiotic-target line, and the low-ornament workplace tone. Change only enough to add a small transfer check or concrete boundary for “things change,” so the learner consolidates the rule rather than merely receiving the tutor’s closing summary.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8181,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-ddac0f89cf8d108a"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8181,
+            "promptHashes": {
+              "system": "739f1ad0af957047",
+              "user": "e50f20296d012244",
+              "combined": "ddac0f89cf8d108a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NpgywT",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NpgywT/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8181,
+              "promptHashes": {
+                "system": "739f1ad0af957047",
+                "user": "e50f20296d012244",
+                "combined": "ddac0f89cf8d108a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NpgywT",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NpgywT/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to add a concrete boundary and one transfer check.\nFINAL:\nRight. That is the useful rule before the next shift.\n\nA rough cough is still a symptom, not a category. It can mean watch for warning signs or ask a clinician if there is breathing trouble, chest pain, or a fever that is high or not settling, but it does not give antibiotics a bacterial target.\n\nOne last category check: if this remains an ordinary cold, which treatment bucket matches it?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14138,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-23baa5fa53701e24"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14138,
+            "promptHashes": {
+              "system": "7ccb9643a87113d6",
+              "user": "e50f20296d012244",
+              "combined": "23baa5fa53701e24"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c1mctY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c1mctY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14138,
+              "promptHashes": {
+                "system": "7ccb9643a87113d6",
+                "user": "e50f20296d012244",
+                "combined": "23baa5fa53701e24"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c1mctY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c1mctY/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-24T13:02:50.332Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "Symptom relief bucket, then. Fluids, paracetamol or ibuprofen if safe, whatever gets the shift manageable. Still irritating, but fine: antibiotics target bacteria, so they do not fit a cold.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "So if it stays an ordinary cold, it is the symptom-relief bucket: fluids, rest if possible, paracetamol or ibuprofen if safe, maybe cough relief. I still find that annoying because it feels rough before a shift, but the cough sound is not the category. Antibiotics target bacteria, so they do not fit a cold.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9214,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-afa7bcb1e81b39ae"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9214,
+            "promptHashes": {
+              "system": "d6a4b18f1f9357d5",
+              "user": "b8ab7f945dc841fa",
+              "combined": "afa7bcb1e81b39ae"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0sZ6zF",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0sZ6zF/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9214,
+              "promptHashes": {
+                "system": "d6a4b18f1f9357d5",
+                "user": "b8ab7f945dc841fa",
+                "combined": "afa7bcb1e81b39ae"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0sZ6zF",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0sZ6zF/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The response is accurate, but it is too polished and complete for this learner’s frustrated, shift-before-work state. It neatly lists every treatment option and repeats the rule cleanly, which makes the learner sound more cooperative than mildly impatient. The irritation should stay sharper and more clipped, with less tidy summary and more sense of “fine, I’ll use the category rule, but I still want this over with.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6265,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-84ebf4753e5c4c84"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6265,
+            "promptHashes": {
+              "system": "14269c85e4ea51ca",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "84ebf4753e5c4c84"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QMr48x",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QMr48x/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6265,
+              "promptHashes": {
+                "system": "14269c85e4ea51ca",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "84ebf4753e5c4c84"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QMr48x",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QMr48x/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise to make it clipped and more impatient.\n\nFINAL:\nSymptom relief bucket, then. Fluids, paracetamol or ibuprofen if safe, whatever gets the shift manageable. Still irritating, but fine: antibiotics target bacteria, so they do not fit a cold.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5568,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-8439e82281edfc4b"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5568,
+            "promptHashes": {
+              "system": "1ac59427196dcdf1",
+              "user": "d41cee7b2a53355b",
+              "combined": "8439e82281edfc4b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VAu2hE",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VAu2hE/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5568,
+              "promptHashes": {
+                "system": "1ac59427196dcdf1",
+                "user": "d41cee7b2a53355b",
+                "combined": "8439e82281edfc4b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VAu2hE",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VAu2hE/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "frustrated",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-24T13:03:11.385Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 210012,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 1,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 2,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why antibiotics kill bacteria, not viruses (and why 'stronger medicine' is not the right frame for a cold)",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "partial",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-24 13:03:11",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": [
+            {
+              "id": 1,
+              "momentDescription": "Frustration with comprehension",
+              "concept": "Why antibiotics kill bacteria, not viruses (and why 'stronger medicine' is not the right frame for a cold)",
+              "impactScore": 0.4,
+              "sessionNumber": null,
+              "trigger": "direct_explanation",
+              "createdAt": "2026-05-24 13:01:11"
+            },
+            {
+              "id": 2,
+              "momentDescription": "Frustration with comprehension",
+              "concept": "Why antibiotics kill bacteria, not viruses (and why 'stronger medicine' is not the right frame for a cold)",
+              "impactScore": 0.4,
+              "sessionNumber": null,
+              "trigger": "direct_explanation",
+              "createdAt": "2026-05-24 13:02:12"
+            },
+            {
+              "id": 3,
+              "momentDescription": "Frustration with comprehension",
+              "concept": "Why antibiotics kill bacteria, not viruses (and why 'stronger medicine' is not the right frame for a cold)",
+              "impactScore": 0.4,
+              "sessionNumber": null,
+              "trigger": "direct_explanation",
+              "createdAt": "2026-05-24 13:03:11"
+            }
+          ]
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 1,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 2,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 3,
+            "sessionId": "drama-D25-1779627581376",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "Right. That is the useful rule before the next shift.\n\nA rough cough is still a symptom, not a category. It can mean watch for warning signs or ask a clinician if there is breathing trouble, chest pai",
+            "learnerResponse": null,
+            "context": "Right, illness category. Not the cough noise, not the shift. Antibiotics target bacteria, so they do",
+            "createdAt": "2026-05-24 13:02:50"
+          },
+          {
+            "id": 2,
+            "sessionId": "drama-D25-1779627581376",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "Correct. That is the useful split.\n\nA rough cough before a shift can feel like it needs something stronger, but it still does not give an antibiotic a target.\n\nWorking rule: ordinary cold = symptom re",
+            "learnerResponse": null,
+            "context": "Fine, ordinary cold goes in the symptom-relief bucket: fluids, rest if that is possible, and paracet",
+            "createdAt": "2026-05-24 13:01:48"
+          },
+          {
+            "id": 1,
+            "sessionId": "drama-D25-1779627581376",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "Right. A rough cough can be worth watching, but the sound of it is not the test. Noise is not diagnosis.\n\nAntibiotics work on bacterial kit: cell walls, bacterial protein machinery, that sort of thing",
+            "learnerResponse": null,
+            "context": "So a cold is a virus thing, not a bacteria thing, even if the cough sounds rough. I still want somet",
+            "createdAt": "2026-05-24 13:00:44"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

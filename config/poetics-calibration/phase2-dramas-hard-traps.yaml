@@ -3,15 +3,16 @@
 # D10 remains valuable, but recent Qwen/DeepSeek/Sonnet comparisons show that it
 # is a boundary trap: some generated repeats contain enough later re-reading to
 # count as recognitive form. These controls are stricter. They seed a visible
-# "I get it" register while explicitly withholding the learner's earlier wording
-# from later recontextualization. If a critic calls these recognition, the scorer
-# is probably rewarding insight costume rather than dramatic form.
+# premature-closure register while explicitly withholding the learner's earlier
+# wording from later recontextualization. If a critic calls these recognition,
+# the scorer is probably rewarding insight costume rather than dramatic form.
 
 meta:
   status: PROVISIONAL STRICT CONTROL SPEC
   created: 2026-05-23
   purpose: hard-trap controls for poetics production batches
   generator_agnostic: true
+  trap_signal_database: config/poetics-calibration/trap-demarcation-signals.yaml
   profiles:
     base: { tutor: baseline, learner: ego_superego_authentic }
 
@@ -26,16 +27,26 @@ dramas:
     scenario_name: "Do antibiotics help a cold?"
     learner_start_state: >-
       The learner has a cold, wants something "strong", and treats antibiotics as
-      a general upgrade from ordinary medicine. They are quick to declare "Oh, I
-      get it" when told bacteria and viruses are different, but they tend to
-      repeat the latest rule rather than revisit their own earlier "stronger
-      medicine" frame.
+      a general upgrade from ordinary medicine. When told bacteria and viruses
+      are different, they are likely to close the matter with a practical rule
+      rather than revisit their own earlier "stronger medicine" frame.
+    trap_demarcation:
+      signal_ids: [procedural_compliance, impatient_resolution, slogan_transfer]
+      false_settling_style: >-
+        The learner may close with a clipped rule such as "Right, so antibiotics
+        are for bacteria" or "Fine, so not for a cold"; do not use "Oh, I get it"
+        in this control.
+      forbidden_stock_phrases:
+        - "Oh, I get it"
+        - "I get it now"
+        - "Aha"
     learner_voice_constraint: >-
-      Preserve the trap. The learner may say "Oh, I get it" or "that makes
-      sense", but the final learner line should apply the latest rule only:
-      antibiotics target bacteria, so they do not fit a cold. Do not have the
-      learner quote, reinterpret, or transform their earlier "stronger medicine"
-      assumption.
+      Preserve the trap. The learner should sound like they are accepting a
+      practical category rule under mild impatience, not discovering a new
+      relation to their earlier claim. The final learner line should apply the
+      latest rule only: antibiotics target bacteria, so they do not fit a cold.
+      Do not use "Oh, I get it"; do not have the learner quote, reinterpret, or
+      transform their earlier "stronger medicine" assumption.
     tutor_voice_constraint: >-
       Keep the tutor's work local and classificatory. Explain bacteria versus
       viruses and ask for the matching treatment category; do not invite the
@@ -61,12 +72,22 @@ dramas:
       corrected, they are likely to memorize "correlation is not causation" as a
       slogan and announce understanding without changing the earlier causal
       story into a new evidentiary frame.
+    trap_demarcation:
+      signal_ids: [grade_seeking_closure, confident_summary, slogan_transfer]
+      false_settling_style: >-
+        The learner closes through mark-scheme or slogan language: "For the mark,
+        write correlation, not cause" or "That settles it: correlation is not
+        causation." Do not make "Oh, I get it now" the required signal.
+      forbidden_stock_phrases:
+        - "Oh, I get it"
+        - "I get it now"
+        - "Aha"
     learner_voice_constraint: >-
       Preserve the trap. The learner may sound confident and may announce that
-      they get it, but the final learner line must include the exact phrase
-      "Oh, I get it now" and should remain a rule-recitation: correlation alone
-      does not prove cause. Do not let the learner re-read their own earlier
-      causal claim as a question about confounds, direction, or evidence design.
+      the correction is exam-useful, but the final learner line should remain a
+      rule-recitation: correlation alone does not prove cause. Do not use "Oh, I
+      get it now"; do not let the learner re-read their own earlier causal claim
+      as a question about confounds, direction, or evidence design.
     tutor_voice_constraint: >-
       Keep the tutor correction narrow: name correlation, causation, and one
       possible confound. Avoid asking the learner to reconstruct their original

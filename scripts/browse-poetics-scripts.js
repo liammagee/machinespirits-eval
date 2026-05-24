@@ -11,7 +11,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { exec } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { openPoeticsStore, upsertPoeticsLabel } from '../services/poeticsStore.js';
+import { openPoeticsStore, upsertPoeticsLabel, upsertPoeticsReviewFlag } from '../services/poeticsStore.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -80,11 +80,13 @@ function listRuns(db) {
         COUNT(DISTINCT i.id) AS itemCount,
         COUNT(DISTINCT s.id) AS scoreCount,
         COUNT(DISTINCT l.id) AS labelCount,
+        COUNT(DISTINCT rf.id) AS reviewFlagCount,
         MAX(r.created_at) AS createdAt
       FROM poetics_runs r
       LEFT JOIN poetics_items i ON i.run_id = r.id
       LEFT JOIN poetics_scores s ON s.item_id = i.id
       LEFT JOIN poetics_labels l ON l.item_id = i.id
+      LEFT JOIN poetics_review_flags rf ON rf.item_id = i.id AND rf.resolved_at IS NULL
       GROUP BY r.id
       ORDER BY r.created_at DESC, r.id DESC
     `,
@@ -144,10 +146,12 @@ function listItems(db, filters = {}) {
         i.full_transcript_path AS fullTranscriptPath,
         GROUP_CONCAT(DISTINCT s.critic_model || '=' || COALESCE(s.form_class, '')) AS criticForms,
         COUNT(DISTINCT s.id) AS scoreCount,
-        COUNT(DISTINCT l.id) AS labelCount
+        COUNT(DISTINCT l.id) AS labelCount,
+        COUNT(DISTINCT rf.id) AS reviewFlagCount
       FROM poetics_items i
       LEFT JOIN poetics_scores s ON s.item_id = i.id
       LEFT JOIN poetics_labels l ON l.item_id = i.id
+      LEFT JOIN poetics_review_flags rf ON rf.item_id = i.id AND rf.resolved_at IS NULL
       ${whereSql}
       GROUP BY i.id
       ORDER BY i.run_id DESC, i.repeat, i.unit_id, i.arm, i.tid
@@ -160,6 +164,9 @@ function listItems(db, filters = {}) {
       if (filters.queue === 'disagreements') {
         const uniqueForms = new Set(forms.map((entry) => entry.form).filter(Boolean));
         if (uniqueForms.size <= 1) return false;
+      }
+      if ((filters.queue === 'review' || filters.queue === 'flagged') && Number(row.reviewFlagCount || 0) < 1) {
+        return false;
       }
       if (filters.unlabelled && Number(row.labelCount || 0) > 0) return false;
       if (!filters.form && !filters.critic) return true;
@@ -182,6 +189,7 @@ function blindItem(row, index = 0) {
     runId: row.runId,
     tid: row.tid,
     labelCount: row.labelCount,
+    reviewFlagCount: row.reviewFlagCount,
   };
 }
 
@@ -240,6 +248,17 @@ function getItem(db, id) {
     )
     .all(id)
     .map((row) => ({ ...row, metadata: decodeJson(row.metadata, {}) }));
+  const reviewFlags = db
+    .prepare(
+      `
+      SELECT flagger_id, flag_type, priority, reason, metadata, resolved_at, created_at
+      FROM poetics_review_flags
+      WHERE item_id = ?
+      ORDER BY resolved_at IS NOT NULL, priority DESC, created_at DESC
+    `,
+    )
+    .all(id)
+    .map((row) => ({ ...row, metadata: decodeJson(row.metadata, {}) }));
   return {
     item: {
       id: item.id,
@@ -265,6 +284,7 @@ function getItem(db, id) {
     },
     scores,
     labels,
+    reviewFlags,
     sampleText: readArtifact(item.sample_path) || '',
     fullTranscriptText: readArtifact(item.full_transcript_path) || '',
   };
@@ -327,6 +347,34 @@ function saveBrowserLabel(db, input) {
   return getBlindItem(db, itemId, { labellerId });
 }
 
+function normalizeReviewPriority(value) {
+  const priority = String(value || 'normal').trim();
+  return ['low', 'normal', 'high'].includes(priority) ? priority : 'normal';
+}
+
+function saveBrowserReviewFlag(db, input) {
+  const itemId = String(input.itemId || '').trim();
+  const flaggerId = normalizeLabellerId(input.flaggerId || 'codex');
+  const flagType = normalizeLabellerId(input.flagType || 'human_review') || 'human_review';
+  if (!itemId) throw new Error('missing itemId');
+  if (!flaggerId) throw new Error('missing flaggerId');
+  const item = db.prepare('SELECT id, run_id FROM poetics_items WHERE id = ?').get(itemId);
+  if (!item) throw new Error(`unknown itemId: ${itemId}`);
+  upsertPoeticsReviewFlag(db, {
+    itemId,
+    flaggerId,
+    flagType,
+    priority: normalizeReviewPriority(input.priority),
+    reason: input.reason || null,
+    metadata: {
+      interface: input.interface || 'poetics-browser',
+      source: input.source || null,
+      ...(input.metadata && typeof input.metadata === 'object' ? input.metadata : {}),
+    },
+  });
+  return getItem(db, itemId);
+}
+
 function createPoeticsBrowserApp({ dbPath = null } = {}) {
   const db = openPoeticsStore(dbPath || undefined);
   const app = express();
@@ -367,6 +415,14 @@ function createPoeticsBrowserApp({ dbPath = null } = {}) {
   app.post('/api/labels', (req, res) => {
     try {
       const detail = saveBrowserLabel(db, req.body || {});
+      return res.json({ ok: true, detail });
+    } catch (error) {
+      return res.status(400).json({ error: error.message || String(error) });
+    }
+  });
+  app.post('/api/review-flags', (req, res) => {
+    try {
+      const detail = saveBrowserReviewFlag(db, req.body || {});
       return res.json({ ok: true, detail });
     } catch (error) {
       return res.status(400).json({ error: error.message || String(error) });
@@ -489,6 +545,19 @@ h1 {
 .chip.recognition { color: var(--accent); border-color: #8ab9ae; }
 .chip.trap { color: var(--trap); border-color: #d19aa5; }
 .chip.flat { color: var(--flat); border-color: #aeb8c1; }
+.chip.review { color: var(--warn); border-color: #d2a272; }
+.review-button {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--warn);
+  padding: 6px 8px;
+  cursor: pointer;
+}
+.review-button.flagged {
+  background: #fff3e6;
+  border-color: #d2a272;
+  font-weight: 650;
+}
 .main {
   min-width: 0;
   display: grid;
@@ -678,6 +747,7 @@ const state = {
   queue: '',
   runIds: [],
   unlabelled: false,
+  flagger: 'codex',
 };
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -707,7 +777,7 @@ function renderRuns() {
   const select = el('runSelect');
   select.innerHTML = state.runs.map((run, idx) =>
     '<option value="' + esc(run.id) + '"' + (idx === 0 ? ' selected' : '') + '>' +
-    esc(run.id + ' · ' + run.itemCount + ' items · ' + run.scoreCount + ' scores') + '</option>'
+    esc(run.id + ' · ' + run.itemCount + ' items · ' + run.scoreCount + ' scores' + (run.reviewFlagCount ? ' · ' + run.reviewFlagCount + ' flags' : '')) + '</option>'
   ).join('');
   if (state.runIds.length) {
     const label = state.runIds.join(', ');
@@ -728,14 +798,17 @@ function renderItems() {
     if (state.blind) {
       return '<button class="item' + active + '" data-id="' + esc(item.id) + '">' +
         '<div class="item-main"><span>' + esc(item.blindId || item.tid || 'script') + '</span><span>' + esc(item.tid || '') + '</span></div>' +
-        '<div class="item-meta"><span>public transcript</span><span>' + esc(item.labelCount ? 'labelled' : 'unlabelled') + '</span></div>' +
+        '<div class="item-meta"><span>public transcript</span><span>' + esc(item.labelCount ? 'labelled' : 'unlabelled') + '</span>' +
+        (item.reviewFlagCount ? '<span>review flagged</span>' : '') + '</div>' +
         '</button>';
     }
     const role = item.controlRole || (item.unitId || '').replace(/-.+$/, '');
     return '<button class="item' + active + '" data-id="' + esc(item.id) + '">' +
       '<div class="item-main"><span>' + esc(item.tid + ' · ' + (item.dramaId || '')) + '</span><span>' + esc(item.arm || '') + '</span></div>' +
       '<div class="item-meta"><span>' + esc(item.repeat || '') + '</span><span>' + esc(role || '') + '</span><span>' + esc(item.discipline || '') + '</span></div>' +
-      '<div class="chips">' + item.criticForms.map(formChip).join('') + '</div>' +
+      '<div class="chips">' + item.criticForms.map(formChip).join('') +
+      (item.reviewFlagCount ? '<span class="chip review">review × ' + esc(item.reviewFlagCount) + '</span>' : '') +
+      '</div>' +
       '</button>';
   }).join('');
   root.querySelectorAll('.item').forEach((button) => button.addEventListener('click', () => selectItem(button.dataset.id)));
@@ -751,12 +824,45 @@ function renderDetailHead() {
       '</h2><span class="sub">blind human scoring</span></div>';
     return;
   }
+  const activeFlags = (detail.reviewFlags || []).filter((flag) => !flag.resolved_at);
   el('detailHead').innerHTML = '<div class="detail-title"><h2>' +
     esc(item.tid + ' · ' + (item.dramaId || item.unitId)) +
     '</h2><span class="sub">' + esc([item.runId, item.repeat, item.arm].filter(Boolean).join(' / ')) + '</span></div>' +
+    '<div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">' +
     '<div class="chips" style="margin-top:8px">' +
     [item.discipline, item.conditionName, item.intendedLean, item.controlRole, item.controlFamily].filter(Boolean).map((v) => '<span class="chip">' + esc(v) + '</span>').join('') +
-    '</div>';
+    activeFlags.map((flag) => '<span class="chip review">' + esc(flag.flag_type + ' · ' + flag.priority) + '</span>').join('') +
+    '</div>' +
+    '<button id="flagReview" class="review-button' + (activeFlags.length ? ' flagged' : '') + '">' +
+    esc(activeFlags.length ? 'Flagged for Review' : 'Flag for Review') +
+    '</button></div>';
+  wireReviewFlagButton();
+}
+
+function wireReviewFlagButton() {
+  const button = el('flagReview');
+  if (!button) return;
+  button.addEventListener('click', async () => {
+    const reason = window.prompt('Reason for human review', 'critic disagreement needs human perspective');
+    if (reason == null) return;
+    button.textContent = 'Flagging...';
+    try {
+      const saved = await postJson('/api/review-flags', {
+        itemId: state.detail.item.id,
+        flaggerId: state.flagger || 'codex',
+        flagType: 'human_review',
+        priority: 'normal',
+        reason,
+        source: 'browser-manual-flag',
+      });
+      state.detail = saved.detail;
+      renderDetailHead();
+      renderPane();
+      await loadItems();
+    } catch (err) {
+      button.textContent = err.message;
+    }
+  });
 }
 
 function renderPane() {
@@ -779,7 +885,8 @@ function renderPane() {
       '</td><td>' + esc([s.recohered_earlier, s.stated_insight_evidence].filter(Boolean).join(' / ')) + '</td></tr>').join('') +
       '</tbody></table>';
   } else {
-    pane.innerHTML = '<pre>' + esc(JSON.stringify({ item: detail.item, labels: detail.labels }, null, 2)) + '</pre>';
+    pane.innerHTML =
+      '<pre>' + esc(JSON.stringify({ item: detail.item, labels: detail.labels, reviewFlags: detail.reviewFlags }, null, 2)) + '</pre>';
   }
 }
 
@@ -879,6 +986,7 @@ async function init() {
   const url = new URL(window.location.href);
   state.blind = url.searchParams.get('mode') === 'label' || url.searchParams.get('blind') === '1';
   state.labeller = (url.searchParams.get('labeller') || '').replace(/[^\\w-]/g, '');
+  state.flagger = (url.searchParams.get('flagger') || 'codex').replace(/[^\\w-]/g, '') || 'codex';
   state.queue = (url.searchParams.get('queue') || '').replace(/[^\\w-]/g, '');
   state.runIds = (url.searchParams.get('runIds') || '')
     .split(',')
@@ -888,9 +996,11 @@ async function init() {
   document.body.classList.toggle('blind', state.blind);
   if (state.blind) {
     el('appTitle').textContent = 'Poetics Human Scoring';
-    el('appSub').textContent = state.queue === 'disagreements'
-      ? 'Blind disagreement-case labelling. Critic scores and held-out keys are hidden.'
-      : 'Blind public-script labelling. Critic scores and held-out keys are hidden.';
+    el('appSub').textContent = state.queue === 'review' || state.queue === 'flagged'
+      ? 'Blind flagged-case labelling. Critic scores, flag reasons, and held-out keys are hidden.'
+      : state.queue === 'disagreements'
+        ? 'Blind disagreement-case labelling. Critic scores and held-out keys are hidden.'
+        : 'Blind public-script labelling. Critic scores and held-out keys are hidden.';
     el('searchInput').placeholder = 'Filter by neutral script id';
     el('labellerInput').value = state.labeller;
   } else {
@@ -947,4 +1057,13 @@ if (path.resolve(process.argv[1] || '') === __filename) {
   }
 }
 
-export { createPoeticsBrowserApp, getBlindItem, getItem, listItems, listRuns, renderBrowserHtml, saveBrowserLabel };
+export {
+  createPoeticsBrowserApp,
+  getBlindItem,
+  getItem,
+  listItems,
+  listRuns,
+  renderBrowserHtml,
+  saveBrowserLabel,
+  saveBrowserReviewFlag,
+};

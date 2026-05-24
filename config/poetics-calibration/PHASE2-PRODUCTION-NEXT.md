@@ -475,6 +475,84 @@ disagreements before any full-run human labelling. Once those are labelled,
 rerun the sidecar report and compare human-browser labels against each critic as
 another disagreement matrix, not as ground truth.
 
+## Review flags, trap demarcation, and Sonnet pilot
+
+**Update, 2026-05-24:** the browser now has a durable review-flag queue in the
+poetics sidecar DB, separate from the computed disagreement queue. The new
+`poetics_review_flags` table records `item_id`, `flagger_id`, `flag_type`,
+priority, reason, metadata, and resolution status. This lets Codex or a human
+editor mark cases for blind human review without turning critic disagreement
+itself into a ground-truth label.
+
+Flag the current cross-run disagreement cases:
+
+```bash
+npm run poetics:flag-review -- \
+  --run-ids phase2-balanced-calibration-v1,phase2-genre-calibration-v1 \
+  --flagger codex \
+  --reason "critic disagreement selected for blind human perspective review"
+```
+
+Blind review queue:
+
+```text
+http://127.0.0.1:3466/?runIds=phase2-balanced-calibration-v1,phase2-genre-calibration-v1&mode=label&queue=review&unlabelled=1&labeller=<id>
+```
+
+The initial flag pass wrote 18 review flags: 5 from
+`phase2-balanced-calibration-v1` and 13 from `phase2-genre-calibration-v1`.
+
+Trap demarcation is now backed by
+`config/poetics-calibration/trap-demarcation-signals.yaml`, a small design
+database of false-settling signals: procedural compliance, impatient
+resolution, confident summary, slogan transfer, and grade-seeking closure. The
+D10, D25, and D26 trap specs now forbid the stock "Oh, I get it" / "I get it
+now" signal and ask for varied premature closure instead. The production batch
+default Qwen critic has also moved from `qwen/qwen3.5-plus-02-15` to
+`qwen/qwen3.7-max`.
+
+Public stage direction has been tightened: generated stage directions should be
+sparse and diegetic, not visible role instructions. The generator quality gate
+now flags `intrusive_stage_direction`, and the default revisit cue now appears
+as an earlier line returning to the table rather than as an explicit "the learner
+must..." instruction. Re-cleaning can apply the current public-transcript
+sanitizer and warning logic to already-generated traces without re-calling a
+model.
+
+Small Sonnet-only pilot:
+
+```bash
+CODEX_REASONING_EFFORT=high node scripts/run-poetics-production-batch.js \
+  --batch-id phase2-sonnet-pilot-v1 \
+  --root-dir config/poetics-calibration/phase2-sonnet-pilot-v1 \
+  --target-spec config/poetics-calibration/phase2-genre-dramas-v1.yaml \
+  --target-only D27,D31,D33 \
+  --target-tid-start 40 \
+  --repeats 1 \
+  --stress-repeats 0 \
+  --only target-r01,control-r01-d10-emphatic,control-r01-d25-hard-trap,control-r01-d26-hard-trap \
+  --critics anthropic/claude-sonnet-4.6 \
+  --score-concurrency 1 \
+  --max-turns 3 \
+  --force
+```
+
+After re-cleaning from the held-out traces and re-scoring the target arms, the
+pilot summary is:
+
+| Critic | `none` recognitions | `reframe` recognitions | Controls |
+|---|---:|---:|---|
+| Claude Sonnet 4.6 | 1/3 | 3/3 | D10 flat; D25 flat; D26 flat |
+
+Interpretation: the revised stage-direction and trap-demarcation changes
+removed the visible "Oh, I get it" crutch from this pilot and kept all three
+trap controls out of recognition under Sonnet. But the controls are now flat
+rather than trap, which means the false-settling signal may have become too
+weak. The D31 no-cue target also crossed into recognition under Sonnet, showing
+that some genres can produce organic tutor adaptation even without the explicit
+reframe cue. That is not a failure to hide; it is exactly the mechanism boundary
+this branch should map before it is promoted into the main evaluation harness.
+
 ## Reporting rule
 
 If the depth top-up or breadth slice changes the empirical interpretation, fold
