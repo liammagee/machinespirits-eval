@@ -95,7 +95,14 @@ function listRuns(db) {
 function listItems(db, filters = {}) {
   const where = [];
   const params = {};
-  if (filters.runId) {
+  if (filters.runIds?.length) {
+    const runPlaceholders = filters.runIds.map((runId, idx) => {
+      const key = `runId${idx}`;
+      params[key] = runId;
+      return `@${key}`;
+    });
+    where.push(`i.run_id IN (${runPlaceholders.join(', ')})`);
+  } else if (filters.runId) {
     where.push('i.run_id = @runId');
     params.runId = filters.runId;
   }
@@ -149,8 +156,13 @@ function listItems(db, filters = {}) {
     )
     .all(params)
     .filter((row) => {
-      if (!filters.form && !filters.critic) return true;
       const forms = parseCriticForms(row.criticForms);
+      if (filters.queue === 'disagreements') {
+        const uniqueForms = new Set(forms.map((entry) => entry.form).filter(Boolean));
+        if (uniqueForms.size <= 1) return false;
+      }
+      if (filters.unlabelled && Number(row.labelCount || 0) > 0) return false;
+      if (!filters.form && !filters.critic) return true;
       return forms.some((entry) => {
         if (filters.form && entry.form !== filters.form) return false;
         if (filters.critic && !entry.critic.includes(filters.critic)) return false;
@@ -323,14 +335,21 @@ function createPoeticsBrowserApp({ dbPath = null } = {}) {
   app.get('/favicon.ico', (_req, res) => res.status(204).end());
   app.get('/api/runs', (_req, res) => res.json({ runs: listRuns(db) }));
   app.get('/api/items', (req, res) => {
+    const runIds = String(req.query.runIds || '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean);
     res.json({
       items: listItems(db, {
         runId: req.query.runId || null,
+        runIds,
         q: req.query.q || null,
         arm: req.query.arm || null,
         role: req.query.role || null,
         form: req.query.form || null,
         critic: req.query.critic || null,
+        queue: req.query.queue || null,
+        unlabelled: req.query.unlabelled === '1',
         blind: req.query.blind === '1',
       }),
     });
@@ -647,7 +666,19 @@ th {
   </main>
 </div>
 <script>
-const state = { runs: [], items: [], selected: null, detail: null, tab: 'sample', blind: false, labeller: '', selectedLabel: null };
+const state = {
+  runs: [],
+  items: [],
+  selected: null,
+  detail: null,
+  tab: 'sample',
+  blind: false,
+  labeller: '',
+  selectedLabel: null,
+  queue: '',
+  runIds: [],
+  unlabelled: false,
+};
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -678,6 +709,12 @@ function renderRuns() {
     '<option value="' + esc(run.id) + '"' + (idx === 0 ? ' selected' : '') + '>' +
     esc(run.id + ' · ' + run.itemCount + ' items · ' + run.scoreCount + ' scores') + '</option>'
   ).join('');
+  if (state.runIds.length) {
+    const label = state.runIds.join(', ');
+    select.innerHTML = '<option value="">' + esc(label + ' · focused queue') + '</option>' + select.innerHTML;
+    select.value = '';
+    select.disabled = true;
+  }
 }
 
 function renderItems() {
@@ -805,8 +842,11 @@ function wireLabelPanel() {
 
 async function loadItems() {
   const params = new URLSearchParams();
-  if (el('runSelect').value) params.set('runId', el('runSelect').value);
+  if (state.runIds.length) params.set('runIds', state.runIds.join(','));
+  else if (el('runSelect').value) params.set('runId', el('runSelect').value);
   if (el('searchInput').value) params.set('q', el('searchInput').value);
+  if (state.queue) params.set('queue', state.queue);
+  if (state.unlabelled) params.set('unlabelled', '1');
   if (state.blind) {
     params.set('blind', '1');
   } else {
@@ -839,10 +879,18 @@ async function init() {
   const url = new URL(window.location.href);
   state.blind = url.searchParams.get('mode') === 'label' || url.searchParams.get('blind') === '1';
   state.labeller = (url.searchParams.get('labeller') || '').replace(/[^\\w-]/g, '');
+  state.queue = (url.searchParams.get('queue') || '').replace(/[^\\w-]/g, '');
+  state.runIds = (url.searchParams.get('runIds') || '')
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean);
+  state.unlabelled = url.searchParams.get('unlabelled') === '1';
   document.body.classList.toggle('blind', state.blind);
   if (state.blind) {
     el('appTitle').textContent = 'Poetics Human Scoring';
-    el('appSub').textContent = 'Blind public-script labelling. Critic scores and held-out keys are hidden.';
+    el('appSub').textContent = state.queue === 'disagreements'
+      ? 'Blind disagreement-case labelling. Critic scores and held-out keys are hidden.'
+      : 'Blind public-script labelling. Critic scores and held-out keys are hidden.';
     el('searchInput').placeholder = 'Filter by neutral script id';
     el('labellerInput').value = state.labeller;
   } else {
@@ -850,7 +898,7 @@ async function init() {
   }
   renderRuns();
   const runId = url.searchParams.get('runId');
-  if (runId) el('runSelect').value = runId;
+  if (runId && !state.runIds.length) el('runSelect').value = runId;
   await loadItems();
   ['runSelect', 'roleSelect', 'formSelect'].forEach((id) => el(id).addEventListener('change', () => { state.selected = null; loadItems(); }));
   el('labellerInput').addEventListener('input', () => { state.labeller = el('labellerInput').value.replace(/[^\\w-]/g, ''); if (state.selected) selectItem(state.selected); });

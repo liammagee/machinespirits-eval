@@ -9,6 +9,7 @@ import yaml from 'yaml';
 import {
   attachApproaches,
   loadApproachDatabases,
+  noCueReframeLeakageFailures,
   qualityWarningsFor,
   withPairedDirectorRevisitCue,
 } from '../scripts/generate-pedagogical-dramas.js';
@@ -52,6 +53,82 @@ describe('generate-pedagogical-dramas', () => {
       assert.equal(drama._pedagogicalApproach.id, drama.pedagogical_approach);
       assert.equal(drama._dialogueApproach.id, drama.dialogue_approach);
     }
+  });
+
+  it('adds an anti-reframe guard to paired no-cue branch plans', () => {
+    const guarded = withPairedDirectorRevisitCue(
+      {
+        side_constraints: {
+          tutor: 'Use the visible object.',
+          learner: 'Work locally.',
+        },
+        interventions: [{ cue_kind: 'ordinary_scene', instruction: 'A bell rings.' }],
+      },
+      'none',
+      'latest',
+    );
+    assert.equal(guarded.no_cue_anti_reframe_guard, true);
+    assert.match(guarded.side_constraints.learner, /Do not quote earlier learner wording/);
+    assert.match(guarded.side_constraints.tutor, /do not ask the learner to revisit/i);
+    assert.equal(guarded.interventions.length, 1);
+  });
+
+  it('flags explicit public self-reframing in no-cue branches', () => {
+    const turns = [
+      { role: 'LEARNER', turnNumber: 1, text: 'I think the number proves the whole claim.' },
+      { role: 'TUTOR', turnNumber: 2, text: 'Check the source first.' },
+      { role: 'LEARNER', turnNumber: 2, text: 'The source only supports one witness.' },
+      { role: 'TUTOR', turnNumber: 3, text: 'Now write the label.' },
+      {
+        role: 'LEARNER',
+        turnNumber: 3,
+        text: 'The old mistake was treating primary source as a trust stamp; new frame: it is one witness.',
+      },
+    ];
+    const failures = noCueReframeLeakageFailures(turns);
+    assert.equal(failures.length, 1);
+    const warnings = qualityWarningsFor({
+      tid: 'T99',
+      dramaId: 'D99',
+      turns,
+      directorPolicy: 'none',
+    });
+    assert.equal(
+      warnings.some((warning) => warning.code === 'no_cue_reframe_leakage'),
+      true,
+    );
+    const reframeWarnings = qualityWarningsFor({
+      tid: 'T99',
+      dramaId: 'D99',
+      turns,
+      directorPolicy: 'reframe',
+    });
+    assert.equal(
+      reframeWarnings.some((warning) => warning.code === 'no_cue_reframe_leakage'),
+      false,
+    );
+  });
+
+  it('flags self-quoting earlier learner wording in no-cue branches', () => {
+    const failures = noCueReframeLeakageFailures([
+      {
+        role: 'LEARNER',
+        turnNumber: 1,
+        text: 'I used the diary as the strongest evidence because page two is primary and close.',
+      },
+      { role: 'TUTOR', turnNumber: 2, text: 'Check what that source can carry.' },
+      { role: 'LEARNER', turnNumber: 2, text: 'The diary can carry a witness view.' },
+      { role: 'TUTOR', turnNumber: 3, text: 'Now write the exhibit label.' },
+      {
+        role: 'LEARNER',
+        turnNumber: 3,
+        text:
+          '“I used the diary as the strongest evidence because page two is primary and close.” ' +
+          'That line is too wide for the label.',
+      },
+    ]);
+    assert.equal(failures.length, 1);
+    assert.equal(failures[0].matched_pattern, 'self_quote_of_prior_learner_turn');
   });
 
   it('flags a revoice cue when the next learner line does not visibly reuse the anchor', () => {

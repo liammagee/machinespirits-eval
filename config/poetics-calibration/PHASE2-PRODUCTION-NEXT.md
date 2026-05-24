@@ -445,6 +445,36 @@ trace, and metadata. It writes to `poetics_labels` with
 `perspective = human-browser`, preserving the rule that human labels are another
 perspective rather than a ground-truth authority.
 
+## Four-step operating split after genre audit
+
+**Decision, 2026-05-24:** keep the clean effect-estimation and genre-stress
+apparatuses separate.
+
+1. `phase2-balanced-calibration-v1` is the clean paired-contrast template for
+   estimating the Director reframe effect. It keeps a tighter scenario family
+   and all three control roles travelling with the target arms.
+2. `phase2-genre-calibration-v1` is the boundary/stress suite. It deliberately
+   varies pedagogy and dialogue genre, and its value is in exposing where
+   organic recognition leaks into `none` arms or where critics disagree.
+3. Future paired `none` arms now carry an anti-reframe guard. The generator adds
+   no-cue branch constraints telling tutor and learner not to quote, revisit,
+   name a framing problem, say `reframe`, use `read it as`, or replace an
+   earlier frame. The quality gate also flags `no_cue_reframe_leakage` when a
+   no-cue learner turn visibly self-reframes anyway. These warnings should be
+   treated as regenerate-or-boundary-suite cases before scoring.
+4. Human labelling should start with disagreement cases only, as a perspective
+   layer rather than an answer key. The browser supports a focused cross-run
+   blind queue:
+
+```text
+http://127.0.0.1:3466/?runIds=phase2-balanced-calibration-v1,phase2-genre-calibration-v1&mode=label&queue=disagreements&unlabelled=1&labeller=<id>
+```
+
+This queue currently targets the 5 balanced disagreements plus the 13 genre
+disagreements before any full-run human labelling. Once those are labelled,
+rerun the sidecar report and compare human-browser labels against each critic as
+another disagreement matrix, not as ground truth.
+
 ## Reporting rule
 
 If the depth top-up or breadth slice changes the empirical interpretation, fold

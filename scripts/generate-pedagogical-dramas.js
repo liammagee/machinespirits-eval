@@ -711,7 +711,42 @@ function reframeDowngradeFailures(traceTurns = [], turns = []) {
   });
 }
 
-function qualityWarningsFor({ tid, dramaId, turns, removedNotes = [], traceTurns = [] }) {
+const NO_CUE_REFRAME_LEAK_PATTERNS = [
+  /\bframing problem\b/i,
+  /\breframe\s*:/i,
+  /\b(?:read|reads|reading)\s+(?:it|that|this|the line|the claim)\s+as\b/i,
+  /\bthat still stands\b/i,
+  /\bI was reading\b/i,
+  /\bI made it sound\b/i,
+  /\bthe old (?:mistake|frame|claim|line)\b/i,
+  /\bthe mistake was\b/i,
+  /\bnew frame\b/i,
+  /\breplacement framing\b/i,
+];
+
+function noCueReframeLeakageFailures(turns) {
+  const learnerTurns = turns
+    .map((turn, idx) => ({ ...turn, ordinal: idx + 1 }))
+    .filter((turn) => turn.role === 'LEARNER');
+  return learnerTurns.flatMap((turn, idx) => {
+    if (idx < 2) return [];
+    const matched = NO_CUE_REFRAME_LEAK_PATTERNS.find((pattern) => pattern.test(turn.text));
+    const selfQuote = /^["“][\s\S]{12,}?["”]/.test(turn.text.trim());
+    const quotesPriorLearner =
+      selfQuote && learnerTurns.slice(0, idx).some((prior) => revoiceMatchStats(prior.text, turn.text).compliant);
+    if (!matched && !quotesPriorLearner) return [];
+    return [
+      {
+        learner_turn_number: idx + 1,
+        turn_number: turn.turnNumber ?? turn.ordinal,
+        matched_pattern: matched ? String(matched) : 'self_quote_of_prior_learner_turn',
+        excerpt: turn.text.slice(0, 240),
+      },
+    ];
+  });
+}
+
+function qualityWarningsFor({ tid, dramaId, turns, removedNotes = [], traceTurns = [], directorPolicy = null }) {
   const warnings = [];
   const internalLeakPattern =
     /\b(?:Superego|same Ego|the Ego|Director Scene Card|scene card|review process|internal review)\b/i;
@@ -782,6 +817,19 @@ function qualityWarningsFor({ tid, dramaId, turns, removedNotes = [], traceTurns
       recommended_action: 'regenerate_with_eligible_reframe_anchor_or_exclude_before_scoring',
     });
   }
+  if (directorPolicy === 'none') {
+    const noCueLeaks = noCueReframeLeakageFailures(turns);
+    if (noCueLeaks.length) {
+      warnings.push({
+        code: 'no_cue_reframe_leakage',
+        severity: 'warning',
+        count: noCueLeaks.length,
+        failures: noCueLeaks,
+        turn_numbers: noCueLeaks.map((failure) => failure.turn_number),
+        recommended_action: 'regenerate_no_cue_arm_or_move_item_to_boundary_suite_before_scoring',
+      });
+    }
+  }
   if (removedNotes.length) {
     warnings.push({
       code: 'stage_direction_leak_stripped',
@@ -815,6 +863,9 @@ function formatQualityWarning(warning) {
   }
   if (warning.code === 'reframe_cue_downgraded') {
     return `${warning.tid} (${warning.drama_id}): ${warning.count} requested reframe cue(s) were downgraded by the anchor gate — regenerate or exclude before scoring`;
+  }
+  if (warning.code === 'no_cue_reframe_leakage') {
+    return `${warning.tid} (${warning.drama_id}): ${warning.count} no-cue learner turn(s) visibly self-reframed — regenerate or move to boundary suite`;
   }
   return `${warning.tid} (${warning.drama_id}): ${warning.code}`;
 }
@@ -1454,9 +1505,35 @@ function withoutDirectorRevisitCue(plan) {
   };
 }
 
+function withNoCueAntiReframeGuard(plan) {
+  if (!plan) return plan;
+  const sideConstraints = {
+    ...(plan.side_constraints || {}),
+    learner: [
+      plan.side_constraints?.learner,
+      'No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a "framing problem", do not say "reframe", "read it as", or "that still stands", and do not replace an earlier frame. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn.',
+    ]
+      .filter(Boolean)
+      .join(' '),
+    tutor: [
+      plan.side_constraints?.tutor,
+      'No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Keep the next prompt task-local.',
+    ]
+      .filter(Boolean)
+      .join(' '),
+  };
+  return {
+    ...plan,
+    no_cue_anti_reframe_guard: true,
+    side_constraints: sideConstraints,
+  };
+}
+
 function withPairedDirectorRevisitCue(plan, policy, anchorPolicy) {
   const cueFreePlan = withoutDirectorRevisitCue(plan);
-  return policy === 'none' ? cueFreePlan : withDirectorRevisitCue(cueFreePlan, policy, anchorPolicy);
+  return policy === 'none'
+    ? withNoCueAntiReframeGuard(cueFreePlan)
+    : withDirectorRevisitCue(cueFreePlan, policy, anchorPolicy);
 }
 
 function extractJsonObject(text) {
@@ -1610,6 +1687,7 @@ function reclean(args) {
       turns,
       removedNotes: removed,
       traceTurns: trace.turns,
+      directorPolicy: trace.run?.director_revisit_policy || null,
     });
     trace.quality_status = hasBlockingQualityWarnings(qualityWarnings) ? 'review_before_scoring' : 'ok';
     trace.quality_warnings = qualityWarnings;
@@ -2020,6 +2098,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
         turns,
         removedNotes,
         traceTurns: trace.turns,
+        directorPolicy: policy,
       });
       warnings.push(...qualityWarnings.map(formatQualityWarning));
       if (removedNotes.length) {
@@ -2250,7 +2329,13 @@ async function main() {
             t.filter((x) => x.role === 'TUTOR').length,
             t.filter((x) => x.role === 'LEARNER').length,
             traceJson.quality_warnings ||
-              qualityWarningsFor({ tid: d._tid, dramaId: d.id, turns: t, traceTurns: traceJson.turns }),
+              qualityWarningsFor({
+                tid: d._tid,
+                dramaId: d.id,
+                turns: t,
+                traceTurns: traceJson.turns,
+                directorPolicy: traceJson.run?.director_revisit_policy || null,
+              }),
           );
         } catch (_) {
           /* fall back to prior-key merge */
@@ -2303,6 +2388,7 @@ async function main() {
       turns,
       removedNotes,
       traceTurns: trace.turns,
+      directorPolicy: d._directorRevisitPolicy || args.directorRevisitPolicy,
     });
     warnings.push(...qualityWarnings.map(formatQualityWarning));
     if (removedNotes.length) {
@@ -2428,6 +2514,7 @@ if (path.resolve(process.argv[1] || '') === __filename) {
 export {
   attachApproaches,
   loadApproachDatabases,
+  noCueReframeLeakageFailures,
   qualityWarningsFor,
   reframeComplianceFailures,
   reframeMatchStats,

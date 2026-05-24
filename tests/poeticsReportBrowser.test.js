@@ -27,6 +27,13 @@ function seed(db) {
     generator: 'codex',
     metadata: {},
   });
+  upsertPoeticsRun(db, {
+    id: 'poetics-second-run',
+    sourceRoot: 'config/poetics-calibration/poetics-second-run',
+    batchId: 'poetics-second-run',
+    generator: 'codex',
+    metadata: {},
+  });
   upsertPoeticsItem(db, {
     id: 'poetics-test-run:target-r01:none:T01',
     runId: 'poetics-test-run',
@@ -55,6 +62,19 @@ function seed(db) {
     controlRole: 'hard_trap_control',
     metadata: {},
   });
+  upsertPoeticsItem(db, {
+    id: 'poetics-second-run:target-r01:reframe:T03',
+    runId: 'poetics-second-run',
+    unitId: 'target-r01',
+    repeat: 'r01',
+    arm: 'reframe',
+    tid: 'T03',
+    dramaId: 'D3',
+    discipline: 'history',
+    condition: 'recognition',
+    intendedLean: 'recognition',
+    metadata: {},
+  });
   upsertPoeticsScore(db, {
     itemId: 'poetics-test-run:target-r01:none:T01',
     criticModel: 'qwen/qwen3.5-plus-02-15',
@@ -81,6 +101,22 @@ function seed(db) {
     recoheredEarlier: 'the learner re-reads the earlier demand',
     statedInsightEvidence: 'Oh, I get it',
   });
+  upsertPoeticsScore(db, {
+    itemId: 'poetics-second-run:target-r01:reframe:T03',
+    criticModel: 'qwen/qwen3.7-max',
+    scoreFile: 'scores/target-r01-reframe-qwen37.json',
+    formClass: 'recognition',
+    recontextualization: 75,
+    statedInsight: 25,
+  });
+  upsertPoeticsScore(db, {
+    itemId: 'poetics-second-run:target-r01:reframe:T03',
+    criticModel: 'deepseek/deepseek-v4-pro',
+    scoreFile: 'scores/target-r01-reframe-deepseek.json',
+    formClass: 'flat',
+    recontextualization: 50,
+    statedInsight: 25,
+  });
 }
 
 describe('poetics sidecar report and browser', () => {
@@ -99,8 +135,8 @@ describe('poetics sidecar report and browser', () => {
   it('lists runs and retrieves script details for the browser API layer', () =>
     withDb((db) => {
       const runs = listRuns(db);
-      assert.equal(runs[0].id, 'poetics-test-run');
-      assert.equal(runs[0].itemCount, 2);
+      const run = runs.find((entry) => entry.id === 'poetics-test-run');
+      assert.equal(run.itemCount, 2);
 
       const hardTraps = listItems(db, { runId: 'poetics-test-run', role: 'hard_trap_control' });
       assert.equal(hardTraps.length, 1);
@@ -131,6 +167,32 @@ describe('poetics sidecar report and browser', () => {
       const blindDetail = getBlindItem(db, 'poetics-test-run:target-r01:none:T01', { labellerId: 'reader-a' });
       assert.equal(blindDetail.scores, undefined);
       assert.equal(blindDetail.label.form_class, 'flat');
+    }));
+
+  it('builds a blind cross-run disagreement queue', () =>
+    withDb((db) => {
+      const queue = listItems(db, {
+        runIds: ['poetics-test-run', 'poetics-second-run'],
+        queue: 'disagreements',
+        blind: true,
+      });
+      assert.equal(queue.length, 2);
+      assert.deepEqual(queue.map((item) => item.runId).sort(), ['poetics-second-run', 'poetics-test-run']);
+      assert.equal(queue[0].criticForms, undefined);
+
+      saveBrowserLabel(db, {
+        itemId: 'poetics-test-run:control-r01-d25-hard-trap:default:T02',
+        labellerId: 'reader-a',
+        formClass: 'trap',
+      });
+      const remaining = listItems(db, {
+        runIds: ['poetics-test-run', 'poetics-second-run'],
+        queue: 'disagreements',
+        unlabelled: true,
+        blind: true,
+      });
+      assert.equal(remaining.length, 1);
+      assert.equal(remaining[0].id, 'poetics-second-run:target-r01:reframe:T03');
     }));
 
   it('surfaces focal-critic disagreement cases for qualitative audit', () =>
