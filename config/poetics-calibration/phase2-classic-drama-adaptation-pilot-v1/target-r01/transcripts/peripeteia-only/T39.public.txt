@@ -1,0 +1,74 @@
+STAGE: [The learner has just drawn a larger square around the first one, each side twice as long; the ruler still pins the lower edge in place.]
+
+LEARNER: [slides the acetate square across the larger outline, corner to corner, then pauses] I thought doubling the side meant it was just twice as much, but it fits once, twice, three, four times in the bigger square. So the drawing is not backing my claim; it is making it wrong, and I need to see where the extra factor came from.
+
+TUTOR: [draws one vertical split and one horizontal split through the larger outline.]
+
+Stop there. The old claim was: double the side, double the area. The acetate has made a counterexample: two copies across and two copies up.
+
+Count the grid now. Not two copies. A two-by-two square of copies.
+
+Now state the corrected claim from the drawing, not from the guess.
+
+LEARNER: [keeps the acetate pinned inside one grid square]
+
+Fine, it is not a technicality; the drawing will not let me call it twice. There are two copies across and two up, so that is four small squares. The corrected claim is: doubling the side multiplies the area by four.
+
+STAGE: [The acetate copy of the original square is slid into the upper-left corner of the larger square, then moved to the upper-right, lower-left, and lower-right positions without changing size.]
+
+TUTOR: [The tutor taps the larger square once across, then once up.]
+
+Keep the acetate fixed. The extra factor came from the second direction: two copies across, and that whole row occurs twice.
+
+So the area factor is not 2. It is \(2 \times 2\).
+
+Now make the exam line match the drawing. Old side: \(s\). Old area: \(s^2\). New side: \(2s\).
+
+Do not skip the square. Write it first:
+
+\[
+(2s)^2 = \_\_\_
+\]
+
+That last line is where the diagram stops being decoration and becomes proof.
+
+LEARNER: [keeps the acetate fixed and writes] \((2s)^2 = 4s^2\).
+The square is the step I was skipping: \(2s\) across and \(2s\) up.
+So the old shortcut only counted one direction.
+
+TUTOR: [places the ruler along the bottom edge, then turns it up the left edge.]
+
+Across first, then up. The square is not acting on a loose 2; it is acting on the whole new side length in both directions.
+
+\[
+(2s)^2=(2s)(2s)=4s^2.
+\]
+
+Now remove the 2 but keep the count. If the new side is \(ks\), the area is
+
+\[
+(ks)(ks)=\_\_\_
+\]
+
+So what factor replaces the 4?
+
+LEARNER: [sets the ruler along the bottom edge, then turns it up the left edge]
+\((ks)(ks)=k^2s^2\), so the factor replacing \(4\) is \(k^2\). I still want to say \(k\) because that is the side change, but the area line makes it happen across and up.
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [slides the acetate three squares across, then lays two more rows beneath it.]
+
+Stop at \(k=3\). Make the shortcut commit first.
+
+If side factor \(3\) meant area factor \(3\), the large square should contain three copies.
+
+Count what the table has produced: three across, three rows. Nine.
+
+So the surviving line is:
+
+\[
+ks \times ks = k^2s^2.
+\]
+
+The pull toward \(k\) names the side change. The grid has made it answer for area.

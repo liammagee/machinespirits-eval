@@ -420,4 +420,89 @@ describe('runInteraction (multi-turn)', () => {
       'tutor ego adjudication should allow register shift as an adaptive mechanism',
     );
   });
+
+  it('passes learner pressure into routine-control prompts without peripeteia checks', async () => {
+    const calls = [];
+    async function llmCall(model, systemPrompt, messages, options = {}) {
+      calls.push({ model, systemPrompt, messages, options });
+      const user = messages?.[0]?.content || '';
+      if (options.agentRole === 'learner_superego') {
+        return { content: 'Keep the resistance visible; do not fake understanding.', usage: {} };
+      }
+      if (options.agentRole === 'learner_ego' && /Produce your final response/.test(user)) {
+        return { content: "FINAL:\nBut that still doesn't make sense; I don't see why the old route works.", usage: {} };
+      }
+      if (options.agentRole === 'learner_ego' && /opening message/.test(user)) {
+        return { content: 'FINAL:\nI think loose means no gravity.', usage: {} };
+      }
+      if (options.agentRole === 'learner_ego') {
+        return { content: "But that still doesn't make sense; I don't see why the old route works.", usage: {} };
+      }
+      if (options.agentRole === 'tutor_superego') {
+        return {
+          content:
+            'FEEDBACK: The draft preserves the route.\nROUTINE_CHECK: It stays on the same worked example.\nKEEP_OR_CHANGE: keep as-is',
+          usage: {},
+        };
+      }
+      if (options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(systemPrompt)) {
+        return {
+          content:
+            'PRIVATE_DECISION: keep the routine branch on the same route.\nFINAL:\nKeep using the same list. Write the force name, then answer the next worksheet item.',
+          usage: {},
+        };
+      }
+      if (options.agentRole === 'tutor_ego') {
+        return { content: 'Check the list again and write the force name.', usage: {} };
+      }
+      return { content: 'stub', usage: {} };
+    }
+
+    const directorPlan = {
+      opening_speaker: 'learner',
+      tutor_adaptation_policy: 'routine',
+    };
+
+    const result = await runInteraction(
+      {
+        learnerId: 'test-learner-routine',
+        personaId: 'eager_novice',
+        tutorProfile: 'recognition',
+        topic: 'Gravity and loose strings',
+        scenario: {
+          name: 'Routine negative-control test',
+          learnerStartState: 'The learner treats loose as no gravity.',
+          directorPlan,
+        },
+      },
+      llmCall,
+      {
+        maxTurns: 2,
+        forceMaxTurns: true,
+        observeInternals: true,
+        learnerProfile: 'ego_superego',
+        directorPlan,
+      },
+    );
+
+    const tutorUseTurn = result.turns.find((turn) => turn.phase === 'tutor' && turn.learnerReversalEventUsed);
+    assert.ok(tutorUseTurn, 'expected routine branch to receive hidden pressure event');
+    assert.match(tutorUseTurn.externalMessage, /Keep using the same list/);
+
+    const tutorSuperegoPrompts = calls
+      .filter((call) => call.options.agentRole === 'tutor_superego')
+      .map((call) => call.systemPrompt);
+    assert.ok(
+      tutorSuperegoPrompts.some((prompt) => /Tutor-private routine-control event/.test(prompt)),
+      'routine superego should see pressure as a negative-control event',
+    );
+    assert.ok(
+      tutorSuperegoPrompts.some((prompt) => /ROUTINE_CHECK/.test(prompt)),
+      'routine superego should evaluate routine-control fidelity',
+    );
+    assert.ok(
+      tutorSuperegoPrompts.every((prompt) => !/PERIPETEIA_CHECK/.test(prompt)),
+      'routine branch must not ask for peripeteia checks',
+    );
+  });
 });

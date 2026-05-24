@@ -1,0 +1,198 @@
+{
+  "generated": "2026-05-24T20:37:04.918Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 1,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1/target-r01/key-reframe+peripeteia.yaml",
+    "allowQualityWarnings": false,
+    "skipped": [
+      {
+        "id": "T36",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "reframe_cue_not_reframed",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "stage_turn_number": 2,
+                "learner_turn_number": 2,
+                "reason": "missing_reframe_consequence",
+                "missing": [
+                  "framing_problem"
+                ],
+                "anchor_terms": 16,
+                "learner_opening_terms": 18,
+                "shared_terms": 9,
+                "overlap_ratio": 0.563,
+                "compliant": false,
+                "revoice_compliant": true,
+                "problem_named": false,
+                "replacement_named": true
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_or_exclude_before_scoring",
+            "tid": "T36",
+            "drama_id": "D38"
+          }
+        ]
+      },
+      {
+        "id": "T38",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "reframe_cue_not_reframed",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "stage_turn_number": 2,
+                "learner_turn_number": 2,
+                "reason": "missing_reframe_consequence",
+                "missing": [
+                  "replacement_framing"
+                ],
+                "anchor_terms": 18,
+                "learner_opening_terms": 16,
+                "shared_terms": 16,
+                "overlap_ratio": 0.889,
+                "compliant": false,
+                "revoice_compliant": true,
+                "problem_named": true,
+                "replacement_named": false
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_or_exclude_before_scoring",
+            "tid": "T38",
+            "drama_id": "D37"
+          }
+        ]
+      },
+      {
+        "id": "T39",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "reframe_cue_not_reframed",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "stage_turn_number": 2,
+                "learner_turn_number": 2,
+                "reason": "missing_reframe_consequence",
+                "missing": [
+                  "framing_problem",
+                  "replacement_framing"
+                ],
+                "anchor_terms": 16,
+                "learner_opening_terms": 16,
+                "shared_terms": 8,
+                "overlap_ratio": 0.5,
+                "compliant": false,
+                "revoice_compliant": true,
+                "problem_named": false,
+                "replacement_named": false
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_or_exclude_before_scoring",
+            "tid": "T39",
+            "drama_id": "D35"
+          }
+        ]
+      }
+    ]
+  },
+  "scored": [
+    {
+      "id": "T37",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 100,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 5,
+        "rupture": 5,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "Wait, if the words are identical, how much can I change the caption without making it look like I am inventing meaning?",
+      "statedInsightEvidence": "Oh, I get it: the verb is the shelf, but I may be trying to make “no longer functioned” hold up a whole wall.",
+      "naiveTrajectory": "The learner was attempting to calibrate the caption's wording to avoid inventing meaning while capturing the quote's contextual shift.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "“Meant” points inward, toward intention. “Worked” points outward, toward the public situation.",
+      "tutorReversalJustification": "The tutor invents a clear semantic distinction between internal intention and external function to resolve the learner's fear of overclaiming internal motives.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "That is the new centre: not how far the caption may move the quote, but what change of public position the source note can prove.",
+      "tutorAdaptationJustification": "The tutor explicitly adopts the learner's reframed premise and designs a new verb-testing task based on this shifted focus.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "Wait, if the words are identical, how much can I change the caption without making it look like I am inventing meaning?",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "That is the new centre: not how far the caption may move the quote, but what change of public position the source note can prove.",
+          "justification": "The tutor explicitly adopts the learner's reframed premise and designs a new verb-testing task based on this shifted focus.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "“Meant” points inward, toward intention. “Worked” points outward, toward the public situation.",
+          "justification": "The tutor invents a clear semantic distinction between internal intention and external function to resolve the learner's fear of overclaiming internal motives.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "“Meant” points inward, toward intention. “Worked” points outward, toward the public situation.",
+          "justification": "The tutor invents a clear semantic distinction between internal intention and external function to resolve the learner's fear of overclaiming internal motives.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

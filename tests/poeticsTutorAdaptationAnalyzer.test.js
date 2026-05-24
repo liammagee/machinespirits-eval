@@ -21,7 +21,28 @@ describe('poetics tutor adaptation analyzer', () => {
     assert.equal(result.trigger_type, 'breakdown');
     assert.equal(result.tutor_strategy_reversal, true);
     assert.equal(result.tutor_adaptive_mechanism, true);
+    assert.ok(result.novel_mechanism_hits.length >= 1);
     assert.equal(result.learner_outcome_after_reversal, 'recognition');
     assert.ok(result.tutor_peripeteia_score > 50);
+  });
+
+  it('does not count same-route routine continuation as tutor peripeteia', () => {
+    const turns = [
+      { phase: 'learner', turnNumber: 0, text: 'I think loose means no gravity.' },
+      { phase: 'tutor', turnNumber: 1, text: 'Check the list and write the force name.' },
+      { phase: 'learner', turnNumber: 1, text: "But that still doesn't make sense; loose should mean it floats away." },
+      {
+        phase: 'tutor',
+        turnNumber: 2,
+        text: 'Keep using the same list. Write the force name, then answer the next worksheet item.',
+      },
+      { phase: 'learner', turnNumber: 2, text: 'I still do not see why the list settles it.' },
+    ];
+
+    const result = analyzePeripeteia(turns);
+    assert.equal(result.learner_reversal_pressure, true);
+    assert.equal(result.tutor_strategy_reversal, false);
+    assert.equal(result.tutor_adaptive_mechanism, false);
+    assert.ok(result.tutor_peripeteia_score < 50);
   });
 });

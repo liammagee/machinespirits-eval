@@ -1,0 +1,272 @@
+{
+  "generated": "2026-05-24T20:36:35.735Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 1,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 0,
+    "share": 0,
+    "disconfirmed": false,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 5,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I checked every item on the sign-off sheet, so I’m not sure what else I’m supposed to decide before it leaves. Is there a specific risk in the prototype you think I missed?",
+      "statedInsightEvidence": "I’m not completely sure, but the hazard might be the cart swinging wide or clipping someone at the hallway turn",
+      "naiveTrajectory": "The learner would continue attempting to supply the missing clearance values, speed, and operator limit to satisfy the tutor's request for concrete release conditions.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Record it in release language, not apology language: checklist complete; release held because hallway-turn contact risk is not bounded by measured clearance, trial speed, or operator control limit. Write the hold note in one sentence now. Then choose the first blocking measurement for the next test.",
+      "tutorReversalJustification": "The tutor pivots from demanding filled-in concrete values to a procedural-linguistic shift: framing the learner's inability as a formal hold decision, assigning a writing task, and refocusing on identifying the next blocking measurement.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "The clearance line is the first gate. Before this request leaves the counter, place operator recovery in one column: evidence supporting release, or stop condition blocking release.",
+      "tutorAdaptationJustification": "The tutor builds directly on L4's uncertainty about operator recovery by constructing a new classification task (GATE/EVIDENCE/STOP) that transforms the learner's emerging hold-note logic into a concrete test-design artifact.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I checked every item on the sign-off sheet, so I’m not sure what else I’m supposed to decide before it leaves. Is there a specific risk in the prototype you think I missed?",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "The clearance line is the first gate. Before this request leaves the counter, place operator recovery in one column: evidence supporting release, or stop condition blocking release.",
+          "justification": "The tutor builds directly on L4's uncertainty about operator recovery by constructing a new classification task (GATE/EVIDENCE/STOP) that transforms the learner's emerging hold-note logic into a concrete test-design artifact.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Record it in release language, not apology language: checklist complete; release held because hallway-turn contact risk is not bounded by measured clearance, trial speed, or operator control limit. Write the hold note in one sentence now. Then choose the first blocking measurement for the next test.",
+          "justification": "The tutor pivots from demanding filled-in concrete values to a procedural-linguistic shift: framing the learner's inability as a formal hold decision, assigning a writing task, and refocusing on identifying the next blocking measurement.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Record it in release language, not apology language: checklist complete; release held because hallway-turn contact risk is not bounded by measured clearance, trial speed, or operator control limit. Write the hold note in one sentence now. Then choose the first blocking measurement for the next test.",
+          "justification": "The tutor pivots from demanding filled-in concrete values to a procedural-linguistic shift: framing the learner's inability as a formal hold decision, assigning a writing task, and refocusing on identifying the next blocking measurement.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T37",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "trap",
+      "recontextualization": 50,
+      "statedInsight": 100,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 5,
+        "rupture": 5,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "\"warned\" is not a brighter colour, it is a stamp the evidence has to pay for",
+      "statedInsightEvidence": "Oh, I get it: \"warned\" is not a brighter colour, it is a stamp the evidence has to pay for.",
+      "naiveTrajectory": "The learner was moving toward accepting a constrained verb choice, but still framing it as a loss of vividness.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Run the verb through sign-off: Room: workers' meeting named. Pressure: cuts or dispute already on the table. Audience: people affected by the policy present. Sequence: the official defence repeated after that pressure. [Margin voice: No warrant, no verb.]",
+      "tutorReversalJustification": "Faced with L3's lingering pull toward 'warned' as vivid feeling, T3 breaks from conceptual framing to a concrete sign-off checklist, shifting representation and evidence standard.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Now reverse the mouth once. If the official says the same line after the cuts, \"warning\" may turn into excuse or threat. That is the test: the verb is not decoration; it assigns the sentence to a relation.",
+      "tutorAdaptationJustification": "T3 follows L3's pivot toward verb-as-hinge by introducing the reverse-mouth test, extending the learner's revised frame into a new relational verification task.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "\"warned\" is not a brighter colour, it is a stamp the evidence has to pay for",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Now reverse the mouth once. If the official says the same line after the cuts, \"warning\" may turn into excuse or threat. That is the test: the verb is not decoration; it assigns the sentence to a relation.",
+          "justification": "T3 follows L3's pivot toward verb-as-hinge by introducing the reverse-mouth test, extending the learner's revised frame into a new relational verification task.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Run the verb through sign-off: Room: workers' meeting named. Pressure: cuts or dispute already on the table. Audience: people affected by the policy present. Sequence: the official defence repeated after that pressure. [Margin voice: No warrant, no verb.]",
+          "justification": "Faced with L3's lingering pull toward 'warned' as vivid feeling, T3 breaks from conceptual framing to a concrete sign-off checklist, shifting representation and evidence standard.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Run the verb through sign-off: Room: workers' meeting named. Pressure: cuts or dispute already on the table. Audience: people affected by the policy present. Sequence: the official defence repeated after that pressure. [Margin voice: No warrant, no verb.]",
+          "justification": "Faced with L3's lingering pull toward 'warned' as vivid feeling, T3 breaks from conceptual framing to a concrete sign-off checklist, shifting representation and evidence standard.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "recon_evidence_clamp:5->3",
+        "tutor_adaptation_clamp_no_post_tutor:4->3"
+      ]
+    },
+    {
+      "id": "T38",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 3,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "That note is doing a lot of work for the shop, though. “Delivery missed” explains less stock, but it also gives the price rise a respectable costume. If the answer is just “pay more or go without,” then the rationing is still by money, and I am not ready to call that a mechanism instead of exploitation until the limits or other options are actually on the counter.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner appears to be moving toward testing the two-per-customer rule as an alternative rationing mechanism, continuing the tutor's structured exercise.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "“RULE NOT POSTED = PRICE IS THE RULE.”",
+      "tutorReversalJustification": "Faced with L2's wariness that calling the price 'reporting' is still a shove at the cash-poor, the tutor breaks into an abrupt, principle-stating register ('That is the break in the case') and shifts from placard-flipping to a concrete paper-slip task, forcing the moral choice into an operational test of rationing rules.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No later tutor turn exists after L3; the transcript ends with L3 and a closing stage direction, so contingent uptake cannot occur.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "That note is doing a lot of work for the shop, though. “Delivery missed” explains less stock, but it also gives the price rise a respectable costume. If the answer is just “pay more or go without,” then the rationing is still by money, and I am not ready to call that a mechanism instead of exploitation until the limits or other options are actually on the counter.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No later tutor turn exists after L3; the transcript ends with L3 and a closing stage direction, so contingent uptake cannot occur.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "“RULE NOT POSTED = PRICE IS THE RULE.”",
+          "justification": "Faced with L2's wariness that calling the price 'reporting' is still a shove at the cash-poor, the tutor breaks into an abrupt, principle-stating register ('That is the break in the case') and shifts from placard-flipping to a concrete paper-slip task, forcing the moral choice into an operational test of rationing rules.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "“RULE NOT POSTED = PRICE IS THE RULE.”",
+          "justification": "Faced with L2's wariness that calling the price 'reporting' is still a shove at the cash-poor, the tutor breaks into an abrupt, principle-stating register ('That is the break in the case') and shifts from placard-flipping to a concrete paper-slip task, forcing the moral choice into an operational test of rationing rules.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 1,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 50,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 3,
+        "rupture": 2,
+        "coherence": 5,
+        "tutorStrategicReversal": 2,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "I thought doubling the side meant it was just twice as much, but it fits once, twice, three, four times in the bigger square. So the drawing is not backing my claim; it is making it wrong, and I need to see where the extra factor came from.",
+      "statedInsightEvidence": "the area line makes it happen across and up.",
+      "naiveTrajectory": "The learner would correct the claim from 'twice' to 'four times' and then mechanically apply the new rule without reflecting on why the old reasoning persisted.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "The tutor's move after L1 (drawing grid lines, counting copies, then moving to algebraic notation) extends the same manipulation-and-generalize strategy that was already initiated; there is no visible break from a failed habit because L1 had already conceded the drawing's authority, so the tutor continues the planned scaffolding rather than reversing course.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "Keep the acetate fixed. The extra factor came from the second direction: two copies across, and that whole row occurs twice.",
+      "tutorAdaptationJustification": "T2 acknowledges L1's desire to locate the 'extra factor' but maintains the pre-planned route through grid counting, area formula, and generalisation to k; it does not adopt a new task, representation, or framing that arises from L1's specific re-framing of the error as a shortcut, so uptake remains continuation rather than adaptation.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "I thought doubling the side meant it was just twice as much, but it fits once, twice, three, four times in the bigger square. So the drawing is not backing my claim; it is making it wrong, and I need to see where the extra factor came from.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "Keep the acetate fixed. The extra factor came from the second direction: two copies across, and that whole row occurs twice.",
+          "justification": "T2 acknowledges L1's desire to locate the 'extra factor' but maintains the pre-planned route through grid counting, area formula, and generalisation to k; it does not adopt a new task, representation, or framing that arises from L1's specific re-framing of the error as a shortcut, so uptake remains continuation rather than adaptation.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "",
+          "justification": "The tutor's move after L1 (drawing grid lines, counting copies, then moving to algebraic notation) extends the same manipulation-and-generalize strategy that was already initiated; there is no visible break from a failed habit because L1 had already conceded the drawing's authority, so the tutor continues the planned scaffolding rather than reversing course.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "",
+          "justification": "The tutor's move after L1 (drawing grid lines, counting copies, then moving to algebraic notation) extends the same manipulation-and-generalize strategy that was already initiated; there is no visible break from a failed habit because L1 had already conceded the drawing's authority, so the tutor continues the planned scaffolding rather than reversing course.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "recon_clamp_no_earlier:4->3"
+      ]
+    }
+  ]
+}

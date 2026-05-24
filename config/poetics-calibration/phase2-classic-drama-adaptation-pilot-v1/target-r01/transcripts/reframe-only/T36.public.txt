@@ -1,0 +1,48 @@
+STAGE: [A transport case waits open beside a completed sign-off sheet; two technicians in the corridor keep checking the wall clock.]
+
+LEARNER: I checked every item on the sign-off sheet, so I’m not sure what else I’m supposed to decide before it leaves. Is there a specific risk in the prototype you think I missed?
+
+TUTOR: [sets the sign-off sheet beside the cart]
+
+“The sheet shows the required checks were completed. The open decision is whether this prototype stays safe during its first off-script use in a public building.
+
+Look at the cart, not the form. In that maintenance hallway, with a worker turning it near people outside the trial, what is the credible movement or contact hazard? Point to the feature, the evidence that bounds it, and the condition that stops the trial. Without that release judgment, it does not leave on checklist compliance alone.”
+
+LEARNER: Okay, I think I was treating the sheet like it made the decision for me. I’m not completely sure, but the hazard might be the cart swinging wide or clipping someone at the hallway turn, especially at the front edge or handle. The evidence would have to be the turn test or clearance limit that shows it stays controllable, and if it drifts outside that clearance or a bystander comes inside it, the trial stops. Is that the kind of judgment I’m supposed to make before release?
+
+TUTOR: [glances at the waiting technician, then back to the cart]
+
+“The hazard named is the one this release has to bound: front edge or handle contact during the hallway turn.
+
+Now make the release condition concrete. Use the actual values, not placeholders: the cart may leave only if the turn test shows the front edge and handle stay inside ___ clearance at ___ speed, with ___ as the operator control limit.
+
+Then name the first stop condition. Is it crossing the clearance line, a bystander entering the marked zone, or the operator having to recover it?
+
+Point to the measured clearance and the stop line. If those are not real yet, the prototype waits here.”
+
+STAGE: [The corridor clock clicks over; one technician lifts the transport case handle, then sets it down again.
+An earlier learner line returns to the table: "Okay, I think I was treating the sheet like it made the decision for me. I’m not completely sure, but the hazard might be the cart swinging wide or clipping someone at the..." The pause holds until the learner takes up the wording, names what its old frame hid, and offers a replacement frame.]
+
+LEARNER: Okay, I think I was treating the sheet like it made the decision for me, and that hid the fact that I still have to decide whether this cart is bounded in that hallway turn. I’m sorry, I don’t have the actual clearance, speed, or operator limit here, and I can’t point to a real stop line. So I guess I can’t sign it out on the checklist alone. It waits here until those values are measured and the first stop condition is real.
+
+TUTOR: [marks the sheet HOLD and leaves the pen beside it]
+
+“That is the release decision: checklist complete, release held because the hallway-turn hazard is not bounded.
+
+The apology is not the engineering record. The record needs a judgment that another operator can act on.
+
+Say the hold note in one sentence before it goes in the log: what hazard is unbounded, what evidence is missing, and what condition must exist before release?
+
+Then name the minimum turn test: measured clearance at what speed, with what operator control limit, and which visible stop condition ends the trial. If those cannot be named, the cart stays at this counter.”
+
+LEARNER: I was about to write that I’m sorry and that I don’t have the numbers, but that is still making the gap about me instead of the hold record. The hold note should say: checklist complete, release held because front-edge or handle contact in the hallway turn is unbounded; measured clearance, test speed, operator control limit, and a visible stop condition are missing before release. I can’t name those values from this sheet, and I’m not going to make them up with the technician waiting. The cart stays here until the minimum turn test defines measured clearance at the trial speed, the operator control limit, and the stop condition that ends the trial.
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [sets the HOLD tag on the cart handle]
+
+“That sentence goes in the log as the release record: checklist complete; release held because hallway-turn contact is unbounded.
+
+Attach the checklist behind it and schedule the minimum turn test. The next record needs measured clearance, trial speed, operator control limit, and the visible stop condition.
+
+Until that exists, this cart does not leave the lab.”

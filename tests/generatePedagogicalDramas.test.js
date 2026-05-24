@@ -47,9 +47,9 @@ describe('generate-pedagogical-dramas', () => {
   it('renders public speaker turns as direct speech with square-bracket action asides', () => {
     assert.equal(
       formatPublicTurnText('TUTOR', '(points at the graph) Try line two.'),
-      '[points at the graph] Try line two.',
+      '[points at the graph]\n\n"Try line two."',
     );
-    assert.equal(formatPublicTurnText('LEARNER', 'I think (x + 1) still matters.'), 'I think (x + 1) still matters.');
+    assert.equal(formatPublicTurnText('LEARNER', 'I think (x + 1) still matters.'), '"I think (x + 1) still matters."');
     assert.equal(formatPublicTurnText('STAGE', 'A timer clicks.'), '[A timer clicks.]');
   });
 
@@ -130,6 +130,7 @@ describe('generate-pedagogical-dramas', () => {
   it('maps paired adaptation arms onto learner-cue and tutor-uptake factors', () => {
     const branches = pairedBranchDefinitions({
       pairedAdaptationArms: [
+        'routine',
         'none',
         'reframe-only',
         'tutor-uptake-only',
@@ -140,6 +141,7 @@ describe('generate-pedagogical-dramas', () => {
     });
 
     assert.deepEqual(branches, [
+      { key: 'routine', revisitPolicy: 'none', tutorAdaptationPolicy: 'routine' },
       { key: 'none', revisitPolicy: 'none', tutorAdaptationPolicy: 'none' },
       { key: 'reframe-only', revisitPolicy: 'reframe', tutorAdaptationPolicy: 'none' },
       { key: 'tutor-uptake-only', revisitPolicy: 'none', tutorAdaptationPolicy: 'uptake' },
@@ -147,6 +149,28 @@ describe('generate-pedagogical-dramas', () => {
       { key: 'peripeteia-only', revisitPolicy: 'none', tutorAdaptationPolicy: 'peripeteia' },
       { key: 'reframe+peripeteia', revisitPolicy: 'reframe', tutorAdaptationPolicy: 'uptake+peripeteia' },
     ]);
+  });
+
+  it('adds a routine negative-control tutor policy that strips branch pressure cues', () => {
+    const plan = withTutorAdaptationPolicy(
+      {
+        side_constraints: {
+          tutor: 'Use the visible object.',
+          learner: 'Work locally.',
+        },
+        interventions: [
+          { cue_kind: 'ordinary_scene', instruction: 'A bell rings.' },
+          { cue_kind: 'tutor_stage_pressure', instruction: 'A deadline appears.' },
+        ],
+      },
+      'routine',
+    );
+
+    assert.equal(plan.tutor_adaptation_policy, 'routine');
+    assert.equal(plan.routine_negative_control, true);
+    assert.equal(plan.interventions.length, 0);
+    assert.match(plan.side_constraints.tutor, /keep the visible teaching route/i);
+    assert.match(plan.tutor_adaptation_contract, /Negative-control routine tutor policy/);
   });
 
   it('adds tutor adaptation policy to director plans without adding a public cue', () => {

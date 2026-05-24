@@ -14,7 +14,7 @@ import { openPoeticsStore } from '../services/poeticsStore.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
-const TUTOR_ADAPTATION_ANALYZER_VERSION = 'tutor-adaptation-v1';
+const TUTOR_ADAPTATION_ANALYZER_VERSION = 'tutor-adaptation-v2';
 
 function parseArgs(argv) {
   const args = {
@@ -123,6 +123,7 @@ function loadRows(db, runId = null) {
         a.tutor_strategy_after,
         a.shared_salient_terms,
         a.evidence AS tutor_adaptation_evidence,
+        a.metadata AS tutor_adaptation_metadata,
         (
           SELECT COUNT(*)
           FROM poetics_labels l
@@ -143,6 +144,7 @@ function loadRows(db, runId = null) {
       flags: decodeJson(row.flags, []),
       item_metadata: decodeJson(row.item_metadata, {}),
       shared_salient_terms: decodeJson(row.shared_salient_terms, []),
+      tutor_adaptation_metadata: decodeJson(row.tutor_adaptation_metadata, {}),
     }));
 }
 
@@ -166,6 +168,10 @@ function summarizeRun(runId, rows) {
       tutorAdaptations: 0,
       scoreSum: 0,
       uptakeDeltaSum: 0,
+      reversalPressure: 0,
+      tutorMechanisms: 0,
+      peripeteiaScoreSum: 0,
+      peripeteiaScored: 0,
       scored: 0,
       missing: 0,
     };
@@ -180,6 +186,13 @@ function summarizeRun(runId, rows) {
     if (row.tutor_contingent_adaptation) bucket.tutorAdaptations += 1;
     bucket.scoreSum += row.tutor_adaptation_score || 0;
     bucket.uptakeDeltaSum += row.uptake_delta || 0;
+    const peripeteia = row.tutor_adaptation_metadata?.peripeteia || null;
+    if (peripeteia) {
+      bucket.peripeteiaScored += 1;
+      if (peripeteia.learner_reversal_pressure) bucket.reversalPressure += 1;
+      if (peripeteia.tutor_adaptive_mechanism || peripeteia.tutor_strategy_reversal) bucket.tutorMechanisms += 1;
+      bucket.peripeteiaScoreSum += peripeteia.tutor_peripeteia_score || 0;
+    }
   }
 
   const targetByCriticArm = {};
@@ -302,16 +315,20 @@ function renderTutorAdaptationSection(run) {
   const arms = Object.keys(run.targetAdaptation || {}).sort();
   if (!arms.length) return 'No target-arm tutor adaptation rows found.';
   const lines = [
-    '| Arm | Items | Learner self-reframes | Tutor contingent adaptations | Mean adaptation score | Mean uptake delta |',
-    '|---|---:|---:|---:|---:|---:|',
+    '| Arm | Items | Learner reversal pressure | Tutor habit-break mechanisms | Mean peripeteia score | Learner self-reframes | Tutor contingent uptake | Mean uptake score | Mean uptake delta |',
+    '|---|---:|---:|---:|---:|---:|---:|---:|---:|',
   ];
   for (const arm of arms) {
     const row = run.targetAdaptation[arm];
     const denom = row.scored || 0;
+    const peripeteiaDenom = row.peripeteiaScored || 0;
+    const meanPeripeteia = peripeteiaDenom
+      ? Math.round((10 * row.peripeteiaScoreSum) / peripeteiaDenom) / 10
+      : 'n/a';
     const meanScore = denom ? Math.round((10 * row.scoreSum) / denom) / 10 : 'n/a';
     const meanDelta = denom ? Math.round((1000 * row.uptakeDeltaSum) / denom) / 1000 : 'n/a';
     lines.push(
-      `| ${arm} | ${row.total}${row.missing ? ` (${row.missing} missing)` : ''} | ${row.learnerSelfReframes}/${denom} | ${row.tutorAdaptations}/${denom} | ${meanScore} | ${meanDelta} |`,
+      `| ${arm} | ${row.total}${row.missing ? ` (${row.missing} missing)` : ''} | ${row.reversalPressure}/${peripeteiaDenom} | ${row.tutorMechanisms}/${peripeteiaDenom} | ${meanPeripeteia} | ${row.learnerSelfReframes}/${denom} | ${row.tutorAdaptations}/${denom} | ${meanScore} | ${meanDelta} |`,
     );
   }
   return lines.join('\n');
@@ -380,6 +397,11 @@ function renderCsv(report) {
     'tutor_contingent_adaptation',
     'tutor_adaptation_score',
     'uptake_delta',
+    'learner_reversal_pressure',
+    'tutor_adaptive_mechanism',
+    'tutor_peripeteia_score',
+    'peripeteia_trigger',
+    'learner_outcome_after_reversal',
     'tutor_strategy_before',
     'tutor_strategy_after',
     'shared_salient_terms',
@@ -387,6 +409,7 @@ function renderCsv(report) {
   ];
   const lines = [header.join(',')];
   for (const row of report.rows) {
+    const peripeteia = row.tutor_adaptation_metadata?.peripeteia || {};
     lines.push(
       [
         row.run_id,
@@ -406,6 +429,11 @@ function renderCsv(report) {
         row.tutor_contingent_adaptation,
         row.tutor_adaptation_score,
         row.uptake_delta,
+        peripeteia.learner_reversal_pressure,
+        peripeteia.tutor_adaptive_mechanism || peripeteia.tutor_strategy_reversal,
+        peripeteia.tutor_peripeteia_score,
+        peripeteia.trigger_type,
+        peripeteia.learner_outcome_after_reversal,
         row.tutor_strategy_before,
         row.tutor_strategy_after,
         (row.shared_salient_terms || []).join(' '),

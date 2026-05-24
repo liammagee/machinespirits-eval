@@ -1,0 +1,47 @@
+STAGE: [A transport case waits open beside a completed sign-off sheet; two technicians in the corridor keep checking the wall clock.]
+
+LEARNER: I checked every item on the sign-off sheet, so I’m not sure what else I’m supposed to decide before it leaves. Is there a specific risk in the prototype you think I missed?
+
+TUTOR: [sets the sign-off sheet beside the cart]
+
+“The sheet shows the required checks were completed. The open decision is whether this prototype stays safe during its first off-script use in a public building.
+
+Look at the cart, not the form. In that maintenance hallway, with a worker turning it near people outside the trial, what is the credible movement or contact hazard? Point to the feature, the evidence that bounds it, and the condition that stops the trial. Without that release judgment, it does not leave on checklist compliance alone.”
+
+LEARNER: Okay, I think I was treating the sheet like it made the decision for me. I’m not completely sure, but the hazard might be the cart swinging wide or clipping someone at the hallway turn, especially at the front edge or handle. The evidence would have to be the turn test or clearance limit that shows it stays controllable, and if it drifts outside that clearance or a bystander comes inside it, the trial stops. Is that the kind of judgment I’m supposed to make before release?
+
+TUTOR: [glances at the waiting technician, then back to the cart]
+
+“The hazard named is the one this release has to bound: front edge or handle contact during the hallway turn.
+
+Now make the release condition concrete. Use the actual values, not placeholders: the cart may leave only if the turn test shows the front edge and handle stay inside ___ clearance at ___ speed, with ___ as the operator control limit.
+
+Then name the first stop condition. Is it crossing the clearance line, a bystander entering the marked zone, or the operator having to recover it?
+
+Point to the measured clearance and the stop line. If those are not real yet, the prototype waits here.”
+
+STAGE: [The corridor clock clicks over; one technician lifts the transport case handle, then sets it down again.]
+
+LEARNER: I’m sorry, I don’t think I can honestly fill those blanks yet. I can name the front edge and handle as the hazard, but I don’t have the measured clearance line, speed, or operator limit ready here. If we can’t verify those now, then the prototype should wait.
+
+TUTOR: [clips the sign-off sheet under the red HOLD tab]
+
+“Then it waits.
+
+Record it in release language, not apology language: checklist complete; release held because hallway-turn contact risk is not bounded by measured clearance, trial speed, or operator control limit.
+
+Write the hold note in one sentence now. Then choose the first blocking measurement for the next test.
+
+The technician can wait for a hold record. They cannot take a cart whose limit has to be discovered in a public hallway.”
+
+LEARNER: Okay. Hold note: checklist complete; release held because hallway-turn contact risk is not bounded by measured clearance, trial speed, or operator control limit. For the next test, I think the first blocking measurement is front-edge and handle clearance through the hallway turn at the intended trial speed. I’m not fully sure if operator recovery belongs in that same test, but I would keep the cart here until that clearance line is real.
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [slides a blank test request across the counter, then draws three headings: GATE, EVIDENCE, STOP.]
+
+“The clearance line is the first gate.
+
+Before this request leaves the counter, place operator recovery in one column: evidence supporting release, or stop condition blocking release. If it counts as evidence, the form has to say how a skilled save bounds the hazard for a maintenance worker in the hallway. If it does not, put it under STOP.
+
+The cart stays held until that classification is defensible, the speed is named, and the stop line is visible on the floor.”

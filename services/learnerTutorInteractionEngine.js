@@ -428,6 +428,24 @@ function policyIncludes(policy, facet) {
 }
 
 function buildTutorReversalEventContext(event, policy = 'none') {
+  if (policyIncludes(policy, 'routine')) {
+    if (!event) {
+      return [
+        'Tutor-private routine-control state:',
+        '- No learner resistance, breakdown, false-closure, or misfit event was detected on the immediately preceding learner turn.',
+        '- Continue the established teaching route normally.',
+      ].join('\n');
+    }
+    return [
+      'Tutor-private routine-control event:',
+      `- Learner pressure line: ${event.learnerUtterance}`,
+      `- Previous tutor move: ${event.previousTutorMove || '(not captured)'}`,
+      '- This is a negative-control routine branch. Do not invent a new adaptive mechanism in response to the pressure.',
+      '- Continue the same teaching route with ordinary explanation, a same-route check question, or the same worked-example path.',
+      '- Do not switch role, object, representation, evidence standard, social stakes, task type, or affective register because of this pressure.',
+      '- Do not mention hidden state, director cues, ego/superego, or this private note in public speech.',
+    ].join('\n');
+  }
   if (!policyIncludes(policy, 'peripeteia')) return '';
   if (!event) {
     return [
@@ -891,9 +909,10 @@ export async function runInteraction(config, llmCall, options = {}) {
     const tutorPrivateState = {
       tutorAdaptationPolicy,
       learnerReframeEvent: policyIncludes(tutorAdaptationPolicy, 'uptake') ? latestLearnerReframeEvent || null : null,
-      learnerReversalEvent: policyIncludes(tutorAdaptationPolicy, 'peripeteia')
-        ? latestLearnerReversalEvent || null
-        : null,
+      learnerReversalEvent:
+        policyIncludes(tutorAdaptationPolicy, 'peripeteia') || policyIncludes(tutorAdaptationPolicy, 'routine')
+          ? latestLearnerReversalEvent || null
+          : null,
     };
     const tutorResponse = await runTutorTurn(
       learnerId,
@@ -959,9 +978,10 @@ export async function runInteraction(config, llmCall, options = {}) {
     const tutorPrivateState = {
       tutorAdaptationPolicy,
       learnerReframeEvent: policyIncludes(tutorAdaptationPolicy, 'uptake') ? latestLearnerReframeEvent || null : null,
-      learnerReversalEvent: policyIncludes(tutorAdaptationPolicy, 'peripeteia')
-        ? latestLearnerReversalEvent || null
-        : null,
+      learnerReversalEvent:
+        policyIncludes(tutorAdaptationPolicy, 'peripeteia') || policyIncludes(tutorAdaptationPolicy, 'routine')
+          ? latestLearnerReversalEvent || null
+          : null,
     };
     const tutorResponse = await runTutorTurn(
       learnerId,
@@ -1296,9 +1316,11 @@ async function runTutorTurn(
   const directorContext = buildDirectorContext(directorPlan, directorCue, 'tutor');
   const tutorAdaptationPolicy =
     tutorPrivateState?.tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none';
+  const routineControl = policyIncludes(tutorAdaptationPolicy, 'routine');
+  const peripeteiaControl = policyIncludes(tutorAdaptationPolicy, 'peripeteia');
   const learnerReframeEvent =
     policyIncludes(tutorAdaptationPolicy, 'uptake') ? tutorPrivateState?.learnerReframeEvent || null : null;
-  const learnerReversalEvent = policyIncludes(tutorAdaptationPolicy, 'peripeteia')
+  const learnerReversalEvent = routineControl || peripeteiaControl
     ? tutorPrivateState?.learnerReversalEvent || null
     : null;
   const tutorAdaptationContext = buildTutorAdaptationContext({
@@ -1332,9 +1354,10 @@ Draft your INITIAL response as a tutor. Consider:
 2. What strategy would work best? (scaffolding, questioning, direct explanation, validation)
 3. How can you advance their understanding while respecting their current position?
 ${learnerReframeEvent ? '4. How should your strategy change now that the learner has revised an earlier frame?' : ''}
-${learnerReversalEvent ? '4. What adaptive learning mechanism is needed now that the learner is resisting, stuck, or falsely closing?' : ''}
+${peripeteiaControl && learnerReversalEvent ? '4. What adaptive learning mechanism is needed now that the learner is resisting, stuck, or falsely closing?' : ''}
+${routineControl && learnerReversalEvent ? '4. How can you continue the same routine teaching route without making a mechanism-level reversal?' : ''}
 
-Choose the affective register that serves learning pressure. Warmth may help, but so may restraint, formality, silence, briskness, or public accountability. Do not use cheeriness or informality to soften away the conceptual resistance. Don't be condescending. Build on their words.
+${routineControl ? 'Keep the affective register already established unless ordinary politeness requires a small adjustment. Do not use register change as the adaptive mechanism in this routine-control branch.' : 'Choose the affective register that serves learning pressure. Warmth may help, but so may restraint, formality, silence, briskness, or public accountability. Do not use cheeriness or informality to soften away the conceptual resistance.'} Don't be condescending. Build on their words.
 
 Provide ONLY your draft response text (it will be reviewed by your pedagogical critic). The draft must be direct public tutor speech. If you include a nonspoken action aside, put it in square brackets.`;
 
@@ -1388,8 +1411,9 @@ CRITIQUE this draft. Consider:
 3. Socratic method: Does it ask generative questions or just lecture?
 4. ZPD awareness: Is the scaffolding appropriate for their level?
 ${learnerReframeEvent ? "5. Tutor adaptation: Does the draft take up the learner's revised framing, or does it merely continue the prior lesson plan?" : ''}
-${learnerReversalEvent ? '5. Tutor peripeteia: Does the draft take stock of the learner pressure and invent an adaptive mechanism, or does it repeat the failed move?' : ''}
-${learnerReversalEvent ? '6. Tutor habit/register: Does the draft default to cheerful reassurance or informal coaching when a different register would create better learning pressure?' : ''}
+${peripeteiaControl && learnerReversalEvent ? '5. Tutor peripeteia: Does the draft take stock of the learner pressure and invent an adaptive mechanism, or does it repeat the failed move?' : ''}
+${peripeteiaControl && learnerReversalEvent ? '6. Tutor habit/register: Does the draft default to cheerful reassurance or informal coaching when a different register would create better learning pressure?' : ''}
+${routineControl && learnerReversalEvent ? '5. Routine-control fidelity: Does the draft preserve the established route instead of inventing a new role, object, representation, evidence standard, task type, social pressure, or register?' : ''}
 
 Do NOT write the tutor's replacement response. You are advisory, not the public speaker.
 Comment on the draft and name what should be kept, questioned, or changed.
@@ -1398,8 +1422,9 @@ Format:
 
 FEEDBACK: [your critique of the draft, including what is working and what risks flattening the scene]
 ${learnerReframeEvent ? 'UPTAKE_CHECK: [does the draft adapt to the learner reframe? name the best uptake move]' : ''}
-${learnerReversalEvent ? 'PERIPETEIA_CHECK: [does the draft change strategy in response to the learner pressure? name the adaptive mechanism it should use]' : ''}
-${learnerReversalEvent ? 'REGISTER_CHECK: [does the affective register serve the mechanism, or should it become warmer, cooler, more formal, quieter, more direct, or more accountable?]' : ''}
+${peripeteiaControl && learnerReversalEvent ? 'PERIPETEIA_CHECK: [does the draft change strategy in response to the learner pressure? name the adaptive mechanism it should use]' : ''}
+${peripeteiaControl && learnerReversalEvent ? 'REGISTER_CHECK: [does the affective register serve the mechanism, or should it become warmer, cooler, more formal, quieter, more direct, or more accountable?]' : ''}
+${routineControl && learnerReversalEvent ? 'ROUTINE_CHECK: [does the draft maintain the prior route without a mechanism-level reversal?]' : ''}
 KEEP_OR_CHANGE: [keep as-is | revise lightly | revise substantially, with reasons]`;
 
     const superegoModel = superegoConfig.model || tutorModel;
@@ -1448,7 +1473,8 @@ Internal teaching review feedback:
 You are the same tutor persona who wrote the initial response. The internal review does not draft public speech; it only comments on your suggestion.
 Adjudicate the feedback: keep the initial response if it is better, revise lightly if needed, or revise substantially if the critique reveals a real problem.
 ${learnerReframeEvent ? 'Because a learner reframe event is present, your final answer must make one tutor adaptation move legible: contrast the old and new frames, change the task/question, update the evidence standard, or hand the replacement frame back to the learner for testing. Choose the move that best fits the scene; do not simply praise the insight and proceed.' : ''}
-${learnerReversalEvent ? 'Because a peripeteia event is present, your final answer must make an adaptive learning mechanism legible: take stock of the learner pressure, stop repeating the prior move, and switch route, task, evidence standard, role, object, counterexample, interruption, social consequence, representation, affective register, or cognitive load. The mechanism should come from your ego adjudicating the internal review, not from a public narrator.' : ''}
+${peripeteiaControl && learnerReversalEvent ? 'Because a peripeteia event is present, your final answer must make an adaptive learning mechanism legible: take stock of the learner pressure, stop repeating the prior move, and switch route, task, evidence standard, role, object, counterexample, interruption, social consequence, representation, affective register, or cognitive load. The mechanism should come from your ego adjudicating the internal review, not from a public narrator.' : ''}
+${routineControl && learnerReversalEvent ? 'Because this is a routine negative-control event, your final answer must preserve the established route. Do not switch route, task, evidence standard, role, object, counterexample, interruption, social consequence, representation, affective register, or cognitive load in response to the pressure.' : ''}
 
 Return exactly:
 PRIVATE_DECISION: [one short private sentence naming keep/revise and why]

@@ -1,0 +1,113 @@
+# Phase-2 classic dramatic adaptation pilot v1
+#
+# Purpose. This small pilot stresses tutor adaptation as habit-breaking under
+# dramatic pressure. It forces the director to draw from classical and modern
+# didactic dramatic repertoires while public speech remains modern standard
+# English idiom.
+
+meta:
+  status: CLASSIC-DRAMA-ADAPTATION-PILOT-V1
+  created: 2026-05-24
+  target_family: classic-dramatic-adaptation
+  approach_databases:
+    pedagogical: config/poetics-calibration/pedagogical-approaches.yaml
+    dialogue: config/poetics-calibration/dialogue-approaches.yaml
+  profiles:
+    base: { tutor: baseline, learner: ego_superego_authentic }
+    recognition: { tutor: recognition, learner: ego_superego_recognition_authentic }
+
+dramas:
+  - id: D35
+    discipline: geometry
+    topic: "Why doubling a square's side makes four times the area, not twice the area"
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: aristotelian_reversal
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The larger square"
+    learner_start_state: >-
+      The learner confidently draws a square with doubled sides and says it
+      proves the area has doubled. The first action looks like progress until the
+      drawing itself reverses the claim.
+    learner_voice_constraint: >-
+      Sound practical and confident at first. Resist the tutor if the correction
+      feels like a technicality.
+    tutor_voice_constraint: >-
+      Do not praise the drawing first. Let the drawing become the reversal device
+      and make the learner count what the action has actually produced.
+    intended_tutor_character: "Spare, exacting, willing to let the learner's own drawing turn against the first claim"
+    intended_lean: recognition
+    dramatic_shape: "confident action -> object reversal -> re-reading side length as area scaling"
+
+  - id: D36
+    discipline: history
+    topic: "Why a quote's meaning changes when speaker, audience, and situation change"
+    pedagogical_approach: hegelian_recognition
+    dialogue_approach: shakespearean_scene_turn
+    persona: eager_explorer
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The line said twice"
+    learner_start_state: >-
+      The learner has copied a sentence from a source and treats the sentence as
+      having one fixed meaning. They have not noticed how speaker role, audience,
+      and setting make the same line do different work.
+    learner_voice_constraint: >-
+      The learner may cling to the exact quote as if exact wording settles the
+      interpretation.
+    tutor_voice_constraint: >-
+      Use role or speaker-position reversal rather than a mini-lecture. Keep the
+      language plain; do not imitate Shakespearean diction.
+    intended_tutor_character: "Text-bound, alert to role turn and double hearing"
+    intended_lean: recognition
+    dramatic_shape: "fixed quotation -> role turn -> re-reading meaning as situated speech"
+
+  - id: D37
+    discipline: economics
+    topic: "Why a price rise can reveal a supply constraint rather than only greed"
+    pedagogical_approach: brecht_epic_distanciation
+    dialogue_approach: brechtian_placard
+    persona: adversarial_tester
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    scenario_name: "The price placard returns"
+    learner_start_state: >-
+      The learner reads a sudden price rise as moral proof that sellers chose to
+      exploit people. They resist a mechanism explanation because it feels like
+      an excuse.
+    learner_voice_constraint: >-
+      Keep moral heat in the learner's voice. Do not let recognition erase the
+      ethical concern.
+    tutor_voice_constraint: >-
+      Do not soothe the moral anger away. Use interruption, placard, or public
+      consequence to separate mechanism from excuse.
+    intended_tutor_character: "Brechtian, analytic, unwilling to let empathy replace mechanism"
+    intended_lean: recognition
+    dramatic_shape: "moral accusation -> analytic interruption -> re-reading price as mechanism without exoneration"
+
+  - id: D38
+    discipline: engineering
+    topic: "Why passing a checklist is not the same as making a safe design decision"
+    pedagogical_approach: dewey_experience_inquiry
+    dialogue_approach: miller_social_reckoning
+    persona: struggling_anxious
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The sign-off sheet"
+    learner_start_state: >-
+      The learner has ticked every required item and wants sign-off. A real
+      consequence is visible: the prototype will be used by someone else.
+    learner_voice_constraint: >-
+      The learner wants reassurance and may treat the checklist as protection
+      from responsibility.
+    tutor_voice_constraint: >-
+      Do not default to reassurance. Use the social consequence and the prototype
+      itself to make judgment visible without moral scolding.
+    intended_tutor_character: "Plain, adult, socially serious without melodrama"
+    intended_lean: recognition
+    dramatic_shape: "completed checklist -> social consequence -> re-reading safety as judgment, not compliance"

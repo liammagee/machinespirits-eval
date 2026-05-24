@@ -1,0 +1,59 @@
+STAGE: [Margin voice: Same sentence, second mouth.]
+
+LEARNER: Wait, if the words are identical, how much can I change the caption without making it look like I am inventing meaning? [looks at the nearly approved label] I thought the exact quote settled it, but now I see the same line could sound like evidence in one mouth and a warning in another.
+
+TUTOR: [sets the label beside the source note]
+
+“The exact quote settles the wording, not the work the sentence was doing. Read it once as an official defending a policy to donors. Read the same line again as a worker repeating it to warn the room. No words changed; the relation changed.
+
+[Margin note: Speaker, audience, occasion.]
+
+So the caption should not add an inside motive the archive cannot prove. It can name the public situation the source note does prove: who said it, to whom, under what pressure, and what job the line was doing there.
+
+Try the label in two columns: ‘the archive proves’ and ‘the caption is guessing.’ The sentence can move only as far as the first column carries it.”
+
+LEARNER: Oh, I get it: the line is like the same object carried into another room, and suddenly it weighs differently because a donor, an official, or a worker can make it do a different job. But “job” still feels slippery, because if I write “the sentence warned the room,” am I already guessing what the worker meant? Maybe the caption can say “in that meeting, under that pressure, the repeated line shifted from policy defence to warning” only if the source note proves the room and audience.
+
+STAGE: [Margin voice: The label has room for one sentence, not for one certainty.]
+
+TUTOR: [sets the copied line in the centre of the label]
+
+The object-in-another-room test catches the problem: same words, different weight. But the label has to prove the room, not pretend it can see inside the worker’s head.
+
+Put the official line in two mouths.
+
+Before donors, it works as policy defence.
+After the cuts are named, in a workers’ meeting, it may work as warning, but only if the source note gives the hinges: meeting, pressure, audience, sequence.
+
+[Margin: The label has room for one sentence, not for one certainty.]
+
+So test the verbs before print.
+
+“Meant” points inward, toward intention.
+“Worked” points outward, toward the public situation.
+
+If the note proves only repetition, the caption can say the worker repeated the official defence. If it also proves the meeting, dispute, and audience, the caption can say the line shifted away from endorsement. Add “toward warning” only if the room and sequence can carry that weight.
+
+“Warned the room” may overclaim. “Repeated under pressure in a workers’ meeting” lets the archive show why the same sentence no longer sits still.
+
+LEARNER: Oh, I get it: “worked” keeps me with the evidence on the table, while “meant” sends me guessing into the worker’s head. The same copied line can change weight when it moves mouths, but “warning” might be me making the exhibit too dramatic before the source note earns it. Let me try: “Repeated under pressure in a workers’ meeting, the official defence shifted away from endorsement.” Is that still too strong unless the sequence is printed in the note?
+
+TUTOR: [sets the copied line between the donor note and the meeting note]
+
+Your “worked, not meant” distinction is holding: the caption can describe public force without entering the worker’s head.
+
+Pass the same sentence through two rooms.
+
+Before donors: policy defence.
+
+After cuts are named, in a workers’ meeting: the same words may stop sounding like endorsement and start sounding like exposure.
+
+[Margin: Sequence required.]
+
+So yes: “shifted away from endorsement” is too strong unless the note prints the route: first use, later repetition, pressure, audience. If that route is there, the verb has support. If it is not, keep the claim on the surface:
+
+“Repeated under pressure in a workers’ meeting, the official defence was no longer heard only in the voice of policy.”
+
+That keeps the room change visible without pretending to know the worker’s motive.
+
+LEARNER: Oh, I get it: the sentence is not frozen by being exact; it has to pass through the donor note and the meeting note before I choose the verb. I am tempted by “exposure,” but that may be me making the room speak louder than the source note allows. [checks the note] If the sequence and audience are printed here, I can move toward that; if not, I should keep it at “repeated under pressure” and let the placement do the work.

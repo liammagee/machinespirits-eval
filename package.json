@@ -79,6 +79,7 @@
     "poetics:ingest": "node scripts/ingest-poetics-artifacts.js",
     "poetics:report": "node scripts/report-poetics-sidecar.js",
     "poetics:adaptation": "node scripts/analyze-poetics-tutor-adaptation.js",
+    "poetics:structure-critic": "node scripts/critic-poetics-structure.js",
     "poetics:audit": "node scripts/audit-poetics-disagreements.js",
     "poetics:flag-review": "node scripts/flag-poetics-review-cases.js",
     "poetics:browse": "node scripts/browse-poetics-scripts.js",

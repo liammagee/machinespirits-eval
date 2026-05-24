@@ -156,7 +156,7 @@ function seed(db) {
   });
   upsertPoeticsTutorAdaptation(db, {
     itemId: 'poetics-second-run:target-r01:reframe:T03',
-    analyzerVersion: 'tutor-adaptation-v1',
+    analyzerVersion: 'tutor-adaptation-v2',
     sourceTracePath: 'config/poetics-calibration/poetics-second-run/target-r01/deliberation/reframe/T03.json',
     learnerSelfReframe: true,
     learnerReframeScore: 1,
@@ -206,6 +206,12 @@ describe('poetics sidecar report and browser', () => {
       assert.match(renderMarkdown(report), /Tutor Adaptation/);
       assert.ok(renderCsv(report).includes('deepseek/deepseek-v4-pro'));
       assert.ok(renderCsv(report).includes('tutor_adaptation_score'));
+
+      const adaptiveReport = buildPoeticsReport(db, { runId: 'poetics-second-run' });
+      assert.match(renderMarkdown(adaptiveReport), /Tutor habit-break mechanisms/);
+      assert.match(renderMarkdown(adaptiveReport), /Mean peripeteia score/);
+      assert.ok(renderCsv(adaptiveReport).includes('tutor_peripeteia_score'));
+      assert.ok(renderCsv(adaptiveReport).includes('68'));
     }));
 
   it('lists runs and retrieves script details for the browser API layer', () =>

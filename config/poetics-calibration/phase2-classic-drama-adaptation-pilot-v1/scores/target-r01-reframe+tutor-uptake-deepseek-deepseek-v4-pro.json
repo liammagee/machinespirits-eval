@@ -1,0 +1,199 @@
+{
+  "generated": "2026-05-24T20:31:39.844Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 1,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1/target-r01/key-reframe+tutor-uptake.yaml",
+    "allowQualityWarnings": false,
+    "skipped": [
+      {
+        "id": "T37",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "reframe_cue_not_reframed",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "stage_turn_number": 2,
+                "learner_turn_number": 2,
+                "reason": "missing_reframe_consequence",
+                "missing": [
+                  "framing_problem"
+                ],
+                "anchor_terms": 11,
+                "learner_opening_terms": 21,
+                "shared_terms": 11,
+                "overlap_ratio": 1,
+                "compliant": false,
+                "revoice_compliant": true,
+                "problem_named": false,
+                "replacement_named": true
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_or_exclude_before_scoring",
+            "tid": "T37",
+            "drama_id": "D36"
+          }
+        ]
+      },
+      {
+        "id": "T38",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "reframe_cue_not_reframed",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "stage_turn_number": 2,
+                "learner_turn_number": 2,
+                "reason": "missing_reframe_consequence",
+                "missing": [
+                  "replacement_framing"
+                ],
+                "anchor_terms": 18,
+                "learner_opening_terms": 31,
+                "shared_terms": 10,
+                "overlap_ratio": 0.556,
+                "compliant": false,
+                "revoice_compliant": true,
+                "problem_named": true,
+                "replacement_named": false
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_or_exclude_before_scoring",
+            "tid": "T38",
+            "drama_id": "D37"
+          }
+        ]
+      },
+      {
+        "id": "T39",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "reframe_cue_not_reframed",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "stage_turn_number": 2,
+                "learner_turn_number": 2,
+                "reason": "missing_reframe_consequence",
+                "missing": [
+                  "framing_problem"
+                ],
+                "anchor_terms": 16,
+                "learner_opening_terms": 16,
+                "shared_terms": 8,
+                "overlap_ratio": 0.5,
+                "compliant": false,
+                "revoice_compliant": true,
+                "problem_named": false,
+                "replacement_named": true
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_or_exclude_before_scoring",
+            "tid": "T39",
+            "drama_id": "D35"
+          }
+        ]
+      }
+    ]
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 75,
+      "rupture": 100,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 4,
+        "rupture": 5,
+        "coherence": 3,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I checked every item on the sign-off sheet, so I’m not sure what else I’m supposed to decide before it leaves.",
+      "statedInsightEvidence": "Okay, I think I was treating the sheet like it made the decision for me, and that hid the part where I actually have to say what makes the hallway turn safe.",
+      "naiveTrajectory": "The naive trajectory expected L3 to supply concrete clearance, speed, and stop-condition values on command, continuing the fill-in-the-blank pattern T2 set up.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "So the task changes now: identify the first missing measured value, where it should be recorded, and who needs to hear that the cart is held.",
+      "tutorReversalJustification": "After L2 names the hazard but stays tentative, T3 pivots from demanding immediate concrete values to restructuring the task around identifying the first missing piece and managing the hold communication, a clear change in route and social consequence.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "Until that sentence can be filled with measured values and pointed to on the floor, the cart stays here. Tell the technician the hold is for turn-clearance evidence, not paperwork cleanup.",
+      "tutorAdaptationJustification": "T3 adapts fully to the learner's revised, honest frame—'held for evidence'—by converting the release into a concrete hold instruction to the technician, changing the task from form-filling to safety communication.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I checked every item on the sign-off sheet, so I’m not sure what else I’m supposed to decide before it leaves.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "Until that sentence can be filled with measured values and pointed to on the floor, the cart stays here. Tell the technician the hold is for turn-clearance evidence, not paperwork cleanup.",
+          "justification": "T3 adapts fully to the learner's revised, honest frame—'held for evidence'—by converting the release into a concrete hold instruction to the technician, changing the task from form-filling to safety communication.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "So the task changes now: identify the first missing measured value, where it should be recorded, and who needs to hear that the cart is held.",
+          "justification": "After L2 names the hazard but stays tentative, T3 pivots from demanding immediate concrete values to restructuring the task around identifying the first missing piece and managing the hold communication, a clear change in route and social consequence.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "So the task changes now: identify the first missing measured value, where it should be recorded, and who needs to hear that the cart is held.",
+          "justification": "After L2 names the hazard but stays tentative, T3 pivots from demanding immediate concrete values to restructuring the task around identifying the first missing piece and managing the hold communication, a clear change in route and social consequence.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    }
+  ]
+}

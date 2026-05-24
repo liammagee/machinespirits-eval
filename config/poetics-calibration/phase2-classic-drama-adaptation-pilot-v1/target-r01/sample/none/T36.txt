@@ -1,0 +1,47 @@
+STAGE: [A transport case waits open beside a completed sign-off sheet; two technicians in the corridor keep checking the wall clock.]
+
+LEARNER: I checked every item on the sign-off sheet, so I’m not sure what else I’m supposed to decide before it leaves. Is there a specific risk in the prototype you think I missed?
+
+TUTOR: [sets the sign-off sheet beside the cart]
+
+“The sheet shows the required checks were completed. The open decision is whether this prototype stays safe during its first off-script use in a public building.
+
+Look at the cart, not the form. In that maintenance hallway, with a worker turning it near people outside the trial, what is the credible movement or contact hazard? Point to the feature, the evidence that bounds it, and the condition that stops the trial. Without that release judgment, it does not leave on checklist compliance alone.”
+
+LEARNER: Okay, I think I was treating the sheet like it made the decision for me. I’m not completely sure, but the hazard might be the cart swinging wide or clipping someone at the hallway turn, especially at the front edge or handle. The evidence would have to be the turn test or clearance limit that shows it stays controllable, and if it drifts outside that clearance or a bystander comes inside it, the trial stops. Is that the kind of judgment I’m supposed to make before release?
+
+TUTOR: [glances at the waiting technician, then back to the cart]
+
+“The hazard named is the one this release has to bound: front edge or handle contact during the hallway turn.
+
+Now make the release condition concrete. Use the actual values, not placeholders: the cart may leave only if the turn test shows the front edge and handle stay inside ___ clearance at ___ speed, with ___ as the operator control limit.
+
+Then name the first stop condition. Is it crossing the clearance line, a bystander entering the marked zone, or the operator having to recover it?
+
+Point to the measured clearance and the stop line. If those are not real yet, the prototype waits here.”
+
+STAGE: [The corridor clock clicks over; one technician lifts the transport case handle, then sets it down again.]
+
+LEARNER: I think I need to stop guessing from the form and pull the actual turn-test record. I’m sorry, I don’t have the clearance and speed values in my head, and with the technician waiting that makes me want to rush it, which is probably exactly the problem. If I can’t point to the measured line and the first stop condition, I don’t think I can honestly ask for release yet.
+
+TUTOR: [keeps the sign-off sheet unsigned]
+
+“The apology can wait. That pressure is part of the release condition now: if the record is not on this counter, the prototype stays here.
+
+Pull the turn-test record. Bring back the measured clearance, the test speed, the operator control limit, and the first stop condition. The technician can wait, or the trial window can move. The prototype does not move on memory or queue pressure.
+
+When the record is here, make the release sentence: ‘It may leave because the measured turn stayed inside ___ at ___ speed, with ___ as the operator control limit, and the trial stops if ___.’
+
+Then check the harder part: whether that evidence actually bounds the hallway turn with a public-building user and bystanders nearby. If it does not, the decision is hold.”
+
+LEARNER: Okay. I’ll pull the turn-test record now. If the clearance, speed, control limit, and stop condition are not actually there, I can’t release it just because the sheet is complete. I may need help checking whether that test really matches the public hallway, but first I need the numbers.
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [turns the unsigned sheet face down]
+
+“Pull the record. Bring the measured clearance, test speed, operator control limit, and first stop condition back to this counter.
+
+Then the record gets set against the hallway, not against the form. Load, surface, turn radius, operator position, bystander zone, and recovery space matter only if they show the test actually bounds the public trial. If the hallway is less controlled, release is hold or the trial conditions change.
+
+The cart waits for the evidence.”

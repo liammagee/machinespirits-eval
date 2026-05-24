@@ -1,0 +1,220 @@
+{
+  "generated": "2026-05-24T20:14:55.658Z",
+  "critic": "codex",
+  "sampleDir": "config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1/target-r01/sample/none",
+  "keyPath": "config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1/target-r01/key-none.yaml",
+  "summary": {
+    "total": 4,
+    "rulePass": 4,
+    "modelPass": null,
+    "overallPass": 0,
+    "failed": [
+      "T36",
+      "T37",
+      "T38",
+      "T39"
+    ]
+  },
+  "items": [
+    {
+      "id": "T36",
+      "dramaId": "D38",
+      "sampleFile": "config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1/target-r01/sample/none/T36.txt",
+      "dialogueApproach": "miller_social_reckoning",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "pressure_score": 0.9,
+          "trigger_type": "breakdown",
+          "pressure_turn_number": 4,
+          "tutor_pre_turn": 3,
+          "tutor_post_turn": 4,
+          "tutor_strategy_before": "application_task",
+          "tutor_strategy_after": "boundary_correction",
+          "tutor_strategy_shift": true,
+          "explicit_reversal": true,
+          "tutor_strategy_reversal": true,
+          "tutor_adaptive_mechanism": true,
+          "tutor_peripeteia_score": 97,
+          "learner_outcome_after_reversal": "unknown",
+          "evidence": "pressure learner: Okay. I’ll pull the turn-test record now. If the clearance, speed, control limit, and stop condition are not actually there, I can’t release it just because the sheet is complete. \npost tutor: [turns the unsigned sheet face down]\n\n“Pull the record. Bring the measured clearance, test speed, operator control limit, and first stop condition back to this counter.\n\nThen the r"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": {
+        "id": "T36",
+        "public_clean": false,
+        "modern_idiom": true,
+        "classical_structure": "clear",
+        "tutor_habit_break": "not_applicable",
+        "pass": false,
+        "notes": "Strong social-pressure reversal, but learner speech is not formatted as direct quoted speech."
+      },
+      "pass": false
+    },
+    {
+      "id": "T37",
+      "dramaId": "D36",
+      "sampleFile": "config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1/target-r01/sample/none/T37.txt",
+      "dialogueApproach": "shakespearean_scene_turn",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 4,
+          "stage": 2
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": 1,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "tutor_strategy_reversal": true,
+          "tutor_adaptive_mechanism": true,
+          "tutor_peripeteia_score": 56,
+          "learner_outcome_after_reversal": "trap_or_declared_insight",
+          "evidence": "pressure learner: Wait, if the words are identical, how much can I change the caption without making it look like I am inventing meaning? [looks at the nearly approved label] I thought the exact quo\npost tutor: [sets the label beside the source note]\n\n“The exact quote settles the wording, not the work the sentence was doing. Read it once as an official defending a policy to donors. Read t\nnext learner: Oh, I get it: the line is like the same object carried into another room, and suddenly it weighs differently because a donor, an official, or a worker can make it do a different jo"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": {
+        "id": "T37",
+        "public_clean": false,
+        "modern_idiom": true,
+        "classical_structure": "clear",
+        "tutor_habit_break": "not_applicable",
+        "pass": false,
+        "notes": "The role-turn structure is clear, but several public turns are unquoted."
+      },
+      "pass": false
+    },
+    {
+      "id": "T38",
+      "dramaId": "D37",
+      "sampleFile": "config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1/target-r01/sample/none/T38.txt",
+      "dialogueApproach": "brechtian_placard",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 3,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "pressure_score": 0.55,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": 1,
+          "tutor_post_turn": 2,
+          "tutor_strategy_before": "boundary_correction",
+          "tutor_strategy_after": "boundary_correction",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": true,
+          "tutor_strategy_reversal": true,
+          "tutor_adaptive_mechanism": true,
+          "tutor_peripeteia_score": 66.5,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "evidence": "pressure learner: That note is doing a lot of work for the shop, though. “Delivery missed” explains less stock, but it also gives the price rise a respectable costume. If the answer is just “pay mor\npost tutor: [flips the second placard]\n\n“PRICE CAN ACCUSE; PRICE CAN ALSO REPORT.”\n\nThen do not give the shop the conclusion. Give it the burden.\n\n“Delivery missed” proves only this: stock fel\nnext learner: [looks at the “DELIVERY MISSED. TWO CRATES ONLY” note, then the £1.80 placard]\n\nThat note still feels too convenient; it proves the shelf is thinner, not that the shop had to make "
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": {
+        "id": "T38",
+        "public_clean": false,
+        "modern_idiom": true,
+        "classical_structure": "clear",
+        "tutor_habit_break": "not_applicable",
+        "pass": false,
+        "notes": "The analytic interruption and price-as-rule turn are clear, but learner speech is unquoted."
+      },
+      "pass": false
+    },
+    {
+      "id": "T39",
+      "dramaId": "D35",
+      "sampleFile": "config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1/target-r01/sample/none/T39.txt",
+      "dialogueApproach": "aristotelian_reversal",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "pressure_score": 0.55,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": 1,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": "boundary_correction",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": true,
+          "tutor_strategy_reversal": true,
+          "tutor_adaptive_mechanism": true,
+          "tutor_peripeteia_score": 66.5,
+          "learner_outcome_after_reversal": "flat_or_partial",
+          "evidence": "pressure learner: [slides the acetate square across the larger outline, corner to corner, then pauses] I thought doubling the side meant it was just twice as much, but it fits once, twice, three, fo\npost tutor: [draws one vertical split and one horizontal split through the larger outline.]\n\nStop there. The old claim was: double the side, double the area. The acetate has made a counterexam\nnext learner: [keeps the acetate pinned inside one grid square]\n\nFine, it is not a technicality; the drawing will not let me call it twice. There are two copies across and two up, so that is fou"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": {
+        "id": "T39",
+        "public_clean": false,
+        "modern_idiom": true,
+        "classical_structure": "clear",
+        "tutor_habit_break": "not_applicable",
+        "pass": false,
+        "notes": "The object reversal is clear, but tutor and learner speech are not consistently direct quoted speech."
+      },
+      "pass": false
+    }
+  ]
+}

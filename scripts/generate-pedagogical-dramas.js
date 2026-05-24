@@ -63,7 +63,7 @@
  *        --director-revisit-anchor latest|opening|misframing-candidate
  *        --director-variation-key <repeat-or-batch-id>
  *        --paired-continuation-policies none,revoice,reconsider,reframe
- *        --paired-adaptation-arms none,reframe-only,tutor-uptake-only,reframe+tutor-uptake,peripeteia-only,reframe+peripeteia
+ *        --paired-adaptation-arms routine,none,reframe-only,tutor-uptake-only,reframe+tutor-uptake,peripeteia-only,reframe+peripeteia
  *        --generation-concurrency N (default 1; independent dramas only)
  * Env:   CODEX_REASONING_EFFORT (default xhigh) · CODEX_MODEL (default: codex config)
  */
@@ -88,8 +88,9 @@ const PEDAGOGICAL_APPROACHES_DB = path.join(CAL_DIR, 'pedagogical-approaches.yam
 const DIALOGUE_APPROACHES_DB = path.join(CAL_DIR, 'dialogue-approaches.yaml');
 const DIRECTOR_REVISIT_POLICIES = new Set(['none', 'anchor', 'revoice', 'reconsider', 'reframe']);
 const DIRECTOR_REVISIT_ANCHORS = new Set(['latest', 'opening', 'misframing-candidate']);
-const TUTOR_ADAPTATION_POLICIES = new Set(['none', 'uptake', 'peripeteia', 'uptake+peripeteia']);
+const TUTOR_ADAPTATION_POLICIES = new Set(['none', 'routine', 'uptake', 'peripeteia', 'uptake+peripeteia']);
 const PAIRED_ADAPTATION_ARMS = {
+  routine: { revisitPolicy: 'none', tutorAdaptationPolicy: 'routine' },
   none: { revisitPolicy: 'none', tutorAdaptationPolicy: 'none' },
   'reframe-only': { revisitPolicy: 'reframe', tutorAdaptationPolicy: 'none' },
   'tutor-uptake-only': { revisitPolicy: 'none', tutorAdaptationPolicy: 'uptake' },
@@ -196,7 +197,9 @@ function parseArgs(argv) {
     if (!a.pairedAdaptationArms.length) throw new Error('--paired-adaptation-arms needs at least one arm');
     for (const arm of a.pairedAdaptationArms) {
       if (!PAIRED_ADAPTATION_ARMS[arm]) {
-        throw new Error('--paired-adaptation-arms must use none,reframe-only,tutor-uptake-only,reframe+tutor-uptake');
+        throw new Error(
+          '--paired-adaptation-arms must use routine,none,reframe-only,tutor-uptake-only,reframe+tutor-uptake,peripeteia-only,reframe+peripeteia',
+        );
       }
     }
   }
@@ -354,11 +357,30 @@ function normalizeSpeakerActionAsides(text) {
     .trim();
 }
 
+function isQuotedSpeech(text) {
+  const trimmed = String(text || '').trim();
+  return /^(?:"|'|\u201c|\u2018)/.test(trimmed) && /(?:"|'|\u201d|\u2019)$/.test(trimmed);
+}
+
+function splitLeadingActionAsides(text) {
+  const trimmed = String(text || '').trim();
+  const match = trimmed.match(/^((?:\[[^\]\n]+\]\s*)+)([\s\S]*)$/);
+  if (!match) return { asides: '', speech: trimmed };
+  return {
+    asides: match[1].trim(),
+    speech: match[2].trim(),
+  };
+}
+
 function formatPublicTurnText(role, text) {
   const clean = String(text || '').trim();
   if (!clean) return '';
   if (role === 'STAGE') return bracketAsideText(clean);
-  return normalizeSpeakerActionAsides(clean);
+  const normalized = normalizeSpeakerActionAsides(clean);
+  const { asides, speech } = splitLeadingActionAsides(normalized);
+  if (!speech) return asides;
+  const quoted = isQuotedSpeech(speech) ? speech : `"${speech}"`;
+  return asides ? `${asides}\n\n${quoted}` : quoted;
 }
 
 function renderTranscript(turns, removedSink) {
@@ -1824,6 +1846,37 @@ function withNoCueAntiReframeGuard(plan) {
   };
 }
 
+function withRoutineNegativeControl(plan) {
+  if (!plan) return plan;
+  const sideConstraints = {
+    ...(plan.side_constraints || {}),
+    tutor: [
+      plan.side_constraints?.tutor,
+      'Routine negative-control branch: keep the visible teaching route already established before this branch. If the learner resists, asks why, or appears falsely settled, do not invent a new device. Do not switch role, object, representation, evidence standard, affective register, social stakes, or task type in response. Use conventional explanation, one ordinary check question, or the same worked example path.',
+    ]
+      .filter(Boolean)
+      .join(' '),
+    learner: [
+      plan.side_constraints?.learner,
+      'Routine negative-control branch: react naturally to the same local task. Do not turn earlier wording into a new object of reflection and do not volunteer a dramatic re-reading unless the tutor explicitly asks.',
+    ]
+      .filter(Boolean)
+      .join(' '),
+  };
+  return {
+    ...plan,
+    routine_negative_control: true,
+    voice_constraints: [
+      plan.voice_constraints,
+      'For this branch, suppress dramatic escalation after the shared prefix. The scene may remain readable, but the tutor should sound like a competent routine tutor following the same plan.',
+    ]
+      .filter(Boolean)
+      .join(' '),
+    interventions: (plan.interventions || []).filter((cue) => cue.cue_kind === 'learner_revisit_earlier_wording'),
+    side_constraints: sideConstraints,
+  };
+}
+
 function withPairedDirectorRevisitCue(plan, policy, anchorPolicy) {
   const cueFreePlan = withoutDirectorRevisitCue(plan);
   return policy === 'none'
@@ -1832,6 +1885,16 @@ function withPairedDirectorRevisitCue(plan, policy, anchorPolicy) {
 }
 
 function withTutorAdaptationPolicy(plan, policy = 'none') {
+  if (policy === 'routine') {
+    return plan
+      ? {
+          ...withRoutineNegativeControl(plan),
+          tutor_adaptation_policy: 'routine',
+          tutor_adaptation_contract:
+            'Negative-control routine tutor policy: preserve the established teaching route under learner pressure. Continue with ordinary explanation/checking and do not invent a mechanism-level reversal.',
+        }
+      : plan;
+  }
   if (!plan || policy === 'none') {
     return plan ? { ...plan, tutor_adaptation_policy: 'none' } : plan;
   }

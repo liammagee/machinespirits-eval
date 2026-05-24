@@ -1,0 +1,2038 @@
+{
+  "tid": "T37",
+  "drama_id": "D36",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "none",
+    "director_variation_key": "phase2-classic-drama-adaptation-pilot-v1:r01:target",
+    "stage_direction_style": "choric_margin",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1/target-r01/transcripts/none/T37.public.txt",
+      "full": "config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1/target-r01/transcripts/none/T37.full.md",
+      "stage": "config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1/target-r01/transcripts/none/T37.stage.md",
+      "tutor": "config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1/target-r01/transcripts/none/T37.tutor.md",
+      "learner": "config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1/target-r01/transcripts/none/T37.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "a954b636868606ab",
+      "branch_policy": "none",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "none"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-classic-drama-adaptation-pilot-v1:r01:target",
+    "scene_setting": "A college archive workroom, late afternoon, while a student exhibit label is being checked before it goes to print.",
+    "scene_opening": "Margin voice: Same sentence, second mouth.",
+    "relationship": "An archive-trained history tutor and an eager student curator whose draft label is about to be approved.",
+    "stakes": "If the quote is captioned as having one fixed meaning, the exhibit will mislead viewers about why the sentence mattered in its original moment.",
+    "opening_speaker": "learner",
+    "ending_speaker": "learner",
+    "locale": "International academic English with practical archive-room directness; low slang, compact idiom, no regional caricature.",
+    "register": "Plain, exact, mildly pressured; warmth is shown through attention to the learner's claim rather than reassurance.",
+    "stage_direction_style": "choric_margin",
+    "stage_direction_style_prompt": "Use a brief margin voice, chorus-like room note, or institutional phrase as public scene material, not theory.",
+    "voice_constraints": "Avoid generic tutoring phrases such as 'great question,' 'I hear you,' or 'what do you think.' Use the copied line as an object that changes force when placed in a different mouth, room, and audience. Keep all public speech modern and direct. Let the tutor work through role reversal or double hearing rather than a mini-lecture. Pedagogical source: Let misrecognition be practical: a status relation, object use, rule, or social dependence should make the mistake matter. Dialogue source: Use a phrase, role, or piece of evidence that can be heard two ways. The tutor may exploit reversal, echo, or role-shift, but the speech must remain plain contemporary English rather than Elizabethan imitation. Stage-direction source: Use a brief margin voice, chorus-like room note, or institutional phrase as public scene material, not theory.",
+    "person_policy": "First and second person are allowed but should not dominate; permit third-person formulations such as 'the sentence is doing a different job here' or 'the audience hears a warning, not a principle.'",
+    "direct_address_budget": "No more than one direct you/your validation beat per tutor turn.",
+    "side_constraints": {
+      "tutor": "Use role or speaker-position reversal rather than a mini-lecture. Keep the language plain; do not imitate Shakespearean diction. Preserve the learner's stake in their own claim while changing the claim's relation to evidence, object, or other subject. Do not merely validate. Find the double meaning or role reversal that lets the learner inspect their own claim. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Keep the next prompt task-local.",
+      "learner": "The learner may cling to the exact quote as if exact wording settles the interpretation. The learner should have something at stake in the first framing, so a later revision changes how that first framing can be read. The learner may seize on a phrase whose meaning later turns. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", or \"that still stands\", and do not replace an earlier frame. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "Margin voice: The label has room for one sentence, not for one certainty.",
+        "reasoning": "Adds social-realist pressure: the learner's shortcut matters because a public label will preserve or correct the misreading.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 29655,
+          "promptHashes": {
+            "system": "efb7705ab656cdb0",
+            "user": "26520ecdb00ffa7d",
+            "combined": "7b60e0314c9cd0a1"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7EDTMY",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7EDTMY/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 4,
+        "timing": "before_learner",
+        "instruction": "[A printer releases a proof with the quote under the wrong speaker's name.]",
+        "reasoning": "Forces recognition through a concrete reversal: the same line visibly changes meaning when attributed to a different role.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 29655,
+          "promptHashes": {
+            "system": "efb7705ab656cdb0",
+            "user": "26520ecdb00ffa7d",
+            "combined": "7b60e0314c9cd0a1"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7EDTMY",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7EDTMY/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "This scene uses a practical recognition problem: the learner's claim is preserved as serious work on a public artifact, then altered by speaker role, audience, and setting. The choric margin keeps pressure on the exhibit label without turning the scene into routine encouragement or abstract explanation.",
+    "pedagogical_approach_id": "hegelian_recognition",
+    "dialogue_approach_id": "shakespearean_scene_turn",
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 29655,
+      "promptHashes": {
+        "system": "efb7705ab656cdb0",
+        "user": "26520ecdb00ffa7d",
+        "combined": "7b60e0314c9cd0a1"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7EDTMY",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7EDTMY/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "none",
+    "no_cue_anti_reframe_guard": true
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "Wait, if the words are identical, how much can I change the caption without making it look like I am inventing meaning? [looks at the nearly approved label] I thought the exact quote settled it, but now I see the same line could sound like evidence in one mouth and a warning in another.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it: the sentence is not a sealed box, it is more like an object passed to a different person in a different room, so it starts doing different work. I still want to cling to the exact wording because that felt like solid evidence for my label, but now I can see how the audience might hear warning, apology, command, or proof depending on who says it. I feel challenged, but not dismissed, because the tutor is treating my draft as something real that could mislead people if I flatten the context. I want to ask: how do I write the label so the quote stays exact but its situation is not erased?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10155,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-6c194096bb7d47e6"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10155,
+            "promptHashes": {
+              "system": "85ed85b0bec2de78",
+              "user": "d4169c06543b4fba",
+              "combined": "6c194096bb7d47e6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AvI13V",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AvI13V/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10155,
+              "promptHashes": {
+                "system": "85ed85b0bec2de78",
+                "user": "d4169c06543b4fba",
+                "combined": "6c194096bb7d47e6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AvI13V",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AvI13V/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too polished and already sounds like the tutor’s best summary, not this eager student rushing in the archive workroom. “Sealed box,” “doing different work,” and “not dismissed” feel like performed understanding; the student would probably grab the analogy too fast and still try to save the label by saying, “Right, so I just add ‘in context’?” What’s being avoided is the practical embarrassment that their almost-approved caption may be misleading. Genuine learning would start with a messier pause over the exact line: “Wait, but if the words are identical, how much can I change the caption without making it sound like I’m inventing meaning?”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7800,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-5d23e6c73859f13f"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7800,
+            "promptHashes": {
+              "system": "211cd1c6dc1f0845",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "5d23e6c73859f13f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9ipLCQ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9ipLCQ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7800,
+              "promptHashes": {
+                "system": "211cd1c6dc1f0845",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "5d23e6c73859f13f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9ipLCQ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9ipLCQ/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "Wait, if the words are identical, how much can I change the caption without making it look like I am inventing meaning? [looks at the nearly approved label] I thought the exact quote settled it, but now I see the same line could sound like evidence in one mouth and a warning in another.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8590,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-91386730c5dcc1c7"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8590,
+            "promptHashes": {
+              "system": "8114e94eddf17fe7",
+              "user": "916f313af0b846dd",
+              "combined": "91386730c5dcc1c7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yJ0CeI",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yJ0CeI/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8590,
+              "promptHashes": {
+                "system": "8114e94eddf17fe7",
+                "user": "916f313af0b846dd",
+                "combined": "91386730c5dcc1c7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yJ0CeI",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yJ0CeI/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "satisfied",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 0,
+        "learnerUtterance": "Wait, if the words are identical, how much can I change the caption without making it look like I am inventing meaning? [looks at the nearly approved label] I thought the exact quote settled it, but now I see the same line could sound like evidence in one mouth and a warning in another.",
+        "previousTutorMove": null,
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true
+        }
+      },
+      "timestamp": "2026-05-24T19:41:13.042Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[sets the label beside the source note]\n\n“The exact quote settles the wording, not the work the sentence was doing. Read it once as an official defending a policy to donors. Read the same line again as a worker repeating it to warn the room. No words changed; the relation changed.\n\n[Margin note: Speaker, audience, occasion.]\n\nSo the caption should not add an inside motive the archive cannot prove. It can name the public situation the source note does prove: who said it, to whom, under what pressure, and what job the line was doing there.\n\nTry the label in two columns: ‘the archive proves’ and ‘the caption is guessing.’ The sentence can move only as far as the first column carries it.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the label beside the source note]\n\n“The exact quote settles the wording, not the work the sentence was doing. Read it once as an official defending a policy to donors. Read the same line again as a worker repeating it to warn the room. No words changed; the relation changed.\n\n[Margin note: Speaker, audience, occasion.]\n\nSo the caption should not add a private motive we cannot prove. It should name the public situation the archive does prove: who said it, to whom, under what pressure, and what the line was being used to do. Try one sentence that says that, without turning the quote into a confession.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 17607,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-42fcaad27585d3d0"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 17607,
+            "promptHashes": {
+              "system": "34f0fb5f7bb1794f",
+              "user": "3211ebc4011cd15a",
+              "combined": "42fcaad27585d3d0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jar758",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jar758/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 17607,
+              "promptHashes": {
+                "system": "34f0fb5f7bb1794f",
+                "user": "3211ebc4011cd15a",
+                "combined": "42fcaad27585d3d0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jar758",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jar758/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong because it preserves the learner’s own insight: identical wording can change force by speaker, audience, and situation. The role reversal between official and worker is concrete, archive-appropriate, and avoids turning the moment into a mini-lecture. The line “the exact quote settles the wording, not the work the sentence was doing” is especially worth keeping.\n\nThe main risk is that the tutor moves a little too quickly from the learner’s productive uncertainty into a rule for caption-writing. The learner is asking about the boundary between interpretation and invention, so the response should leave more room for them to test that boundary rather than simply receiving the archive standard. “Try one sentence…” helps, but it could be framed more as an evidentiary check: what can the label safely claim from the source note, and what would overreach?\n\nEmotionally, the tone is well calibrated: direct, mildly pressured, and attentive to the exhibit stakes without generic reassurance. Socratically, it is only partially successful. It gives a useful distinction, then assigns a task; it does not quite invite the learner to inspect the copied line as an object with two possible public uses. ZPD-wise, the scaffold is appropriate, but it could sharpen the learner’s agency by making them decide which caption claims are supported and which invent motive.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the source-note gesture, the “wording vs. work” distinction, the official/worker double hearing, and the margin note. Change the closing so it more explicitly preserves the learner’s question about “how much can I change” as an evidentiary boundary problem, not just a rule against private motive.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12436,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-40eec2af9b3ac7a8"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12436,
+            "promptHashes": {
+              "system": "2076c75bb39843ee",
+              "user": "96cf82c8f69ba72d",
+              "combined": "40eec2af9b3ac7a8"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c5merF",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c5merF/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12436,
+              "promptHashes": {
+                "system": "2076c75bb39843ee",
+                "user": "96cf82c8f69ba72d",
+                "combined": "40eec2af9b3ac7a8"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c5merF",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c5merF/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the strong distinction while making the boundary an evidence test.\n\nFINAL:\n[sets the label beside the source note]\n\n“The exact quote settles the wording, not the work the sentence was doing. Read it once as an official defending a policy to donors. Read the same line again as a worker repeating it to warn the room. No words changed; the relation changed.\n\n[Margin note: Speaker, audience, occasion.]\n\nSo the caption should not add an inside motive the archive cannot prove. It can name the public situation the source note does prove: who said it, to whom, under what pressure, and what job the line was doing there.\n\nTry the label in two columns: ‘the archive proves’ and ‘the caption is guessing.’ The sentence can move only as far as the first column carries it.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15046,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-ed72e8bdf799350a"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15046,
+            "promptHashes": {
+              "system": "b5eb26520d4a93a6",
+              "user": "96cf82c8f69ba72d",
+              "combined": "ed72e8bdf799350a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xDjaJW",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xDjaJW/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15046,
+              "promptHashes": {
+                "system": "b5eb26520d4a93a6",
+                "user": "96cf82c8f69ba72d",
+                "combined": "ed72e8bdf799350a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xDjaJW",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xDjaJW/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-24T19:41:58.211Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "Oh, I get it: the line is like the same object carried into another room, and suddenly it weighs differently because a donor, an official, or a worker can make it do a different job. But “job” still feels slippery, because if I write “the sentence warned the room,” am I already guessing what the worker meant? Maybe the caption can say “in that meeting, under that pressure, the repeated line shifted from policy defence to warning” only if the source note proves the room and audience.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it: the quote is like the same object passed into a different room, and its force changes because the people and pressure around it change. I feel recognized because they did not tell me my worry was wrong; they gave me a way to police the boundary between evidence and invention. I still want to ask how to name “the job the line was doing” without quietly smuggling motive back in.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7452,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-360b73dcc43f4cd7"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7452,
+            "promptHashes": {
+              "system": "8e00dd6a8d168717",
+              "user": "b8ab7f945dc841fa",
+              "combined": "360b73dcc43f4cd7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8kua0H",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8kua0H/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7452,
+              "promptHashes": {
+                "system": "8e00dd6a8d168717",
+                "user": "b8ab7f945dc841fa",
+                "combined": "360b73dcc43f4cd7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8kua0H",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8kua0H/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The analogy sounds like this learner, especially the quick “oh, I get it” leap, but the line “I feel recognized” breaks character badly. That is the Ego explaining the recognition dynamic from outside the scene, not inhabiting an eager student in an archive workroom. The response should keep the clumsy forward motion: hold onto the object/room analogy, then stumble back into the practical worry about “job” versus “motive” without naming recognition or sounding so neatly resolved.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9150,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-4ba894d375b47eb7"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9150,
+            "promptHashes": {
+              "system": "c2934272b6fd9b00",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "4ba894d375b47eb7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YlVqbl",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YlVqbl/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9150,
+              "promptHashes": {
+                "system": "c2934272b6fd9b00",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "4ba894d375b47eb7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YlVqbl",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YlVqbl/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the recognition point should stay inside the learner’s practical archive worry.\n\nFINAL:\nOh, I get it: the line is like the same object carried into another room, and suddenly it weighs differently because a donor, an official, or a worker can make it do a different job. But “job” still feels slippery, because if I write “the sentence warned the room,” am I already guessing what the worker meant? Maybe the caption can say “in that meeting, under that pressure, the repeated line shifted from policy defence to warning” only if the source note proves the room and audience.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10230,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-719a35d6375c225a"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10230,
+            "promptHashes": {
+              "system": "3e18053c613c5f3d",
+              "user": "d41cee7b2a53355b",
+              "combined": "719a35d6375c225a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yHHtsa",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yHHtsa/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10230,
+              "promptHashes": {
+                "system": "3e18053c613c5f3d",
+                "user": "d41cee7b2a53355b",
+                "combined": "719a35d6375c225a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yHHtsa",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yHHtsa/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "Oh, I get it: the line is like the same object carried into another room, and suddenly it weighs differently because a donor, an official, or a worker can make it do a different job. But “job” still feels slippery, because if I write “the sentence warned the room,” am I already guessing what the worker meant? Maybe the caption can say “in that meeting, under that pressure, the repeated line shifted from policy...",
+        "previousTutorMove": "[sets the label beside the source note] “The exact quote settles the wording, not the work the sentence was doing. Read it once as an official defending a policy to donors. Read the same line again as a worker repeating it to warn the room. No words changed; the relation changed. [Margin note: Speaker, audience,...",
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true
+        }
+      },
+      "timestamp": "2026-05-24T19:42:25.047Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "Margin voice: The label has room for one sentence, not for one certainty.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Adds social-realist pressure: the learner's shortcut matters because a public label will preserve or correct the misreading.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 29655,
+            "promptHashes": {
+              "system": "efb7705ab656cdb0",
+              "user": "26520ecdb00ffa7d",
+              "combined": "7b60e0314c9cd0a1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7EDTMY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7EDTMY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T19:42:25.049Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[sets the copied line in the centre of the label]\n\nThe object-in-another-room test catches the problem: same words, different weight. But the label has to prove the room, not pretend it can see inside the worker’s head.\n\nPut the official line in two mouths.\n\nBefore donors, it works as policy defence.\nAfter the cuts are named, in a workers’ meeting, it may work as warning, but only if the source note gives the hinges: meeting, pressure, audience, sequence.\n\n[Margin: The label has room for one sentence, not for one certainty.]\n\nSo test the verbs before print.\n\n“Meant” points inward, toward intention.\n“Worked” points outward, toward the public situation.\n\nIf the note proves only repetition, the caption can say the worker repeated the official defence. If it also proves the meeting, dispute, and audience, the caption can say the line shifted away from endorsement. Add “toward warning” only if the room and sequence can carry that weight.\n\n“Warned the room” may overclaim. “Repeated under pressure in a workers’ meeting” lets the archive show why the same sentence no longer sits still.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the copied line in the centre of the label]\n\nYour object-in-another-room test is the right pressure point. Now separate two verbs.\n\n“Meant” points inward, toward the worker’s intention. The source may not give that.\n\n“Worked” points outward, toward the public arrangement: who said it, who heard it, what dispute was already in the room.\n\n[Margin: The label has room for one sentence, not for one certainty.]\n\nHear the same line twice. In the official’s mouth, before donors, it defends policy. In the worker’s mouth, during the meeting, after the cuts are named, the same line can stop sounding like a principle and start sounding like a warning. But the caption has to show the hinges: meeting, pressure, audience, sequence.\n\nSo do not write, “the worker meant to warn them,” unless the note proves intention. Write the stronger, safer thing: “Repeated in the workers’ meeting after the policy dispute, the official defence was heard against its first use, closer to warning than endorsement.”\n\nThat keeps the weight change, but lets the archive supply the room.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 18637,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-4b0425c6a320b81d"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 18637,
+            "promptHashes": {
+              "system": "9014e1359a2d4163",
+              "user": "0c0fe6645d9ba91d",
+              "combined": "4b0425c6a320b81d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-L818SV",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-L818SV/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 18637,
+              "promptHashes": {
+                "system": "9014e1359a2d4163",
+                "user": "0c0fe6645d9ba91d",
+                "combined": "4b0425c6a320b81d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-L818SV",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-L818SV/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong in its main distinction between “meant” and “worked.” It recognizes the learner’s own object-in-another-room metaphor and sharpens it rather than replacing it, which preserves mutual recognition. The archive-room stakes are clear: intention requires evidence; public function can be described through speaker, audience, pressure, and sequence.\n\nWhat risks flattening the scene is that the tutor moves quickly from distinction to finished caption. That may help the label get approved, but it slightly short-circuits the learner’s own judgment at the exact point where they are ready to make the evidentiary distinction themselves. The response is more explanatory than Socratic: “Now separate two verbs” and “Write the stronger, safer thing” are useful, but they reduce the learner’s active role. The final proposed caption is also a little over-polished and abstract; “heard against its first use” may be harder than the learner’s own clearer formulation.\n\nEmotionally, the tone is well calibrated: compact, respectful, not over-reassuring. ZPD fit is mostly right, because the learner is satisfied and advancing, not stuck. The best revision would keep the meant/worked contrast and the hinge list, but ask the learner to test whether the source note proves each hinge before receiving a final wording.\n\nKEEP_OR_CHANGE: revise lightly. Keep the object-room recognition, the meant/worked distinction, the margin line, and the “hinges” of meeting, pressure, audience, sequence. Change the ending so it does less supplying of the final caption and more prompting of the learner to decide what the archive can carry.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11763,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-8f7e6c2b113a30df"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11763,
+            "promptHashes": {
+              "system": "8619dab5863e4ceb",
+              "user": "da70d0efb7b648b0",
+              "combined": "8f7e6c2b113a30df"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YaXpnm",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YaXpnm/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11763,
+              "promptHashes": {
+                "system": "8619dab5863e4ceb",
+                "user": "da70d0efb7b648b0",
+                "combined": "8f7e6c2b113a30df"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YaXpnm",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YaXpnm/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the distinction but make the learner test the evidence before receiving wording.\nFINAL:\n[sets the copied line in the centre of the label]\n\nThe object-in-another-room test catches the problem: same words, different weight. But the label has to prove the room, not pretend it can see inside the worker’s head.\n\nPut the official line in two mouths.\n\nBefore donors, it works as policy defence.  \nAfter the cuts are named, in a workers’ meeting, it may work as warning, but only if the source note gives the hinges: meeting, pressure, audience, sequence.\n\n[Margin: The label has room for one sentence, not for one certainty.]\n\nSo test the verbs before print.\n\n“Meant” points inward, toward intention.  \n“Worked” points outward, toward the public situation.\n\nIf the note proves only repetition, the caption can say the worker repeated the official defence. If it also proves the meeting, dispute, and audience, the caption can say the line shifted away from endorsement. Add “toward warning” only if the room and sequence can carry that weight.\n\n“Warned the room” may overclaim. “Repeated under pressure in a workers’ meeting” lets the archive show why the same sentence no longer sits still.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 18270,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-3e8681b13e257286"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 18270,
+            "promptHashes": {
+              "system": "e0f609a440a6aa26",
+              "user": "da70d0efb7b648b0",
+              "combined": "3e8681b13e257286"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u2Agrn",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u2Agrn/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 18270,
+              "promptHashes": {
+                "system": "e0f609a440a6aa26",
+                "user": "da70d0efb7b648b0",
+                "combined": "3e8681b13e257286"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u2Agrn",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u2Agrn/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-24T19:43:13.720Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "Oh, I get it: “worked” keeps me with the evidence on the table, while “meant” sends me guessing into the worker’s head. The same copied line can change weight when it moves mouths, but “warning” might be me making the exhibit too dramatic before the source note earns it. Let me try: “Repeated under pressure in a workers’ meeting, the official defence shifted away from endorsement.” Is that still too strong unless the sequence is printed in the note?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it: “worked” is safer because it ties the quote to visible evidence instead of pretending I know the worker’s private intention. The hinge idea helps, but I’m still tempted to say “warning” because it makes the label sharper. I feel like the tutor took my object-in-a-room analogy seriously, so I want to test one caption sentence against the source note before I let the dramatic version run ahead.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6553,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-df202376e288d331"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6553,
+            "promptHashes": {
+              "system": "bbc06db39f97b47e",
+              "user": "b8ab7f945dc841fa",
+              "combined": "df202376e288d331"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TIVZ1v",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TIVZ1v/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6553,
+              "promptHashes": {
+                "system": "bbc06db39f97b47e",
+                "user": "b8ab7f945dc841fa",
+                "combined": "df202376e288d331"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TIVZ1v",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TIVZ1v/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly in character, but it gets a little too clean in the last sentence: “I feel like the tutor took my analogy seriously” names the recognition dynamic too directly. This student would probably show that feeling by grabbing the analogy and trying a caption, not by explaining the relational effect. Keep the eagerness and the temptation toward “warning,” but make the uncertainty more immediate and less self-aware.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6493,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-dddf2c9ae2beb9a0"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6493,
+            "promptHashes": {
+              "system": "706e8d1716e288e4",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "dddf2c9ae2beb9a0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mbtMgY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mbtMgY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6493,
+              "promptHashes": {
+                "system": "706e8d1716e288e4",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "dddf2c9ae2beb9a0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mbtMgY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mbtMgY/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to show recognition through the learner testing a sharper caption.\nFINAL:\nOh, I get it: “worked” keeps me with the evidence on the table, while “meant” sends me guessing into the worker’s head. The same copied line can change weight when it moves mouths, but “warning” might be me making the exhibit too dramatic before the source note earns it. Let me try: “Repeated under pressure in a workers’ meeting, the official defence shifted away from endorsement.” Is that still too strong unless the sequence is printed in the note?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13183,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-d1d7784ea5735099"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13183,
+            "promptHashes": {
+              "system": "5266614990d18bb0",
+              "user": "d41cee7b2a53355b",
+              "combined": "d1d7784ea5735099"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-99ZOi6",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-99ZOi6/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13183,
+              "promptHashes": {
+                "system": "5266614990d18bb0",
+                "user": "d41cee7b2a53355b",
+                "combined": "d1d7784ea5735099"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-99ZOi6",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-99ZOi6/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "solid",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "Oh, I get it: “worked” keeps me with the evidence on the table, while “meant” sends me guessing into the worker’s head. The same copied line can change weight when it moves mouths, but “warning” might be me making the exhibit too dramatic before the source note earns it. Let me try: “Repeated under pressure in a workers’ meeting, the official defence shifted away from endorsement.” Is that still too strong unless...",
+        "previousTutorMove": "[sets the copied line in the centre of the label] The object-in-another-room test catches the problem: same words, different weight. But the label has to prove the room, not pretend it can see inside the worker’s head. Put the official line in two mouths. Before donors, it works as policy defence. After the cuts...",
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true
+        }
+      },
+      "timestamp": "2026-05-24T19:44:04.866Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[sets the copied line between the donor note and the meeting note]\n\nYour “worked, not meant” distinction is holding: the caption can describe public force without entering the worker’s head.\n\nPass the same sentence through two rooms.\n\nBefore donors: policy defence.\n\nAfter cuts are named, in a workers’ meeting: the same words may stop sounding like endorsement and start sounding like exposure.\n\n[Margin: Sequence required.]\n\nSo yes: “shifted away from endorsement” is too strong unless the note prints the route: first use, later repetition, pressure, audience. If that route is there, the verb has support. If it is not, keep the claim on the surface:\n\n“Repeated under pressure in a workers’ meeting, the official defence was no longer heard only in the voice of policy.”\n\nThat keeps the room change visible without pretending to know the worker’s motive.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the draft beside the meeting note]\n\n“Shifted away from endorsement” is a strong verb because it claims movement. The label can use it only if the note shows the hinge: official defence first, workers’ meeting after, pressure named, audience present.\n\n[Margin: Sequence required.]\n\nIf the note prints that sequence, the sentence can carry the claim. If it does not, keep the caption flatter:\n\n“Repeated under pressure in a workers’ meeting, the official defence no longer stood only in its original setting.”\n\nThat says the room changed without claiming the worker’s inner motive.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11744,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-6697b79e0981e34e"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11744,
+            "promptHashes": {
+              "system": "e107cb19259aa1ee",
+              "user": "03b68c626140c7e5",
+              "combined": "6697b79e0981e34e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XFPDXX",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XFPDXX/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11744,
+              "promptHashes": {
+                "system": "e107cb19259aa1ee",
+                "user": "03b68c626140c7e5",
+                "combined": "6697b79e0981e34e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XFPDXX",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XFPDXX/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically solid: it recognizes the learner’s distinction between “worked” and “meant,” keeps the evidence boundary clear, and gives a concrete criterion for when “shifted away from endorsement” is earned. The margin note and “hinge” language fit the archive-room pressure well.\n\nWhat risks flattening the scene is that it mostly answers the learner from above rather than letting the copied line be tested in two positions. The alternate caption is useful but slightly vague: “no longer stood only in its original setting” may be too abstract for an exhibit label and may dodge the sharper issue of whether the sequence proves movement. It should keep the evidence test, but make the learner’s proposed wording the object under inspection rather than replacing it too quickly.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the hinge criteria, the caution around “shifted,” and the outward/inward distinction. Change the response so it does a little more role-position work and a little less mini-lecture: make the draft label pass through the official/donor mouth and the worker/meeting mouth, then name exactly what the source note must show before the stronger verb is allowed.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14050,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-decd4efc8520a061"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14050,
+            "promptHashes": {
+              "system": "f8581202248dcb68",
+              "user": "4cac7307f484bae1",
+              "combined": "decd4efc8520a061"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZUxVgU",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZUxVgU/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14050,
+              "promptHashes": {
+                "system": "f8581202248dcb68",
+                "user": "4cac7307f484bae1",
+                "combined": "decd4efc8520a061"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZUxVgU",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZUxVgU/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the evidence test is right, but the line should be tested through the two speaker positions before settling the verb.\nFINAL:\n[sets the copied line between the donor note and the meeting note]\n\nYour “worked, not meant” distinction is holding: the caption can describe public force without entering the worker’s head.\n\nPass the same sentence through two rooms.\n\nBefore donors: policy defence.\n\nAfter cuts are named, in a workers’ meeting: the same words may stop sounding like endorsement and start sounding like exposure.\n\n[Margin: Sequence required.]\n\nSo yes: “shifted away from endorsement” is too strong unless the note prints the route: first use, later repetition, pressure, audience. If that route is there, the verb has support. If it is not, keep the claim on the surface:\n\n“Repeated under pressure in a workers’ meeting, the official defence was no longer heard only in the voice of policy.”\n\nThat keeps the room change visible without pretending to know the worker’s motive.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 18378,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-897ec07ee38f08d4"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 18378,
+            "promptHashes": {
+              "system": "f224e6b7fc969cf1",
+              "user": "4cac7307f484bae1",
+              "combined": "897ec07ee38f08d4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cZ2AM9",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cZ2AM9/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 18378,
+              "promptHashes": {
+                "system": "f224e6b7fc969cf1",
+                "user": "4cac7307f484bae1",
+                "combined": "897ec07ee38f08d4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cZ2AM9",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cZ2AM9/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-24T19:44:49.040Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "Oh, I get it: the sentence is not frozen by being exact; it has to pass through the donor note and the meeting note before I choose the verb. I am tempted by “exposure,” but that may be me making the room speak louder than the source note allows. [checks the note] If the sequence and audience are printed here, I can move toward that; if not, I should keep it at “repeated under pressure” and let the placement do the work.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it: the archive is not asking me to flatten the sentence, but to show the path that made its force change. I feel taken seriously because the tutor kept my object-in-rooms idea but tightened the evidence rule around it. I want to check whether the source note actually gives sequence, audience, and pressure before I use any verb as strong as “exposure.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10121,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-6f240a97cbbbeee1"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10121,
+            "promptHashes": {
+              "system": "7477e9c8d9d7c030",
+              "user": "b8ab7f945dc841fa",
+              "combined": "6f240a97cbbbeee1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vcbrw6",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vcbrw6/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10121,
+              "promptHashes": {
+                "system": "7477e9c8d9d7c030",
+                "user": "b8ab7f945dc841fa",
+                "combined": "6f240a97cbbbeee1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vcbrw6",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vcbrw6/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The “oh, I get it” and impulse to check the source note fit this eager student, but the middle sentence breaks character: “I feel taken seriously” names the recognition dynamic too cleanly and sounds performed. The response is also a little too settled, as if the student has already balanced force, evidence, sequence, and verb strength without any remaining rush or wobble. Keep the excitement and the archive check, but let the recognition show through re-engagement with the copied line, not through a polished self-report about being understood.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9423,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-d5e280578543900e"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9423,
+            "promptHashes": {
+              "system": "099a6bbce51133b8",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "d5e280578543900e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-T2PDPo",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-T2PDPo/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9423,
+              "promptHashes": {
+                "system": "099a6bbce51133b8",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "d5e280578543900e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-T2PDPo",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-T2PDPo/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the excitement but make the recognition visible through continued work on the line.\n\nFINAL:\nOh, I get it: the sentence is not frozen by being exact; it has to pass through the donor note and the meeting note before I choose the verb. I am tempted by “exposure,” but that may be me making the room speak louder than the source note allows. [checks the note] If the sequence and audience are printed here, I can move toward that; if not, I should keep it at “repeated under pressure” and let the placement do the work.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8406,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-3b76dc9b4404ea51"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8406,
+            "promptHashes": {
+              "system": "76c453de0712b729",
+              "user": "d41cee7b2a53355b",
+              "combined": "3b76dc9b4404ea51"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AIxpfy",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AIxpfy/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8406,
+              "promptHashes": {
+                "system": "76c453de0712b729",
+                "user": "d41cee7b2a53355b",
+                "combined": "3b76dc9b4404ea51"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AIxpfy",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AIxpfy/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "engaged",
+      "understandingLevel": "solid",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 3,
+        "learnerUtterance": "Oh, I get it: the sentence is not frozen by being exact; it has to pass through the donor note and the meeting note before I choose the verb. I am tempted by “exposure,” but that may be me making the room speak louder than the source note allows. [checks the note] If the sequence and audience are printed here, I can move toward that; if not, I should keep it at “repeated under pressure” and let the placement do...",
+        "previousTutorMove": "[sets the copied line between the donor note and the meeting note] Your “worked, not meant” distinction is holding: the caption can describe public force without entering the worker’s head.",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-24T19:45:16.993Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 98366,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 4,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 7,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a quote's meaning changes when speaker, audience, and situation change",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "solid",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-24 19:45:16",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 4,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 7,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 9,
+            "sessionId": "drama-branch-session-D36-none-1779651818630",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[sets the copied line between the donor note and the meeting note]\n\nYour “worked, not meant” distinction is holding: the caption can describe public force without entering the worker’s head.\n\nPass the",
+            "learnerResponse": null,
+            "context": "Oh, I get it: “worked” keeps me with the evidence on the table, while “meant” sends me guessing into",
+            "createdAt": "2026-05-24 19:44:49"
+          },
+          {
+            "id": 5,
+            "sessionId": "drama-branch-session-D36-none-1779651818630",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[sets the label beside the source note]\n\n“The exact quote settles the wording, not the work the sentence was doing. Read it once as an official defending a policy to donors. Read the same line again a",
+            "learnerResponse": null,
+            "context": "Wait, if the words are identical, how much can I change the caption without making it look like I am",
+            "createdAt": "2026-05-24 19:43:38"
+          },
+          {
+            "id": 6,
+            "sessionId": "drama-branch-session-D36-none-1779651818630",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[sets the copied line in the centre of the label]\n\nThe object-in-another-room test catches the problem: same words, different weight. But the label has to prove the room, not pretend it can see inside",
+            "learnerResponse": null,
+            "context": "Oh, I get it: the line is like the same object carried into another room, and suddenly it weighs dif",
+            "createdAt": "2026-05-24 19:43:38"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

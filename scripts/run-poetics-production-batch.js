@@ -83,6 +83,9 @@ function parseArgs(argv) {
     critics: DEFAULT_CRITICS,
     generationConcurrency: 1,
     scoreConcurrency: 3,
+    structureCritic: 'off',
+    structureCriticConcurrency: 1,
+    failOnStructureCritic: false,
     maxTurns: 3,
     targetSpec: V3_SPEC,
     targetOnly: V3_TARGETS,
@@ -112,6 +115,9 @@ function parseArgs(argv) {
     else if (t === '--critics') args.critics = splitCsv(argv[++i]);
     else if (t === '--generation-concurrency') args.generationConcurrency = parseInt(argv[++i], 10);
     else if (t === '--score-concurrency') args.scoreConcurrency = parseInt(argv[++i], 10);
+    else if (t === '--structure-critic') args.structureCritic = argv[++i];
+    else if (t === '--structure-critic-concurrency') args.structureCriticConcurrency = parseInt(argv[++i], 10);
+    else if (t === '--fail-on-structure-critic') args.failOnStructureCritic = true;
     else if (t === '--max-turns') args.maxTurns = parseInt(argv[++i], 10);
     else if (t === '--target-spec') args.targetSpec = path.resolve(argv[++i]);
     else if (t === '--target-only') args.targetOnly = argv[++i];
@@ -155,6 +161,12 @@ function parseArgs(argv) {
   if (!Number.isInteger(args.scoreConcurrency) || args.scoreConcurrency < 1) {
     throw new Error('--score-concurrency must be a positive integer');
   }
+  if (!['off', 'rules', 'codex', 'claude', 'claude-code'].includes(args.structureCritic)) {
+    throw new Error('--structure-critic must be off|rules|codex|claude|claude-code');
+  }
+  if (!Number.isInteger(args.structureCriticConcurrency) || args.structureCriticConcurrency < 1) {
+    throw new Error('--structure-critic-concurrency must be a positive integer');
+  }
   args.rootDir = args.rootDir || path.join(CAL_DIR, args.batchId);
   return args;
 }
@@ -191,7 +203,15 @@ function buildPlan(rawArgs = {}) {
 
   const units = [];
   const pairedTargetArms = args.adaptationArms
-    ? ['none', 'reframe-only', 'tutor-uptake-only', 'reframe+tutor-uptake']
+    ? [
+        'routine',
+        'none',
+        'reframe-only',
+        'tutor-uptake-only',
+        'reframe+tutor-uptake',
+        'peripeteia-only',
+        'reframe+peripeteia',
+      ]
     : ['none', 'reframe'];
   for (let i = 1; i <= args.repeats; i++) {
     const r = repeatLabel(i);
@@ -262,6 +282,8 @@ function buildPlan(rawArgs = {}) {
     maxTurns: args.maxTurns,
     generationConcurrency: args.generationConcurrency,
     scoreConcurrency: args.scoreConcurrency,
+    structureCritic: args.structureCritic,
+    structureCriticConcurrency: args.structureCriticConcurrency,
     critics: args.critics,
     allUnits: units,
     selectedUnitIds: selected.map((unit) => unit.id),
@@ -327,6 +349,21 @@ function scoreJobs(unit, args) {
   return jobs;
 }
 
+function structureCriticJobs(unit, args) {
+  const arms = unit.pairedPolicies
+    ? unit.pairedPolicies.map((policy) => ({
+        id: `${unit.id}-${policy}`,
+        sampleDir: path.join(unit.outDir, policy),
+        keyPath: path.join(path.dirname(unit.keyPath), `key-${policy}.yaml`),
+      }))
+    : [{ id: unit.id, sampleDir: unit.outDir, keyPath: unit.keyPath }];
+  return arms.map((arm) => ({
+    ...arm,
+    critic: args.structureCritic,
+    outPath: path.join(args.rootDir, 'structure-critic', `${arm.id}-${modelSlug(args.structureCritic)}.json`),
+  }));
+}
+
 function scoreCommand(job, args) {
   const cmd = [
     process.execPath,
@@ -344,6 +381,27 @@ function scoreCommand(job, args) {
   ];
   if (args.mock) cmd.push('--mock');
   if (args.allowQualityWarnings) cmd.push('--allow-quality-warnings');
+  return cmd;
+}
+
+function structureCriticCommand(job, args) {
+  const critic = job.critic === 'claude' ? 'claude-code' : job.critic;
+  const cmd = [
+    process.execPath,
+    'scripts/critic-poetics-structure.js',
+    '--critic',
+    critic,
+    '--sample-dir',
+    job.sampleDir,
+    '--key',
+    job.keyPath,
+    '--out',
+    job.outPath,
+    '--concurrency',
+    String(args.structureCriticConcurrency),
+  ];
+  if (args.mock) cmd.push('--mock');
+  if (args.failOnStructureCritic) cmd.push('--fail-on-violation');
   return cmd;
 }
 
@@ -404,6 +462,7 @@ function summarizePlan(plan, args) {
   console.log(`  generator: ${plan.generator}${args.mock ? ' (mock)' : ''}`);
   console.log(`  generation concurrency: ${plan.generationConcurrency}`);
   console.log(`  units: ${plan.units.length} (${nTargets} target, ${nControls} control, ${nStress} stress)`);
+  if (args.structureCritic !== 'off') console.log(`  structure critic: ${args.structureCritic}`);
   console.log(`  critics: ${plan.critics.join(', ')}`);
 }
 
@@ -431,6 +490,25 @@ function runPlan(args) {
       generationProgress.step(`${unit.id} complete`);
     }
     generationProgress.finish('generation stage complete');
+  }
+
+  if (args.structureCritic !== 'off') {
+    console.log('\n── structural critic ──');
+    if (!args.dryRun) fs.mkdirSync(path.join(args.rootDir, 'structure-critic'), { recursive: true });
+    const jobs = plan.units.flatMap((unit) => structureCriticJobs(unit, args));
+    const criticProgress = createProgressReporter({
+      label: 'structure critic',
+      total: jobs.length,
+      enabled: !args.dryRun,
+    });
+    criticProgress.start(`${jobs.length} structure critic job(s)`);
+    for (const job of jobs) {
+      console.log(`\n# ${job.id} · ${job.critic}`);
+      criticProgress.note(`${job.id} · ${job.critic} starting`);
+      runCommand(structureCriticCommand(job, args), args);
+      criticProgress.step(`${job.id} · ${job.critic} complete`);
+    }
+    criticProgress.finish('structural critic stage complete');
   }
 
   if (!args.skipScore) {
@@ -472,4 +550,14 @@ if (path.resolve(process.argv[1] || '') === __filename) {
   }
 }
 
-export { buildPlan, CONTROL_UNITS, generationCommand, modelSlug, parseArgs, scoreCommand, scoreJobs };
+export {
+  buildPlan,
+  CONTROL_UNITS,
+  generationCommand,
+  modelSlug,
+  parseArgs,
+  scoreCommand,
+  scoreJobs,
+  structureCriticCommand,
+  structureCriticJobs,
+};

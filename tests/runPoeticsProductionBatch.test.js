@@ -8,6 +8,8 @@ import {
   parseArgs,
   scoreCommand,
   scoreJobs,
+  structureCriticCommand,
+  structureCriticJobs,
 } from '../scripts/run-poetics-production-batch.js';
 
 describe('run-poetics-production-batch', () => {
@@ -76,7 +78,7 @@ describe('run-poetics-production-batch', () => {
     assert.ok(cmd.includes('phase2-production-v1:r01:target'));
   });
 
-  it('can emit the four-arm tutor-adaptation target design', () => {
+  it('can emit the seven-arm tutor-adaptation target design', () => {
     const args = parseArgs([
       '--root-dir',
       '/tmp/phase2-production-v1-test',
@@ -91,14 +93,56 @@ describe('run-poetics-production-batch', () => {
     const target = buildPlan(args).units.find((unit) => unit.kind === 'target');
     const cmd = generationCommand(target, args);
 
-    assert.deepEqual(target.pairedPolicies, ['none', 'reframe-only', 'tutor-uptake-only', 'reframe+tutor-uptake']);
+    assert.deepEqual(target.pairedPolicies, [
+      'routine',
+      'none',
+      'reframe-only',
+      'tutor-uptake-only',
+      'reframe+tutor-uptake',
+      'peripeteia-only',
+      'reframe+peripeteia',
+    ]);
     assert.equal(target.pairedAdaptationArms, true);
     assert.ok(cmd.includes('--paired-adaptation-arms'));
-    assert.ok(cmd.includes('none,reframe-only,tutor-uptake-only,reframe+tutor-uptake'));
+    assert.ok(
+      cmd.includes(
+        'routine,none,reframe-only,tutor-uptake-only,reframe+tutor-uptake,peripeteia-only,reframe+peripeteia',
+      ),
+    );
 
     const jobs = scoreJobs(target, args);
-    assert.equal(jobs.length, 8);
+    assert.equal(jobs.length, 14);
+    assert.ok(jobs.some((job) => job.id === 'target-r01-routine'));
     assert.ok(jobs.some((job) => job.id === 'target-r01-reframe+tutor-uptake'));
+    assert.ok(jobs.some((job) => job.id === 'target-r01-peripeteia-only'));
+    assert.ok(jobs.some((job) => job.id === 'target-r01-reframe+peripeteia'));
+  });
+
+  it('can add a pre-scoring structural critic stage', () => {
+    const args = parseArgs([
+      '--root-dir',
+      '/tmp/phase2-production-v1-test',
+      '--repeats',
+      '1',
+      '--stress-repeats',
+      '0',
+      '--adaptation-arms',
+      '--structure-critic',
+      'codex',
+      '--structure-critic-concurrency',
+      '2',
+    ]);
+    const target = buildPlan(args).units.find((unit) => unit.kind === 'target');
+    const jobs = structureCriticJobs(target, args);
+    assert.equal(jobs.length, 7);
+    assert.equal(jobs[0].critic, 'codex');
+    assert.ok(jobs.some((job) => job.id === 'target-r01-reframe+peripeteia'));
+    const command = structureCriticCommand(jobs[0], args);
+    assert.ok(command.includes('scripts/critic-poetics-structure.js'));
+    assert.ok(command.includes('--critic'));
+    assert.ok(command.includes('codex'));
+    assert.ok(command.includes('--concurrency'));
+    assert.ok(command.includes('2'));
   });
 
   it('can point target units at a breadth scenario spec', () => {

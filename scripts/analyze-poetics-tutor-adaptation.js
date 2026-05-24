@@ -21,7 +21,7 @@ import { reframeMatchStats } from './generate-pedagogical-dramas.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
-const ANALYZER_VERSION = 'tutor-adaptation-v1';
+const ANALYZER_VERSION = 'tutor-adaptation-v2';
 
 const STOPWORDS = new Set(
   [
@@ -369,10 +369,51 @@ const RESISTANCE_PATTERNS = [
 
 const TUTOR_REVERSAL_PATTERNS = [
   /\b(?:let['’]?s back up|pause|try another|different route|switch|instead|start over|new way|not working)\b/i,
-  /\b(?:lower|simpler|smaller|concrete|draw|mark|test|change the question|change the task|evidence standard)\b/i,
-  /\b(?:switch roles|you be|take the role|role reversal|counterexample|object|model|map|diagram|placard|interruption|outside rule|social consequence|public consequence)\b/i,
+  /\b(?:lower the load|simpler case|smaller case|change the question|change the task|new evidence standard|evidence standard)\b/i,
+  /\b(?:switch roles|you be|take the role|role reversal|counterexample|new object|new model|new map|new diagram|placard|interruption|outside rule|social consequence|public consequence)\b/i,
   /\b(?:no praise|not yet|hold on|slow down|say it plainly|be precise|formal|quiet|brisk|accountable)\b/i,
   /\b(?:I was asking|that route|my question|the task|we should not|rather than)\b[\s\S]{0,120}\b(?:instead|try|switch|start|test|use)\b/i,
+];
+
+const MECHANISM_SHIFT_PATTERNS = [
+  {
+    id: 'route_reset',
+    patterns: [
+      /\b(?:let['’]?s back up|start over|different route|new route|switch route|not working|rather than)\b/i,
+    ],
+  },
+  {
+    id: 'changed_task_or_question',
+    patterns: [/\b(?:change the question|change the task|new task|new question|instead,?\s+(?:write|draw|test|choose))\b/i],
+  },
+  {
+    id: 'evidence_standard',
+    patterns: [
+      /\b(?:evidence standard|standard of evidence|measured|record|source|proof rule|release condition|benchmark)\b/i,
+    ],
+  },
+  {
+    id: 'representation_or_object',
+    patterns: [
+      /\b(?:draw|diagram|map|model|object|card|graph|table|line|sheet|cart|string|square|placard)\b/i,
+    ],
+  },
+  {
+    id: 'role_or_interruption',
+    patterns: [/\b(?:switch roles|you be|take the role|interruption|outside rule|placard|caption|corridor|clock)\b/i],
+  },
+  {
+    id: 'social_consequence',
+    patterns: [/\b(?:client|family|committee|deadline|public|approval|release|report|audience|bystander|trial)\b/i],
+  },
+  {
+    id: 'register_shift',
+    patterns: [/\b(?:no praise|not yet|hold on|slow down|plainly|quiet|formal|brisk|accountable|apology can wait)\b/i],
+  },
+  {
+    id: 'cognitive_load_shift',
+    patterns: [/\b(?:smaller case|simpler case|lower the load|one step|first stop|before anything else)\b/i],
+  },
 ];
 
 function learnerResistanceScore(text) {
@@ -381,6 +422,17 @@ function learnerResistanceScore(text) {
   const contradiction = /\b(?:but|no|wait|still|unless|except)\b/i.test(learnerText) ? 1 : 0;
   const question = /\?/.test(learnerText) ? 1 : 0;
   return round(Math.min(1, hits * 0.35 + contradiction * 0.2 + question * 0.15));
+}
+
+function mechanismHits(text) {
+  return MECHANISM_SHIFT_PATTERNS.filter((mechanism) =>
+    mechanism.patterns.some((pattern) => pattern.test(String(text || ''))),
+  ).map((mechanism) => mechanism.id);
+}
+
+function novelMechanismHits(preTutor, postTutor) {
+  const before = new Set(mechanismHits(preTutor?.text || ''));
+  return mechanismHits(postTutor?.text || '').filter((id) => !before.has(id));
 }
 
 function classifyResistance(text) {
@@ -430,20 +482,26 @@ function analyzePeripeteia(turns) {
     : false;
   const pressureTerms = pressureTurn ? termSet(pressureTurn.text) : new Set();
   const postOverlap = postTutor ? overlapRatio(pressureTerms, postTutor.text) : 0;
+  const mechanismNovelty = novelMechanismHits(preTutor, postTutor);
+  const mechanismDepth = mechanismNovelty.length;
+  const strongPressure = Boolean(pressure && pressure.score >= 0.65);
   const tutorStrategyReversal = Boolean(
-    pressure &&
+    strongPressure &&
       postTutor &&
-      (explicitReversal || strategyShift || (postOverlap >= 0.12 && beforeStrategy !== afterStrategy)),
+      (explicitReversal ||
+        mechanismDepth >= 2 ||
+        (strategyShift && mechanismDepth >= 1 && postOverlap >= 0.15)),
   );
   const tutorPeripeteiaScore = pressure
     ? round(
         Math.min(
-          100,
-          15 +
-            Math.min(30, pressure.score * 30) +
-            Math.min(20, postOverlap * 100) +
-            (strategyShift ? 20 : 0) +
-            (explicitReversal ? 15 : 0),
+          tutorStrategyReversal ? 100 : 49,
+          10 +
+            Math.min(25, pressure.score * 25) +
+            Math.min(15, postOverlap * 100) +
+            Math.min(25, mechanismDepth * 12.5) +
+            (strategyShift ? 10 : 0) +
+            (explicitReversal ? 20 : 0),
         ),
         1,
       )
@@ -460,6 +518,7 @@ function analyzePeripeteia(turns) {
     tutor_strategy_after: afterStrategy,
     tutor_strategy_shift: strategyShift,
     explicit_reversal: explicitReversal,
+    novel_mechanism_hits: mechanismNovelty,
     tutor_strategy_reversal: tutorStrategyReversal,
     tutor_adaptive_mechanism: tutorStrategyReversal,
     tutor_peripeteia_score: tutorPeripeteiaScore,

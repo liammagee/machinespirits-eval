@@ -326,6 +326,36 @@ tutor alternative mechanisms: a cooler register, a sharper public consequence, a
 role turn, an interruption, a concrete object, a counterexample, or a silence
 that makes the learner's resistance usable rather than smoothing it away.
 
+Before paying for external critic scoring, run the structural critic. This is a
+quasi unit test, not an outcome label: it can use the same local generator family
+(`codex` or `claude-code`) to check whether public transcripts are clean, modern
+in idiom, structurally dramatic, and free of hidden ego/superego/director leaks.
+
+```bash
+node scripts/critic-poetics-structure.js \
+  --critic codex \
+  --sample-dir <sample-dir> \
+  --key <key.yaml> \
+  --out exports/<run-id>-structure-critic.json
+```
+
+The production runner can insert this as a pre-scoring stage:
+
+```bash
+CODEX_REASONING_EFFORT=high node scripts/run-poetics-production-batch.js \
+  --batch-id phase2-classic-drama-adaptation-pilot-v1 \
+  --root-dir config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1 \
+  --target-spec config/poetics-calibration/phase2-classic-drama-adaptation-v1.yaml \
+  --target-only D35,D36,D37,D38 \
+  --target-tid-start 35 \
+  --repeats 1 \
+  --stress-repeats 0 \
+  --only target-r01 \
+  --adaptation-arms \
+  --structure-critic codex \
+  --critics qwen/qwen3.7-max,google/gemini-3.5-flash,deepseek/deepseek-v4-pro
+```
+
 The strict-control slice lives under
 `config/poetics-calibration/phase2-hard-trap-controls-v1/`. The first repeat
 confirmed both D25 and D26 as traps for Qwen, Gemini, Sonnet, and DeepSeek. The
@@ -664,6 +694,75 @@ weak. The D31 no-cue target also crossed into recognition under Sonnet, showing
 that some genres can produce organic tutor adaptation even without the explicit
 reframe cue. That is not a failure to hide; it is exactly the mechanism boundary
 this branch should map before it is promoted into the main evaluation harness.
+
+## Structural critic and classic-drama adaptation pilot
+
+**Update, 2026-05-24:** the production batch can now insert a cheap structural
+critic before external scoring:
+
+```bash
+node scripts/critic-poetics-structure.js \
+  --sample-dir <sample-dir> \
+  --key <key.yaml> \
+  --critic rules|codex|claude-code
+```
+
+The batch wrapper exposes the same stage through
+`--structure-critic rules|codex|claude|claude-code`, with
+`--fail-on-structure-critic` for future runs that should stop before paid
+external scoring. This is a quasi unit test, not an outcome evaluator. It checks
+formal compliance: labelled public turns, no hidden-process leakage, no named
+theory exposition or archaic pastiche, action asides in square brackets, direct
+quoted tutor/learner speech, and a visible dramatic pressure/turn. The model
+critic asks the same local CLI family used for generation, while deterministic
+rules catch cheap mechanical violations first.
+
+The first classic-drama pilot used
+`phase2-classic-drama-adaptation-pilot-v1` over D35-D38 with six arms:
+`none`, `reframe-only`, `tutor-uptake-only`, `reframe+tutor-uptake`,
+`peripeteia-only`, and `reframe+peripeteia`. Critics were
+`qwen/qwen3.7-max`, `google/gemini-3.5-flash`, and
+`deepseek/deepseek-v4-pro`.
+
+Artifacts:
+
+- Run root:
+  `config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1`
+- Sidecar report:
+  `exports/phase2-classic-drama-adaptation-pilot-v1-report.md`
+- Tutor-adaptation sidecar:
+  `exports/phase2-classic-drama-adaptation-pilot-v1-tutor-adaptation.json`
+
+Pilot reading:
+
+- The structural critic was useful but exposed a formatting defect: generated
+  learner turns were direct speech in the stage-play sense but not enclosed as
+  quoted speech. Future generation now wraps public tutor/learner speech as
+  quotes while keeping action asides in square brackets.
+- The reframe-only arm was externally scored as recognition in all clean cases
+  (3/3 across the three critics). The combined reframe arms had several
+  `reframe_cue_not_reframed` quality skips, so those cells should be treated as
+  exploratory, not evidence of a reliable effect.
+- The peripeteia sidecar detects learner reversal pressure and tutor habit-break
+  mechanisms in every arm, including `none`. That is informative but not yet a
+  clean contrast: the classic-drama scene ecology is strong enough to elicit
+  organic adaptation even without the explicit peripeteia policy. The next
+  design needs a genuinely routine/nonadaptive arm, or a stricter peripeteia
+  detector, before the pilot can estimate the marginal effect of the policy.
+
+**Next design correction:** future `--adaptation-arms` runs now use a seven-arm
+target set by adding `routine` ahead of `none`. `routine` is the true negative
+control: it removes branch-level director pressure cues after the shared prefix
+and asks the tutor ego/superego loop to preserve the established teaching route
+under pressure. `none` remains an uncued but otherwise normal dramatic branch,
+so it can still reveal organic adaptation.
+
+The tutor-adaptation sidecar is also bumped to `tutor-adaptation-v2`. The v2
+peripeteia detector still records learner reversal pressure, but it only counts
+a tutor mechanism when the post-pressure tutor turn shows a route reset, changed
+task/question, new evidence standard, representation/object move, role or
+interruption device, social consequence, register shift, or cognitive-load
+shift. Same-route continuation is capped below the mechanism threshold.
 
 ## Reporting rule
 

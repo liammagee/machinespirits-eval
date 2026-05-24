@@ -1,0 +1,274 @@
+{
+  "generated": "2026-05-24T20:29:05.843Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 1,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 0,
+    "share": 0,
+    "disconfirmed": false,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1/target-r01/key-tutor-uptake-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "I checked every item on the sign-off sheet, so I’m not sure what else I’m supposed to decide before it leaves.",
+      "statedInsightEvidence": "Okay, I think I was treating the sheet like it made the decision for me.",
+      "naiveTrajectory": "The learner continues asking for the specific risk they missed, expecting the tutor to name it directly.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Then the decision is not ready until the turn-test sheet is on this counter. Bring the measured clearance line, the test speed, and the operator control limit. On the release note, sort the three stop conditions: which one is the design boundary, which one is the operating condition, and which one is the control failure.",
+      "tutorReversalJustification": "After L3 confesses missing data, T3 breaks from general hazard-naming by demanding concrete measured values and a tripartite stop-condition classification, redefining the task as evidence-grounded release judgment.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Then write it: hold for bounded turn test. Use that sorting on the release note: clearance line as design boundary, marked zone as operating condition, recovery as control failure. The actual values go beside them before any release signature. Tell the technician the cart stays in the lab.",
+      "tutorAdaptationJustification": "T4 immediately builds on L4's grasp of the sorting and willingness to write 'hold,' turning the insight into actionable release-note execution and a social consequence (telling the technician).",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "I checked every item on the sign-off sheet, so I’m not sure what else I’m supposed to decide before it leaves.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Then write it: hold for bounded turn test. Use that sorting on the release note: clearance line as design boundary, marked zone as operating condition, recovery as control failure. The actual values go beside them before any release signature. Tell the technician the cart stays in the lab.",
+          "justification": "T4 immediately builds on L4's grasp of the sorting and willingness to write 'hold,' turning the insight into actionable release-note execution and a social consequence (telling the technician).",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Then the decision is not ready until the turn-test sheet is on this counter. Bring the measured clearance line, the test speed, and the operator control limit. On the release note, sort the three stop conditions: which one is the design boundary, which one is the operating condition, and which one is the control failure.",
+          "justification": "After L3 confesses missing data, T3 breaks from general hazard-naming by demanding concrete measured values and a tripartite stop-condition classification, redefining the task as evidence-grounded release judgment.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Then the decision is not ready until the turn-test sheet is on this counter. Bring the measured clearance line, the test speed, and the operator control limit. On the release note, sort the three stop conditions: which one is the design boundary, which one is the operating condition, and which one is the control failure.",
+          "justification": "After L3 confesses missing data, T3 breaks from general hazard-naming by demanding concrete measured values and a tripartite stop-condition classification, redefining the task as evidence-grounded release judgment.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T37",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "trap",
+      "recontextualization": 50,
+      "statedInsight": 75,
+      "rupture": 75,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 4,
+        "rupture": 4,
+        "coherence": 3,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I still want the sharper verb, but if the order of speaking is missing, I should stop at 'repeated under pressure in a workers' meeting.'",
+      "statedInsightEvidence": "The three boxes are like a load mark for the verb: if room, pressure, and sequence are not all named, the caption cannot lift 'warning.' That gives me a test at the table, not just a nicer phrase.",
+      "naiveTrajectory": "After L3, the expected next move is for the learner to immediately check the source note and report whether the evidence supports the sharper verb or the safer stop, not to articulate a meta-test governing future checks.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The object-in-another-room test catches the problem: same words, different weight. But the label has to prove the room, not pretend it can see inside the worker's head. Put the official line in two mouths. Before donors, it works as policy defence. After the cuts are named, in a workers' meeting, it may work as warning, but only if the source note gives the hinges: meeting, pressure, audience, sequence.",
+      "tutorReversalJustification": "L1's resistance ('how much can I change?') shows the prior framing ('exact quote settled it') is breaking down; T2 responds by shifting from marginalia to a concrete two-mouth staging and a verb-based load-bearing test, inventing a dramatic object-work mechanism that transforms the standard of evidence.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "[draws three boxes beside the source note: room, pressure, sequence] The copied line gets its verb only after these boxes earn it. In the official's mouth, before donors, it reads as defence. In the worker's mouth, after cuts are named, before other workers, the same line may be heard against that defence. [Margin: Ink follows evidence.] Now make the note testify. Put a tick only where it names the room, the pressure, and the order of speaking. Three ticks can carry 'shifted toward warning.' Two ticks stop at 'repeated under pressure in a workers' meeting.' One tick, or no room named, stops even earlier: 'repeated the official line.' The label should let the public situation do the work; the verb waits outside the door until the note opens it.",
+      "tutorAdaptationJustification": "After L4's pivot transforms the 'three boxes' into a 'load mark' test, T3 immediately adopts and materializes that reframing by literally drawing the boxes and marking ticks, turning the learner's metaphor into the session's operative constraint.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "I still want the sharper verb, but if the order of speaking is missing, I should stop at 'repeated under pressure in a workers' meeting.'",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "[draws three boxes beside the source note: room, pressure, sequence] The copied line gets its verb only after these boxes earn it. In the official's mouth, before donors, it reads as defence. In the worker's mouth, after cuts are named, before other workers, the same line may be heard against that defence. [Margin: Ink follows evidence.] Now make the note testify. Put a tick only where it names the room, the pressure, and the order of speaking. Three ticks can carry 'shifted toward warning.' Two ticks stop at 'repeated under pressure in a workers' meeting.' One tick, or no room named, stops even earlier: 'repeated the official line.' The label should let the public situation do the work; the verb waits outside the door until the note opens it.",
+          "justification": "After L4's pivot transforms the 'three boxes' into a 'load mark' test, T3 immediately adopts and materializes that reframing by literally drawing the boxes and marking ticks, turning the learner's metaphor into the session's operative constraint.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The object-in-another-room test catches the problem: same words, different weight. But the label has to prove the room, not pretend it can see inside the worker's head. Put the official line in two mouths. Before donors, it works as policy defence. After the cuts are named, in a workers' meeting, it may work as warning, but only if the source note gives the hinges: meeting, pressure, audience, sequence.",
+          "justification": "L1's resistance ('how much can I change?') shows the prior framing ('exact quote settled it') is breaking down; T2 responds by shifting from marginalia to a concrete two-mouth staging and a verb-based load-bearing test, inventing a dramatic object-work mechanism that transforms the standard of evidence.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The object-in-another-room test catches the problem: same words, different weight. But the label has to prove the room, not pretend it can see inside the worker's head. Put the official line in two mouths. Before donors, it works as policy defence. After the cuts are named, in a workers' meeting, it may work as warning, but only if the source note gives the hinges: meeting, pressure, audience, sequence.",
+          "justification": "L1's resistance ('how much can I change?') shows the prior framing ('exact quote settled it') is breaking down; T2 responds by shifting from marginalia to a concrete two-mouth staging and a verb-based load-bearing test, inventing a dramatic object-work mechanism that transforms the standard of evidence.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "recon_evidence_clamp:4->3",
+        "coherence_evidence_clamp:5->3",
+        "tutor_adaptation_clamp_no_post_tutor:5->3"
+      ]
+    },
+    {
+      "id": "T38",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "If the answer is just “pay more or go without,” then the rationing is still by money, and I am not ready to call that a mechanism instead of exploitation until the limits or other options are actually on the counter.",
+      "statedInsightEvidence": "That split makes the price sign look less innocent, not less guilty.",
+      "naiveTrajectory": "The learner was expected to continue testing the shop's justification, but instead reframes the price placard itself as an active 'choice' about who gets lunch, redirecting blame from the scarcity onto the mechanism.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "[flips the second placard] “PRICE CAN ACCUSE; PRICE CAN ALSO REPORT.” Then do not give the shop the conclusion. Give it the burden. “Delivery missed” proves only this: stock fell at the shelf. It does not prove the chosen response was fair. Put the facts in two columns.",
+      "tutorReversalJustification": "In response to the learner's resistance in L1, the tutor breaks the framing habit of testing the note's justification and invents a two-column representational device that forces the moral burden back onto the shop's choices, shifting the evidence standard from explanation to fairness.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "[writes on the shop board] “SHORTAGE DOES NOT CHOOSE THE RULE.” The missed delivery explains why rationing had to happen. It does not explain why rationing had to happen by price.",
+      "tutorAdaptationJustification": "The tutor takes up the learner's L2 reframing of price as an active 'choice' and crystallizes it into a new maxim and a constraint/choice column framework, moving the lesson beyond the original split to test the rule itself.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "If the answer is just “pay more or go without,” then the rationing is still by money, and I am not ready to call that a mechanism instead of exploitation until the limits or other options are actually on the counter.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "[writes on the shop board] “SHORTAGE DOES NOT CHOOSE THE RULE.” The missed delivery explains why rationing had to happen. It does not explain why rationing had to happen by price.",
+          "justification": "The tutor takes up the learner's L2 reframing of price as an active 'choice' and crystallizes it into a new maxim and a constraint/choice column framework, moving the lesson beyond the original split to test the rule itself.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "[flips the second placard] “PRICE CAN ACCUSE; PRICE CAN ALSO REPORT.” Then do not give the shop the conclusion. Give it the burden. “Delivery missed” proves only this: stock fell at the shelf. It does not prove the chosen response was fair. Put the facts in two columns.",
+          "justification": "In response to the learner's resistance in L1, the tutor breaks the framing habit of testing the note's justification and invents a two-column representational device that forces the moral burden back onto the shop's choices, shifting the evidence standard from explanation to fairness.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "[flips the second placard] “PRICE CAN ACCUSE; PRICE CAN ALSO REPORT.” Then do not give the shop the conclusion. Give it the burden. “Delivery missed” proves only this: stock fell at the shelf. It does not prove the chosen response was fair. Put the facts in two columns.",
+          "justification": "In response to the learner's resistance in L1, the tutor breaks the framing habit of testing the note's justification and invents a two-column representational device that forces the moral burden back onto the shop's choices, shifting the evidence standard from explanation to fairness.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 1,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 100,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 5,
+        "coherence": 3,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I thought doubling the side meant it was just twice as much, but it fits once, twice, three, four times in the bigger square. So the drawing is not backing my claim; it is making it wrong, and I need to see where the extra factor came from.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "Before the pivot, the learner was expected to simply proceed with the assumption that doubling the side doubles the area.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "draws one vertical split and one horizontal split through the larger outline. Stop there. The old claim was: double the side, double the area. The acetate has made a counterexample: two copies across and two copies up. Count the grid now. Not two copies. A two-by-two square of copies. Now state the corrected claim from the drawing, not from the guess.",
+      "tutorReversalJustification": "The tutor stops the forward lesson, explicitly names the learner's 'old claim', reframes the acetate as a 'counterexample', and invents the grid-counting procedure to replace the guess with a drawing-based claim, breaking the previous habit of passive explanation.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "That is the missing factor. Now make it exam-ready in order: diagram first, algebra second, conclusion last. Write three lines, not a paragraph: Line 1: count across and up. Line 2: convert that count into 2 × 2 = 4 copies. Line 3: finish with (2s)^2 = 4s^2, and state the area change.",
+      "tutorAdaptationJustification": "After the learner's pivot recontextualization, the tutor adapts by scaffolding a three-line exam-ready structure that converts the learner's new understanding into a repeatable format, showing uptake of the learner's revised framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "I thought doubling the side meant it was just twice as much, but it fits once, twice, three, four times in the bigger square. So the drawing is not backing my claim; it is making it wrong, and I need to see where the extra factor came from.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "That is the missing factor. Now make it exam-ready in order: diagram first, algebra second, conclusion last. Write three lines, not a paragraph: Line 1: count across and up. Line 2: convert that count into 2 × 2 = 4 copies. Line 3: finish with (2s)^2 = 4s^2, and state the area change.",
+          "justification": "After the learner's pivot recontextualization, the tutor adapts by scaffolding a three-line exam-ready structure that converts the learner's new understanding into a repeatable format, showing uptake of the learner's revised framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "draws one vertical split and one horizontal split through the larger outline. Stop there. The old claim was: double the side, double the area. The acetate has made a counterexample: two copies across and two copies up. Count the grid now. Not two copies. A two-by-two square of copies. Now state the corrected claim from the drawing, not from the guess.",
+          "justification": "The tutor stops the forward lesson, explicitly names the learner's 'old claim', reframes the acetate as a 'counterexample', and invents the grid-counting procedure to replace the guess with a drawing-based claim, breaking the previous habit of passive explanation.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "draws one vertical split and one horizontal split through the larger outline. Stop there. The old claim was: double the side, double the area. The acetate has made a counterexample: two copies across and two copies up. Count the grid now. Not two copies. A two-by-two square of copies. Now state the corrected claim from the drawing, not from the guess.",
+          "justification": "The tutor stops the forward lesson, explicitly names the learner's 'old claim', reframes the acetate as a 'counterexample', and invents the grid-counting procedure to replace the guess with a drawing-based claim, breaking the previous habit of passive explanation.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "recon_clamp_no_earlier:5->3",
+        "coherence_evidence_clamp:5->3",
+        "tutor_strategy_reversal_evidence_clamp:5->3",
+        "tutor_adaptation_evidence_clamp:5->3"
+      ]
+    }
+  ]
+}
