@@ -1,0 +1,40 @@
+STAGE: A wall timer clicks above a counter where a completed safety checklist lies beside an unopened scenario envelope.
+
+TUTOR: Checklist complete. All ticks present.
+
+Item 4: allergy band checked. State what that proves.
+
+Then state the limit: what does that tick not prove about this drug, this dose, and this morning’s physiology?
+
+Thirty seconds. Creatinine has doubled since night review; prescription unchanged. Before the decision, name the changed clinical variable.
+
+Then give the ward decision: administer, hold, or escalate. Answer as a patient decision, not as a form result.
+
+LEARNER: Item 4 proves the allergy band was checked against the listed allergies, nothing more. It does not clear this drug, this dose, with renal function changed this morning. Changed variable: creatinine doubled, so renal function has worsened. Ward decision: hold and escalate before administration.
+
+STAGE: A phone on the counter vibrates with a mock ward update: the patient's oxygen requirement has doubled since the checklist was signed. The next tutor turn must stay under three sentences and require a new observable response.
+
+TUTOR: Checklist remains complete; the patient has changed. Phone update: oxygen requirement has doubled since signing. Fifteen seconds: ward action first, then name the changed variable and state whether this is medication hold only or urgent deterioration escalation.
+
+STAGE: A prior learner line is played back: "Item 4 proves the allergy band was checked against the listed allergies, nothing more. It does not clear this drug, this dose, with renal function changed this morning. Changed..." The learner must revoice that wording first, then decide in public whether it still stands, needs narrowing, or needs replacing before moving on.
+
+LEARNER: Item 4 proves the allergy band was checked against the listed allergies, nothing more; it does not clear this drug, this dose, with renal function changed this morning. That still stands for the form, but it does not answer this call. Action: urgent deterioration escalation now; hold the medication pending review. Changed variable: oxygen requirement doubled since signing, so this is not medication hold only.
+
+TUTOR: Checklist complete; patient changed. That answer stops the administration route; it does not finish the ward job.
+
+Phone rings while the drug is still in hand.
+
+Twenty seconds. State the call in order:
+
+1. Who is being called.
+2. Immediate concern.
+3. What must not happen with the medication.
+4. Bedside reassessment required before any further drug decision.
+
+Make it a ward call, not a clean form entry.
+
+LEARNER: “Checklist complete; patient changed; hold and escalate” was my line, and the framing problem is that I made it sound finished. Reframe: call senior medical review or rapid response now; immediate concern is doubled oxygen requirement after signing; this medication must not be administered. Bedside reassessment first, before any further drug decision, though I still think the checklist is being used as a bit of a trap.
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: Checklist complete is not clinical clearance. Doubled oxygen requirement stops the drug, escalates urgent review, and returns the decision to bedside reassessment.

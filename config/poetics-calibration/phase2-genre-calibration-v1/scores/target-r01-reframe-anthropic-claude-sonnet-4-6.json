@@ -1,0 +1,205 @@
+{
+  "generated": "2026-05-24T04:37:35.357Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 6,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-genre-calibration-v1/target-r01/key-reframe.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T27",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I can take three washers off this pan and three off that pan, and the marks still line up, so the balance part makes sense. But when it becomes the label, I'm not sure how to explain it except saying \"do the same thing to both sides,\" which feels a bit like repeating the rule.",
+      "statedInsightEvidence": "I think I can do it with the card, but without it I might still rush the label.",
+      "naiveTrajectory": "The prior turns were moving toward the learner smoothly filling in the tutor's sentence-frame blanks with 'equal' and 'true,' progressively internalising the prop-based script.",
+      "flags": []
+    },
+    {
+      "id": "T28",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "Sorry, I think I was reading \"tentative\" like \"argument missing,\" but the page maybe is only flagging how the sentence sounds academic or does not sound academic yet.",
+      "statedInsightEvidence": "Maybe the better frame is that the sentence has to meet the rubric voice",
+      "naiveTrajectory": "The prior turns were moving incrementally toward accepting the tutor's word-level fix, with the learner progressively softening the misreading of 'tentative' while still treating the sheet as an external judge.",
+      "flags": []
+    },
+    {
+      "id": "T29",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "residents avoid the Pine stop after dark, causing missed evening access, so the working group should test a Pine-route audit",
+      "statedInsightEvidence": "that was the framing problem",
+      "naiveTrajectory": "The prior turns were heading toward a successfully narrowed, confident problem sentence ready for packet close, with only minor provisional hedging left to add.",
+      "flags": []
+    },
+    {
+      "id": "T30",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I used the diary as the strongest evidence because page 2 is the primary source, written closest to the hearing, so surely it carries more trust.",
+      "statedInsightEvidence": "Oh, I get it: page 2 is more like one witness's notebook than the verdict of the whole hearing.",
+      "naiveTrajectory": "The prior turns were heading toward a tidy comparative ranking of diary versus historian, with the learner progressively refining which source to privilege for the label.",
+      "flags": []
+    },
+    {
+      "id": "T31",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "Is the next fork asking about the veins?",
+      "statedInsightEvidence": "I said it like a guess from the leaf, not from this line on the toothed branch.",
+      "naiveTrajectory": "The learner was proceeding step-by-step through the key's forks, apparently following the procedure correctly, and the expected next move was simply to confirm the vein fork and place the card.",
+      "flags": []
+    },
+    {
+      "id": "T32",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5
+      },
+      "recoheredEarlier": "\"Checklist complete; patient changed; hold and escalate\" was my line, and the framing problem is that I made it sound finished.",
+      "statedInsightEvidence": "the framing problem is that I made it sound finished",
+      "naiveTrajectory": "The learner was on a trajectory of progressively refining the same hold-and-escalate answer by adding new changed variables as they appeared.",
+      "flags": [
+        "recon_evidence_clamp:4->3"
+      ]
+    },
+    {
+      "id": "T33",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 0,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 1
+      },
+      "recoheredEarlier": "My first reaction is still: that new tag looks like greed in ink. But the empty crate is bothering that reaction, because if twelve crates turned into four, the old label really does just hand tomatoes to whoever gets here first. I don't want the supply slip used as a clean alibi, though.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "",
+      "flags": []
+    },
+    {
+      "id": "T34",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 50,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 3,
+        "rupture": 3,
+        "coherence": 5
+      },
+      "recoheredEarlier": "The mistake was letting the side count stand in for the area count.",
+      "statedInsightEvidence": "The mistake was letting the side count stand in for the area count.",
+      "naiveTrajectory": "The learner was on track to apply the narrowed claim (side doubled; area quadrupled) straightforwardly to the three-unit case by counting nine squares.",
+      "flags": [
+        "recon_evidence_clamp:4->3"
+      ]
+    }
+  ]
+}

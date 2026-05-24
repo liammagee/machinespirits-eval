@@ -1,0 +1,161 @@
+{
+  "generated": "2026-05-24T01:17:53.944Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.5-plus-02-15",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 6,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-balanced-calibration-v1/target-r01/key-reframe.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T19",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "0.04% still feels like thin arithmetic to hang climate-scale claims on, even with that meter blinking at 420.",
+      "statedInsightEvidence": "the framing problem was that I was picturing a room percentage, not a whole exit path to space.",
+      "naiveTrajectory": "The dialogue expects the learner to either accept the tutor's explanation or continue doubting the physical claim directly.",
+      "flags": []
+    },
+    {
+      "id": "T20",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "If the words are exact, it seems fair, or at least that was the standard in my head.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner continues to ask the tutor to define the specific line between tightening and steering.",
+      "flags": []
+    },
+    {
+      "id": "T21",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I thought the wall map was the thing to trust because Greenland looks almost absurdly large up there.",
+      "statedInsightEvidence": "I can say it is projection distortion, not Greenland nearly Africa-sized, but standing beside the map it still nags at me.",
+      "naiveTrajectory": "The prior turns establish a pattern of the learner struggling to accept the numerical evidence over the visual map.",
+      "flags": []
+    },
+    {
+      "id": "T22",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I think the ward sentence only licenses, sorry, the pattern across admissions in Ward C, not a claim about this patient.",
+      "statedInsightEvidence": "The framing problem is that I was still letting the average sort of sit on this patient as if it was evidence about them.",
+      "naiveTrajectory": "Following T2's modeling of the summary phrasing, the expected next step was for the learner to produce the final case statement.",
+      "flags": []
+    },
+    {
+      "id": "T23",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 5,
+        "coherence": 5
+      },
+      "recoheredEarlier": "Okay, the steel is not the bridge; the route is the bridge, and a loose gusset can steal the whole load before the member even gets to prove itself.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner appeared to be steadily accepting and refining the tutor's constraints without questioning their own prior grasp of them.",
+      "flags": []
+    },
+    {
+      "id": "T24",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 50,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 3,
+        "coherence": 3
+      },
+      "recoheredEarlier": "I thought the person's body gets used to the antibiotic, so I wrote it wrong on the poster.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner seeks to resolve the conceptual confusion between mutation and pre-existing resistance.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    }
+  ]
+}

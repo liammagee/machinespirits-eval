@@ -1,16 +1,21 @@
 import { strict as assert } from 'node:assert';
+import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { describe, it } from 'node:test';
+import yaml from 'yaml';
 import {
   DEFAULT_ANSWERS,
   artifactPaths,
   buildDramaSpec,
   buildGeneratorCommand,
   collectAnswers,
+  loadAnswersFile,
   parseArgs,
   profilePair,
   runIdFor,
   slugify,
+  writeAnswersTemplate,
 } from '../scripts/drama-generator.js';
 
 describe('drama-generator', () => {
@@ -86,7 +91,41 @@ describe('drama-generator', () => {
     assert.ok(command.includes('--force'));
   });
 
+  it('declares a sidecar-ingestible batch plan path for one-off runs', () => {
+    const paths = artifactPaths('/tmp/drama-generator-test', 'smoke');
+    assert.equal(path.basename(paths.batchPlanPath), 'batch-plan.json');
+    assert.equal(path.basename(paths.summaryPath), 'run-summary.json');
+  });
+
   it('slugifies scenario names for path-safe run ids', () => {
     assert.equal(slugify('Can an exact quote still mislead?'), 'can-an-exact-quote-still-mislead');
+  });
+
+  it('loads questionnaire answers from YAML and writes an editable template', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'drama-generator-answers-'));
+    const templatePath = path.join(root, 'answers.yaml');
+    writeAnswersTemplate(templatePath);
+    const template = yaml.parse(fs.readFileSync(templatePath, 'utf8'));
+    assert.equal(template.answers.condition, DEFAULT_ANSWERS.condition);
+
+    const answersPath = path.join(root, 'custom.yaml');
+    fs.writeFileSync(
+      answersPath,
+      yaml.stringify({
+        answers: {
+          ...DEFAULT_ANSWERS,
+          discipline: 'music theory',
+          scenarioName: 'Cadence mistake',
+          condition: 'base',
+        },
+      }),
+      'utf8',
+    );
+    assert.equal(loadAnswersFile(answersPath).discipline, 'music theory');
+    const args = parseArgs(['--answers', answersPath, '--non-interactive']);
+    const answers = collectAnswers(args);
+    assert.equal(answers.discipline, 'music theory');
+    assert.equal(answers.scenarioName, 'Cadence mistake');
+    assert.equal(answers.condition, 'base');
   });
 });

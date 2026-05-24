@@ -116,6 +116,8 @@ describe('run-poetics-production-batch', () => {
     const args = parseArgs([
       '--root-dir',
       '/tmp/phase2-production-v1-test',
+      '--score-concurrency',
+      '1',
       '--critics',
       'qwen/qwen3.5-plus-02-15,google/gemini-3.5-flash',
     ]);
@@ -129,11 +131,18 @@ describe('run-poetics-production-batch', () => {
       'target-r01-reframe',
       'target-r01-reframe',
     ]);
-    assert.ok(scoreCommand(jobs[0], args).includes('--sample-dir'));
+    const command = scoreCommand(jobs[0], args);
+    assert.ok(command.includes('--sample-dir'));
+    assert.ok(command.includes('--concurrency'));
+    assert.ok(command.includes('1'));
   });
 
   it('normalizes model names into stable artifact slugs', () => {
     assert.equal(modelSlug('qwen/qwen3.5-plus-02-15'), 'qwen-qwen3-5-plus-02-15');
     assert.equal(modelSlug('google/gemini-3.5-flash'), 'google-gemini-3-5-flash');
+  });
+
+  it('can resume scoring without overwriting existing score artifacts', () => {
+    assert.equal(parseArgs(['--skip-existing-scores']).skipExistingScores, true);
   });
 });

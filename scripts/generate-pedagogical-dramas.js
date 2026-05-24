@@ -80,6 +80,8 @@ const __dirname = path.dirname(__filename);
 const WORKTREE_ROOT = path.resolve(__dirname, '..');
 const CAL_DIR = path.join(WORKTREE_ROOT, 'config', 'poetics-calibration');
 const DRAMAS_SPEC = path.join(CAL_DIR, 'phase2-dramas-v2.yaml');
+const PEDAGOGICAL_APPROACHES_DB = path.join(CAL_DIR, 'pedagogical-approaches.yaml');
+const DIALOGUE_APPROACHES_DB = path.join(CAL_DIR, 'dialogue-approaches.yaml');
 const DIRECTOR_REVISIT_POLICIES = new Set(['none', 'anchor', 'revoice', 'reconsider', 'reframe']);
 const DIRECTOR_REVISIT_ANCHORS = new Set(['latest', 'opening', 'misframing-candidate']);
 
@@ -92,6 +94,8 @@ function parseArgs(argv) {
     model: 'sonnet',
     generator: 'claude',
     spec: null,
+    pedagogyDb: PEDAGOGICAL_APPROACHES_DB,
+    dialogueDb: DIALOGUE_APPROACHES_DB,
     tidStart: 0,
     mock: false,
     dryRun: false,
@@ -121,6 +125,8 @@ function parseArgs(argv) {
     else if (t === '--model') a.model = argv[++i];
     else if (t === '--generator') a.generator = argv[++i];
     else if (t === '--spec') a.spec = path.resolve(argv[++i]);
+    else if (t === '--pedagogy-db') a.pedagogyDb = path.resolve(argv[++i]);
+    else if (t === '--dialogue-db') a.dialogueDb = path.resolve(argv[++i]);
     else if (t === '--tid-start') a.tidStart = parseInt(argv[++i], 10);
     else if (t === '--only') a.only = argv[++i];
     else if (t === '--out-dir') a.outDir = path.resolve(argv[++i]);
@@ -139,21 +145,23 @@ function parseArgs(argv) {
         .split(',')
         .map((policy) => policy.trim())
         .filter(Boolean);
-    }
-    else throw new Error(`unknown arg: ${t}`);
+    } else throw new Error(`unknown arg: ${t}`);
   }
   if (!Number.isInteger(a.seed)) throw new Error('--seed must be an integer');
   if (!Number.isInteger(a.maxTurns) || a.maxTurns < 1) throw new Error('--max-turns must be a positive integer');
   if (a.generator !== 'claude' && a.generator !== 'codex')
     throw new Error(`--generator must be claude|codex (got ${a.generator})`);
   if (!Number.isInteger(a.tidStart) || a.tidStart < 0) throw new Error('--tid-start must be a non-negative integer');
+  if (a.pedagogyDb && !fs.existsSync(a.pedagogyDb)) throw new Error(`--pedagogy-db not found: ${a.pedagogyDb}`);
+  if (a.dialogueDb && !fs.existsSync(a.dialogueDb)) throw new Error(`--dialogue-db not found: ${a.dialogueDb}`);
   if (!['off', 'scene'].includes(a.directorMode)) throw new Error('--director-mode must be off|scene');
   if (!DIRECTOR_REVISIT_POLICIES.has(a.directorRevisitPolicy))
     throw new Error('--director-revisit-policy must be none|anchor|revoice|reconsider|reframe');
   if (!DIRECTOR_REVISIT_ANCHORS.has(a.directorRevisitAnchor))
     throw new Error('--director-revisit-anchor must be latest|opening|misframing-candidate');
   if (a.pairedContinuationPolicies) {
-    if (!a.pairedContinuationPolicies.length) throw new Error('--paired-continuation-policies needs at least one policy');
+    if (!a.pairedContinuationPolicies.length)
+      throw new Error('--paired-continuation-policies needs at least one policy');
     for (const policy of a.pairedContinuationPolicies) {
       if (!DIRECTOR_REVISIT_POLICIES.has(policy)) {
         throw new Error('--paired-continuation-policies must use none|anchor|revoice|reconsider|reframe');
@@ -185,9 +193,7 @@ function resolveDirectorRevisitOptions(d, args) {
     );
   }
   if (!DIRECTOR_REVISIT_ANCHORS.has(anchor)) {
-    throw new Error(
-      `drama ${d.id || '<unknown>'} director_revisit_anchor must be latest|opening|misframing-candidate`,
-    );
+    throw new Error(`drama ${d.id || '<unknown>'} director_revisit_anchor must be latest|opening|misframing-candidate`);
   }
   return { policy, anchor: policy === 'none' ? null : anchor };
 }
@@ -392,16 +398,14 @@ function revoiceTerms(text) {
 }
 
 function extractRevisitAnchor(text) {
-  return (
-    String(text || '').match(
-      /A prior learner line is played back:\s*"([\s\S]*?)"\s*The learner must/i,
-    )?.[1] || ''
-  );
+  return String(text || '').match(/A prior learner line is played back:\s*"([\s\S]*?)"\s*The learner must/i)?.[1] || '';
 }
 
 function revoiceMatchStats(anchor, learnerText) {
   const anchorTerms = revoiceTerms(anchor);
-  const normalizedLearner = String(learnerText || '').replace(/\s+/g, ' ').trim();
+  const normalizedLearner = String(learnerText || '')
+    .replace(/\s+/g, ' ')
+    .trim();
   const learnerOpeningProbe = normalizedLearner.replace(/\.{2,}/g, '…');
   const firstSentence = learnerOpeningProbe.match(/^.*?[.!?](?=\s|$)/)?.[0] || '';
   const minimumSharedTerms = Math.min(3, anchorTerms.length);
@@ -439,7 +443,11 @@ function revoiceComplianceFailures(turns) {
     failures.push({
       stage_turn_number: cue.turnNumber ?? i + 1,
       learner_turn_number: learner?.turnNumber ?? null,
-      reason: !anchor ? 'missing_anchor' : learner?.role !== 'LEARNER' ? 'missing_followup_learner' : 'low_anchor_overlap',
+      reason: !anchor
+        ? 'missing_anchor'
+        : learner?.role !== 'LEARNER'
+          ? 'missing_followup_learner'
+          : 'low_anchor_overlap',
       ...stats,
     });
   }
@@ -463,12 +471,16 @@ function namesEarlierFramingProblem(text) {
     /\bI\s+(?:was still|was putting|was making|kept|went straight|made|put)\b[\s\S]{0,90}\b(?:sound like|too\s+\w+|mood first|before|ahead|again|into|mean)\b/i,
     /\bI\s+was\s+still\s+acting\s+like\b/i,
     /\bI\s+was\s+letting\b[\s\S]{0,90}\btoo much\b/i,
+    /\bproblem\s+is\s+that\s+I\s+was\s+letting\b/i,
     /\bthat\s+was\s+me\s+letting\b[\s\S]{0,90}\bmean\b/i,
     /\bI\s+was\s+using\b[\s\S]{0,90}\bas\s+the\s+clue\b/i,
     /\bI\s+let\b[\s\S]{0,90}\bdecide\b[\s\S]{0,90}\bbefore checking\b/i,
     /\bI\s+let\b[\s\S]{0,90}\bbe\s+the\s+whole\b[\s\S]{0,90}\bbefore\b/i,
     /\bproblem\s+is\s+I\s+(?:put|placed|located|made|treated)\b/i,
     /\bproblem\s+was\s+making\b/i,
+    /\b(?:I|it|that|this)?\s*was\s+still\s+making\b[\s\S]{0,90}\bsound\s+like\b/i,
+    /\bmesses\s+with\s+my\s+frame\b[\s\S]{0,120}\b(?:treating|treated)\b/i,
+    /\b(?:I|we)\s+was\s+treating\b[\s\S]{0,90}\blike\s+a\s+(?:confession|verdict|judge|proof|alibi)\b/i,
     /\bmixing\s+up\b[\s\S]{0,90}\bwith\b/i,
     /\b(?:was|is)\s+(?:only|just)\b[\s\S]{0,90}\b(?:not|rather than)\b/i,
     /\btreat(?:ed|ing)\b[\s\S]{0,90}\bas\s+(?:absent|gone|empty|not\s+there)\b/i,
@@ -500,9 +512,12 @@ function replacesEarlierFraming(text) {
     /\b(?:instead|rather|now)\b[\s\S]{0,100}\b(?:frame|read|say|put|treat|write|claim)\b/i,
     /\b(?:frame|read|say|put|treat|write|claim)\b[\s\S]{0,80}\b(?:instead|rather|now)\b/i,
     /\b(?:new|better|revised|replacement)\s+(?:frame|framing|reading)\b/i,
+    /\b(?:new|better|revised)\s+(?:check|test|claim|question)\s+(?:is|starts?|uses?|asks?)\b/i,
     /\bnew\s+(?:margin\s+note|mark|label|line|frame)\s*:/i,
     /\breplacement\s+is\b/i,
     /\breplace\s+it\s*:/i,
+    /\bI[’']d\s+change\s+it\s+to\b/i,
+    /\breframe\s*:/i,
     /\bbetter\s+(?:reading|line|claim)\s+is\b/i,
     /\bbetter\s+way\s+is\b/i,
     /\bI\s+(?:would|should|need to|can|will)\s+(?:frame|read|say|put|treat|write|claim|change|call)\b/i,
@@ -527,6 +542,9 @@ function replacesEarlierFraming(text) {
     /\bnot\s+just\s+water\b[\s\S]{0,120}\b(?:solution|balance|salt)\b/i,
     /\bbalance\b[\s\S]{0,80}\b(?:weighs|measures|carries)\b[\s\S]{0,60}\bsalt\b/i,
     /\b(?:more like|better as|read from|looking back)\b/i,
+    /\bread\s+it\s+as\b/i,
+    /\bsplit\s+(?:tag|frame|claim|reading)\b/i,
+    /\bpart\b[\s\S]{0,80}\bpart\b/i,
     /\b(?:maybe|now)\b[\s\S]{0,100}\b(?:is|becomes?)\s+the\s+(?:pattern|rule)\b/i,
     /\b(?:effect size|estimate|interval)\b[\s\S]{0,120}\b(?:has|have|needs?|need)\s+to\s+show\b/i,
     /\b(?:it|that|this)\s+(?:should|has to|needs? to)\s+(?:start|read|say|show|lead)\b/i,
@@ -631,6 +649,11 @@ function keyItemFor(d, nTutor, nLearner, qualityWarnings = []) {
     drama_id: d.id,
     discipline: d.discipline,
     condition: d.condition,
+    pedagogical_approach: d.pedagogical_approach || d._pedagogicalApproach?.id || null,
+    pedagogical_family: d._pedagogicalApproach?.family || null,
+    dialogue_approach: d.dialogue_approach || d._dialogueApproach?.id || null,
+    dialogue_family: d._dialogueApproach?.family || null,
+    stage_direction_policy: stageDirectionPolicyFor(d),
     tutor_profile: d.tutor_profile,
     learner_profile: d.learner_profile,
     persona: d.persona,
@@ -657,17 +680,24 @@ function transcriptReframesAnchor(anchor, turns = []) {
   return turns.some((turn) => turn.role === 'LEARNER' && reframeMatchStats(anchor, turn.text).compliant);
 }
 
+function transcriptLooselyReframesAfterDowngrade(anchor, turns = []) {
+  if (!anchor) return false;
+  return turns.some((turn) => {
+    if (turn.role !== 'LEARNER') return false;
+    const learnerText = String(turn.text || '');
+    if (!namesEarlierFramingProblem(learnerText) || !replacesEarlierFraming(learnerText)) return false;
+    return true;
+  });
+}
+
 function reframeDowngradeFailures(traceTurns = [], turns = []) {
   return traceTurns.flatMap((turn, idx) => {
     const cue = turn?.directorCue;
-    if (
-      turn?.phase !== 'director' ||
-      cue?.requestedRevisitPolicy !== 'reframe' ||
-      cue?.revisitPolicy === 'reframe'
-    ) {
+    if (turn?.phase !== 'director' || cue?.requestedRevisitPolicy !== 'reframe' || cue?.revisitPolicy === 'reframe') {
       return [];
     }
     if (transcriptReframesAnchor(cue.anchorQuote, turns)) return [];
+    if (transcriptLooselyReframesAfterDowngrade(cue.anchorQuote, turns)) return [];
     return [
       {
         stage_turn_number: turn.turnNumber ?? idx + 1,
@@ -683,7 +713,8 @@ function reframeDowngradeFailures(traceTurns = [], turns = []) {
 
 function qualityWarningsFor({ tid, dramaId, turns, removedNotes = [], traceTurns = [] }) {
   const warnings = [];
-  const internalLeakPattern = /\b(?:Superego|same Ego|the Ego|Director Scene Card|scene card|review process|internal review)\b/i;
+  const internalLeakPattern =
+    /\b(?:Superego|same Ego|the Ego|Director Scene Card|scene card|review process|internal review)\b/i;
   const leakedTurns = turns
     .map((t, idx) => ({ ...t, ordinal: idx + 1 }))
     .filter((t) => internalLeakPattern.test(t.text));
@@ -1081,7 +1112,8 @@ function parseRoleMap(str) {
     const rawKey = pair.slice(0, eq).trim();
     const k = ROLE_ALIASES[rawKey] || rawKey;
     const v = pair.slice(eq + 1).trim();
-    if (!ROLE_MAP_KEYS.has(k)) throw new Error(`--role-map key "${rawKey}" not one of: ${[...ROLE_MAP_KEYS].join(', ')}`);
+    if (!ROLE_MAP_KEYS.has(k))
+      throw new Error(`--role-map key "${rawKey}" not one of: ${[...ROLE_MAP_KEYS].join(', ')}`);
     if (v !== 'claude' && v !== 'codex')
       throw new Error(`--role-map value for "${k}" must be claude|codex (got "${v}")`);
     map[k] = v;
@@ -1164,6 +1196,108 @@ const SETTINGS = [
   'a lab bench conversation while equipment is being packed away',
 ];
 
+function loadApproachDatabase(filePath, kind) {
+  if (!filePath) return { path: null, version: null, byId: new Map() };
+  const doc = yaml.parse(fs.readFileSync(filePath, 'utf8')) || {};
+  const byId = new Map();
+  for (const entry of doc.approaches || []) {
+    if (!entry?.id) throw new Error(`${kind} approach entry is missing id in ${filePath}`);
+    if (byId.has(entry.id)) throw new Error(`duplicate ${kind} approach id "${entry.id}" in ${filePath}`);
+    byId.set(entry.id, { ...entry, _kind: kind, _sourcePath: path.relative(WORKTREE_ROOT, filePath) });
+  }
+  return { path: filePath, version: doc.version || null, byId };
+}
+
+function loadApproachDatabases(args) {
+  return {
+    pedagogical: loadApproachDatabase(args.pedagogyDb, 'pedagogical'),
+    dialogue: loadApproachDatabase(args.dialogueDb, 'dialogue'),
+  };
+}
+
+function attachApproaches(d, databases) {
+  if (d.pedagogical_approach) {
+    const approach = databases.pedagogical.byId.get(d.pedagogical_approach);
+    if (!approach) throw new Error(`drama ${d.id} references unknown pedagogical_approach: ${d.pedagogical_approach}`);
+    d._pedagogicalApproach = approach;
+  }
+  if (d.dialogue_approach) {
+    const approach = databases.dialogue.byId.get(d.dialogue_approach);
+    if (!approach) throw new Error(`drama ${d.id} references unknown dialogue_approach: ${d.dialogue_approach}`);
+    d._dialogueApproach = approach;
+  }
+  return d;
+}
+
+function approachSummaryForPrompt(approach) {
+  if (!approach) return null;
+  const keys = [
+    'id',
+    'family',
+    'lineage',
+    'medium',
+    'core_move',
+    'turn_shape',
+    'stage_direction_policy',
+    'tutor_prompt',
+    'learner_prompt',
+    'director_prompt',
+    'tutor_constraint',
+    'learner_constraint',
+    'risks',
+  ];
+  return Object.fromEntries(keys.filter((key) => approach[key] != null).map((key) => [key, approach[key]]));
+}
+
+function combineText(...parts) {
+  return parts
+    .filter((part) => part != null && String(part).trim())
+    .map((part) => String(part).trim())
+    .join(' ');
+}
+
+function stageDirectionPolicyFor(d) {
+  return d.stage_direction_policy || d._dialogueApproach?.stage_direction_policy || null;
+}
+
+function applyApproachDirectorOverrides(d, plan) {
+  if (!plan) return plan;
+  const pedagogy = d._pedagogicalApproach || null;
+  const dialogue = d._dialogueApproach || null;
+  const stagePolicy = stageDirectionPolicyFor(d);
+  let next = {
+    ...plan,
+    pedagogical_approach_id: pedagogy?.id || null,
+    dialogue_approach_id: dialogue?.id || null,
+    stage_direction_policy: stagePolicy || plan.stage_direction_policy || null,
+    voice_constraints: combineText(
+      plan.voice_constraints,
+      pedagogy?.director_prompt ? `Pedagogical source: ${pedagogy.director_prompt}` : null,
+      dialogue?.director_prompt ? `Dialogue source: ${dialogue.director_prompt}` : null,
+    ),
+    side_constraints: {
+      ...(plan.side_constraints || {}),
+      tutor: combineText(plan.side_constraints?.tutor, pedagogy?.tutor_prompt, dialogue?.tutor_constraint),
+      learner: combineText(plan.side_constraints?.learner, pedagogy?.learner_prompt, dialogue?.learner_constraint),
+    },
+  };
+  if (dialogue?.opening_speaker && !d.opening_speaker) next.opening_speaker = dialogue.opening_speaker;
+  if (dialogue?.ending_speaker && !d.ending_speaker) next.ending_speaker = dialogue.ending_speaker;
+
+  if (stagePolicy === 'none' || stagePolicy === 'none_except_required_cue') {
+    next = {
+      ...next,
+      scene_opening: '',
+      interventions: (next.interventions || []).filter((cue) => cue.cue_kind === 'learner_revisit_earlier_wording'),
+    };
+  } else if (stagePolicy === 'sparse') {
+    const revisit = (next.interventions || []).filter((cue) => cue.cue_kind === 'learner_revisit_earlier_wording');
+    const ordinary = (next.interventions || []).filter((cue) => cue.cue_kind !== 'learner_revisit_earlier_wording');
+    next.interventions = [...ordinary.slice(0, 1), ...revisit];
+  }
+  return next;
+}
+
 function variationOffset(key = '') {
   return String(key || '')
     .split('')
@@ -1177,33 +1311,52 @@ function variantIndex(dramaId, offset = 0, variationKey = '') {
 
 function fallbackDirectorPlan(d, reason = 'fallback', args = {}) {
   const variationKey = d.director_variation_key || d._directorVariationKey || args.directorVariationKey || '';
+  const pedagogy = d._pedagogicalApproach || null;
+  const dialogue = d._dialogueApproach || null;
+  const stagePolicy = stageDirectionPolicyFor(d);
   const voice = VOICE_VARIANTS[variantIndex(d.id, 0, variationKey)];
   const setting = d.scene_setting || SETTINGS[variantIndex(d.id, 2, variationKey)];
   const opensWithTutor = variantIndex(d.id, 1, variationKey) % 3 === 0;
   const endsWithTutor = variantIndex(d.id, 2, variationKey) % 4 === 0;
-  return {
+  return applyApproachDirectorOverrides(d, {
     parse_status: reason,
     variation_key: variationKey || null,
     scene_setting: setting,
-    scene_opening: `The scene opens ${setting}; the misconception is already present in the learner's situation, not only in a direct question.`,
+    scene_opening:
+      stagePolicy === 'none' || stagePolicy === 'none_except_required_cue'
+        ? ''
+        : `The scene opens ${setting}; the misconception is already present in the learner's situation, not only in a direct question.`,
     relationship: d.relationship || 'a tutor and learner who do not yet share a stable register',
     stakes: d.stakes || d.learner_start_state || d.topic,
-    opening_speaker: d.opening_speaker || (opensWithTutor ? 'tutor' : 'learner'),
-    ending_speaker: d.ending_speaker || (endsWithTutor ? 'tutor' : 'learner'),
+    opening_speaker: d.opening_speaker || dialogue?.opening_speaker || (opensWithTutor ? 'tutor' : 'learner'),
+    ending_speaker: d.ending_speaker || dialogue?.ending_speaker || (endsWithTutor ? 'tutor' : 'learner'),
     locale: d.locale || voice.locale,
-    register: d.register || voice.register,
+    register: d.register || dialogue?.turn_shape || voice.register,
     voice_constraints:
       d.voice_constraints ||
-      `${voice.person_policy} Avoid the repeated American tutoring pattern of "I hear you / your intuition is right / what do you think".`,
+      combineText(
+        `${voice.person_policy} Avoid the repeated American tutoring pattern of "I hear you / your intuition is right / what do you think".`,
+        pedagogy?.director_prompt,
+        dialogue?.director_prompt,
+      ),
     person_policy: d.person_policy || voice.person_policy,
-    direct_address_budget: d.direct_address_budget || 'No more than one direct "you/your" validation beat per public turn.',
+    direct_address_budget:
+      d.direct_address_budget || 'No more than one direct "you/your" validation beat per public turn.',
     side_constraints: {
       tutor:
         d.tutor_voice_constraint ||
-        'The tutor need not always validate first; sometimes begin with an object, a counterexample, silence, or a concise claim.',
+        combineText(
+          'The tutor need not always validate first; sometimes begin with an object, a counterexample, silence, or a concise claim.',
+          pedagogy?.tutor_prompt,
+          dialogue?.tutor_constraint,
+        ),
       learner:
         d.learner_voice_constraint ||
-        'The learner should not always narrate confusion in polished first person; allow fragments, resistance, overheard reasoning, or practical stakes.',
+        combineText(
+          'The learner should not always narrate confusion in polished first person; allow fragments, resistance, overheard reasoning, or practical stakes.',
+          pedagogy?.learner_prompt,
+          dialogue?.learner_constraint,
+        ),
     },
     interventions: [
       {
@@ -1218,7 +1371,7 @@ function fallbackDirectorPlan(d, reason = 'fallback', args = {}) {
     director_note:
       d.director_note ||
       'The director varies scene ecology and voice; variation keys change draw-level style without changing labels.',
-  };
+  });
 }
 
 function applySpecDirectorOverrides(d, plan) {
@@ -1252,17 +1405,17 @@ function withDirectorRevisitCue(plan, policy, anchorPolicy) {
       ? 'A prior learner line is played back. The learner must revoice that earlier wording first, name the earlier framing problem in public speech, then replace it with a new framing that changes how the earlier line reads.'
       : policy === 'reconsider'
         ? 'A prior learner line is played back. The learner must revoice that earlier wording first, then decide in public whether it still stands, needs narrowing, or needs replacing before moving on.'
-      : policy === 'revoice'
-        ? 'A prior learner line is played back. The learner must revoice that earlier wording before moving on, then say exactly what it now misses, keeps, or changes.'
-        : 'A prior learner line is played back or pointed to. The next learner line must repeat or close-paraphrase one earlier phrase they used, then say what that phrase now misses, keeps, or changes.';
+        : policy === 'revoice'
+          ? 'A prior learner line is played back. The learner must revoice that earlier wording before moving on, then say exactly what it now misses, keeps, or changes.'
+          : 'A prior learner line is played back or pointed to. The next learner line must repeat or close-paraphrase one earlier phrase they used, then say what that phrase now misses, keeps, or changes.';
   const cueReasoning =
     policy === 'reframe'
       ? 'Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.'
       : policy === 'reconsider'
         ? 'Opt-in reconsideration mirror: the learner must make a public judgment about earlier wording without being forced to replace it.'
-      : policy === 'revoice'
-        ? 'Opt-in revoice mirror: the learner must make the earlier wording and the change to it legible in public speech.'
-        : 'Opt-in rehearsal mirror: the learner must visibly revisit earlier wording instead of only accepting the latest correction.';
+        : policy === 'revoice'
+          ? 'Opt-in revoice mirror: the learner must make the earlier wording and the change to it legible in public speech.'
+          : 'Opt-in rehearsal mirror: the learner must visibly revisit earlier wording instead of only accepting the latest correction.';
   const cue = {
     after_turn: 2,
     timing: 'before_learner',
@@ -1333,6 +1486,7 @@ Return exactly one JSON object with:
   "ending_speaker": "learner|tutor|director",
   "locale": "English/register ecology",
   "register": "speech style and affective temperature",
+  "stage_direction_policy": "none|none_except_required_cue|sparse|short|interventionist|rich",
   "voice_constraints": "constraints that prevent generic American AI tutoring prose",
   "person_policy": "how much first/second/third person is allowed",
   "direct_address_budget": "budget for direct you/your validation",
@@ -1357,6 +1511,12 @@ async function buildDirectorPlan(d, llmCall, args) {
     learner_start_state: d.learner_start_state,
     persona: d.persona,
     intended_tutor_character: d.intended_tutor_character,
+    pedagogical_approach: approachSummaryForPrompt(d._pedagogicalApproach),
+    dialogue_approach: approachSummaryForPrompt(d._dialogueApproach),
+    approach_instruction:
+      d._pedagogicalApproach || d._dialogueApproach
+        ? 'Use the selected pedagogical and dialogue approaches as directorial source material for scene ecology, tutor constraints, learner constraints, speaker order, turn length, and stage-direction policy. Do not name these approach IDs in public speech.'
+        : null,
     director_variation_key: variationKey,
     forbidden_failure_modes: [
       'every turn in first/second person',
@@ -1371,45 +1531,36 @@ async function buildDirectorPlan(d, llmCall, args) {
       `The generator will inject one visible learner look-back cue after turn 2 using the ${revisitPolicy} policy and the ${revisitAnchor} anchor selector. Let the scene make that cue plausible without naming recognition or guaranteeing a breakthrough.`,
     fallback_variation_seed: fallback,
   });
-  const response = await llmCall(
-    'director',
-    buildDirectorSystemPrompt(),
-    [{ role: 'user', content: userPrompt }],
-    {
-      temperature: 0.85,
-      maxTokens: 900,
-      agentRole: 'director',
-    },
-  );
+  const response = await llmCall('director', buildDirectorSystemPrompt(), [{ role: 'user', content: userPrompt }], {
+    temperature: 0.85,
+    maxTokens: 900,
+    agentRole: 'director',
+  });
   try {
     const parsed = extractJsonObject(response.content);
     if (!parsed) throw new Error('no JSON object');
+    const merged = applySpecDirectorOverrides(d, {
+      ...fallback,
+      ...parsed,
+      variation_key: variationKey,
+      interventions:
+        Array.isArray(parsed.interventions) && parsed.interventions.length
+          ? parsed.interventions
+          : fallback.interventions,
+      parse_status: 'ok',
+      provenance: response.provenance || response.apiPayload?.provenance || null,
+    });
     return withDirectorCueProvenance(
-      withDirectorRevisitCue(
-        applySpecDirectorOverrides(d, {
-          ...fallback,
-          ...parsed,
-          variation_key: variationKey,
-          interventions:
-            Array.isArray(parsed.interventions) && parsed.interventions.length ? parsed.interventions : fallback.interventions,
-          parse_status: 'ok',
-          provenance: response.provenance || response.apiPayload?.provenance || null,
-        }),
-        revisitPolicy,
-        revisitAnchor,
-      ),
+      applyApproachDirectorOverrides(d, withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor)),
     );
   } catch (error) {
+    const merged = applySpecDirectorOverrides(d, {
+      ...fallbackDirectorPlan(d, `fallback-parse-failed:${error.message}`, args),
+      raw_director_response: String(response.content || '').slice(0, 2000),
+      provenance: response.provenance || response.apiPayload?.provenance || null,
+    });
     return withDirectorCueProvenance(
-      withDirectorRevisitCue(
-        applySpecDirectorOverrides(d, {
-          ...fallbackDirectorPlan(d, `fallback-parse-failed:${error.message}`, args),
-          raw_director_response: String(response.content || '').slice(0, 2000),
-          provenance: response.provenance || response.apiPayload?.provenance || null,
-        }),
-        revisitPolicy,
-        revisitAnchor,
-      ),
+      applyApproachDirectorOverrides(d, withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor)),
     );
   }
 }
@@ -1503,7 +1654,8 @@ function formatRoleLabel(phase, role, stage = null) {
     if (role === 'superego') return `Tutor Superego${formatStageSuffix(stage)}`;
     return `Tutor ${role}${formatStageSuffix(stage)}`;
   }
-  if (role === 'ego' || role === 'ego_initial' || role === 'ego_revision') return `Learner Ego${formatStageSuffix(stage)}`;
+  if (role === 'ego' || role === 'ego_initial' || role === 'ego_revision')
+    return `Learner Ego${formatStageSuffix(stage)}`;
   if (role === 'superego') return `Learner Superego${formatStageSuffix(stage)}`;
   if (role === 'unified_learner') return 'Learner';
   return `Learner ${role}${formatStageSuffix(stage)}`;
@@ -1547,9 +1699,9 @@ function renderHeldOutTranscript(trace, { tid, dramaId, mode }) {
       ? 'Full held-out role transcript'
       : mode === 'stage'
         ? 'Stage transcript'
-      : mode === 'tutor'
-        ? 'Tutor held-out role transcript'
-        : 'Learner held-out role transcript';
+        : mode === 'tutor'
+          ? 'Tutor held-out role transcript'
+          : 'Learner held-out role transcript';
   const lines = [`# ${title}`, '', `tid: ${tid}`, `drama_id: ${dramaId}`, ''];
 
   if ((mode === 'full' || mode === 'stage') && trace.directorPlan) {
@@ -1726,6 +1878,10 @@ function baseKeyObject({ args, runtime, directorPolicy, directorAnchor, transcri
     director_revisit_cue: directorPolicy !== 'none',
     director_revisit_policy: directorPolicy,
     director_revisit_anchor: directorPolicy === 'none' ? null : directorAnchor,
+    approach_databases: {
+      pedagogical: path.relative(WORKTREE_ROOT, args.pedagogyDb),
+      dialogue: path.relative(WORKTREE_ROOT, args.dialogueDb),
+    },
     transcripts_dir: path.relative(WORKTREE_ROOT, transcriptsDir),
     seed: args.seed,
     max_turns: args.maxTurns,
@@ -1837,7 +1993,11 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
           personaId: d.persona,
           tutorProfile: d.tutor_profile,
           topic: d.topic,
-          scenario: { name: d.scenario_name, learnerStartState: d.learner_start_state, directorPlan: branchDirectorPlan },
+          scenario: {
+            name: d.scenario_name,
+            learnerStartState: d.learner_start_state,
+            directorPlan: branchDirectorPlan,
+          },
           sessionId: branchId('branch-session', d.id, policy),
         },
         llmCall,
@@ -1863,7 +2023,11 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
       });
       warnings.push(...qualityWarnings.map(formatQualityWarning));
       if (removedNotes.length) {
-        fs.writeFileSync(path.join(dirs.delibDir, `${d._tid}.stripped.json`), JSON.stringify(removedNotes, null, 2), 'utf8');
+        fs.writeFileSync(
+          path.join(dirs.delibDir, `${d._tid}.stripped.json`),
+          JSON.stringify(removedNotes, null, 2),
+          'utf8',
+        );
       }
       const transcriptArtifacts = writeHeldOutTranscripts({
         args: { ...args, transcriptsDir: dirs.transcriptsDir },
@@ -1891,7 +2055,12 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
         pairedContinuation,
       });
       armKeys[policy].items[d._tid] = {
-        ...keyItemFor(branchDrama, turns.filter((turn) => turn.role === 'TUTOR').length, turns.filter((turn) => turn.role === 'LEARNER').length, qualityWarnings),
+        ...keyItemFor(
+          branchDrama,
+          turns.filter((turn) => turn.role === 'TUTOR').length,
+          turns.filter((turn) => turn.role === 'LEARNER').length,
+          qualityWarnings,
+        ),
         paired_continuation: pairedContinuation,
       };
     }
@@ -1942,6 +2111,8 @@ async function main() {
   const spec = yaml.parse(fs.readFileSync(args.spec, 'utf8'));
   const dramas = spec.dramas || [];
   if (dramas.length === 0) throw new Error('no dramas in spec');
+  const approachDatabases = loadApproachDatabases(args);
+  dramas.forEach((d) => attachApproaches(d, approachDatabases));
 
   // Seeded T-id assignment over the FULL spec FIRST, so the neutral id encodes
   // neither condition nor spec order. --tid-start offsets the numbering so a
@@ -1998,7 +2169,8 @@ async function main() {
   for (const d of order) {
     console.log(
       `  ${d._tid} ← ${d.id}  [${d.condition}]  ${d.discipline} · persona=${d.persona} · ` +
-        `tutor=${d.tutor_profile} · learner=${d.learner_profile}`,
+        `tutor=${d.tutor_profile} · learner=${d.learner_profile}` +
+        `${d._pedagogicalApproach || d._dialogueApproach ? ` · approach=${[d._pedagogicalApproach?.id, d._dialogueApproach?.id].filter(Boolean).join('+')}` : ''}`,
     );
   }
 
@@ -2070,8 +2242,7 @@ async function main() {
               ...d,
               _directorMode: traceJson.run?.director_mode || null,
               _directorRevisitPolicy:
-                traceJson.run?.director_revisit_policy ||
-                (traceJson.run?.director_revisit_cue ? 'anchor' : 'none'),
+                traceJson.run?.director_revisit_policy || (traceJson.run?.director_revisit_cue ? 'anchor' : 'none'),
               _directorRevisitAnchor: traceJson.run?.director_revisit_anchor || 'latest',
               _directorVariationKey: traceJson.run?.director_variation_key || null,
               _directorPlan: traceJson.directorPlan || null,
@@ -2255,6 +2426,8 @@ if (path.resolve(process.argv[1] || '') === __filename) {
 }
 
 export {
+  attachApproaches,
+  loadApproachDatabases,
   qualityWarningsFor,
   reframeComplianceFailures,
   reframeMatchStats,

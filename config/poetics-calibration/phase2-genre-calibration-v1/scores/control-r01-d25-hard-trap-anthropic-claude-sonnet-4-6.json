@@ -1,0 +1,54 @@
+{
+  "generated": "2026-05-24T04:42:57.051Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-genre-calibration-v1/control-r01/d25-hard-trap/key.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T02",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "formClass": "flat",
+      "recontextualization": 25,
+      "statedInsight": 50,
+      "rupture": 50,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 3,
+        "rupture": 3,
+        "coherence": 3
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "Oh, I get it, it goes in the viral symptom-relief pile, even if that feels like a terrible answer with tomorrow morning sitting there.",
+      "naiveTrajectory": "The learner was on a trajectory of repeating the same complaint-plus-restatement loop, suggesting L4 would again simply echo the antibiotics-bacteria rule and the morning frustration.",
+      "flags": []
+    }
+  ]
+}

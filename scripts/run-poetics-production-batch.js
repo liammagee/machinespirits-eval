@@ -80,6 +80,7 @@ function parseArgs(argv) {
     repeats: 3,
     stressRepeats: 1,
     critics: DEFAULT_CRITICS,
+    scoreConcurrency: 3,
     maxTurns: 3,
     targetSpec: V3_SPEC,
     targetOnly: V3_TARGETS,
@@ -92,6 +93,7 @@ function parseArgs(argv) {
     force: false,
     skipGenerate: false,
     skipScore: false,
+    skipExistingScores: false,
     allowQualityWarnings: false,
     only: null,
     json: false,
@@ -105,6 +107,7 @@ function parseArgs(argv) {
     else if (t === '--repeats') args.repeats = parseInt(argv[++i], 10);
     else if (t === '--stress-repeats') args.stressRepeats = parseInt(argv[++i], 10);
     else if (t === '--critics') args.critics = splitCsv(argv[++i]);
+    else if (t === '--score-concurrency') args.scoreConcurrency = parseInt(argv[++i], 10);
     else if (t === '--max-turns') args.maxTurns = parseInt(argv[++i], 10);
     else if (t === '--target-spec') args.targetSpec = path.resolve(argv[++i]);
     else if (t === '--target-only') args.targetOnly = argv[++i];
@@ -117,6 +120,7 @@ function parseArgs(argv) {
     else if (t === '--force') args.force = true;
     else if (t === '--skip-generate') args.skipGenerate = true;
     else if (t === '--skip-score') args.skipScore = true;
+    else if (t === '--skip-existing-scores') args.skipExistingScores = true;
     else if (t === '--allow-quality-warnings') args.allowQualityWarnings = true;
     else if (t === '--only') args.only = new Set(splitCsv(argv[++i]));
     else if (t === '--json') args.json = true;
@@ -140,6 +144,9 @@ function parseArgs(argv) {
     throw new Error('--stress-tid-start must be a non-negative integer');
   }
   if (!args.critics.length) throw new Error('--critics must name at least one critic');
+  if (!Number.isInteger(args.scoreConcurrency) || args.scoreConcurrency < 1) {
+    throw new Error('--score-concurrency must be a positive integer');
+  }
   args.rootDir = args.rootDir || path.join(CAL_DIR, args.batchId);
   return args;
 }
@@ -241,6 +248,7 @@ function buildPlan(rawArgs = {}) {
     repeats: args.repeats,
     stressRepeats: args.stressRepeats,
     maxTurns: args.maxTurns,
+    scoreConcurrency: args.scoreConcurrency,
     critics: args.critics,
     allUnits: units,
     selectedUnitIds: selected.map((unit) => unit.id),
@@ -313,6 +321,8 @@ function scoreCommand(job, args) {
     job.keyPath,
     '--out',
     job.outPath,
+    '--concurrency',
+    String(args.scoreConcurrency),
   ];
   if (args.mock) cmd.push('--mock');
   if (args.allowQualityWarnings) cmd.push('--allow-quality-warnings');
@@ -400,6 +410,10 @@ function runPlan(args) {
     if (!args.dryRun) fs.mkdirSync(path.join(args.rootDir, 'scores'), { recursive: true });
     for (const unit of plan.units) {
       for (const job of scoreJobs(unit, args)) {
+        if (args.skipExistingScores && fs.existsSync(job.outPath)) {
+          console.log(`\n# ${job.id} · ${job.critic} (skip existing)`);
+          continue;
+        }
         console.log(`\n# ${job.id} · ${job.critic}`);
         runCommand(scoreCommand(job, args), args);
       }

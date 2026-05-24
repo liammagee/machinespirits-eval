@@ -65,6 +65,8 @@ function parseArgs(argv) {
     model: 'sonnet',
     maxTurns: 3,
     roleMap: null,
+    answersFile: null,
+    templatePath: null,
     nonInteractive: false,
     mock: false,
     force: false,
@@ -108,6 +110,10 @@ function parseArgs(argv) {
       args.maxTurns = Number.parseInt(argv[++i], 10);
     } else if (token === '--role-map') {
       args.roleMap = argv[++i];
+    } else if (token === '--answers') {
+      args.answersFile = path.resolve(argv[++i]);
+    } else if (token === '--write-template') {
+      args.templatePath = path.resolve(argv[++i]);
     } else if (token === '--title') {
       setAnswer('title', argv[++i]);
     } else if (token === '--discipline') {
@@ -151,6 +157,9 @@ function parseArgs(argv) {
     }
   }
 
+  if (args.answersFile) {
+    args.answers = { ...loadAnswersFile(args.answersFile), ...args.answers };
+  }
   validateArgs(args);
   return args;
 }
@@ -179,6 +188,8 @@ function helpText() {
   return `Usage:
   node scripts/drama-generator.js
   node scripts/drama-generator.js --mock --non-interactive --out-root /tmp/drama-generator --id smoke --force
+  node scripts/drama-generator.js --write-template exports/drama-generator/answers.yaml
+  node scripts/drama-generator.js --answers answers.yaml --generator codex --force
   node scripts/drama-generator.js --generator codex --revisit-policy reframe --max-turns 3
 
 Questions collected: discipline, learner level, topic/scenario, learner start state,
@@ -192,6 +203,28 @@ Outputs:
   <out-root>/<id>/transcripts/T01.full.md
   <out-root>/<id>/key.yaml
   <out-root>/<id>/deliberation/T01.json`;
+}
+
+function loadAnswersFile(filePath) {
+  if (!fs.existsSync(filePath)) throw new Error(`--answers file not found: ${filePath}`);
+  const raw = fs.readFileSync(filePath, 'utf8');
+  const parsed = filePath.endsWith('.json') ? JSON.parse(raw) : yaml.parse(raw);
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('--answers must contain a YAML/JSON object');
+  }
+  return parsed.answers && typeof parsed.answers === 'object' ? parsed.answers : parsed;
+}
+
+function writeAnswersTemplate(filePath) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(
+    filePath,
+    yaml.stringify({
+      note: 'Edit these values, then run: npm run drama:generate -- --answers <this-file> --generator codex --force',
+      answers: DEFAULT_ANSWERS,
+    }),
+    'utf8',
+  );
 }
 
 function slugify(value, fallback = 'drama') {
@@ -367,6 +400,7 @@ function artifactPaths(outRoot, runId) {
     delibDir: path.join(rootDir, 'deliberation'),
     transcriptsDir: path.join(rootDir, 'transcripts'),
     keyPath: path.join(rootDir, 'key.yaml'),
+    batchPlanPath: path.join(rootDir, 'batch-plan.json'),
     summaryPath: path.join(rootDir, 'run-summary.json'),
     publicSamplePath: path.join(rootDir, 'sample', 'T01.txt'),
     fullTranscriptPath: path.join(rootDir, 'transcripts', 'T01.full.md'),
@@ -412,6 +446,36 @@ function writePlan({ args, answers, runId, paths, spec, command }) {
   fs.mkdirSync(paths.rootDir, { recursive: true });
   fs.writeFileSync(paths.specPath, yaml.stringify(spec), 'utf8');
   fs.writeFileSync(
+    paths.batchPlanPath,
+    `${JSON.stringify(
+      {
+        batchId: runId,
+        rootDir: path.relative(ROOT, paths.rootDir),
+        generator: args.generator,
+        repeats: 1,
+        stressRepeats: 0,
+        maxTurns: args.maxTurns,
+        critics: [],
+        units: [
+          {
+            id: 'drama-generator',
+            kind: 'target',
+            repeat: 'single',
+            spec: path.relative(ROOT, paths.specPath),
+            only: 'DG1',
+            outDir: path.relative(ROOT, paths.sampleDir),
+            delibDir: path.relative(ROOT, paths.delibDir),
+            transcriptsDir: path.relative(ROOT, paths.transcriptsDir),
+            keyPath: path.relative(ROOT, paths.keyPath),
+          },
+        ],
+      },
+      null,
+      2,
+    )}\n`,
+    'utf8',
+  );
+  fs.writeFileSync(
     paths.summaryPath,
     `${JSON.stringify(
       {
@@ -424,6 +488,7 @@ function writePlan({ args, answers, runId, paths, spec, command }) {
           deliberationDir: path.relative(ROOT, paths.delibDir),
           transcriptsDir: path.relative(ROOT, paths.transcriptsDir),
           key: path.relative(ROOT, paths.keyPath),
+          batchPlan: path.relative(ROOT, paths.batchPlanPath),
         },
         command,
       },
@@ -481,6 +546,11 @@ async function main() {
     console.log(helpText());
     return;
   }
+  if (args.templatePath) {
+    writeAnswersTemplate(args.templatePath);
+    console.log(`wrote answers template -> ${rel(args.templatePath)}`);
+    return;
+  }
   const answers =
     args.nonInteractive || !process.stdin.isTTY ? collectAnswers(args) : await collectInteractiveAnswers(args.answers);
   const runId = runIdFor(args, answers);
@@ -519,8 +589,10 @@ export {
   buildDramaSpec,
   buildGeneratorCommand,
   collectAnswers,
+  loadAnswersFile,
   parseArgs,
   profilePair,
   runIdFor,
   slugify,
+  writeAnswersTemplate,
 };

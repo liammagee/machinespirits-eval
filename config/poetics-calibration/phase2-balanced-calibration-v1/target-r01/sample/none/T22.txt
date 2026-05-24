@@ -1,0 +1,68 @@
+STAGE: Fluorescent light catches the dashboard while a paper cup trembles beside a stack of anonymized patient summaries.
+
+TUTOR: The dashboard is describing Ward C, not this patient.
+
+The table says: across many admissions, reassessment was often delayed. The case note says: analgesia at 18:05, reassessment documented at 18:40.
+
+Pause there.
+
+What is the ward sentence licensed to claim?
+And what is the case sentence licensed to claim?
+
+The moral risk is real: an average becomes a stereotype when it is used as a verdict. Used carefully, it is a prompt for inquiry.
+
+So in the debrief, keep the claims separated:
+
+“At ward level, reassessment is often delayed.”
+
+“In this anonymized case, reassessment was documented 35 minutes after analgesia.”
+
+Now the audit lead is asking for the case summary. The responsible move is not “this patient got average care.” It is: does this case match the ward pattern, depart from it, or reveal a different process?
+
+The group statistic can guide the question. The case evidence has to carry the claim.
+
+LEARNER: I think the ward sentence only licenses, sorry, the pattern across admissions in Ward C, not a claim about this patient. My first instinct is still to say the average tells us what this person probably got, but the case note only gives the 18:05 to 18:40 gap. So maybe the case summary can say it resembles the delay pattern, but only on that documented reassessment timing. Is even “resembles” too strong from one note?
+
+TUTOR: The case note is doing the heavier work here.
+
+“Resembles” can work, but only if it stays narrow: this case has a documented 35-minute reassessment interval, and that is compatible with the ward-level delay pattern. It does not license “this patient got average care.”
+
+Test the phrase against the evidence:
+
+“Matches the ward pattern” may be too strong.
+
+“Is consistent with the ward-level pattern” is safer.
+
+“Raises the question of whether this case reflects the ward pattern” is even more cautious.
+
+So the case summary might carry the claim like this:
+
+“In this case, analgesia was given at 18:05 and reassessment was documented at 18:40. That timing is consistent with the ward-level pattern of delayed reassessment, but the case claim rests on this note, not on the ward average.”
+
+The average can shape the suspicion. The note has to carry the finding.
+
+Then the debrief question becomes sharper: what produced this 35-minute gap here: actual delay, documentation delay, competing acuity, staffing, or something else?
+
+STAGE: A pager sounds in the corridor and someone asks whether the room is free in five minutes. The learner must answer briefly, under time pressure, without producing a tidy summary.
+
+LEARNER: Yes, five minutes—sorry. My instinct still wants the dashboard to say what probably happened to this patient, but the projected note only gives me the 35-minute documented gap. Maybe “consistent with” is acceptable, if it stays attached to that note and not to the average as a verdict.
+
+TUTOR: The projected note still says 18:05 to 18:40: thirty-five minutes documented. Put the dashboard beside it, not inside it.
+
+The pressure point is “probably.”
+
+Try the three phrasings against the evidence:
+
+“Probably happened to this patient” leans on the dashboard too hard.
+
+“Consistent with the ward-level pattern” stays closer to the note.
+
+“Raises the question whether this case reflects the ward pattern” is the most cautious.
+
+So the case summary can say:
+
+“In this case, reassessment was documented 35 minutes after analgesia. That timing is consistent with the ward-level delay pattern, but the case finding rests on the documented interval, not on the ward average.”
+
+Then the debrief question is not “did this patient get average care?” It is: what explains this interval here: clinical delay, documentation delay, competing acuity, staffing, or something else?
+
+LEARNER: I think “probably” is where I keep smuggling the dashboard into the case, sorry. The note only supports the 35-minute documented interval, and “consistent with the ward-level pattern” seems safer than saying it matched the average. I’m still unsure whether a case summary should stop there or add “raises the question,” especially if the audit lead wants a clear finding.

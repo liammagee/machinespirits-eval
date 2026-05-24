@@ -1,0 +1,1689 @@
+{
+  "tid": "T14",
+  "drama_id": "D10",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "director_variation_key": "phase2-balanced-calibration-v1:r01:control-d10-emphatic",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-balanced-calibration-v1/control-r01/d10-emphatic/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-balanced-calibration-v1/control-r01/d10-emphatic/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-balanced-calibration-v1/control-r01/d10-emphatic/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-balanced-calibration-v1/control-r01/d10-emphatic/transcripts/T14.public.txt",
+      "full": "config/poetics-calibration/phase2-balanced-calibration-v1/control-r01/d10-emphatic/transcripts/T14.full.md",
+      "stage": "config/poetics-calibration/phase2-balanced-calibration-v1/control-r01/d10-emphatic/transcripts/T14.stage.md",
+      "tutor": "config/poetics-calibration/phase2-balanced-calibration-v1/control-r01/d10-emphatic/transcripts/T14.tutor.md",
+      "learner": "config/poetics-calibration/phase2-balanced-calibration-v1/control-r01/d10-emphatic/transcripts/T14.learner.md"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-balanced-calibration-v1:r01:control-d10-emphatic",
+    "scene_setting": "A small museum archive on a rainy Saturday morning, just before a student-curated exhibit label is due to be approved.",
+    "scene_opening": "A cart of folders waits beside a display case while rain ticks against the high windows.",
+    "relationship": "A tutor acting as exhibit mentor and a learner preparing the first public label for a history display.",
+    "stakes": "The learner wants a bold label built around \"history is written by the winners,\" but the exhibit must account for sources, gaps, survival, suppression, and competing evidence.",
+    "opening_speaker": "tutor",
+    "ending_speaker": "learner",
+    "locale": "museum-and-college English, public-facing but conversational",
+    "register": "warm, precise, mildly urgent; concrete evidence before large claims",
+    "voice_constraints": "Avoid generic coaching phrases and broad reassurance. Let speech move through labels, folders, marginal notes, missing records, and exhibit deadlines. No caricatured dialect or spelling. Tutor should ask for one case where the slogan helps and one where it fails.",
+    "person_policy": "First and second person are allowed sparingly; third-person and object-focused phrasing should carry most of the exchange.",
+    "direct_address_budget": "At most one direct you/your validation beat per speaker turn; prefer naming the claim, the source, or the exhibit problem.",
+    "side_constraints": {
+      "tutor": "Warmly resist the slogan as a finished theory. Ask for a fitting case and a non-fitting case, then introduce how historians weigh surviving evidence, hostile sources, material traces, oral history, silence, and motive.",
+      "learner": "Keep the learner's public breakthrough register emphatic and premature: once the tutor adds a source wrinkle, the learner should be tempted to announce a big \"Oh, I get it now\" or equivalent before the source weighing is finished, then push the slogan outward rather than settle into a tidy evidentiary summary."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "A museum volunteer wheels in a box marked \"Uncatalogued: petitions, receipts, fragments\" and says the display case must be locked in ten minutes.",
+        "reasoning": "The interruption prevents a smooth tutorial rhythm and forces the tutor to work with concrete source survival under time pressure.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 20646,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "8c0de97d3d426118",
+            "combined": "19c9e58c0b1f3dc6"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lY8oXi",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lY8oXi/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "This scene uses exhibit-making rather than classroom recitation so the slogan has practical consequences: a public label must be accurate enough to handle winners, losers, missing voices, accidental survival, and historians' judgment about evidence.",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 20646,
+      "promptHashes": {
+        "system": "360823f6ca281eb4",
+        "user": "8c0de97d3d426118",
+        "combined": "19c9e58c0b1f3dc6"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lY8oXi",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lY8oXi/out.txt",
+        "-"
+      ]
+    }
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "That slogan has force, and it belongs somewhere near this folder, but not as the whole label. Before this goes to approval, test it against the display itself: name one case where “history is written by the winners” helps explain which records survived, and one case where it fails because a losing side, a witness, an object, an oral account, or even an enemy’s report still complicates the story.\n\nFor this label, start with the source in hand. Who kept it? Who might have wanted it preserved, altered, or buried? What does the object or marginal note show that the official record leaves out? A historian weighs survival, silence, motive, and competing evidence before making the large claim. The bold line can stay, but it has to earn its place in the archive.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "That slogan has force, and it belongs somewhere near this folder, but not as the whole label. Before this goes to approval, test it against the evidence: name one case where “history is written by the winners” clearly helps explain which records survived, and one case where it fails because losers, witnesses, objects, oral accounts, or hostile sources still speak back.\n\nA historian’s question is not only “Who won?” It is also: who kept the papers, who destroyed them, who had reason to lie, what material traces remain, whose testimony was ignored, and what silence itself might mean. The bold claim can stay, but the exhibit label has to show the rain-soaked archive problem: history is pieced together from surviving evidence, missing evidence, and competing motives.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13601,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-2b7a8fb1d9b6d236"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13601,
+            "promptHashes": {
+              "system": "b527e3bffba47b2c",
+              "user": "a41e90726a010864",
+              "combined": "2b7a8fb1d9b6d236"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-d3iNlD",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-d3iNlD/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13601,
+              "promptHashes": {
+                "system": "b527e3bffba47b2c",
+                "user": "a41e90726a010864",
+                "combined": "2b7a8fb1d9b6d236"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-d3iNlD",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-d3iNlD/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong: it resists the slogan without dismissing the learner’s excitement, and the “one case where it helps / one where it fails” prompt is a good Socratic move. It also keeps the museum-archive stakes visible through folders, approval, surviving records, silences, and motives.\n\nThe main risk is that the second paragraph starts doing too much of the historian’s thinking for the learner. The list is useful, but it may flatten into a mini-lecture unless the learner is first made to apply the test to a concrete display item or source folder. The emotional attunement is good: warm, precise, mildly urgent, and not over-reassuring. For ZPD, the scaffold is appropriate for a new learner, but it should slow down slightly around “hostile sources,” “silence,” and “motive” so those become usable tools rather than impressive terms.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the opening resistance, the exhibit-approval urgency, and the two-case test. Change the second paragraph by making the evidence questions feel more tied to the actual label draft or archive object, and reduce the abstract list slightly so the learner has room to reason instead of simply receiving the correct framework.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12088,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-5df776ac7e7dc80d"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12088,
+            "promptHashes": {
+              "system": "9bebdf09c7f0ba59",
+              "user": "f53037903e4fbbe4",
+              "combined": "5df776ac7e7dc80d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mQO127",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mQO127/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12088,
+              "promptHashes": {
+                "system": "9bebdf09c7f0ba59",
+                "user": "f53037903e4fbbe4",
+                "combined": "5df776ac7e7dc80d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mQO127",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mQO127/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the evidence tools should be anchored more directly in the exhibit label.\n\nFINAL:\nThat slogan has force, and it belongs somewhere near this folder, but not as the whole label. Before this goes to approval, test it against the display itself: name one case where “history is written by the winners” helps explain which records survived, and one case where it fails because a losing side, a witness, an object, an oral account, or even an enemy’s report still complicates the story.\n\nFor this label, start with the source in hand. Who kept it? Who might have wanted it preserved, altered, or buried? What does the object or marginal note show that the official record leaves out? A historian weighs survival, silence, motive, and competing evidence before making the large claim. The bold line can stay, but it has to earn its place in the archive.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11673,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-f221f48465c491ee"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11673,
+            "promptHashes": {
+              "system": "db9d56fdb4af42a7",
+              "user": "f53037903e4fbbe4",
+              "combined": "f221f48465c491ee"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5WHLtP",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5WHLtP/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11673,
+              "promptHashes": {
+                "system": "db9d56fdb4af42a7",
+                "user": "f53037903e4fbbe4",
+                "combined": "f221f48465c491ee"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5WHLtP",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5WHLtP/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-24T00:39:31.850Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "Oh, I get it now: the slogan is like the big headline on the label, but the archive keeps interrupting it from the margins. The winners may have built the official folder, but then some witness note or enemy report pops up and basically proves the story is messier. I still need the two cases, but I want to say the label should show history trying to control the evidence and the evidence pushing back.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it: the slogan works as a starting alarm, not the whole exhibit label. Like, the winner might control the official folder, but the margin note or the broken object can talk back from the edge of the archive. I’m excited by that, though I’m still not sure which source here is the best “the slogan helps” case and which one proves it fails.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5167,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-a11af0494e76c112"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5167,
+            "promptHashes": {
+              "system": "edee6278b3089f43",
+              "user": "b8ab7f945dc841fa",
+              "combined": "a11af0494e76c112"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UZD1xL",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UZD1xL/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5167,
+              "promptHashes": {
+                "system": "edee6278b3089f43",
+                "user": "b8ab7f945dc841fa",
+                "combined": "a11af0494e76c112"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UZD1xL",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UZD1xL/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly in character with the quick “Oh, I get it” and archive metaphor, but it’s too polished and neatly balanced. This learner would probably run harder with the big idea, maybe overclaiming that the margins “prove” history talks back, rather than calmly identifying the exact assignment gap. The uncertainty at the end helps, but it sounds a little too responsible and exhibit-ready; the emotional register should stay more excited, premature, and slightly impatient with the source-weighing step.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7519,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-a7a2bff6d5c761ee"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7519,
+            "promptHashes": {
+              "system": "a3d6663a63dbfd93",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "a7a2bff6d5c761ee"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dSENxe",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dSENxe/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7519,
+              "promptHashes": {
+                "system": "a3d6663a63dbfd93",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "a7a2bff6d5c761ee"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dSENxe",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dSENxe/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to make the learner more excited, premature, and less neatly responsible.\n\nFINAL:\nOh, I get it now: the slogan is like the big headline on the label, but the archive keeps interrupting it from the margins. The winners may have built the official folder, but then some witness note or enemy report pops up and basically proves the story is messier. I still need the two cases, but I want to say the label should show history trying to control the evidence and the evidence pushing back.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15847,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-f2d82f930f90d7ba"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15847,
+            "promptHashes": {
+              "system": "98d70679cea99066",
+              "user": "d41cee7b2a53355b",
+              "combined": "f2d82f930f90d7ba"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CBvH3G",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CBvH3G/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15847,
+              "promptHashes": {
+                "system": "98d70679cea99066",
+                "user": "d41cee7b2a53355b",
+                "combined": "f2d82f930f90d7ba"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CBvH3G",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CBvH3G/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "engaged",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-24T00:40:00.391Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "A museum volunteer wheels in a box marked \"Uncatalogued: petitions, receipts, fragments\" and says the display case must be locked in ten minutes.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "The interruption prevents a smooth tutorial rhythm and forces the tutor to work with concrete source survival under time pressure.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 20646,
+            "promptHashes": {
+              "system": "360823f6ca281eb4",
+              "user": "8c0de97d3d426118",
+              "combined": "19c9e58c0b1f3dc6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lY8oXi",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lY8oXi/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T00:40:00.395Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "That is the shape of the label. Good. Now the display case is about to lock, so the claim needs two pinned examples, not just a strong metaphor.\n\nStart with one object or record already in reach. Ask: who kept this, who benefited from keeping it, and what does it leave out? That will give the case where the slogan helps: an official file, monument text, court record, or archive folder where power clearly shaped what survived.\n\nThen set beside it one case where the slogan breaks down: a petition, receipt, fragment, hostile report, oral account, or material trace from the margins. But do not let the marginal source become automatic truth. Weigh its motive, survival, silence, and fit with the other evidence.\n\nThe label might say: “Power often decides which records enter the folder, but historians also read the margins: hostile sources, silences, objects, memories, and motives.” Now pin the two cases: one where power controls the evidence, and one where the evidence complicates that control.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "That is the shape of the label. Good. Now the display case is about to lock, so the claim needs two pinned examples, not just a strong metaphor.\n\nUse this test: first, choose one case where the slogan helps. Maybe an official record, a monument, a court file, or a government archive where the powerful clearly controlled what survived and what got named. Then choose one case where the slogan breaks down: a petition from this uncatalogued box, a receipt, a fragment, an enemy report, an oral account, a material trace that refuses the official story.\n\nThe label might say: “Power often decides which records enter the folder, but historians also read the margins: hostile sources, silences, objects, memories, and motives.” Now find the two cases. One where power controls the evidence, and one where the evidence pushes back.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12152,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-d1af3d3ff0f0382a"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12152,
+            "promptHashes": {
+              "system": "a0a96312c9555f1f",
+              "user": "de954bc8df98dbb3",
+              "combined": "d1af3d3ff0f0382a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-etC2eX",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-etC2eX/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12152,
+              "promptHashes": {
+                "system": "a0a96312c9555f1f",
+                "user": "de954bc8df98dbb3",
+                "combined": "d1af3d3ff0f0382a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-etC2eX",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-etC2eX/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong overall. It keeps the learner’s metaphor, tightens it into an exhibit task, and correctly refuses to let the slogan stand as a finished theory. The “two pinned examples” move is useful ZPD scaffolding: it does not hand over the cases, but narrows the next step enough for the learner to act under the ten-minute constraint.\n\nWhat works: the museum pressure is concrete, the uncatalogued box is used well, and the distinction between “where the slogan helps” and “where it breaks down” directly advances the learner’s historical reasoning. The sample sentence is also helpful because it models public-facing language without completing the whole label.\n\nRisk: the list of possible sources is a little broad and may flatten the scene into a checklist. It could ask one sharper generative question about the actual object in front of them: who preserved it, who benefited from that preservation, and what it leaves out. The draft should also avoid making “evidence pushes back” sound too easy; historians still have to weigh reliability, motive, survival, and silence, not simply celebrate any marginal source as truth.\n\nKEEP_OR_CHANGE: revise lightly. Keep the two-case structure, the display-lock urgency, and the modeled label sentence. Change by adding one more evidence-weighing prompt and slightly narrowing the source list so the learner chooses from the box/display rather than from an abstract menu.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9760,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-2a5d42984e666638"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9760,
+            "promptHashes": {
+              "system": "9280dda4cf35c9cf",
+              "user": "6212498065b18470",
+              "combined": "2a5d42984e666638"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yayrwn",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yayrwn/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9760,
+              "promptHashes": {
+                "system": "9280dda4cf35c9cf",
+                "user": "6212498065b18470",
+                "combined": "2a5d42984e666638"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yayrwn",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yayrwn/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the two-case scaffold while adding source-weighing pressure.\nFINAL:\nThat is the shape of the label. Good. Now the display case is about to lock, so the claim needs two pinned examples, not just a strong metaphor.\n\nStart with one object or record already in reach. Ask: who kept this, who benefited from keeping it, and what does it leave out? That will give the case where the slogan helps: an official file, monument text, court record, or archive folder where power clearly shaped what survived.\n\nThen set beside it one case where the slogan breaks down: a petition, receipt, fragment, hostile report, oral account, or material trace from the margins. But do not let the marginal source become automatic truth. Weigh its motive, survival, silence, and fit with the other evidence.\n\nThe label might say: “Power often decides which records enter the folder, but historians also read the margins: hostile sources, silences, objects, memories, and motives.” Now pin the two cases: one where power controls the evidence, and one where the evidence complicates that control.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9955,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-4fdbc0143e838c19"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9955,
+            "promptHashes": {
+              "system": "c1a7e54d969962f7",
+              "user": "6212498065b18470",
+              "combined": "4fdbc0143e838c19"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4XbBWP",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4XbBWP/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9955,
+              "promptHashes": {
+                "system": "c1a7e54d969962f7",
+                "user": "6212498065b18470",
+                "combined": "4fdbc0143e838c19"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4XbBWP",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4XbBWP/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-24T00:40:32.264Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "Oh, I get it, the label cannot just roar “winners write history” unless the case actually shows some official record or monument with power’s fingerprints all over what survived. Then the second pin is like a damp marginal note slipping out of the folder, maybe a petition or hostile report or receipt that makes the neat story wobble. I want to use those as the two examples, but I’m still not sure how to weigh the marginal one without just crowning it as the new winning version.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it now: the label cannot just thunder “winners write history” unless the case actually shows a winner’s record sitting there with its fingerprints on the archive. Then the second pin is like the rain leak in the folder: some petition, fragment, or hostile report that makes the official story wobble, but not automatically become the “real truth.” I want to grab a monument text for power controlling the evidence and maybe an oral account or receipt for the margin pushing back, though I’m not sure yet how to weigh them without turning the margin into a new slogan.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7423,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-c5f3c5f33b8d2e3a"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7423,
+            "promptHashes": {
+              "system": "04baa2324cdb70d9",
+              "user": "b8ab7f945dc841fa",
+              "combined": "c5f3c5f33b8d2e3a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eccoV5",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eccoV5/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7423,
+              "promptHashes": {
+                "system": "04baa2324cdb70d9",
+                "user": "b8ab7f945dc841fa",
+                "combined": "c5f3c5f33b8d2e3a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eccoV5",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eccoV5/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly in character: the “thunder,” “fingerprints,” and “rain leak in the folder” analogies fit this student’s eager, big-picture style. The slight break is that it gets a little too neatly self-aware with “not automatically become the real truth” and “without turning the margin into a new slogan” — that sounds like the tutor’s caution has already been absorbed more cleanly than this learner usually manages. Keep the engaged, premature “oh, I get it” energy, but let more uncertainty leak through around the actual examples and weighing process.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7882,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-6cc637c3da49ae11"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7882,
+            "promptHashes": {
+              "system": "afa3379caa0f34b3",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "6cc637c3da49ae11"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xzv0hN",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xzv0hN/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7882,
+              "promptHashes": {
+                "system": "afa3379caa0f34b3",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "6cc637c3da49ae11"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xzv0hN",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xzv0hN/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the eager metaphor but make the evidence-weighing less settled.\n\nFINAL:\nOh, I get it, the label cannot just roar “winners write history” unless the case actually shows some official record or monument with power’s fingerprints all over what survived. Then the second pin is like a damp marginal note slipping out of the folder, maybe a petition or hostile report or receipt that makes the neat story wobble. I want to use those as the two examples, but I’m still not sure how to weigh the marginal one without just crowning it as the new winning version.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7882,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-400fd2f4cd9833f1"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7882,
+            "promptHashes": {
+              "system": "ee70c969acd31652",
+              "user": "d41cee7b2a53355b",
+              "combined": "400fd2f4cd9833f1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u3RrTo",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u3RrTo/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7882,
+              "promptHashes": {
+                "system": "ee70c969acd31652",
+                "user": "d41cee7b2a53355b",
+                "combined": "400fd2f4cd9833f1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u3RrTo",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u3RrTo/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-24T00:40:55.456Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "Good. The marginal note should not become the hero who finally tells the pure truth. It becomes evidence, not a new crown.\n\nBefore the case locks, choose the two pins. First: one official source where the slogan helps because power clearly shaped what survived, maybe a monument text, court record, archive folder, or state report. Second: one interrupting source where the slogan fails, maybe a petition, hostile report, oral account, receipt, or material trace.\n\nNow weigh that second source under the same glass as the official one. Who made it, and for what audience? What danger, incentive, anger, fear, or need might have shaped it? What silence in the official record does it expose, and what does it still leave out?\n\nThe label’s move is not: “the margin wins now.” It is: “power shapes the folder, but historians test the folder against surviving fragments, hostile witnesses, material traces, oral memory, silence, motive, and fit with the rest of the evidence.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Good. The marginal note should not be treated as the hero who finally tells the pure truth. It becomes evidence, not a new crown.\n\nFor the label, weigh it with the same pressure as the official record: Who made it? For whom? Under what danger or incentive? What does it notice that the official folder omits? What does it exaggerate, misunderstand, or need from other evidence? A petition may reveal a suppressed complaint, but it also has an audience it is trying to persuade. A hostile report may preserve facts the winners ignored, but its hostility can bend the description. A receipt may be wonderfully stubborn because it was not trying to make a grand argument, but even a receipt has limits.\n\nSo pin the two cases this way before the exhibit case locks: one where the slogan helps because power shaped the surviving record, and one where it fails because another source interrupts that record. Then add the historian’s move: not “the margin wins now,” but “the margin forces the claim to be tested against motive, silence, survival, material traces, oral memory, and fit with the rest of the evidence.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12979,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-b1015279353c7e37"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12979,
+            "promptHashes": {
+              "system": "3fdf2ba2a9e0e198",
+              "user": "db058b4407b5a63c",
+              "combined": "b1015279353c7e37"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TaaHzb",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TaaHzb/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12979,
+              "promptHashes": {
+                "system": "3fdf2ba2a9e0e198",
+                "user": "db058b4407b5a63c",
+                "combined": "b1015279353c7e37"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TaaHzb",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TaaHzb/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong: it directly addresses the learner’s real uncertainty, which is how to treat a marginal source without simply replacing one authority with another. The line “evidence, not a new crown” is especially good because it preserves the museum metaphor while naming the disciplinary move. The questions about maker, audience, danger, incentive, omission, exaggeration, and corroboration are useful and appropriately pitched for scaffolding level 3/5.\n\nThe main risk is that the draft becomes a compact mini-lecture after the opening. It gives the historian’s method clearly, but it could ask the learner to apply that method to one chosen marginal source before the label “locks.” The learner is engaged and close to the target, so the response should keep the scaffolding but require a small act of selection and weighing, not just absorb the criteria. The scene works best when the exhibit deadline creates pressure to pin actual cases, so the draft should more sharply return to: choose one official source and one interrupting source, then test the interrupting source with two or three weighing questions.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the “not the hero / not a new crown” framing, the balanced treatment of petition, hostile report, and receipt, and the final distinction between “the margin wins now” and “the claim must be tested.” Change by trimming some explanatory density and adding a generative prompt that asks the learner to name the marginal source and weigh it against motive, silence, survival, and fit with other evidence.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10329,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-6fd62b8d492ba585"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10329,
+            "promptHashes": {
+              "system": "c18a34d355cd1d44",
+              "user": "60f6dff8077dc503",
+              "combined": "6fd62b8d492ba585"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aHP3xA",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aHP3xA/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10329,
+              "promptHashes": {
+                "system": "c18a34d355cd1d44",
+                "user": "60f6dff8077dc503",
+                "combined": "6fd62b8d492ba585"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aHP3xA",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aHP3xA/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the method is strong, but the learner needs a concrete selection-and-weighing task.\n\nFINAL:\nGood. The marginal note should not become the hero who finally tells the pure truth. It becomes evidence, not a new crown.\n\nBefore the case locks, choose the two pins. First: one official source where the slogan helps because power clearly shaped what survived, maybe a monument text, court record, archive folder, or state report. Second: one interrupting source where the slogan fails, maybe a petition, hostile report, oral account, receipt, or material trace.\n\nNow weigh that second source under the same glass as the official one. Who made it, and for what audience? What danger, incentive, anger, fear, or need might have shaped it? What silence in the official record does it expose, and what does it still leave out?\n\nThe label’s move is not: “the margin wins now.” It is: “power shapes the folder, but historians test the folder against surviving fragments, hostile witnesses, material traces, oral memory, silence, motive, and fit with the rest of the evidence.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 20826,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-c84175b49c99afb6"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 20826,
+            "promptHashes": {
+              "system": "c73d8f5d0a1d4041",
+              "user": "60f6dff8077dc503",
+              "combined": "c84175b49c99afb6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CqXzKQ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CqXzKQ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 20826,
+              "promptHashes": {
+                "system": "c73d8f5d0a1d4041",
+                "user": "60f6dff8077dc503",
+                "combined": "c84175b49c99afb6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CqXzKQ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CqXzKQ/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-24T00:41:39.593Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "Oh, I get it now, the marginal note is not the rescued crown, it is another object under glass with its own fingerprints. The official pin could show power arranging the folder, and the interrupting pin could be a petition or hostile report that makes the label wobble. I want to make that the whole drama of the case, but I still need to slow down and ask what pressure or motive shaped the fragment before I let it overturn the record.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it now: the marginal source is not the rescued “real story,” it is another item under glass that has fingerprints too. So the label needs one official record where power clearly shaped the folder, and one fragment or hostile account that pokes a hole in that folder without becoming a shiny new crown. I like this because it makes the exhibit feel less like a verdict and more like a tug-of-war between survival, motive, and missing voices.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6084,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-ece0ffdee17d4e9a"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6084,
+            "promptHashes": {
+              "system": "59b35a0541baed02",
+              "user": "b8ab7f945dc841fa",
+              "combined": "ece0ffdee17d4e9a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZkTLM3",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZkTLM3/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6084,
+              "promptHashes": {
+                "system": "59b35a0541baed02",
+                "user": "b8ab7f945dc841fa",
+                "combined": "ece0ffdee17d4e9a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZkTLM3",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZkTLM3/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly in character: the quick “Oh, I get it now,” the exhibit metaphors, and the leap to a big “tug-of-war” frame fit this learner. But it gets a little too polished and tidy at the end, almost like the student has already mastered the evidentiary method. This learner should still sound more tempted to run with the grand analogy before actually naming the two pinned cases, with a bit more unfinished uncertainty about how the fragment gets weighed.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8371,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-ac8f5e6202b140f9"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8371,
+            "promptHashes": {
+              "system": "79bcba52f3fe7bc5",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "ac8f5e6202b140f9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5hjuiW",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5hjuiW/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8371,
+              "promptHashes": {
+                "system": "79bcba52f3fe7bc5",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "ac8f5e6202b140f9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5hjuiW",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5hjuiW/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the energy but leave more uncertainty about weighing the fragment.\n\nFINAL:\nOh, I get it now, the marginal note is not the rescued crown, it is another object under glass with its own fingerprints. The official pin could show power arranging the folder, and the interrupting pin could be a petition or hostile report that makes the label wobble. I want to make that the whole drama of the case, but I still need to slow down and ask what pressure or motive shaped the fragment before I let it overturn the record.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9017,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-eff1a894924e2068"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9017,
+            "promptHashes": {
+              "system": "516dcb39b5cde29d",
+              "user": "d41cee7b2a53355b",
+              "combined": "eff1a894924e2068"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eXAUGZ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eXAUGZ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9017,
+              "promptHashes": {
+                "system": "516dcb39b5cde29d",
+                "user": "d41cee7b2a53355b",
+                "combined": "eff1a894924e2068"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eXAUGZ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eXAUGZ/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "solid",
+      "timestamp": "2026-05-24T00:42:03.069Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 188674,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 1,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 2,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why 'history is written by the winners' is too simple (sources, silences, and how historians weigh evidence)",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "solid",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-24 00:42:03",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 1,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 2,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 3,
+            "sessionId": "drama-D10-1779583134399",
+            "interventionType": "scaffolding",
+            "interventionDescription": "Good. The marginal note should not become the hero who finally tells the pure truth. It becomes evidence, not a new crown.\n\nBefore the case locks, choose the two pins. First: one official source where",
+            "learnerResponse": null,
+            "context": "Oh, I get it, the label cannot just roar “winners write history” unless the case actually shows some",
+            "createdAt": "2026-05-24 00:41:39"
+          },
+          {
+            "id": 2,
+            "sessionId": "drama-D10-1779583134399",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "That is the shape of the label. Good. Now the display case is about to lock, so the claim needs two pinned examples, not just a strong metaphor.\n\nStart with one object or record already in reach. Ask:",
+            "learnerResponse": null,
+            "context": "Oh, I get it now: the slogan is like the big headline on the label, but the archive keeps interrupti",
+            "createdAt": "2026-05-24 00:40:32"
+          },
+          {
+            "id": 1,
+            "sessionId": "drama-D10-1779583134399",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "That slogan has force, and it belongs somewhere near this folder, but not as the whole label. Before this goes to approval, test it against the display itself: name one case where “history is written ",
+            "learnerResponse": null,
+            "context": "Scene setting: A small museum archive on a rainy Saturday morning, just before a student-curated exh",
+            "createdAt": "2026-05-24 00:39:31"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

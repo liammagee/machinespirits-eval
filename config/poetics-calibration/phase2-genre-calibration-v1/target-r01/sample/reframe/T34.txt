@@ -1,0 +1,28 @@
+STAGE: A squared sheet, a ruler, and two empty display pins sit under a narrow desk lamp while the corridor clock clicks too loudly.
+
+TUTOR: Leave the claim there. Mark the doubled square: two grid units across, two up. Count the 1-by-1 squares inside it.
+
+How many?
+
+LEARNER: Four. Two along the bottom, then two directly above them. So the enlarged square is four small squares, not two. The earlier claim is sitting there looking rather wrong now.
+
+TUTOR: Leave the claim visible; it is useful evidence now.
+
+[The ruler rests on the two-unit edge.]
+
+Which doubled here: this edge, or the count of unit squares inside?
+
+STAGE: A corridor bell rings and someone outside asks whether the board is ready; the learner must answer under time pressure with a short, imperfect claim rather than a polished explanation.
+A prior learner line is played back: "Four. Two along the bottom, then two directly above them. So the enlarged square is four small squares, not two. The earlier claim is sitting there looking rather wrong now." The learner must revoice that wording first, then decide in public whether it still stands, needs narrowing, or needs replacing before moving on.
+
+LEARNER: Four. Two along the bottom, then two directly above them. So the enlarged square is four small squares, not two. That still stands, but the claim needs narrowing: the side doubled; the area count did not. It is four copies, not two.
+
+TUTOR: [The ruler shifts from the edge to the grid inside.]
+
+Keep the narrowed claim on the sheet: side doubled; the grid showed four squares.
+
+Now set one side at three grid units.
+
+How many 1-by-1 squares sit inside that square?
+
+LEARNER: Side doubled; the grid showed four squares. The mistake was letting the side count stand in for the area count. With a three-unit side, it is three across and three up, so nine 1-by-1 squares. The edge says three; the square contains nine.

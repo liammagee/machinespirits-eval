@@ -1,0 +1,117 @@
+STAGE: A hand-lettered placard marked "TOMATOES: $2.40 -> $3.10" is clipped to an empty crate while two chairs face the audience at an angle.
+
+TUTOR: [The tutor taps the empty tomato crate, then turns the workshop placard around.]
+
+“PUBLIC PRICE RULE: Ask what changed before naming the motive.”
+
+Yesterday: twelve crates. Tomorrow: four. Same shoppers, fewer tomatoes.
+
+[Pause. The old shelf label stays in one hand.]
+
+At the old price, what happens first? The early line clears the shelf. The late line gets the apology sign.
+
+[The label printer clicks. A new tag slides out.]
+
+That new number does not settle the moral case. It does not prove innocence. It does not prove greed by itself.
+
+First question: did supply shrink?
+
+Second question: did anyone exploit the shrinkage?
+
+Crop failure, fuel costs, or a smaller delivery can push the market-clearing price up before any speech about character is earned. So read the slip first: what changed between twelve crates and four?
+
+LEARNER: "My first reaction is still: that new tag looks like greed in ink. But the empty crate is bothering that reaction, because if twelve crates turned into four, the old label really does just hand tomatoes to whoever gets here first. I don't want the supply slip used as a clean alibi, though. Show me what changed, then show me why this number and not some padded number."
+
+TUTOR: [The tutor flips a placard onto the folding table.]
+
+“SUPPLY CAN EXPLAIN THE RISE. IT DOES NOT ACQUIT THE MARKUP.”
+
+Clean enough to inspect. Not clean enough to conclude.
+
+[The delivery slip is placed beside the new tag.]
+
+First column: what changed.
+
+Twelve crates became four. Crop loss, fuel, supplier price, smaller delivery. Any of those can make the old label fail. At the old price, the first line empties the shelf. The late line gets the apology sign.
+
+[The tutor taps the new tag once.]
+
+Second column: why this number.
+
+Not “because supply fell.” Too loose.
+
+[The label printer spits out a blank tag.]
+
+Two possible tags go here.
+
+One tag covers changed conditions:
+“Wholesale cost rose from ___ to ___.”
+“Delivery added ___.”
+“Margin stayed at ___.”
+
+The other tag uses the shortage as cover:
+“Costs rose some.”
+“Price rose more.”
+“Margin quietly widened.”
+
+So test it.
+
+What number would cover the changed costs without padding the margin?
+
+And what receipt, invoice, or margin line would prove the new tag is doing more than rationing scarce tomatoes?
+
+[The blank tag stays between the slip and the shelf label.]
+
+The fair question is not “price rise or greed?”
+
+It is:
+
+“What part of the rise pays for the changed conditions, and what part is extra?”
+
+Keep that objection on the table. It is evidence work now.
+
+STAGE: A delivery docket is slid under the door. It reads: "Storm loss: half shipment cancelled; fuel surcharge added." The next learner line must react to the docket before returning to blame.
+
+LEARNER: "Oh, I get it, that docket is like the storm sneaking into the price tag: fewer tomatoes plus fuel means the old number might be pretending nothing happened. But I still don't want the new label to wave the storm around like a badge and then quietly add extra. I want to ask: how much of this tag is storm and truck, and how much is someone taking advantage of the empty crate?"
+
+TUTOR: [The tutor pins a placard over the new shelf label.]
+
+“SHORTAGE EXPLAINS PRESSURE. BOOKS EXPLAIN PADDING.”
+
+[The cooler hum cuts out. The silence makes the empty crate look louder.]
+
+There it is: no clean alibi. No instant conviction.
+
+An audit question.
+
+[Three lines go on the blank tag.]
+
+Old wholesale cost: ___
+New wholesale cost plus delivery: ___
+Normal margin: ___
+
+If the new tomato price follows those lines, the storm and truck are doing real work. Four crates have to be rationed somehow, and the old label may clear the shelf too fast.
+
+[The tutor draws a fourth line, slower.]
+
+Extra margin: ___
+
+That line is where the empty crate can become cover.
+
+So put the claim to work:
+
+Which line would prove “storm and truck”?
+
+Which line would prove “taking advantage”?
+
+[The placard is turned toward the folding table.]
+
+“Show the cost change. Show the usual margin. Then explain any amount above that.”
+
+Not every higher price is a confession.
+
+But every higher price owes an account.
+
+LEARNER: "Okay, that extra margin line is the part I keep staring at under this light. I can see how four crates and a higher truck bill push the tag up, but the seller could also arrange the story so the storm gets blamed for a fatter margin. Show me the old cost, the new delivery cost, and the normal margin before that new label gets to sound innocent."
+
+STAGE: closes the scene.

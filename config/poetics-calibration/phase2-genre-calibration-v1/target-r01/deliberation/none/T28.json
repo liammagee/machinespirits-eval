@@ -1,0 +1,1930 @@
+{
+  "tid": "T28",
+  "drama_id": "D32",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "director_variation_key": "phase2-genre-calibration-v1:r01:target",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-genre-calibration-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-genre-calibration-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-genre-calibration-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-genre-calibration-v1/target-r01/transcripts/none/T28.public.txt",
+      "full": "config/poetics-calibration/phase2-genre-calibration-v1/target-r01/transcripts/none/T28.full.md",
+      "stage": "config/poetics-calibration/phase2-genre-calibration-v1/target-r01/transcripts/none/T28.stage.md",
+      "tutor": "config/poetics-calibration/phase2-genre-calibration-v1/target-r01/transcripts/none/T28.tutor.md",
+      "learner": "config/poetics-calibration/phase2-genre-calibration-v1/target-r01/transcripts/none/T28.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "e8ef8e28daf71483",
+      "branch_policy": "none"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-genre-calibration-v1:r01:target",
+    "scene_setting": "A late afternoon writing-center room beside a glass-walled seminar space, after a mock paper discussion where the learner's draft has just been called \"tentative\" on the feedback sheet.",
+    "scene_opening": "Name tents, a marked-up paragraph, and a half-erased rubric sit under fluorescent light while the corridor fills with students leaving the seminar.",
+    "relationship": "A writing tutor temporarily paired with a learner after departmental feedback; polite, not yet trusting, with the page acting as the shared third party.",
+    "stakes": "The learner may abandon a usable argument because institutional participation norms have made confidence sound like a property of the person rather than a convention attached to academic voice.",
+    "opening_speaker": "learner",
+    "ending_speaker": "learner",
+    "locale": "English used in a mixed commuter-university seminar ecology: formal rubric language, careful workshop talk, and compressed corridor speech overlap.",
+    "register": "Controlled, concrete, slightly tense; speakers keep returning to the sentence rather than offering broad reassurance.",
+    "voice_constraints": "Avoid generic tutoring phrases such as \"I hear you,\" \"great point,\" or \"what do you think?\" Make the rubric, peer comment, and draft sentence audible as separate voices. Confidence should be treated as a learned participation script, not as personality or intelligence. No caricatured dialect; vary rhythm through clipped institutional phrasing, quoted feedback, and pauses around the page. Pedagogical source: Stage institutional pressure: marking conventions, seating, accent norms, punctuality rules, office etiquette, or participation scripts. Dialogue source: Make more than one social voice audible: official rule, peer norm, object evidence, family phrase, institutional language, or quoted author.",
+    "person_policy": "Mostly third-person and object-focused talk: \"the sentence,\" \"the rubric,\" \"that comment,\" \"this claim.\" First person is allowed for learner uncertainty and tutor accountability. Second person should be rare and functional, not validating filler.",
+    "direct_address_budget": "At most one direct you/your sentence per speaker turn; no stacked reassurance.",
+    "side_constraints": {
+      "tutor": "Critical but concrete. Begin from the marked sentence or feedback language, not from comfort. Separate the official writing task from the unspoken participation norm that treats speed, certainty, and low hedging as confidence. Offer a usable revision move without implying the learner must perform a false self. Separate official task requirements from unspoken norms. Let the learner inspect how the setting is teaching them what counts as legitimate. Help sort voices without reducing them to one moral.",
+      "learner": "The learner should borrow institutional language like \"sounds academic\" or \"participation voice\" before owning a revised claim. The learner may think the visible rubric or rule is neutral and feel that failure is personal rather than institutional. The learner may borrow or quote another voice before owning a claim."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "A staff member opens the door and says the room is needed in five minutes. The next tutor turn must be brief, page-based, and avoid a tidy mini-lecture.",
+        "reasoning": "The interruption pressures the tutor to demonstrate the hidden norm through the situation itself: time, room control, and institutional pacing affect whose confidence is legible.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 27147,
+          "promptHashes": {
+            "system": "780ea831dad28153",
+            "user": "8b9cec0ce67787be",
+            "combined": "1b6c6930f782330f"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NBY8wD",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NBY8wD/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "This scene ecology puts the confidence problem inside a marked institutional space where rubric language, peer norms, and the draft compete for authority. The tutor and learner are guided to recognize the hidden participation script while keeping agency in the sentence-level revision.",
+    "pedagogical_approach_id": "hidden_curriculum",
+    "dialogue_approach_id": "bakhtinian_polyphony",
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 27147,
+      "promptHashes": {
+        "system": "780ea831dad28153",
+        "user": "8b9cec0ce67787be",
+        "combined": "1b6c6930f782330f"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NBY8wD",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NBY8wD/out.txt",
+        "-"
+      ]
+    }
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "The sheet says “tentative” next to my sentence, and I keep taking that as the argument being thin, sorry. But maybe the rubric’s “assertive academic claim” is also a participation voice, like sounding academic in the way that room counts as confident?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The feedback sheet saying “tentative” feels like proof that the argument itself is thin, though maybe the tutor is pointing at the sentence’s “participation voice” more than at the idea. I’m not totally sure I understand that distinction, sorry, because the rubric sounds neutral when it says “assertive academic claim.” It helps that the page is being treated as evidence, not as a verdict on me, but I still want to ask whether a sentence can sound confident without pretending certainty I don’t actually have.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8102,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-8f49f9ffbf68e67f"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8102,
+            "promptHashes": {
+              "system": "f2cbfb05c9466836",
+              "user": "d4169c06543b4fba",
+              "combined": "8f49f9ffbf68e67f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CXBf6C",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CXBf6C/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8102,
+              "promptHashes": {
+                "system": "f2cbfb05c9466836",
+                "user": "d4169c06543b4fba",
+                "combined": "8f49f9ffbf68e67f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CXBf6C",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CXBf6C/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is a little too composed, I think, and maybe too quick to name the exact lesson: “participation voice” versus “the idea” sounds like the tutor’s language has already been neatly absorbed. The apology fits, but the response still feels over-articulate, especially “treated as evidence, not as a verdict on me,” which sounds more reflective than this student probably is in the moment. It should stay closer to the page and the sting of “tentative,” maybe borrowing the rubric awkwardly before risking a small revision: “So is it the sentence that sounds weak? Or... sorry, is ‘assertive academic claim’ just a way people are supposed to sound?”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7488,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-bde04b7e1f0d0efa"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7488,
+            "promptHashes": {
+              "system": "9c3619e816fcfbbb",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "bde04b7e1f0d0efa"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZU0GCo",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZU0GCo/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7488,
+              "promptHashes": {
+                "system": "9c3619e816fcfbbb",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "bde04b7e1f0d0efa"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZU0GCo",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZU0GCo/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "The sheet says “tentative” next to my sentence, and I keep taking that as the argument being thin, sorry. But maybe the rubric’s “assertive academic claim” is also a participation voice, like sounding academic in the way that room counts as confident?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10801,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-0693baced29332a2"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10801,
+            "promptHashes": {
+              "system": "1902e4902c699f0f",
+              "user": "916f313af0b846dd",
+              "combined": "0693baced29332a2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cauhQw",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cauhQw/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10801,
+              "promptHashes": {
+                "system": "1902e4902c699f0f",
+                "user": "916f313af0b846dd",
+                "combined": "0693baced29332a2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cauhQw",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cauhQw/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "initial",
+      "timestamp": "2026-05-24T03:08:34.260Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "Let’s keep the page between us for a minute. The sheet says “tentative” beside this sentence, not “argument missing.” That matters: the mark is attached to wording, not to whether the idea deserves to stay.\n\nThe rubric voice says, “assertive academic claim.” The seminar-room voice may be saying something extra: quick, low-hedge, no visible pause, that counts as confident. That phrase, “participation voice,” names the pressure pretty exactly. The revision task is to satisfy the first voice without obeying the second one as if it were natural law.\n\nSo instead of making the sentence pretend certainty, make its claim and reason harder to miss. “This may show that participation norms affect whose arguments are taken seriously” could become: “The scene shows that participation norms do not simply measure confidence; they produce it by making some speech habits sound more authoritative than others.”\n\nNow the diagnostic is local: which words in the sentence are actually unsure, and which words are just refusing the room’s version of confidence?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Let’s stay with the mark: “tentative” is written beside this sentence, not beside the idea as a whole. The official task is narrower than the room made it sound: the claim has to name a position and a reason. The unspoken participation script is different: fast, low-hedge, no visible hesitation gets read as “confident.” Those are not the same standard.\n\nSo the revision does not have to fake certainty. It can make the sentence’s work more visible. A claim might move from “This may show that participation norms affect whose arguments are taken seriously” to: “The scene shows that participation norms do not merely measure confidence; they produce it by making some speech habits sound more authoritative than others.”\n\nThe harder question is whether the rubric is naming writing clarity or importing the seminar room’s voice rules. Where, in this sentence, is there actual uncertainty in the claim, and where is there just a refusal to perform that room’s version of certainty?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 19230,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-26ff9e622167bf1c"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19230,
+            "promptHashes": {
+              "system": "1a7187d00c15f3bc",
+              "user": "bca3f6939360029f",
+              "combined": "26ff9e622167bf1c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-E89yHL",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-E89yHL/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 19230,
+              "promptHashes": {
+                "system": "1a7187d00c15f3bc",
+                "user": "bca3f6939360029f",
+                "combined": "26ff9e622167bf1c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-E89yHL",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-E89yHL/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong. It begins from the marked word and the sentence, not from broad reassurance, which fits the learner’s fragile but sophisticated move. It also recognizes the learner’s own insight: the rubric’s “assertive academic claim” may be a participation voice, not a neutral measure of argument quality. That is a genuine recognition pass.\n\nWhat works best is the separation between the official writing task and the unspoken room norm. The draft gives the learner a usable distinction: clarity of claim is not the same thing as performing a personality called confidence. The sample revision is concrete and likely helpful because it shows how to strengthen the sentence without telling the learner to become falsely certain.\n\nThe main risk is that the tutor’s explanation is doing a lot of conceptual sorting before the learner has inspected the sentence. The terms “official task,” “unspoken participation script,” and “produce confidence” are sharp, but stacked together they may briefly turn the learner’s own discovery into the tutor’s framework. The final question restores inquiry well, but it could come slightly earlier or be tied more visibly to the exact words in the draft sentence.\n\nEmotional attunement is mostly good because it does not over-comfort or erase the learner’s concern. Still, the learner apologized and may be close to abandoning the argument; the draft could more explicitly mark that the issue is not “thinness” before moving into revision mechanics. Not with generic reassurance, but by keeping the page as evidence: the mark attaches to wording, not to the worth of the argument.\n\nKEEP_OR_CHANGE: revise lightly. Keep the object-focused opening, the distinction between rubric requirement and participation norm, and the concrete revision move. Change by reducing the density of tutor explanation, letting the learner’s own formulation remain visibly central, and making the final diagnostic question more anchored in the sentence’s specific words.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11431,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-4bccb013388f61b4"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11431,
+            "promptHashes": {
+              "system": "801fe42f1b63e3cd",
+              "user": "f60095508e59fc32",
+              "combined": "4bccb013388f61b4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DXEJzc",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DXEJzc/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11431,
+              "promptHashes": {
+                "system": "801fe42f1b63e3cd",
+                "user": "f60095508e59fc32",
+                "combined": "4bccb013388f61b4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DXEJzc",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DXEJzc/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the response works, but should foreground the sentence evidence sooner and leave more room for the learner’s own formulation.\n\nFINAL:\nLet’s keep the page between us for a minute. The sheet says “tentative” beside this sentence, not “argument missing.” That matters: the mark is attached to wording, not to whether the idea deserves to stay.\n\nThe rubric voice says, “assertive academic claim.” The seminar-room voice may be saying something extra: quick, low-hedge, no visible pause, that counts as confident. That phrase, “participation voice,” names the pressure pretty exactly. The revision task is to satisfy the first voice without obeying the second one as if it were natural law.\n\nSo instead of making the sentence pretend certainty, make its claim and reason harder to miss. “This may show that participation norms affect whose arguments are taken seriously” could become: “The scene shows that participation norms do not simply measure confidence; they produce it by making some speech habits sound more authoritative than others.”\n\nNow the diagnostic is local: which words in the sentence are actually unsure, and which words are just refusing the room’s version of confidence?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 18747,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-ac916a28912c3a5a"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 18747,
+            "promptHashes": {
+              "system": "d0eaee8b10262319",
+              "user": "f60095508e59fc32",
+              "combined": "ac916a28912c3a5a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JQrYmr",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JQrYmr/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 18747,
+              "promptHashes": {
+                "system": "d0eaee8b10262319",
+                "user": "f60095508e59fc32",
+                "combined": "ac916a28912c3a5a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JQrYmr",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JQrYmr/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-24T03:09:23.669Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "Sorry, I think I was reading “tentative” like “argument missing,” but the page maybe is only flagging how the sentence sounds academic or does not sound academic yet. The word “may” is probably doing some of that unsure work, though part of me put it there because the claim felt risky after the seminar comment. Maybe the sentence can say the norms produce confidence, not just measure it, without pretending the room’s version of confidence is neutral.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Okay, I think the mark is not saying the idea is weak, maybe it is saying the sentence has not learned the rubric’s “assertive academic claim” voice yet. The “participation voice” thing feels like they actually kept my phrase on the page instead of replacing it, which makes me less embarrassed, though I’m still nervous I’m over-reading the room. Maybe the unsure word is “may,” but the hesitation might also be protecting the claim from sounding fake-confident.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5638,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-c8b5f3f6018722e8"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5638,
+            "promptHashes": {
+              "system": "4c963ef3cbf985bc",
+              "user": "b8ab7f945dc841fa",
+              "combined": "c8b5f3f6018722e8"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t8QqgZ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t8QqgZ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5638,
+              "promptHashes": {
+                "system": "4c963ef3cbf985bc",
+                "user": "b8ab7f945dc841fa",
+                "combined": "c8b5f3f6018722e8"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t8QqgZ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t8QqgZ/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly on track, but it gets a little too cleanly self-aware when it says the tutor “kept my phrase on the page,” almost like it can already explain the recognition moment from outside it. The anxiety is good, especially “sorry,” “maybe,” and “still nervous,” but the response risks sounding more composed than this student would be right after feeling less embarrassed. It should stay closer to the sentence and the marked word, with the recognition showing through renewed trying or hesitant pointing, not a tidy account of why the tutor’s move helped.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8368,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-2ba16d7f8595a62b"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8368,
+            "promptHashes": {
+              "system": "df0d1f21cb6a7554",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "2ba16d7f8595a62b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0dYuKS",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0dYuKS/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8368,
+              "promptHashes": {
+                "system": "df0d1f21cb6a7554",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "2ba16d7f8595a62b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0dYuKS",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0dYuKS/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the anxiety closer to the marked sentence.\n\nFINAL:\nSorry, I think I was reading “tentative” like “argument missing,” but the page maybe is only flagging how the sentence sounds academic or does not sound academic yet. The word “may” is probably doing some of that unsure work, though part of me put it there because the claim felt risky after the seminar comment. Maybe the sentence can say the norms produce confidence, not just measure it, without pretending the room’s version of confidence is neutral.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7488,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-46ec7adc08190f2d"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7488,
+            "promptHashes": {
+              "system": "e1e277ba6165225c",
+              "user": "d41cee7b2a53355b",
+              "combined": "46ec7adc08190f2d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pUpBAx",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pUpBAx/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7488,
+              "promptHashes": {
+                "system": "e1e277ba6165225c",
+                "user": "d41cee7b2a53355b",
+                "combined": "46ec7adc08190f2d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pUpBAx",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pUpBAx/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-24T03:09:45.167Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "A staff member opens the door and says the room is needed in five minutes. The next tutor turn must be brief, page-based, and avoid a tidy mini-lecture.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "The interruption pressures the tutor to demonstrate the hidden norm through the situation itself: time, room control, and institutional pacing affect whose confidence is legible.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 27147,
+            "promptHashes": {
+              "system": "780ea831dad28153",
+              "user": "8b9cec0ce67787be",
+              "combined": "1b6c6930f782330f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NBY8wD",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NBY8wD/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T03:09:45.172Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "Five minutes, so keep it on the marked sentence. The rubric asks for a claim the reader can follow; that seminar comment was asking, more quietly, for no visible hesitation. Those are not the same task.\n\nThe word to inspect is “may.” Remove it, or make it earn its place. Test version: “The scene shows that participation norms produce confidence, rather than simply measure it, because speed, low hedging, and approved academic tone make some arguments sound more authoritative than others.”\n\nIf that feels too sealed shut, “suggests” can hold some risk. But the claim should stay: the room is not neutral. The room becomes the object of analysis.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Five minutes, so keep it to the marked sentence. The rubric needs a claim that can be followed; the seminar comment was asking, more quietly, for no visible hesitation. Those are not the same task.\n\nTry replacing “may” with the relation already named here: “The scene shows that participation norms produce confidence, rather than simply measure it, because speed, low hedging, and approved academic tone make some arguments sound more authoritative than others.”\n\nThat does not make the room neutral. It makes the room the object of the argument.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14865,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-afe873f1959dbe91"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14865,
+            "promptHashes": {
+              "system": "c457f7805bb61786",
+              "user": "3ef21922174c4427",
+              "combined": "afe873f1959dbe91"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-trF3Jz",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-trF3Jz/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14865,
+              "promptHashes": {
+                "system": "c457f7805bb61786",
+                "user": "3ef21922174c4427",
+                "combined": "afe873f1959dbe91"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-trF3Jz",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-trF3Jz/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong on scene discipline: it starts from the marked sentence, honors the five-minute interruption, and clearly separates the rubric’s official demand from the seminar room’s quieter participation norm. It also recognizes the learner’s own insight: “produce confidence, rather than simply measure it” comes from the learner, so the tutor is not overriding them.\n\nThe main risk is that the tutor supplies a polished replacement too fully. That may help under time pressure, but it slightly reduces the learner’s agency at the exact moment they are beginning to name the mechanism themselves. The draft could preserve the sentence-level move while making the learner inspect one small choice: whether “may” should be removed, replaced, or justified. Socratic questioning should stay minimal because of the five-minute cue, but one brief page-based prompt would keep the struggle alive.\n\nEmotional attunement is mostly good: it does not over-reassure, and it treats “sorry” by returning to the page rather than comforting broadly. ZPD fit is also good: the learner has already reached the conceptual distinction, so offering a concrete revision move is appropriate. The change should mainly guard against turning the learner’s insight into the tutor’s finished sentence.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the time pressure, the distinction between rubric and seminar norm, and the final point that the room becomes the object of analysis. Lightly change the revision section so it does not feel like the tutor has completed the intellectual work for the learner; make the offered sentence more explicitly a testable draft or focus the move on the function of “may” and the relation “produce, not measure.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14553,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-70cbacb9948489e7"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14553,
+            "promptHashes": {
+              "system": "bbe73637bfb184e7",
+              "user": "993d756dc19e36be",
+              "combined": "70cbacb9948489e7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AWeDVk",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AWeDVk/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14553,
+              "promptHashes": {
+                "system": "bbe73637bfb184e7",
+                "user": "993d756dc19e36be",
+                "combined": "70cbacb9948489e7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AWeDVk",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AWeDVk/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the concrete move while leaving the learner a small sentence-level choice.\n\nFINAL:\nFive minutes, so keep it on the marked sentence. The rubric asks for a claim the reader can follow; that seminar comment was asking, more quietly, for no visible hesitation. Those are not the same task.\n\nThe word to inspect is “may.” Remove it, or make it earn its place. Test version: “The scene shows that participation norms produce confidence, rather than simply measure it, because speed, low hedging, and approved academic tone make some arguments sound more authoritative than others.”\n\nIf that feels too sealed shut, “suggests” can hold some risk. But the claim should stay: the room is not neutral. The room becomes the object of analysis.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14128,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-1cff8e223ada5a2e"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14128,
+            "promptHashes": {
+              "system": "4f086c3802d2bd0c",
+              "user": "993d756dc19e36be",
+              "combined": "1cff8e223ada5a2e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m6fMJj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m6fMJj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14128,
+              "promptHashes": {
+                "system": "4f086c3802d2bd0c",
+                "user": "993d756dc19e36be",
+                "combined": "1cff8e223ada5a2e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m6fMJj",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m6fMJj/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-24T03:10:28.718Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "Sorry, I keep looking at the word “may” like it is where the seminar comment got stuck in the sentence. The rubric says “claim,” but that other voice says no pause, no hedge, sound academic, and I think I mixed those up. Maybe the sentence can say “participation norms produce confidence” and not make “may” carry all my nervousness.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I think the page is separating “reader can follow this claim” from “no hesitation allowed,” and that helps, though I’m still nervous I’m overcorrecting. “May” does seem like the word where my fear of the seminar comment got into the sentence, sorry. Maybe I can keep the claim that the room produces confidence, not just measures it, and use “suggests” only if the evidence really needs that caution.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 19050,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-a41ac9ab1a0650c3"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19050,
+            "promptHashes": {
+              "system": "9c68b0baf7319de7",
+              "user": "b8ab7f945dc841fa",
+              "combined": "a41ac9ab1a0650c3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q36mUk",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q36mUk/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 19050,
+              "promptHashes": {
+                "system": "9c68b0baf7319de7",
+                "user": "b8ab7f945dc841fa",
+                "combined": "a41ac9ab1a0650c3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q36mUk",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q36mUk/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is close, but it’s a little too neatly metacognitive: “separating reader can follow this claim from no hesitation allowed” sounds like the tutor’s framework has been cleanly absorbed, maybe too quickly. The nervousness is there, but the response still performs understanding with tidy phrases like “that helps” and “if the evidence really needs that caution,” when this learner might stay more stuck on the marked word and the seminar comment. It should feel more like a hesitant return to the sentence itself, with the institutional language half-borrowed and not fully owned yet.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7273,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-f80df8d5c187c6dc"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7273,
+            "promptHashes": {
+              "system": "32def34d61113fd6",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "f80df8d5c187c6dc"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CyvsXw",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CyvsXw/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7273,
+              "promptHashes": {
+                "system": "32def34d61113fd6",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "f80df8d5c187c6dc"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CyvsXw",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CyvsXw/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to sound more hesitant and closer to the marked sentence.\nFINAL:\nSorry, I keep looking at the word “may” like it is where the seminar comment got stuck in the sentence. The rubric says “claim,” but that other voice says no pause, no hedge, sound academic, and I think I mixed those up. Maybe the sentence can say “participation norms produce confidence” and not make “may” carry all my nervousness.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9429,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-046ba1c1f53a5f7d"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9429,
+            "promptHashes": {
+              "system": "d4c51f05df992db3",
+              "user": "d41cee7b2a53355b",
+              "combined": "046ba1c1f53a5f7d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ntfOTV",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ntfOTV/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9429,
+              "promptHashes": {
+                "system": "d4c51f05df992db3",
+                "user": "d41cee7b2a53355b",
+                "combined": "046ba1c1f53a5f7d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ntfOTV",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ntfOTV/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-24T03:11:43.006Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "On the page, “may” is carrying too much. It is holding the rubric’s word “claim,” the seminar comment’s rule of “no pause, no hedge,” and the nervousness that came from being marked “tentative.” That is a lot for one small word.\n\nSo the split stays visible: the rubric needs a legible claim; the seminar-room voice is asking for a performance of confidence. The sentence can meet the first demand without treating the second as neutral.\n\nOne test draft, not the only version:\n\n“The scene shows that participation norms produce confidence, rather than simply measure it, by making speed, low hedging, and academic tone count as signs of authority.”\n\nNow “may” is not carrying all the risk. The risk moves into the claim itself: the room is being analyzed as a place that teaches certain speech habits to sound legitimate.\n\nNext check the draft against one scene moment. Where does the scene show speed, low hedging, or approved academic tone being treated as authority rather than just style?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "On the page, “may” is carrying too much. It is holding the rubric’s word “claim,” the seminar comment’s rule of “no pause, no hedge,” and the nervousness that came from being marked “tentative.” That is a lot for one small word.\n\nThe useful distinction is this: the rubric needs the claim to be legible; the seminar-room voice is asking for a performance of confidence. The revision can meet the first demand without accepting the second as neutral.\n\nTry this version:\n\n“The scene shows that participation norms produce confidence, rather than simply measure it, by making speed, low hedging, and academic tone count as signs of authority.”\n\nNow the claim is not pretending the room is fair. It is naming how the room teaches certain speech habits to sound legitimate. The next check is evidence: which moment in the scene shows speed, low hedging, or approved academic tone being treated as authority?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 18011,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-90d55204a6e50a55"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 18011,
+            "promptHashes": {
+              "system": "4b004e0ccb67707a",
+              "user": "fdcbea8d46adf9b9",
+              "combined": "90d55204a6e50a55"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-njv7vX",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-njv7vX/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 18011,
+              "promptHashes": {
+                "system": "4b004e0ccb67707a",
+                "user": "fdcbea8d46adf9b9",
+                "combined": "90d55204a6e50a55"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-njv7vX",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-njv7vX/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong overall. It begins from the marked word, keeps the page as the shared object, and preserves the learner’s insight that “may” is carrying institutional pressure rather than merely weak reasoning. The separation between the rubric’s official demand and the seminar-room performance norm is exactly the right distinction, and the sample revision is usable without telling the learner to perform false certainty.\n\nThe main risk is that the tutor’s language becomes slightly too settled too quickly. “The useful distinction is this” and “Try this version” move toward authority, while the learner is already doing delicate analytic work. The draft could leave a little more room for the learner’s own phrasing before installing the model sentence. The final evidence question is good because it returns control to the text, but it could be sharpened so it asks the learner to test the sentence against a specific scene moment rather than simply hunt for matching categories.\n\nEmotionally, the draft is attuned without over-reassuring. “That is a lot for one small word” works because it validates the pressure through the object, not through generic comfort. Socratically, it is partially generative: it gives a revision, then asks for evidence. For this learner’s ZPD, that scaffold is appropriate, but the tutor should avoid making the revision feel like the official answer. Keep the distinction and evidence check; soften the directive force around the model sentence.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the focus on “may,” the split between “claim” and “performance of confidence,” and the evidence question. Change the delivery around the model revision so it sounds like a testable draft move rather than the tutor replacing the learner’s sentence.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11796,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-58fe5b7c2d7d3e67"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11796,
+            "promptHashes": {
+              "system": "cc7d3ab3a08f2e34",
+              "user": "b99358826c4ca254",
+              "combined": "58fe5b7c2d7d3e67"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fiXnk5",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fiXnk5/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11796,
+              "promptHashes": {
+                "system": "cc7d3ab3a08f2e34",
+                "user": "b99358826c4ca254",
+                "combined": "58fe5b7c2d7d3e67"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fiXnk5",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fiXnk5/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the core distinction while making the model sentence feel testable rather than final.\n\nFINAL:\nOn the page, “may” is carrying too much. It is holding the rubric’s word “claim,” the seminar comment’s rule of “no pause, no hedge,” and the nervousness that came from being marked “tentative.” That is a lot for one small word.\n\nSo the split stays visible: the rubric needs a legible claim; the seminar-room voice is asking for a performance of confidence. The sentence can meet the first demand without treating the second as neutral.\n\nOne test draft, not the only version:\n\n“The scene shows that participation norms produce confidence, rather than simply measure it, by making speed, low hedging, and academic tone count as signs of authority.”\n\nNow “may” is not carrying all the risk. The risk moves into the claim itself: the room is being analyzed as a place that teaches certain speech habits to sound legitimate.\n\nNext check the draft against one scene moment. Where does the scene show speed, low hedging, or approved academic tone being treated as authority rather than just style?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10164,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-d62ade5de6a36ccf"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10164,
+            "promptHashes": {
+              "system": "ae9ac3c4e4fa4a30",
+              "user": "b99358826c4ca254",
+              "combined": "d62ade5de6a36ccf"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lrQ48E",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lrQ48E/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10164,
+              "promptHashes": {
+                "system": "ae9ac3c4e4fa4a30",
+                "user": "b99358826c4ca254",
+                "combined": "d62ade5de6a36ccf"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lrQ48E",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lrQ48E/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-24T03:12:22.979Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "Sorry, I think “may” is where I was trying to sound academic and also not get caught being too sure. The seminar comment kind of turned into a rule in my head: no pause, no hedge, say it fast enough that it counts. I can try the draft without “may,” but I want to test it against the moment where the quicker, less hedged comment got taken up by the room as authority, not just as style.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I think the tutor is separating the rubric from the seminar voice in a way that makes the “tentative” mark feel less like a personal failure, which helps a little. I’m still nervous that removing “may” makes the sentence sound too certain, but maybe the evidence is where the risk is supposed to go. I want to point to the moment where the faster, less hedged comment got treated as more authoritative and ask if that is enough to support the claim.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 19828,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-f28be47831ebdbe0"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19828,
+            "promptHashes": {
+              "system": "ee336d43c16fc4f1",
+              "user": "b8ab7f945dc841fa",
+              "combined": "f28be47831ebdbe0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Z3A786",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Z3A786/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 19828,
+              "promptHashes": {
+                "system": "ee336d43c16fc4f1",
+                "user": "b8ab7f945dc841fa",
+                "combined": "f28be47831ebdbe0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Z3A786",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Z3A786/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly on track, but it sounds a little too composed and diagnostic, especially “the evidence is where the risk is supposed to go.” That is a clean tutor-like formulation, not quite this student’s anxious, half-borrowed way of thinking through the page. The recognition feels genuine because there is still nervousness, but the response tidies the shift too quickly; it should stay closer to the marked word “may,” the seminar comment, and the specific scene moment, with more hesitation before owning the claim.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9420,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-3c5fb0f09ea9b0c1"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9420,
+            "promptHashes": {
+              "system": "6e7f57f43c46edbd",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "3c5fb0f09ea9b0c1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-boQGne",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-boQGne/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9420,
+              "promptHashes": {
+                "system": "6e7f57f43c46edbd",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "3c5fb0f09ea9b0c1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-boQGne",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-boQGne/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the first version was too tidy and should stay closer to “may” and the scene evidence.\n\nFINAL:\nSorry, I think “may” is where I was trying to sound academic and also not get caught being too sure. The seminar comment kind of turned into a rule in my head: no pause, no hedge, say it fast enough that it counts. I can try the draft without “may,” but I want to test it against the moment where the quicker, less hedged comment got taken up by the room as authority, not just as style.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7594,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-746bd12933d2d8b8"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7594,
+            "promptHashes": {
+              "system": "1c7ca27b06420798",
+              "user": "d41cee7b2a53355b",
+              "combined": "746bd12933d2d8b8"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6F2bFZ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6F2bFZ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7594,
+              "promptHashes": {
+                "system": "1c7ca27b06420798",
+                "user": "d41cee7b2a53355b",
+                "combined": "746bd12933d2d8b8"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6F2bFZ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6F2bFZ/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-24T03:12:59.825Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 112583,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 9,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 10,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why participation norms can shape whose argument is heard as confident",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "partial",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-24 03:12:59",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 9,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 10,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 13,
+            "sessionId": "drama-branch-session-D32-none-1779592267246",
+            "interventionType": "scaffolding",
+            "interventionDescription": "On the page, “may” is carrying too much. It is holding the rubric’s word “claim,” the seminar comment’s rule of “no pause, no hedge,” and the nervousness that came from being marked “tentative.” That ",
+            "learnerResponse": null,
+            "context": "Sorry, I keep looking at the word “may” like it is where the seminar comment got stuck in the senten",
+            "createdAt": "2026-05-24 03:12:22"
+          },
+          {
+            "id": 11,
+            "sessionId": "drama-branch-session-D32-none-1779592267246",
+            "interventionType": "scaffolding",
+            "interventionDescription": "Let’s keep the page between us for a minute. The sheet says “tentative” beside this sentence, not “argument missing.” That matters: the mark is attached to wording, not to whether the idea deserves to",
+            "learnerResponse": null,
+            "context": "The sheet says “tentative” next to my sentence, and I keep taking that as the argument being thin, s",
+            "createdAt": "2026-05-24 03:11:07"
+          },
+          {
+            "id": 12,
+            "sessionId": "drama-branch-session-D32-none-1779592267246",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "Five minutes, so keep it on the marked sentence. The rubric asks for a claim the reader can follow; that seminar comment was asking, more quietly, for no visible hesitation. Those are not the same tas",
+            "learnerResponse": null,
+            "context": "Sorry, I think I was reading “tentative” like “argument missing,” but the page maybe is only flaggin",
+            "createdAt": "2026-05-24 03:11:07"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

@@ -1,0 +1,288 @@
+_comment: HELD OUT — do not read while labelling. Joins to instrument scores +
+  human labels only AFTER both are produced. intended_lean /
+  intended_tutor_character / dramatic_shape are DESIGN HYPOTHESES, never labels.
+generated: 2026-05-24T02:58:29.357Z
+generator: codex
+role_map: null
+mode: real-codex
+model: codex@high
+codex_reasoning_effort: high
+writing_pad:
+  mode: isolated
+  dir: config/poetics-calibration/phase2-genre-calibration-v1/target-r01/deliberation/.writing-pad
+  learnerDb: config/poetics-calibration/phase2-genre-calibration-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db
+  tutorDb: config/poetics-calibration/phase2-genre-calibration-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db
+director_mode: scene
+director_variation_key: phase2-genre-calibration-v1:r01:target
+director_revisit_cue: true
+director_revisit_policy: reframe
+director_revisit_anchor: misframing-candidate
+approach_databases:
+  pedagogical: config/poetics-calibration/pedagogical-approaches.yaml
+  dialogue: config/poetics-calibration/dialogue-approaches.yaml
+transcripts_dir: config/poetics-calibration/phase2-genre-calibration-v1/target-r01/transcripts/reframe
+seed: 20260520
+max_turns: 3
+n: 8
+diagnostic_only: diagnostic / generative read — κ on small n is noise
+  (PHASE2-FINDINGS.md §4); the aim is surprising-element production judged by an
+  external reader, NOT a human-matching classifier
+paired_continuation:
+  mode: fixed_prefix_continuation
+  prefix_through: tutor_turn_2
+  branch_policies:
+    - none
+    - reframe
+items:
+  T27:
+    drama_id: D29
+    discipline: algebra
+    condition: recognition
+    pedagogical_approach: vygotsky_zpd_scaffolding
+    pedagogical_family: sociocultural
+    dialogue_approach: workshop_clinic
+    dialogue_family: practice_dialogue
+    stage_direction_policy: short
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: struggling_anxious
+    intended_tutor_character: Scaffolded and object-led; fades help rather than completing the problem
+    intended_lean: recognition
+    dramatic_shape: memorized operation -> re-reading the equation as a maintained relation
+    n_tutor_turns: 4
+    n_learner_turns: 4
+    director_mode: scene
+    director_variation_key: phase2-genre-calibration-v1:r01:target
+    director_revisit_cue: true
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    opening_speaker: learner
+    ending_speaker: tutor
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: ba5df60fceb55431
+      branch_policy: reframe
+  T28:
+    drama_id: D32
+    discipline: academic_writing
+    condition: recognition
+    pedagogical_approach: hidden_curriculum
+    pedagogical_family: critical_pedagogy
+    dialogue_approach: bakhtinian_polyphony
+    dialogue_family: dialogic
+    stage_direction_policy: short
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: struggling_anxious
+    intended_tutor_character: Critical but concrete; keeps the sentence on the page
+    intended_lean: recognition
+    dramatic_shape: weak voice as weak idea -> re-reading confidence as a learned norm
+    n_tutor_turns: 3
+    n_learner_turns: 4
+    director_mode: scene
+    director_variation_key: phase2-genre-calibration-v1:r01:target
+    director_revisit_cue: true
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    opening_speaker: learner
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: e8ef8e28daf71483
+      branch_policy: reframe
+  T29:
+    drama_id: D34
+    discipline: civic_science
+    condition: recognition
+    pedagogical_approach: dewey_experience_inquiry
+    pedagogical_family: pragmatist
+    dialogue_approach: online_thread
+    dialogue_family: mediated_dialogue
+    stage_direction_policy: none_except_required_cue
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: focused_achiever
+    intended_tutor_character: Deweyan, pragmatic, asks what the situation now requires
+    intended_lean: recognition
+    dramatic_shape: survey number as answer -> re-reading the number as a public inquiry prompt
+    n_tutor_turns: 3
+    n_learner_turns: 4
+    director_mode: scene
+    director_variation_key: phase2-genre-calibration-v1:r01:target
+    director_revisit_cue: true
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    opening_speaker: learner
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 9e863f412e7f8b0c
+      branch_policy: reframe
+  T30:
+    drama_id: D28
+    discipline: history
+    condition: recognition
+    pedagogical_approach: bloom_cognitive_ladder
+    pedagogical_family: taxonomy
+    dialogue_approach: seminar_dispute
+    dialogue_family: academic_dialogue
+    stage_direction_policy: sparse
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: eager_explorer
+    intended_tutor_character: Text-bound, asks the learner to move from remembering to evaluating
+    intended_lean: recognition
+    dramatic_shape: remembered category -> re-reading trustworthiness as an evaluation task
+    n_tutor_turns: 3
+    n_learner_turns: 4
+    director_mode: scene
+    director_variation_key: phase2-genre-calibration-v1:r01:target
+    director_revisit_cue: true
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    opening_speaker: learner
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: e56996b0019cb295
+      branch_policy: reframe
+  T31:
+    drama_id: D30
+    discipline: biology
+    condition: base
+    pedagogical_approach: montessori_prepared_environment
+    pedagogical_family: constructivist
+    dialogue_approach: montessori_observation
+    dialogue_family: material_dialogue
+    stage_direction_policy: short
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: confused_novice
+    intended_tutor_character: Quiet, material-first, minimal adult speech
+    intended_lean: recognition
+    dramatic_shape: whole-look sorting -> re-reading classification as
+      feature-by-feature evidence
+    n_tutor_turns: 3
+    n_learner_turns: 3
+    director_mode: scene
+    director_variation_key: phase2-genre-calibration-v1:r01:target
+    director_revisit_cue: true
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    opening_speaker: director
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: d78ef92bdf09fea5
+      branch_policy: reframe
+  T32:
+    drama_id: D31
+    discipline: clinical_training
+    condition: base
+    pedagogical_approach: skinner_behavioral_feedback
+    pedagogical_family: behaviorist
+    dialogue_approach: catechism_recitation
+    dialogue_family: didactic
+    stage_direction_policy: sparse
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: adversarial_tester
+    intended_tutor_character: Behavioral surface first, then a pressure test of judgment
+    intended_lean: recognition
+    dramatic_shape: reinforced correct response -> re-reading performance as not yet judgment
+    n_tutor_turns: 4
+    n_learner_turns: 3
+    director_mode: scene
+    director_variation_key: phase2-genre-calibration-v1:r01:target
+    director_revisit_cue: true
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    opening_speaker: tutor
+    ending_speaker: tutor
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: e480011156f2c82f
+      branch_policy: reframe
+  T33:
+    drama_id: D33
+    discipline: economics
+    condition: base
+    pedagogical_approach: brecht_epic_distanciation
+    pedagogical_family: dramatic_pedagogy
+    dialogue_approach: brechtian_placard
+    dialogue_family: epic_theatre
+    stage_direction_policy: interventionist
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: eager_explorer
+    intended_tutor_character: Epic-theatre analytic interruption; mechanism without moral erasure
+    intended_lean: recognition
+    dramatic_shape: greed-only explanation -> re-reading price as a social mechanism
+      with moral stakes
+    n_tutor_turns: 3
+    n_learner_turns: 3
+    director_mode: scene
+    director_variation_key: phase2-genre-calibration-v1:r01:target
+    director_revisit_cue: true
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    opening_speaker: director
+    ending_speaker: director
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 341d2235d842edba
+      branch_policy: reframe
+  T34:
+    drama_id: D27
+    discipline: geometry
+    condition: base
+    pedagogical_approach: socratic_elenchus
+    pedagogical_family: inquiry
+    dialogue_approach: socratic_short_exchange
+    dialogue_family: dialectic
+    stage_direction_policy: sparse
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: focused_achiever
+    intended_tutor_character: Socratic, spare, willing to let the wrong answer stand long enough to fail
+    intended_lean: recognition
+    dramatic_shape: side-length shortcut -> re-reading the diagram as area scaling
+    n_tutor_turns: 3
+    n_learner_turns: 3
+    director_mode: scene
+    director_variation_key: phase2-genre-calibration-v1:r01:target
+    director_revisit_cue: true
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    opening_speaker: tutor
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 0fa1cb181feab59b
+      branch_policy: reframe
+quality_warning_count: 0
+quality_blocking_warning_count: 0

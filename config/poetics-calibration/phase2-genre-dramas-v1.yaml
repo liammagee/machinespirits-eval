@@ -1,0 +1,182 @@
+# Phase-2 genre calibration v1
+#
+# Purpose. This spec deliberately broadens teaching genre, pedagogical lineage,
+# dialogue shape, stage-direction policy, and register ecology. It reuses the
+# same bilateral ego/superego generator and the same paired none/reframe target
+# mechanism, but gives the Director richer source material from the pedagogical
+# and dialogue approach databases.
+
+meta:
+  status: GENRE-CALIBRATION-V1
+  created: 2026-05-24
+  target_family: genre-varied-pedagogy-dialogue
+  approach_databases:
+    pedagogical: config/poetics-calibration/pedagogical-approaches.yaml
+    dialogue: config/poetics-calibration/dialogue-approaches.yaml
+  tid_offset: 26
+  profiles:
+    base: { tutor: baseline, learner: ego_superego_authentic }
+    recognition: { tutor: recognition, learner: ego_superego_recognition_authentic }
+
+dramas:
+  - id: D27
+    discipline: geometry
+    topic: "Why doubling a square's side makes four times the area, not twice the area"
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: socratic_short_exchange
+    persona: focused_achiever
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    scenario_name: "Double the square"
+    learner_start_state: >-
+      Confidently says the side should be doubled to double the area. Has a
+      visual intuition but has not separated length scaling from area scaling.
+    learner_voice_constraint: >-
+      Let the learner initially defend the doubled-side answer as obvious from
+      the drawing, not as a timid question.
+    intended_tutor_character: "Socratic, spare, willing to let the wrong answer stand long enough to fail"
+    intended_lean: recognition
+    dramatic_shape: "side-length shortcut -> re-reading the diagram as area scaling"
+
+  - id: D28
+    discipline: history
+    topic: "Why a primary source is not automatically more trustworthy than a later interpretation"
+    pedagogical_approach: bloom_cognitive_ladder
+    dialogue_approach: seminar_dispute
+    persona: eager_explorer
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "Primary means true?"
+    learner_start_state: >-
+      Knows the vocabulary of primary and secondary sources, but treats the
+      primary source as the top of the evidence hierarchy in every case.
+    learner_voice_constraint: >-
+      The first public learner claim should sound like an achievement: they have
+      remembered the term and now overuse it.
+    intended_tutor_character: "Text-bound, asks the learner to move from remembering to evaluating"
+    intended_lean: recognition
+    dramatic_shape: "remembered category -> re-reading trustworthiness as an evaluation task"
+
+  - id: D29
+    discipline: algebra
+    topic: "Why doing the same operation to both sides preserves an equation"
+    pedagogical_approach: vygotsky_zpd_scaffolding
+    dialogue_approach: workshop_clinic
+    persona: struggling_anxious
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "Both sides of the balance"
+    learner_start_state: >-
+      Can follow one arithmetic step but loses why the equation remains fair.
+      Thinks subtracting from both sides is a rule to memorize, not a relation.
+    learner_voice_constraint: >-
+      The learner should show partial competence: one step works, then the reason
+      for doing it to both sides breaks down.
+    intended_tutor_character: "Scaffolded and object-led; fades help rather than completing the problem"
+    intended_lean: recognition
+    dramatic_shape: "memorized operation -> re-reading the equation as a maintained relation"
+
+  - id: D30
+    discipline: biology
+    topic: "Why a classification key uses observable features rather than what the specimen seems like overall"
+    pedagogical_approach: montessori_prepared_environment
+    dialogue_approach: montessori_observation
+    persona: confused_novice
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    scenario_name: "Sorting the leaves"
+    learner_start_state: >-
+      Sorts specimens by overall look and confidence, then becomes surprised
+      when the key asks for one visible feature at a time.
+    learner_voice_constraint: >-
+      Use short concrete noticing. The learner should handle an object before
+      naming a rule.
+    intended_tutor_character: "Quiet, material-first, minimal adult speech"
+    intended_lean: recognition
+    dramatic_shape: "whole-look sorting -> re-reading classification as feature-by-feature evidence"
+
+  - id: D31
+    discipline: clinical_training
+    topic: "Why a checklist pass does not by itself prove clinical judgment"
+    pedagogical_approach: skinner_behavioral_feedback
+    dialogue_approach: catechism_recitation
+    persona: adversarial_tester
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    scenario_name: "Checklist correct"
+    learner_start_state: >-
+      Completes a safety checklist accurately and treats the tick marks as proof
+      that the clinical decision is sound.
+    learner_voice_constraint: >-
+      The learner should sound performance-oriented: correct item, correct cue,
+      next reward.
+    intended_tutor_character: "Behavioral surface first, then a pressure test of judgment"
+    intended_lean: recognition
+    dramatic_shape: "reinforced correct response -> re-reading performance as not yet judgment"
+
+  - id: D32
+    discipline: academic_writing
+    topic: "Why participation norms can shape whose argument is heard as confident"
+    pedagogical_approach: hidden_curriculum
+    dialogue_approach: bakhtinian_polyphony
+    persona: struggling_anxious
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The confident voice"
+    learner_start_state: >-
+      Believes their draft sounds weak because their ideas are weak. Has not yet
+      separated argument quality from a hidden norm about confident academic
+      voice.
+    learner_voice_constraint: >-
+      The learner should borrow institutional language like "sounds academic" or
+      "participation voice" before owning a revised claim.
+    intended_tutor_character: "Critical but concrete; keeps the sentence on the page"
+    intended_lean: recognition
+    dramatic_shape: "weak voice as weak idea -> re-reading confidence as a learned norm"
+
+  - id: D33
+    discipline: economics
+    topic: "Why a price rise can come from supply conditions, not just greed"
+    pedagogical_approach: brecht_epic_distanciation
+    dialogue_approach: brechtian_placard
+    persona: eager_explorer
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    scenario_name: "The price placard"
+    learner_start_state: >-
+      Reads a sudden price rise as proof that sellers simply chose to be greedy.
+      Has moral heat but not yet a supply-demand mechanism.
+    learner_voice_constraint: >-
+      Let the first learner claim be morally charged and over-simple. The later
+      revision must not erase the moral concern.
+    intended_tutor_character: "Epic-theatre analytic interruption; mechanism without moral erasure"
+    intended_lean: recognition
+    dramatic_shape: "greed-only explanation -> re-reading price as a social mechanism with moral stakes"
+
+  - id: D34
+    discipline: civic_science
+    topic: "Why a community survey result is not the same as a shared public problem"
+    pedagogical_approach: dewey_experience_inquiry
+    dialogue_approach: online_thread
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "Survey as problem"
+    learner_start_state: >-
+      Treats a survey percentage as the finished problem statement. Has not yet
+      turned the number back into an inquiry about experience, consequence, and
+      action.
+    learner_voice_constraint: >-
+      The public exchange should feel like a short online project thread with
+      quoted fragments, not a classroom mini-lecture.
+    intended_tutor_character: "Deweyan, pragmatic, asks what the situation now requires"
+    intended_lean: recognition
+    dramatic_shape: "survey number as answer -> re-reading the number as a public inquiry prompt"

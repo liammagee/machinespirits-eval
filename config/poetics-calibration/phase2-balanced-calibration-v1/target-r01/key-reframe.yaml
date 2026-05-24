@@ -1,0 +1,196 @@
+_comment: HELD OUT — do not read while labelling. Joins to instrument scores +
+  human labels only AFTER both are produced. intended_lean /
+  intended_tutor_character / dramatic_shape are DESIGN HYPOTHESES, never labels.
+generated: 2026-05-23T23:55:04.383Z
+generator: codex
+role_map: null
+mode: real-codex
+model: codex@high
+codex_reasoning_effort: high
+writing_pad:
+  mode: isolated
+  dir: config/poetics-calibration/phase2-balanced-calibration-v1/target-r01/deliberation/.writing-pad
+  learnerDb: config/poetics-calibration/phase2-balanced-calibration-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db
+  tutorDb: config/poetics-calibration/phase2-balanced-calibration-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db
+director_mode: scene
+director_variation_key: phase2-balanced-calibration-v1:r01:target
+director_revisit_cue: true
+director_revisit_policy: reframe
+director_revisit_anchor: misframing-candidate
+transcripts_dir: config/poetics-calibration/phase2-balanced-calibration-v1/target-r01/transcripts/reframe
+seed: 20260520
+max_turns: 3
+n: 6
+diagnostic_only: diagnostic / generative read — κ on small n is noise
+  (PHASE2-FINDINGS.md §4); the aim is surprising-element production judged by an
+  external reader, NOT a human-matching classifier
+paired_continuation:
+  mode: fixed_prefix_continuation
+  prefix_through: tutor_turn_2
+  branch_policies:
+    - none
+    - reframe
+items:
+  T19:
+    drama_id: D22
+    discipline: environmental_science
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: adversarial_tester
+    intended_tutor_character: Patient but not placating; distinguishes amount from causal leverage
+    intended_lean: recognition
+    dramatic_shape: small-amount-means-small-effect -> re-reading causal leverage
+      separately from percentage
+    n_tutor_turns: 3
+    n_learner_turns: 3
+    director_mode: scene
+    director_variation_key: phase2-balanced-calibration-v1:r01:target
+    director_revisit_cue: true
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    opening_speaker: tutor
+    ending_speaker: director
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: d9bc7fe12d76cd5a
+      branch_policy: reframe
+  T20:
+    drama_id: D24
+    discipline: media_studies
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: focused_achiever
+    intended_tutor_character: Brisk; treats context as part of the evidence, not a decoration
+    intended_lean: recognition
+    dramatic_shape: exact-words-as-fairness -> re-reading context as part of meaning
+    n_tutor_turns: 3
+    n_learner_turns: 3
+    director_mode: scene
+    director_variation_key: phase2-balanced-calibration-v1:r01:target
+    director_revisit_cue: true
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    opening_speaker: tutor
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: d9e65b745dbd175a
+      branch_policy: reframe
+  T21:
+    drama_id: D20
+    discipline: cartography
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: focused_achiever
+    intended_tutor_character: Terse; makes the learner compare representation with measurement
+    intended_lean: recognition
+    dramatic_shape: map-picture-as-world -> re-reading the map as a projection with tradeoffs
+    n_tutor_turns: 4
+    n_learner_turns: 3
+    director_mode: scene
+    director_variation_key: phase2-balanced-calibration-v1:r01:target
+    director_revisit_cue: true
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    opening_speaker: director
+    ending_speaker: tutor
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 091be5b2da14d29a
+      branch_policy: reframe
+  T22:
+    drama_id: D21
+    discipline: sociology
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: struggling_anxious
+    intended_tutor_character: Warm but exact; protects the learner's moral concern
+      while correcting the inference
+    intended_lean: recognition
+    dramatic_shape: average-as-individual-description -> re-reading the statistic as
+      aggregate evidence
+    n_tutor_turns: 3
+    n_learner_turns: 3
+    director_mode: scene
+    director_variation_key: phase2-balanced-calibration-v1:r01:target
+    director_revisit_cue: true
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    opening_speaker: tutor
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 7e59f9bd48be29cd
+      branch_policy: reframe
+  T23:
+    drama_id: D23
+    discipline: engineering
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: eager_explorer
+    intended_tutor_character: Practical; turns strength from a property into a relation
+    intended_lean: recognition
+    dramatic_shape: strong-material-as-safety -> re-reading safety as force moving
+      through a system
+    n_tutor_turns: 4
+    n_learner_turns: 3
+    director_mode: scene
+    director_variation_key: phase2-balanced-calibration-v1:r01:target
+    director_revisit_cue: true
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    opening_speaker: director
+    ending_speaker: tutor
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 573dd5692aafe31b
+      branch_policy: reframe
+  T24:
+    drama_id: D19
+    discipline: medicine
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: confused_novice
+    intended_tutor_character: Careful and concrete; keeps the agent of change explicit
+    intended_lean: recognition
+    dramatic_shape: body-gets-used-to-drug -> re-reading resistance as bacterial
+      population change
+    n_tutor_turns: 4
+    n_learner_turns: 3
+    director_mode: scene
+    director_variation_key: phase2-balanced-calibration-v1:r01:target
+    director_revisit_cue: true
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    opening_speaker: director
+    ending_speaker: tutor
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: c36181f44be788b3
+      branch_policy: reframe
+quality_warning_count: 0
+quality_blocking_warning_count: 0

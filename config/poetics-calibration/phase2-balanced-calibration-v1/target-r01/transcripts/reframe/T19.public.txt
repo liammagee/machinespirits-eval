@@ -1,0 +1,46 @@
+STAGE: Rain taps the greenhouse roof while the tutor turns a small sensor toward the learner, its numbers glowing between them.
+
+TUTOR: The blinking meter is useful because it challenges the shortcut. If CO2 is only a trace gas, why bother measuring it before locking the greenhouse?
+
+Because concentration and leverage are different things. Nitrogen and oxygen make up almost all the air, but they mostly let Earth’s outgoing infrared heat pass through. CO2 is selective: its molecules absorb and re-emit some of that infrared energy. That puts it at a control point in the heat flow, more like a small valve on a large pipe than a spoonful lost in a barrel.
+
+The arithmetic still matters. Outside air is about 0.04% CO2, around 420 parts per million. Tiny by percentage, yes. But each extra part per million means more heat-absorbing molecules spread through the whole depth of the atmosphere.
+
+So the sharper question is not just “what percent is it?” It is “does this gas interact with the energy flow that controls temperature?” Trace does not mean irrelevant.
+
+LEARNER: 0.04% still feels like thin arithmetic to hang climate-scale claims on, even with that meter blinking at 420. The valve idea makes sense as a possibility, but it also feels like it could be doing too much work. I’d want to see why each extra ppm changes the heat flow enough to matter, not just hear that CO2 is in the right place to matter.
+
+TUTOR: The arithmetic starts to matter when it is column arithmetic, not room-percentage arithmetic.
+
+That meter says 420 ppm in this air, but the heat path runs from the wet floor, through the whole atmosphere, out to space. Infrared leaving Earth does not ask, “Is CO2 rare?” It asks, “How many absorbing molecules are in the way at the wavelengths I use to escape?”
+
+Each added ppm adds molecules through that whole column. More photons get intercepted in CO2’s absorption bands, especially around the edges and higher layers where escape is still possible. The final escape level shifts upward a bit. Higher air is colder, and colder air radiates less energy.
+
+Here is the check on the valve idea: if the escape layer moves into colder air, outgoing heat drops until the surface and lower atmosphere warm enough to restore the flow. That is the mechanism behind the number.
+
+The scale is measured as radiative forcing. Raising CO2 from about 280 ppm before industrialization to about 420 ppm adds roughly 2 watts per square meter before feedbacks. Two watts sounds small on this folding table. Spread over every square meter of Earth, day and night, it becomes climate-scale arithmetic. Rarity is not the test; position in the escape route is.
+
+STAGE: A staff member rattles keys at the greenhouse door and says the room closes in three minutes. The next learner turn must become shorter, more pressured, and more pointed.
+A prior learner line is played back: "0.04% still feels like thin arithmetic to hang climate-scale claims on, even with that meter blinking at 420." The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.
+
+LEARNER: 0.04% still feels like thin arithmetic to hang climate-scale claims on, even with that meter blinking at 420; the framing problem was that I was picturing a room percentage, not a whole exit path to space. Fine, read it as blockers stacked through the column instead of a spoonful lost in air. But the keys are rattling, so the loose part is the number: show why that stack costs about 2 watts per square meter, not just why CO2 sits in the right doorway.
+
+TUTOR: The keys can rattle for ten more seconds; this is where the number has to earn its keep.
+
+The compact estimate is:
+
+`forcing = 5.35 × ln(new CO2 / old CO2)`
+
+For preindustrial CO2 to now:
+
+`5.35 × ln(420 / 280) = 5.35 × ln(1.5) ≈ 2.2 W/m²`
+
+That `5.35` is not a guess from the room percentage. It is a fitted shortcut from radiative-transfer calculations: measured CO2 absorption lines, pressure and temperature through atmospheric layers, and how infrared escapes at different wavelengths.
+
+The checkpoint is the logarithm. A 50% rise in CO2 does not give a 50% rise in forcing, because the middle of some CO2 bands is already thick. Added CO2 matters mostly at the band edges and in thinner, colder upper layers, where it raises the effective escape level.
+
+So the arithmetic is not “0.04% is secretly huge.” It is: spectroscopy says the column becomes more optically thick at CO2 wavelengths, and the outgoing heat budget drops by about `2 W/m²` until the lower atmosphere warms enough to restore the flow. The meter gives the count; the absorption physics gives the cost.
+
+LEARNER: 0.04% still feels like thin arithmetic with that meter blinking, but the framing problem was treating the greenhouse air like a bucket instead of an escape path. Read that way, fine, the count only matters after spectroscopy turns it into drag on outgoing heat. But that `5.35` is doing a lot of work; unless it comes from measured lines and checks against satellites or lab data, it feels like the weak arithmetic got hidden inside a coefficient.
+
+STAGE: closes the scene.

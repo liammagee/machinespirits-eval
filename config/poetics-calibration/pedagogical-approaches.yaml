@@ -1,0 +1,220 @@
+version: "2026-05-24"
+purpose: >-
+  Source database for genre-varied teaching drama generation. Entries are not
+  labels and are not ground truth. They are director-facing repertoires that can
+  shape scene ecology, tutor constraints, learner constraints, and risks.
+
+approaches:
+  - id: socratic_elenchus
+    family: inquiry
+    lineage: "Socratic elenchus; Plato's early dialogues"
+    core_move: "Expose a confident answer to counterexample until the learner can revise the question."
+    tutor_prompt: >-
+      Ask for a claim, test it with a compact counterexample, and let aporia do
+      some work before offering terminology. Avoid praise-first tutoring.
+    learner_prompt: >-
+      The learner may begin confidently, then become annoyed or embarrassed when
+      the first answer fails. Do not make the learner instantly grateful.
+    director_prompt: >-
+      The scene may resemble an oral examination, corridor argument, or public
+      demonstration. Silence and embarrassment are available dramatic materials.
+    risks:
+      - "Can become catechism if the tutor secretly supplies every step."
+      - "Can humiliate the learner if the counterexample becomes a victory lap."
+    source_notes:
+      - "Plato, Meno; Euthyphro; Theaetetus."
+
+  - id: bloom_cognitive_ladder
+    family: taxonomy
+    lineage: "Bloom taxonomy and later Anderson-Krathwohl revision"
+    core_move: "Move between recall, understanding, application, analysis, evaluation, and creation."
+    tutor_prompt: >-
+      Name the level of work implicitly through task design rather than by
+      lecturing about the taxonomy. Escalate only when the lower-level work is
+      stable enough to support it.
+    learner_prompt: >-
+      The learner may confuse remembering a term with being able to use or judge
+      it. Let this mismatch show in public speech.
+    director_prompt: >-
+      Stage the lesson around a task artifact: a rubric, design brief, lab
+      answer, source packet, or draft paragraph that demands a higher-order move.
+    risks:
+      - "Can flatten into a checklist."
+      - "Can overvalue visible production over conceptual change."
+    source_notes:
+      - "Bloom et al., Taxonomy of Educational Objectives."
+      - "Anderson and Krathwohl revision."
+
+  - id: vygotsky_zpd_scaffolding
+    family: sociocultural
+    lineage: "Vygotsky; zone of proximal development; scaffolding"
+    core_move: "Find the work the learner can do with assistance and hand back responsibility gradually."
+    tutor_prompt: >-
+      Offer a scaffold that is narrow enough to use and temporary enough to
+      remove. Mark what the learner can already do without making it a compliment.
+    learner_prompt: >-
+      The learner should be able to do part of the task, fail at the next part,
+      and use the scaffold unevenly.
+    director_prompt: >-
+      Make social assistance visible: a shared worksheet, tool, peer standard,
+      or workplace procedure can hold part of the task.
+    risks:
+      - "Can become over-helping if the scaffold never fades."
+      - "Can misread dependence as incapacity."
+    source_notes:
+      - "Vygotsky, Mind in Society."
+      - "Wood, Bruner, and Ross on scaffolding."
+
+  - id: montessori_prepared_environment
+    family: constructivist
+    lineage: "Montessori prepared environment and auto-education"
+    core_move: "Arrange materials so the learner can notice error and order through manipulation."
+    tutor_prompt: >-
+      Speak less. Point to the material, invite repetition, and let error-control
+      in the object do some teaching before explanation.
+    learner_prompt: >-
+      The learner may be absorbed in the object and speak in short practical
+      fragments rather than polished reflection.
+    director_prompt: >-
+      Put manipulable materials in view: tiles, cards, specimens, counters,
+      maps, blocks, or instruments. The stage direction can carry some meaning.
+    risks:
+      - "Can under-explain when explicit language is needed."
+      - "Can romanticize independence while hiding adult design."
+    source_notes:
+      - "Maria Montessori, The Montessori Method."
+
+  - id: skinner_behavioral_feedback
+    family: behaviorist
+    lineage: "Skinner; programmed instruction; reinforcement"
+    core_move: "Shape performance through small responses, immediate feedback, and reinforcement schedules."
+    tutor_prompt: >-
+      Break the task into observable responses, give immediate consequence, and
+      avoid inferring deep understanding from correct performance alone.
+    learner_prompt: >-
+      The learner may chase the reward signal or pattern-match the tutor's cue
+      without owning the concept.
+    director_prompt: >-
+      Use drills, checklists, timers, flash cards, automated quizzes, or training
+      scripts. Let correctness be visible but not necessarily meaningful.
+    risks:
+      - "Can produce trap-like insight declarations after shallow success."
+      - "Can suppress learner agency if reinforcement replaces interpretation."
+    source_notes:
+      - "B. F. Skinner, The Technology of Teaching."
+
+  - id: hidden_curriculum
+    family: critical_pedagogy
+    lineage: "Hidden curriculum; sociology of schooling"
+    core_move: "Reveal the tacit rule, status code, or institutional expectation that is being taught alongside content."
+    tutor_prompt: >-
+      Separate official task requirements from unspoken norms. Let the learner
+      inspect how the setting is teaching them what counts as legitimate.
+    learner_prompt: >-
+      The learner may think the visible rubric or rule is neutral and feel that
+      failure is personal rather than institutional.
+    director_prompt: >-
+      Stage institutional pressure: marking conventions, seating, accent norms,
+      punctuality rules, office etiquette, or participation scripts.
+    risks:
+      - "Can drift into social diagnosis without teaching the object."
+      - "Can make the learner feel trapped if no usable agency remains."
+    source_notes:
+      - "Philip Jackson; Bowles and Gintis; critical pedagogy discussions."
+
+  - id: didactic_literature
+    family: literary_didactic
+    lineage: "Fable, parable, exemplum, moral tale, conduct literature"
+    core_move: "Use narrative example to teach a norm, distinction, or practical judgment."
+    tutor_prompt: >-
+      Let the example carry the rule, but ask the learner what the example does
+      and does not prove. Do not turn the story into a slogan too early.
+    learner_prompt: >-
+      The learner may overgeneralize the moral or resist being taught through a
+      story.
+    director_prompt: >-
+      Bring in an anecdote, fable, case, or quoted passage. The scene can feel
+      like reading aloud, rehearsal, or moral dispute.
+    risks:
+      - "Can become preachy."
+      - "Can hide the concept behind narrative charm."
+    source_notes:
+      - "Aesop; parables; medieval exempla; didactic fiction traditions."
+
+  - id: brecht_epic_distanciation
+    family: dramatic_pedagogy
+    lineage: "Brechtian epic theatre; Verfremdung; Lehrstuck"
+    core_move: "Interrupt immersion so the learner can see the social mechanism rather than merely feel the scene."
+    tutor_prompt: >-
+      Permit interruption, placards, role-switching, and analytic commentary.
+      Make the constructedness of the lesson visible without naming the hidden
+      evaluation mechanism.
+    learner_prompt: >-
+      The learner may resist the interruption, then use it to see the prior
+      claim as a role or social script rather than a private thought.
+    director_prompt: >-
+      Use short placards, breaks in rhythm, a quoted rule on a board, or a
+      deliberate pause that prevents smooth empathy from doing all the work.
+    risks:
+      - "Can feel over-directed if the intervention announces the answer."
+      - "Can mistake alienation for recognition."
+    source_notes:
+      - "Bertolt Brecht, epic theatre and learning plays."
+
+  - id: hegelian_recognition
+    family: recognition
+    lineage: "Hegel; mutual recognition; later recognition theory"
+    core_move: "Treat the learner as an agent whose claim must be answered, not merely corrected."
+    tutor_prompt: >-
+      Preserve the learner's stake in their own claim while changing the claim's
+      relation to evidence, object, or other subject. Do not merely validate.
+    learner_prompt: >-
+      The learner should have something at stake in the first framing, so a later
+      revision changes how that first framing can be read.
+    director_prompt: >-
+      Let misrecognition be practical: a status relation, object use, rule, or
+      social dependence should make the mistake matter.
+    risks:
+      - "Can collapse into recognition vocabulary without public recohering."
+      - "Can over-index on second-person affirmation."
+    source_notes:
+      - "Hegel, Phenomenology of Spirit."
+      - "Recognition-theory descendants including Honneth."
+
+  - id: dewey_experience_inquiry
+    family: pragmatist
+    lineage: "Dewey; experience, inquiry, democracy and education"
+    core_move: "Begin from a problematic situation and reorganize experience through inquiry."
+    tutor_prompt: >-
+      Keep the learner inside the problem situation. Convert felt trouble into
+      an inquiry path, test, or consequence, then return to action.
+    learner_prompt: >-
+      The learner may have a practical need before they have a clean concept.
+      Their words can be provisional and tool-seeking.
+    director_prompt: >-
+      Use workshop, studio, civic problem, lab, design review, or community
+      setting. The scene should have consequences beyond answering the tutor.
+    risks:
+      - "Can become generic problem-solving if the original experience is lost."
+      - "Can rush to utility before the concept is stable."
+    source_notes:
+      - "John Dewey, How We Think; Democracy and Education; Experience and Education."
+
+  - id: freire_problem_posing
+    family: critical_dialogue
+    lineage: "Freire; problem-posing education"
+    core_move: "Replace deposit-style explanation with co-investigation of a named problem in the learner's world."
+    tutor_prompt: >-
+      Avoid banking-model delivery. Ask what the situation asks of both people,
+      and let the learner's words become material for joint inquiry.
+    learner_prompt: >-
+      The learner may initially treat the tutor as the authority who should
+      deposit the answer, then renegotiate that relation.
+    director_prompt: >-
+      Stage asymmetry without pretending it is gone: adult education, workplace
+      meeting, community issue, or classroom rule under dispute.
+    risks:
+      - "Can romanticize dialogue while the tutor still controls the path."
+      - "Can become political framing without conceptual specificity."
+    source_notes:
+      - "Paulo Freire, Pedagogy of the Oppressed."

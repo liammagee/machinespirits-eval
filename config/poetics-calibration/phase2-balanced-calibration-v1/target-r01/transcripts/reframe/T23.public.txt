@@ -1,0 +1,30 @@
+STAGE: A red tag hangs from the model bridge while the load frame ticks softly and someone in the hallway stacks metal stools.
+
+TUTOR: The red tag stays on for now. Strong steel helps, but force still needs a route: from this loading nose, through the deck, into the truss members, across these joints, down to the supports. If a joint slips, or the geometry lets one member buckle, the material never gets a clean chance to carry the load.
+
+Put a finger near this gusset when the hallway doors shake the bench. Watch for the first tiny motion before naming it. For the second demo, trace the path: which pieces carry tension, which carry compression, and which joint moves first when the frame starts to shake?
+
+LEARNER: Okay, the steel is not the bridge; the route is the bridge, and a loose gusset can steal the whole load before the member even gets to prove itself. The red tag hurts, but fine, I’ll hold off calling it resonance until this frame actually shows the first twitch. I’m watching that joint by the clamp, then I’ll trace which bars carry and which ones start to loosen or buckle.
+
+TUTOR: The red tag stays because the route is the bridge, not the steel.
+
+Keep the clamp joint under watch, then trace load nose to deck, deck to diagonals, diagonals into the gussets, gussets down to the supports. When the first twitch shows, pause there: what does that motion prove about the path? Did the load arrive off-center, did a joint rotate, or did a compression bar start to bow before the member got a clean line?
+
+Hold resonance in reserve. One shake is motion; repeated timing that grows is the claim. Before the second demo gets cleared, the frame has to show where force travels and where it tries to escape.
+
+STAGE: A lab timer beeps and someone asks from the hallway whether the model is cleared. The next learner line must be brief, pressured, and partly addressed to the object rather than to the tutor.
+A prior learner line is played back: "Okay, the steel is not the bridge; the route is the bridge, and a loose gusset can steal the whole load before the member even gets to prove itself." The learner must revoice that wording first, then decide in public whether it still stands, needs narrowing, or needs replacing before moving on.
+
+LEARNER: Okay, the steel is not the bridge; the route is the bridge, and a loose gusset can steal the whole load before the member even gets to prove itself. That still stands, but narrower: clamp joint, show whether the force passes clean or leaks sideways. Timer’s beeping, hallway’s asking, but not cleared yet; one shake is motion, and I don’t get to call resonance unless the timing starts stacking.
+
+TUTOR: Red tag stays on the clamp until that narrower claim earns it.
+
+Route is bridge: load nose, deck, diagonal, gusset, support. First motion gets named by its job, not its drama: slip, rotation, bow, or stacked timing.
+
+Clamp joint first. If it twitches, pause the demo there and sort the evidence: did the load pass clean, leak sideways, or start feeding a rhythm? Three shakes growing can argue resonance. One twitch fading is only motion.
+
+LEARNER: “Route is bridge” was my shortcut, but I was still using it like a poster slogan and trying to crown the first twitch as resonance. New version: the clamp has to show whether the load actually passes from nose to deck to diagonal to gusset to support, or leaks out as slip, rotation, or a bowed compression bar. I hate the red tag, but fine, three shakes growing before the resonance banner comes out.
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: Red tag stays: clamp motion has to show clean transfer before strength counts, and resonance only earns its name when three shakes stack instead of one twitch fading.

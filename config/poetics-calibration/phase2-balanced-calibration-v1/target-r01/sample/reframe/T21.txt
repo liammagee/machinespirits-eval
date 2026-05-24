@@ -1,0 +1,37 @@
+STAGE: A wall map hangs beside a globe while a caretaker stacks chairs and the clock clicks toward closing.
+
+TUTOR: “Thirty million square kilometres for Africa. A little over two million for Greenland. That is the first check.
+
+Lay the Greenland cut-out over the Mercator wall map. It bulges there because it sits far north, where the projection stretches land sideways and upwards. Now hold the same cut-out against the globe beside Africa. Same land, different surface, different rule.
+
+Mercator is useful for direction. It is not an equal-area map.
+
+So the answer is not ‘Greenland is nearly Africa-sized’. It is: ‘Greenland looks huge on a Mercator map because high-latitude areas are enlarged by projection distortion.’ Trust the measurement before the wall-map impression.”
+
+LEARNER: I thought the wall map was the thing to trust because Greenland looks almost absurdly large up there. But thirty million against just over two million is not close; the cut-out cannot have changed, only the surface has. I am still having to force myself past the picture, but the answer should be that Mercator has stretched the northern bit, not that Greenland is near Africa.
+
+STAGE: A caretaker switches off half the lights and says there are three minutes left. The next tutor turn must be short, object-led, and not a tidy explanatory paragraph.
+
+TUTOR: Two million. Thirty million. Those are the sizes.
+
+Greenland cut-out: globe first, wall map second. Same plastic. Different grid.
+
+Area figure against picture. The figure wins.
+
+Mark it as projection stretch in the far north, not Greenland nearly Africa-sized.
+
+STAGE: A prior learner line is played back: "I thought the wall map was the thing to trust because Greenland looks almost absurdly large up there." The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.
+
+LEARNER: I thought the wall map was the thing to trust because Greenland looks almost absurdly large up there. The framing problem was that I treated the stretched picture as the measurement. The new check is the area figures first: Greenland just over two million, Africa about thirty million; same cut-out on the globe, then the Mercator grid stretches it in the far north. It still jars visually, but I should mark projection distortion, not Greenland nearly Africa-sized.
+
+TUTOR: Two million against thirty million. That is the anchor.
+
+The cut-out has not grown. On the globe it keeps proportion; on the Mercator sheet the far-north grid pulls it wider and taller. Same land, distorted representation.
+
+That area-first check is the reliable method. Mercator is useful for direction, not true area: Greenland looks large because of high-latitude projection stretch; Africa remains vastly larger.
+
+LEARNER: I thought the wall map was the evidence, because it looks like Greenland is swelling up towards Africa’s size. The mistake in that framing is that I treated the picture on this sheet as if it were the measurement. The new check is two million against thirty million first, then the same cut-out on the globe, with the Mercator grid making the far-north version look stretched. I can say it is projection distortion, not Greenland nearly Africa-sized, but standing beside the map it still nags at me.
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: Two million against thirty million; the cut-out and globe agree, the Mercator sheet stretches the far north, and that nagging impression is the distortion doing its work.

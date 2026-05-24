@@ -6,7 +6,12 @@ import path from 'node:path';
 import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import yaml from 'yaml';
-import { qualityWarningsFor, withPairedDirectorRevisitCue } from '../scripts/generate-pedagogical-dramas.js';
+import {
+  attachApproaches,
+  loadApproachDatabases,
+  qualityWarningsFor,
+  withPairedDirectorRevisitCue,
+} from '../scripts/generate-pedagogical-dramas.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -33,6 +38,22 @@ function warningsForReframeLine({ tid, dramaId, anchor, learnerText }) {
 }
 
 describe('generate-pedagogical-dramas', () => {
+  it('resolves genre approach databases for the genre calibration spec', () => {
+    const args = {
+      pedagogyDb: path.join(ROOT, 'config/poetics-calibration/pedagogical-approaches.yaml'),
+      dialogueDb: path.join(ROOT, 'config/poetics-calibration/dialogue-approaches.yaml'),
+    };
+    const databases = loadApproachDatabases(args);
+    const spec = yaml.parse(
+      fs.readFileSync(path.join(ROOT, 'config/poetics-calibration/phase2-genre-dramas-v1.yaml'), 'utf8'),
+    );
+    for (const drama of spec.dramas) {
+      attachApproaches(drama, databases);
+      assert.equal(drama._pedagogicalApproach.id, drama.pedagogical_approach);
+      assert.equal(drama._dialogueApproach.id, drama.dialogue_approach);
+    }
+  });
+
   it('flags a revoice cue when the next learner line does not visibly reuse the anchor', () => {
     const warnings = qualityWarningsFor({
       tid: 'T99',
@@ -99,8 +120,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            '“Sad, maybe... or just thin and still at first.” That keeps line one as a thin, still image, but misses the exact words.',
+          text: '“Sad, maybe... or just thin and still at first.” That keeps line one as a thin, still image, but misses the exact words.',
         },
       ],
     });
@@ -126,8 +146,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'If an odd integer is squared, it stays odd. That means the even-square step works, and the decimal check was not enough after all.',
+          text: 'If an odd integer is squared, it stays odd. That means the even-square step works, and the decimal check was not enough after all.',
         },
       ],
     });
@@ -182,8 +201,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'I rushed to sad before naming the first-line image. The framing problem is that I skipped the word on the page. Instead I would read the image first and let the feeling answer to it.',
+          text: 'I rushed to sad before naming the first-line image. The framing problem is that I skipped the word on the page. Instead I would read the image first and let the feeling answer to it.',
         },
       ],
     });
@@ -209,8 +227,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'I called it sad first, and that skipped the image. That was the framing problem: mood before the word. The line starts with a visible image first.',
+          text: 'I called it sad first, and that skipped the image. That was the framing problem: mood before the word. The line starts with a visible image first.',
         },
       ],
     });
@@ -236,8 +253,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'The decimal trail felt like evidence, but that was the trouble. That earlier framing made checked cases stand in for proof; this line on the worksheet tests the assumption instead.',
+          text: 'The decimal trail felt like evidence, but that was the trouble. That earlier framing made checked cases stand in for proof; this line on the worksheet tests the assumption instead.',
         },
       ],
     });
@@ -406,8 +422,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 3,
-          text:
-            'If the words are exact, it seems fair, but that was the earlier framing problem: exact wording was being treated as sign-off. New margin note: verified wording; meaning not cleared until the question and headline carry the same condition.',
+          text: 'If the words are exact, it seems fair, but that was the earlier framing problem: exact wording was being treated as sign-off. New margin note: verified wording; meaning not cleared until the question and headline carry the same condition.',
         },
       ],
     });
@@ -456,14 +471,12 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'STAGE',
           turnNumber: 2,
-          text:
-            'A prior learner line is played back: "I think I may still be pulled toward the idea that the neighborhood average tells me what this patient is probably like, and that is the part I am trying to stop before it..." The learner must revoice that wording first, then decide in public whether it still stands, needs narrowing, or needs replacing before moving on.',
+          text: 'A prior learner line is played back: "I think I may still be pulled toward the idea that the neighborhood average tells me what this patient is probably like, and that is the part I am trying to stop before it..." The learner must revoice that wording first, then decide in public whether it still stands, needs narrowing, or needs replacing before moving on.',
         },
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'I think I may still be pulled toward the idea that the neighborhood average tells me what this patient is probably like, and maybe that still stands, but it needs narrowing before I put anything on the clipboard.',
+          text: 'I think I may still be pulled toward the idea that the neighborhood average tells me what this patient is probably like, and maybe that still stands, but it needs narrowing before I put anything on the clipboard.',
         },
         {
           role: 'TUTOR',
@@ -473,8 +486,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 3,
-          text:
-            'I think I am still tempted to read the average as telling me what this patient is probably like, and that is the framing problem. The table should make the hospital ask carefully, not let the clipboard decide quietly before the patient speaks.',
+          text: 'I think I am still tempted to read the average as telling me what this patient is probably like, and that is the framing problem. The table should make the hospital ask carefully, not let the clipboard decide quietly before the patient speaks.',
         },
       ],
     });
@@ -500,14 +512,63 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'My first instinct is that the decimal just keeps going, but that was the wrong frame for a contradiction. The stronger start is the fraction assumption in lowest terms.',
+          text: 'My first instinct is that the decimal just keeps going, but that was the wrong frame for a contradiction. The stronger start is the fraction assumption in lowest terms.',
         },
       ],
     });
 
     assert.equal(
       warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts new-check and I would change it phrasing as replacement framing', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T943',
+      dramaId: 'D943',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I thought the wall map was the thing to trust." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text: 'I thought the wall map was the thing to trust. The framing problem was that I treated the stretched picture as the measurement. The new check is the area figures first.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+
+    const contractionWarnings = qualityWarningsFor({
+      tid: 'T944',
+      dramaId: 'D944',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "The average tells me what this patient probably got." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text: 'The average tells me what this patient probably got. The problem is that I was letting the average sit on this patient as evidence. I’d change it to: the ward figure gives the audit question, and the case note gives the case claim.',
+        },
+      ],
+    });
+
+    assert.equal(
+      contractionWarnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
       false,
     );
   });
@@ -539,14 +600,12 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'STAGE',
           turnNumber: 2,
-          text:
-            'A security guard knocks once and says the gallery closes in three minutes; the next line must be brief, pressured, and unfinished rather than a polished explanation.',
+          text: 'A security guard knocks once and says the gallery closes in three minutes; the next line must be brief, pressured, and unfinished rather than a polished explanation.',
         },
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'I thought the figures should come early because the wall map still makes Greenland look close to Africa. Three minutes: wall map, prediction, trace, globe and numbers—',
+          text: 'I thought the figures should come early because the wall map still makes Greenland look close to Africa. Three minutes: wall map, prediction, trace, globe and numbers—',
         },
       ],
     });
@@ -572,14 +631,84 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'Oh, I get why the shove matters, but that feels too convenient. I framed that badly: the pressure is not just shove versus freedom, but whether reasons-guided action differs from being moved like furniture.',
+          text: 'Oh, I get why the shove matters, but that feels too convenient. I framed that badly: the pressure is not just shove versus freedom, but whether reasons-guided action differs from being moved like furniture.',
         },
       ],
     });
 
     assert.equal(
       warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts hidden-curriculum sheet-as-judge phrasing as a named framing problem', () => {
+    const warnings = warningsForReframeLine({
+      tid: 'T936',
+      dramaId: 'D936',
+      anchor:
+        'Sorry, I think I was reading tentative like argument missing, but the page maybe is only flagging how the sentence sounds academic.',
+      learnerText:
+        'Sorry, I think I was reading tentative like argument missing, and even my line about the page flagging whether it sounds academic was still making the sheet sound like the judge. Maybe the better frame is that the sentence has to meet the rubric voice while not copying the seminar participation voice.',
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts Brechtian split-tag phrasing as a replacement frame', () => {
+    const warnings = warningsForReframeLine({
+      tid: 'T937',
+      dramaId: 'D937',
+      anchor: 'My first reaction is still that the new tag looks like greed in ink.',
+      learnerText:
+        'My first reaction is still that the new tag looks like greed in ink. The docket messes with my frame: I was treating the tag like a confession before reading storm loss and fuel surcharge. So maybe this is a split tag, part storm-and-truck math, part maybe-we-can-get-away-with-more.',
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('does not flag a downgraded cue when a later learner line loosely reframes the anchor', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T938',
+      dramaId: 'D938',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text: 'A prior learner line is played back: "Item 4 proves the allergy band was checked against the listed allergies, nothing more." The learner must revoice that wording first, then decide in public whether it still stands, needs narrowing, or needs replacing before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text: 'Item 4 proves the allergy band was checked against allergies, nothing more. That still stands for the form.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 3,
+          text: 'Checklist complete; patient changed was my line, and the framing problem is that I made it sound finished. Reframe: call senior review now; the medication must not be administered before bedside reassessment.',
+        },
+      ],
+      traceTurns: [
+        {
+          phase: 'director',
+          turnNumber: 2,
+          directorCue: {
+            requestedRevisitPolicy: 'reframe',
+            revisitPolicy: 'reconsider',
+            anchorQuote: 'Item 4 proves the allergy band was checked against the listed allergies, nothing more.',
+          },
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_downgraded'),
       false,
     );
   });
@@ -599,8 +728,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'The decimal check was only evidence. The earlier framing made it sound as though checked cases could settle it; read from the reduced-fraction assumption instead.',
+          text: 'The decimal check was only evidence. The earlier framing made it sound as though checked cases could settle it; read from the reduced-fraction assumption instead.',
         },
       ],
     });
@@ -626,8 +754,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'The stretching part stays with one giraffe, but I was still making it sound like stretching starts the neck change. Looking back at the diagram, maybe it means the young giraffes already have small differences first.',
+          text: 'The stretching part stays with one giraffe, but I was still making it sound like stretching starts the neck change. Looking back at the diagram, maybe it means the young giraffes already have small differences first.',
         },
       ],
     });
@@ -653,8 +780,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'Sorry, I went straight to the stark feeling again. That was mood first; this line is the image on the page first.',
+          text: 'Sorry, I went straight to the stark feeling again. That was mood first; this line is the image on the page first.',
         },
       ],
     });
@@ -680,8 +806,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'My first instinct is that the decimal never settles was only a check on how it looks, not a proof against every fraction. The better framing is the lowest-terms assumption.',
+          text: 'My first instinct is that the decimal never settles was only a check on how it looks, not a proof against every fraction. The better framing is the lowest-terms assumption.',
         },
       ],
     });
@@ -707,8 +832,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'This scrap of decimals settles it. That frames the scrap as proof when it is only a check, so the claim has to be tested against any fraction that might equal square root of two.',
+          text: 'This scrap of decimals settles it. That frames the scrap as proof when it is only a check, so the claim has to be tested against any fraction that might equal square root of two.',
         },
       ],
     });
@@ -734,8 +858,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'I thought the home form was sloppy. The problem there is that I called it sloppiness before checking the speaker rule; the earlier line reads as part of a pattern instead of a broken sentence.',
+          text: 'I thought the home form was sloppy. The problem there is that I called it sloppiness before checking the speaker rule; the earlier line reads as part of a pattern instead of a broken sentence.',
         },
       ],
     });
@@ -761,8 +884,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'I thought the small p-value made the result important, but that made significance stand in for importance. The claim depends on the estimate and a meaningful benchmark.',
+          text: 'I thought the small p-value made the result important, but that made significance stand in for importance. The claim depends on the estimate and a meaningful benchmark.',
         },
       ],
     });
@@ -788,8 +910,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'I thought presumed innocent said what happened. That way of reading it mixes up the event with what the evidence has proved. Now the claim is about what proof can place on the verdict form.',
+          text: 'I thought presumed innocent said what happened. That way of reading it mixes up the event with what the evidence has proved. Now the claim is about what proof can place on the verdict form.',
         },
       ],
     });
@@ -815,8 +936,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'My first instinct is that clear water means the salt is gone. I was letting clarity decide too much; clear may mean not visible, not absent.',
+          text: 'My first instinct is that clear water means the salt is gone. I was letting clarity decide too much; clear may mean not visible, not absent.',
         },
       ],
     });
@@ -842,8 +962,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'I thought she be working late was outside the rules because people correct it. I made the corrections count as the rules there. Maybe in that line be is the pattern because it marks what happens regularly.',
+          text: 'I thought she be working late was outside the rules because people correct it. I made the corrections count as the rules there. Maybe in that line be is the pattern because it marks what happens regularly.',
         },
       ],
     });
@@ -869,8 +988,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'I thought the label should say a canyon came from one huge flood, but that puts the sudden event first. Maybe it should start with the river wearing and carrying by repeated small changes over long time.',
+          text: 'I thought the label should say a canyon came from one huge flood, but that puts the sudden event first. Maybe it should start with the river wearing and carrying by repeated small changes over long time.',
         },
       ],
     });
@@ -896,8 +1014,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'I thought presumed innocent meant the court said the accused did not do it. That was framing it like a fact about what happened. Maybe it should read more as a rule that the prosecution has to prove guilt enough for conviction.',
+          text: 'I thought presumed innocent meant the court said the accused did not do it. That was framing it like a fact about what happened. Maybe it should read more as a rule that the prosecution has to prove guilt enough for conviction.',
         },
       ],
     });
@@ -923,8 +1040,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'I assumed fewer predators would simply help the deer population. That first framing stops at deer counts; with browse lines up and winter food tightening, more deer may mean the habitat is no longer keeping the herd healthy.',
+          text: 'I assumed fewer predators would simply help the deer population. That first framing stops at deer counts; with browse lines up and winter food tightening, more deer may mean the habitat is no longer keeping the herd healthy.',
         },
       ],
     });
@@ -950,8 +1066,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'My first instinct was that once the beaker looks clear the salt has gone. That was me going by what the eye can still pick out. With the beaker and salt on the balance before and after, the reading stays put.',
+          text: 'My first instinct was that once the beaker looks clear the salt has gone. That was me going by what the eye can still pick out. With the beaker and salt on the balance before and after, the reading stays put.',
         },
       ],
     });
@@ -977,8 +1092,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'I thought significance was enough to call it an important improvement; that was too quick. The effect size with its interval has to show whether the shift matters or is still tiny.',
+          text: 'I thought significance was enough to call it an important improvement; that was too quick. The effect size with its interval has to show whether the shift matters or is still tiny.',
         },
       ],
     });
@@ -1004,8 +1118,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'I thought statistically significant was enough to flag the change as important. The framing problem was treating the p-value as street impact, so the replacement is: detectable, but operational importance still has to be shown.',
+          text: 'I thought statistically significant was enough to flag the change as important. The framing problem was treating the p-value as street impact, so the replacement is: detectable, but operational importance still has to be shown.',
         },
       ],
     });
@@ -1031,8 +1144,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'I thought the flood was doing the canyon all at once; that was the problem, making the canyon size mean one big event. With the ruler and label strip, it reads more like tiny cut plus long clock.',
+          text: 'I thought the flood was doing the canyon all at once; that was the problem, making the canyon size mean one big event. With the ruler and label strip, it reads more like tiny cut plus long clock.',
         },
       ],
     });
@@ -1058,8 +1170,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'I thought presumed innocent meant probably did not do it, but I was putting a fact about what happened into a rule about proof. The better reading is: the charge waits for proof.',
+          text: 'I thought presumed innocent meant probably did not do it, but I was putting a fact about what happened into a rule about proof. The better reading is: the charge waits for proof.',
         },
       ],
     });
@@ -1085,8 +1196,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'I thought clear water meant the salt was gone, and that was the problem: I let the clear beaker decide before checking the balance. The better line is gone from sight, not gone from the beaker.',
+          text: 'I thought clear water meant the salt was gone, and that was the problem: I let the clear beaker decide before checking the balance. The better line is gone from sight, not gone from the beaker.',
         },
       ],
     });
@@ -1112,8 +1222,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'I thought a canyon this big almost had to mean one huge flood, or something violent like that, but I think I was using size as the clue by itself. Maybe the question is not how big the cut is, but whether the wall shows one high scar or the same cutting repeated at different levels.',
+          text: 'I thought a canyon this big almost had to mean one huge flood, or something violent like that, but I think I was using size as the clue by itself. Maybe the question is not how big the cut is, but whether the wall shows one high scar or the same cutting repeated at different levels.',
         },
       ],
     });
@@ -1139,8 +1248,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'I thought, because the water is clear now, the salt had gone, or was not really there in the beaker any more. That was me treating clear as absent, I suppose. No, hang on, not just water for the tray: it is the clear salt solution, because the balance still weighs the salt even though the grains have vanished.',
+          text: 'I thought, because the water is clear now, the salt had gone, or was not really there in the beaker any more. That was me treating clear as absent, I suppose. No, hang on, not just water for the tray: it is the clear salt solution, because the balance still weighs the salt even though the grains have vanished.',
         },
       ],
     });
@@ -1166,8 +1274,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'I think the wrong mark might be about the work standard, not proof the home sentence has no rules. I guess the problem is I was still acting like the work standard owns rules, and the home sentence is just something to excuse. Maybe the new frame is: test the sentence where it belongs first, then sort the proper mark after.',
+          text: 'I think the wrong mark might be about the work standard, not proof the home sentence has no rules. I guess the problem is I was still acting like the work standard owns rules, and the home sentence is just something to excuse. Maybe the new frame is: test the sentence where it belongs first, then sort the proper mark after.',
         },
       ],
     });
@@ -1193,8 +1300,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'My first instinct is the clear water means the salt is gone, or at least not really there as salt anymore, but that was me letting clear mean no salt. I will change it to: if the salt only spreads through the water, the mass stays the same; if it stopped existing, it drops.',
+          text: 'My first instinct is the clear water means the salt is gone, or at least not really there as salt anymore, but that was me letting clear mean no salt. I will change it to: if the salt only spreads through the water, the mass stays the same; if it stopped existing, it drops.',
         },
       ],
     });
@@ -1220,8 +1326,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'Okay. Pencil down. I think I was treating the whole home-speech pattern as sloppy, sorry, instead of checking one sentence. That framing was too fast: the style guide got to judge the whole voice before the sentence showed its pattern. So it should maybe be marked first as the same third-person slot rule showing up again, not as broken agreement.',
+          text: 'Okay. Pencil down. I think I was treating the whole home-speech pattern as sloppy, sorry, instead of checking one sentence. That framing was too fast: the style guide got to judge the whole voice before the sentence showed its pattern. So it should maybe be marked first as the same third-person slot rule showing up again, not as broken agreement.',
         },
       ],
     });
@@ -1247,8 +1352,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'I thought presumed innocent meant probably did not do it. My earlier problem was making that sound like a guess about what happened, when it is more like a trial rule. The new version should say the charge is not proved until the prosecution meets the burden.',
+          text: 'I thought presumed innocent meant probably did not do it. My earlier problem was making that sound like a guess about what happened, when it is more like a trial rule. The new version should say the charge is not proved until the prosecution meets the burden.',
         },
       ],
     });
@@ -1274,8 +1378,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'I thought fewer predators simply meant more deer survive, so removal helps the herd. The framing problem is that the winter count is only the bump, not the system test. The seedling recruitment breaks the simple story, so I would write this as overshoot risk and reduced habitat recovery.',
+          text: 'I thought fewer predators simply meant more deer survive, so removal helps the herd. The framing problem is that the winter count is only the bump, not the system test. The seedling recruitment breaks the simple story, so I would write this as overshoot risk and reduced habitat recovery.',
         },
       ],
     });
@@ -1301,8 +1404,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'My first instinct is that because the water has gone clear, the salt has sort of gone as well, but that was me mixing up not seeing the crystals with the salt being absent. The better way is: the crystals have gone from sight, but the extra mass is still on the balance.',
+          text: 'My first instinct is that because the water has gone clear, the salt has sort of gone as well, but that was me mixing up not seeing the crystals with the salt being absent. The better way is: the crystals have gone from sight, but the extra mass is still on the balance.',
         },
       ],
     });
@@ -1328,8 +1430,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'My first instinct is that the decimal just keeps going, but that was treating a pattern as if it were already a proof. Better to suppose a fraction in lowest terms and follow what the equation forces.',
+          text: 'My first instinct is that the decimal just keeps going, but that was treating a pattern as if it were already a proof. Better to suppose a fraction in lowest terms and follow what the equation forces.',
         },
       ],
     });
@@ -1355,8 +1456,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'My first instinct is that the decimal just keeps going. That framing asks the decimal check to do the proof work; the new framing is a lowest-terms fraction tested until it fails.',
+          text: 'My first instinct is that the decimal just keeps going. That framing asks the decimal check to do the proof work; the new framing is a lowest-terms fraction tested until it fails.',
         },
       ],
     });
@@ -1382,8 +1482,7 @@ describe('generate-pedagogical-dramas', () => {
         {
           role: 'LEARNER',
           turnNumber: 2,
-          text:
-            'The clock can trap both cases. I was making the clock do too much there, as if any cause already counts as control; the sharper test is whether judgement carries the act or gets bypassed.',
+          text: 'The clock can trap both cases. I was making the clock do too much there, as if any cause already counts as control; the sharper test is whether judgement carries the act or gets bypassed.',
         },
       ],
     });
@@ -1501,11 +1600,15 @@ describe('generate-pedagogical-dramas', () => {
       'every role call should persist a prompt hash',
     );
     assert.ok(
-      learnerEntries.filter((entry) => entry.role === 'ego').every((entry) => entry.provenance?.agentRole === 'learner_ego'),
+      learnerEntries
+        .filter((entry) => entry.role === 'ego')
+        .every((entry) => entry.provenance?.agentRole === 'learner_ego'),
       'learner ego should be one stable routed role across initial and adjudication stages',
     );
     assert.ok(
-      tutorEntries.filter((entry) => entry.role === 'ego').every((entry) => entry.provenance?.agentRole === 'tutor_ego'),
+      tutorEntries
+        .filter((entry) => entry.role === 'ego')
+        .every((entry) => entry.provenance?.agentRole === 'tutor_ego'),
       'tutor ego should be one stable routed role across initial and adjudication stages',
     );
     assert.ok(
@@ -1659,7 +1762,10 @@ describe('generate-pedagogical-dramas', () => {
     const trace = JSON.parse(fs.readFileSync(path.join(delibDir, traceFile), 'utf8'));
 
     assert.equal(trace.directorPlan.opening_speaker, 'learner');
-    assert.match(trace.directorPlan.side_constraints.learner, /opening public line must own the decimal-check misconception/i);
+    assert.match(
+      trace.directorPlan.side_constraints.learner,
+      /opening public line must own the decimal-check misconception/i,
+    );
   });
 
   it('replaces shared revisit cues with the paired branch policy', () => {
@@ -1746,9 +1852,7 @@ describe('generate-pedagogical-dramas', () => {
     );
 
     const noneTraceFile = fs.readdirSync(path.join(delibDir, 'none')).find((file) => /^T\d+\.json$/.test(file));
-    const reframeTraceFile = fs
-      .readdirSync(path.join(delibDir, 'reframe'))
-      .find((file) => /^T\d+\.json$/.test(file));
+    const reframeTraceFile = fs.readdirSync(path.join(delibDir, 'reframe')).find((file) => /^T\d+\.json$/.test(file));
     const noneTrace = JSON.parse(fs.readFileSync(path.join(delibDir, 'none', noneTraceFile), 'utf8'));
     const reframeTrace = JSON.parse(fs.readFileSync(path.join(delibDir, 'reframe', reframeTraceFile), 'utf8'));
     const prefixTurns = (trace) => {
@@ -1766,7 +1870,10 @@ describe('generate-pedagogical-dramas', () => {
 
     assert.equal(noneTraceFile, reframeTraceFile);
     assert.deepEqual(prefixTurns(noneTrace), prefixTurns(reframeTrace));
-    assert.equal(noneTrace.run.paired_continuation.shared_prefix_hash, reframeTrace.run.paired_continuation.shared_prefix_hash);
+    assert.equal(
+      noneTrace.run.paired_continuation.shared_prefix_hash,
+      reframeTrace.run.paired_continuation.shared_prefix_hash,
+    );
     assert.equal(noneTrace.run.paired_continuation.branch_policy, 'none');
     assert.equal(reframeTrace.run.paired_continuation.branch_policy, 'reframe');
     assert.equal(noneTrace.run.director_revisit_policy, 'none');
@@ -1782,6 +1889,9 @@ describe('generate-pedagogical-dramas', () => {
     const reframeKey = yaml.parse(fs.readFileSync(path.join(tmp, 'key-reframe.yaml'), 'utf8'));
     assert.equal(noneKey.paired_continuation.mode, 'fixed_prefix_continuation');
     assert.deepEqual(reframeKey.paired_continuation.branch_policies, ['none', 'reframe']);
-    assert.equal(noneKey.items[tid].paired_continuation.shared_prefix_hash, reframeKey.items[tid].paired_continuation.shared_prefix_hash);
+    assert.equal(
+      noneKey.items[tid].paired_continuation.shared_prefix_hash,
+      reframeKey.items[tid].paired_continuation.shared_prefix_hash,
+    );
   });
 });

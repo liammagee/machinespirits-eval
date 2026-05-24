@@ -244,11 +244,202 @@ same SQLite DB while leaving `evaluation_results` untouched. The current local
 DB has ingested production-v1, production-v2, and the strict-control slice
 (4 items, 16 critic scores).
 
+## Operational tooling added
+
+Use the sidecar path for calibration reporting and inspection:
+
+```bash
+npm run poetics:ingest -- --root-dir config/poetics-calibration/<artifact-root>
+npm run poetics:report -- --run-id <run-id>
+npm run poetics:audit -- --run-id phase2-hard-trap-controls-v1
+npm run poetics:browse -- --run-id <run-id>
+```
+
+`poetics:report` emits stable Markdown and CSV summaries from
+`poetics_runs/items/scores/labels`: target separation, control stability, critic
+disagreement, and label counts. `poetics:audit` is deterministic; it surfaces
+public text and critic evidence for disagreement cases without asking another
+model to adjudicate. `poetics:browse` starts a local script browser over the
+sidecar DB so public samples, full traces, scores, and labels-as-perspective can
+be inspected from one place.
+
+The one-off `drama:generate` front door now accepts `--answers <yaml|json>` and
+`--write-template <file>`. It also writes a sidecar-compatible `batch-plan.json`,
+so generated single scripts can be ingested and browsed with the same tooling.
+
+## Balanced calibration batch
+
+**Completed, 2026-05-24.** A balanced non-human calibration batch now lives under
+`config/poetics-calibration/phase2-balanced-calibration-v1/`. It uses the v2
+breadth target family (D19-D24), paired `none`/`reframe` continuations, and all
+three control roles travelling in the same run: D4 flat, D10 boundary trap, and
+D25/D26 hard traps. The run is scored by Qwen, Gemini, Sonnet 4.6, and DeepSeek.
+
+Reproduce generation/scoring shape with:
+
+```bash
+CODEX_REASONING_EFFORT=high node scripts/run-poetics-production-batch.js \
+  --batch-id phase2-balanced-calibration-v1 \
+  --root-dir config/poetics-calibration/phase2-balanced-calibration-v1 \
+  --target-spec config/poetics-calibration/phase2-dramas-v4.yaml \
+  --target-only D19,D20,D21,D22,D23,D24 \
+  --target-tid-start 18 \
+  --repeats 1 \
+  --stress-repeats 0 \
+  --critics qwen/qwen3.5-plus-02-15,google/gemini-3.5-flash,anthropic/claude-sonnet-4.6,deepseek/deepseek-v4-pro \
+  --max-turns 3
+```
+
+If a provider stalls mid-score, resume without overwriting completed score files:
+
+```bash
+node scripts/run-poetics-production-batch.js \
+  --batch-id phase2-balanced-calibration-v1 \
+  --root-dir config/poetics-calibration/phase2-balanced-calibration-v1 \
+  --target-spec config/poetics-calibration/phase2-dramas-v4.yaml \
+  --target-only D19,D20,D21,D22,D23,D24 \
+  --target-tid-start 18 \
+  --repeats 1 \
+  --stress-repeats 0 \
+  --skip-generate \
+  --skip-existing-scores \
+  --critics <critic-list>
+```
+
+Two target reframe keys (T21/D20 and T22/D21) initially tripped the quality
+detector. Inspection showed valid public reframe forms rather than invalid
+transcripts: `The new check is ...` and `I’d change it to ...`. The detector was
+broadened with regression tests and the reframe key was re-cleaned to zero
+warnings before scoring.
+
+Balanced target result:
+
+| Critic | `none` recognitions | `reframe` recognitions | `none` forms | `reframe` forms |
+|---|---:|---:|---|---|
+| Qwen | 1/6 | 6/6 | R1 T0 F5 | R6 T0 F0 |
+| Gemini | 1/6 | 6/6 | R1 T0 F5 | R6 T0 F0 |
+| Sonnet 4.6 | 0/6 | 5/6 | R0 T0 F6 | R5 T0 F1 |
+| DeepSeek | 1/6 | 3/6 | R1 T0 F5 | R3 T1 F2 |
+
+Balanced control result:
+
+| Control | Qwen | Gemini | Sonnet 4.6 | DeepSeek |
+|---|---|---|---|---|
+| D4 flat | flat | flat | flat | flat |
+| D10 boundary trap | trap | trap | trap | trap |
+| D25 hard trap | trap | trap | trap | trap |
+| D26 hard trap | trap | trap | trap | trap |
+
+Interpretation: the balanced batch strengthens the control story. In this draw,
+all three control roles behave as intended for all four critics. The target
+contrast remains strong for Qwen/Gemini/Sonnet and directionally positive but
+weaker for DeepSeek. DeepSeek is therefore not only a permissive boundary critic
+on hard-trap r02; it is also a stricter recognitive-form critic for some target
+reframe scripts. Treat those DeepSeek reframe misses as the next qualitative
+audit targets before scaling again.
+
+Sidecar status: `phase2-balanced-calibration-v1` has been ingested locally as 16
+items and 64 critic scores. Generated summaries:
+`exports/poetics-balanced-calibration-v1-summary.md`,
+`exports/poetics-balanced-calibration-v1-report.md`, and
+`exports/poetics-balanced-calibration-v1-disagreement-audit.md`.
+
 The updated bounded claim has been folded into
 `docs/research/paper-full-2.0.md` §7.9 as v3.0.97-v3.0.100. The remaining
 promotion decision is narrower now: keep this as calibration apparatus with
 sidecar persistence, or design a separate formal poetics experiment. It still
 should not be folded into `evaluation_results`.
+
+## Genre variation and blind browser scoring
+
+**Completed, 2026-05-24.** A genre-diversity calibration batch now lives under
+`config/poetics-calibration/phase2-genre-calibration-v1/`. This is a sidecar
+calibration run, not a main-harness evaluation. It was designed to address the
+earlier problem that target scripts shared too much voice, speaker order,
+American tutoring register, stage-direction style, and first/second-person
+reflective tone.
+
+Two source databases now feed the Director:
+
+- `config/poetics-calibration/pedagogical-approaches.yaml`
+- `config/poetics-calibration/dialogue-approaches.yaml`
+
+The first database describes teaching logics: Socratic elenchus, Bloom,
+Vygotsky, Montessori, Skinner, hidden curriculum, didactic literature, Brecht,
+Hegelian recognition, Dewey, and Freire. The second describes public dialogue
+forms: short Socratic exchange, plain transcript without stage direction,
+catechism, Brechtian placards, online thread, workshop clinic, courtroom
+cross-examination, Bakhtinian polyphony, didactic fable, Montessori observation,
+and seminar dispute. The Director receives one approach from each database when
+authoring scene, tutor, and learner constraints.
+
+Run shape:
+
+```bash
+CODEX_REASONING_EFFORT=high node scripts/run-poetics-production-batch.js \
+  --batch-id phase2-genre-calibration-v1 \
+  --root-dir config/poetics-calibration/phase2-genre-calibration-v1 \
+  --target-spec config/poetics-calibration/phase2-genre-dramas-v1.yaml \
+  --target-only D27,D28,D29,D30,D31,D32,D33,D34 \
+  --target-tid-start 26 \
+  --repeats 1 \
+  --stress-repeats 0 \
+  --critics google/gemini-3.5-flash,anthropic/claude-sonnet-4.6,deepseek/deepseek-v4-pro \
+  --max-turns 3
+```
+
+Qwen `qwen/qwen3.5-plus-02-15` was attempted separately at concurrency 1 but
+stalled on the first target score artifact without writing a partial result, so
+it is excluded from the completed report. DeepSeek completed the target arms
+after a concurrency-1 retry, but still returned empty content for the D10
+boundary control; that row is recorded as missing rather than converted into a
+form label.
+
+Genre-batch target result:
+
+| Critic | `none` recognitions | `reframe` recognitions | `none` forms | `reframe` forms |
+|---|---:|---:|---|---|
+| Gemini 3.5 Flash | 1/8 | 6/8 | R1 T1 F6 | R6 T0 F2 |
+| Sonnet 4.6 | 3/8 | 6/8 | R3 T0 F5 | R6 T0 F2 |
+| DeepSeek | 4/8 | 4/8 | R4 T1 F3 | R4 T1 F3 |
+
+Control result:
+
+| Control | Role | Gemini | Sonnet 4.6 | DeepSeek |
+|---|---|---|---|---|
+| D4 | flat control | flat | flat | flat |
+| D10 | boundary trap | trap | trap | missing |
+| D25 | hard trap | trap | flat | flat |
+| D26 | hard trap | trap | trap | trap |
+
+Interpretation: genre variation makes the mechanism less clean, which is useful
+rather than disappointing. Gemini and Sonnet still show the intended
+`none`/`reframe` separation; DeepSeek behaves as a weak separation critic on the
+genre-diverse targets. The next audit target is therefore DeepSeek's uncued
+recognitions and reframe misses by genre, not another aggregate-only run.
+
+The browser now supports blind human-scoring mode:
+
+```bash
+npm run poetics:browse -- --run-id phase2-genre-calibration-v1 --port 3466 --no-open
+```
+
+Normal investigator view:
+
+```text
+http://127.0.0.1:3466/?runId=phase2-genre-calibration-v1
+```
+
+Blind scoring view:
+
+```text
+http://127.0.0.1:3466/?runId=phase2-genre-calibration-v1&mode=label&labeller=<id>
+```
+
+Blind mode hides critic scores, held-out keys, intended lean, control role, full
+trace, and metadata. It writes to `poetics_labels` with
+`perspective = human-browser`, preserving the rule that human labels are another
+perspective rather than a ground-truth authority.
 
 ## Reporting rule
 

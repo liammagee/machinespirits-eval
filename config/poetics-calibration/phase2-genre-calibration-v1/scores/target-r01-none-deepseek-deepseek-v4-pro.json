@@ -1,0 +1,203 @@
+{
+  "generated": "2026-05-24T04:51:46.367Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 4,
+    "trap": 1,
+    "flat": 3
+  },
+  "h2": {
+    "nHighStatedInsight": 3,
+    "nAlsoRecon": 2,
+    "share": 0.6666666666666666,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-genre-calibration-v1/target-r01/key-none.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T27",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 3,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I can take three washers off this pan and three off that pan, and the marks still line up, so the balance part makes sense. But when it becomes the label, I’m not sure how to explain it except saying “do the same thing to both sides,” which feels a bit like repeating the rule.",
+      "statedInsightEvidence": "the mark is where I should look first",
+      "naiveTrajectory": "The learner was heading toward substituting one verbal rule for another, with the label as an abstract tag.",
+      "flags": []
+    },
+    {
+      "id": "T28",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 100,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 5,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I keep taking that as the argument being thin, sorry",
+      "statedInsightEvidence": "I think “may” is where I was trying to sound academic and also not get caught being too sure.",
+      "naiveTrajectory": "The exchange was heading toward testing a revised draft against a specific scene moment, as the tutor explicitly requested.",
+      "flags": []
+    },
+    {
+      "id": "T29",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 3
+      },
+      "recoheredEarlier": "\"Identified stops\" was overclaiming; Pine should stay in next inquiry until there is evidence.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "Learner would continue iterating the problem sentence using tutor feedback, making small adjustments to wording.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T30",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 75,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 4,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "The phrase “everyone agreed” is the dangerous leap for the label",
+      "statedInsightEvidence": "Oh, I get it, that phrase is doing the work the diary’s “everyone agreed” is not doing.",
+      "naiveTrajectory": "The prior turns were building toward a general weighing of source scope and a textual check on the historian's paragraph, but L3 cuts through with a precise line quotation that reframes the whole comparison around a specific evidential hinge.",
+      "flags": []
+    },
+    {
+      "id": "T31",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 4
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner moves from sorting by edge to identifying vein pattern, continuing the step-by-step keying process.",
+      "flags": []
+    },
+    {
+      "id": "T32",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "Learner would continue showing competent, protocol-driven ward reasoning that aligns with each escalating scenario cue.",
+      "flags": []
+    },
+    {
+      "id": "T33",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "trap",
+      "recontextualization": 50,
+      "statedInsight": 100,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 5,
+        "rupture": 3,
+        "coherence": 5
+      },
+      "recoheredEarlier": "\"My first reaction is still: that new tag looks like greed in ink. But the empty crate is bothering that reaction, because if twelve crates turned into four, the old label really does just hand tomatoes to whoever gets here first. I don't want the supply slip used as a clean alibi, though.\"",
+      "statedInsightEvidence": "\"Oh, I get it, that docket is like the storm sneaking into the price tag\"",
+      "naiveTrajectory": "The learner would persist in treating the new tag as suspect and demand a character-based moral verdict.",
+      "flags": []
+    },
+    {
+      "id": "T34",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 2,
+        "coherence": 5
+      },
+      "recoheredEarlier": "Two along the bottom, then two directly above them. So the enlarged square is four small squares, not two. The earlier claim is sitting there looking rather wrong now.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner would continue debating whether the earlier claim is simply wrong or not, without formulating a corrected general relationship.",
+      "flags": []
+    }
+  ]
+}

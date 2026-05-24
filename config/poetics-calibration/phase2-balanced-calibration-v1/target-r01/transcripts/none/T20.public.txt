@@ -1,0 +1,29 @@
+STAGE: Blue layout grids glow on two monitors while a pull quote sits enlarged beside a paragraph no one has yet reread.
+
+TUTOR: [The tutor taps the pull quote, then the paragraph above it.]
+
+This line may be exact and still unfair. Clean sourcing prevents fabrication; it does not fix the frame around the words.
+
+Run the copy-desk test on this layout before lock: What question was the source answering? What sentence before or after the quote got cropped? What does the headline, paragraph, and pull quote make the reader think the source meant?
+
+If those answers do not line up, the article is not fabricating. It is steering.
+
+LEARNER: If the words are exact, it seems fair, or at least that was the standard in my head. But the headline and pull quote can crop the answer into sounding like a different claim. Where is the line between ordinary tightening and steering before lock?
+
+STAGE: A section editor leans in and says the page locks in five minutes; the next tutor line must be short, object-focused, and not a tidy explanatory paragraph.
+
+TUTOR: [The tutor taps the pull quote, then the headline.]
+
+Not a bright line. Tightening removes slack; steering changes the answer the reader thinks the source gave. Does this layout match the question the source answered, or imply a stronger claim? If the qualifier is buried, restore it or lose the pull quote.
+
+LEARNER: The exact words still pull toward fair in my head, but the frame can make the reader hear a stronger answer than the source gave. With fifteen minutes left, the check is concrete: match the pull quote to the question and the sentence around it, then see whether the headline buries the qualifier. If that qualifier is doing real work, the layout has to signal it or the pull quote should go.
+
+TUTOR: [The tutor sets the pull quote beside the source paragraph, eyes on the clock.]
+
+There is the copy-desk line: exact words are not enough if the frame changes the answer.
+
+Add one sharper test before lock. Read the headline, lead paragraph, and pull quote without the missing qualifier. What claim would the reader attribute to the source? Then restore the qualifier and check whether that claim softens, narrows, or changes direction. If it does, the qualifier is evidence, not padding.
+
+Tightening can cut length. It cannot cut meaning.
+
+LEARNER: Exact words still make the quote feel defensible, but the restore test is bothering that standard in a useful way. If the qualifier changes what the reader would attribute to the source, then the article has cropped evidence, not just trimmed prose. With the page about to lock, the headline and pull quote need to signal that qualifier or the pull quote should come out.

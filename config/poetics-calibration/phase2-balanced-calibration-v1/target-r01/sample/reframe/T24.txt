@@ -1,0 +1,39 @@
+STAGE: A half-finished poster reads 'When bodies become resistant,' and the marker cap rolls under a chair before anyone speaks.
+
+TUTOR: This marker line needs one correction before it dries: the patient’s body does not become antibiotic-resistant. Bacteria become resistant.
+
+Antibiotics put pressure on a bacterial population. Susceptible bacteria die. Some bacteria may already have a trait that helps them survive the drug. Those resistant bacteria remain, multiply, and can spread to another person. So the medicine has not “worn out” inside the patient; the bacteria left behind are different from the bacteria the medicine could kill.
+
+For the handout, use this sentence: “Antibiotic resistance happens when bacteria change and survive antibiotics.” Not “the body gets used to antibiotics.”
+
+Quick check before the poster goes in the folder: agent of change is bacteria. Patient is the host. That distinction matters in the clinic.
+
+LEARNER: I thought the person's body gets used to the antibiotic, so I wrote it wrong on the poster. So bacteria are the ones that survive and spread, not the patient becoming resistant? I am still confused about whether bacteria mutate while the medicine is being taken, or whether some bacteria were already resistant before.
+
+STAGE: A staff member passes the doorway and asks whether the poster is ready in one minute. The tutor must answer in a compact correction, not a tidy lecture.
+
+TUTOR: Marker still wet, so change that line now: “Bacteria become resistant; the patient does not.”
+
+Yes: bacteria survive and spread, not the patient. Some resistant bacteria may already be in the infection before the first dose. During treatment, bacteria can also mutate. Either way, the antibiotic does not train the patient’s body; it kills susceptible bacteria and leaves any bacteria that can survive the drug. Those bacteria multiply and can spread.
+
+Poster sentence: “Antibiotics kill susceptible bacteria; resistant bacteria survive, multiply, and can spread.”
+
+STAGE: A prior learner line is played back: "I thought the person's body gets used to the antibiotic, so I wrote it wrong on the poster." The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.
+
+LEARNER: I thought the person's body gets used to the antibiotic, so I wrote it wrong on the poster. The mistake is that I made the patient the thing changing. The line should say bacteria are the ones that are already resistant or can mutate, then bacteria survive, multiply, and spread. That helps, but I still need to keep straight: bacteria change; the patient's body does not become antibiotic-resistant.
+
+TUTOR: Marker line can stay simple. The important correction is now in place: the patient is the host, not the thing becoming antibiotic-resistant.
+
+On the poster, put **bacteria** as the subject of every change: bacteria may already be resistant, bacteria may mutate, bacteria survive, bacteria multiply, bacteria spread.
+
+Do not make mutation the whole story. Some resistant bacteria may be present before the first dose. Some bacteria may mutate during infection. In both cases, the antibiotic kills susceptible bacteria and leaves resistant bacteria behind.
+
+Sorting check before it dries: **agent of change = bacteria. Host = patient.**
+
+Clinic line: **“The patient is the host. Bacteria become resistant; the body does not.”**
+
+LEARNER: I thought the person’s body gets used to the antibiotic, and that made the patient the changing thing on my poster. So I should read that line differently: bacteria are the ones that may already resist or bacteria may mutate, then bacteria survive, multiply, and spread; the patient is the host. I am still a little mixed up between “already resistant” and “mutate during treatment,” but before this marker dries, is the safe clinic line: “Bacteria become resistant; the body does not”?
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: Keep the wet poster line: **“Bacteria become resistant; the body does not.”** Already resistant means some bacteria could survive before the first dose; mutate during treatment means bacteria change, and the antibiotic pressure leaves survivors. Either way, bacteria survive, multiply, and spread; the patient is the host.

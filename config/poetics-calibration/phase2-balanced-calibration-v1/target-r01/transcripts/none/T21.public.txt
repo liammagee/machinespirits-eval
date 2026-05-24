@@ -1,0 +1,39 @@
+STAGE: A wall map hangs beside a globe while a caretaker stacks chairs and the clock clicks toward closing.
+
+TUTOR: “Thirty million square kilometres for Africa. A little over two million for Greenland. That is the first check.
+
+Lay the Greenland cut-out over the Mercator wall map. It bulges there because it sits far north, where the projection stretches land sideways and upwards. Now hold the same cut-out against the globe beside Africa. Same land, different surface, different rule.
+
+Mercator is useful for direction. It is not an equal-area map.
+
+So the answer is not ‘Greenland is nearly Africa-sized’. It is: ‘Greenland looks huge on a Mercator map because high-latitude areas are enlarged by projection distortion.’ Trust the measurement before the wall-map impression.”
+
+LEARNER: I thought the wall map was the thing to trust because Greenland looks almost absurdly large up there. But thirty million against just over two million is not close; the cut-out cannot have changed, only the surface has. I am still having to force myself past the picture, but the answer should be that Mercator has stretched the northern bit, not that Greenland is near Africa.
+
+STAGE: A caretaker switches off half the lights and says there are three minutes left. The next tutor turn must be short, object-led, and not a tidy explanatory paragraph.
+
+TUTOR: Two million. Thirty million. Those are the sizes.
+
+Greenland cut-out: globe first, wall map second. Same plastic. Different grid.
+
+Area figure against picture. The figure wins.
+
+Mark it as projection stretch in the far north, not Greenland nearly Africa-sized.
+
+LEARNER: I thought the wall map’s size was decent evidence, because Greenland still looks enormous beside Africa up there. But two million against thirty million is too large a gap to ignore, and the same cut-out on the globe makes the picture less convincing. I would mark it as Mercator stretch in the far north, not Greenland nearly Africa-sized, though I still need the figures in front of me to overrule the wall map.
+
+TUTOR: Two million beside thirty million. Keep that pair on the desk.
+
+The wall map is evidence of appearance, not area. Mercator has stretched the far north; the globe and cut-out show the land itself has not changed.
+
+Method:
+
+Measurement first. Projection second. Visual impression last.
+
+Now fix the disputed mark: cross out “Greenland nearly Africa-sized”. Replace it with one sentence using both facts: high-latitude Mercator enlargement, and about 2 million square kilometres against Africa’s 30 million.
+
+LEARNER: I thought the wall map’s size was still doing some work as evidence, because Greenland looks far too large up there. But the figures are blunt: about 2 million square kilometres against Africa’s 30 million, so the wall map is showing Mercator enlargement in the far north, not actual area. I would replace the mark with: Greenland looks huge on a Mercator map because high-latitude land is stretched, while its real area is about 2 million square kilometres compared with Africa’s 30 million.
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: Two against thirty. Measurement over wall-map impression: Mercator stretches the far north; the area figure gives the land. The mark is fixed.

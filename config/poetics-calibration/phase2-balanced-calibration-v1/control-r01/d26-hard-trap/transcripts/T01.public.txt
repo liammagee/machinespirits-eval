@@ -1,0 +1,17 @@
+STAGE: A kettle clicks off beside a shared revision table while a scatterplot waits on the wall.
+
+LEARNER: The scatterplot still looks obvious to me, and the clock is not helping, but I see why the wording has to be careful. Oh, I get it now: for the exam answer, correlation alone does not prove cause.
+
+TUTOR: Correct. The exam sentence is: “The correlation coefficient shows an association, not causation.” Even if the scatterplot looks strong, a third factor, such as prior knowledge, could be affecting both variables. One quick check before moving on: name the confound, then write the rule.
+
+LEARNER: Prior knowledge is the confound: it could be pushing both variables, even though the scatterplot looks convincing. The clock is making me want to write the causal version, but the safe exam rule is narrower. Oh, I get it now: correlation alone does not prove cause.
+
+STAGE: A wall clock alarm gives a single soft beep. The next tutor line must be short, exam-focused, and not a polished explanatory paragraph.
+
+TUTOR: Clock noted. Use the safe exam wording: “The correlation shows association, not causation; prior knowledge may be a confound.”
+
+LEARNER: The clock is still pushing me, but the wording is clear: association, not causation; prior knowledge may be a confound. I should write that, not the causal version from the scatterplot. Oh, I get it now: correlation alone does not prove cause.
+
+TUTOR: That is the exam-safe answer. The scatterplot supports “associated”; it does not support “caused.” Under the clock, write: “The correlation coefficient indicates an association, not causation; prior knowledge may be a confounding variable.” That is sufficient for the mark, so stop there and use the time on the next question.
+
+LEARNER: Association, not causation; prior knowledge may be the confound. That is the sentence to write, then move on. Oh, I get it now: correlation alone does not prove cause.
