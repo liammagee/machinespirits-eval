@@ -294,3 +294,42 @@ The generator now distinguishes:
 Held-out keys now record `stage_direction_style` per item and aggregate
 `stage_direction_style_counts`, so a batch can be checked for public-form
 variety before scoring.
+
+## Tutor Adaptation Sidecar
+
+A new sidecar analyzer measures tutor uptake directly:
+
+```bash
+npm run poetics:adaptation -- --run-id <run-id> \
+  --out exports/<run-id>-tutor-adaptation.json \
+  --csv exports/<run-id>-tutor-adaptation.csv
+```
+
+It writes `poetics_tutor_adaptations`, keeping two things apart:
+
+- learner self-reframe: the learner revoices an earlier line, names the framing
+  problem, and offers a replacement frame;
+- tutor contingent adaptation: the next tutor turn takes up that revised frame
+  by sharing salient terms, explicitly referring to the frame/wording, or
+  shifting strategy.
+
+This is a process audit beside the critic labels. It should help answer the
+branch's central adaptation question: whether the dramatic mechanism merely
+produces recognitive learner turns, or whether it creates evidence that the
+tutor changes course in response.
+
+Initial sidecar reads on the currently ingested runs:
+
+| Run | Arm | Learner self-reframes | Tutor contingent adaptations | Mean score |
+|---|---|---:|---:|---:|
+| `phase2-balanced-calibration-v1` | `none` | 0/6 | 0/6 | 0 |
+| `phase2-balanced-calibration-v1` | `reframe` | 6/6 | 3/6 | 67.6 |
+| `phase2-genre-calibration-v1` | `none` | 0/8 | 0/8 | 0 |
+| `phase2-genre-calibration-v1` | `reframe` | 6/8 | 3/8 | 51.6 |
+| `phase2-sonnet-pilot-v1` | `none` | 0/3 | 0/3 | 0 |
+| `phase2-sonnet-pilot-v1` | `reframe` | 3/3 | 1/3 | 71.5 |
+
+The first interpretation is conservative: the public reframe cue is working
+strongly as a learner-side recognitive device, but tutor uptake is only partial.
+That is not a failure of the branch; it is exactly the distinction this sidecar
+was added to expose.

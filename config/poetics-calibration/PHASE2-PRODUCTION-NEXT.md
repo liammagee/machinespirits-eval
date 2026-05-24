@@ -218,6 +218,35 @@ control taxonomy is therefore now explicit:
 | `boundary_trap_control` | D10 emphatic | critic-sensitive boundary; not a hard trap |
 | `hard_trap_control` | D25, D26 | strict insight-costume controls |
 
+## Tutor adaptation sidecar
+
+The poetics sidecar now has a deterministic tutor-adaptation analyzer. It is not
+a replacement for the recognitive/trap/flat critic labels. It asks a narrower
+process question: after a learner visibly reframes an earlier line, does the
+next tutor turn take up that revised framing?
+
+Run it after ingesting a batch:
+
+```bash
+npm run poetics:adaptation -- --run-id <run-id> \
+  --out exports/<run-id>-tutor-adaptation.json \
+  --csv exports/<run-id>-tutor-adaptation.csv
+```
+
+The analyzer writes `poetics_tutor_adaptations` with two intentionally separate
+signals:
+
+- `learner_self_reframe`: the learner revoices an earlier utterance, names the
+  prior framing problem, and supplies a replacement framing.
+- `tutor_contingent_adaptation`: the next tutor turn takes up the learner's
+  revised framing through shared salient terms, explicit uptake, or a strategy
+  shift.
+
+This should be reported as sidecar audit evidence, not as ground truth. The
+metric is useful because it distinguishes scripts where recognitive form is
+mostly learner-side from scripts where the tutor actually adapts after the
+learner's reframe.
+
 The strict-control slice lives under
 `config/poetics-calibration/phase2-hard-trap-controls-v1/`. The first repeat
 confirmed both D25 and D26 as traps for Qwen, Gemini, Sonnet, and DeepSeek. The

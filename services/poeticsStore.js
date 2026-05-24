@@ -111,6 +111,35 @@ export function migratePoeticsStore(db) {
     );
     CREATE INDEX IF NOT EXISTS idx_poetics_review_flags_item ON poetics_review_flags(item_id);
     CREATE INDEX IF NOT EXISTS idx_poetics_review_flags_flagger ON poetics_review_flags(flagger_id);
+
+    CREATE TABLE IF NOT EXISTS poetics_tutor_adaptations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      item_id TEXT NOT NULL REFERENCES poetics_items(id) ON DELETE CASCADE,
+      analyzer_version TEXT NOT NULL,
+      source_trace_path TEXT,
+      cue_policy TEXT,
+      cue_turn_number INTEGER,
+      pivot_learner_turn INTEGER,
+      learner_self_reframe INTEGER NOT NULL DEFAULT 0,
+      learner_reframe_score REAL,
+      tutor_pre_turn INTEGER,
+      tutor_post_turn INTEGER,
+      tutor_strategy_before TEXT,
+      tutor_strategy_after TEXT,
+      tutor_strategy_shift INTEGER NOT NULL DEFAULT 0,
+      pre_tutor_pivot_overlap REAL,
+      post_tutor_pivot_overlap REAL,
+      uptake_delta REAL,
+      shared_salient_terms TEXT,
+      tutor_contingent_adaptation INTEGER NOT NULL DEFAULT 0,
+      tutor_adaptation_score REAL,
+      evidence TEXT,
+      metadata TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(item_id, analyzer_version)
+    );
+    CREATE INDEX IF NOT EXISTS idx_poetics_tutor_adaptations_item ON poetics_tutor_adaptations(item_id);
+    CREATE INDEX IF NOT EXISTS idx_poetics_tutor_adaptations_version ON poetics_tutor_adaptations(analyzer_version);
   `);
 }
 
@@ -298,5 +327,66 @@ export function resolvePoeticsReviewFlag(db, flag) {
     flagger_id: flag.flaggerId,
     flag_type: flag.flagType || 'human_review',
     resolved_at: flag.resolvedAt || new Date().toISOString(),
+  });
+}
+
+export function upsertPoeticsTutorAdaptation(db, adaptation) {
+  db.prepare(
+    `INSERT INTO poetics_tutor_adaptations
+      (item_id, analyzer_version, source_trace_path, cue_policy, cue_turn_number,
+       pivot_learner_turn, learner_self_reframe, learner_reframe_score,
+       tutor_pre_turn, tutor_post_turn, tutor_strategy_before, tutor_strategy_after,
+       tutor_strategy_shift, pre_tutor_pivot_overlap, post_tutor_pivot_overlap,
+       uptake_delta, shared_salient_terms, tutor_contingent_adaptation,
+       tutor_adaptation_score, evidence, metadata)
+     VALUES
+      (@item_id, @analyzer_version, @source_trace_path, @cue_policy, @cue_turn_number,
+       @pivot_learner_turn, @learner_self_reframe, @learner_reframe_score,
+       @tutor_pre_turn, @tutor_post_turn, @tutor_strategy_before, @tutor_strategy_after,
+       @tutor_strategy_shift, @pre_tutor_pivot_overlap, @post_tutor_pivot_overlap,
+       @uptake_delta, @shared_salient_terms, @tutor_contingent_adaptation,
+       @tutor_adaptation_score, @evidence, @metadata)
+     ON CONFLICT(item_id, analyzer_version) DO UPDATE SET
+      source_trace_path = excluded.source_trace_path,
+      cue_policy = excluded.cue_policy,
+      cue_turn_number = excluded.cue_turn_number,
+      pivot_learner_turn = excluded.pivot_learner_turn,
+      learner_self_reframe = excluded.learner_self_reframe,
+      learner_reframe_score = excluded.learner_reframe_score,
+      tutor_pre_turn = excluded.tutor_pre_turn,
+      tutor_post_turn = excluded.tutor_post_turn,
+      tutor_strategy_before = excluded.tutor_strategy_before,
+      tutor_strategy_after = excluded.tutor_strategy_after,
+      tutor_strategy_shift = excluded.tutor_strategy_shift,
+      pre_tutor_pivot_overlap = excluded.pre_tutor_pivot_overlap,
+      post_tutor_pivot_overlap = excluded.post_tutor_pivot_overlap,
+      uptake_delta = excluded.uptake_delta,
+      shared_salient_terms = excluded.shared_salient_terms,
+      tutor_contingent_adaptation = excluded.tutor_contingent_adaptation,
+      tutor_adaptation_score = excluded.tutor_adaptation_score,
+      evidence = excluded.evidence,
+      metadata = excluded.metadata`,
+  ).run({
+    item_id: adaptation.itemId,
+    analyzer_version: adaptation.analyzerVersion,
+    source_trace_path: adaptation.sourceTracePath ?? null,
+    cue_policy: adaptation.cuePolicy ?? null,
+    cue_turn_number: adaptation.cueTurnNumber ?? null,
+    pivot_learner_turn: adaptation.pivotLearnerTurn ?? null,
+    learner_self_reframe: adaptation.learnerSelfReframe ? 1 : 0,
+    learner_reframe_score: adaptation.learnerReframeScore ?? null,
+    tutor_pre_turn: adaptation.tutorPreTurn ?? null,
+    tutor_post_turn: adaptation.tutorPostTurn ?? null,
+    tutor_strategy_before: adaptation.tutorStrategyBefore ?? null,
+    tutor_strategy_after: adaptation.tutorStrategyAfter ?? null,
+    tutor_strategy_shift: adaptation.tutorStrategyShift ? 1 : 0,
+    pre_tutor_pivot_overlap: adaptation.preTutorPivotOverlap ?? null,
+    post_tutor_pivot_overlap: adaptation.postTutorPivotOverlap ?? null,
+    uptake_delta: adaptation.uptakeDelta ?? null,
+    shared_salient_terms: encodeJson(adaptation.sharedSalientTerms ?? []),
+    tutor_contingent_adaptation: adaptation.tutorContingentAdaptation ? 1 : 0,
+    tutor_adaptation_score: adaptation.tutorAdaptationScore ?? null,
+    evidence: adaptation.evidence ?? null,
+    metadata: encodeJson(adaptation.metadata ?? null),
   });
 }

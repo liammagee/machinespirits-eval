@@ -15,6 +15,7 @@ import { openPoeticsStore, upsertPoeticsLabel, upsertPoeticsReviewFlag } from '.
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
+const TUTOR_ADAPTATION_ANALYZER_VERSION = 'tutor-adaptation-v1';
 
 function parseArgs(argv) {
   const args = {
@@ -145,11 +146,16 @@ function listItems(db, filters = {}) {
         i.sample_path AS samplePath,
         i.full_transcript_path AS fullTranscriptPath,
         GROUP_CONCAT(DISTINCT s.critic_model || '=' || COALESCE(s.form_class, '')) AS criticForms,
+        MAX(a.learner_self_reframe) AS learnerSelfReframe,
+        MAX(a.tutor_contingent_adaptation) AS tutorContingentAdaptation,
+        MAX(a.tutor_adaptation_score) AS tutorAdaptationScore,
         COUNT(DISTINCT s.id) AS scoreCount,
         COUNT(DISTINCT l.id) AS labelCount,
         COUNT(DISTINCT rf.id) AS reviewFlagCount
       FROM poetics_items i
       LEFT JOIN poetics_scores s ON s.item_id = i.id
+      LEFT JOIN poetics_tutor_adaptations a
+        ON a.item_id = i.id AND a.analyzer_version = '${TUTOR_ADAPTATION_ANALYZER_VERSION}'
       LEFT JOIN poetics_labels l ON l.item_id = i.id
       LEFT JOIN poetics_review_flags rf ON rf.item_id = i.id AND rf.resolved_at IS NULL
       ${whereSql}
@@ -177,7 +183,14 @@ function listItems(db, filters = {}) {
       });
     })
     .map((row, index) => {
-      const hydrated = { ...row, criticForms: parseCriticForms(row.criticForms) };
+      const hydrated = {
+        ...row,
+        learnerSelfReframe: row.learnerSelfReframe == null ? null : Boolean(row.learnerSelfReframe),
+        tutorContingentAdaptation:
+          row.tutorContingentAdaptation == null ? null : Boolean(row.tutorContingentAdaptation),
+        tutorAdaptationScore: row.tutorAdaptationScore == null ? null : Number(row.tutorAdaptationScore),
+        criticForms: parseCriticForms(row.criticForms),
+      };
       return filters.blind ? blindItem(hydrated, index) : hydrated;
     });
 }
@@ -259,6 +272,22 @@ function getItem(db, id) {
     )
     .all(id)
     .map((row) => ({ ...row, metadata: decodeJson(row.metadata, {}) }));
+  const tutorAdaptation = db
+    .prepare(
+      `
+      SELECT analyzer_version, source_trace_path, cue_policy, cue_turn_number,
+        pivot_learner_turn, learner_self_reframe, learner_reframe_score,
+        tutor_pre_turn, tutor_post_turn, tutor_strategy_before, tutor_strategy_after,
+        tutor_strategy_shift, pre_tutor_pivot_overlap, post_tutor_pivot_overlap,
+        uptake_delta, shared_salient_terms, tutor_contingent_adaptation,
+        tutor_adaptation_score, evidence, metadata, created_at
+      FROM poetics_tutor_adaptations
+      WHERE item_id = ?
+      ORDER BY analyzer_version = '${TUTOR_ADAPTATION_ANALYZER_VERSION}' DESC, created_at DESC
+      LIMIT 1
+    `,
+    )
+    .get(id);
   return {
     item: {
       id: item.id,
@@ -285,6 +314,16 @@ function getItem(db, id) {
     scores,
     labels,
     reviewFlags,
+    tutorAdaptation: tutorAdaptation
+      ? {
+          ...tutorAdaptation,
+          learner_self_reframe: Boolean(tutorAdaptation.learner_self_reframe),
+          tutor_strategy_shift: Boolean(tutorAdaptation.tutor_strategy_shift),
+          tutor_contingent_adaptation: Boolean(tutorAdaptation.tutor_contingent_adaptation),
+          shared_salient_terms: decodeJson(tutorAdaptation.shared_salient_terms, []),
+          metadata: decodeJson(tutorAdaptation.metadata, {}),
+        }
+      : null,
     sampleText: readArtifact(item.sample_path) || '',
     fullTranscriptText: readArtifact(item.full_transcript_path) || '',
   };
@@ -806,7 +845,10 @@ function renderItems() {
     return '<button class="item' + active + '" data-id="' + esc(item.id) + '">' +
       '<div class="item-main"><span>' + esc(item.tid + ' · ' + (item.dramaId || '')) + '</span><span>' + esc(item.arm || '') + '</span></div>' +
       '<div class="item-meta"><span>' + esc(item.repeat || '') + '</span><span>' + esc(role || '') + '</span><span>' + esc(item.discipline || '') + '</span></div>' +
-      '<div class="chips">' + item.criticForms.map(formChip).join('') +
+    '<div class="chips">' + item.criticForms.map(formChip).join('') +
+      (item.tutorAdaptationScore == null ? '' : '<span class="chip">' + esc('tutor adapt ' + Math.round(item.tutorAdaptationScore)) + '</span>') +
+      (item.learnerSelfReframe ? '<span class="chip recognition">learner reframe</span>' : '') +
+      (item.tutorContingentAdaptation ? '<span class="chip recognition">tutor uptake</span>' : '') +
       (item.reviewFlagCount ? '<span class="chip review">review × ' + esc(item.reviewFlagCount) + '</span>' : '') +
       '</div>' +
       '</button>';
@@ -879,14 +921,33 @@ function renderPane() {
   } else if (state.tab === 'full') {
     pane.innerHTML = '<pre>' + esc(detail.fullTranscriptText || 'No full transcript found.') + '</pre>';
   } else if (state.tab === 'scores') {
+    const adaptation = detail.tutorAdaptation;
+    const adaptationHtml = adaptation ? '<h3>Tutor adaptation sidecar</h3>' +
+      '<table><tbody>' +
+      '<tr><th>Learner self-reframe</th><td>' + esc(adaptation.learner_self_reframe) + '</td></tr>' +
+      '<tr><th>Tutor contingent adaptation</th><td>' + esc(adaptation.tutor_contingent_adaptation) + '</td></tr>' +
+      '<tr><th>Adaptation score</th><td>' + esc(adaptation.tutor_adaptation_score) + '</td></tr>' +
+      '<tr><th>Uptake delta</th><td>' + esc(adaptation.uptake_delta) + '</td></tr>' +
+      '<tr><th>Strategy</th><td>' + esc([adaptation.tutor_strategy_before, adaptation.tutor_strategy_after].filter(Boolean).join(' -> ')) + '</td></tr>' +
+      '<tr><th>Shared terms</th><td>' + esc((adaptation.shared_salient_terms || []).join(', ')) + '</td></tr>' +
+      '<tr><th>Evidence</th><td>' + esc(adaptation.evidence || '') + '</td></tr>' +
+      '</tbody></table>' : '<div class="empty">No tutor adaptation sidecar row found.</div>';
     pane.innerHTML = '<table><thead><tr><th>Critic</th><th>Form</th><th>Recon</th><th>Insight</th><th>Pivot</th><th>Evidence</th></tr></thead><tbody>' +
       detail.scores.map((s) => '<tr><td>' + esc(s.critic_model) + '</td><td>' + esc(s.form_class) + '</td><td>' +
       esc(s.recontextualization) + '</td><td>' + esc(s.stated_insight) + '</td><td>' + esc(s.pivot_learner_turn) +
       '</td><td>' + esc([s.recohered_earlier, s.stated_insight_evidence].filter(Boolean).join(' / ')) + '</td></tr>').join('') +
-      '</tbody></table>';
+      '</tbody></table>' + adaptationHtml;
   } else {
     pane.innerHTML =
-      '<pre>' + esc(JSON.stringify({ item: detail.item, labels: detail.labels, reviewFlags: detail.reviewFlags }, null, 2)) + '</pre>';
+      '<pre>' +
+      esc(
+        JSON.stringify(
+          { item: detail.item, labels: detail.labels, reviewFlags: detail.reviewFlags, tutorAdaptation: detail.tutorAdaptation },
+          null,
+          2,
+        ),
+      ) +
+      '</pre>';
   }
 }
 

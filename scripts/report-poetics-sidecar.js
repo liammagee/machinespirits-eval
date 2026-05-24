@@ -14,6 +14,7 @@ import { openPoeticsStore } from '../services/poeticsStore.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
+const TUTOR_ADAPTATION_ANALYZER_VERSION = 'tutor-adaptation-v1';
 
 function parseArgs(argv) {
   const args = {
@@ -114,6 +115,14 @@ function loadRows(db, runId = null) {
         s.recohered_earlier,
         s.stated_insight_evidence,
         s.flags,
+        a.learner_self_reframe,
+        a.tutor_contingent_adaptation,
+        a.tutor_adaptation_score,
+        a.uptake_delta,
+        a.tutor_strategy_before,
+        a.tutor_strategy_after,
+        a.shared_salient_terms,
+        a.evidence AS tutor_adaptation_evidence,
         (
           SELECT COUNT(*)
           FROM poetics_labels l
@@ -122,6 +131,8 @@ function loadRows(db, runId = null) {
       FROM poetics_runs r
       JOIN poetics_items i ON i.run_id = r.id
       LEFT JOIN poetics_scores s ON s.item_id = i.id
+      LEFT JOIN poetics_tutor_adaptations a
+        ON a.item_id = i.id AND a.analyzer_version = '${TUTOR_ADAPTATION_ANALYZER_VERSION}'
       ${where}
       ORDER BY r.id, i.repeat, i.unit_id, i.arm, i.tid, s.critic_model
     `,
@@ -131,6 +142,7 @@ function loadRows(db, runId = null) {
       ...row,
       flags: decodeJson(row.flags, []),
       item_metadata: decodeJson(row.item_metadata, {}),
+      shared_salient_terms: decodeJson(row.shared_salient_terms, []),
     }));
 }
 
@@ -144,6 +156,31 @@ function summarizeRun(runId, rows) {
   const targetScores = scoreRows.filter((row) => String(row.unit_id || '').startsWith('target-'));
   const controlScores = scoreRows.filter((row) => row.control_role);
   const labelCount = items.reduce((sum, row) => sum + (row.label_count || 0), 0);
+  const targetAdaptation = {};
+
+  for (const row of items.filter((item) => String(item.unit_id || '').startsWith('target-'))) {
+    const arm = row.arm || 'default';
+    targetAdaptation[arm] ||= {
+      total: 0,
+      learnerSelfReframes: 0,
+      tutorAdaptations: 0,
+      scoreSum: 0,
+      uptakeDeltaSum: 0,
+      scored: 0,
+      missing: 0,
+    };
+    const bucket = targetAdaptation[arm];
+    bucket.total += 1;
+    if (row.learner_self_reframe == null) {
+      bucket.missing += 1;
+      continue;
+    }
+    bucket.scored += 1;
+    if (row.learner_self_reframe) bucket.learnerSelfReframes += 1;
+    if (row.tutor_contingent_adaptation) bucket.tutorAdaptations += 1;
+    bucket.scoreSum += row.tutor_adaptation_score || 0;
+    bucket.uptakeDeltaSum += row.uptake_delta || 0;
+  }
 
   const targetByCriticArm = {};
   for (const row of targetScores) {
@@ -206,6 +243,7 @@ function summarizeRun(runId, rows) {
     arms: countBy(items, (row) => row.arm),
     controls: Object.values(controls),
     targetByCriticArm,
+    targetAdaptation,
     disagreements,
   };
 }
@@ -260,6 +298,25 @@ function renderControlSection(run) {
   return lines.join('\n');
 }
 
+function renderTutorAdaptationSection(run) {
+  const arms = Object.keys(run.targetAdaptation || {}).sort();
+  if (!arms.length) return 'No target-arm tutor adaptation rows found.';
+  const lines = [
+    '| Arm | Items | Learner self-reframes | Tutor contingent adaptations | Mean adaptation score | Mean uptake delta |',
+    '|---|---:|---:|---:|---:|---:|',
+  ];
+  for (const arm of arms) {
+    const row = run.targetAdaptation[arm];
+    const denom = row.scored || 0;
+    const meanScore = denom ? Math.round((10 * row.scoreSum) / denom) / 10 : 'n/a';
+    const meanDelta = denom ? Math.round((1000 * row.uptakeDeltaSum) / denom) / 1000 : 'n/a';
+    lines.push(
+      `| ${arm} | ${row.total}${row.missing ? ` (${row.missing} missing)` : ''} | ${row.learnerSelfReframes}/${denom} | ${row.tutorAdaptations}/${denom} | ${meanScore} | ${meanDelta} |`,
+    );
+  }
+  return lines.join('\n');
+}
+
 function renderDisagreementSection(run) {
   if (!run.disagreements.length) return 'No critic disagreements found.';
   const lines = ['| Item | Drama | Unit | Forms | Scores |', '|---|---|---|---|---|'];
@@ -286,6 +343,10 @@ function renderMarkdown(report) {
       '### Target Separation',
       '',
       renderTargetSection(run),
+      '',
+      '### Tutor Adaptation',
+      '',
+      renderTutorAdaptationSection(run),
       '',
       '### Controls',
       '',
@@ -315,6 +376,13 @@ function renderCsv(report) {
     'recontextualization',
     'stated_insight',
     'pivot_learner_turn',
+    'learner_self_reframe',
+    'tutor_contingent_adaptation',
+    'tutor_adaptation_score',
+    'uptake_delta',
+    'tutor_strategy_before',
+    'tutor_strategy_after',
+    'shared_salient_terms',
     'sample_path',
   ];
   const lines = [header.join(',')];
@@ -334,6 +402,13 @@ function renderCsv(report) {
         row.recontextualization,
         row.stated_insight,
         row.pivot_learner_turn,
+        row.learner_self_reframe,
+        row.tutor_contingent_adaptation,
+        row.tutor_adaptation_score,
+        row.uptake_delta,
+        row.tutor_strategy_before,
+        row.tutor_strategy_after,
+        (row.shared_salient_terms || []).join(' '),
         row.sample_path,
       ]
         .map(csvCell)

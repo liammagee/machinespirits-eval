@@ -19,6 +19,7 @@ import {
   upsertPoeticsReviewFlag,
   upsertPoeticsRun,
   upsertPoeticsScore,
+  upsertPoeticsTutorAdaptation,
 } from '../services/poeticsStore.js';
 
 function withDb(fn) {
@@ -130,6 +131,26 @@ function seed(db) {
     recontextualization: 50,
     statedInsight: 25,
   });
+  upsertPoeticsTutorAdaptation(db, {
+    itemId: 'poetics-second-run:target-r01:reframe:T03',
+    analyzerVersion: 'tutor-adaptation-v1',
+    sourceTracePath: 'config/poetics-calibration/poetics-second-run/target-r01/deliberation/reframe/T03.json',
+    learnerSelfReframe: true,
+    learnerReframeScore: 1,
+    tutorPreTurn: 2,
+    tutorPostTurn: 3,
+    tutorStrategyBefore: 'mechanism_explanation',
+    tutorStrategyAfter: 'application_task',
+    tutorStrategyShift: true,
+    preTutorPivotOverlap: 0.08,
+    postTutorPivotOverlap: 0.32,
+    uptakeDelta: 0.24,
+    sharedSalientTerms: ['projection', 'area', 'scale'],
+    tutorContingentAdaptation: true,
+    tutorAdaptationScore: 72,
+    evidence: 'post tutor takes up the revised map frame',
+    metadata: {},
+  });
   upsertPoeticsReviewFlag(db, {
     itemId: 'poetics-test-run:control-r01-d25-hard-trap:default:T02',
     flaggerId: 'codex',
@@ -150,7 +171,9 @@ describe('poetics sidecar report and browser', () => {
       assert.equal(report.runs[0].disagreements.length, 1);
       assert.match(renderMarkdown(report), /Critic Disagreements/);
       assert.match(renderMarkdown(report), /hard_trap_control/);
+      assert.match(renderMarkdown(report), /Tutor Adaptation/);
       assert.ok(renderCsv(report).includes('deepseek/deepseek-v4-pro'));
+      assert.ok(renderCsv(report).includes('tutor_adaptation_score'));
     }));
 
   it('lists runs and retrieves script details for the browser API layer', () =>
@@ -170,6 +193,15 @@ describe('poetics sidecar report and browser', () => {
       assert.equal(detail.item.controlRole, 'hard_trap_control');
       assert.equal(detail.scores.length, 2);
       assert.equal(detail.reviewFlags.length, 1);
+
+      const adaptiveItems = listItems(db, { runId: 'poetics-second-run' });
+      assert.equal(adaptiveItems[0].tutorAdaptationScore, 72);
+      assert.equal(adaptiveItems[0].learnerSelfReframe, true);
+      assert.equal(adaptiveItems[0].tutorContingentAdaptation, true);
+
+      const adaptiveDetail = getItem(db, 'poetics-second-run:target-r01:reframe:T03');
+      assert.equal(adaptiveDetail.tutorAdaptation.tutor_adaptation_score, 72);
+      assert.deepEqual(adaptiveDetail.tutorAdaptation.shared_salient_terms, ['projection', 'area', 'scale']);
     }));
 
   it('supports blind browser labels without exposing critic scores', () =>
@@ -178,6 +210,7 @@ describe('poetics sidecar report and browser', () => {
       assert.equal(blindItems.length, 2);
       assert.ok(blindItems[0].blindId);
       assert.equal(blindItems[0].criticForms, undefined);
+      assert.equal(blindItems[0].tutorAdaptationScore, undefined);
 
       const saved = saveBrowserLabel(db, {
         itemId: 'poetics-test-run:target-r01:none:T01',
