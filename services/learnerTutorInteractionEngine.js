@@ -98,6 +98,11 @@ function buildDirectorContext(plan, cue = null, side = null) {
   if (plan?.locale || plan?.register) {
     lines.push(`- Voice/register: ${[plan.locale, plan.register].filter(Boolean).join('; ')}`);
   }
+  if (plan?.stage_direction_style || plan?.stage_direction_style_prompt) {
+    lines.push(
+      `- Stage-direction style: ${[plan.stage_direction_style, plan.stage_direction_style_prompt].filter(Boolean).join(': ')}`,
+    );
+  }
   if (plan?.voice_constraints) lines.push(`- Voice constraints: ${plan.voice_constraints}`);
   if (plan?.person_policy) lines.push(`- Person policy: ${plan.person_policy}`);
   if (plan?.direct_address_budget) lines.push(`- Direct address budget: ${plan.direct_address_budget}`);

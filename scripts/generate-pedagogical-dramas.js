@@ -688,6 +688,7 @@ function keyItemFor(d, nTutor, nLearner, qualityWarnings = []) {
     dialogue_approach: d.dialogue_approach || d._dialogueApproach?.id || null,
     dialogue_family: d._dialogueApproach?.family || null,
     stage_direction_policy: stageDirectionPolicyFor(d),
+    stage_direction_style: stageDirectionStyleFor(d)?.id || null,
     tutor_profile: d.tutor_profile,
     learner_profile: d.learner_profile,
     persona: d.persona,
@@ -832,7 +833,7 @@ function qualityWarningsFor({ tid, dramaId, turns, removedNotes = [], traceTurns
       count: intrusiveStageDirections.length,
       failures: intrusiveStageDirections,
       turn_numbers: intrusiveStageDirections.map((failure) => failure.turn_number),
-      recommended_action: 'regenerate_with_sparser_diegetic_stage_direction',
+      recommended_action: 'regenerate_with_public_scene_material_not_role_instruction',
     });
   }
   const truncatedLearnerTurns = turns
@@ -929,7 +930,7 @@ function formatQualityWarning(warning) {
     return `${warning.tid} (${warning.drama_id}): ${warning.count} public turn(s) may leak internal process — inspect/regenerate before scoring`;
   }
   if (warning.code === 'intrusive_stage_direction') {
-    return `${warning.tid} (${warning.drama_id}): ${warning.count} stage direction(s) read as instruction rather than scene action — regenerate or reclean before scoring`;
+    return `${warning.tid} (${warning.drama_id}): ${warning.count} stage direction(s) read as role instruction rather than public scene material — regenerate or reclean before scoring`;
   }
   if (warning.code === 'revoice_cue_not_revoiced') {
     return `${warning.tid} (${warning.drama_id}): ${warning.count} revoice cue(s) were not visibly revoiced — regenerate or exclude before scoring`;
@@ -1323,6 +1324,73 @@ const SETTINGS = [
   'a lab bench conversation while equipment is being packed away',
 ];
 
+const STAGE_DIRECTION_STYLES = [
+  {
+    id: 'bare_transcript',
+    policies: ['none', 'none_except_required_cue'],
+    prompt:
+      'No ordinary visible stage direction. Let context be inferred from speech, quoted artifacts, timestamps, or task references.',
+  },
+  {
+    id: 'scene_heading',
+    policies: ['sparse', 'short'],
+    prompt: 'Use a compact scene heading or situating line, closer to a script heading than explanatory narration.',
+  },
+  {
+    id: 'object_business',
+    policies: ['sparse', 'short', 'interventionist', 'rich'],
+    prompt: 'Use one concrete object action or material arrangement that changes what the speakers can honestly say.',
+  },
+  {
+    id: 'ambient_pressure',
+    policies: ['sparse', 'short'],
+    prompt:
+      'Use time, queue, room, or institutional pressure as stage texture; avoid explaining the lesson through it.',
+  },
+  {
+    id: 'placard_caption',
+    policies: ['interventionist', 'rich'],
+    prompt:
+      'Use a public placard, caption, board note, or displayed rule that interrupts how the previous line is read.',
+  },
+  {
+    id: 'thread_metadata',
+    policies: ['sparse', 'short'],
+    prompt: 'Use transcript/thread metadata such as edit markers, timestamps, quoted fragments, or a reopened comment.',
+  },
+  {
+    id: 'choric_margin',
+    policies: ['short', 'interventionist', 'rich'],
+    prompt:
+      'Use a brief margin voice, chorus-like room note, or institutional phrase as public scene material, not theory.',
+  },
+  {
+    id: 'rich_scene_work',
+    policies: ['rich'],
+    prompt:
+      'Use recurring physical scene detail across the exchange so context develops, without turning into hidden commentary.',
+  },
+];
+
+const STAGE_DIRECTION_STYLE_BY_ID = new Map(STAGE_DIRECTION_STYLES.map((style) => [style.id, style]));
+
+const DISCIPLINE_OBJECTS = {
+  algebra: 'balance sketch',
+  academic_writing: 'marked draft paragraph',
+  biology: 'specimen tray',
+  cartography: 'wall map',
+  civic_science: 'survey table',
+  clinical_training: 'checklist sheet',
+  economics: 'price chart',
+  engineering: 'prototype rig',
+  environmental_science: 'field data table',
+  geometry: 'squared grid',
+  history: 'source packet',
+  media_studies: 'annotated headline',
+  medicine: 'case note',
+  sociology: 'projected chart',
+};
+
 function loadApproachDatabase(filePath, kind) {
   if (!filePath) return { path: null, version: null, byId: new Map() };
   const doc = yaml.parse(fs.readFileSync(filePath, 'utf8')) || {};
@@ -1366,6 +1434,7 @@ function approachSummaryForPrompt(approach) {
     'core_move',
     'turn_shape',
     'stage_direction_policy',
+    'stage_direction_style',
     'tutor_prompt',
     'learner_prompt',
     'director_prompt',
@@ -1387,20 +1456,99 @@ function stageDirectionPolicyFor(d) {
   return d.stage_direction_policy || d._dialogueApproach?.stage_direction_policy || null;
 }
 
+function visibleObjectFor(d) {
+  return d.scene_object || DISCIPLINE_OBJECTS[d.discipline] || 'marked work';
+}
+
+function compatibleStageDirectionStyles(policy) {
+  const normalized = policy || 'sparse';
+  return STAGE_DIRECTION_STYLES.filter((style) => style.policies.includes(normalized));
+}
+
+function resolveStageDirectionStyle(d) {
+  const explicitId = d.stage_direction_style || d._dialogueApproach?.stage_direction_style || null;
+  const policy = stageDirectionPolicyFor(d) || 'sparse';
+  if (explicitId) {
+    const explicit = STAGE_DIRECTION_STYLE_BY_ID.get(explicitId);
+    if (!explicit)
+      throw new Error(`drama ${d.id || '<unknown>'} references unknown stage_direction_style: ${explicitId}`);
+    if (!explicit.policies.includes(policy)) {
+      throw new Error(
+        `drama ${d.id || '<unknown>'} stage_direction_style ${explicitId} is incompatible with policy ${policy}`,
+      );
+    }
+    return explicit;
+  }
+  const candidates = compatibleStageDirectionStyles(policy);
+  if (!candidates.length) return null;
+  const variationKey = d.director_variation_key || d._directorVariationKey || '';
+  return candidates[variantIndex(d.id, 7, variationKey) % candidates.length];
+}
+
+function stageDirectionStyleFor(d) {
+  if (d._stageDirectionStyle) return d._stageDirectionStyle;
+  return resolveStageDirectionStyle(d);
+}
+
+function stageDirectionStyleSummary(style) {
+  if (!style) return null;
+  return {
+    id: style.id,
+    compatible_policies: style.policies,
+    prompt: style.prompt,
+  };
+}
+
+function stageOpeningForStyle(d, setting, style, stagePolicy) {
+  if (stagePolicy === 'none' || stagePolicy === 'none_except_required_cue' || !style) return '';
+  const object = visibleObjectFor(d);
+  if (style.id === 'scene_heading') return `Scene: ${setting}. The first answer is already in circulation.`;
+  if (style.id === 'object_business')
+    return `The ${object} sits between them, already marked by the learner's first attempt.`;
+  if (style.id === 'ambient_pressure')
+    return `A time pressure is visible in the room; the unfinished answer stays on the table.`;
+  if (style.id === 'placard_caption') return 'PLACARD: A quick answer can look finished before it has been tested.';
+  if (style.id === 'thread_metadata') return '[thread reopened after a marked exercise; one fragment remains quoted]';
+  if (style.id === 'choric_margin') return 'Margin note: the room has already learned one convenient shortcut.';
+  if (style.id === 'rich_scene_work')
+    return `The ${object} is still visible in ${setting}; its first mark will not quite disappear.`;
+  return `The scene opens ${setting}; the misconception is already present in the learner's situation.`;
+}
+
+function stageInterventionForStyle(d, style) {
+  const object = visibleObjectFor(d);
+  if (!style) {
+    return 'A small external interruption changes the rhythm; the next reply comes under time pressure and cannot settle into a tidy explanatory paragraph.';
+  }
+  if (style.id === 'scene_heading') return 'Scene shift: the same answer is tried against a new example.';
+  if (style.id === 'object_business') return `The ${object} is moved or turned; the earlier mark remains visible.`;
+  if (style.id === 'ambient_pressure') return 'The queue moves; the explanation now has to become usable, not longer.';
+  if (style.id === 'placard_caption') return 'PLACARD: Correct surface, unsettled relation.';
+  if (style.id === 'thread_metadata') return '[two minutes later, an edit cursor sits after the contested phrase]';
+  if (style.id === 'choric_margin') return 'Room note: the answer sounds settled before the evidence has moved.';
+  if (style.id === 'rich_scene_work')
+    return `The ${object} returns to the center; the first answer looks too neat beside it.`;
+  return 'A small external interruption changes the rhythm; the next reply comes under time pressure.';
+}
+
 function applyApproachDirectorOverrides(d, plan) {
   if (!plan) return plan;
   const pedagogy = d._pedagogicalApproach || null;
   const dialogue = d._dialogueApproach || null;
   const stagePolicy = stageDirectionPolicyFor(d);
+  const stageStyle = stageDirectionStyleFor(d);
   let next = {
     ...plan,
     pedagogical_approach_id: pedagogy?.id || null,
     dialogue_approach_id: dialogue?.id || null,
     stage_direction_policy: stagePolicy || plan.stage_direction_policy || null,
+    stage_direction_style: stageStyle?.id || plan.stage_direction_style || null,
+    stage_direction_style_prompt: stageStyle?.prompt || plan.stage_direction_style_prompt || null,
     voice_constraints: combineText(
       plan.voice_constraints,
       pedagogy?.director_prompt ? `Pedagogical source: ${pedagogy.director_prompt}` : null,
       dialogue?.director_prompt ? `Dialogue source: ${dialogue.director_prompt}` : null,
+      stageStyle?.prompt ? `Stage-direction source: ${stageStyle.prompt}` : null,
     ),
     side_constraints: {
       ...(plan.side_constraints || {}),
@@ -1441,6 +1589,7 @@ function fallbackDirectorPlan(d, reason = 'fallback', args = {}) {
   const pedagogy = d._pedagogicalApproach || null;
   const dialogue = d._dialogueApproach || null;
   const stagePolicy = stageDirectionPolicyFor(d);
+  const stageStyle = stageDirectionStyleFor(d);
   const voice = VOICE_VARIANTS[variantIndex(d.id, 0, variationKey)];
   const setting = d.scene_setting || SETTINGS[variantIndex(d.id, 2, variationKey)];
   const opensWithTutor = variantIndex(d.id, 1, variationKey) % 3 === 0;
@@ -1449,22 +1598,22 @@ function fallbackDirectorPlan(d, reason = 'fallback', args = {}) {
     parse_status: reason,
     variation_key: variationKey || null,
     scene_setting: setting,
-    scene_opening:
-      stagePolicy === 'none' || stagePolicy === 'none_except_required_cue'
-        ? ''
-        : `The scene opens ${setting}; the misconception is already present in the learner's situation, not only in a direct question.`,
+    scene_opening: stageOpeningForStyle(d, setting, stageStyle, stagePolicy),
     relationship: d.relationship || 'a tutor and learner who do not yet share a stable register',
     stakes: d.stakes || d.learner_start_state || d.topic,
     opening_speaker: d.opening_speaker || dialogue?.opening_speaker || (opensWithTutor ? 'tutor' : 'learner'),
     ending_speaker: d.ending_speaker || dialogue?.ending_speaker || (endsWithTutor ? 'tutor' : 'learner'),
     locale: d.locale || voice.locale,
     register: d.register || dialogue?.turn_shape || voice.register,
+    stage_direction_style: stageStyle?.id || null,
+    stage_direction_style_prompt: stageStyle?.prompt || null,
     voice_constraints:
       d.voice_constraints ||
       combineText(
         `${voice.person_policy} Avoid the repeated American tutoring pattern of "I hear you / your intuition is right / what do you think".`,
         pedagogy?.director_prompt,
         dialogue?.director_prompt,
+        stageStyle?.prompt ? `Stage-direction source: ${stageStyle.prompt}` : null,
       ),
     person_policy: d.person_policy || voice.person_policy,
     direct_address_budget:
@@ -1489,9 +1638,7 @@ function fallbackDirectorPlan(d, reason = 'fallback', args = {}) {
       {
         after_turn: 2,
         timing: variantIndex(d.id, 3, variationKey) % 2 === 0 ? 'before_tutor' : 'before_learner',
-        instruction:
-          d.director_intervention ||
-          'A small external interruption changes the rhythm; the next reply comes under time pressure and cannot settle into a tidy explanatory paragraph.',
+        instruction: d.director_intervention || stageInterventionForStyle(d, stageStyle),
         reasoning: 'Scheduled director cue to prevent smooth alternation from becoming routine.',
       },
     ],
@@ -1627,7 +1774,7 @@ function buildDirectorSystemPrompt() {
 Create a hidden scene card that will guide separate tutor and learner agents. Your job is to break routine: vary setting, relation, voice, speaker order, and occasional external intervention while preserving the learning topic.
 
 Do not stereotype dialect, nationality, class, or region. Locale/register constraints should affect rhythm, idiom density, directness, and situation, not caricatured spelling.
-Write visible stage directions as diegetic play text, not instruction text. Usually use at most a scene opening plus one short pressure cue. Do not start them with "The director...", do not explain your intention inside them, and do not tell the learner or tutor what they must say.
+Use the requested stage-direction style instead of collapsing every scene into the same sparse neutral cue. Some scenes may have no visible directions, some may use headings, objects, placards, transcript metadata, margin voices, or richer physical business. Stage directions must still be public scene material, not hidden instruction text: do not start them with "The director...", do not explain your intention inside them, and do not tell the learner or tutor what they must say.
 
 Return exactly one JSON object with:
 {
@@ -1640,6 +1787,7 @@ Return exactly one JSON object with:
   "locale": "English/register ecology",
   "register": "speech style and affective temperature",
   "stage_direction_policy": "none|none_except_required_cue|sparse|short|interventionist|rich",
+  "stage_direction_style": "requested style id",
   "voice_constraints": "constraints that prevent generic American AI tutoring prose",
   "person_policy": "how much first/second/third person is allowed",
   "direct_address_budget": "budget for direct you/your validation",
@@ -1654,6 +1802,7 @@ async function buildDirectorPlan(d, llmCall, args) {
   const revisitPolicy = d._directorRevisitPolicy ?? args.directorRevisitPolicy;
   const revisitAnchor = d._directorRevisitAnchor ?? args.directorRevisitAnchor;
   const variationKey = d.director_variation_key || d._directorVariationKey || args.directorVariationKey || null;
+  const stageStyle = stageDirectionStyleFor(d);
   const fallback = fallbackDirectorPlan(d, 'fallback-not-called', args);
   const userPrompt = yaml.stringify({
     drama_id: d.id,
@@ -1671,6 +1820,9 @@ async function buildDirectorPlan(d, llmCall, args) {
     intended_tutor_character: d.intended_tutor_character,
     pedagogical_approach: approachSummaryForPrompt(d._pedagogicalApproach),
     dialogue_approach: approachSummaryForPrompt(d._dialogueApproach),
+    stage_direction_style: stageDirectionStyleSummary(stageStyle),
+    stage_direction_instruction:
+      'The aim is not simply less stage direction; it is greater variation in public form. Follow the selected style unless the drama spec explicitly overrides it.',
     approach_instruction:
       d._pedagogicalApproach || d._dialogueApproach
         ? 'Use the selected pedagogical and dialogue approaches as directorial source material for scene ecology, tutor constraints, learner constraints, speaker order, turn length, and stage-direction policy. Do not name these approach IDs in public speech.'
@@ -1989,6 +2141,7 @@ function writeGeneratedDramaArtifacts({
           director_revisit_policy: d._directorRevisitPolicy,
           director_revisit_anchor: d._directorRevisitAnchor,
           director_variation_key: d._directorVariationKey || null,
+          stage_direction_style: stageDirectionStyleFor(d)?.id || null,
           model: args.generator === 'codex' ? `codex@${CODEX_REASONING_EFFORT}` : args.model,
           codex_reasoning_effort: CODEX_REASONING_EFFORT,
           writing_pad: runtime.writingPad,
@@ -2063,6 +2216,16 @@ function finalizeKeyObject(keyObj) {
     (sum, item) => sum + (hasBlockingQualityWarnings(item.quality_warnings || []) ? 1 : 0),
     0,
   );
+  keyObj.stage_direction_policy_counts = Object.values(keyObj.items).reduce((counts, item) => {
+    const key = item.stage_direction_policy || 'unspecified';
+    counts[key] = (counts[key] || 0) + 1;
+    return counts;
+  }, {});
+  keyObj.stage_direction_style_counts = Object.values(keyObj.items).reduce((counts, item) => {
+    const key = item.stage_direction_style || 'unspecified';
+    counts[key] = (counts[key] || 0) + 1;
+    return counts;
+  }, {});
   return keyObj;
 }
 
@@ -2301,6 +2464,8 @@ async function main() {
     const revisit = resolveDirectorRevisitOptions(d, args);
     d._directorRevisitPolicy = revisit.policy;
     d._directorRevisitAnchor = revisit.anchor;
+    d._directorVariationKey = d.director_variation_key || args.directorVariationKey || null;
+    d._stageDirectionStyle = resolveStageDirectionStyle(d);
   }
   const revisitSummary = summarizeDirectorRevisitOptions(order);
 
@@ -2330,7 +2495,8 @@ async function main() {
     console.log(
       `  ${d._tid} ← ${d.id}  [${d.condition}]  ${d.discipline} · persona=${d.persona} · ` +
         `tutor=${d.tutor_profile} · learner=${d.learner_profile}` +
-        `${d._pedagogicalApproach || d._dialogueApproach ? ` · approach=${[d._pedagogicalApproach?.id, d._dialogueApproach?.id].filter(Boolean).join('+')}` : ''}`,
+        `${d._pedagogicalApproach || d._dialogueApproach ? ` · approach=${[d._pedagogicalApproach?.id, d._dialogueApproach?.id].filter(Boolean).join('+')}` : ''}` +
+        `${d._stageDirectionStyle ? ` · stage=${d._stageDirectionStyle.id}` : ''}`,
     );
   }
 
@@ -2405,6 +2571,8 @@ async function main() {
                 traceJson.run?.director_revisit_policy || (traceJson.run?.director_revisit_cue ? 'anchor' : 'none'),
               _directorRevisitAnchor: traceJson.run?.director_revisit_anchor || 'latest',
               _directorVariationKey: traceJson.run?.director_variation_key || null,
+              _stageDirectionStyle:
+                STAGE_DIRECTION_STYLE_BY_ID.get(traceJson.run?.stage_direction_style) || d._stageDirectionStyle || null,
               _directorPlan: traceJson.directorPlan || null,
             },
             t.filter((x) => x.role === 'TUTOR').length,
@@ -2427,7 +2595,6 @@ async function main() {
     }
     console.log(`\n  ${d._tid} (${d.id}) — generating ${d.discipline}/${d.condition} …`);
     const t0 = Date.now();
-    d._directorVariationKey = d.director_variation_key || args.directorVariationKey || null;
     const directorPlan = await buildDirectorPlan(d, llmCall, args);
     d._directorMode = args.directorMode;
     d._directorPlan = directorPlan;
@@ -2501,6 +2668,7 @@ async function main() {
             director_revisit_policy: d._directorRevisitPolicy,
             director_revisit_anchor: d._directorRevisitAnchor,
             director_variation_key: d._directorVariationKey || null,
+            stage_direction_style: stageDirectionStyleFor(d)?.id || null,
             model: args.generator === 'codex' ? `codex@${CODEX_REASONING_EFFORT}` : args.model,
             codex_reasoning_effort: CODEX_REASONING_EFFORT,
             writing_pad: runtime.writingPad,
@@ -2602,5 +2770,6 @@ export {
   reframeMatchStats,
   revoiceComplianceFailures,
   revoiceMatchStats,
+  stageDirectionStyleFor,
   withPairedDirectorRevisitCue,
 };

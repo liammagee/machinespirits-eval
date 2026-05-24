@@ -511,13 +511,17 @@ now" signal and ask for varied premature closure instead. The production batch
 default Qwen critic has also moved from `qwen/qwen3.5-plus-02-15` to
 `qwen/qwen3.7-max`.
 
-Public stage direction has been tightened: generated stage directions should be
-sparse and diegetic, not visible role instructions. The generator quality gate
-now flags `intrusive_stage_direction`, and the default revisit cue now appears
-as an earlier line returning to the table rather than as an explicit "the learner
+Public stage direction should vary more, not merely shrink. The generator now
+treats stage direction as a positive style axis: bare transcript, compact scene
+heading, object business, ambient pressure, placard/caption, thread metadata,
+choric margin, or richer physical scene work. The quality gate still flags
+`intrusive_stage_direction` when a stage line reads as a role instruction rather
+than public scene material, and the default revisit cue now appears as an
+earlier line returning to the table rather than as an explicit "the learner
 must..." instruction. Re-cleaning can apply the current public-transcript
 sanitizer and warning logic to already-generated traces without re-calling a
-model.
+model. New keys also record `stage_direction_style_counts`, so batch review can
+check whether stage form is actually varying.
 
 Small Sonnet-only pilot:
 

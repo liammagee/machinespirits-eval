@@ -12,6 +12,7 @@ import {
   loadApproachDatabases,
   noCueReframeLeakageFailures,
   qualityWarningsFor,
+  stageDirectionStyleFor,
   withPairedDirectorRevisitCue,
 } from '../scripts/generate-pedagogical-dramas.js';
 
@@ -54,6 +55,26 @@ describe('generate-pedagogical-dramas', () => {
       assert.equal(drama._pedagogicalApproach.id, drama.pedagogical_approach);
       assert.equal(drama._dialogueApproach.id, drama.dialogue_approach);
     }
+  });
+
+  it('keeps stage-direction style as a positive variation axis, not only a sparsity policy', () => {
+    const args = {
+      pedagogyDb: path.join(ROOT, 'config/poetics-calibration/pedagogical-approaches.yaml'),
+      dialogueDb: path.join(ROOT, 'config/poetics-calibration/dialogue-approaches.yaml'),
+    };
+    const databases = loadApproachDatabases(args);
+    const spec = yaml.parse(
+      fs.readFileSync(path.join(ROOT, 'config/poetics-calibration/phase2-genre-dramas-v1.yaml'), 'utf8'),
+    );
+    const styles = new Set();
+    for (const drama of spec.dramas) {
+      attachApproaches(drama, databases);
+      const style = stageDirectionStyleFor(drama);
+      assert.ok(style?.id, `${drama.id} should resolve a stage-direction style`);
+      assert.ok(style.policies.includes(drama._dialogueApproach.stage_direction_policy));
+      styles.add(style.id);
+    }
+    assert.ok(styles.size >= 5, `expected varied stage-direction styles, got ${[...styles].join(', ')}`);
   });
 
   it('warns when public stage direction reads as fourth-wall instruction text', () => {

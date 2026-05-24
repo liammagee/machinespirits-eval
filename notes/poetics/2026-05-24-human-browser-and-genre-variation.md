@@ -272,3 +272,25 @@ Blind human-scoring mode:
 ```text
 http://127.0.0.1:3466/?runId=phase2-genre-calibration-v1&mode=label&labeller=liam
 ```
+
+## Stage Direction Correction
+
+Follow-up correction: the stage-direction problem is not mainly that directions
+are too frequent or too intrusive. The deeper problem is sameness. Stage
+direction should be a positive form-variation axis, while still avoiding public
+role instructions or hidden-process leakage.
+
+The generator now distinguishes:
+
+- bare transcript
+- compact scene heading
+- object business
+- ambient pressure
+- placard/caption
+- thread metadata
+- choric margin
+- richer physical scene work
+
+Held-out keys now record `stage_direction_style` per item and aggregate
+`stage_direction_style_counts`, so a batch can be checked for public-form
+variety before scoring.

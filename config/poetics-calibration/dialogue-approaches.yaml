@@ -10,6 +10,7 @@ approaches:
     medium: "face-to-face oral exchange"
     turn_shape: "short question-answer turns with visible aporia"
     stage_direction_policy: sparse
+    stage_direction_style: scene_heading
     opening_speaker: tutor
     ending_speaker: learner
     director_prompt: >-
@@ -25,6 +26,7 @@ approaches:
     medium: "bare chat or transcript"
     turn_shape: "public turns only; no visible stage directions except required experimental cues"
     stage_direction_policy: none_except_required_cue
+    stage_direction_style: bare_transcript
     opening_speaker: learner
     ending_speaker: learner
     director_prompt: >-
@@ -40,6 +42,7 @@ approaches:
     medium: "recitation, drill, or oral check"
     turn_shape: "prompt-response-feedback pattern, with risk of shallow correctness"
     stage_direction_policy: sparse
+    stage_direction_style: ambient_pressure
     opening_speaker: tutor
     ending_speaker: tutor
     director_prompt: >-
@@ -55,6 +58,7 @@ approaches:
     medium: "learning play with visible interruption"
     turn_shape: "dialogue interrupted by a short placard, rule, or exterior sign"
     stage_direction_policy: interventionist
+    stage_direction_style: placard_caption
     opening_speaker: director
     ending_speaker: director
     director_prompt: >-
@@ -69,7 +73,8 @@ approaches:
     family: mediated_dialogue
     medium: "asynchronous comments or feedback thread"
     turn_shape: "short posts, quoted fragments, delayed repair"
-    stage_direction_policy: none_except_required_cue
+    stage_direction_policy: sparse
+    stage_direction_style: thread_metadata
     opening_speaker: learner
     ending_speaker: learner
     director_prompt: >-
@@ -85,6 +90,7 @@ approaches:
     medium: "studio, clinic, lab, or design review"
     turn_shape: "object-led back-and-forth under practical time pressure"
     stage_direction_policy: short
+    stage_direction_style: object_business
     opening_speaker: learner
     ending_speaker: tutor
     director_prompt: >-
@@ -100,6 +106,7 @@ approaches:
     medium: "cross-examination or public justification"
     turn_shape: "challenge, evidence test, narrowed claim"
     stage_direction_policy: sparse
+    stage_direction_style: scene_heading
     opening_speaker: tutor
     ending_speaker: learner
     director_prompt: >-
@@ -115,6 +122,7 @@ approaches:
     medium: "multi-voiced text discussion"
     turn_shape: "speakers handle several voices in one text or social scene"
     stage_direction_policy: short
+    stage_direction_style: choric_margin
     opening_speaker: learner
     ending_speaker: learner
     director_prompt: >-
@@ -130,6 +138,7 @@ approaches:
     medium: "parable, fable, case, or miniature story"
     turn_shape: "example first, rule extracted only after pressure"
     stage_direction_policy: short
+    stage_direction_style: scene_heading
     opening_speaker: tutor
     ending_speaker: learner
     director_prompt: >-
@@ -145,6 +154,7 @@ approaches:
     medium: "prepared environment with manipulable materials"
     turn_shape: "few words, object manipulation, learner noticing error"
     stage_direction_policy: short
+    stage_direction_style: object_business
     opening_speaker: director
     ending_speaker: learner
     director_prompt: >-
@@ -160,6 +170,7 @@ approaches:
     medium: "seminar, tutorial, or reading group"
     turn_shape: "claim, objection, textual evidence, revised claim"
     stage_direction_policy: sparse
+    stage_direction_style: thread_metadata
     opening_speaker: learner
     ending_speaker: learner
     director_prompt: >-
