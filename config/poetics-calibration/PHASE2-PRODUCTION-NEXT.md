@@ -388,35 +388,39 @@ CODEX_REASONING_EFFORT=high node scripts/run-poetics-production-batch.js \
   --max-turns 3
 ```
 
-Qwen `qwen/qwen3.5-plus-02-15` was attempted separately at concurrency 1 but
-stalled on the first target score artifact without writing a partial result, so
-it is excluded from the completed report. DeepSeek completed the target arms
-after a concurrency-1 retry, but still returned empty content for the D10
-boundary control; that row is recorded as missing rather than converted into a
-form label.
+Qwen `qwen/qwen3.5-plus-02-15` was attempted twice at concurrency 1 but stalled
+on the first target score artifact without writing a partial result. The Qwen
+retry therefore used `qwen/qwen3.7-max`: first as a one-item D4 probe, then as a
+full target/control scoring pass at concurrency 1. DeepSeek completed the target
+arms after a concurrency-1 retry, and a later D10 retry succeeded; DeepSeek now
+reads the D10 boundary-control row as recognition rather than missing.
 
 Genre-batch target result:
 
 | Critic | `none` recognitions | `reframe` recognitions | `none` forms | `reframe` forms |
 |---|---:|---:|---|---|
+| Qwen 3.7 Max | 3/8 | 8/8 | R3 T1 F4 | R8 T0 F0 |
 | Gemini 3.5 Flash | 1/8 | 6/8 | R1 T1 F6 | R6 T0 F2 |
 | Sonnet 4.6 | 3/8 | 6/8 | R3 T0 F5 | R6 T0 F2 |
 | DeepSeek | 4/8 | 4/8 | R4 T1 F3 | R4 T1 F3 |
 
 Control result:
 
-| Control | Role | Gemini | Sonnet 4.6 | DeepSeek |
-|---|---|---|---|---|
-| D4 | flat control | flat | flat | flat |
-| D10 | boundary trap | trap | trap | missing |
-| D25 | hard trap | trap | flat | flat |
-| D26 | hard trap | trap | trap | trap |
+| Control | Role | Qwen 3.7 | Gemini | Sonnet 4.6 | DeepSeek |
+|---|---|---|---|---|---|
+| D4 | flat control | flat | flat | flat | flat |
+| D10 | boundary trap | recognition | trap | trap | recognition |
+| D25 | hard trap | trap | trap | flat | flat |
+| D26 | hard trap | trap | trap | trap | trap |
 
 Interpretation: genre variation makes the mechanism less clean, which is useful
-rather than disappointing. Gemini and Sonnet still show the intended
+rather than disappointing. Qwen 3.7, Gemini, and Sonnet show the intended
 `none`/`reframe` separation; DeepSeek behaves as a weak separation critic on the
-genre-diverse targets. The next audit target is therefore DeepSeek's uncued
-recognitions and reframe misses by genre, not another aggregate-only run.
+genre-diverse targets. D10 again behaves as a boundary control rather than a
+hard trap: Qwen 3.7 and DeepSeek read it as recognition, while Gemini and Sonnet
+read it as trap. The next audit target is therefore DeepSeek's uncued
+recognitions and reframe misses by genre, and the D10/Qwen/DeepSeek boundary
+read, not another aggregate-only run.
 
 The browser now supports blind human-scoring mode:
 

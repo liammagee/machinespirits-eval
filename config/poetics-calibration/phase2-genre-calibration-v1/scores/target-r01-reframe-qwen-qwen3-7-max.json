@@ -1,0 +1,201 @@
+{
+  "generated": "2026-05-24T08:57:43.435Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 8,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 2,
+    "nAlsoRecon": 2,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-genre-calibration-v1/target-r01/key-reframe.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T27",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "saying “do the same thing to both sides,” which feels a bit like repeating the rule.",
+      "statedInsightEvidence": "I think I can do it with the card",
+      "naiveTrajectory": "The learner was expected to simply repeat the corrected script and fill in the blanks as prompted by the tutor.",
+      "flags": []
+    },
+    {
+      "id": "T28",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "the page maybe is only flagging how the sentence sounds academic or does not sound academic yet",
+      "statedInsightEvidence": "Maybe that is the problem in my reading",
+      "naiveTrajectory": "The dialogue was heading toward simply finding the right synonym for 'may' to satisfy the tutor's prompt about making the claim harder to miss.",
+      "flags": []
+    },
+    {
+      "id": "T29",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "something like “residents avoid the Pine stop after dark, causing missed evening access, so the working group should test a Pine-route audit.”",
+      "statedInsightEvidence": "that was the framing problem.",
+      "naiveTrajectory": "The learner was progressing toward finalizing a definitive, narrow problem statement using the tutor's specific examples.",
+      "flags": []
+    },
+    {
+      "id": "T30",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 100,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 5,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I used the diary as the strongest evidence because page 2 is the primary source, written closest to the hearing, so surely it carries more trust.",
+      "statedInsightEvidence": "Oh, I get it",
+      "naiveTrajectory": "The learner was expected to simply extract the requested phrase from the historian's paragraph and move forward with drafting the exhibit label.",
+      "flags": []
+    },
+    {
+      "id": "T31",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "is the next fork asking about the veins?",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was moving forward by guessing the next feature of the dichotomous key based on the physical leaf.",
+      "flags": []
+    },
+    {
+      "id": "T32",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 75,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 4,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "Ward decision: hold and escalate before administration.",
+      "statedInsightEvidence": "the framing problem is that I made it sound finished.",
+      "naiveTrajectory": "The learner was expected to mechanically supply the four requested components of the ward call in order to complete the simulation checklist.",
+      "flags": []
+    },
+    {
+      "id": "T33",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "that new tag looks like greed in ink",
+      "statedInsightEvidence": "I think I get it",
+      "naiveTrajectory": "The learner was proceeding toward demanding proof that the supply shortage was not merely an alibi for pure greed.",
+      "flags": []
+    },
+    {
+      "id": "T34",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "The earlier claim is sitting there looking rather wrong now.",
+      "statedInsightEvidence": "The mistake was letting the side count stand in for the area count.",
+      "naiveTrajectory": "The learner is expected to merely provide the numerical answer for the area of a 3x3 square.",
+      "flags": []
+    }
+  ]
+}

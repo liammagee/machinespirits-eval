@@ -1,7 +1,7 @@
 {
-  "generated": "2026-05-24T08:26:09.405Z",
+  "generated": "2026-05-24T08:58:11.058Z",
   "phase": 2,
-  "critic": "deepseek/deepseek-v4-pro",
+  "critic": "qwen/qwen3.7-max",
   "cuts": {
     "recon_hit": 75,
     "stated_insight_high": 75
@@ -36,21 +36,19 @@
       "pivotLearnerTurn": 3,
       "formClass": "recognition",
       "recontextualization": 75,
-      "statedInsight": 75,
-      "rupture": 50,
-      "globalCoherence": 50,
+      "statedInsight": 100,
+      "rupture": 75,
+      "globalCoherence": 100,
       "rawScores": {
         "recon": 4,
-        "statedInsight": 4,
-        "rupture": 3,
-        "coherence": 3
+        "statedInsight": 5,
+        "rupture": 4,
+        "coherence": 5
       },
-      "recoheredEarlier": "the silences start feeling like evidence, which is dangerous because I want to turn that into a whole theory immediately",
-      "statedInsightEvidence": "Oh, I get it, the UNAVAILABLE slip is evidence but not a confession",
-      "naiveTrajectory": "L2's fascination with the UNAVAILABLE slip as 'almost shouting' and 'power making things vanish' pointed toward embracing it as whole theory, while L3 pulls back and repositions it as evidence with strict limits.",
-      "flags": [
-        "coherence_evidence_clamp:5->3"
-      ]
+      "recoheredEarlier": "let the absence matter without pretending it proves everything",
+      "statedInsightEvidence": "Oh, I get it",
+      "naiveTrajectory": "The learner was building toward treating the missing document as definitive proof of a grand theory where winners actively erase history.",
+      "flags": []
     }
   ]
 }

@@ -27,6 +27,11 @@ const CRITICS = [
     slug: 'qwen-qwen3-5-plus-02-15',
   },
   {
+    id: 'qwen37',
+    label: 'Qwen 3.7 Max',
+    slug: 'qwen-qwen3-7-max',
+  },
+  {
     id: 'gemini',
     label: 'Gemini 3.5 Flash',
     slug: 'google-gemini-3-5-flash',
