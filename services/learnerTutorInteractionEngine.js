@@ -237,6 +237,135 @@ function buildAnchoredRevisitCue(cue, conversationHistory) {
   };
 }
 
+function simpleTerms(text) {
+  return [
+    ...new Set(
+      String(text || '')
+        .toLowerCase()
+        .replace(/[’']/g, '')
+        .match(/[a-z]+(?:[0-9]+)?|[0-9]+(?:\.[0-9]+)?/g)
+        ?.filter((term) => term.length > 2 && !['and', 'but', 'the', 'that', 'this', 'with', 'from'].includes(term)) ||
+        [],
+    ),
+  ];
+}
+
+function anchorOverlap(anchor, learnerText) {
+  const anchorTerms = simpleTerms(anchor);
+  if (!anchorTerms.length) return 0;
+  const learnerTerms = new Set(simpleTerms(learnerText));
+  return anchorTerms.filter((term) => learnerTerms.has(term)).length / anchorTerms.length;
+}
+
+function sentenceWith(text, patterns) {
+  const sentences = String(text || '')
+    .split(/(?<=[.!?])\s+|\n+/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+  return sentences.find((sentence) => patterns.some((pattern) => pattern.test(sentence))) || null;
+}
+
+function extractRevisitAnchorFromCue(cue) {
+  if (cue?.anchor_quote) return cue.anchor_quote;
+  return (
+    String(cue?.instruction || '').match(
+      /(?:A prior learner line is played back|An earlier learner line returns to the table):\s*"([\s\S]*?)"\s*(?:The learner must|The pause holds|The next response|The learner has to)/i,
+    )?.[1] || null
+  );
+}
+
+const REFRAME_PROBLEM_PATTERNS = [
+  /\b(?:framing problem|old frame|earlier mistake|mistake was|problem was|problem is|I was treating|I was letting|I assumed|I thought)\b/i,
+  /\b(?:still stands|needs? narrowing|narrower|cannot carry|not the whole|nothing more|not proof|not the proof|not alone|only testing|not just)\b/i,
+];
+
+const REFRAME_REPLACEMENT_PATTERNS = [
+  /\b(?:new frame|new line|new version|read it as|instead|rather|should say|should read|now the question|replacement|better)\b/i,
+  /\b(?:needs? narrowing|narrower|would say|want to say|question|test|read|line|label|claim|frame|evidence)\b/i,
+];
+
+function learnerReframeScore(anchor, learnerText) {
+  const revoice = anchor ? anchorOverlap(anchor, learnerText) >= 0.2 : /\b(?:earlier|old|first)\b/i.test(learnerText);
+  const problemNamed = REFRAME_PROBLEM_PATTERNS.some((pattern) => pattern.test(learnerText));
+  const replacementNamed = REFRAME_REPLACEMENT_PATTERNS.some((pattern) => pattern.test(learnerText));
+  const confidence = (revoice ? 0.34 : 0) + (problemNamed ? 0.33 : 0) + (replacementNamed ? 0.33 : 0);
+  return {
+    revoice,
+    problemNamed,
+    replacementNamed,
+    confidence: Math.round(confidence * 100) / 100,
+  };
+}
+
+function buildLearnerReframeEvent({
+  learnerMessage,
+  conversationHistory = [],
+  directorCue = null,
+  turnNumber = null,
+} = {}) {
+  const text = extractExternalSection(learnerMessage || '');
+  if (!text) return null;
+  const cuePolicy = directorCue?.revisit_policy || directorCue?.revisitPolicy || null;
+  const anchor =
+    extractRevisitAnchorFromCue(directorCue) ||
+    (cuePolicy
+      ? null
+      : priorLearnerMessages(conversationHistory).find((message) => anchorOverlap(message.content, text) >= 0.2)
+          ?.content);
+  const score = learnerReframeScore(anchor, text);
+  const source = cuePolicy ? 'director_revisit_cue' : 'organic';
+  const threshold = cuePolicy ? 0.67 : 0.8;
+  if (score.confidence < threshold) return null;
+  const oldFrameProblem = sentenceWith(text, REFRAME_PROBLEM_PATTERNS);
+  const revisedFrame =
+    sentenceWith(text, REFRAME_REPLACEMENT_PATTERNS) ||
+    String(text || '')
+      .split(/(?<=[.!?])\s+|\n+/)
+      .map((sentence) => sentence.trim())
+      .filter(Boolean)
+      .at(-1) ||
+    text;
+  return {
+    kind: 'learner_reframe_event',
+    source,
+    turnNumber,
+    cuePolicy,
+    requestedCuePolicy:
+      directorCue?.requested_revisit_policy || directorCue?.requestedRevisitPolicy || cuePolicy || null,
+    oldLearnerLine: anchor ? clipDirectorAnchor(anchor, 240) : null,
+    oldFrameProblem,
+    revisedFrame: clipDirectorAnchor(revisedFrame, 260),
+    learnerUtterance: clipDirectorAnchor(text, 420),
+    confidence: score.confidence,
+    evidence: {
+      revoice: score.revoice,
+      problemNamed: score.problemNamed,
+      replacementNamed: score.replacementNamed,
+      anchorOverlap: Math.round(anchorOverlap(anchor, text) * 1000) / 1000,
+    },
+  };
+}
+
+function buildTutorReframeEventContext(event, policy = 'none') {
+  if (policy !== 'uptake') return '';
+  if (!event) {
+    return [
+      'Tutor-private adaptation state:',
+      '- No learner reframe event was detected on the immediately preceding learner turn.',
+      '- Continue the lesson normally; do not invent an old/new frame contrast.',
+    ].join('\n');
+  }
+  return [
+    'Tutor-private learner reframe event:',
+    `- Old learner line: ${event.oldLearnerLine || '(not captured)'}`,
+    `- Learner's revised frame: ${event.revisedFrame || event.learnerUtterance}`,
+    `- Old-frame problem named: ${event.oldFrameProblem || '(implicit)'}`,
+    `- Cue policy/source/confidence: ${[event.cuePolicy || 'organic', event.source, event.confidence].filter(Boolean).join(' / ')}`,
+    '- Adapt visibly to this changed learner framing. Choose one uptake move: contrast old and new frames; change the task/question; update the evidence standard; or hand the replacement frame back to the learner for testing.',
+    '- Do not mention hidden state, director cues, ego/superego, or this private note in public speech.',
+  ].join('\n');
+}
+
 function combineDirectorCues(matches, timing) {
   if (!matches.length) return null;
   if (matches.length === 1) return matches[0];
@@ -586,6 +715,7 @@ export async function runInteraction(config, llmCall, options = {}) {
   // Main interaction loop
   let turnCount = resumed?.turnCount || 0;
   let interactionContinues = true;
+  let latestLearnerReframeEvent = resumed?.latestLearnerReframeEvent || null;
 
   const runLearnerPhase = async (phaseTurnCount, tutorResponse) => {
     const learnerDirectorCue = directorCueFor(directorPlan, phaseTurnCount, 'before_learner', conversationHistory);
@@ -601,11 +731,18 @@ export async function runInteraction(config, llmCall, options = {}) {
       trace: interactionTrace,
       profileContext: buildDirectorContext(directorPlan, learnerDirectorCue, 'learner'),
     });
+    const learnerReframeEvent = buildLearnerReframeEvent({
+      learnerMessage: learnerResponse.externalMessage,
+      conversationHistory,
+      directorCue: learnerDirectorCue,
+      turnNumber: phaseTurnCount,
+    });
 
     conversationHistory.push({
       role: 'learner',
       content: learnerResponse.externalMessage,
       internalDeliberation: observeInternals ? learnerResponse.internalDeliberation : null,
+      learnerReframeEvent,
     });
 
     interactionTrace.turns.push({
@@ -615,12 +752,14 @@ export async function runInteraction(config, llmCall, options = {}) {
       internalDeliberation: learnerResponse.internalDeliberation,
       emotionalState: learnerResponse.emotionalState,
       understandingLevel: learnerResponse.understandingLevel,
+      learnerReframeEvent,
       timestamp: new Date().toISOString(),
     });
 
     await updateLearnerWritingPad(learnerId, sessionId, learnerResponse, tutorResponse, topic);
     interactionTrace.outcomes.push(...detectTurnOutcomes(learnerResponse, tutorResponse));
     currentLearnerMessage = learnerResponse;
+    latestLearnerReframeEvent = learnerReframeEvent;
     return learnerResponse;
   };
 
@@ -637,6 +776,11 @@ export async function runInteraction(config, llmCall, options = {}) {
     // ================ TUTOR TURN ================
     const tutorDirectorCue = directorCueFor(directorPlan, turnCount, 'before_tutor');
     recordDirectorCue(interactionTrace, turnCount, tutorDirectorCue);
+    const tutorPrivateState = {
+      tutorAdaptationPolicy: directorPlan?.tutor_adaptation_policy || 'none',
+      learnerReframeEvent:
+        directorPlan?.tutor_adaptation_policy === 'uptake' ? latestLearnerReframeEvent || null : null,
+    };
     const tutorResponse = await runTutorTurn(
       learnerId,
       sessionId,
@@ -648,7 +792,9 @@ export async function runInteraction(config, llmCall, options = {}) {
       interactionTrace,
       directorPlan,
       tutorDirectorCue,
+      tutorPrivateState,
     );
+    latestLearnerReframeEvent = null;
 
     conversationHistory.push({
       role: 'tutor',
@@ -662,6 +808,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       externalMessage: tutorResponse.externalMessage,
       internalDeliberation: tutorResponse.internalDeliberation,
       strategy: tutorResponse.strategy,
+      learnerReframeEventUsed: tutorResponse.learnerReframeEventUsed || null,
       timestamp: new Date().toISOString(),
     });
 
@@ -692,6 +839,11 @@ export async function runInteraction(config, llmCall, options = {}) {
       reasoning: 'Director requested a tutor closing beat.',
     };
     recordDirectorCue(interactionTrace, turnCount + 1, closingCue);
+    const tutorPrivateState = {
+      tutorAdaptationPolicy: directorPlan?.tutor_adaptation_policy || 'none',
+      learnerReframeEvent:
+        directorPlan?.tutor_adaptation_policy === 'uptake' ? latestLearnerReframeEvent || null : null,
+    };
     const tutorResponse = await runTutorTurn(
       learnerId,
       sessionId,
@@ -703,7 +855,9 @@ export async function runInteraction(config, llmCall, options = {}) {
       interactionTrace,
       directorPlan,
       closingCue,
+      tutorPrivateState,
     );
+    latestLearnerReframeEvent = null;
     conversationHistory.push({
       role: 'tutor',
       content: tutorResponse.externalMessage,
@@ -715,6 +869,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       externalMessage: tutorResponse.externalMessage,
       internalDeliberation: tutorResponse.internalDeliberation,
       strategy: tutorResponse.strategy,
+      learnerReframeEventUsed: tutorResponse.learnerReframeEventUsed || null,
       timestamp: new Date().toISOString(),
       directorClosing: true,
     });
@@ -974,6 +1129,7 @@ async function runTutorTurn(
   trace,
   directorPlan = null,
   directorCue = null,
+  tutorPrivateState = {},
 ) {
   // Get tutor configuration from profile
   const _profile = tutorConfig.getActiveProfile(tutorProfileName);
@@ -1017,6 +1173,11 @@ async function runTutorTurn(
     .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
     .join('\n\n');
   const directorContext = buildDirectorContext(directorPlan, directorCue, 'tutor');
+  const tutorAdaptationPolicy =
+    tutorPrivateState?.tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none';
+  const learnerReframeEvent =
+    tutorAdaptationPolicy === 'uptake' ? tutorPrivateState?.learnerReframeEvent || null : null;
+  const tutorReframeContext = buildTutorReframeEventContext(learnerReframeEvent, tutorAdaptationPolicy);
 
   // Tutor internal deliberation
   const internalDeliberation = [];
@@ -1033,6 +1194,7 @@ Recent conversation:
 ${conversationContext}
 
 ${directorContext ? `${directorContext}\n` : ''}
+${tutorReframeContext ? `${tutorReframeContext}\n` : ''}
 
 The learner just said:
 "${learnerMessage}"
@@ -1041,6 +1203,7 @@ Draft your INITIAL response as a tutor. Consider:
 1. What is this learner's current state? (confused, engaged, frustrated, etc.)
 2. What strategy would work best? (scaffolding, questioning, direct explanation, validation)
 3. How can you advance their understanding while respecting their current position?
+${learnerReframeEvent ? '4. How should your strategy change now that the learner has revised an earlier frame?' : ''}
 
 Be warm but intellectually challenging. Don't be condescending. Build on their words.
 
@@ -1082,6 +1245,7 @@ Recent conversation:
 ${conversationContext}
 
 ${directorContext ? `${directorContext}\n` : ''}
+${tutorReframeContext ? `${tutorReframeContext}\n` : ''}
 
 The learner said:
 "${learnerMessage}"
@@ -1094,6 +1258,7 @@ CRITIQUE this draft. Consider:
 2. Emotional attunement: Does it respect the learner's current state?
 3. Socratic method: Does it ask generative questions or just lecture?
 4. ZPD awareness: Is the scaffolding appropriate for their level?
+${learnerReframeEvent ? "5. Tutor adaptation: Does the draft take up the learner's revised framing, or does it merely continue the prior lesson plan?" : ''}
 
 Do NOT write the tutor's replacement response. You are advisory, not the public speaker.
 Comment on the draft and name what should be kept, questioned, or changed.
@@ -1101,6 +1266,7 @@ Comment on the draft and name what should be kept, questioned, or changed.
 Format:
 
 FEEDBACK: [your critique of the draft, including what is working and what risks flattening the scene]
+${learnerReframeEvent ? 'UPTAKE_CHECK: [does the draft adapt to the learner reframe? name the best uptake move]' : ''}
 KEEP_OR_CHANGE: [keep as-is | revise lightly | revise substantially, with reasons]`;
 
     const superegoModel = superegoConfig.model || tutorModel;
@@ -1135,6 +1301,7 @@ Recent conversation:
 ${conversationContext}
 
 ${directorContext ? `${directorContext}\n` : ''}
+${tutorReframeContext ? `${tutorReframeContext}\n` : ''}
 
 The learner just said:
 "${learnerMessage}"
@@ -1147,6 +1314,7 @@ Internal teaching review feedback:
 
 You are the same tutor persona who wrote the initial response. The internal review does not draft public speech; it only comments on your suggestion.
 Adjudicate the feedback: keep the initial response if it is better, revise lightly if needed, or revise substantially if the critique reveals a real problem.
+${learnerReframeEvent ? 'Because a learner reframe event is present, your final answer must make one tutor adaptation move legible: contrast the old and new frames, change the task/question, update the evidence standard, or hand the replacement frame back to the learner for testing. Choose the move that best fits the scene; do not simply praise the insight and proceed.' : ''}
 
 Return exactly:
 PRIVATE_DECISION: [one short private sentence naming keep/revise and why]
@@ -1199,6 +1367,7 @@ The FINAL section must contain only public tutor speech. Do not mention the Ego,
     rawResponse: egoResponse.content, // Keep raw for debugging
     internalDeliberation,
     strategy,
+    learnerReframeEventUsed: learnerReframeEvent,
     suggestsEnding:
       externalMessage.toLowerCase().includes('good place to pause') ||
       externalMessage.toLowerCase().includes('think about this'),
@@ -1848,6 +2017,8 @@ export {
   extractExternalSection,
   sanitizeLearnerReusableText,
   buildAnchoredRevisitCue,
+  buildLearnerReframeEvent,
+  buildTutorReframeEventContext,
   calculateMemoryDelta,
   callLearnerAI,
   INTERACTION_OUTCOMES,

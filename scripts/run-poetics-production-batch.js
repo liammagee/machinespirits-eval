@@ -95,6 +95,7 @@ function parseArgs(argv) {
     skipScore: false,
     skipExistingScores: false,
     allowQualityWarnings: false,
+    adaptationArms: false,
     only: null,
     json: false,
   };
@@ -122,6 +123,7 @@ function parseArgs(argv) {
     else if (t === '--skip-score') args.skipScore = true;
     else if (t === '--skip-existing-scores') args.skipExistingScores = true;
     else if (t === '--allow-quality-warnings') args.allowQualityWarnings = true;
+    else if (t === '--adaptation-arms') args.adaptationArms = true;
     else if (t === '--only') args.only = new Set(splitCsv(argv[++i]));
     else if (t === '--json') args.json = true;
     else throw new Error(`unknown arg: ${t}`);
@@ -182,6 +184,9 @@ function buildPlan(rawArgs = {}) {
   if (!args.critics?.length) args.critics = DEFAULT_CRITICS;
 
   const units = [];
+  const pairedTargetArms = args.adaptationArms
+    ? ['none', 'reframe-only', 'tutor-uptake-only', 'reframe+tutor-uptake']
+    : ['none', 'reframe'];
   for (let i = 1; i <= args.repeats; i++) {
     const r = repeatLabel(i);
     units.push({
@@ -191,7 +196,8 @@ function buildPlan(rawArgs = {}) {
       spec: args.targetSpec,
       tidStart: args.targetTidStart,
       only: args.targetOnly,
-      pairedPolicies: ['none', 'reframe'],
+      pairedPolicies: pairedTargetArms,
+      pairedAdaptationArms: args.adaptationArms,
       directorRevisitAnchor: 'misframing-candidate',
       directorVariationKey: variationKeyFor(args, r, 'target'),
       outDir: path.join(args.rootDir, `target-${r}`, 'sample'),
@@ -279,7 +285,10 @@ function generationCommand(unit, args) {
   ];
   if (unit.tidStart != null) cmd.push('--tid-start', String(unit.tidStart));
   if (unit.pairedPolicies) {
-    cmd.push('--paired-continuation-policies', unit.pairedPolicies.join(','));
+    cmd.push(
+      unit.pairedAdaptationArms ? '--paired-adaptation-arms' : '--paired-continuation-policies',
+      unit.pairedPolicies.join(','),
+    );
     cmd.push('--director-revisit-anchor', unit.directorRevisitAnchor);
   }
   if (unit.directorVariationKey) cmd.push('--director-variation-key', unit.directorVariationKey);

@@ -73,6 +73,31 @@ describe('run-poetics-production-batch', () => {
     assert.ok(cmd.includes('phase2-production-v1:r01:target'));
   });
 
+  it('can emit the four-arm tutor-adaptation target design', () => {
+    const args = parseArgs([
+      '--root-dir',
+      '/tmp/phase2-production-v1-test',
+      '--repeats',
+      '1',
+      '--stress-repeats',
+      '0',
+      '--adaptation-arms',
+      '--critics',
+      'qwen/qwen3.7-max,google/gemini-3.5-flash',
+    ]);
+    const target = buildPlan(args).units.find((unit) => unit.kind === 'target');
+    const cmd = generationCommand(target, args);
+
+    assert.deepEqual(target.pairedPolicies, ['none', 'reframe-only', 'tutor-uptake-only', 'reframe+tutor-uptake']);
+    assert.equal(target.pairedAdaptationArms, true);
+    assert.ok(cmd.includes('--paired-adaptation-arms'));
+    assert.ok(cmd.includes('none,reframe-only,tutor-uptake-only,reframe+tutor-uptake'));
+
+    const jobs = scoreJobs(target, args);
+    assert.equal(jobs.length, 8);
+    assert.ok(jobs.some((job) => job.id === 'target-r01-reframe+tutor-uptake'));
+  });
+
   it('can point target units at a breadth scenario spec', () => {
     const breadthSpec = path.resolve('config/poetics-calibration/phase2-dramas-v4.yaml');
     const args = parseArgs([

@@ -247,6 +247,34 @@ metric is useful because it distinguishes scripts where recognitive form is
 mostly learner-side from scripts where the tutor actually adapts after the
 learner's reframe.
 
+The next adaptation test can now be run as a four-arm paired design. The arms
+separate the public learner reframe cue from tutor-private uptake pressure:
+
+- `none`: no public reframe cue, no tutor uptake pressure.
+- `reframe-only`: public learner reframe cue, no tutor uptake pressure.
+- `tutor-uptake-only`: no public reframe cue, but the tutor receives an uptake
+  contract; this should mostly be inert unless an organic learner reframe is
+  detected.
+- `reframe+tutor-uptake`: public learner reframe cue plus tutor-private uptake
+  pressure on the next tutor turn.
+
+Pilot command:
+
+```bash
+CODEX_REASONING_EFFORT=high node scripts/run-poetics-production-batch.js \
+  --batch-id phase2-tutor-adaptation-pilot-v1 \
+  --repeats 1 \
+  --stress-repeats 0 \
+  --adaptation-arms \
+  --only target-r01 \
+  --critics qwen/qwen3.7-max,google/gemini-3.5-flash,anthropic/claude-sonnet-4.6
+```
+
+The generator stores hidden `learner_reframe_event` records in the full trace
+and passes them only into the next tutor turn when the branch's
+`tutor_adaptation_policy` is `uptake`. Public transcripts should show the
+resulting tutor move, not the hidden event itself.
+
 The strict-control slice lives under
 `config/poetics-calibration/phase2-hard-trap-controls-v1/`. The first repeat
 confirmed both D25 and D26 as traps for Qwen, Gemini, Sonnet, and DeepSeek. The

@@ -204,4 +204,113 @@ describe('runInteraction (multi-turn)', () => {
       assert.strictEqual(typeof INTERACTION_OUTCOMES[key], 'string');
     }
   });
+
+  it('passes hidden learner reframe events into the next tutor uptake prompt', async () => {
+    const calls = [];
+    async function llmCall(model, systemPrompt, messages, options = {}) {
+      calls.push({ model, systemPrompt, messages, options });
+      const user = messages?.[0]?.content || '';
+      if (options.agentRole === 'learner_superego') {
+        return { content: 'Keep the public wording concrete; name the old frame and replacement.', usage: {} };
+      }
+      if (options.agentRole === 'learner_ego' && /Produce your final response/.test(user)) {
+        return {
+          content:
+            'FINAL:\nI thought the decimal was the proof. The problem was treating the decimal as proof by itself. Better frame: the equation has to do the proof work.',
+          usage: {},
+        };
+      }
+      if (options.agentRole === 'learner_ego' && /opening message/.test(user)) {
+        return { content: 'FINAL:\nI thought the decimal was the proof.', usage: {} };
+      }
+      if (options.agentRole === 'learner_ego') {
+        return { content: 'I thought the decimal was the proof.', usage: {} };
+      }
+      if (options.agentRole === 'tutor_superego') {
+        return {
+          content:
+            'FEEDBACK: Check whether the tutor takes up the learner frame.\nUPTAKE_CHECK: Revise toward the new proof frame.\nKEEP_OR_CHANGE: revise lightly',
+          usage: {},
+        };
+      }
+      if (options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(systemPrompt)) {
+        return {
+          content:
+            'PRIVATE_DECISION: revise to test the learner reframe.\nFINAL:\nUse that new frame: let the equation, not the decimal, carry the proof. What would the equation need to show first?',
+          usage: {},
+        };
+      }
+      if (options.agentRole === 'tutor_ego') {
+        return { content: 'Check what the decimal can and cannot prove.', usage: {} };
+      }
+      return { content: 'stub', usage: {} };
+    }
+
+    const directorPlan = {
+      opening_speaker: 'learner',
+      tutor_adaptation_policy: 'uptake',
+      interventions: [
+        {
+          after_turn: 1,
+          timing: 'before_learner',
+          cue_kind: 'learner_revisit_earlier_wording',
+          revisit_policy: 'reframe',
+          revisit_anchor: 'opening',
+          instruction: 'An earlier learner line returns to the table.',
+        },
+      ],
+    };
+
+    const result = await runInteraction(
+      {
+        learnerId: 'test-learner-adaptation',
+        personaId: 'eager_novice',
+        tutorProfile: 'recognition',
+        topic: 'Irrationality proof',
+        scenario: {
+          name: 'Tutor adaptation test',
+          learnerStartState: 'The learner treats a decimal as proof.',
+          directorPlan,
+        },
+      },
+      llmCall,
+      {
+        maxTurns: 2,
+        forceMaxTurns: true,
+        observeInternals: true,
+        learnerProfile: 'ego_superego',
+        directorPlan,
+      },
+    );
+
+    const reframeTurn = result.turns.find((turn) => turn.phase === 'learner' && turn.learnerReframeEvent);
+    assert.ok(reframeTurn, 'expected learner turn to carry hidden reframe event');
+    assert.equal(reframeTurn.learnerReframeEvent.cuePolicy, 'reframe');
+
+    const tutorUseTurn = result.turns.find((turn) => turn.phase === 'tutor' && turn.learnerReframeEventUsed);
+    assert.ok(tutorUseTurn, 'expected following tutor turn to consume hidden reframe event');
+    assert.match(tutorUseTurn.externalMessage, /Use that new frame/);
+
+    const tutorSuperegoPrompts = calls
+      .filter((call) => call.options.agentRole === 'tutor_superego')
+      .map((call) => call.systemPrompt);
+    assert.ok(
+      tutorSuperegoPrompts.some((prompt) => /Tutor-private learner reframe event/.test(prompt)),
+      'tutor superego should see private reframe state',
+    );
+    assert.ok(
+      tutorSuperegoPrompts.some((prompt) => /UPTAKE_CHECK/.test(prompt)),
+      'tutor superego should be asked to evaluate uptake',
+    );
+
+    const tutorAdjudicationPrompts = calls
+      .filter(
+        (call) => call.options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(call.systemPrompt),
+      )
+      .map((call) => call.systemPrompt);
+    assert.ok(
+      tutorAdjudicationPrompts.some((prompt) => /must make one tutor adaptation move legible/.test(prompt)),
+      'tutor ego adjudication should choose an uptake move',
+    );
+  });
 });

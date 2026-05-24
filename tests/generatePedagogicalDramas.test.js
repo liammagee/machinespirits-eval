@@ -11,9 +11,11 @@ import {
   intrusiveStageDirectionFailures,
   loadApproachDatabases,
   noCueReframeLeakageFailures,
+  pairedBranchDefinitions,
   qualityWarningsFor,
   stageDirectionStyleFor,
   withPairedDirectorRevisitCue,
+  withTutorAdaptationPolicy,
 } from '../scripts/generate-pedagogical-dramas.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -110,6 +112,32 @@ describe('generate-pedagogical-dramas', () => {
     assert.match(guarded.side_constraints.learner, /Do not quote earlier learner wording/);
     assert.match(guarded.side_constraints.tutor, /do not ask the learner to revisit/i);
     assert.equal(guarded.interventions.length, 1);
+  });
+
+  it('maps paired adaptation arms onto learner-cue and tutor-uptake factors', () => {
+    const branches = pairedBranchDefinitions({
+      pairedAdaptationArms: ['none', 'reframe-only', 'tutor-uptake-only', 'reframe+tutor-uptake'],
+    });
+
+    assert.deepEqual(branches, [
+      { key: 'none', revisitPolicy: 'none', tutorAdaptationPolicy: 'none' },
+      { key: 'reframe-only', revisitPolicy: 'reframe', tutorAdaptationPolicy: 'none' },
+      { key: 'tutor-uptake-only', revisitPolicy: 'none', tutorAdaptationPolicy: 'uptake' },
+      { key: 'reframe+tutor-uptake', revisitPolicy: 'reframe', tutorAdaptationPolicy: 'uptake' },
+    ]);
+  });
+
+  it('adds tutor adaptation policy to director plans without adding a public cue', () => {
+    const plan = withTutorAdaptationPolicy(
+      {
+        interventions: [{ cue_kind: 'ordinary_scene', instruction: 'A bell rings.' }],
+      },
+      'uptake',
+    );
+
+    assert.equal(plan.tutor_adaptation_policy, 'uptake');
+    assert.match(plan.tutor_adaptation_contract, /tutor-private learner reframe event/);
+    assert.equal(plan.interventions.length, 1);
   });
 
   it('flags explicit public self-reframing in no-cue branches', () => {

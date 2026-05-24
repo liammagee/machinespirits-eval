@@ -62,6 +62,7 @@
  *        --director-revisit-anchor latest|opening|misframing-candidate
  *        --director-variation-key <repeat-or-batch-id>
  *        --paired-continuation-policies none,revoice,reconsider,reframe
+ *        --paired-adaptation-arms none,reframe-only,tutor-uptake-only,reframe+tutor-uptake
  * Env:   CODEX_REASONING_EFFORT (default xhigh) · CODEX_MODEL (default: codex config)
  */
 
@@ -84,6 +85,12 @@ const PEDAGOGICAL_APPROACHES_DB = path.join(CAL_DIR, 'pedagogical-approaches.yam
 const DIALOGUE_APPROACHES_DB = path.join(CAL_DIR, 'dialogue-approaches.yaml');
 const DIRECTOR_REVISIT_POLICIES = new Set(['none', 'anchor', 'revoice', 'reconsider', 'reframe']);
 const DIRECTOR_REVISIT_ANCHORS = new Set(['latest', 'opening', 'misframing-candidate']);
+const PAIRED_ADAPTATION_ARMS = {
+  none: { revisitPolicy: 'none', tutorAdaptationPolicy: 'none' },
+  'reframe-only': { revisitPolicy: 'reframe', tutorAdaptationPolicy: 'none' },
+  'tutor-uptake-only': { revisitPolicy: 'none', tutorAdaptationPolicy: 'uptake' },
+  'reframe+tutor-uptake': { revisitPolicy: 'reframe', tutorAdaptationPolicy: 'uptake' },
+};
 
 // ── args ─────────────────────────────────────────────────────────────────────
 
@@ -113,6 +120,7 @@ function parseArgs(argv) {
     directorRevisitAnchor: 'latest',
     directorVariationKey: null,
     pairedContinuationPolicies: null,
+    pairedAdaptationArms: null,
   };
   for (let i = 0; i < argv.length; i++) {
     const t = argv[i];
@@ -145,6 +153,11 @@ function parseArgs(argv) {
         .split(',')
         .map((policy) => policy.trim())
         .filter(Boolean);
+    } else if (t === '--paired-adaptation-arms') {
+      a.pairedAdaptationArms = String(argv[++i] || '')
+        .split(',')
+        .map((arm) => arm.trim())
+        .filter(Boolean);
     } else throw new Error(`unknown arg: ${t}`);
   }
   if (!Number.isInteger(a.seed)) throw new Error('--seed must be an integer');
@@ -167,6 +180,17 @@ function parseArgs(argv) {
         throw new Error('--paired-continuation-policies must use none|anchor|revoice|reconsider|reframe');
       }
     }
+  }
+  if (a.pairedAdaptationArms) {
+    if (!a.pairedAdaptationArms.length) throw new Error('--paired-adaptation-arms needs at least one arm');
+    for (const arm of a.pairedAdaptationArms) {
+      if (!PAIRED_ADAPTATION_ARMS[arm]) {
+        throw new Error('--paired-adaptation-arms must use none,reframe-only,tutor-uptake-only,reframe+tutor-uptake');
+      }
+    }
+  }
+  if (a.pairedContinuationPolicies && a.pairedAdaptationArms) {
+    throw new Error('use either --paired-continuation-policies or --paired-adaptation-arms, not both');
   }
   a.spec = a.spec || DRAMAS_SPEC;
   // Default output locations are GENERATOR-AWARE so the arms never collide:
@@ -703,6 +727,7 @@ function keyItemFor(d, nTutor, nLearner, qualityWarnings = []) {
     director_revisit_policy: d._directorRevisitPolicy || 'none',
     director_revisit_anchor:
       d._directorRevisitPolicy && d._directorRevisitPolicy !== 'none' ? d._directorRevisitAnchor || 'latest' : null,
+    tutor_adaptation_policy: d._tutorAdaptationPolicy || d._directorPlan?.tutor_adaptation_policy || 'none',
     opening_speaker: d._directorPlan?.opening_speaker || null,
     ending_speaker: d._directorPlan?.ending_speaker || null,
     quality_status: blocked ? 'review_before_scoring' : 'ok',
@@ -1759,6 +1784,18 @@ function withPairedDirectorRevisitCue(plan, policy, anchorPolicy) {
     : withDirectorRevisitCue(cueFreePlan, policy, anchorPolicy);
 }
 
+function withTutorAdaptationPolicy(plan, policy = 'none') {
+  if (!plan || policy === 'none') {
+    return plan ? { ...plan, tutor_adaptation_policy: 'none' } : plan;
+  }
+  return {
+    ...plan,
+    tutor_adaptation_policy: policy,
+    tutor_adaptation_contract:
+      'If the runtime supplies a tutor-private learner reframe event, the tutor ego/superego loop must adapt to the changed learner frame. If no event is supplied, do not invent one.',
+  };
+}
+
 function extractJsonObject(text) {
   const raw = String(text || '').trim();
   if (!raw) return null;
@@ -1861,7 +1898,13 @@ async function buildDirectorPlan(d, llmCall, args) {
       provenance: response.provenance || response.apiPayload?.provenance || null,
     });
     return withDirectorCueProvenance(
-      applyApproachDirectorOverrides(d, withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor)),
+      applyApproachDirectorOverrides(
+        d,
+        withTutorAdaptationPolicy(
+          withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
+          d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+        ),
+      ),
     );
   } catch (error) {
     const merged = applySpecDirectorOverrides(d, {
@@ -1870,7 +1913,13 @@ async function buildDirectorPlan(d, llmCall, args) {
       provenance: response.provenance || response.apiPayload?.provenance || null,
     });
     return withDirectorCueProvenance(
-      applyApproachDirectorOverrides(d, withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor)),
+      applyApproachDirectorOverrides(
+        d,
+        withTutorAdaptationPolicy(
+          withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
+          d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+        ),
+      ),
     );
   }
 }
@@ -2140,6 +2189,7 @@ function writeGeneratedDramaArtifacts({
           director_revisit_cue: d._directorRevisitPolicy !== 'none',
           director_revisit_policy: d._directorRevisitPolicy,
           director_revisit_anchor: d._directorRevisitAnchor,
+          tutor_adaptation_policy: d._tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none',
           director_variation_key: d._directorVariationKey || null,
           stage_direction_style: stageDirectionStyleFor(d)?.id || null,
           model: args.generator === 'codex' ? `codex@${CODEX_REASONING_EFFORT}` : args.model,
@@ -2162,7 +2212,16 @@ function writeGeneratedDramaArtifacts({
   );
 }
 
-function baseKeyObject({ args, runtime, directorPolicy, directorAnchor, transcriptsDir, order, paired = null }) {
+function baseKeyObject({
+  args,
+  runtime,
+  directorPolicy,
+  directorAnchor,
+  tutorAdaptationPolicy = 'none',
+  transcriptsDir,
+  order,
+  paired = null,
+}) {
   return {
     _comment:
       'HELD OUT — do not read while labelling. Joins to instrument scores + human labels only AFTER both are produced. intended_lean / intended_tutor_character / dramatic_shape are DESIGN HYPOTHESES, never labels.',
@@ -2190,6 +2249,7 @@ function baseKeyObject({ args, runtime, directorPolicy, directorAnchor, transcri
     director_revisit_cue: directorPolicy !== 'none',
     director_revisit_policy: directorPolicy,
     director_revisit_anchor: directorPolicy === 'none' ? null : directorAnchor,
+    tutor_adaptation_policy: tutorAdaptationPolicy,
     approach_databases: {
       pedagogical: path.relative(WORKTREE_ROOT, args.pedagogyDb),
       dialogue: path.relative(WORKTREE_ROOT, args.dialogueDb),
@@ -2229,23 +2289,41 @@ function finalizeKeyObject(keyObj) {
   return keyObj;
 }
 
+function pairedBranchDefinitions(args) {
+  if (args.pairedAdaptationArms) {
+    return [...new Set(args.pairedAdaptationArms)].map((arm) => ({
+      key: arm,
+      revisitPolicy: PAIRED_ADAPTATION_ARMS[arm].revisitPolicy,
+      tutorAdaptationPolicy: PAIRED_ADAPTATION_ARMS[arm].tutorAdaptationPolicy,
+    }));
+  }
+  return [...new Set(args.pairedContinuationPolicies)].map((policy) => ({
+    key: policy,
+    revisitPolicy: policy,
+    tutorAdaptationPolicy: 'none',
+  }));
+}
+
 async function generatePairedContinuations({ args, order, runtime, llmCall }) {
-  const policies = [...new Set(args.pairedContinuationPolicies)];
-  const armDirs = Object.fromEntries(policies.map((policy) => [policy, policyArtifactDirs(args, policy)]));
+  const branches = pairedBranchDefinitions(args);
+  const branchKeys = branches.map((branch) => branch.key);
+  const armDirs = Object.fromEntries(branches.map((branch) => [branch.key, policyArtifactDirs(args, branch.key)]));
   const armKeys = Object.fromEntries(
-    policies.map((policy) => [
-      policy,
+    branches.map((branch) => [
+      branch.key,
       baseKeyObject({
         args,
         runtime,
-        directorPolicy: policy,
+        directorPolicy: branch.revisitPolicy,
         directorAnchor: args.directorRevisitAnchor,
-        transcriptsDir: armDirs[policy].transcriptsDir,
+        tutorAdaptationPolicy: branch.tutorAdaptationPolicy,
+        transcriptsDir: armDirs[branch.key].transcriptsDir,
         order,
         paired: {
           mode: 'fixed_prefix_continuation',
           prefix_through: 'tutor_turn_2',
-          branch_policies: policies,
+          branch_policies: branchKeys,
+          branches,
         },
       }),
     ]),
@@ -2259,7 +2337,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
     fs.mkdirSync(path.dirname(dirs.keyPath), { recursive: true });
   }
 
-  console.log(`\n── paired continuations: fixed prefix through tutor turn 2 · policies=${policies.join(',')} ──`);
+  console.log(`\n── paired continuations: fixed prefix through tutor turn 2 · branches=${branchKeys.join(',')} ──`);
   for (const d of order) {
     d._directorVariationKey = d.director_variation_key || args.directorVariationKey || null;
     console.log(`\n  ${d._tid} (${d.id}) — generating shared prefix …`);
@@ -2267,6 +2345,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
       ...d,
       _directorRevisitPolicy: 'none',
       _directorRevisitAnchor: null,
+      _tutorAdaptationPolicy: 'none',
     };
     const directorPlan = await buildDirectorPlan(prefixDrama, llmCall, args);
     const prefixTrace = await runtime.runInteraction(
@@ -2291,27 +2370,31 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
     const prefixTurns = externalTurns(resumeTrace);
     const prefixHash = sha256Short(renderTranscript(prefixTurns));
 
-    for (const policy of policies) {
-      const dirs = armDirs[policy];
+    for (const branch of branches) {
+      const dirs = armDirs[branch.key];
       const outTxt = path.join(dirs.outDir, `${d._tid}.txt`);
       if (fs.existsSync(outTxt) && !args.force) {
         throw new Error(`paired continuation output exists: ${outTxt} (pass --force to overwrite)`);
       }
       const branchDirectorPlan = withDirectorCueProvenance(
-        withPairedDirectorRevisitCue(directorPlan, policy, args.directorRevisitAnchor),
+        withTutorAdaptationPolicy(
+          withPairedDirectorRevisitCue(directorPlan, branch.revisitPolicy, args.directorRevisitAnchor),
+          branch.tutorAdaptationPolicy,
+        ),
       );
       const branchDrama = {
         ...d,
         _directorMode: args.directorMode,
         _directorPlan: branchDirectorPlan,
         _directorVariationKey: d._directorVariationKey || null,
-        _directorRevisitPolicy: policy,
-        _directorRevisitAnchor: policy === 'none' ? null : args.directorRevisitAnchor,
+        _directorRevisitPolicy: branch.revisitPolicy,
+        _directorRevisitAnchor: branch.revisitPolicy === 'none' ? null : args.directorRevisitAnchor,
+        _tutorAdaptationPolicy: branch.tutorAdaptationPolicy,
       };
-      console.log(`    ${policy} → continuing from prefix ${prefixHash} …`);
+      console.log(`    ${branch.key} → continuing from prefix ${prefixHash} …`);
       const trace = await runtime.runInteraction(
         {
-          learnerId: branchId('branch', d.id, policy),
+          learnerId: branchId('branch', d.id, branch.key),
           personaId: d.persona,
           tutorProfile: d.tutor_profile,
           topic: d.topic,
@@ -2320,7 +2403,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
             learnerStartState: d.learner_start_state,
             directorPlan: branchDirectorPlan,
           },
-          sessionId: branchId('branch-session', d.id, policy),
+          sessionId: branchId('branch-session', d.id, branch.key),
         },
         llmCall,
         {
@@ -2342,7 +2425,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
         turns,
         removedNotes,
         traceTurns: trace.turns,
-        directorPolicy: policy,
+        directorPolicy: branch.revisitPolicy,
       });
       warnings.push(...qualityWarnings.map(formatQualityWarning));
       if (removedNotes.length) {
@@ -2363,7 +2446,9 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
         mode: 'fixed_prefix_continuation',
         prefix_through: 'tutor_turn_2',
         shared_prefix_hash: prefixHash,
-        branch_policy: policy,
+        branch_policy: branch.key,
+        director_revisit_policy: branch.revisitPolicy,
+        tutor_adaptation_policy: branch.tutorAdaptationPolicy,
       };
       writeGeneratedDramaArtifacts({
         args,
@@ -2377,7 +2462,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
         transcriptArtifacts,
         pairedContinuation,
       });
-      armKeys[policy].items[d._tid] = {
+      armKeys[branch.key].items[d._tid] = {
         ...keyItemFor(
           branchDrama,
           turns.filter((turn) => turn.role === 'TUTOR').length,
@@ -2389,10 +2474,10 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
     }
   }
 
-  for (const policy of policies) {
-    const dirs = armDirs[policy];
-    fs.writeFileSync(dirs.keyPath, yaml.stringify(finalizeKeyObject(armKeys[policy])), 'utf8');
-    console.log(`\n${policy}:`);
+  for (const branch of branches) {
+    const dirs = armDirs[branch.key];
+    fs.writeFileSync(dirs.keyPath, yaml.stringify(finalizeKeyObject(armKeys[branch.key])), 'utf8');
+    console.log(`\n${branch.key}:`);
     console.log(`  samples → ${path.relative(WORKTREE_ROOT, dirs.outDir)}`);
     console.log(`  key     → ${path.relative(WORKTREE_ROOT, dirs.keyPath)}`);
   }
@@ -2464,6 +2549,10 @@ async function main() {
     const revisit = resolveDirectorRevisitOptions(d, args);
     d._directorRevisitPolicy = revisit.policy;
     d._directorRevisitAnchor = revisit.anchor;
+    d._tutorAdaptationPolicy = d.tutor_adaptation_policy || 'none';
+    if (!['none', 'uptake'].includes(d._tutorAdaptationPolicy)) {
+      throw new Error(`drama ${d.id || '<unknown>'} tutor_adaptation_policy must be none|uptake`);
+    }
     d._directorVariationKey = d.director_variation_key || args.directorVariationKey || null;
     d._stageDirectionStyle = resolveStageDirectionStyle(d);
   }
@@ -2535,7 +2624,7 @@ async function main() {
       : args.generator === 'codex'
         ? makeCodexLlmCall()
         : makeClaudeLlmCall(args.model);
-  if (args.pairedContinuationPolicies) {
+  if (args.pairedContinuationPolicies || args.pairedAdaptationArms) {
     await generatePairedContinuations({ args, order, runtime, llmCall });
     return;
   }
@@ -2570,6 +2659,7 @@ async function main() {
               _directorRevisitPolicy:
                 traceJson.run?.director_revisit_policy || (traceJson.run?.director_revisit_cue ? 'anchor' : 'none'),
               _directorRevisitAnchor: traceJson.run?.director_revisit_anchor || 'latest',
+              _tutorAdaptationPolicy: traceJson.run?.tutor_adaptation_policy || 'none',
               _directorVariationKey: traceJson.run?.director_variation_key || null,
               _stageDirectionStyle:
                 STAGE_DIRECTION_STYLE_BY_ID.get(traceJson.run?.stage_direction_style) || d._stageDirectionStyle || null,
@@ -2667,6 +2757,7 @@ async function main() {
             director_revisit_cue: d._directorRevisitPolicy !== 'none',
             director_revisit_policy: d._directorRevisitPolicy,
             director_revisit_anchor: d._directorRevisitAnchor,
+            tutor_adaptation_policy: d._tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none',
             director_variation_key: d._directorVariationKey || null,
             stage_direction_style: stageDirectionStyleFor(d)?.id || null,
             model: args.generator === 'codex' ? `codex@${CODEX_REASONING_EFFORT}` : args.model,
@@ -2697,6 +2788,9 @@ async function main() {
     runtime,
     directorPolicy: revisitSummary.policy,
     directorAnchor: revisitSummary.anchor,
+    tutorAdaptationPolicy: order.some((d) => d._tutorAdaptationPolicy && d._tutorAdaptationPolicy !== 'none')
+      ? 'mixed'
+      : 'none',
     transcriptsDir: args.transcriptsDir,
     order,
   });
@@ -2765,6 +2859,7 @@ export {
   intrusiveStageDirectionFailures,
   loadApproachDatabases,
   noCueReframeLeakageFailures,
+  pairedBranchDefinitions,
   qualityWarningsFor,
   reframeComplianceFailures,
   reframeMatchStats,
@@ -2772,4 +2867,5 @@ export {
   revoiceMatchStats,
   stageDirectionStyleFor,
   withPairedDirectorRevisitCue,
+  withTutorAdaptationPolicy,
 };

@@ -30,6 +30,8 @@ import {
   generateLearnerResponse,
   sanitizeLearnerReusableText,
   buildAnchoredRevisitCue,
+  buildLearnerReframeEvent,
+  buildTutorReframeEventContext,
   calculateMemoryDelta,
   INTERACTION_OUTCOMES,
 } from '../learnerTutorInteractionEngine.js';
@@ -202,6 +204,42 @@ describe('buildAnchoredRevisitCue', () => {
 
     assert.equal(cue.anchor_policy, 'misframing-candidate');
     assert.equal(cue.anchor_quote, 'I kept treating sad as the whole close reading before naming an image.');
+  });
+});
+
+describe('learner reframe event detection', () => {
+  it('extracts a hidden learner reframe event from a reframe cue response', () => {
+    const event = buildLearnerReframeEvent({
+      turnNumber: 2,
+      directorCue: {
+        revisit_policy: 'reframe',
+        anchor_quote: 'I thought the decimal was the proof.',
+      },
+      learnerMessage:
+        'I thought the decimal was the proof. The problem was treating the decimal as proof by itself. Better frame: the equation has to do the proof work.',
+      conversationHistory: [{ role: 'learner', content: 'I thought the decimal was the proof.' }],
+    });
+
+    assert.equal(event.kind, 'learner_reframe_event');
+    assert.equal(event.cuePolicy, 'reframe');
+    assert.equal(event.confidence, 1);
+    assert.match(event.oldLearnerLine, /decimal was the proof/);
+    assert.match(event.revisedFrame, /Better frame/);
+  });
+
+  it('builds tutor-private uptake context only for uptake policy', () => {
+    const event = buildLearnerReframeEvent({
+      directorCue: { revisit_policy: 'reframe', anchor_quote: 'I thought the chart proved cause.' },
+      learnerMessage:
+        'I thought the chart proved cause. The old frame was the problem. Instead, the chart is evidence for a pattern.',
+    });
+
+    assert.equal(buildTutorReframeEventContext(event, 'none'), '');
+    const context = buildTutorReframeEventContext(event, 'uptake');
+    assert.match(context, /Tutor-private learner reframe event/);
+    assert.match(context, /contrast old and new frames/);
+    assert.match(context, /Do not mention hidden state/);
+    assert.match(buildTutorReframeEventContext(null, 'uptake'), /No learner reframe event was detected/);
   });
 });
 
