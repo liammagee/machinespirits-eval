@@ -61,6 +61,7 @@ import { fileURLToPath } from 'url';
 import yaml from 'yaml';
 import { callModel, parseJsonResponse, runWithConcurrency, MODEL_MAP } from './score-poetics-calibration.js';
 import { evidencePresent, to100 } from './score-poetics-phase1.js';
+import { createProgressReporter } from './progress.js';
 import { quadraticWeightedKappa, cohenKappa } from './compare-poetics-critics.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -691,10 +692,20 @@ async function mainScore(o) {
   console.log(
     `Scoring ${sample.length} transcripts with ${o.mock ? 'MOCK' : o.model} (concurrency ${o.concurrency})...`,
   );
+  const progress = createProgressReporter({
+    label: 'scoring',
+    total: sample.length,
+  });
+  progress.start(`${o.mock ? 'MOCK' : o.model} · concurrency ${o.concurrency}`);
   const scored = await runWithConcurrency(
-    sample.map((item) => () => scoreItem(item, o.model, o.mock)),
+    sample.map((item) => async () => {
+      const result = await scoreItem(item, o.model, o.mock);
+      progress.step(`${item.id} ${result.error ? 'error' : result.formClass}`);
+      return result;
+    }),
     o.concurrency,
   );
+  progress.finish('scoring complete');
   const h2 = computeH2(scored);
   const counts = formCounts(scored);
   const critic = o.mock ? 'mock' : o.model;

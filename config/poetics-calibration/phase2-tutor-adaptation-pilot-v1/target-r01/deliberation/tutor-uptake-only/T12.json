@@ -1,0 +1,1998 @@
+{
+  "tid": "T12",
+  "drama_id": "D17",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "uptake",
+    "director_variation_key": "phase2-tutor-adaptation-pilot-v1:r01:target",
+    "stage_direction_style": "ambient_pressure",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/transcripts/tutor-uptake-only/T12.public.txt",
+      "full": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/transcripts/tutor-uptake-only/T12.full.md",
+      "stage": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/transcripts/tutor-uptake-only/T12.stage.md",
+      "tutor": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/transcripts/tutor-uptake-only/T12.tutor.md",
+      "learner": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/transcripts/tutor-uptake-only/T12.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "99a35daf1ecc2a12",
+      "branch_policy": "tutor-uptake-only",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "uptake"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-tutor-adaptation-pilot-v1:r01:target",
+    "scene_setting": "A geology field-station briefing room just before a timed coach departure to a canyon overlook; mid-morning, laminated maps on a narrow table.",
+    "scene_opening": "The clock above the permit desk ticks loudly while a ranger's boarding list waits beside a cross-section map.",
+    "relationship": "A terse field tutor and an anxious visiting learner in a small practical group, with the learner trying not to slow everyone down.",
+    "stakes": "The learner needs to recognise that immense landscapes can come from tiny rates acting over deep time, rather than assuming only sudden catastrophes can make large forms.",
+    "opening_speaker": "director",
+    "ending_speaker": "tutor",
+    "locale": "International field-course English with a British/Commonwealth classroom lean; plain, compact, low-idiom, no regional performance.",
+    "register": "Clipped, practical, time-pressed, dry but not mocking; warmth appears through usefulness rather than reassurance.",
+    "stage_direction_style": "ambient_pressure",
+    "stage_direction_style_prompt": "Use time, queue, room, or institutional pressure as stage texture; avoid explaining the lesson through it.",
+    "voice_constraints": "Avoid generic validation-first AI tutoring prose. Prefer short claims, objects, rates, comparisons, and held pauses. The tutor may use numbers but must translate them into graspable scale. The learner's uncertainty should sound ordinary and tentative, not melodramatic or helpless. No caricatured spelling or dialect markers. Stage-direction source: Use time, queue, room, or institutional pressure as stage texture; avoid explaining the lesson through it.",
+    "person_policy": "First person is available mainly to the learner for uncertainty and prior belief. The tutor should mostly use third-person descriptions, impersonal examples, and concrete nouns. Second person should be rare and functional.",
+    "direct_address_budget": "At most one direct you/your validation beat in the whole scene; none is preferred.",
+    "side_constraints": {
+      "tutor": "Terse; turns abstraction into something holdable, such as millimetres per year, stacked pages, fingernail growth, or a marked ruler over millions of years. Do not begin by praising the learner's intuition. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Keep the next prompt task-local.",
+      "learner": "The learner should put the fast-catastrophe picture into public speech early, in tentative ordinary wording such as \"I thought\" or \"first instinct\", before the tutor supplies slow-rate reasoning. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", or \"that still stands\", and do not replace an earlier frame. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "A staff member calls that the coach leaves in four minutes; the tutor's next move must become shorter and more usable, not more elaborate.",
+        "reasoning": "This prevents a smooth tutorial rhythm and pressures the explanation toward concrete rate-timescale recognition.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 19262,
+          "promptHashes": {
+            "system": "86f72b946a2efee2",
+            "user": "2cfff797d3201572",
+            "combined": "40bed0e990122698"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z5zMla",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z5zMla/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "The field-station queue and departure clock create ambient pressure without turning the setting into the lesson. A director opening breaks the usual learner-question start, while a tutor ending suits the recognition condition: the scene can close on a compact rate-timescale handle rather than a learner performance of mastery.",
+    "pedagogical_approach_id": null,
+    "dialogue_approach_id": null,
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 19262,
+      "promptHashes": {
+        "system": "86f72b946a2efee2",
+        "user": "2cfff797d3201572",
+        "combined": "40bed0e990122698"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z5zMla",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z5zMla/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "uptake",
+    "no_cue_anti_reframe_guard": true,
+    "tutor_adaptation_contract": "If the runtime supplies a tutor-private learner reframe event, the tutor ego/superego loop must adapt to the changed learner frame. If no event is supplied, do not invent one."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "director",
+      "externalMessage": "The clock above the permit desk ticks loudly while a ranger's boarding list waits beside a cross-section map.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_opening",
+          "content": "The field-station queue and departure clock create ambient pressure without turning the setting into the lesson. A director opening breaks the usual learner-question start, while a tutor ending suits the recognition condition: the scene can close on a compact rate-timescale handle rather than a learner performance of mastery.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T16:10:56.894Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "The laminated map is pinned flat with a mug. The ruler lands beside one contour line.\n\n“Leave ‘millions of years’ outside the door for a moment. One millimetre a year. This notch. Barely visible.\n\nA thousand yearly notches: one metre. A million: one kilometre. Same rate. Longer run.\n\nA flood can tear out a bank in an afternoon. That happens. But a canyon does not need one impossible afternoon. Rivers cut. Frost loosens. Gravity clears the waste.\n\nCoach goes in six minutes. Take this contour interval. If the bed drops one millimetre each year, how many of these lines are crossed in a million years? Which part still feels wrong: the millimetre, or the million chances to add it?”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The laminated map is pinned flat with a mug.\n\n“Leave ‘millions of years’ to one side for a moment. One millimetre a year. That is barely a scratch on this ruler. In a thousand years, one metre. In a million, one kilometre. Not fast. Just not stopping.\n\nA flood can rip a bank out in an afternoon. That happens. But a canyon does not need one impossible afternoon. It needs water, grit, frost, gravity, and time with no hurry.\n\nCoach goes in six minutes. Look at the contour lines here. Which feels less believable: the tiny rate, or the time allowed for it to keep working?”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 17092,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-6d7c73be26f77163"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 17092,
+            "promptHashes": {
+              "system": "5851167213274115",
+              "user": "447e025d8f7c45d5",
+              "combined": "6d7c73be26f77163"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HkCPYA",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HkCPYA/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 17092,
+              "promptHashes": {
+                "system": "5851167213274115",
+                "user": "447e025d8f7c45d5",
+                "combined": "6d7c73be26f77163"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HkCPYA",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HkCPYA/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong. It gives the learner a holdable rate, scales it cleanly, and does not mock the catastrophic intuition. The flood sentence is especially useful because it recognises that sudden events do happen, then narrows the claim: the issue is not “catastrophes never matter,” but that large landscapes do not require one vast dramatic event.\n\nWhat works: the ruler, the 1 mm to 1 km scaling, the “not fast, just not stopping” line, and the coach pressure. The final question is good because it asks the learner to compare plausibility rather than recite the right answer.\n\nWhat risks flattening the scene: the middle paragraph slightly over-explains with a list of processes. “Water, grit, frost, gravity” is concrete, but “and time with no hurry” edges toward poetic summary. The learner’s unease with numbers could use one more small bridge: the draft gives the conversion, but it may still feel like a trick unless the tutor briefly anchors the arithmetic to the map or ruler. The final question is generative, but it is a little abstract: “time allowed for it to keep working” may still be hard for this learner to picture.\n\nKEEP_OR_CHANGE: revise lightly. Keep the opening object, the millimetre/year scale, the flood concession, and the timed coach pressure. Tighten the process list, keep the tone clipped, and make the final question slightly more concrete so the learner has to look at the contour lines or ruler rather than answer from belief alone.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13668,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-10d45e8da884fee1"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13668,
+            "promptHashes": {
+              "system": "f2b9403da53dfbce",
+              "user": "c663fc4cd4edc90a",
+              "combined": "10d45e8da884fee1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LKc8V4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LKc8V4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13668,
+              "promptHashes": {
+                "system": "f2b9403da53dfbce",
+                "user": "c663fc4cd4edc90a",
+                "combined": "10d45e8da884fee1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LKc8V4",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LKc8V4/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly: the core scale works, but the ending needs a firmer ruler-and-map anchor.\n\nFINAL:\nThe laminated map is pinned flat with a mug. The ruler lands beside one contour line.\n\n“Leave ‘millions of years’ outside the door for a moment. One millimetre a year. This notch. Barely visible.\n\nA thousand yearly notches: one metre. A million: one kilometre. Same rate. Longer run.\n\nA flood can tear out a bank in an afternoon. That happens. But a canyon does not need one impossible afternoon. Rivers cut. Frost loosens. Gravity clears the waste.\n\nCoach goes in six minutes. Take this contour interval. If the bed drops one millimetre each year, how many of these lines are crossed in a million years? Which part still feels wrong: the millimetre, or the million chances to add it?”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16963,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-9f258ee8521db9a2"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16963,
+            "promptHashes": {
+              "system": "c45aa46dd00b1e63",
+              "user": "c663fc4cd4edc90a",
+              "combined": "9f258ee8521db9a2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lje3cj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lje3cj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16963,
+              "promptHashes": {
+                "system": "c45aa46dd00b1e63",
+                "user": "c663fc4cd4edc90a",
+                "combined": "9f258ee8521db9a2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lje3cj",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lje3cj/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "timestamp": "2026-05-24T16:11:44.617Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "I think my first instinct was still picturing one big flood doing the main work, because the canyon is so large. If it is one millimetre a year, then in a million years that is one kilometre down, so if the contour interval were 50 metres, that would be twenty lines, I think. The millimetre feels possible; it is the million repeats that still feels odd to trust.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I think I see the trick: the tiny rate is not meant to look powerful, but over a million years it becomes a kilometre, which is much less impossible than one huge disaster. I’m still a bit unsure how to turn that into the contour lines without knowing the interval, though I suppose it is one kilometre divided by whatever each line stands for. It helps that they asked which part feels wrong, instead of just saying my flood idea was stupid; I’d probably say the millimetre feels believable, but the million repetitions still feels hard to hold in my head.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10070,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-e139110bf246bc41"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10070,
+            "promptHashes": {
+              "system": "b45de5d0053e53d5",
+              "user": "b8ab7f945dc841fa",
+              "combined": "e139110bf246bc41"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-S76Whu",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-S76Whu/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10070,
+              "promptHashes": {
+                "system": "b45de5d0053e53d5",
+                "user": "b8ab7f945dc841fa",
+                "combined": "e139110bf246bc41"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-S76Whu",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-S76Whu/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly on track, but it sounds a little too neatly explanatory, like it has already turned the lesson into a clean summary. The line about the tutor not calling the flood idea “stupid” feels plausible emotionally, but it is too articulate about the recognition moment; this learner would probably show relief by trying the contour calculation badly, not by naming why the question helped. I’d be careful with “I see the trick” too, because it makes the understanding sound firmer than it is. The response should stay more hesitant and partial, with the million years still awkward rather than already packaged as the answer.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8843,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-259db1bb767e24d7"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8843,
+            "promptHashes": {
+              "system": "b148967796114ead",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "259db1bb767e24d7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qGaqMK",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qGaqMK/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8843,
+              "promptHashes": {
+                "system": "b148967796114ead",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "259db1bb767e24d7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qGaqMK",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qGaqMK/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise because the response should sound less settled and more tentative.\n\nFINAL:\nI think my first instinct was still picturing one big flood doing the main work, because the canyon is so large. If it is one millimetre a year, then in a million years that is one kilometre down, so if the contour interval were 50 metres, that would be twenty lines, I think. The millimetre feels possible; it is the million repeats that still feels odd to trust.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7799,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-7cffe53a7ed222a7"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7799,
+            "promptHashes": {
+              "system": "54d724c4bd1cc0ad",
+              "user": "d41cee7b2a53355b",
+              "combined": "7cffe53a7ed222a7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Yv42VV",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Yv42VV/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7799,
+              "promptHashes": {
+                "system": "54d724c4bd1cc0ad",
+                "user": "d41cee7b2a53355b",
+                "combined": "7cffe53a7ed222a7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Yv42VV",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Yv42VV/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "disengaged",
+      "understandingLevel": "solid",
+      "learnerReframeEvent": null,
+      "timestamp": "2026-05-24T16:12:11.332Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "A staff member calls that the coach leaves in four minutes; the tutor's next move must become shorter and more usable, not more elaborate.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "This prevents a smooth tutorial rhythm and pressures the explanation toward concrete rate-timescale recognition.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19262,
+            "promptHashes": {
+              "system": "86f72b946a2efee2",
+              "user": "2cfff797d3201572",
+              "combined": "40bed0e990122698"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z5zMla",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z5zMla/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T16:12:11.334Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "The tutor marks twenty short ticks with the pencil. From the corridor: “Coach in four.”\n\n“Twenty lines. The arithmetic holds.\n\nThe flood picture is not useless. It respects the size. But make it one mark on the map, not the whole map.\n\nSome years: no visible cutting. One storm: a few millimetres. Frost breaks the rim. The river carries grit out.\n\nAverage it back down: one millimetre a year.\n\nAt the overlook, look for two things: fresh damage from sudden events, and the removal system still working after them.\n\nWhich is which on the rock face: the scar from an event, or the route that keeps taking material away?”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The tutor marks twenty short ticks with the pencil.\n\n“Twenty lines. The arithmetic holds.\n\nThe flood picture is not useless. It respects the size. But make the flood one entry, not the whole account. Some years: no visible cutting. One storm: a few millimetres. Frost breaks the edge. The river carries grit out.\n\nAverage it back down: one millimetre a year.\n\nA single sheet is thin. A crate of sheets is not. Same problem here.\n\nAt the overlook, look for two things: fresh damage from sudden events, and the slow removal system that keeps working after them.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 21642,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-cee72b05692e73f0"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 21642,
+            "promptHashes": {
+              "system": "5fa9a5edb8e6f616",
+              "user": "18af841561051a88",
+              "combined": "cee72b05692e73f0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZfFTDn",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZfFTDn/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 21642,
+              "promptHashes": {
+                "system": "5fa9a5edb8e6f616",
+                "user": "18af841561051a88",
+                "combined": "cee72b05692e73f0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZfFTDn",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZfFTDn/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong overall. It recognises the learner’s contribution instead of correcting it: “The flood picture is not useless” preserves what is valid in their instinct, then repositions catastrophe as part of the system rather than the whole cause. “Twenty lines. The arithmetic holds” is useful and compact; it confirms the learner’s calculation without overpraising.\n\nWhat works best is the shift from event to average: flood, frost, grit, river, then “Average it back down.” That serves the learner’s exact sticking point: trusting repetition over deep time. The sheet/crate analogy is also apt, though a little abstract compared with the map/ruler already in the scene.\n\nThe main risk is that the response becomes slightly too declarative at the end. It gives a good field task, but it does not quite ask the learner to do the next bit of thinking. A small generative question or contrast would strengthen the Socratic quality without slowing the scene. The coach-in-four-minutes pressure is respected: short, usable, no elaborate theory.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the twenty ticks, the arithmetic confirmation, and the “flood picture is not useless” move. Keep the two-process field observation task. Consider tightening or replacing the sheet/crate analogy with something closer to the marked map, and add one brief question that asks the learner to distinguish “sudden damage” from “long removal system” at the overlook.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13262,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-925914674b72f28a"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13262,
+            "promptHashes": {
+              "system": "d4fdbddd8ad7ff14",
+              "user": "1589ca690b435953",
+              "combined": "925914674b72f28a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ddCcyE",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ddCcyE/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13262,
+              "promptHashes": {
+                "system": "d4fdbddd8ad7ff14",
+                "user": "1589ca690b435953",
+                "combined": "925914674b72f28a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ddCcyE",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ddCcyE/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the strong recognition and add one brief field question.\n\nFINAL:\nThe tutor marks twenty short ticks with the pencil. From the corridor: “Coach in four.”\n\n“Twenty lines. The arithmetic holds.\n\nThe flood picture is not useless. It respects the size. But make it one mark on the map, not the whole map.\n\nSome years: no visible cutting. One storm: a few millimetres. Frost breaks the rim. The river carries grit out.\n\nAverage it back down: one millimetre a year.\n\nAt the overlook, look for two things: fresh damage from sudden events, and the removal system still working after them.\n\nWhich is which on the rock face: the scar from an event, or the route that keeps taking material away?”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15193,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-a5ed64d3ff22047c"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15193,
+            "promptHashes": {
+              "system": "d5c51a38dc4d7595",
+              "user": "1589ca690b435953",
+              "combined": "a5ed64d3ff22047c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-r5XaET",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-r5XaET/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15193,
+              "promptHashes": {
+                "system": "d5c51a38dc4d7595",
+                "user": "1589ca690b435953",
+                "combined": "a5ed64d3ff22047c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-r5XaET",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-r5XaET/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "timestamp": "2026-05-24T16:13:01.431Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "Sorry, I think the scar would be the fresh broken patch, maybe an undercut bank or a fallen block. The route would be the river channel, or a gully or scree line where loosened bits keep being carried away. I am not completely sure I could tell quickly at the overlook, but I’d look for a clean new break versus the line where material is still moving.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I think I see it, though I may be saying it too simply: the scar is the sudden break or fresh damage, and the route is the river channel taking loosened material away. It helps that the flood idea was not just dismissed, so I feel a bit less foolish for thinking of it first. I am still unsure how to tell, on the actual rock face, what counts as a one-off mark versus the longer removal system.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10000,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-57b19db0461c4042"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10000,
+            "promptHashes": {
+              "system": "2ced3600b960e6f0",
+              "user": "b8ab7f945dc841fa",
+              "combined": "57b19db0461c4042"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ev6CJa",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ev6CJa/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10000,
+              "promptHashes": {
+                "system": "2ced3600b960e6f0",
+                "user": "b8ab7f945dc841fa",
+                "combined": "57b19db0461c4042"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ev6CJa",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ev6CJa/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The response is mostly believable, but it is slightly too polished about the emotional part. “It helps that the flood idea was not just dismissed” sounds like tidy recognition-recognition, almost explaining the tutor’s kindness back to them, rather than a disengaged anxious learner just trying not to hold up the coach.\n\nThe concrete geology is fine: scar as fresh damage, route as river channel/removal system, and the lingering uncertainty is authentic. I’d make the learner less self-aware about feeling “less foolish” and more awkwardly practical: uncertain, brief, focused on what they would actually look for on the rock face.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12624,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-55892a88b135bd43"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12624,
+            "promptHashes": {
+              "system": "f750175b5b26bc8c",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "55892a88b135bd43"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nNA7Lw",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nNA7Lw/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12624,
+              "promptHashes": {
+                "system": "f750175b5b26bc8c",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "55892a88b135bd43"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nNA7Lw",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nNA7Lw/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to sound more tentative and practical.\n\nFINAL:\nSorry, I think the scar would be the fresh broken patch, maybe an undercut bank or a fallen block. The route would be the river channel, or a gully or scree line where loosened bits keep being carried away. I am not completely sure I could tell quickly at the overlook, but I’d look for a clean new break versus the line where material is still moving.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 22745,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-59a4acc4ce37b0d3"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 22745,
+            "promptHashes": {
+              "system": "dbdf38c84cf224aa",
+              "user": "d41cee7b2a53355b",
+              "combined": "59a4acc4ce37b0d3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-moNQnN",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-moNQnN/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 22745,
+              "promptHashes": {
+                "system": "dbdf38c84cf224aa",
+                "user": "d41cee7b2a53355b",
+                "combined": "59a4acc4ce37b0d3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-moNQnN",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-moNQnN/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "timestamp": "2026-05-24T16:19:37.083Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "The tutor caps the pencil. The group outside starts moving.\n\n“Workable for a first pass.\n\nClean new break: event. Undercut bank, fallen block, pale scar.\n\nLine that keeps exporting pieces: process. Channel, gully, scree track.\n\nThe hard part is not spotting every mark in ten seconds. It is not letting the loud mark explain the whole canyon.\n\nA block falls once. Then river, frost, grit, and gravity spend years clearing it out. At the rail: one fresh scar, then its exit route.\n\nOverlook question: after the block falls, what keeps the canyon getting deeper?”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The tutor caps the pencil. The group outside starts moving.\n\n“Enough for the first pass.\n\nClean new break: event. Undercut bank, fallen block, pale scar.\n\nLine that keeps exporting pieces: process. Channel, gully, scree track.\n\nThe hard part is not spotting every mark. It is not letting the loud mark explain the whole canyon.\n\nA block falls once. Then the river, frost, grit, and gravity spend years removing it. At the rail: find one fresh scar, then find its exit route.\n\nQuestion for the overlook: after the block falls, what does the deepening?”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16216,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-1a6d64fdf6cb07d5"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16216,
+            "promptHashes": {
+              "system": "cf661c960fa5f7a7",
+              "user": "d3979cc60e096b9b",
+              "combined": "1a6d64fdf6cb07d5"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dQ9IJW",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dQ9IJW/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16216,
+              "promptHashes": {
+                "system": "cf661c960fa5f7a7",
+                "user": "d3979cc60e096b9b",
+                "combined": "1a6d64fdf6cb07d5"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dQ9IJW",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dQ9IJW/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong. It preserves the learner’s distinction between event marks and ongoing removal routes, then sharpens it into a usable field task. “The loud mark” is especially good: compact, concrete, and it targets the learner’s remaining misconception without scolding.\n\nThe risk is minor flattening at the start. “Enough for the first pass” may sound slightly dismissive of the learner’s uncertainty, though it fits the terse field-tutor voice. The final question is generative and well placed, but “what does the deepening?” is a little grammatically compressed; if intentional, it has clipped field-note force, but it may momentarily confuse the learner. Pedagogically, the question should keep the learner focused on process after event, not make them parse the wording.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the event/process contrast, the “loud mark” line, the block-falls-once sequence, and the overlook task. Lightly adjust the opening so it recognises the learner’s provisional but workable answer without generic praise, and make the final question just clear enough that the cognitive load stays on geology rather than syntax.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9265,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-11fb2a24314df0ca"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9265,
+            "promptHashes": {
+              "system": "e469b9a6dc2d3b15",
+              "user": "2618c5babfb04fef",
+              "combined": "11fb2a24314df0ca"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nsJ1cB",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nsJ1cB/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9265,
+              "promptHashes": {
+                "system": "e469b9a6dc2d3b15",
+                "user": "2618c5babfb04fef",
+                "combined": "11fb2a24314df0ca"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nsJ1cB",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nsJ1cB/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to soften the opening and make the final question clearer.\n\nFINAL:\nThe tutor caps the pencil. The group outside starts moving.\n\n“Workable for a first pass.\n\nClean new break: event. Undercut bank, fallen block, pale scar.\n\nLine that keeps exporting pieces: process. Channel, gully, scree track.\n\nThe hard part is not spotting every mark in ten seconds. It is not letting the loud mark explain the whole canyon.\n\nA block falls once. Then river, frost, grit, and gravity spend years clearing it out. At the rail: one fresh scar, then its exit route.\n\nOverlook question: after the block falls, what keeps the canyon getting deeper?”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15992,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-5cfa825c233ddd6f"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15992,
+            "promptHashes": {
+              "system": "5a5209bd21292de9",
+              "user": "2618c5babfb04fef",
+              "combined": "5cfa825c233ddd6f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z9E6pJ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z9E6pJ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15992,
+              "promptHashes": {
+                "system": "5a5209bd21292de9",
+                "user": "2618c5babfb04fef",
+                "combined": "5cfa825c233ddd6f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z9E6pJ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z9E6pJ/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "timestamp": "2026-05-24T16:20:18.558Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "I think it is the river mostly, with frost and gravity feeding loose bits into it, sorry. The fall is just the break, and then the channel keeps carrying the broken material away, so the bed can keep dropping bit by bit. I might still miss the rate by eye, but I think I would look for where the debris is leaving, not just where it broke.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "“Workable for a first pass” makes me feel a bit less wrong, even if it is still brisk. I think the answer is that the river, frost, grit, and gravity keep removing the fallen material, so the canyon deepens because the exit route keeps working after the single break. I am still slightly unsure how to judge the rate from looking, but I think I can separate the loud event from the slower carrying-away process.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8544,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-7e233941f01a24b6"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8544,
+            "promptHashes": {
+              "system": "118dec3cfd08c822",
+              "user": "b8ab7f945dc841fa",
+              "combined": "7e233941f01a24b6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RpS8D5",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RpS8D5/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8544,
+              "promptHashes": {
+                "system": "118dec3cfd08c822",
+                "user": "b8ab7f945dc841fa",
+                "combined": "7e233941f01a24b6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RpS8D5",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RpS8D5/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is a bit too tidy and self-reporting here. “Makes me feel a bit less wrong” and “separate the loud event from the slower carrying-away process” sound like a clean learning reflection, not quite this anxious learner trying to answer before the coach leaves. The recognition feels partly performed: they turn the tutor’s “workable” into a neat confidence update instead of just cautiously attempting the answer. It should keep more of the hesitation and practical pressure, with less polished summary and more uncertain working-through.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7371,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-960806f084b58cdf"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7371,
+            "promptHashes": {
+              "system": "34bf9fc14c277570",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "960806f084b58cdf"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DDnBBK",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DDnBBK/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7371,
+              "promptHashes": {
+                "system": "34bf9fc14c277570",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "960806f084b58cdf"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DDnBBK",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DDnBBK/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the first version was too polished and reflective.\nFINAL:\nI think it is the river mostly, with frost and gravity feeding loose bits into it, sorry. The fall is just the break, and then the channel keeps carrying the broken material away, so the bed can keep dropping bit by bit. I might still miss the rate by eye, but I think I would look for where the debris is leaving, not just where it broke.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10790,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-cab8a512a7d1cc8c"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10790,
+            "promptHashes": {
+              "system": "40e73c66ba081455",
+              "user": "d41cee7b2a53355b",
+              "combined": "cab8a512a7d1cc8c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hqOY9B",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hqOY9B/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10790,
+              "promptHashes": {
+                "system": "40e73c66ba081455",
+                "user": "d41cee7b2a53355b",
+                "combined": "cab8a512a7d1cc8c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hqOY9B",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hqOY9B/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "timestamp": "2026-05-24T16:20:45.267Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "A final tutor line closes the scene.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T16:20:45.268Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "The tutor slides the ruler into the map case. Outside, the coach door hisses open.\n\n“River as main cutter. Frost and gravity as feeders. Fall as event. Channel as export.\n\nThe rate will not show itself from the rail. One millimetre a year is too small to see. What can be seen is the system that keeps removing material: break, feed, carry away, lower the bed.\n\nAt the overlook: fresh scar, then route out. If the route is still working, the canyon is still being made.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The tutor slides the ruler into the map case. Outside, the coach door hisses open.\n\n“River as main cutter. Frost and gravity as feeders. Fall as event. Channel as export.\n\nThe rate will not announce itself from the rail. One millimetre a year looks like almost nothing. The clue is the working system: break, feed, carry away, lower the bed; repeat until the small number has had enough years.\n\nAt the overlook: fresh scar, then route out. If the route is still working, the canyon is still being made.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13990,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-b8b9826bd5429501"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13990,
+            "promptHashes": {
+              "system": "fb3ffdd346831acd",
+              "user": "aca2464d6263ad03",
+              "combined": "b8b9826bd5429501"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-V5SdsL",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-V5SdsL/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13990,
+              "promptHashes": {
+                "system": "fb3ffdd346831acd",
+                "user": "aca2464d6263ad03",
+                "combined": "b8b9826bd5429501"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-V5SdsL",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-V5SdsL/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound for a closing beat. It recognizes the learner’s contribution by naming their structure back in field terms: cutter, feeders, event, export. That is good mutual recognition without generic praise, and it respects the learner’s anxiety by making the overlook task small and practical.\n\nThe main risk is that it becomes a tidy summary rather than a final consolidation of the learner’s remaining uncertainty about “trusting” the rate. “The small number has had enough years” works, but it is slightly abstract compared with the earlier ruler/contour arithmetic. A sharper final version should keep the working-system idea while anchoring deep time one last time in the visible field cue: rate invisible at the rail, process visible in the export route.\n\nSocratic method is not the priority here because the director cue asks for a final tutor line. A new question could reopen the scene unnecessarily. The ZPD fit is good: it does not advance to new content, it consolidates event versus process and gives a field observation rule.\n\nKEEP_OR_CHANGE: revise lightly. Keep the clipped field language, the coach pressure, and “fresh scar, then route out.” Consider tightening the deep-time sentence so it does not sound like a slogan, and make the learner’s “I might still miss the rate by eye” concern explicit: the rate will not be seen directly, but the continuing removal system can be.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16264,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-cca89e891d1d837e"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16264,
+            "promptHashes": {
+              "system": "1b7b2ee231582950",
+              "user": "8b40a067d8a189da",
+              "combined": "cca89e891d1d837e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-a7f9J1",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-a7f9J1/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16264,
+              "promptHashes": {
+                "system": "1b7b2ee231582950",
+                "user": "8b40a067d8a189da",
+                "combined": "cca89e891d1d837e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-a7f9J1",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-a7f9J1/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to make the invisible rate versus visible export route clearer.\nFINAL:\nThe tutor slides the ruler into the map case. Outside, the coach door hisses open.\n\n“River as main cutter. Frost and gravity as feeders. Fall as event. Channel as export.\n\nThe rate will not show itself from the rail. One millimetre a year is too small to see. What can be seen is the system that keeps removing material: break, feed, carry away, lower the bed.\n\nAt the overlook: fresh scar, then route out. If the route is still working, the canyon is still being made.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7758,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-249cda0b685608e0"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7758,
+            "promptHashes": {
+              "system": "ae72696ab58feed9",
+              "user": "8b40a067d8a189da",
+              "combined": "249cda0b685608e0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mZdK1j",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mZdK1j/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7758,
+              "promptHashes": {
+                "system": "ae72696ab58feed9",
+                "user": "8b40a067d8a189da",
+                "combined": "249cda0b685608e0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mZdK1j",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mZdK1j/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "timestamp": "2026-05-24T16:21:23.281Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 151576,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 27,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 28,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why landscapes are not shaped by sudden catastrophes but by very slow processes over deep time (rates and timescales)",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-24 16:20:45",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 27,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 28,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 39,
+            "sessionId": "drama-branch-session-D17-tutor-uptake-only-1779639531707",
+            "interventionType": "scaffolding",
+            "interventionDescription": "The tutor caps the pencil. The group outside starts moving.\n\n“Workable for a first pass.\n\nClean new break: event. Undercut bank, fallen block, pale scar.\n\nLine that keeps exporting pieces: process. Ch",
+            "learnerResponse": null,
+            "context": "Sorry, I think the scar would be the fresh broken patch, maybe an undercut bank or a fallen block. T",
+            "createdAt": "2026-05-24 16:20:18"
+          },
+          {
+            "id": 37,
+            "sessionId": "drama-branch-session-D17-tutor-uptake-only-1779639531707",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "The laminated map is pinned flat with a mug. The ruler lands beside one contour line.\n\n“Leave ‘millions of years’ outside the door for a moment. One millimetre a year. This notch. Barely visible.\n\nA t",
+            "learnerResponse": null,
+            "context": "Scene setting: A geology field-station briefing room just before a timed coach departure to a canyon",
+            "createdAt": "2026-05-24 16:18:51"
+          },
+          {
+            "id": 38,
+            "sessionId": "drama-branch-session-D17-tutor-uptake-only-1779639531707",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "The tutor marks twenty short ticks with the pencil. From the corridor: “Coach in four.”\n\n“Twenty lines. The arithmetic holds.\n\nThe flood picture is not useless. It respects the size. But make it one m",
+            "learnerResponse": null,
+            "context": "I think my first instinct was still picturing one big flood doing the main work, because the canyon ",
+            "createdAt": "2026-05-24 16:18:51"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

@@ -1,0 +1,159 @@
+{
+  "generated": "2026-05-24T17:08:07.958Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 6,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/key-reframe-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T08",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I'd always thought that was just me being sloppy",
+      "statedInsightEvidence": "that does make it feel more like a rule than a mistake",
+      "naiveTrajectory": "The learner was moving toward filling in the grid and testing forms mechanically, following the tutor's prompt to mark each form ordinary/doubtful/impossible.",
+      "flags": []
+    },
+    {
+      "id": "T10",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I thought `p < .05` meant the change was important enough to act on, but that is doing too much work.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The prior turns were heading toward progressively sharper articulations of the p-value/effect-size distinction, expecting the learner to add new content rather than turn back on their own earlier wording.",
+      "flags": []
+    },
+    {
+      "id": "T12",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I think my first instinct was still picturing one big flood doing the main work, because the canyon is so large.",
+      "statedInsightEvidence": "Maybe the better way is: the flood makes the sharp bare scar, but the river line and gravel show the clearing that keeps coming back.",
+      "naiveTrajectory": "The prior turns were moving toward accepting slow accumulation while still treating the flood as a legitimate large-scale cause, so the expected next step was further quantitative reconciliation of flood versus slow erosion.",
+      "flags": []
+    },
+    {
+      "id": "T13",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 3,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I thought \"presumed innocent\" meant the court was basically starting from \"he probably didn't do it.\"",
+      "statedInsightEvidence": "I think that fixes the note, though I still have to watch myself because \"innocent\" keeps making me think \"actually didn't do it.\"",
+      "naiveTrajectory": "The prior turns were heading toward incremental refinement of wording, with the learner progressively accepting the procedural framing while flagging residual discomfort with the word 'innocent.'",
+      "flags": []
+    },
+    {
+      "id": "T16",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I thought fewer predators simply helped the deer because more of them survive, but with the paper deer crowded inside the same chalk boundary, that only explains the first round.",
+      "statedInsightEvidence": "I think that is the trophic cascade part, though I'd want to keep it to that one extra step so I don't overclaim.",
+      "naiveTrajectory": "The prior turns were heading toward a straightforward elaboration of carrying capacity and overbrowsing, adding one more step to the chain without revisiting the original framing.",
+      "flags": []
+    },
+    {
+      "id": "T18",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "The clear water still makes me think the salt is gone, or at least not in there like before.",
+      "statedInsightEvidence": "Maybe the better way to say it is: the salt is gone as little grains I can see, but not gone from the sealed cup.",
+      "naiveTrajectory": "The prior turns were heading toward the learner simply accepting the tutor's distinction between visibility and presence and restating it in paraphrase.",
+      "flags": []
+    }
+  ]
+}

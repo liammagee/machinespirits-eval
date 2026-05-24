@@ -42,10 +42,11 @@
  * (discipline / condition / intended-lean / dramatic-shape) joins to scores +
  * labels only AFTER both.
  *
- * Cost posture: these 6 dramas share ONE Max-plan quota window AND feed a
- * between-condition contrast, so they run SEQUENTIALLY (concurrent → N× drain +
- * differential attrition). Each drama is written as soon as it completes and
- * existing outputs are skipped, so a quota-interrupted run resumes by re-running.
+ * Cost posture: these dramas share a quota window AND feed between-condition
+ * contrasts. They run sequentially by default; pass --generation-concurrency N
+ * for attended parallel runs when quota/rate limits allow it. Each drama is
+ * written as soon as it completes and existing outputs are skipped, so a
+ * quota-interrupted run resumes by re-running.
  *
  * Usage:
  *   node scripts/generate-pedagogical-dramas.js --dry-run        # plan only, no LLM, no writes
@@ -63,6 +64,7 @@
  *        --director-variation-key <repeat-or-batch-id>
  *        --paired-continuation-policies none,revoice,reconsider,reframe
  *        --paired-adaptation-arms none,reframe-only,tutor-uptake-only,reframe+tutor-uptake
+ *        --generation-concurrency N (default 1; independent dramas only)
  * Env:   CODEX_REASONING_EFFORT (default xhigh) · CODEX_MODEL (default: codex config)
  */
 
@@ -75,6 +77,7 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import yaml from 'yaml';
 import { jsonrepair } from 'jsonrepair';
+import { createProgressReporter, runTasksWithConcurrency } from './progress.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -121,6 +124,7 @@ function parseArgs(argv) {
     directorVariationKey: null,
     pairedContinuationPolicies: null,
     pairedAdaptationArms: null,
+    generationConcurrency: 1,
   };
   for (let i = 0; i < argv.length; i++) {
     const t = argv[i];
@@ -158,13 +162,17 @@ function parseArgs(argv) {
         .split(',')
         .map((arm) => arm.trim())
         .filter(Boolean);
-    } else throw new Error(`unknown arg: ${t}`);
+    } else if (t === '--generation-concurrency') a.generationConcurrency = parseInt(argv[++i], 10);
+    else throw new Error(`unknown arg: ${t}`);
   }
   if (!Number.isInteger(a.seed)) throw new Error('--seed must be an integer');
   if (!Number.isInteger(a.maxTurns) || a.maxTurns < 1) throw new Error('--max-turns must be a positive integer');
   if (a.generator !== 'claude' && a.generator !== 'codex')
     throw new Error(`--generator must be claude|codex (got ${a.generator})`);
   if (!Number.isInteger(a.tidStart) || a.tidStart < 0) throw new Error('--tid-start must be a non-negative integer');
+  if (!Number.isInteger(a.generationConcurrency) || a.generationConcurrency < 1) {
+    throw new Error('--generation-concurrency must be a positive integer');
+  }
   if (a.pedagogyDb && !fs.existsSync(a.pedagogyDb)) throw new Error(`--pedagogy-db not found: ${a.pedagogyDb}`);
   if (a.dialogueDb && !fs.existsSync(a.dialogueDb)) throw new Error(`--dialogue-db not found: ${a.dialogueDb}`);
   if (!['off', 'scene'].includes(a.directorMode)) throw new Error('--director-mode must be off|scene');
@@ -528,6 +536,10 @@ function namesEarlierFramingProblem(text) {
     /\b(?:the\s+)?mistake\s+(?:was|is)\s+that\b/i,
     /\b(?:that|it)\s+(?:was|put|made)\b[\s\S]{0,90}\b(?:too\s+\w+|mood first|sound like|ahead|early)\b/i,
     /\bI\s+(?:was still|was putting|was making|kept|went straight|made|put)\b[\s\S]{0,90}\b(?:sound like|too\s+\w+|mood first|before|ahead|again|into|mean)\b/i,
+    /\bI\s+(?:said|treated|read)\b[\s\S]{0,90}\bas\s+if\b/i,
+    /\b(?:that|this|it|my old framing|the old read|that old wording|old wording|that way of saying it)\b[\s\S]{0,90}\b(?:hid|hides|hiding|made it sound|makes it sound)\b/i,
+    /\b(?:that|this|it|my old framing|the old read|that old wording|old wording|that way of saying it)\b[\s\S]{0,90}\b(?:only going by|only counting|not asking)\b/i,
+    /\b(?:problem|trouble|issue)\s+with\s+(?:that|this|it)\s+is\b/i,
     /\bI\s+was\s+still\s+acting\s+like\b/i,
     /\bI\s+was\s+letting\b[\s\S]{0,90}\btoo much\b/i,
     /\bproblem\s+is\s+that\s+I\s+was\s+letting\b/i,
@@ -573,14 +585,22 @@ function replacesEarlierFraming(text) {
     /\b(?:new|better|revised|replacement)\s+(?:frame|framing|reading)\b/i,
     /\b(?:new|better|revised)\s+(?:check|test|claim|question)\s+(?:is|starts?|uses?|asks?)\b/i,
     /\bnew\s+(?:margin\s+note|mark|label|line|frame)\s*:/i,
+    /\bbetter\s+(?:note|mark|label|line|frame)\s*:/i,
     /\bnew\s+(?:read|reading)\s*:/i,
     /\breplacement\s+is\b/i,
     /\breplace\s+it\s*:/i,
+    /\breplace\s+it\s+with\b/i,
+    /\breplace\b[\s\S]{0,80}\bwith\s*:/i,
+    /\breframe\b[\s\S]{0,80}\bas\s*:/i,
     /\bI[’']d\s+change\s+it\s+to\b/i,
+    /\bI[’']d\s+replace\s+it\s+with\b/i,
     /\breframe\s*:/i,
-    /\bbetter\s+(?:reading|line|claim)\s+is\b/i,
-    /\bbetter\s+way\s+is\b/i,
+    /\bbetter\s+(?:reading|line|claim|sentence|note|wording)\s+(?:is|seems? to be)\b/i,
+    /\bbetter\s+way\s+(?:is|to\s+(?:put|say)\s+it\s+is)\b/i,
     /\bI\s+(?:would|should|need to|can|will)\s+(?:frame|read|say|put|treat|write|claim|change|call)\b/i,
+    /\bmaybe\s+I\s+(?:should|would|need to|can)\s+(?:frame|read|say|put|treat|write|claim|change|call)\b/i,
+    /\bso\s+the\b[\s\S]{0,90}\b(?:would|should|is|becomes?)\b/i,
+    /\b(?:fresh\s+)?scar\b[\s\S]{0,90}\bwould\s+be\b[\s\S]{0,120}\b(?:event|route|system)\b/i,
     /\b(?:the|this)\s+(?:form|line|label|claim|sentence|answer)\s+should\s+(?:say|read|show)\b/i,
     /\b(?:introduction|question|sentence|clipboard|chart|table)\s+should\s+(?:say|ask|read|show|make|prompt|stay|remain)\b/i,
     /\b(?:line|claim|proof|equation|step)\b[\s\S]{0,40}\b(?:is|starts?|reads?|works?|shows?|means?|puts?|becomes?|tests?)\b/i,
@@ -2307,6 +2327,10 @@ function pairedBranchDefinitions(args) {
 async function generatePairedContinuations({ args, order, runtime, llmCall }) {
   const branches = pairedBranchDefinitions(args);
   const branchKeys = branches.map((branch) => branch.key);
+  const progress = createProgressReporter({
+    label: 'generation',
+    total: order.length * (branches.length + 1),
+  });
   const armDirs = Object.fromEntries(branches.map((branch) => [branch.key, policyArtifactDirs(args, branch.key)]));
   const armKeys = Object.fromEntries(
     branches.map((branch) => [
@@ -2338,141 +2362,167 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
   }
 
   console.log(`\n── paired continuations: fixed prefix through tutor turn 2 · branches=${branchKeys.join(',')} ──`);
-  for (const d of order) {
-    d._directorVariationKey = d.director_variation_key || args.directorVariationKey || null;
-    console.log(`\n  ${d._tid} (${d.id}) — generating shared prefix …`);
-    const prefixDrama = {
-      ...d,
-      _directorRevisitPolicy: 'none',
-      _directorRevisitAnchor: null,
-      _tutorAdaptationPolicy: 'none',
-    };
-    const directorPlan = await buildDirectorPlan(prefixDrama, llmCall, args);
-    const prefixTrace = await runtime.runInteraction(
-      {
-        learnerId: branchId('prefix', d.id, 'none'),
-        personaId: d.persona,
-        tutorProfile: d.tutor_profile,
-        topic: d.topic,
-        scenario: { name: d.scenario_name, learnerStartState: d.learner_start_state, directorPlan },
-        sessionId: branchId('prefix-session', d.id, 'none'),
-      },
-      llmCall,
-      {
-        maxTurns: 2,
-        observeInternals: true,
-        learnerProfile: d.learner_profile,
-        forceMaxTurns: true,
-        directorPlan,
-      },
-    );
-    const resumeTrace = tracePrefixThroughTutorTurn(prefixTrace, 2);
-    const prefixTurns = externalTurns(resumeTrace);
-    const prefixHash = sha256Short(renderTranscript(prefixTurns));
-
-    for (const branch of branches) {
-      const dirs = armDirs[branch.key];
-      const outTxt = path.join(dirs.outDir, `${d._tid}.txt`);
-      if (fs.existsSync(outTxt) && !args.force) {
-        throw new Error(`paired continuation output exists: ${outTxt} (pass --force to overwrite)`);
-      }
-      const branchDirectorPlan = withDirectorCueProvenance(
-        withTutorAdaptationPolicy(
-          withPairedDirectorRevisitCue(directorPlan, branch.revisitPolicy, args.directorRevisitAnchor),
-          branch.tutorAdaptationPolicy,
-        ),
-      );
-      const branchDrama = {
-        ...d,
-        _directorMode: args.directorMode,
-        _directorPlan: branchDirectorPlan,
-        _directorVariationKey: d._directorVariationKey || null,
-        _directorRevisitPolicy: branch.revisitPolicy,
-        _directorRevisitAnchor: branch.revisitPolicy === 'none' ? null : args.directorRevisitAnchor,
-        _tutorAdaptationPolicy: branch.tutorAdaptationPolicy,
-      };
-      console.log(`    ${branch.key} → continuing from prefix ${prefixHash} …`);
-      const trace = await runtime.runInteraction(
-        {
-          learnerId: branchId('branch', d.id, branch.key),
-          personaId: d.persona,
-          tutorProfile: d.tutor_profile,
-          topic: d.topic,
-          scenario: {
-            name: d.scenario_name,
-            learnerStartState: d.learner_start_state,
-            directorPlan: branchDirectorPlan,
+  progress.start(
+    `paired continuations · ${order.length} item(s) × ${branches.length} branch(es) · concurrency=${args.generationConcurrency}`,
+  );
+  let itemResults;
+  try {
+    itemResults = await runTasksWithConcurrency(
+      order.map((d) => async () => {
+        d._directorVariationKey = d.director_variation_key || args.directorVariationKey || null;
+        const itemWarnings = [];
+        const itemEntries = {};
+        progress.note(`${d._tid} (${d.id}) shared prefix starting`);
+        console.log(`\n  ${d._tid} (${d.id}) — generating shared prefix …`);
+        const prefixDrama = {
+          ...d,
+          _directorRevisitPolicy: 'none',
+          _directorRevisitAnchor: null,
+          _tutorAdaptationPolicy: 'none',
+        };
+        const directorPlan = await buildDirectorPlan(prefixDrama, llmCall, args);
+        const prefixTrace = await runtime.runInteraction(
+          {
+            learnerId: branchId('prefix', d.id, 'none'),
+            personaId: d.persona,
+            tutorProfile: d.tutor_profile,
+            topic: d.topic,
+            scenario: { name: d.scenario_name, learnerStartState: d.learner_start_state, directorPlan },
+            sessionId: branchId('prefix-session', d.id, 'none'),
           },
-          sessionId: branchId('branch-session', d.id, branch.key),
-        },
-        llmCall,
-        {
-          maxTurns: args.maxTurns,
-          observeInternals: true,
-          learnerProfile: d.learner_profile,
-          forceMaxTurns: true,
-          directorPlan: branchDirectorPlan,
-          resumeTrace,
-        },
-      );
-      const turns = externalTurns(trace);
-      const removedNotes = [];
-      const publicTranscript = renderTranscript(turns, removedNotes);
-      fs.writeFileSync(outTxt, publicTranscript, 'utf8');
-      const qualityWarnings = qualityWarningsFor({
-        tid: d._tid,
-        dramaId: d.id,
-        turns,
-        removedNotes,
-        traceTurns: trace.turns,
-        directorPolicy: branch.revisitPolicy,
-      });
-      warnings.push(...qualityWarnings.map(formatQualityWarning));
-      if (removedNotes.length) {
-        fs.writeFileSync(
-          path.join(dirs.delibDir, `${d._tid}.stripped.json`),
-          JSON.stringify(removedNotes, null, 2),
-          'utf8',
+          llmCall,
+          {
+            maxTurns: 2,
+            observeInternals: true,
+            learnerProfile: d.learner_profile,
+            forceMaxTurns: true,
+            directorPlan,
+          },
         );
-      }
-      const transcriptArtifacts = writeHeldOutTranscripts({
-        args: { ...args, transcriptsDir: dirs.transcriptsDir },
-        tid: d._tid,
-        dramaId: d.id,
-        trace,
-        publicTranscript,
-      });
-      const pairedContinuation = {
-        mode: 'fixed_prefix_continuation',
-        prefix_through: 'tutor_turn_2',
-        shared_prefix_hash: prefixHash,
-        branch_policy: branch.key,
-        director_revisit_policy: branch.revisitPolicy,
-        tutor_adaptation_policy: branch.tutorAdaptationPolicy,
-      };
-      writeGeneratedDramaArtifacts({
-        args,
-        dirs,
-        d: branchDrama,
-        trace,
-        directorPlan: branchDirectorPlan,
-        runtime,
-        publicTranscript,
-        qualityWarnings,
-        transcriptArtifacts,
-        pairedContinuation,
-      });
-      armKeys[branch.key].items[d._tid] = {
-        ...keyItemFor(
-          branchDrama,
-          turns.filter((turn) => turn.role === 'TUTOR').length,
-          turns.filter((turn) => turn.role === 'LEARNER').length,
-          qualityWarnings,
-        ),
-        paired_continuation: pairedContinuation,
-      };
+        const resumeTrace = tracePrefixThroughTutorTurn(prefixTrace, 2);
+        const prefixTurns = externalTurns(resumeTrace);
+        const prefixHash = sha256Short(renderTranscript(prefixTurns));
+        progress.step(`${d._tid} prefix ready ${prefixHash}`);
+
+        for (const branch of branches) {
+          const dirs = armDirs[branch.key];
+          const outTxt = path.join(dirs.outDir, `${d._tid}.txt`);
+          if (fs.existsSync(outTxt) && !args.force) {
+            throw new Error(`paired continuation output exists: ${outTxt} (pass --force to overwrite)`);
+          }
+          const branchDirectorPlan = withDirectorCueProvenance(
+            withTutorAdaptationPolicy(
+              withPairedDirectorRevisitCue(directorPlan, branch.revisitPolicy, args.directorRevisitAnchor),
+              branch.tutorAdaptationPolicy,
+            ),
+          );
+          const branchDrama = {
+            ...d,
+            _directorMode: args.directorMode,
+            _directorPlan: branchDirectorPlan,
+            _directorVariationKey: d._directorVariationKey || null,
+            _directorRevisitPolicy: branch.revisitPolicy,
+            _directorRevisitAnchor: branch.revisitPolicy === 'none' ? null : args.directorRevisitAnchor,
+            _tutorAdaptationPolicy: branch.tutorAdaptationPolicy,
+          };
+          progress.note(`${d._tid} ${branch.key} starting`);
+          console.log(`    ${branch.key} → continuing from prefix ${prefixHash} …`);
+          const trace = await runtime.runInteraction(
+            {
+              learnerId: branchId('branch', d.id, branch.key),
+              personaId: d.persona,
+              tutorProfile: d.tutor_profile,
+              topic: d.topic,
+              scenario: {
+                name: d.scenario_name,
+                learnerStartState: d.learner_start_state,
+                directorPlan: branchDirectorPlan,
+              },
+              sessionId: branchId('branch-session', d.id, branch.key),
+            },
+            llmCall,
+            {
+              maxTurns: args.maxTurns,
+              observeInternals: true,
+              learnerProfile: d.learner_profile,
+              forceMaxTurns: true,
+              directorPlan: branchDirectorPlan,
+              resumeTrace,
+            },
+          );
+          const turns = externalTurns(trace);
+          const removedNotes = [];
+          const publicTranscript = renderTranscript(turns, removedNotes);
+          fs.writeFileSync(outTxt, publicTranscript, 'utf8');
+          const qualityWarnings = qualityWarningsFor({
+            tid: d._tid,
+            dramaId: d.id,
+            turns,
+            removedNotes,
+            traceTurns: trace.turns,
+            directorPolicy: branch.revisitPolicy,
+          });
+          itemWarnings.push(...qualityWarnings.map(formatQualityWarning));
+          if (removedNotes.length) {
+            fs.writeFileSync(
+              path.join(dirs.delibDir, `${d._tid}.stripped.json`),
+              JSON.stringify(removedNotes, null, 2),
+              'utf8',
+            );
+          }
+          const transcriptArtifacts = writeHeldOutTranscripts({
+            args: { ...args, transcriptsDir: dirs.transcriptsDir },
+            tid: d._tid,
+            dramaId: d.id,
+            trace,
+            publicTranscript,
+          });
+          const pairedContinuation = {
+            mode: 'fixed_prefix_continuation',
+            prefix_through: 'tutor_turn_2',
+            shared_prefix_hash: prefixHash,
+            branch_policy: branch.key,
+            director_revisit_policy: branch.revisitPolicy,
+            tutor_adaptation_policy: branch.tutorAdaptationPolicy,
+          };
+          writeGeneratedDramaArtifacts({
+            args,
+            dirs,
+            d: branchDrama,
+            trace,
+            directorPlan: branchDirectorPlan,
+            runtime,
+            publicTranscript,
+            qualityWarnings,
+            transcriptArtifacts,
+            pairedContinuation,
+          });
+          itemEntries[branch.key] = {
+            ...keyItemFor(
+              branchDrama,
+              turns.filter((turn) => turn.role === 'TUTOR').length,
+              turns.filter((turn) => turn.role === 'LEARNER').length,
+              qualityWarnings,
+            ),
+            paired_continuation: pairedContinuation,
+          };
+          progress.step(`${d._tid} ${branch.key} complete`);
+        }
+        return { tid: d._tid, entries: itemEntries, warnings: itemWarnings };
+      }),
+      args.generationConcurrency,
+    );
+  } catch (err) {
+    progress.stop();
+    throw err;
+  }
+  for (const result of itemResults) {
+    warnings.push(...result.warnings);
+    for (const branch of branches) {
+      if (result.entries[branch.key]) armKeys[branch.key].items[result.tid] = result.entries[branch.key];
     }
   }
+  progress.finish('paired generation complete');
 
   for (const branch of branches) {
     const dirs = armDirs[branch.key];
@@ -2630,157 +2680,186 @@ async function main() {
   }
   const keyItems = {};
   const warnings = [];
+  const progress = createProgressReporter({
+    label: 'generation',
+    total: order.length,
+  });
+  progress.start(`generation · ${order.length} item(s) · concurrency=${args.generationConcurrency}`);
 
-  // SEQUENTIAL by design (shared quota window + between-condition contrast).
-  for (const d of order) {
-    const outTxt = path.join(args.outDir, `${d._tid}.txt`);
-    // --only means "regenerate exactly these", so it always overwrites its
-    // selection; bare resume skips anything already on disk.
-    if (fs.existsSync(outTxt) && !args.force && !args.only) {
-      // Resume: don't regenerate, but still record this drama in the held-out key
-      // from its existing trace, so a partial/append run emits a COMPLETE key
-      // (otherwise skipped dramas survive only if a prior key happened to exist).
-      const tracePath = path.join(args.delibDir, `${d._tid}.json`);
-      if (fs.existsSync(tracePath)) {
-        try {
-          const traceJson = JSON.parse(fs.readFileSync(tracePath, 'utf8'));
-          const t = externalTurns(traceJson, { restoreLeakedEgo: true });
-          writeHeldOutTranscripts({
-            args,
-            tid: d._tid,
-            dramaId: d.id,
-            trace: traceJson,
-            publicTranscript: renderTranscript(t),
-          });
-          keyItems[d._tid] = keyItemFor(
-            {
-              ...d,
-              _directorMode: traceJson.run?.director_mode || null,
-              _directorRevisitPolicy:
-                traceJson.run?.director_revisit_policy || (traceJson.run?.director_revisit_cue ? 'anchor' : 'none'),
-              _directorRevisitAnchor: traceJson.run?.director_revisit_anchor || 'latest',
-              _tutorAdaptationPolicy: traceJson.run?.tutor_adaptation_policy || 'none',
-              _directorVariationKey: traceJson.run?.director_variation_key || null,
-              _stageDirectionStyle:
-                STAGE_DIRECTION_STYLE_BY_ID.get(traceJson.run?.stage_direction_style) || d._stageDirectionStyle || null,
-              _directorPlan: traceJson.directorPlan || null,
-            },
-            t.filter((x) => x.role === 'TUTOR').length,
-            t.filter((x) => x.role === 'LEARNER').length,
-            traceJson.quality_warnings ||
-              qualityWarningsFor({
+  // Independent dramas can run concurrently; each drama's internal turn order is still serial.
+  let generatedResults;
+  try {
+    generatedResults = await runTasksWithConcurrency(
+      order.map((d) => async () => {
+        const outTxt = path.join(args.outDir, `${d._tid}.txt`);
+        const itemWarnings = [];
+        // --only means "regenerate exactly these", so it always overwrites its
+        // selection; bare resume skips anything already on disk.
+        if (fs.existsSync(outTxt) && !args.force && !args.only) {
+          // Resume: don't regenerate, but still record this drama in the held-out key
+          // from its existing trace, so a partial/append run emits a COMPLETE key
+          // (otherwise skipped dramas survive only if a prior key happened to exist).
+          let recoveredKeyItem = null;
+          const tracePath = path.join(args.delibDir, `${d._tid}.json`);
+          if (fs.existsSync(tracePath)) {
+            try {
+              const traceJson = JSON.parse(fs.readFileSync(tracePath, 'utf8'));
+              const t = externalTurns(traceJson, { restoreLeakedEgo: true });
+              writeHeldOutTranscripts({
+                args,
                 tid: d._tid,
                 dramaId: d.id,
-                turns: t,
-                traceTurns: traceJson.turns,
-                directorPolicy: traceJson.run?.director_revisit_policy || null,
-              }),
+                trace: traceJson,
+                publicTranscript: renderTranscript(t),
+              });
+              recoveredKeyItem = keyItemFor(
+                {
+                  ...d,
+                  _directorMode: traceJson.run?.director_mode || null,
+                  _directorRevisitPolicy:
+                    traceJson.run?.director_revisit_policy || (traceJson.run?.director_revisit_cue ? 'anchor' : 'none'),
+                  _directorRevisitAnchor: traceJson.run?.director_revisit_anchor || 'latest',
+                  _tutorAdaptationPolicy: traceJson.run?.tutor_adaptation_policy || 'none',
+                  _directorVariationKey: traceJson.run?.director_variation_key || null,
+                  _stageDirectionStyle:
+                    STAGE_DIRECTION_STYLE_BY_ID.get(traceJson.run?.stage_direction_style) ||
+                    d._stageDirectionStyle ||
+                    null,
+                  _directorPlan: traceJson.directorPlan || null,
+                },
+                t.filter((x) => x.role === 'TUTOR').length,
+                t.filter((x) => x.role === 'LEARNER').length,
+                traceJson.quality_warnings ||
+                  qualityWarningsFor({
+                    tid: d._tid,
+                    dramaId: d.id,
+                    turns: t,
+                    traceTurns: traceJson.turns,
+                    directorPolicy: traceJson.run?.director_revisit_policy || null,
+                  }),
+              );
+            } catch (_) {
+              /* fall back to prior-key merge */
+            }
+          }
+          console.log(
+            `\n  ${d._tid} (${d.id}) — exists, skipping (resume; keyed from trace). Use --force to regenerate.`,
           );
-        } catch (_) {
-          /* fall back to prior-key merge */
+          progress.step(`${d._tid} skipped existing`);
+          return { tid: d._tid, keyItem: recoveredKeyItem, warnings: itemWarnings };
         }
-      }
-      console.log(`\n  ${d._tid} (${d.id}) — exists, skipping (resume; keyed from trace). Use --force to regenerate.`);
-      continue;
-    }
-    console.log(`\n  ${d._tid} (${d.id}) — generating ${d.discipline}/${d.condition} …`);
-    const t0 = Date.now();
-    const directorPlan = await buildDirectorPlan(d, llmCall, args);
-    d._directorMode = args.directorMode;
-    d._directorPlan = directorPlan;
-    if (directorPlan) {
-      console.log(
-        `    director → opens=${directorPlan.opening_speaker} ends=${directorPlan.ending_speaker || 'unspecified'} ` +
-          `register=${String(directorPlan.register || directorPlan.locale || 'n/a').slice(0, 80)}`,
-      );
-    }
-    const trace = await runtime.runInteraction(
-      {
-        learnerId: `drama-${d.id}-${Date.now()}`,
-        personaId: d.persona,
-        tutorProfile: d.tutor_profile,
-        topic: d.topic,
-        scenario: { name: d.scenario_name, learnerStartState: d.learner_start_state, directorPlan },
-        sessionId: `drama-${d.id}-${Date.now()}`,
-      },
-      llmCall,
-      {
-        maxTurns: args.maxTurns,
-        observeInternals: true,
-        learnerProfile: d.learner_profile,
-        forceMaxTurns: true,
-        directorPlan,
-      },
-    );
-
-    const turns = externalTurns(trace);
-    const nTutor = turns.filter((t) => t.role === 'TUTOR').length;
-    const nLearner = turns.filter((t) => t.role === 'LEARNER').length;
-
-    const removedNotes = [];
-    const publicTranscript = renderTranscript(turns, removedNotes);
-    fs.writeFileSync(outTxt, publicTranscript, 'utf8');
-    const qualityWarnings = qualityWarningsFor({
-      tid: d._tid,
-      dramaId: d.id,
-      turns,
-      removedNotes,
-      traceTurns: trace.turns,
-      directorPolicy: d._directorRevisitPolicy || args.directorRevisitPolicy,
-    });
-    warnings.push(...qualityWarnings.map(formatQualityWarning));
-    if (removedNotes.length) {
-      fs.writeFileSync(
-        path.join(args.delibDir, `${d._tid}.stripped.json`),
-        JSON.stringify(removedNotes, null, 2),
-        'utf8',
-      );
-    }
-    const transcriptArtifacts = writeHeldOutTranscripts({
-      args,
-      tid: d._tid,
-      dramaId: d.id,
-      trace,
-      publicTranscript,
-    });
-    // HELD OUT — full trace incl. internal deliberation; never shown to critic/labeller.
-    fs.writeFileSync(
-      path.join(args.delibDir, `${d._tid}.json`),
-      JSON.stringify(
-        {
-          tid: d._tid,
-          drama_id: d.id,
-          run: {
-            generator: args.roleMap ? 'mixed' : args.generator,
-            role_map: args.roleMap || null,
-            director_mode: args.directorMode,
-            director_revisit_cue: d._directorRevisitPolicy !== 'none',
-            director_revisit_policy: d._directorRevisitPolicy,
-            director_revisit_anchor: d._directorRevisitAnchor,
-            tutor_adaptation_policy: d._tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none',
-            director_variation_key: d._directorVariationKey || null,
-            stage_direction_style: stageDirectionStyleFor(d)?.id || null,
-            model: args.generator === 'codex' ? `codex@${CODEX_REASONING_EFFORT}` : args.model,
-            codex_reasoning_effort: CODEX_REASONING_EFFORT,
-            writing_pad: runtime.writingPad,
-            transcript_artifacts: transcriptArtifacts,
+        console.log(`\n  ${d._tid} (${d.id}) — generating ${d.discipline}/${d.condition} …`);
+        progress.note(`${d._tid} (${d.id}) starting`);
+        const t0 = Date.now();
+        const directorPlan = await buildDirectorPlan(d, llmCall, args);
+        d._directorMode = args.directorMode;
+        d._directorPlan = directorPlan;
+        if (directorPlan) {
+          console.log(
+            `    director → opens=${directorPlan.opening_speaker} ends=${directorPlan.ending_speaker || 'unspecified'} ` +
+              `register=${String(directorPlan.register || directorPlan.locale || 'n/a').slice(0, 80)}`,
+          );
+        }
+        const sessionStamp = Date.now();
+        const trace = await runtime.runInteraction(
+          {
+            learnerId: `drama-${d.id}-${sessionStamp}`,
+            personaId: d.persona,
+            tutorProfile: d.tutor_profile,
+            topic: d.topic,
+            scenario: { name: d.scenario_name, learnerStartState: d.learner_start_state, directorPlan },
+            sessionId: `drama-${d.id}-${sessionStamp}`,
           },
-          directorPlan,
-          turns: trace.turns,
-          metrics: trace.metrics,
-          writingPadSnapshots: trace.writingPadSnapshots,
-          quality_status: hasBlockingQualityWarnings(qualityWarnings) ? 'review_before_scoring' : 'ok',
-          quality_warnings: qualityWarnings,
-        },
-        null,
-        2,
-      ),
-      'utf8',
-    );
+          llmCall,
+          {
+            maxTurns: args.maxTurns,
+            observeInternals: true,
+            learnerProfile: d.learner_profile,
+            forceMaxTurns: true,
+            directorPlan,
+          },
+        );
 
-    keyItems[d._tid] = keyItemFor(d, nTutor, nLearner, qualityWarnings);
-    console.log(`    → ${nTutor} tutor / ${nLearner} learner turns · ${((Date.now() - t0) / 1000).toFixed(0)}s`);
+        const turns = externalTurns(trace);
+        const nTutor = turns.filter((t) => t.role === 'TUTOR').length;
+        const nLearner = turns.filter((t) => t.role === 'LEARNER').length;
+
+        const removedNotes = [];
+        const publicTranscript = renderTranscript(turns, removedNotes);
+        fs.writeFileSync(outTxt, publicTranscript, 'utf8');
+        const qualityWarnings = qualityWarningsFor({
+          tid: d._tid,
+          dramaId: d.id,
+          turns,
+          removedNotes,
+          traceTurns: trace.turns,
+          directorPolicy: d._directorRevisitPolicy || args.directorRevisitPolicy,
+        });
+        itemWarnings.push(...qualityWarnings.map(formatQualityWarning));
+        if (removedNotes.length) {
+          fs.writeFileSync(
+            path.join(args.delibDir, `${d._tid}.stripped.json`),
+            JSON.stringify(removedNotes, null, 2),
+            'utf8',
+          );
+        }
+        const transcriptArtifacts = writeHeldOutTranscripts({
+          args,
+          tid: d._tid,
+          dramaId: d.id,
+          trace,
+          publicTranscript,
+        });
+        // HELD OUT — full trace incl. internal deliberation; never shown to critic/labeller.
+        fs.writeFileSync(
+          path.join(args.delibDir, `${d._tid}.json`),
+          JSON.stringify(
+            {
+              tid: d._tid,
+              drama_id: d.id,
+              run: {
+                generator: args.roleMap ? 'mixed' : args.generator,
+                role_map: args.roleMap || null,
+                director_mode: args.directorMode,
+                director_revisit_cue: d._directorRevisitPolicy !== 'none',
+                director_revisit_policy: d._directorRevisitPolicy,
+                director_revisit_anchor: d._directorRevisitAnchor,
+                tutor_adaptation_policy: d._tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none',
+                director_variation_key: d._directorVariationKey || null,
+                stage_direction_style: stageDirectionStyleFor(d)?.id || null,
+                model: args.generator === 'codex' ? `codex@${CODEX_REASONING_EFFORT}` : args.model,
+                codex_reasoning_effort: CODEX_REASONING_EFFORT,
+                writing_pad: runtime.writingPad,
+                transcript_artifacts: transcriptArtifacts,
+              },
+              directorPlan,
+              turns: trace.turns,
+              metrics: trace.metrics,
+              writingPadSnapshots: trace.writingPadSnapshots,
+              quality_status: hasBlockingQualityWarnings(qualityWarnings) ? 'review_before_scoring' : 'ok',
+              quality_warnings: qualityWarnings,
+            },
+            null,
+            2,
+          ),
+          'utf8',
+        );
+
+        console.log(`    → ${nTutor} tutor / ${nLearner} learner turns · ${((Date.now() - t0) / 1000).toFixed(0)}s`);
+        progress.step(`${d._tid} complete`);
+        return { tid: d._tid, keyItem: keyItemFor(d, nTutor, nLearner, qualityWarnings), warnings: itemWarnings };
+      }),
+      args.generationConcurrency,
+    );
+  } catch (err) {
+    progress.stop();
+    throw err;
   }
+  for (const result of generatedResults) {
+    if (result.keyItem) keyItems[result.tid] = result.keyItem;
+    warnings.push(...result.warnings);
+  }
+  progress.finish('generation complete');
 
   // Held-out key (merge with any prior key on resume so skipped dramas survive).
   let keyObj = baseKeyObject({

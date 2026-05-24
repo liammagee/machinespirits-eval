@@ -1,0 +1,41 @@
+STAGE: On the lab table, five paper deer stand inside a chalk circle with twelve green paper leaves, while two red binder clips labeled PREDATORS sit just outside the circle.
+
+TUTOR: [The tutor moves the predator cards aside, then slides the paper deer into the chalk boundary and bunches the leaf cutouts into one small corner.]
+
+Let the straight-line answer run first: predators gone, more deer survive, so the herd grows. That part is not wrong; it is just unfinished.
+
+Hold it there for a second. Same chalk boundary, same small leaf pile, more paper deer inside it. If all of them eat from this patch, what is left for the next round?
+
+That is the missing step in the marked answer. The food has not grown with the herd. Once the deer pass what the habitat can replace, they overbrowse the plants, weaken next year’s food supply, and the “helped” population can end up thinner, sicker, and headed for a crash.
+
+So the revision can say: removing predators may increase prey numbers briefly, but it can push the prey past carrying capacity. Then the effects spread through the plants and other species too; that wider chain reaction is the trophic cascade.
+
+LEARNER: I thought fewer predators simply helped the deer because more of them survive, but with the paper deer crowded inside the same chalk boundary, that only explains the first round. The leaf pile is still small, so if the herd eats it down, next year’s food supply gets worse and the population could crash instead of just keep growing. I think my answer needs carrying capacity and overbrowsing, but I’m still not sure how far to extend the trophic cascade beyond the plants getting eaten down.
+
+TUTOR: [The tutor pulls three leaf cutouts out of the chalk boundary and sets them beside the marked answer, leaving the paper deer crowded around bare space.]
+
+That is the right place to pause: the cascade does not have to become “everything affects everything.” It just needs one honest step past the plants.
+
+In this model, overbrowsing means fewer leaves now and weaker plant regrowth next round. From there, pick one defensible beyond-plant effect for the marked answer: less cover for small animals, fewer young shrubs or trees, or fewer insects and birds that depend on those plants.
+
+Then keep the chain tight: predators removed, deer increase, deer exceed carrying capacity, overbrowsing reduces plant recovery, and that habitat change affects another species group. That is far enough to show a trophic cascade without turning the answer into a full ecosystem inventory.
+
+STAGE: A lab timer clicks; the tutor removes the two red predator clips and adds four more paper deer to the chalk circle without adding any green leaves.
+
+LEARNER: I thought taking out the predator clips would simply help the deer, because fewer of them die. But with four more paper deer inside the same chalk circle and no extra leaves, the food limit is what changes the result: they can eat the patch down, weaken regrowth, and crash later. For the cascade, I think I can add one careful next step, like fewer insects or birds using those plants, but I’m still checking where that stops being evidence and starts being too broad.
+
+TUTOR: [The tutor draws one short arrow from the stripped leaf pile to the sample tray labeled “insects / birds,” then leaves the marker capped beside it.]
+
+For this marked answer, stop after one direct plant-dependent effect. The answer has evidence for fewer leaves, weaker regrowth, and changed cover or food for species that use those plants. It does not need to predict the whole community after that.
+
+So the revision can stay tight: removing predators may briefly raise deer survival, but the herd can exceed carrying capacity, overbrowse the plants, reduce regrowth, and change habitat or food for plant-dependent insects or birds. That shows the trophic cascade without overclaiming.
+
+LEARNER: I thought fewer predators simply helped the deer because more survive at first. Now, with the leaves stripped down and one arrow going to insects and birds, I see the answer should stop at the evidence: the herd can pass carrying capacity, overbrowse, and leave less food or cover for plant-dependent species. I feel clearer about the boundary, but I still want to word “may briefly increase” so it does not sound like predator removal is good overall.
+
+STAGE: A final tutor line closes the scene.
+
+TUTOR: [The tutor writes “briefly” above the first arrow, then draws a stop mark after the insect/bird tray.]
+
+That word does the work if the sentence keeps moving. The marked answer can land here: “Removing predators may briefly increase deer survival, but without more food the herd can exceed carrying capacity, overbrowse plants, reduce regrowth, and leave less food or cover for plant-dependent insects and birds.”
+
+“May briefly” names the first-round effect without calling it a benefit overall. The rest of the sentence shows why the system does not stop with more deer.

@@ -61,12 +61,15 @@ describe('run-poetics-production-batch', () => {
   });
 
   it('emits fixed-prefix reframe generation commands for target units', () => {
-    const args = parseArgs(['--root-dir', '/tmp/phase2-production-v1-test']);
+    const args = parseArgs(['--root-dir', '/tmp/phase2-production-v1-test', '--generation-concurrency', '2']);
     const target = buildPlan(args).units.find((unit) => unit.kind === 'target');
     const cmd = generationCommand(target, args);
 
+    assert.equal(buildPlan(args).generationConcurrency, 2);
     assert.ok(cmd.includes('--paired-continuation-policies'));
     assert.ok(cmd.includes('none,reframe'));
+    assert.ok(cmd.includes('--generation-concurrency'));
+    assert.ok(cmd.includes('2'));
     assert.ok(cmd.includes('--director-revisit-anchor'));
     assert.ok(cmd.includes('misframing-candidate'));
     assert.ok(cmd.includes('--director-variation-key'));

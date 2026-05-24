@@ -1,0 +1,274 @@
+_comment: HELD OUT — do not read while labelling. Joins to instrument scores +
+  human labels only AFTER both are produced. intended_lean /
+  intended_tutor_character / dramatic_shape are DESIGN HYPOTHESES, never labels.
+generated: 2026-05-24T15:47:41.174Z
+generator: codex
+role_map: null
+mode: real-codex
+model: codex@high
+codex_reasoning_effort: high
+writing_pad:
+  mode: isolated
+  dir: config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/deliberation/.writing-pad
+  learnerDb: config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db
+  tutorDb: config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db
+director_mode: scene
+director_variation_key: phase2-tutor-adaptation-pilot-v1:r01:target
+director_revisit_cue: false
+director_revisit_policy: none
+director_revisit_anchor: null
+tutor_adaptation_policy: uptake
+approach_databases:
+  pedagogical: config/poetics-calibration/pedagogical-approaches.yaml
+  dialogue: config/poetics-calibration/dialogue-approaches.yaml
+transcripts_dir: config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/transcripts/tutor-uptake-only
+seed: 20260520
+max_turns: 3
+n: 6
+diagnostic_only: diagnostic / generative read — κ on small n is noise
+  (PHASE2-FINDINGS.md §4); the aim is surprising-element production judged by an
+  external reader, NOT a human-matching classifier
+paired_continuation:
+  mode: fixed_prefix_continuation
+  prefix_through: tutor_turn_2
+  branch_policies:
+    - none
+    - reframe-only
+    - tutor-uptake-only
+    - reframe+tutor-uptake
+  branches:
+    - key: none
+      revisitPolicy: none
+      tutorAdaptationPolicy: none
+    - key: reframe-only
+      revisitPolicy: reframe
+      tutorAdaptationPolicy: none
+    - key: tutor-uptake-only
+      revisitPolicy: none
+      tutorAdaptationPolicy: uptake
+    - key: reframe+tutor-uptake
+      revisitPolicy: reframe
+      tutorAdaptationPolicy: uptake
+items:
+  T08:
+    drama_id: D11
+    discipline: linguistics
+    condition: recognition
+    pedagogical_approach: null
+    pedagogical_family: null
+    dialogue_approach: null
+    dialogue_family: null
+    stage_direction_policy: null
+    stage_direction_style: ambient_pressure
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: struggling_anxious
+    intended_tutor_character: Terse; asks the learner to point to an actual rule the dialect follows
+    intended_lean: recognition
+    dramatic_shape: internalised-correctness → re-reading 'rules' as description, not law
+    n_tutor_turns: 3
+    n_learner_turns: 3
+    director_mode: scene
+    director_variation_key: phase2-tutor-adaptation-pilot-v1:r01:target
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: uptake
+    opening_speaker: tutor
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: d5250885f2aa7f2e
+      branch_policy: tutor-uptake-only
+      director_revisit_policy: none
+      tutor_adaptation_policy: uptake
+  T10:
+    drama_id: D9
+    discipline: statistics
+    condition: recognition
+    pedagogical_approach: null
+    pedagogical_family: null
+    dialogue_approach: null
+    dialogue_family: null
+    stage_direction_policy: null
+    stage_direction_style: scene_heading
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: focused_achiever
+    intended_tutor_character: Socratic; withholds the definition, probes the assumption
+    intended_lean: recognition
+    dramatic_shape: significance=importance → re-reading what a p-value does and does not say
+    n_tutor_turns: 4
+    n_learner_turns: 3
+    director_mode: scene
+    director_variation_key: phase2-tutor-adaptation-pilot-v1:r01:target
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: uptake
+    opening_speaker: tutor
+    ending_speaker: tutor
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: f58aad7d69179401
+      branch_policy: tutor-uptake-only
+      director_revisit_policy: none
+      tutor_adaptation_policy: uptake
+  T12:
+    drama_id: D17
+    discipline: geology
+    condition: recognition
+    pedagogical_approach: null
+    pedagogical_family: null
+    dialogue_approach: null
+    dialogue_family: null
+    stage_direction_policy: null
+    stage_direction_style: ambient_pressure
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: struggling_anxious
+    intended_tutor_character: Terse; converts the abstract timescale into something the learner can hold
+    intended_lean: recognition
+    dramatic_shape: catastrophe-intuition → re-reading the canyon as accumulated slow time
+    n_tutor_turns: 4
+    n_learner_turns: 3
+    director_mode: scene
+    director_variation_key: phase2-tutor-adaptation-pilot-v1:r01:target
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: uptake
+    opening_speaker: director
+    ending_speaker: tutor
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 99a35daf1ecc2a12
+      branch_policy: tutor-uptake-only
+      director_revisit_policy: none
+      tutor_adaptation_policy: uptake
+  T13:
+    drama_id: D18
+    discipline: law
+    condition: base
+    pedagogical_approach: null
+    pedagogical_family: null
+    dialogue_approach: null
+    dialogue_family: null
+    stage_direction_policy: null
+    stage_direction_style: thread_metadata
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: confused_novice
+    intended_tutor_character: Didactic; separates 'what happened' from 'what must be shown'
+    intended_lean: recognition
+    dramatic_shape: factual-reading of a procedural rule → re-reading it as a
+      burden, not a verdict (recohering under BASE)
+    n_tutor_turns: 4
+    n_learner_turns: 3
+    director_mode: scene
+    director_variation_key: phase2-tutor-adaptation-pilot-v1:r01:target
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: uptake
+    opening_speaker: tutor
+    ending_speaker: tutor
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 48a484f392890a09
+      branch_policy: tutor-uptake-only
+      director_revisit_policy: none
+      tutor_adaptation_policy: uptake
+  T16:
+    drama_id: D14
+    discipline: ecology
+    condition: base
+    pedagogical_approach: null
+    pedagogical_family: null
+    dialogue_approach: null
+    dialogue_family: null
+    stage_direction_policy: null
+    stage_direction_style: object_business
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: focused_achiever
+    intended_tutor_character: Warm; lets the learner run the linear story until it breaks
+    intended_lean: recognition
+    dramatic_shape: linear cause→effect → re-reading the system as coupled
+      (recohering under BASE)
+    n_tutor_turns: 4
+    n_learner_turns: 3
+    director_mode: scene
+    director_variation_key: phase2-tutor-adaptation-pilot-v1:r01:target
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: uptake
+    opening_speaker: director
+    ending_speaker: tutor
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: e6e56fc1d5d21791
+      branch_policy: tutor-uptake-only
+      director_revisit_policy: none
+      tutor_adaptation_policy: uptake
+  T18:
+    drama_id: D7
+    discipline: chemistry
+    condition: recognition
+    pedagogical_approach: null
+    pedagogical_family: null
+    dialogue_approach: null
+    dialogue_family: null
+    stage_direction_policy: null
+    stage_direction_style: scene_heading
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: confused_novice
+    intended_tutor_character: Socratic; asks the learner to weigh their own claim
+    intended_lean: recognition
+    dramatic_shape: vanishing-substance intuition → re-reading 'gone' as 'dispersed
+      but conserved'
+    n_tutor_turns: 3
+    n_learner_turns: 3
+    director_mode: scene
+    director_variation_key: phase2-tutor-adaptation-pilot-v1:r01:target
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: uptake
+    opening_speaker: tutor
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: b383fa9776ef40ad
+      branch_policy: tutor-uptake-only
+      director_revisit_policy: none
+      tutor_adaptation_policy: uptake
+quality_warning_count: 0
+quality_blocking_warning_count: 0
+stage_direction_policy_counts:
+  unspecified: 6
+stage_direction_style_counts:
+  ambient_pressure: 2
+  scene_heading: 2
+  thread_metadata: 1
+  object_business: 1

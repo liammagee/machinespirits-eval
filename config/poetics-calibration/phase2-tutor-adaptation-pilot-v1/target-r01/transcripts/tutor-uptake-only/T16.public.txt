@@ -1,0 +1,47 @@
+STAGE: On the lab table, five paper deer stand inside a chalk circle with twelve green paper leaves, while two red binder clips labeled PREDATORS sit just outside the circle.
+
+TUTOR: [The tutor moves the predator cards aside, then slides the paper deer into the chalk boundary and bunches the leaf cutouts into one small corner.]
+
+Let the straight-line answer run first: predators gone, more deer survive, so the herd grows. That part is not wrong; it is just unfinished.
+
+Hold it there for a second. Same chalk boundary, same small leaf pile, more paper deer inside it. If all of them eat from this patch, what is left for the next round?
+
+That is the missing step in the marked answer. The food has not grown with the herd. Once the deer pass what the habitat can replace, they overbrowse the plants, weaken next year’s food supply, and the “helped” population can end up thinner, sicker, and headed for a crash.
+
+So the revision can say: removing predators may increase prey numbers briefly, but it can push the prey past carrying capacity. Then the effects spread through the plants and other species too; that wider chain reaction is the trophic cascade.
+
+LEARNER: I thought fewer predators simply helped the deer because more of them survive, but with the paper deer crowded inside the same chalk boundary, that only explains the first round. The leaf pile is still small, so if the herd eats it down, next year’s food supply gets worse and the population could crash instead of just keep growing. I think my answer needs carrying capacity and overbrowsing, but I’m still not sure how far to extend the trophic cascade beyond the plants getting eaten down.
+
+TUTOR: [The tutor pulls three leaf cutouts out of the chalk boundary and sets them beside the marked answer, leaving the paper deer crowded around bare space.]
+
+That is the right place to pause: the cascade does not have to become “everything affects everything.” It just needs one honest step past the plants.
+
+In this model, overbrowsing means fewer leaves now and weaker plant regrowth next round. From there, pick one defensible beyond-plant effect for the marked answer: less cover for small animals, fewer young shrubs or trees, or fewer insects and birds that depend on those plants.
+
+Then keep the chain tight: predators removed, deer increase, deer exceed carrying capacity, overbrowsing reduces plant recovery, and that habitat change affects another species group. That is far enough to show a trophic cascade without turning the answer into a full ecosystem inventory.
+
+STAGE: A lab timer clicks; the tutor removes the two red predator clips and adds four more paper deer to the chalk circle without adding any green leaves.
+
+LEARNER: I thought fewer predators simply helped the prey population because more deer survive. But with the predator clips gone and four more paper deer inside the same chalk circle, the food has not changed, so the deer might pass carrying capacity and eat down the leaves faster than they can recover. For the marked answer, I think one careful next step could be that weaker plant regrowth leaves less food or cover for insects and birds, but I want to make sure that is specific enough for the trophic cascade.
+
+TUTOR: [The tutor moves two leaf cutouts from the crowded deer circle to a tray labeled “insects/birds,” then leaves one bare patch inside the chalk boundary.]
+
+That is specific enough because it crosses one clear link beyond the deer eating plants. The answer is not just saying “the ecosystem changes”; it names a pathway: fewer predators, more deer at first, same food limit, overbrowsing, weaker plant recovery, then less food or cover for insects and birds.
+
+That is also the limit for this marked answer. One defensible dependent group is enough; no need to list the whole ecosystem.
+
+A clean version could be: “Removing predators may briefly increase deer numbers, but the herd can exceed carrying capacity and overbrowse plants. If plant regrowth weakens, insects and birds that depend on those plants for food or cover may also decline, so the effect becomes a trophic cascade rather than a simple benefit to prey.”
+
+LEARNER: I thought removing predators simply helped the prey population because more deer survive, but the bare patch inside the chalk boundary makes that only the first step. The chain seems to be: more deer, same food limit, overbrowsing, weaker plant regrowth, then less food or cover for insects and birds. I think that works as a trophic cascade, but I want to word the insects/birds part tightly so it sounds like a real dependency, not just “other species are affected.”
+
+STAGE: A final tutor line closes the scene.
+
+TUTOR: [The tutor slides one remaining leaf cutout halfway under the insects/birds tray, then draws a short arrow from the bare chalk patch to the tray.]
+
+Make the dependency do the work. Not “other species are affected,” but “insects and birds that rely on those plants for food, nesting sites, or cover can decline.”
+
+That keeps the chain honest: the deer do not directly harm the birds in this answer; the deer reduce plant recovery, and the plant loss removes something those insects and birds need. A tight final version would be:
+
+“Removing predators may briefly increase deer numbers, but the herd can exceed carrying capacity and overbrowse the plants. If the plants cannot regrow well, insects and birds that depend on those plants for food, nesting, or cover may also decline, so the predator removal creates a trophic cascade rather than simply helping the prey population.”
+
+The arrow stops there: plants as the link, insects and birds as the dependent group.

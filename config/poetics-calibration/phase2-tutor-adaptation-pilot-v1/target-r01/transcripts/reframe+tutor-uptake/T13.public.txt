@@ -1,0 +1,116 @@
+STAGE: 15:42 CT | thread reopened after marked exercise: quoted fragment remains, “innocent until proven guilty,” with one unresolved margin comment.
+
+TUTOR: [Reopened comment · 4:18 PM · edited]
+
+> “The court assumes the accused didn’t do it.”
+
+Correction: not quite.
+
+That sentence treats the presumption as a factual claim. It is not. “Innocent until proven guilty” is a procedural rule: the accused does not have to prove innocence, and the state may not treat the accused as guilty unless the prosecution proves the charge.
+
+For observation notes, keep the distinction tight:
+
+Presumption of innocence: starting legal position, not a finding about what happened.
+
+Burden of proof: the prosecution must prove guilt; the accused does not have to disprove it.
+
+Criminal standard: the prosecution’s proof must meet the criminal standard, usually beyond a reasonable doubt.
+
+Use:
+
+> “The accused is presumed innocent unless and until the prosecution proves guilt beyond a reasonable doubt.”
+
+Do not write:
+
+> “The court believes the accused is innocent.”
+
+Check the sentence before saving: if it sounds like the court is deciding what actually happened before proof is heard, revise it. The rule controls who must prove what, and how strongly; it does not announce factual innocence.
+
+LEARNER: I thought “presumed innocent” meant the court was basically starting from “he probably didn’t do it.” Now I think the correction is saying that is not really a belief about what happened, but more like a rule about who has to prove the case. I’m still stuck on the word “innocent,” though, because it sounds like a verdict before the verdict.
+
+TUTOR: > “I’m still stuck on the word ‘innocent.’”
+
+That word is doing the misleading work. Here, “innocent” does not mean “factually did not do it.” It means “not legally guilty unless the prosecution proves guilt.”
+
+Margin note:
+
+- **Factual innocence:** the accused did not commit the act.
+- **Presumption of innocence:** the accused must be treated as not guilty before proof.
+- **Burden/standard:** the prosecution must prove guilt beyond a reasonable doubt.
+
+So it is not a verdict before the verdict. It is a rule that blocks the court from treating accusation as proof.
+
+Sentence test before saving the note: replace “presumed innocent” with “not legally guilty unless proved guilty beyond a reasonable doubt.” If the sentence still works, it is procedural. If it turns into “the court thinks he probably did not do it,” revise.
+
+Use:
+
+> “The accused is legally presumed innocent unless the prosecution proves guilt beyond a reasonable doubt.”
+
+Avoid:
+
+> “The court starts from the belief that he probably did not do it.”
+
+STAGE: 15:44 CT | edit marker returns to the phrase “presumed innocent”; the comment label changes from 'wording' to 'burden/standard'.
+An earlier learner line returns to the table: "I thought “presumed innocent” meant the court was basically starting from “he probably didn’t do it.” Now I think the correction is saying that is not really a belief about..." The pause holds until the learner takes up the wording, names what its old frame hid, and offers a replacement frame.
+
+LEARNER: I thought “presumed innocent” meant the court was basically starting from “he probably didn’t do it,” but that made the phrase sound like a factual guess about what happened. The better wording seems to be: the accused is not legally guilty unless the prosecution proves guilt beyond a reasonable doubt. I still keep slipping and reading “treated as not guilty” as “believed not guilty,” so I want to ask if that difference is mostly about burden and standard, not the court’s opinion.
+
+TUTOR: [Reopened comment · 4:26 PM]
+
+> “treated as not guilty” vs. “believed not guilty”
+
+Yes. The difference is mostly about **burden** and **standard**, not the court’s opinion.
+
+Use the revised frame:
+
+> “The accused is not legally guilty unless the prosecution proves guilt beyond a reasonable doubt.”
+
+Margin distinction:
+
+- **Factual innocence:** the accused did not commit the act.
+- **Presumption of innocence:** the accused is not treated as legally guilty at the start.
+- **Burden of proof:** the prosecution must prove the charge.
+- **Standard of evidence:** that proof must reach beyond a reasonable doubt.
+
+The old frame made “innocent” sound like a factual guess: “he probably did not do it.” The corrected frame is legal status: guilt has not been established under the required burden and standard.
+
+Before saving the note, run this check:
+
+> Does the sentence describe what the court believes, or what the prosecution must prove?
+
+Avoid:
+
+> “The court believes he is not guilty.”
+
+Use:
+
+> “The accused remains legally not guilty unless the prosecution proves guilt beyond a reasonable doubt.”
+
+LEARNER: [Reply · 4:29 PM]
+
+I thought “presumed innocent” meant the court was treating the accused as probably not the person who did it. That framing problem is that I made “innocent” sound like a guess about the facts instead of a rule about what has to be proved. Revised note: “the accused is not legally guilty unless the prosecution proves guilt beyond a reasonable doubt.” I think that is better, but “not guilty” still keeps sounding like “didn’t do it” in my head.
+
+STAGE: A final tutor line closes the scene.
+
+TUTOR: [Reopened comment · 4:31 PM]
+
+> “not guilty” still keeps sounding like “didn’t do it”
+
+Correction: in this context, read **not guilty** as **guilt has not been legally proved**, not as **the accused did not do it**.
+
+Margin distinction:
+
+- **Fact question:** what actually happened.
+- **Legal status before proof:** not guilty / presumed innocent.
+- **Burden:** the prosecution must prove guilt.
+- **Standard:** beyond a reasonable doubt.
+
+Use this test before saving the note:
+
+> Is the sentence about what happened, or about what has been proved?
+
+If it answers what happened, it is drifting into factual innocence. If it answers what has been proved under the criminal standard, it is using the presumption correctly.
+
+Save this version:
+
+> “The presumption of innocence means the accused is legally not guilty unless the prosecution proves guilt beyond a reasonable doubt; it is not a claim that the accused factually did not commit the act.”

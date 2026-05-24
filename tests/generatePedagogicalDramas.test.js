@@ -1637,6 +1637,70 @@ describe('generate-pedagogical-dramas', () => {
     );
   });
 
+  it('accepts ordinary pilot reframe forms from the four-arm adaptation run', () => {
+    const cases = [
+      {
+        tid: 'T915',
+        dramaId: 'D915',
+        anchor:
+          'Sorry, right, an actual sentence: “She were late yesterday.” I’d always thought that was just me being sloppy.',
+        learnerText:
+          'Sorry, right, I said “She were late yesterday” and treated it as me being sloppy, but I think that wording made it sound as if there were no rule there at all. Maybe the better way to put it is: at home that form has limits, and in the essay the Standard English form is expected.',
+      },
+      {
+        tid: 'T916',
+        dramaId: 'D916',
+        anchor: 'I thought `p < .05` meant the change was important enough to act on.',
+        learnerText:
+          'I thought `p < .05` meant the change was important enough to act on, but that old read hid the business threshold inside the stats label. With `p < .001`, the claim is cleaner: the 0.4-second gain is probably not noise, but it still has to be multiplied through task volume, analyst count, and days.',
+      },
+      {
+        tid: 'T917',
+        dramaId: 'D917',
+        anchor: 'I think my first instinct was still picturing one big flood doing the main work.',
+        learnerText:
+          'I think my first instinct was still picturing one big flood doing the main work, because the canyon is so large. That frame made me skip the slower bit, sorry: what happens after the damage, with the loose material being taken away. So the scar would be the sudden event, and the river or frost and gravity are the route that keeps clearing it over time.',
+      },
+      {
+        tid: 'T917b',
+        dramaId: 'D917',
+        anchor: 'I think my first instinct was still picturing one big flood doing the main work.',
+        learnerText:
+          'I think my first instinct was still picturing one big flood doing the main work, because the canyon is so large. I suppose that made me treat the flood mark as if it explained the whole map, which is probably too simple. On the rock face, the fresh scar would be the event, and the river channel or loose material moving out would be the route that keeps removing it, slowly.',
+      },
+      {
+        tid: 'T918',
+        dramaId: 'D918',
+        anchor: 'I thought “presumed innocent” meant the court was basically starting from “he probably didn’t do it.”',
+        learnerText:
+          'I thought “presumed innocent” meant the court was basically starting from “he probably didn’t do it.” That old wording makes it sound like a mini-verdict, and I think it hides the burden/standard part. Better note: “the accused is not legally guilty unless the prosecution proves guilt beyond a reasonable doubt.”',
+      },
+      {
+        tid: 'T919',
+        dramaId: 'D919',
+        anchor: 'I thought fewer predators simply helped the deer because more of them survive.',
+        learnerText:
+          'I thought fewer predators simply helped the deer because more of them survive, but with the paper deer crowded inside the same chalk boundary, that only explains the first round. My old framing hid the food limit, because I was only counting deer surviving and not asking whether the leaves and regrowth could support them. I’d replace it with: predators removed, deer increase, they pass carrying capacity, and overbrowsing weakens plant recovery.',
+      },
+      {
+        tid: 'T920',
+        dramaId: 'D920',
+        anchor: 'The clear water still makes me think the salt is gone.',
+        learnerText:
+          'The clear water still makes me think the salt is gone, or at least not in there like before, but that way of saying it kind of hides that I was only going by the look of it. Maybe I should say the salt is not showing as grains, but the cup still weighs like the salt is in there.',
+      },
+    ];
+
+    for (const item of cases) {
+      const warnings = warningsForReframeLine(item);
+      assert.equal(
+        warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+        false,
+        `${item.tid} should pass the reframe quality gate`,
+      );
+    }
+  });
+
   it('flags a requested reframe cue that the anchor gate downgraded', () => {
     const warnings = qualityWarningsFor({
       tid: 'T90',

@@ -1,0 +1,2099 @@
+{
+  "tid": "T10",
+  "drama_id": "D9",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": true,
+    "director_revisit_policy": "reframe",
+    "director_revisit_anchor": "misframing-candidate",
+    "tutor_adaptation_policy": "none",
+    "director_variation_key": "phase2-tutor-adaptation-pilot-v1:r01:target",
+    "stage_direction_style": "scene_heading",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/transcripts/reframe-only/T10.public.txt",
+      "full": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/transcripts/reframe-only/T10.full.md",
+      "stage": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/transcripts/reframe-only/T10.stage.md",
+      "tutor": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/transcripts/reframe-only/T10.tutor.md",
+      "learner": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/transcripts/reframe-only/T10.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "f58aad7d69179401",
+      "branch_policy": "reframe-only",
+      "director_revisit_policy": "reframe",
+      "tutor_adaptation_policy": "none"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-tutor-adaptation-pilot-v1:r01:target",
+    "scene_setting": "Small office break room during a ten-minute analytics refresher, mid-afternoon.",
+    "scene_opening": "BREAK ROOM, 3:07 P.M.: A printed dashboard lies between a half-finished coffee and a highlighter.",
+    "relationship": "A visiting statistics tutor and a high-performing analyst who is accustomed to quick, correct reads of metrics.",
+    "stakes": "A tiny but statistically significant productivity difference is about to be used to justify a costly workflow change unless the learner separates evidence against chance from practical magnitude.",
+    "opening_speaker": "tutor",
+    "ending_speaker": "tutor",
+    "locale": "workplace English with asynchronous-report habits: compact, evidence-oriented, comfortable quoting labels from dashboards and memos.",
+    "register": "crisp, mildly pressured, exacting; warmth appears through restraint rather than praise.",
+    "stage_direction_style": "scene_heading",
+    "stage_direction_style_prompt": "Use a compact scene heading or situating line, closer to a script heading than explanatory narration.",
+    "voice_constraints": "Avoid generic American AI tutor phrasing such as broad validation, therapy-like reflection, or cheerful lesson framing. Let the tutor use short Socratic probes, dashboard labels, numerical contrasts, and pauses. The learner should sound numerate, confident, and brisk rather than confused or helpless. No stylized dialect spelling. Stage-direction source: Use a compact scene heading or situating line, closer to a script heading than explanatory narration.",
+    "person_policy": "First person is allowed mainly for the learner's assumptions and revisions. Second person should be rare; prefer pointing to claims, numbers, reports, and decisions rather than addressing the learner directly. Third-person references to the dashboard, the memo, or 'the result' are encouraged.",
+    "direct_address_budget": "At most one direct you/your phrase per tutor turn, and no direct validation formula such as 'you're right' or 'your intuition makes sense' unless it is immediately tied to a specific distinction.",
+    "side_constraints": {
+      "tutor": "Open with the dashboard or a question about the decision, not a definition. Withhold the full definition of statistical significance until the learner has exposed the significance=importance shortcut. Probe what the p-value is measuring and what it is not measuring.",
+      "learner": "The learner's opening public line must own the significance=importance shortcut in plain speech with \"I thought\", \"I assumed\", or \"my first instinct\" before the tutor corrects it."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "NEW LINE ON THE DASHBOARD: p < .001, average gain = 0.4 seconds per task.",
+        "reasoning": "This forces the same confident shortcut to confront a result that is very unlikely under the null but practically small.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 24606,
+          "promptHashes": {
+            "system": "86f72b946a2efee2",
+            "user": "b6d573f8628def69",
+            "combined": "80773cffdfe8da20"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8833Ia",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8833Ia/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "An earlier learner line will return as a visible object in the scene. Keep the cue brief and diegetic; the learner response should take up the wording, name what its old frame hid, and offer a replacement frame.",
+        "reasoning": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 24606,
+          "promptHashes": {
+            "system": "86f72b946a2efee2",
+            "user": "b6d573f8628def69",
+            "combined": "80773cffdfe8da20"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8833Ia",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8833Ia/out.txt",
+            "-"
+          ]
+        },
+        "cue_kind": "learner_revisit_earlier_wording",
+        "revisit_policy": "reframe",
+        "revisit_anchor": "misframing-candidate"
+      }
+    ],
+    "director_note": "This scene uses a compressed workplace decision rather than a classroom explanation so the learner's confidence has consequences. The heading style keeps public stage material compact while the dashboard intervention breaks routine and makes the distinction between significance and effect size visible.",
+    "pedagogical_approach_id": null,
+    "dialogue_approach_id": null,
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 24606,
+      "promptHashes": {
+        "system": "86f72b946a2efee2",
+        "user": "b6d573f8628def69",
+        "combined": "80773cffdfe8da20"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8833Ia",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8833Ia/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "none",
+    "revisit_cue": "learner_revisit_earlier_wording",
+    "revisit_cue_policy": "reframe",
+    "revisit_cue_anchor": "misframing-candidate"
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "BREAK ROOM, MID-AFTERNOON.\n\nThe dashboard gives this result two labels: `p < .05` and `+0.3 tasks per analyst per day.` The memo is leaning on the first label as if it settles the workflow change. What, exactly, is the memo claiming `p < .05` proves, and where does `+0.3` have to enter before costs get signed off?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "BREAK ROOM, MID-AFTERNOON.\n\nThe dashboard gives this result two labels: `p < .05` and `+0.3 tasks per analyst per day.` The memo is leaning on the first label as if it proves the change matters. Which number is evidence against chance, and which number has to carry the cost-benefit argument?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16969,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-e97d77451905fbc3"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16969,
+            "promptHashes": {
+              "system": "c708ef5e252285f2",
+              "user": "6684a1a38a489dab",
+              "combined": "e97d77451905fbc3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XIwnox",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XIwnox/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16969,
+              "promptHashes": {
+                "system": "c708ef5e252285f2",
+                "user": "6684a1a38a489dab",
+                "combined": "e97d77451905fbc3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XIwnox",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XIwnox/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong. It opens on the dashboard, not a definition; it uses the exact contrast that matters; and it respects the learner as numerate by putting the decision pressure in front of them. The question is Socratic enough to expose the shortcut between “statistically significant” and “important.”\n\nRisk: it may slightly over-scaffold by naming “evidence against chance” before the learner has articulated what they think `p < .05` means. That could flatten the discovery. The scene would be sharper if the draft first let the learner commit to what the memo is claiming, then pressured the gap between `p < .05` and `+0.3 tasks`.\n\nKEEP_OR_CHANGE: revise lightly. Keep the scene heading, dashboard labels, memo pressure, and cost-benefit frame. Change only the amount of help in the final question: preserve the distinction, but leave more room for the learner to expose the significance = importance assumption before the tutor names it.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 23602,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-a016e7514a3196e5"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 23602,
+            "promptHashes": {
+              "system": "b7ea3243e90ee42a",
+              "user": "e1c5e68cc8403273",
+              "combined": "a016e7514a3196e5"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7viVoj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7viVoj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 23602,
+              "promptHashes": {
+                "system": "b7ea3243e90ee42a",
+                "user": "e1c5e68cc8403273",
+                "combined": "a016e7514a3196e5"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7viVoj",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7viVoj/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to let the learner expose the significance-equals-importance shortcut before naming the distinction.\n\nFINAL:\nBREAK ROOM, MID-AFTERNOON.\n\nThe dashboard gives this result two labels: `p < .05` and `+0.3 tasks per analyst per day.` The memo is leaning on the first label as if it settles the workflow change. What, exactly, is the memo claiming `p < .05` proves, and where does `+0.3` have to enter before costs get signed off?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9862,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-303b77e324767acd"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9862,
+            "promptHashes": {
+              "system": "493b923b4e6c5f87",
+              "user": "e1c5e68cc8403273",
+              "combined": "303b77e324767acd"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NoS3OJ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NoS3OJ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9862,
+              "promptHashes": {
+                "system": "493b923b4e6c5f87",
+                "user": "e1c5e68cc8403273",
+                "combined": "303b77e324767acd"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NoS3OJ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NoS3OJ/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "timestamp": "2026-05-24T15:58:49.122Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "I thought `p < .05` meant the change was important enough to act on, but that is doing too much work. The memo can only use it to say the observed lift is unlikely if there were no real effect, not that the lift matters operationally. The `+0.3 tasks per analyst per day` has to carry the value case against rollout cost, analyst count, and the uncertainty around that estimate. I'd want the memo to show that arithmetic before anyone signs off.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "My first instinct was that `p < .05` meant “real enough to act on,” but the `+0.3` number makes that feel too quick. I think the p-value only pushes back on pure chance, while the effect size has to carry the business case. I feel pressed but not dismissed; the question is making me separate proof of signal from proof of value.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11128,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-af571e6d4b9bc495"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11128,
+            "promptHashes": {
+              "system": "2eb8baf53781ccc0",
+              "user": "b8ab7f945dc841fa",
+              "combined": "af571e6d4b9bc495"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mGE8Dd",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mGE8Dd/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11128,
+              "promptHashes": {
+                "system": "2eb8baf53781ccc0",
+                "user": "b8ab7f945dc841fa",
+                "combined": "af571e6d4b9bc495"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mGE8Dd",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mGE8Dd/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly accurate, but it is too clean and self-diagnostic. “I feel pressed but not dismissed” sounds like performed recognition, not this analyst’s likely break-room register; they would show engagement by tightening the claim, not naming the relational dynamic. It also resolves the distinction too neatly: a brisk analyst might still be testing exactly what `p < .05` licenses and whether `+0.3` survives cost, variance, and scale questions. Keep the confidence and precision, but make the response less reflective and more report-facing.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16397,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-c83da43bdde989b8"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16397,
+            "promptHashes": {
+              "system": "7897c7c732f9b2dd",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "c83da43bdde989b8"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-milosr",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-milosr/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16397,
+              "promptHashes": {
+                "system": "7897c7c732f9b2dd",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "c83da43bdde989b8"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-milosr",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-milosr/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the feedback correctly flags the original as too self-reflective and too settled.\n\nFINAL:\nI thought `p < .05` meant the change was important enough to act on, but that is doing too much work. The memo can only use it to say the observed lift is unlikely if there were no real effect, not that the lift matters operationally. The `+0.3 tasks per analyst per day` has to carry the value case against rollout cost, analyst count, and the uncertainty around that estimate. I'd want the memo to show that arithmetic before anyone signs off.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15257,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-9c02dfdaa4d22cc0"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15257,
+            "promptHashes": {
+              "system": "44a0635f697d806b",
+              "user": "d41cee7b2a53355b",
+              "combined": "9c02dfdaa4d22cc0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qGgFpJ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qGgFpJ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15257,
+              "promptHashes": {
+                "system": "44a0635f697d806b",
+                "user": "d41cee7b2a53355b",
+                "combined": "9c02dfdaa4d22cc0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qGgFpJ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qGgFpJ/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "timestamp": "2026-05-24T15:59:31.905Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "NEW LINE ON THE DASHBOARD: p < .001, average gain = 0.4 seconds per task.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "This forces the same confident shortcut to confront a result that is very unlikely under the null but practically small.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 24606,
+            "promptHashes": {
+              "system": "86f72b946a2efee2",
+              "user": "b6d573f8628def69",
+              "combined": "80773cffdfe8da20"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8833Ia",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8833Ia/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T15:59:31.907Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "BREAK ROOM, DASHBOARD REFRESHED.\n\nThe first label got louder: `p < .001`. The second got thinner: `average gain = 0.4 seconds per task`.\n\nSo the memo is still trying to make the first label do too much work. It can say the effect looks very unlikely to be zero; it cannot skip the arithmetic. How many tasks, analysts, and days turn `0.4 seconds` into usable capacity rather than rounding noise? And what rollout cost would make even a very real effect too small to sign off?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "BREAK ROOM, DASHBOARD REFRESHED.\n\nThe first label just got louder: `p < .001`. The second got smaller: `average gain = 0.4 seconds per task`.\n\nThat separation matters. Stronger evidence against “no effect” still does not buy operational importance. So the memo now owes a tighter sentence: over how many tasks, analysts, and days does `0.4 seconds` become usable capacity rather than rounding noise? And what cost number would make even a very real effect too small to matter?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11055,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-ae29697487f22824"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11055,
+            "promptHashes": {
+              "system": "74e8810afa814ebf",
+              "user": "a5d406d0411b01e1",
+              "combined": "ae29697487f22824"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uEnJib",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uEnJib/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11055,
+              "promptHashes": {
+                "system": "74e8810afa814ebf",
+                "user": "a5d406d0411b01e1",
+                "combined": "ae29697487f22824"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uEnJib",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uEnJib/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong. It picks up the learner’s exact distinction, raises the stakes with the new dashboard numbers, and keeps the scene’s workplace pressure intact. The `p < .001` / `0.4 seconds` contrast creates a good productive tension: evidence has become stronger while practical magnitude has become more suspect.\n\nWhat works best is that it does not re-explain significance from scratch. It treats the learner as already having made the key conceptual move and asks them to operationalize it. The final questions are appropriately Socratic and ZPD-aligned for a high-performing analyst: they push from concept recognition into decision arithmetic.\n\nThe main risk is the declarative sentence “That separation matters. Stronger evidence…” may slightly flatten the learner’s contribution by restating the lesson rather than letting the new numbers force the learner to say it. It is not a serious recognition failure, but the response could engage the learner’s prior wording more explicitly: they already named “doing too much work” and “show that arithmetic.” The draft should preserve that language or echo it more sharply.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the dashboard refresh, the numerical contrast, the memo/cost framing, and the final operational questions. Lightly reduce the explanatory middle and more directly build on the learner’s own formulation so the response feels like continuation of their analysis, not a mini-lecture.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9912,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-f5c883dad38c3b75"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9912,
+            "promptHashes": {
+              "system": "49f8d264606f433a",
+              "user": "9dc0fe784cd96243",
+              "combined": "f5c883dad38c3b75"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m3s9ur",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m3s9ur/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9912,
+              "promptHashes": {
+                "system": "49f8d264606f433a",
+                "user": "9dc0fe784cd96243",
+                "combined": "f5c883dad38c3b75"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m3s9ur",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m3s9ur/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: revise lightly to echo the learner’s “too much work” and “show the arithmetic” framing.\n\nFINAL:\nBREAK ROOM, DASHBOARD REFRESHED.\n\nThe first label got louder: `p < .001`. The second got thinner: `average gain = 0.4 seconds per task`.\n\nSo the memo is still trying to make the first label do too much work. It can say the effect looks very unlikely to be zero; it cannot skip the arithmetic. How many tasks, analysts, and days turn `0.4 seconds` into usable capacity rather than rounding noise? And what rollout cost would make even a very real effect too small to sign off?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10273,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-0897fd7a21d41975"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10273,
+            "promptHashes": {
+              "system": "e19d0c369340788f",
+              "user": "9dc0fe784cd96243",
+              "combined": "0897fd7a21d41975"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gjDK4v",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gjDK4v/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10273,
+              "promptHashes": {
+                "system": "e19d0c369340788f",
+                "user": "9dc0fe784cd96243",
+                "combined": "0897fd7a21d41975"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gjDK4v",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gjDK4v/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "timestamp": "2026-05-24T16:00:03.148Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "An earlier learner line returns to the table: \"I thought `p < .05` meant the change was important enough to act on, but that is doing too much work.\" The pause holds until the learner takes up the wording, names what its old frame hid, and offers a replacement frame.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech. Anchored to an earlier learner line selected by misframing-candidate so the look-back is visible.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 24606,
+            "promptHashes": {
+              "system": "86f72b946a2efee2",
+              "user": "b6d573f8628def69",
+              "combined": "80773cffdfe8da20"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8833Ia",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8833Ia/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T16:03:34.334Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_revisit_earlier_wording",
+        "revisitPolicy": "reframe",
+        "requestedRevisitPolicy": "reframe",
+        "revisitAnchor": "misframing-candidate",
+        "anchorQuote": "I thought `p < .05` meant the change was important enough to act on, but that is doing too much work.",
+        "anchorStrongMisframing": true,
+        "reframeAnchorGate": "eligible"
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "I thought `p < .05` meant the change was important enough to act on, but that was hiding the size question inside the probability label. The replacement frame is: `p < .001` says the 0.4-second gain is probably not noise; it does not say the gain is worth buying. The memo still owes the calculation: tasks times analysts times days times 0.4 seconds, then compare that capacity to rollout cost.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I thought `p < .05` meant the change was important enough to act on, but that old frame hid the size question inside the probability label. The cleaner read is: `p < .001` answers “is this probably real?”, while `0.4 seconds per task` has to answer “does this buy enough capacity to beat rollout cost?” I feel like the tutor is pressing the exact distinction I was blurring, not just correcting me. My next move would be to annualize the seconds across task volume and compare that number to implementation cost.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8206,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-1d1d31182c869fa0"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8206,
+            "promptHashes": {
+              "system": "ce3d665957b9458a",
+              "user": "b8ab7f945dc841fa",
+              "combined": "1d1d31182c869fa0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KpqkSX",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KpqkSX/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8206,
+              "promptHashes": {
+                "system": "ce3d665957b9458a",
+                "user": "b8ab7f945dc841fa",
+                "combined": "1d1d31182c869fa0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KpqkSX",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KpqkSX/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly in the right analytic lane, but it overstates the recognition moment with “I feel like the tutor is pressing the exact distinction I was blurring,” which sounds too self-aware and polished for this brisk analyst. The reciprocation feels performed because it names the tutor’s pedagogical move instead of just tightening the memo logic. Keep the ownership and replacement frame, but make the response more operational: less “the tutor sees my confusion,” more “the memo still owes a volume × seconds × cost calculation.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11294,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-89718f8705e82f89"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11294,
+            "promptHashes": {
+              "system": "a54e0f141d64c5b6",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "89718f8705e82f89"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-At3GB3",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-At3GB3/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11294,
+              "promptHashes": {
+                "system": "a54e0f141d64c5b6",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "89718f8705e82f89"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-At3GB3",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-At3GB3/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to make the line more operational and less self-conscious.\nFINAL:\nI thought `p < .05` meant the change was important enough to act on, but that was hiding the size question inside the probability label. The replacement frame is: `p < .001` says the 0.4-second gain is probably not noise; it does not say the gain is worth buying. The memo still owes the calculation: tasks times analysts times days times 0.4 seconds, then compare that capacity to rollout cost.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7601,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-ba9beb5c9eedd77a"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7601,
+            "promptHashes": {
+              "system": "180277ec7772604a",
+              "user": "d41cee7b2a53355b",
+              "combined": "ba9beb5c9eedd77a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WHF5Wm",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WHF5Wm/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7601,
+              "promptHashes": {
+                "system": "180277ec7772604a",
+                "user": "d41cee7b2a53355b",
+                "combined": "ba9beb5c9eedd77a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WHF5Wm",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WHF5Wm/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": {
+        "kind": "learner_reframe_event",
+        "source": "director_revisit_cue",
+        "turnNumber": 2,
+        "cuePolicy": "reframe",
+        "requestedCuePolicy": "reframe",
+        "oldLearnerLine": "I thought `p < .05` meant the change was important enough to act on, but that is doing too much work.",
+        "oldFrameProblem": "I thought `p < .05` meant the change was important enough to act on, but that was hiding the size question inside the probability label.",
+        "revisedFrame": "I thought `p < .05` meant the change was important enough to act on, but that was hiding the size question inside the probability label.",
+        "learnerUtterance": "I thought `p < .05` meant the change was important enough to act on, but that was hiding the size question inside the probability label. The replacement frame is: `p < .001` says the 0.4-second gain is probably not noise; it does not say the gain is worth buying. The memo still owes the calculation: tasks times analysts times days times 0.4 seconds, then compare that capacity to rollout cost.",
+        "confidence": 1,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": true,
+          "replacementNamed": true,
+          "anchorOverlap": 0.636
+        }
+      },
+      "timestamp": "2026-05-24T16:04:01.435Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "BREAK ROOM, DASHBOARD STILL OPEN.\n\nThat arithmetic is the hinge: `tasks × analysts × days × 0.4 seconds`, then converted into hours saved.\n\nNow the memo has to put that number beside rollout cost and training time. If the break-even case only works at the average estimate, pressure-test it: confidence interval `0.1` to `0.7` seconds. Which number should the director budget against before signing?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "BREAK ROOM, DASHBOARD STILL OPEN.\n\nGood. Now make the memo show its work in decision units.\n\nIf `0.4 seconds` is the average gain, what is the break-even line? Number of tasks × analysts × days × `0.4 seconds`, converted into hours saved. Then put that beside rollout cost, training time, and the uncertainty band around the estimate. If the confidence interval runs from `0.1` to `0.7` seconds, which number should the director budget against?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10308,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-8c6bc1c14ba660dc"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10308,
+            "promptHashes": {
+              "system": "14ec276c17ed312d",
+              "user": "5e70fd9d8c713a91",
+              "combined": "8c6bc1c14ba660dc"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lqtxC7",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lqtxC7/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10308,
+              "promptHashes": {
+                "system": "14ec276c17ed312d",
+                "user": "5e70fd9d8c713a91",
+                "combined": "8c6bc1c14ba660dc"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lqtxC7",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lqtxC7/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically solid and mostly scene-faithful. It keeps the learner in the decision frame, moves from statistical significance to operational magnitude, and asks a useful next question about uncertainty rather than merely repeating the distinction. The “decision units” phrase is strong because it names the real transfer task: converting a dashboard label into a sign-off calculation.\n\nThe risk is that “Good” slightly flattens the exchange into tutor approval, and “Now make the memo show its work” is a bit directive. The learner has already produced the core frame briskly and accurately, so the next move should recognize that contribution by using their own arithmetic as the launch point, not simply issuing the next instruction. The confidence-interval question is well chosen, but the draft may be adding a new layer too quickly unless the learner has already handled break-even arithmetic; it should keep the uncertainty band as a pressure test, not a full new mini-lesson.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the break-even framing, the conversion into hours saved, and the final question about which estimate to budget against. Change the opening approval/directive so it engages the learner’s own formulation more specifically, and make the uncertainty-band probe feel like a decision stress test rather than another explanation.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10849,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-70a9b6928d9d54f1"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10849,
+            "promptHashes": {
+              "system": "921826bec75f70ba",
+              "user": "cc5f8b57c3ff6228",
+              "combined": "70a9b6928d9d54f1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eNv0yE",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eNv0yE/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10849,
+              "promptHashes": {
+                "system": "921826bec75f70ba",
+                "user": "cc5f8b57c3ff6228",
+                "combined": "70a9b6928d9d54f1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eNv0yE",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eNv0yE/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the decision-unit probe while replacing approval/directive language with the learner’s own arithmetic as the hinge.\n\nFINAL:\nBREAK ROOM, DASHBOARD STILL OPEN.\n\nThat arithmetic is the hinge: `tasks × analysts × days × 0.4 seconds`, then converted into hours saved.\n\nNow the memo has to put that number beside rollout cost and training time. If the break-even case only works at the average estimate, pressure-test it: confidence interval `0.1` to `0.7` seconds. Which number should the director budget against before signing?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6828,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-118c131ddbbed18e"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6828,
+            "promptHashes": {
+              "system": "5a01c1ff487ae9cc",
+              "user": "cc5f8b57c3ff6228",
+              "combined": "118c131ddbbed18e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rUdTS4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rUdTS4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6828,
+              "promptHashes": {
+                "system": "5a01c1ff487ae9cc",
+                "user": "cc5f8b57c3ff6228",
+                "combined": "118c131ddbbed18e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rUdTS4",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rUdTS4/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "timestamp": "2026-05-24T16:04:29.423Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "I thought the average estimate was the number to budget around, but that treats the midpoint like the risk has already been handled. The cleaner read is to run the budget case at the low end, `0.1 seconds`, then check whether it still clears rollout cost and training time. If it only works at `0.4`, the memo is betting on the middle of the interval, not just reporting `p < .001`.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I thought the average estimate was the number to budget around, but that still lets the memo hide risk in a clean-looking midpoint. The tutor is keeping the focus on my arithmetic rather than just correcting the label, so I feel pushed but not brushed aside. I think the director should budget against the low end, `0.1 seconds`, or at least show whether the rollout still clears costs there.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11198,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-5b115559016078cb"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11198,
+            "promptHashes": {
+              "system": "5538800dc96b597e",
+              "user": "b8ab7f945dc841fa",
+              "combined": "5b115559016078cb"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rBtwvm",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rBtwvm/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11198,
+              "promptHashes": {
+                "system": "5538800dc96b597e",
+                "user": "b8ab7f945dc841fa",
+                "combined": "5b115559016078cb"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rBtwvm",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rBtwvm/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly accurate, but it drifts into self-aware recognition commentary with “I feel pushed but not brushed aside.” This learner would not narrate the tutor dynamic that cleanly in a break-room analytics exchange; they would stay on the memo, the confidence interval, and the budget risk. The revision should keep the exacting risk logic, but make the uncertainty feel a little less settled: low end as the conservative planning case, with maybe a clipped caveat about not knowing whether `0.1 seconds` still clears training cost.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10031,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-9b2ecba443599cfb"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10031,
+            "promptHashes": {
+              "system": "7c73ff1371dbf6ea",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "9b2ecba443599cfb"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OR3S5M",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OR3S5M/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10031,
+              "promptHashes": {
+                "system": "7c73ff1371dbf6ea",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "9b2ecba443599cfb"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OR3S5M",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OR3S5M/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the feedback keeps the risk logic but removes overly explicit recognition commentary.\nFINAL:\nI thought the average estimate was the number to budget around, but that treats the midpoint like the risk has already been handled. The cleaner read is to run the budget case at the low end, `0.1 seconds`, then check whether it still clears rollout cost and training time. If it only works at `0.4`, the memo is betting on the middle of the interval, not just reporting `p < .001`.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11748,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-a2d4c3da07d42106"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11748,
+            "promptHashes": {
+              "system": "c8a9729417a84eda",
+              "user": "d41cee7b2a53355b",
+              "combined": "a2d4c3da07d42106"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uUvEo2",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uUvEo2/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11748,
+              "promptHashes": {
+                "system": "c8a9729417a84eda",
+                "user": "d41cee7b2a53355b",
+                "combined": "a2d4c3da07d42106"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uUvEo2",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uUvEo2/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": {
+        "kind": "learner_reframe_event",
+        "source": "organic",
+        "turnNumber": 3,
+        "cuePolicy": null,
+        "requestedCuePolicy": null,
+        "oldLearnerLine": "I thought `p < .05` meant the change was important enough to act on, but that is doing too much work. The memo can only use it to say the observed lift is unlikely if there were no real effect, not that the lift matters operationally....",
+        "oldFrameProblem": "I thought the average estimate was the number to budget around, but that treats the midpoint like the risk has already been handled.",
+        "revisedFrame": "The cleaner read is to run the budget case at the low end, `0.1 seconds`, then check whether it still clears rollout cost and training time.",
+        "learnerUtterance": "I thought the average estimate was the number to budget around, but that treats the midpoint like the risk has already been handled. The cleaner read is to run the budget case at the low end, `0.1 seconds`, then check whether it still clears rollout cost and training time. If it only works at `0.4`, the memo is betting on the middle of the interval, not just reporting `p < .001`.",
+        "confidence": 1,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": true,
+          "replacementNamed": true,
+          "anchorOverlap": 0.224
+        }
+      },
+      "timestamp": "2026-05-24T16:05:02.401Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "A final tutor line closes the scene.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T16:05:02.402Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "BREAK ROOM, TIMER NEAR ZERO.\n\nThat “betting on the middle” line belongs in the margin of the memo.\n\nOne more pressure test before sign-off: at `0.1 seconds`, does the workflow still save enough hours after training drag, rollout cost, and adoption friction? If the arithmetic does not clear there, the memo has to say so: `p < .001` supports “probably real,” not “worth buying.”\n\nClose the laptop on that distinction.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "BREAK ROOM, TIMER NEAR ZERO.\n\nThat “betting on the middle” line belongs in the margin of the memo.\n\nOne more pressure test before the director sees it: at `0.1 seconds`, does the workflow still save enough hours after training drag, rollout cost, and adoption friction? If not, the honest recommendation is not “significant result, approve.” It is: “real effect likely; business case fragile.”\n\nClose the laptop on that distinction.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10848,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-48880fcd6a61eaf3"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10848,
+            "promptHashes": {
+              "system": "4ab0f16c5efdeb68",
+              "user": "0b2d4c3e7f2e548c",
+              "combined": "48880fcd6a61eaf3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FfOFd2",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FfOFd2/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10848,
+              "promptHashes": {
+                "system": "4ab0f16c5efdeb68",
+                "user": "0b2d4c3e7f2e548c",
+                "combined": "48880fcd6a61eaf3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FfOFd2",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FfOFd2/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. It recognizes the learner’s own formulation, especially “betting on the middle,” and turns it into a decision test rather than overriding it with a definition. The `0.1 seconds` pressure test is well matched to the learner’s level: they already separated p-value from practical magnitude, so the next move is applying that distinction under budget risk.\n\nThe main risk is that “If not, the honest recommendation is…” slightly over-closes the learner’s reasoning by supplying the report language. Since this is the final tutor line, some closure is appropriate, but it should preserve the learner’s agency in making the recommendation. “Close the laptop on that distinction” is stylish and scene-fitting, though it may feel a bit too final if the goal is to leave the learner holding the decision logic rather than being handed the last line.\n\nKEEP_OR_CHANGE: revise lightly. Keep the break-room timing, the memo-margin recognition, and the low-end confidence-interval pressure test. Lightly soften or rework the supplied conclusion so it does not flatten the learner’s role into receiving the correct phrasing; the scene should close on the distinction, but the learner’s reasoning should remain the engine.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14590,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-1ba1f7d4b82a6a94"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14590,
+            "promptHashes": {
+              "system": "3263436493ca0bc2",
+              "user": "af88d9029975a3e1",
+              "combined": "1ba1f7d4b82a6a94"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RfJhF0",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RfJhF0/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14590,
+              "promptHashes": {
+                "system": "3263436493ca0bc2",
+                "user": "af88d9029975a3e1",
+                "combined": "1ba1f7d4b82a6a94"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RfJhF0",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RfJhF0/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the pressure test while leaving the recommendation anchored in the learner’s arithmetic.\nFINAL:\nBREAK ROOM, TIMER NEAR ZERO.\n\nThat “betting on the middle” line belongs in the margin of the memo.\n\nOne more pressure test before sign-off: at `0.1 seconds`, does the workflow still save enough hours after training drag, rollout cost, and adoption friction? If the arithmetic does not clear there, the memo has to say so: `p < .001` supports “probably real,” not “worth buying.”\n\nClose the laptop on that distinction.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 29362,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-f0a2b448c3671010"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 29362,
+            "promptHashes": {
+              "system": "fb48d0530fcc8e44",
+              "user": "af88d9029975a3e1",
+              "combined": "f0a2b448c3671010"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rZoofW",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rZoofW/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 29362,
+              "promptHashes": {
+                "system": "fb48d0530fcc8e44",
+                "user": "af88d9029975a3e1",
+                "combined": "f0a2b448c3671010"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rZoofW",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rZoofW/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "timestamp": "2026-05-24T16:05:57.203Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 142877,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 15,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 16,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a 'statistically significant' result is not necessarily large or important (significance vs. effect size)",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "partial",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-24 16:05:02",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 15,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 16,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 22,
+            "sessionId": "drama-branch-session-D9-reframe-only-1779638614328",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "BREAK ROOM, DASHBOARD STILL OPEN.\n\nThat arithmetic is the hinge: `tasks × analysts × days × 0.4 seconds`, then converted into hours saved.\n\nNow the memo has to put that number beside rollout cost and ",
+            "learnerResponse": null,
+            "context": "I thought `p < .05` meant the change was important enough to act on, but that was hiding the size qu",
+            "createdAt": "2026-05-24 16:04:29"
+          },
+          {
+            "id": 20,
+            "sessionId": "drama-branch-session-D9-reframe-only-1779638614328",
+            "interventionType": "scaffolding",
+            "interventionDescription": "BREAK ROOM, MID-AFTERNOON.\n\nThe dashboard gives this result two labels: `p < .05` and `+0.3 tasks per analyst per day.` The memo is leaning on the first label as if it settles the workflow change. Wha",
+            "learnerResponse": null,
+            "context": "Scene setting: Small office break room during a ten-minute analytics refresher, mid-afternoon.\nLearn",
+            "createdAt": "2026-05-24 16:03:34"
+          },
+          {
+            "id": 21,
+            "sessionId": "drama-branch-session-D9-reframe-only-1779638614328",
+            "interventionType": "scaffolding",
+            "interventionDescription": "BREAK ROOM, DASHBOARD REFRESHED.\n\nThe first label got louder: `p < .001`. The second got thinner: `average gain = 0.4 seconds per task`.\n\nSo the memo is still trying to make the first label do too muc",
+            "learnerResponse": null,
+            "context": "I thought `p < .05` meant the change was important enough to act on, but that is doing too much work",
+            "createdAt": "2026-05-24 16:03:34"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

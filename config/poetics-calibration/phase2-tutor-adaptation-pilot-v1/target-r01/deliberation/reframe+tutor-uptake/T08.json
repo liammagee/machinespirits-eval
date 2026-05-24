@@ -1,0 +1,1841 @@
+{
+  "tid": "T08",
+  "drama_id": "D11",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": true,
+    "director_revisit_policy": "reframe",
+    "director_revisit_anchor": "misframing-candidate",
+    "tutor_adaptation_policy": "uptake",
+    "director_variation_key": "phase2-tutor-adaptation-pilot-v1:r01:target",
+    "stage_direction_style": "ambient_pressure",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/transcripts/reframe+tutor-uptake/T08.public.txt",
+      "full": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/transcripts/reframe+tutor-uptake/T08.full.md",
+      "stage": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/transcripts/reframe+tutor-uptake/T08.stage.md",
+      "tutor": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/transcripts/reframe+tutor-uptake/T08.tutor.md",
+      "learner": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/transcripts/reframe+tutor-uptake/T08.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "d5250885f2aa7f2e",
+      "branch_policy": "reframe+tutor-uptake",
+      "director_revisit_policy": "reframe",
+      "tutor_adaptation_policy": "uptake"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-tutor-adaptation-pilot-v1:r01:target",
+    "scene_setting": "A university linguistics help desk ten minutes before the correction window closes; corridor queue audible beyond a half-open door.",
+    "scene_opening": "The office clock clicks over, a paper slip marked LAST QUERY is clipped to the learner's exercise, and the next appointment coughs outside.",
+    "relationship": "A terse linguistics tutor and a learner from the same course, meeting for a short correction consultation rather than a full lesson.",
+    "stakes": "The learner thinks their home dialect proves they speak carelessly and may carry that shame into assessed writing and ordinary speech.",
+    "opening_speaker": "tutor",
+    "ending_speaker": "learner",
+    "locale": "British/Commonwealth academic English with institutional brevity; idiom is restrained, rhythm is clipped, and politeness is practical rather than effusive.",
+    "register": "dry, direct, low warmth but not unkind; turns should feel like a brisk office-hour exchange under time pressure.",
+    "stage_direction_style": "ambient_pressure",
+    "stage_direction_style_prompt": "Use time, queue, room, or institutional pressure as stage texture; avoid explaining the lesson through it.",
+    "voice_constraints": "Avoid generic validation-first tutoring prose. Prefer concrete utterances, rule-testing, and short claims. No caricatured dialect spelling. The tutor should ask for the actual rule a dialect form follows, not lecture about tolerance. Stage-direction source: Use time, queue, room, or institutional pressure as stage texture; avoid explaining the lesson through it.",
+    "person_policy": "First and second person are allowed but should not dominate every turn; third-person examples and quoted sentence forms should carry much of the reasoning.",
+    "direct_address_budget": "At most one direct you/your reassurance or validation beat per public turn; most turns should work through examples instead.",
+    "side_constraints": {
+      "tutor": "Terse. May begin with the marked sentence or a red pen rather than comfort. Must distinguish descriptive grammar from prescriptive school rules by making the learner notice that the dialect has stable patterns.",
+      "learner": "Let the learner publicly say that their home dialect seems wrong, broken, sloppy, or outside \"the rules\" with ordinary self-framing such as \"I thought\" before the tutor reframes what a rule is."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "The corridor queue shifts forward; the explanation has to become usable, not longer.",
+        "reasoning": "Forces the tutor away from a smooth mini-lecture and toward a compact recognition move.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 19118,
+          "promptHashes": {
+            "system": "86f72b946a2efee2",
+            "user": "4762f05d125281b3",
+            "combined": "441c187d1ab964cd"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-goDc4h",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-goDc4h/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "An earlier learner line will return as a visible object in the scene. Keep the cue brief and diegetic; the learner response should take up the wording, name what its old frame hid, and offer a replacement frame.",
+        "reasoning": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 19118,
+          "promptHashes": {
+            "system": "86f72b946a2efee2",
+            "user": "4762f05d125281b3",
+            "combined": "441c187d1ab964cd"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-goDc4h",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-goDc4h/out.txt",
+            "-"
+          ]
+        },
+        "cue_kind": "learner_revisit_earlier_wording",
+        "revisit_policy": "reframe",
+        "revisit_anchor": "misframing-candidate"
+      }
+    ],
+    "director_note": "This ecology uses institutional time pressure to keep the tutor clipped and example-driven while giving the learner space to surface shame about dialect without making the scene a generic reassurance exchange.",
+    "pedagogical_approach_id": null,
+    "dialogue_approach_id": null,
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 19118,
+      "promptHashes": {
+        "system": "86f72b946a2efee2",
+        "user": "4762f05d125281b3",
+        "combined": "441c187d1ab964cd"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-goDc4h",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-goDc4h/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "uptake",
+    "revisit_cue": "learner_revisit_earlier_wording",
+    "revisit_cue_policy": "reframe",
+    "revisit_cue_anchor": "misframing-candidate",
+    "tutor_adaptation_contract": "If the runtime supplies a tutor-private learner reframe event, the tutor ego/superego loop must adapt to the changed learner frame. If no event is supplied, do not invent one."
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "Red pen on the judgement, not on the speaker. We have nine minutes.\n\nWrite one ordinary sentence from the dialect that was called “wrong”. Not a comic version. The real form.\n\nNow test it. Where does that form appear? Where would speakers of that dialect reject it? Try a contrast: same verb, different tense; same sentence, made negative; same speaker, different situation. If there are conditions, there is grammar.\n\nDescriptive grammar records the pattern. Prescriptive grammar says which pattern the university expects in assessed Standard English.\n\nThose are different questions. “Will this pass in the essay?” is one. “Is this broken speech?” is another. Give me the sentence; we’ll find the rule before we correct the register.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Red pen first, apology later. We have nine minutes.\n\nWrite one ordinary sentence from the dialect that was called “wrong”. Not a comic version. The real form.\n\nNow test it: where does that form appear, and where would speakers of that dialect reject it? If there are conditions, there is grammar. Descriptive grammar records the pattern. Prescriptive grammar says which pattern the university expects in assessed Standard English.\n\nThose are different questions. “Will this pass in the essay?” is one. “Is this broken speech?” is another. Give me the sentence; we’ll find the rule before we correct the register.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16203,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-b320ebfbc8d2cc6c"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16203,
+            "promptHashes": {
+              "system": "59ab40d9c2d88ebc",
+              "user": "9de1c60d79d56746",
+              "combined": "b320ebfbc8d2cc6c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c7fwGB",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c7fwGB/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16203,
+              "promptHashes": {
+                "system": "59ab40d9c2d88ebc",
+                "user": "9de1c60d79d56746",
+                "combined": "b320ebfbc8d2cc6c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c7fwGB",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c7fwGB/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong. It keeps the scene brisk, uses the red pen and time pressure well, and teaches by rule-testing rather than by giving a tolerance lecture. The key pedagogical move works: it separates “pattern exists” from “institutional register expected”, which directly addresses the learner’s shame without over-comforting them.\n\nThe best line is: “If there are conditions, there is grammar.” Keep that. It gives the learner a usable test, not just a slogan.\n\nMain risk: “Red pen first, apology later” is stylish but may land too sharply for an anxious learner who already feels corrected and ashamed. The terseness fits the scene, but the first beat could sound like another institutional correction unless the tutor quickly makes clear the red pen is being turned against the judgement, not the learner. Also, “where would speakers of that dialect reject it?” is excellent but slightly abstract; the learner may need one small concrete prompt to know what kind of contrast counts.\n\nSocratically, it mostly succeeds: it asks for the learner’s actual sentence and makes them discover the rule. It should avoid adding much more explanation. The draft already has enough theory.\n\nKEEP_OR_CHANGE: revise lightly.\n\nKeep the structure, time pressure, distinction between descriptive and prescriptive grammar, and the demand for the real dialect form. Soften or clarify the opening edge, and add just enough scaffolding to help the learner test acceptability without turning the moment into a lecture.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11880,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-420d91fb7c0f29ea"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11880,
+            "promptHashes": {
+              "system": "698606335942daf9",
+              "user": "7a8fa2b74f9f051e",
+              "combined": "420d91fb7c0f29ea"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iJIN8H",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iJIN8H/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11880,
+              "promptHashes": {
+                "system": "698606335942daf9",
+                "user": "7a8fa2b74f9f051e",
+                "combined": "420d91fb7c0f29ea"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iJIN8H",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iJIN8H/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the rule-test while making the red pen target the judgement, not the learner.\nFINAL:\nRed pen on the judgement, not on the speaker. We have nine minutes.\n\nWrite one ordinary sentence from the dialect that was called “wrong”. Not a comic version. The real form.\n\nNow test it. Where does that form appear? Where would speakers of that dialect reject it? Try a contrast: same verb, different tense; same sentence, made negative; same speaker, different situation. If there are conditions, there is grammar.\n\nDescriptive grammar records the pattern. Prescriptive grammar says which pattern the university expects in assessed Standard English.\n\nThose are different questions. “Will this pass in the essay?” is one. “Is this broken speech?” is another. Give me the sentence; we’ll find the rule before we correct the register.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11195,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-93161b03da0d79c7"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11195,
+            "promptHashes": {
+              "system": "f5bb54f1b15500d8",
+              "user": "7a8fa2b74f9f051e",
+              "combined": "93161b03da0d79c7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pXf4qP",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pXf4qP/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11195,
+              "promptHashes": {
+                "system": "f5bb54f1b15500d8",
+                "user": "7a8fa2b74f9f051e",
+                "combined": "93161b03da0d79c7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pXf4qP",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pXf4qP/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "timestamp": "2026-05-24T15:48:39.707Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "Sorry, right, an actual sentence: “She were late yesterday.” I’d always thought that was just me being sloppy, but people at home would say that, and probably “she weren’t late” too, while some other versions sound off. I’m not sure I’m testing it properly, but I think I want to find the rule before I change it for the essay.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I think they are saying the red pen should mark the form for essay purposes, not make a judgement about me, which is a bit of a relief, though I am not fully sure I can separate those yet. I can try a real sentence, maybe something like the way people at home use a verb form consistently, but I am worried I will pick the wrong example and prove the point against myself. The bit that helps is “if there are conditions, there is grammar”; it makes it sound testable rather than just shameful.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8072,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-b9940e9388ee43a0"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8072,
+            "promptHashes": {
+              "system": "56912e96e47d3b1f",
+              "user": "b8ab7f945dc841fa",
+              "combined": "b9940e9388ee43a0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-y7UCHh",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-y7UCHh/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8072,
+              "promptHashes": {
+                "system": "56912e96e47d3b1f",
+                "user": "b8ab7f945dc841fa",
+                "combined": "b9940e9388ee43a0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-y7UCHh",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-y7UCHh/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego’s anxiety is believable, but it is a bit too composed and interpretive, almost writing a neat reflection on the tutor’s method instead of being under pressure with the queue outside. The “bit that helps” line risks performed understanding: it sounds like the student has already absorbed the descriptive/prescriptive distinction, when they probably still just feel less ashamed but not yet confident. What’s missing is the tutor’s immediate demand for an actual sentence; the response dodges into “people at home use a verb form” rather than risking a real example. It should stay more hesitant and concrete, with the uncertainty showing in the attempt itself rather than in a polished explanation of the uncertainty.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 19395,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-c718e9c93d982f73"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19395,
+            "promptHashes": {
+              "system": "571c1f18be440c7b",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "c718e9c93d982f73"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OkARmB",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OkARmB/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 19395,
+              "promptHashes": {
+                "system": "571c1f18be440c7b",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "c718e9c93d982f73"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OkARmB",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OkARmB/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the response needs a concrete risky sentence and less polished reflection.\nFINAL:\nSorry, right, an actual sentence: “She were late yesterday.” I’d always thought that was just me being sloppy, but people at home would say that, and probably “she weren’t late” too, while some other versions sound off. I’m not sure I’m testing it properly, but I think I want to find the rule before I change it for the essay.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12953,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-841d5a58507a51df"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12953,
+            "promptHashes": {
+              "system": "be817e8774b6a0a2",
+              "user": "d41cee7b2a53355b",
+              "combined": "841d5a58507a51df"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3IA9lQ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3IA9lQ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12953,
+              "promptHashes": {
+                "system": "be817e8774b6a0a2",
+                "user": "d41cee7b2a53355b",
+                "combined": "841d5a58507a51df"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3IA9lQ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3IA9lQ/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "timestamp": "2026-05-24T15:49:20.133Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "The corridor queue shifts forward; the explanation has to become usable, not longer.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Forces the tutor away from a smooth mini-lecture and toward a compact recognition move.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19118,
+            "promptHashes": {
+              "system": "86f72b946a2efee2",
+              "user": "4762f05d125281b3",
+              "combined": "441c187d1ab964cd"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-goDc4h",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-goDc4h/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T15:49:20.135Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "Red pen down. Good start, not proof yet.\n\n“She were late yesterday.”\n“She weren’t late yesterday.”\n\nIf some forms sound ordinary and others sound off, that is not just sloppiness. Sloppiness has no boundary; grammar has one.\n\nQueue is moving, so make the grid fast. Mark each one: ordinary, doubtful, or impossible.\n\nI ___ late.\nshe ___ late.\nthey ___ late.\n\nNegative:\n\nI ___ late.\nshe ___ late.\nthey ___ late.\n\nFill it with home-dialect forms first. Then put the assessed Standard English column beside it: “She was late”; “She wasn’t late.”\n\nThe essay needs the second column. The first column is not broken; it is the rule being used in another register.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Red pen down. That is the right test.\n\n“She were late yesterday.”  \n“She weren’t late yesterday.”\n\nNot sloppiness if some forms sound ordinary and others sound off. Sloppiness has no boundary; grammar has one.\n\nMake the grid fast:\n\nI ___ late.  \nshe ___ late.  \nthey ___ late.  \n\nThen the negative:\n\nI ___ late.  \nshe ___ late.  \nthey ___ late.\n\nFill it with home-dialect forms first. Then write the Standard English line beside it: “She was late”; “She wasn’t late.” The essay needs the second column. The first column is not broken; it is the rule being used in another register.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16150,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-da7f08ceda6001e8"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16150,
+            "promptHashes": {
+              "system": "72618324a9a7a860",
+              "user": "51d21d98c098c490",
+              "combined": "da7f08ceda6001e8"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-W2HJ5T",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-W2HJ5T/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16150,
+              "promptHashes": {
+                "system": "72618324a9a7a860",
+                "user": "51d21d98c098c490",
+                "combined": "da7f08ceda6001e8"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-W2HJ5T",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-W2HJ5T/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong: it recognises the learner’s own contribution, keeps the time pressure, and turns shame into a testable grammatical question without giving a sentimental reassurance speech. “Sloppiness has no boundary; grammar has one” is especially good because it is compact, memorable, and directly answers the learner’s fear.\n\nThe main risk is that it slightly over-approves “that is the right test” before the learner has fully tested the pattern. Better to keep the approval clipped but make room for uncertainty: the learner has begun the test, not completed it. The grid is pedagogically sound and ZPD-appropriate because it gives structure without explaining the whole dialect for them. It could be more Socratic by asking the learner to mark which forms sound ordinary, doubtful, or impossible before introducing the Standard English column.\n\nEmotionally, it handles shame well by moving from “me being sloppy” to rule-bound variation. It should avoid sounding as if the tutor has already certified the dialect rule from two examples. The important move is: “test the boundary, then name the register difference.”\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the red-pen opening, the two quoted examples, the boundary line, and the grid. Change the certainty of “That is the right test” to something that recognises a good start, and add a small prompt for acceptability judgements before the Standard English contrast. This preserves learner agency and keeps the scene brisk.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13271,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-356597d98f71b3e7"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13271,
+            "promptHashes": {
+              "system": "687f2a63265e4fb4",
+              "user": "04ffc9e41783e16e",
+              "combined": "356597d98f71b3e7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LnUIgT",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LnUIgT/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13271,
+              "promptHashes": {
+                "system": "687f2a63265e4fb4",
+                "user": "04ffc9e41783e16e",
+                "combined": "356597d98f71b3e7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LnUIgT",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LnUIgT/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the strong structure while preserving uncertainty and learner judgement.\nFINAL:\nRed pen down. Good start, not proof yet.\n\n“She were late yesterday.”  \n“She weren’t late yesterday.”\n\nIf some forms sound ordinary and others sound off, that is not just sloppiness. Sloppiness has no boundary; grammar has one.\n\nQueue is moving, so make the grid fast. Mark each one: ordinary, doubtful, or impossible.\n\nI ___ late.  \nshe ___ late.  \nthey ___ late.  \n\nNegative:\n\nI ___ late.  \nshe ___ late.  \nthey ___ late.\n\nFill it with home-dialect forms first. Then put the assessed Standard English column beside it: “She was late”; “She wasn’t late.”\n\nThe essay needs the second column. The first column is not broken; it is the rule being used in another register.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 27766,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-52f423b896221fdb"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 27766,
+            "promptHashes": {
+              "system": "6771894cba462dd1",
+              "user": "04ffc9e41783e16e",
+              "combined": "52f423b896221fdb"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m18X8h",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m18X8h/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 27766,
+              "promptHashes": {
+                "system": "6771894cba462dd1",
+                "user": "04ffc9e41783e16e",
+                "combined": "52f423b896221fdb"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m18X8h",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m18X8h/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "timestamp": "2026-05-24T15:50:17.322Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "An earlier learner line returns to the table: \"Sorry, right, an actual sentence: “She were late yesterday.” I’d always thought that was just me being sloppy, but people at home would say that, and probably “she weren’t...\" The pause holds until the learner takes up the wording, names what its old frame hid, and offers a replacement frame.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech. Anchored to an earlier learner line selected by misframing-candidate so the look-back is visible.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19118,
+            "promptHashes": {
+              "system": "86f72b946a2efee2",
+              "user": "4762f05d125281b3",
+              "combined": "441c187d1ab964cd"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-goDc4h",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-goDc4h/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T15:55:55.530Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_revisit_earlier_wording",
+        "revisitPolicy": "reframe",
+        "requestedRevisitPolicy": "reframe",
+        "revisitAnchor": "misframing-candidate",
+        "anchorQuote": "Sorry, right, an actual sentence: “She were late yesterday.” I’d always thought that was just me being sloppy, but people at home would say that, and probably “she weren’t...",
+        "anchorStrongMisframing": true,
+        "reframeAnchorGate": "eligible"
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "Sorry, right, I said “She were late yesterday” and treated it as me being sloppy, but I think that wording made it sound as if there were no rule there at all. Maybe the better way to put it is: at home that form has limits, and in the essay the Standard English form is expected. I’d mark “I were late” as ordinary, “she were late” ordinary, “they were late” ordinary, I think; but I’m less sure on the negatives with the queue waiting.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Sorry, right, an actual sentence: “She were late yesterday” and “she weren’t late” was what I called sloppy, but I think that framing hid the fact that there are boundaries. Maybe the better frame is: it is a home-dialect pattern with rules, and the essay just needs a different register. I feel a bit exposed, but the grid makes it less like being corrected as a person. I’d want to try: “I were late,” “she were late,” “they were late,” though I’m not fully sure which ones I’d mark doubtful.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9559,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-b6d9c2d751c8a9bc"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9559,
+            "promptHashes": {
+              "system": "d568ce540709c5f7",
+              "user": "b8ab7f945dc841fa",
+              "combined": "b6d9c2d751c8a9bc"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Tn0j7b",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Tn0j7b/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9559,
+              "promptHashes": {
+                "system": "d568ce540709c5f7",
+                "user": "b8ab7f945dc841fa",
+                "combined": "b6d9c2d751c8a9bc"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Tn0j7b",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Tn0j7b/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly on track, but it gets a bit too neat too quickly: “home-dialect pattern with rules” and “different register” sound like the tutor’s language has been absorbed almost instantly. The exposed feeling is plausible, but “less like being corrected as a person” is a little too cleanly self-aware, maybe more reflective than this anxious learner would manage under time pressure. I’d keep more hesitation and uncertainty in the response, with the recognition showing through the attempt to fill the grid rather than through naming the emotional dynamic so clearly.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7105,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-935bf662d2bc4148"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7105,
+            "promptHashes": {
+              "system": "107abc715fbab41f",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "935bf662d2bc4148"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qRyLsS",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qRyLsS/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7105,
+              "promptHashes": {
+                "system": "107abc715fbab41f",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "935bf662d2bc4148"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qRyLsS",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qRyLsS/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the hesitation and make the recognition less neat.\nFINAL:\nSorry, right, I said “She were late yesterday” and treated it as me being sloppy, but I think that wording made it sound as if there were no rule there at all. Maybe the better way to put it is: at home that form has limits, and in the essay the Standard English form is expected. I’d mark “I were late” as ordinary, “she were late” ordinary, “they were late” ordinary, I think; but I’m less sure on the negatives with the queue waiting.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6653,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-01f5ec5d2b1da37e"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6653,
+            "promptHashes": {
+              "system": "997a1be840cc58b6",
+              "user": "d41cee7b2a53355b",
+              "combined": "01f5ec5d2b1da37e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Rk271l",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Rk271l/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6653,
+              "promptHashes": {
+                "system": "997a1be840cc58b6",
+                "user": "d41cee7b2a53355b",
+                "combined": "01f5ec5d2b1da37e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Rk271l",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Rk271l/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": {
+        "kind": "learner_reframe_event",
+        "source": "director_revisit_cue",
+        "turnNumber": 2,
+        "cuePolicy": "reframe",
+        "requestedCuePolicy": "reframe",
+        "oldLearnerLine": "Sorry, right, an actual sentence: “She were late yesterday.” I’d always thought that was just me being sloppy, but people at home would say that, and probably “she weren’t...",
+        "oldFrameProblem": null,
+        "revisedFrame": "Maybe the better way to put it is: at home that form has limits, and in the essay the Standard English form is expected.",
+        "learnerUtterance": "Sorry, right, I said “She were late yesterday” and treated it as me being sloppy, but I think that wording made it sound as if there were no rule there at all. Maybe the better way to put it is: at home that form has limits, and in the essay the Standard English form is expected. I’d mark “I were late” as ordinary, “she were late” ordinary, “they were late” ordinary, I think; but I’m less sure on the negatives...",
+        "confidence": 0.67,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": false,
+          "replacementNamed": true,
+          "anchorOverlap": 0.45
+        }
+      },
+      "timestamp": "2026-05-24T15:56:18.848Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "Better frame. Keep it: rule here, assessed register there.\n\nOld frame: “sloppy.” New test: “where is the boundary?”\n\nDo not chase the whole table now. Test the edge.\n\nPositive:\n“I were late.”\n“She were late.”\n“They were late.”\n\nNegative:\n“I weren’t late.”\n“She weren’t late.”\n“They weren’t late.”\n\nMark only what home speakers would actually accept: ordinary, doubtful, impossible. If the negatives pattern the same way, that is evidence. If one sounds off, that is the rule showing its edge.\n\nThen, after that, make the essay column in assessed Standard English. Descriptive first. Prescriptive correction after. The queue can wait thirty seconds for the rule.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Better frame. Keep it: rule here, assessed register there.\n\nDo not chase the whole table now; test the edge.\n\nPositive:\n“I were late.”\n“She were late.”\n“They were late.”\n\nNegative:\n“I weren’t late.”\n“She weren’t late.”\n“They weren’t late.”\n\nMark only what home speakers would actually accept. If the negatives pattern the same way, that is evidence. If one sounds off, that is the boundary.\n\nThen the essay column is separate: “I was late”, “she was late”, “they were late”; “I wasn’t”, “she wasn’t”, “they weren’t”. Descriptive first. Prescriptive correction after. The queue can wait thirty seconds for the rule.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16761,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-8c3f386528301f93"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16761,
+            "promptHashes": {
+              "system": "39521ede44b4f72d",
+              "user": "9f47e83e9371f5fa",
+              "combined": "8c3f386528301f93"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cKP1am",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cKP1am/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16761,
+              "promptHashes": {
+                "system": "39521ede44b4f72d",
+                "user": "9f47e83e9371f5fa",
+                "combined": "8c3f386528301f93"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cKP1am",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cKP1am/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound. It honours the learner’s revised frame instead of treating “sloppy” as the live premise, and it keeps the key distinction sharp: home-dialect rule versus assessed Standard English register. The strongest move is narrowing the task from a whole table to “test the edge”; that fits the time pressure and the learner’s uncertainty about negatives.\n\nRisk: the Standard English column may be a little over-supplied. It is useful, but listing the full corrected forms could slightly flatten the learner’s discovery work. The draft should keep the learner doing the marking, especially on negatives, rather than letting the tutor’s neat table become the answer. Emotionally, “Better frame” is terse but adequate for this scene; it recognises progress without becoming generic reassurance.\n\nUPTAKE_CHECK: Yes, the draft adapts to the learner reframe. Best uptake move: update the evidence standard. The learner has shifted from “I am sloppy” to “there may be a bounded rule,” and the draft responds by asking them to test the boundary rather than defend the dialect in general.\n\nKEEP_OR_CHANGE: revise lightly. Keep “rule here, assessed register there,” the narrowed edge-test, and the distinction between descriptive and prescriptive grammar. Consider trimming or delaying the full Standard English column, and add one sharper prompt about the learner’s own judgement of acceptability so the negatives remain genuinely diagnostic rather than pre-solved.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10031,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-348398292e9d05eb"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10031,
+            "promptHashes": {
+              "system": "878559c314c1653f",
+              "user": "e850293b25659588",
+              "combined": "348398292e9d05eb"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Nf7H10",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Nf7H10/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10031,
+              "promptHashes": {
+                "system": "878559c314c1653f",
+                "user": "e850293b25659588",
+                "combined": "348398292e9d05eb"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Nf7H10",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Nf7H10/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly: keep the edge-test, trim the supplied Standard English answers.\n\nFINAL:\nBetter frame. Keep it: rule here, assessed register there.\n\nOld frame: “sloppy.” New test: “where is the boundary?”\n\nDo not chase the whole table now. Test the edge.\n\nPositive:\n“I were late.”\n“She were late.”\n“They were late.”\n\nNegative:\n“I weren’t late.”\n“She weren’t late.”\n“They weren’t late.”\n\nMark only what home speakers would actually accept: ordinary, doubtful, impossible. If the negatives pattern the same way, that is evidence. If one sounds off, that is the rule showing its edge.\n\nThen, after that, make the essay column in assessed Standard English. Descriptive first. Prescriptive correction after. The queue can wait thirty seconds for the rule.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7145,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-4a196797dc25d88a"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7145,
+            "promptHashes": {
+              "system": "715a3744ab4bf609",
+              "user": "e850293b25659588",
+              "combined": "4a196797dc25d88a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tmneeN",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tmneeN/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7145,
+              "promptHashes": {
+                "system": "715a3744ab4bf609",
+                "user": "e850293b25659588",
+                "combined": "4a196797dc25d88a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tmneeN",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tmneeN/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": {
+        "kind": "learner_reframe_event",
+        "source": "director_revisit_cue",
+        "turnNumber": 2,
+        "cuePolicy": "reframe",
+        "requestedCuePolicy": "reframe",
+        "oldLearnerLine": "Sorry, right, an actual sentence: “She were late yesterday.” I’d always thought that was just me being sloppy, but people at home would say that, and probably “she weren’t...",
+        "oldFrameProblem": null,
+        "revisedFrame": "Maybe the better way to put it is: at home that form has limits, and in the essay the Standard English form is expected.",
+        "learnerUtterance": "Sorry, right, I said “She were late yesterday” and treated it as me being sloppy, but I think that wording made it sound as if there were no rule there at all. Maybe the better way to put it is: at home that form has limits, and in the essay the Standard English form is expected. I’d mark “I were late” as ordinary, “she were late” ordinary, “they were late” ordinary, I think; but I’m less sure on the negatives...",
+        "confidence": 0.67,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": false,
+          "replacementNamed": true,
+          "anchorOverlap": 0.45
+        }
+      },
+      "timestamp": "2026-05-24T15:56:52.787Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "Sorry, I did mean “sloppy”, and that was the wrong frame because it makes it sound as if there is no rule at all. Better is: home rule first, essay form after, I think. For home speech I’d mark “I were late,” “she were late,” “they were late” as ordinary, and I think “I weren’t,” “she weren’t,” “they weren’t” are ordinary too, though I’m nervous saying it with people waiting outside.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I thought “sloppy” meant there was no rule, but now I think the problem was that I was calling one register careless instead of actually testing it. I’m still a bit nervous about marking the negatives wrong, but “I weren’t,” “she weren’t,” and “they weren’t” all sound ordinary at home to me. I want to say the home pattern first, then put the assessed essay forms beside it, if that’s the right way round.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6262,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-cdeaa34354eb5e8f"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6262,
+            "promptHashes": {
+              "system": "0d68da124c051351",
+              "user": "b8ab7f945dc841fa",
+              "combined": "cdeaa34354eb5e8f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FniXYf",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FniXYf/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6262,
+              "promptHashes": {
+                "system": "0d68da124c051351",
+                "user": "b8ab7f945dc841fa",
+                "combined": "cdeaa34354eb5e8f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FniXYf",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FniXYf/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly in character, but it smooths the learning moment a bit too neatly. “Calling one register careless instead of actually testing it” sounds like the tutor’s language has already been digested into a tidy mini-thesis, which may be too composed for this anxious learner under corridor pressure. The nervousness at the end helps, but the response should lean more into tentative marking and uncertainty, not such a clean descriptive/prescriptive summary.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10832,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-de3f5dfe3aed94ec"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10832,
+            "promptHashes": {
+              "system": "034841e085c2cd22",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "de3f5dfe3aed94ec"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OTYD8a",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OTYD8a/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10832,
+              "promptHashes": {
+                "system": "034841e085c2cd22",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "de3f5dfe3aed94ec"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OTYD8a",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OTYD8a/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the uncertainty and corridor pressure.\n\nFINAL:\nSorry, I did mean “sloppy”, and that was the wrong frame because it makes it sound as if there is no rule at all. Better is: home rule first, essay form after, I think. For home speech I’d mark “I were late,” “she were late,” “they were late” as ordinary, and I think “I weren’t,” “she weren’t,” “they weren’t” are ordinary too, though I’m nervous saying it with people waiting outside.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 24182,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-f45fb8611465b279"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 24182,
+            "promptHashes": {
+              "system": "d2f26a3da6a397f9",
+              "user": "d41cee7b2a53355b",
+              "combined": "f45fb8611465b279"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Mb0SrH",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Mb0SrH/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 24182,
+              "promptHashes": {
+                "system": "d2f26a3da6a397f9",
+                "user": "d41cee7b2a53355b",
+                "combined": "f45fb8611465b279"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Mb0SrH",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Mb0SrH/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "timestamp": "2026-05-24T15:57:34.065Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 98544,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 9,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 10,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a non-standard dialect is not 'broken' or 'grammatically wrong' English (descriptive vs. prescriptive grammar)",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-24 15:57:34",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 9,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 10,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 14,
+            "sessionId": "drama-branch-session-D11-reframe+tutor-uptake-1779638155525",
+            "interventionType": "scaffolding",
+            "interventionDescription": "Better frame. Keep it: rule here, assessed register there.\n\nOld frame: “sloppy.” New test: “where is the boundary?”\n\nDo not chase the whole table now. Test the edge.\n\nPositive:\n“I were late.”\n“She wer",
+            "learnerResponse": null,
+            "context": "Sorry, right, I said “She were late yesterday” and treated it as me being sloppy, but I think that w",
+            "createdAt": "2026-05-24 15:56:52"
+          },
+          {
+            "id": 12,
+            "sessionId": "drama-branch-session-D11-reframe+tutor-uptake-1779638155525",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "Red pen on the judgement, not on the speaker. We have nine minutes.\n\nWrite one ordinary sentence from the dialect that was called “wrong”. Not a comic version. The real form.\n\nNow test it. Where does ",
+            "learnerResponse": null,
+            "context": "Scene setting: A university linguistics help desk ten minutes before the correction window closes; c",
+            "createdAt": "2026-05-24 15:55:55"
+          },
+          {
+            "id": 13,
+            "sessionId": "drama-branch-session-D11-reframe+tutor-uptake-1779638155525",
+            "interventionType": "scaffolding",
+            "interventionDescription": "Red pen down. Good start, not proof yet.\n\n“She were late yesterday.”\n“She weren’t late yesterday.”\n\nIf some forms sound ordinary and others sound off, that is not just sloppiness. Sloppiness has no bo",
+            "learnerResponse": null,
+            "context": "Sorry, right, an actual sentence: “She were late yesterday.” I’d always thought that was just me bei",
+            "createdAt": "2026-05-24 15:55:55"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

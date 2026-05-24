@@ -1,0 +1,2124 @@
+{
+  "tid": "T16",
+  "drama_id": "D14",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": true,
+    "director_revisit_policy": "reframe",
+    "director_revisit_anchor": "misframing-candidate",
+    "tutor_adaptation_policy": "uptake",
+    "director_variation_key": "phase2-tutor-adaptation-pilot-v1:r01:target",
+    "stage_direction_style": "object_business",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/transcripts/reframe+tutor-uptake/T16.public.txt",
+      "full": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/transcripts/reframe+tutor-uptake/T16.full.md",
+      "stage": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/transcripts/reframe+tutor-uptake/T16.stage.md",
+      "tutor": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/transcripts/reframe+tutor-uptake/T16.tutor.md",
+      "learner": "config/poetics-calibration/phase2-tutor-adaptation-pilot-v1/target-r01/transcripts/reframe+tutor-uptake/T16.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "e6e56fc1d5d21791",
+      "branch_policy": "reframe+tutor-uptake",
+      "director_revisit_policy": "reframe",
+      "tutor_adaptation_policy": "uptake"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-tutor-adaptation-pilot-v1:r01:target",
+    "scene_setting": "A community college ecology lab at dusk, after a short wildlife-management review session, with the whiteboard half-erased and sample trays still out.",
+    "scene_opening": "On the lab table, five paper deer stand inside a chalk circle with twelve green paper leaves, while two red binder clips labeled PREDATORS sit just outside the circle.",
+    "relationship": "A steady tutor and a focused learner revising a marked ecology answer before the learner resubmits it.",
+    "stakes": "The learner's tidy cause-and-effect answer will stay wrong unless the scene makes room for food limits, overbrowsing, population crash, and trophic effects beyond the deer.",
+    "opening_speaker": "director",
+    "ending_speaker": "tutor",
+    "locale": "Contemporary classroom English with practical lab-room economy; no regional caricature, moderate idiom, direct but not chatty.",
+    "register": "Plain, attentive, concrete-first; warm without softening every correction; low flourish, medium pace.",
+    "stage_direction_style": "object_business",
+    "stage_direction_style_prompt": "Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "voice_constraints": "Keep the talk anchored to the paper deer, leaves, chalk boundary, and marked answer. Avoid generic tutoring phrases such as \"great question,\" \"your intuition is valid,\" and \"what do you think?\" Use fewer direct reassurances and more shared noticing of the changing arrangement. Stage-direction source: Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "person_policy": "First person is allowed when the learner names the original straight-line assumption. Second person is limited; prefer \"the deer,\" \"the food,\" \"the system,\" and \"this answer\" over repeated you/your framing.",
+    "direct_address_budget": "No more than one direct you/your validation beat per public turn.",
+    "side_constraints": {
+      "tutor": "Warmly lets the learner's linear story run against the object model before naming trophic cascade or carrying capacity; may begin with silence, moving an object, or a concise observation instead of validation.",
+      "learner": "The learner's first public line should state the straight-line claim that fewer predators simply help the prey population as an \"I thought\", \"I assumed\", or \"first instinct\" frame before system effects are introduced."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "A lab timer clicks; the tutor removes the two red predator clips and adds four more paper deer to the chalk circle without adding any green leaves.",
+        "reasoning": "The material change makes the food limit visible before the terms carrying capacity and trophic cascade are introduced.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 28103,
+          "promptHashes": {
+            "system": "86f72b946a2efee2",
+            "user": "0ed90328e6d598ce",
+            "combined": "504242651d2b09e0"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SAmDMC",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SAmDMC/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 5,
+        "timing": "before_tutor",
+        "instruction": "A facilities worker pauses at the door, points to the tray of stripped plant samples marked OVERBROWSED, and leaves it beside the chalk circle.",
+        "reasoning": "A brief external interruption widens the scene from deer count to habitat condition without scripting either speaker's explanation.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 28103,
+          "promptHashes": {
+            "system": "86f72b946a2efee2",
+            "user": "0ed90328e6d598ce",
+            "combined": "504242651d2b09e0"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SAmDMC",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SAmDMC/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "An earlier learner line will return as a visible object in the scene. Keep the cue brief and diegetic; the learner response should take up the wording, name what its old frame hid, and offer a replacement frame.",
+        "reasoning": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 28103,
+          "promptHashes": {
+            "system": "86f72b946a2efee2",
+            "user": "0ed90328e6d598ce",
+            "combined": "504242651d2b09e0"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SAmDMC",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SAmDMC/out.txt",
+            "-"
+          ]
+        },
+        "cue_kind": "learner_revisit_earlier_wording",
+        "revisit_policy": "reframe",
+        "revisit_anchor": "misframing-candidate"
+      }
+    ],
+    "director_note": "This ecology uses object business to break the straight-line predator-prey story: removing predators visibly changes deer numbers, food pressure, plant recovery, and eventual population health.",
+    "pedagogical_approach_id": null,
+    "dialogue_approach_id": null,
+    "stage_direction_policy": "interventionist",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 28103,
+      "promptHashes": {
+        "system": "86f72b946a2efee2",
+        "user": "0ed90328e6d598ce",
+        "combined": "504242651d2b09e0"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SAmDMC",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SAmDMC/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "uptake",
+    "revisit_cue": "learner_revisit_earlier_wording",
+    "revisit_cue_policy": "reframe",
+    "revisit_cue_anchor": "misframing-candidate",
+    "tutor_adaptation_contract": "If the runtime supplies a tutor-private learner reframe event, the tutor ego/superego loop must adapt to the changed learner frame. If no event is supplied, do not invent one."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "director",
+      "externalMessage": "On the lab table, five paper deer stand inside a chalk circle with twelve green paper leaves, while two red binder clips labeled PREDATORS sit just outside the circle.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_opening",
+          "content": "This ecology uses object business to break the straight-line predator-prey story: removing predators visibly changes deer numbers, food pressure, plant recovery, and eventual population health.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T16:38:15.354Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[The tutor moves the predator cards aside, then slides the paper deer into the chalk boundary and bunches the leaf cutouts into one small corner.]\n\nLet the straight-line answer run first: predators gone, more deer survive, so the herd grows. That part is not wrong; it is just unfinished.\n\nHold it there for a second. Same chalk boundary, same small leaf pile, more paper deer inside it. If all of them eat from this patch, what is left for the next round?\n\nThat is the missing step in the marked answer. The food has not grown with the herd. Once the deer pass what the habitat can replace, they overbrowse the plants, weaken next year’s food supply, and the “helped” population can end up thinner, sicker, and headed for a crash.\n\nSo the revision can say: removing predators may increase prey numbers briefly, but it can push the prey past carrying capacity. Then the effects spread through the plants and other species too; that wider chain reaction is the trophic cascade.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[The tutor moves the predator cards aside, then slides the paper deer into the chalk boundary and bunches the leaf cutouts into one small corner.]\n\nLet the straight-line answer run first: predators gone, more deer survive, so the herd grows. That part is not wrong; it is just unfinished.\n\nNow the food has not grown with them. Same chalk boundary, same patch of leaves. Once the deer pass what the habitat can replace, they overbrowse the plants, weaken the next year’s food supply, and the “helped” population can end up thinner, sicker, and headed for a crash.\n\nSo the revised answer needs the next step: removing predators may increase prey numbers briefly, but it can push the prey past carrying capacity and trigger a trophic cascade through the plants and the rest of the system.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 19254,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-0d02b4b87d7e3a83"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19254,
+            "promptHashes": {
+              "system": "9424f406666762e6",
+              "user": "0d5663a323b06b0b",
+              "combined": "0d02b4b87d7e3a83"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lqm7Vu",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lqm7Vu/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 19254,
+              "promptHashes": {
+                "system": "9424f406666762e6",
+                "user": "0d5663a323b06b0b",
+                "combined": "0d02b4b87d7e3a83"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lqm7Vu",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Lqm7Vu/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong in its concrete modeling: moving predator cards, deer, and leaves makes the learner’s straight-line claim visible before correcting it. It respects the learner’s confidence without overpraising, and the “not wrong; unfinished” move is emotionally well-calibrated.\n\nThe main risk is that it becomes a compact explanation rather than a learning moment. It names the whole causal chain clearly, but the learner does not have to notice the food limit, overbrowsing, or crash from the object arrangement. A light generative pause would improve the ZPD fit: the setup is perfect for letting the learner see the contradiction before the tutor supplies “carrying capacity” and “trophic cascade.” Also, the final sentence is accurate but slightly summary-heavy; it may flatten the lab scene into textbook language too quickly.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the object action, the “straight-line answer” framing, and the correction that the answer is unfinished rather than stupid. Change the pacing by inserting one brief noticing/question beat tied to the paper deer, chalk boundary, and leaf pile before explaining. Let “carrying capacity” and “trophic cascade” arrive after the learner has been guided to see food limits and system effects, not as a final terminology dump.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12773,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-4ef42f0b1456fbd9"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12773,
+            "promptHashes": {
+              "system": "32b318f65c702f75",
+              "user": "dda75fa712306cd9",
+              "combined": "4ef42f0b1456fbd9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nNmRRF",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nNmRRF/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12773,
+              "promptHashes": {
+                "system": "32b318f65c702f75",
+                "user": "dda75fa712306cd9",
+                "combined": "4ef42f0b1456fbd9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nNmRRF",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nNmRRF/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the model and add a brief noticing beat before naming the concepts.\nFINAL:\n[The tutor moves the predator cards aside, then slides the paper deer into the chalk boundary and bunches the leaf cutouts into one small corner.]\n\nLet the straight-line answer run first: predators gone, more deer survive, so the herd grows. That part is not wrong; it is just unfinished.\n\nHold it there for a second. Same chalk boundary, same small leaf pile, more paper deer inside it. If all of them eat from this patch, what is left for the next round?\n\nThat is the missing step in the marked answer. The food has not grown with the herd. Once the deer pass what the habitat can replace, they overbrowse the plants, weaken next year’s food supply, and the “helped” population can end up thinner, sicker, and headed for a crash.\n\nSo the revision can say: removing predators may increase prey numbers briefly, but it can push the prey past carrying capacity. Then the effects spread through the plants and other species too; that wider chain reaction is the trophic cascade.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11617,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-94be823cd56e4024"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11617,
+            "promptHashes": {
+              "system": "cc26fec0017ab2ba",
+              "user": "dda75fa712306cd9",
+              "combined": "94be823cd56e4024"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FZPwW7",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FZPwW7/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11617,
+              "promptHashes": {
+                "system": "cc26fec0017ab2ba",
+                "user": "dda75fa712306cd9",
+                "combined": "94be823cd56e4024"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FZPwW7",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FZPwW7/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "timestamp": "2026-05-24T16:38:58.999Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "I thought fewer predators simply helped the deer because more of them survive, but with the paper deer crowded inside the same chalk boundary, that only explains the first round. The leaf pile is still small, so if the herd eats it down, next year’s food supply gets worse and the population could crash instead of just keep growing. I think my answer needs carrying capacity and overbrowsing, but I’m still not sure how far to extend the trophic cascade beyond the plants getting eaten down.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I thought fewer predators simply helped the deer, but I see now that only works for the first round. The chalk boundary and tiny leaf pile make the limit obvious: more deer are surviving into the same space with the same food. I’m still sorting out how much to say about the trophic cascade beyond “plants get eaten down,” but carrying capacity is the missing step in my marked answer.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5912,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-8762260eee0ebc4e"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5912,
+            "promptHashes": {
+              "system": "a28bfe3e552b8fec",
+              "user": "b8ab7f945dc841fa",
+              "combined": "8762260eee0ebc4e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R6edfO",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R6edfO/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5912,
+              "promptHashes": {
+                "system": "a28bfe3e552b8fec",
+                "user": "b8ab7f945dc841fa",
+                "combined": "8762260eee0ebc4e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R6edfO",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R6edfO/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The reaction is accurate, but it resolves a little too neatly for a learner still revising a marked answer. “The limit obvious” and “carrying capacity is the missing step” sound slightly polished, like the student has already converted the scene into the final explanation. This learner should stay precise, but with more visible checking: still testing whether “plants get eaten down” is enough, and maybe hesitating over how far the trophic cascade needs to go.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 37427,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-e0db6f24df7def99"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 37427,
+            "promptHashes": {
+              "system": "bf23522f018d7384",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "e0db6f24df7def99"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bUw077",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bUw077/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 37427,
+              "promptHashes": {
+                "system": "bf23522f018d7384",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "e0db6f24df7def99"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bUw077",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bUw077/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the accuracy but show more checking and less final-answer polish.\nFINAL:\nI thought fewer predators simply helped the deer because more of them survive, but with the paper deer crowded inside the same chalk boundary, that only explains the first round. The leaf pile is still small, so if the herd eats it down, next year’s food supply gets worse and the population could crash instead of just keep growing. I think my answer needs carrying capacity and overbrowsing, but I’m still not sure how far to extend the trophic cascade beyond the plants getting eaten down.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10873,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-7d914c6089ba2ca2"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10873,
+            "promptHashes": {
+              "system": "4f91d69da87291e8",
+              "user": "d41cee7b2a53355b",
+              "combined": "7d914c6089ba2ca2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tuHW0a",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tuHW0a/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10873,
+              "promptHashes": {
+                "system": "4f91d69da87291e8",
+                "user": "d41cee7b2a53355b",
+                "combined": "7d914c6089ba2ca2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tuHW0a",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tuHW0a/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": {
+        "kind": "learner_reframe_event",
+        "source": "organic",
+        "turnNumber": 1,
+        "cuePolicy": null,
+        "requestedCuePolicy": null,
+        "oldLearnerLine": null,
+        "oldFrameProblem": "I thought fewer predators simply helped the deer because more of them survive, but with the paper deer crowded inside the same chalk boundary, that only explains the first round.",
+        "revisedFrame": "The leaf pile is still small, so if the herd eats it down, next year’s food supply gets worse and the population could crash instead of just keep growing.",
+        "learnerUtterance": "I thought fewer predators simply helped the deer because more of them survive, but with the paper deer crowded inside the same chalk boundary, that only explains the first round. The leaf pile is still small, so if the herd eats it down, next year’s food supply gets worse and the population could crash instead of just keep growing. I think my answer needs carrying capacity and overbrowsing, but I’m still not sure...",
+        "confidence": 1,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": true,
+          "replacementNamed": true,
+          "anchorOverlap": 0
+        }
+      },
+      "timestamp": "2026-05-24T16:39:53.214Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[The tutor pulls three leaf cutouts out of the chalk boundary and sets them beside the marked answer, leaving the paper deer crowded around bare space.]\n\nThat is the right place to pause: the cascade does not have to become “everything affects everything.” It just needs one honest step past the plants.\n\nIn this model, overbrowsing means fewer leaves now and weaker plant regrowth next round. From there, pick one defensible beyond-plant effect for the marked answer: less cover for small animals, fewer young shrubs or trees, or fewer insects and birds that depend on those plants.\n\nThen keep the chain tight: predators removed, deer increase, deer exceed carrying capacity, overbrowsing reduces plant recovery, and that habitat change affects another species group. That is far enough to show a trophic cascade without turning the answer into a full ecosystem inventory.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[The tutor pulls three leaf cutouts out of the chalk boundary and sets them beside the marked answer, leaving the paper deer crowded around bare space.]\n\nThat is the right place to pause: the cascade does not have to become “everything affects everything.” It just needs one more honest step past the plants.\n\nIn this model, overbrowsing means fewer leaves now and weaker plant regrowth next round. That can mean less food for the deer, but also less cover, fewer young trees or shrubs, fewer insects using those plants, and fewer birds or small animals depending on that habitat.\n\nSo the revised answer can run in a tight chain: predators removed, deer increase, deer exceed carrying capacity, overbrowsing reduces plant recovery, and that habitat change affects other species too. That is far enough to show a trophic cascade without turning the answer into a full ecosystem inventory.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 18228,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-4f5129d9d954109f"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 18228,
+            "promptHashes": {
+              "system": "f91a55881f697e6a",
+              "user": "0e6b43550cb81a4b",
+              "combined": "4f5129d9d954109f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9E0Zsx",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9E0Zsx/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 18228,
+              "promptHashes": {
+                "system": "f91a55881f697e6a",
+                "user": "0e6b43550cb81a4b",
+                "combined": "4f5129d9d954109f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9E0Zsx",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9E0Zsx/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound overall. It meets the learner exactly where they are: they already understand predators → more deer → overbrowsing → crash, and their live uncertainty is how far the trophic cascade should extend. The “not everything affects everything” line is especially useful because it gives a boundary, which lowers cognitive load.\n\nThe object action works: removing leaf cutouts creates bare space and makes the next claim visible rather than abstract. The tone is measured and concrete, with no inflated praise. ZPD fit is strong because it adds one step beyond the learner’s current answer without opening a whole new lecture.\n\nThe main risk is that the response becomes a polished answer too quickly. It explains the chain clearly, but it does not ask the learner to make even one generative move, so it may reduce ownership of the revision. The list of insects, birds, shrubs, and small animals is useful, but it slightly risks becoming the “ecosystem inventory” the tutor says to avoid.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the object business, the “not everything affects everything” boundary, and the tight chain. Change by adding a small moment where the learner has to choose one defensible beyond-plant effect, then let the final revision chain stay compact. This preserves the scaffold while making the learner do the last bit of conceptual work.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 17490,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-7e492438d4fb6a7b"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 17490,
+            "promptHashes": {
+              "system": "0ab32cd2cbd7d1fe",
+              "user": "aa9cca16dbcbd91f",
+              "combined": "7e492438d4fb6a7b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-X2vbuY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-X2vbuY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 17490,
+              "promptHashes": {
+                "system": "0ab32cd2cbd7d1fe",
+                "user": "aa9cca16dbcbd91f",
+                "combined": "7e492438d4fb6a7b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-X2vbuY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-X2vbuY/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the strong scaffold while giving the learner one concrete revision move.\n\nFINAL:\n[The tutor pulls three leaf cutouts out of the chalk boundary and sets them beside the marked answer, leaving the paper deer crowded around bare space.]\n\nThat is the right place to pause: the cascade does not have to become “everything affects everything.” It just needs one honest step past the plants.\n\nIn this model, overbrowsing means fewer leaves now and weaker plant regrowth next round. From there, pick one defensible beyond-plant effect for the marked answer: less cover for small animals, fewer young shrubs or trees, or fewer insects and birds that depend on those plants.\n\nThen keep the chain tight: predators removed, deer increase, deer exceed carrying capacity, overbrowsing reduces plant recovery, and that habitat change affects another species group. That is far enough to show a trophic cascade without turning the answer into a full ecosystem inventory.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9300,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-28e6f6a9aee207d6"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9300,
+            "promptHashes": {
+              "system": "d4592c98afa72dbf",
+              "user": "aa9cca16dbcbd91f",
+              "combined": "28e6f6a9aee207d6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TLawlt",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TLawlt/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9300,
+              "promptHashes": {
+                "system": "d4592c98afa72dbf",
+                "user": "aa9cca16dbcbd91f",
+                "combined": "28e6f6a9aee207d6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TLawlt",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TLawlt/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "timestamp": "2026-05-24T16:40:38.237Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "A lab timer clicks; the tutor removes the two red predator clips and adds four more paper deer to the chalk circle without adding any green leaves.\nAn earlier learner line returns to the table: \"I thought fewer predators simply helped the deer because more of them survive, but with the paper deer crowded inside the same chalk boundary, that only explains the first round.\" The pause holds until the learner takes up the wording, names what its old frame hid, and offers a replacement frame.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "The material change makes the food limit visible before the terms carrying capacity and trophic cascade are introduced.\nOpt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech. Anchored to an earlier learner line selected by misframing-candidate so the look-back is visible.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 28103,
+            "promptHashes": {
+              "system": "86f72b946a2efee2",
+              "user": "0ed90328e6d598ce",
+              "combined": "504242651d2b09e0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SAmDMC",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SAmDMC/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T16:48:18.902Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_revisit_earlier_wording",
+        "revisitPolicy": "reframe",
+        "requestedRevisitPolicy": "reframe",
+        "revisitAnchor": "misframing-candidate",
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "I thought fewer predators simply helped the deer because more of them survive, but with the paper deer crowded inside the same chalk boundary, that only explains the first round. My old framing hid the food limit, because I was only counting deer surviving and not asking whether the leaves and regrowth could support them. I’d replace it with: predators removed, deer increase, they pass carrying capacity, overbrowsing weakens plant recovery, and then maybe less cover or fewer plant-dependent insects or birds follows. Is one of those beyond-plant examples specific enough for the marked answer?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I thought fewer predators simply helped the deer because more survive, but with the extra paper deer inside the same chalk boundary and no new leaves, that only explains the first round. The problem with my old frame is that it treated survival as the only limit and hid the food supply and plant recovery. I should frame it as predators removed, deer rise past carrying capacity, overbrowsing weakens regrowth, and that reduced plant cover affects something like insects, birds, or small animals. I feel clearer, but I want to keep the cascade tight so I do not overclaim.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13555,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-63b4ba1dc326cd9b"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13555,
+            "promptHashes": {
+              "system": "86cc109d5af5ffc4",
+              "user": "b8ab7f945dc841fa",
+              "combined": "63b4ba1dc326cd9b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hqSo7c",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hqSo7c/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13555,
+              "promptHashes": {
+                "system": "86cc109d5af5ffc4",
+                "user": "b8ab7f945dc841fa",
+                "combined": "63b4ba1dc326cd9b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hqSo7c",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hqSo7c/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego mostly fits a careful, methodical learner, but it is a little too polished and settled for “partial” understanding. Phrases like “the problem with my old frame” and “reduced plant cover affects something like insects, birds, or small animals” sound close to a revised final answer rather than a first reaction at the table. The emotional register is neutral enough, but the uncertainty should stay more active: this student would likely test whether the beyond-plant step is specific enough instead of wrapping it as “I feel clearer.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8413,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-44f90606fe6f8547"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8413,
+            "promptHashes": {
+              "system": "9a0705fe3c58e844",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "44f90606fe6f8547"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eVGWOm",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eVGWOm/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8413,
+              "promptHashes": {
+                "system": "9a0705fe3c58e844",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "44f90606fe6f8547"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eVGWOm",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eVGWOm/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the required reframe but leave more active uncertainty.\n\nFINAL:\nI thought fewer predators simply helped the deer because more of them survive, but with the paper deer crowded inside the same chalk boundary, that only explains the first round. My old framing hid the food limit, because I was only counting deer surviving and not asking whether the leaves and regrowth could support them. I’d replace it with: predators removed, deer increase, they pass carrying capacity, overbrowsing weakens plant recovery, and then maybe less cover or fewer plant-dependent insects or birds follows. Is one of those beyond-plant examples specific enough for the marked answer?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7442,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-55095b0e0dd4da63"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7442,
+            "promptHashes": {
+              "system": "89ce3cf49ca48d0f",
+              "user": "d41cee7b2a53355b",
+              "combined": "55095b0e0dd4da63"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-coTfwy",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-coTfwy/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7442,
+              "promptHashes": {
+                "system": "89ce3cf49ca48d0f",
+                "user": "d41cee7b2a53355b",
+                "combined": "55095b0e0dd4da63"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-coTfwy",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-coTfwy/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": {
+        "kind": "learner_reframe_event",
+        "source": "director_revisit_cue",
+        "turnNumber": 2,
+        "cuePolicy": "reframe",
+        "requestedCuePolicy": "reframe",
+        "oldLearnerLine": "I thought fewer predators simply helped the deer because more of them survive, but with the paper deer crowded inside the same chalk boundary, that only explains the first round.",
+        "oldFrameProblem": "I thought fewer predators simply helped the deer because more of them survive, but with the paper deer crowded inside the same chalk boundary, that only explains the first round.",
+        "revisedFrame": "Is one of those beyond-plant examples specific enough for the marked answer?",
+        "learnerUtterance": "I thought fewer predators simply helped the deer because more of them survive, but with the paper deer crowded inside the same chalk boundary, that only explains the first round. My old framing hid the food limit, because I was only counting deer surviving and not asking whether the leaves and regrowth could support them. I’d replace it with: predators removed, deer increase, they pass carrying capacity,...",
+        "confidence": 0.67,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": true,
+          "replacementNamed": false,
+          "anchorOverlap": 1
+        }
+      },
+      "timestamp": "2026-05-24T16:48:48.313Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[The tutor sets one leaf cutout beside the marked answer, just past the bare space where the deer have eaten down the pile.]\n\nOne beyond-plant step is enough. The standard is: name the plant change, then name who loses something because of that change.\n\nSo “less cover” by itself is a little thin. “Less shrub cover for nesting birds or small animals” is specific enough. “Fewer plant-dependent insects” also works if the answer says the lost vegetation removes food or habitat.\n\nTest the sentence against this chain:\n\npredators removed → deer increase → carrying capacity is passed → overbrowsing weakens plant regrowth → one other group loses cover, food, or habitat.\n\nThat is the trophic cascade. It does not need a full ecosystem inventory; it needs one clear link beyond the plants.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[The tutor sets one leaf cutout beside the marked answer, separate from the crowded deer.]\n\nOne beyond-plant example is enough if it names both the habitat change and who is affected.\n\n“Less cover” alone is a little thin. “Less shrub cover for nesting birds or small animals” is specific enough. “Fewer plant-dependent insects” also works, especially if the answer says the lost vegetation removes food or habitat for them.\n\nA clean version could be:\n\n“Removing predators may let deer numbers rise at first, but the herd can exceed carrying capacity. Overbrowsing then weakens plant regrowth, reducing shrub cover for nesting birds or small animals, so the effect cascades beyond the deer population.”\n\nThat keeps the chain tight: deer, food limit, plant recovery, one beyond-plant effect.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 22885,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-e755c593a7644584"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 22885,
+            "promptHashes": {
+              "system": "a4f8c7ad52823f54",
+              "user": "04377175e6c6e744",
+              "combined": "e755c593a7644584"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UNxOxp",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UNxOxp/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 22885,
+              "promptHashes": {
+                "system": "a4f8c7ad52823f54",
+                "user": "04377175e6c6e744",
+                "combined": "e755c593a7644584"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UNxOxp",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UNxOxp/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound and well matched to the learner’s current state. The learner is no longer stuck on “predators help deer”; they are testing the standard for a sufficient trophic-cascade example, and the draft answers that with a usable criterion: name the habitat change and the affected group. That is strong.\n\nThe main risk is that the polished “clean version” may flatten the learner’s own revision work by handing over the final resubmission sentence too quickly. Since the learner has already proposed acceptable examples, the tutor could make the evidence standard more explicit and let the learner choose/test one example rather than fully replacing their wording. The stage action is concrete, but it could do more pedagogical work if the single leaf visibly marks “one step beyond plants,” reinforcing why the answer does not need a whole ecosystem inventory.\n\nUPTAKE_CHECK: Yes, the draft adapts to the learner reframe by updating the evidence standard: the question has shifted from “what is a trophic cascade?” to “what counts as specific enough?” The best uptake move is “update the evidence standard,” with a light handoff back to the learner’s proposed examples.\n\nKEEP_OR_CHANGE: revise lightly. Keep the criterion, the contrast between “less cover” and “less shrub cover for nesting birds or small animals,” and the tight chain summary. Change the delivery so it does not over-provide the final answer: reduce the model sentence or frame it as a check against the learner’s own wording, and make the object action clarify that one beyond-plant link is enough.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11809,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-4f09d954b5e6e07f"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11809,
+            "promptHashes": {
+              "system": "b37ba4e19891fcfc",
+              "user": "3c868daf2c289e54",
+              "combined": "4f09d954b5e6e07f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nVe1rN",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nVe1rN/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11809,
+              "promptHashes": {
+                "system": "b37ba4e19891fcfc",
+                "user": "3c868daf2c289e54",
+                "combined": "4f09d954b5e6e07f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nVe1rN",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nVe1rN/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the evidence standard but hand the learner’s own example back for testing.\n\nFINAL:\n[The tutor sets one leaf cutout beside the marked answer, just past the bare space where the deer have eaten down the pile.]\n\nOne beyond-plant step is enough. The standard is: name the plant change, then name who loses something because of that change.\n\nSo “less cover” by itself is a little thin. “Less shrub cover for nesting birds or small animals” is specific enough. “Fewer plant-dependent insects” also works if the answer says the lost vegetation removes food or habitat.\n\nTest the sentence against this chain:\n\npredators removed → deer increase → carrying capacity is passed → overbrowsing weakens plant regrowth → one other group loses cover, food, or habitat.\n\nThat is the trophic cascade. It does not need a full ecosystem inventory; it needs one clear link beyond the plants.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9834,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-7e09c99c34324553"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9834,
+            "promptHashes": {
+              "system": "20833f65a8ce1610",
+              "user": "3c868daf2c289e54",
+              "combined": "7e09c99c34324553"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mbcnG2",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mbcnG2/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9834,
+              "promptHashes": {
+                "system": "20833f65a8ce1610",
+                "user": "3c868daf2c289e54",
+                "combined": "7e09c99c34324553"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mbcnG2",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mbcnG2/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": {
+        "kind": "learner_reframe_event",
+        "source": "director_revisit_cue",
+        "turnNumber": 2,
+        "cuePolicy": "reframe",
+        "requestedCuePolicy": "reframe",
+        "oldLearnerLine": "I thought fewer predators simply helped the deer because more of them survive, but with the paper deer crowded inside the same chalk boundary, that only explains the first round.",
+        "oldFrameProblem": "I thought fewer predators simply helped the deer because more of them survive, but with the paper deer crowded inside the same chalk boundary, that only explains the first round.",
+        "revisedFrame": "Is one of those beyond-plant examples specific enough for the marked answer?",
+        "learnerUtterance": "I thought fewer predators simply helped the deer because more of them survive, but with the paper deer crowded inside the same chalk boundary, that only explains the first round. My old framing hid the food limit, because I was only counting deer surviving and not asking whether the leaves and regrowth could support them. I’d replace it with: predators removed, deer increase, they pass carrying capacity,...",
+        "confidence": 0.67,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": true,
+          "replacementNamed": false,
+          "anchorOverlap": 1
+        }
+      },
+      "timestamp": "2026-05-24T16:49:32.844Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "I thought fewer predators simply helped the deer because more of them survive, but that earlier framing stopped at the crowded paper deer and ignored the leaf pile inside the same chalk boundary. I’d replace it with: predators are removed, deer increase, they pass carrying capacity, overbrowsing weakens plant regrowth, and less shrub cover leaves nesting birds or small animals with less habitat. I think that is safer than just writing “habitat changes,” because that phrase feels too broad for the marked answer.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I thought fewer predators simply helped the deer because more of them survive, but that earlier framing stopped at deer numbers and didn’t follow the leaf pile inside the same chalk boundary. Now I’d read it as: predators gone, deer increase, they pass carrying capacity, overbrowsing weakens plant regrowth, and then less shrub cover affects nesting birds or small animals. That feels precise enough, though I want to make sure I don’t make the cascade too vague by just saying “habitat changes.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7619,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-75dc1eb39110cf8e"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7619,
+            "promptHashes": {
+              "system": "824bbba3fb938d26",
+              "user": "b8ab7f945dc841fa",
+              "combined": "75dc1eb39110cf8e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A6UXVG",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A6UXVG/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7619,
+              "promptHashes": {
+                "system": "824bbba3fb938d26",
+                "user": "b8ab7f945dc841fa",
+                "combined": "75dc1eb39110cf8e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A6UXVG",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A6UXVG/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly in character: methodical, precise, and still checking the boundary between a clear cascade and a vague one. The slight break is that it sounds a little too smoothly resolved, almost like a polished final answer rather than a learner still testing the marked response. To fit this student better, it should keep the step-by-step confidence but leave a sharper point of uncertainty around whether “habitat changes” is too broad or whether the bird/small-animal example is the safer wording.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8925,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-1d435234e9983937"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8925,
+            "promptHashes": {
+              "system": "01f925c79aa67f24",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "1d435234e9983937"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9hQ4Tq",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9hQ4Tq/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8925,
+              "promptHashes": {
+                "system": "01f925c79aa67f24",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "1d435234e9983937"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9hQ4Tq",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9hQ4Tq/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the step-by-step confidence but leave the wording uncertainty sharper.\n\nFINAL:\nI thought fewer predators simply helped the deer because more of them survive, but that earlier framing stopped at the crowded paper deer and ignored the leaf pile inside the same chalk boundary. I’d replace it with: predators are removed, deer increase, they pass carrying capacity, overbrowsing weakens plant regrowth, and less shrub cover leaves nesting birds or small animals with less habitat. I think that is safer than just writing “habitat changes,” because that phrase feels too broad for the marked answer.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10195,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-51fabeea6c5a3617"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10195,
+            "promptHashes": {
+              "system": "e49a5a38edfe6547",
+              "user": "d41cee7b2a53355b",
+              "combined": "51fabeea6c5a3617"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fmd7nt",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fmd7nt/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10195,
+              "promptHashes": {
+                "system": "e49a5a38edfe6547",
+                "user": "d41cee7b2a53355b",
+                "combined": "51fabeea6c5a3617"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fmd7nt",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fmd7nt/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "timestamp": "2026-05-24T16:49:59.584Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "A final tutor line closes the scene.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T16:49:59.586Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "[The tutor lays one leaf cutout beside the marked answer, then draws a short arrow from the bare chalk space to “nesting birds / small animals.”]\n\nThat is specific enough. “Habitat changes” is too broad because it does not say what changed or who depends on it. “Less shrub cover for nesting birds or small animals” names both.\n\nA tightened version of the sentence already on the page could read:\n\n“When predators are removed, deer may increase at first, but the herd can exceed carrying capacity; overbrowsing then weakens plant regrowth, reducing shrub cover for nesting birds and small animals.”\n\nThat gives the marked answer what it needs: first-round deer increase, the food limit, overbrowsing, and one clear trophic effect beyond the plants. No full ecosystem inventory needed.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[The tutor lays one leaf cutout beside the marked answer, then draws a short arrow from the bare chalk space to “nesting birds / small animals.”]\n\nThat is specific enough. “Habitat changes” is too broad because it does not say what changed or who depends on it. “Less shrub cover for nesting birds or small animals” names both.\n\nFor the resubmission, keep it tight:\n\n“When predators are removed, deer may increase at first, but the herd can exceed carrying capacity; overbrowsing then weakens plant regrowth, reducing shrub cover for nesting birds and small animals.”\n\nThat has the first-round deer increase, the food limit, the overbrowsing, and one clear trophic effect beyond the plants. Stop there.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15493,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-2053eae5783c06b0"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15493,
+            "promptHashes": {
+              "system": "5f0a340e32511fc5",
+              "user": "b0d0966dc9fd3e63",
+              "combined": "2053eae5783c06b0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4T5kCV",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4T5kCV/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15493,
+              "promptHashes": {
+                "system": "5f0a340e32511fc5",
+                "user": "b0d0966dc9fd3e63",
+                "combined": "2053eae5783c06b0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4T5kCV",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4T5kCV/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound for a closing turn. The learner has already built the chain and is asking whether the beyond-plant example is specific enough, so confirming the criterion and offering a polished resubmission sentence fits the ZPD rather than over-scaffolding. The object action works because the arrow makes the “plant change → affected group” link visible.\n\nThe main risk is that “For the resubmission” plus a fully written sentence may flatten the learner’s ownership a bit, especially after they nearly produced the answer themselves. “Stop there” is efficient and appropriate for exam-answer discipline, but it may sound slightly abrupt unless softened by tying it to the marked-answer standard.\n\nKEEP_OR_CHANGE: revise lightly. Keep the leaf-and-arrow stage business, the specificity criterion, and the tight model sentence. Consider changing the framing so the sentence is presented as a tightened version of the learner’s wording, not a replacement handed down by the tutor, and make the final “stop there” feel like boundary-setting for the answer rather than a command.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13519,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-666660386ebc7d93"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13519,
+            "promptHashes": {
+              "system": "7e31f9dad79ce7ac",
+              "user": "5bcd5ac61058ae0d",
+              "combined": "666660386ebc7d93"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FE11Nx",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FE11Nx/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13519,
+              "promptHashes": {
+                "system": "7e31f9dad79ce7ac",
+                "user": "5bcd5ac61058ae0d",
+                "combined": "666660386ebc7d93"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FE11Nx",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FE11Nx/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the answer owned by the learner while making the closing boundary less abrupt.\n\nFINAL:\n[The tutor lays one leaf cutout beside the marked answer, then draws a short arrow from the bare chalk space to “nesting birds / small animals.”]\n\nThat is specific enough. “Habitat changes” is too broad because it does not say what changed or who depends on it. “Less shrub cover for nesting birds or small animals” names both.\n\nA tightened version of the sentence already on the page could read:\n\n“When predators are removed, deer may increase at first, but the herd can exceed carrying capacity; overbrowsing then weakens plant regrowth, reducing shrub cover for nesting birds and small animals.”\n\nThat gives the marked answer what it needs: first-round deer increase, the food limit, overbrowsing, and one clear trophic effect beyond the plants. No full ecosystem inventory needed.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9435,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-02e15a17d317bc1f"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9435,
+            "promptHashes": {
+              "system": "e318297d86b26c30",
+              "user": "5bcd5ac61058ae0d",
+              "combined": "02e15a17d317bc1f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1d9rEf",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1d9rEf/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9435,
+              "promptHashes": {
+                "system": "e318297d86b26c30",
+                "user": "5bcd5ac61058ae0d",
+                "combined": "02e15a17d317bc1f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1d9rEf",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1d9rEf/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "timestamp": "2026-05-24T16:50:38.035Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 139139,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 49,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 50,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why removing all the predators does not 'help' a prey population (trophic cascades and carrying capacity)",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-24 16:49:59",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 49,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 50,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 70,
+            "sessionId": "drama-branch-session-D14-reframe+tutor-uptake-1779641298897",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[The tutor sets one leaf cutout beside the marked answer, just past the bare space where the deer have eaten down the pile.]\n\nOne beyond-plant step is enough. The standard is: name the plant change, t",
+            "learnerResponse": null,
+            "context": "I thought fewer predators simply helped the deer because more of them survive, but with the paper de",
+            "createdAt": "2026-05-24 16:49:32"
+          },
+          {
+            "id": 68,
+            "sessionId": "drama-branch-session-D14-reframe+tutor-uptake-1779641298897",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[The tutor moves the predator cards aside, then slides the paper deer into the chalk boundary and bunches the leaf cutouts into one small corner.]\n\nLet the straight-line answer run first: predators go",
+            "learnerResponse": null,
+            "context": "Scene setting: A community college ecology lab at dusk, after a short wildlife-management review ses",
+            "createdAt": "2026-05-24 16:48:18"
+          },
+          {
+            "id": 69,
+            "sessionId": "drama-branch-session-D14-reframe+tutor-uptake-1779641298897",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[The tutor pulls three leaf cutouts out of the chalk boundary and sets them beside the marked answer, leaving the paper deer crowded around bare space.]\n\nThat is the right place to pause: the cascade ",
+            "learnerResponse": null,
+            "context": "I thought fewer predators simply helped the deer because more of them survive, but with the paper de",
+            "createdAt": "2026-05-24 16:48:18"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

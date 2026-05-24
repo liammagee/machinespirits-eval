@@ -20,6 +20,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { createProgressReporter } from './progress.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -80,6 +81,7 @@ function parseArgs(argv) {
     repeats: 3,
     stressRepeats: 1,
     critics: DEFAULT_CRITICS,
+    generationConcurrency: 1,
     scoreConcurrency: 3,
     maxTurns: 3,
     targetSpec: V3_SPEC,
@@ -108,6 +110,7 @@ function parseArgs(argv) {
     else if (t === '--repeats') args.repeats = parseInt(argv[++i], 10);
     else if (t === '--stress-repeats') args.stressRepeats = parseInt(argv[++i], 10);
     else if (t === '--critics') args.critics = splitCsv(argv[++i]);
+    else if (t === '--generation-concurrency') args.generationConcurrency = parseInt(argv[++i], 10);
     else if (t === '--score-concurrency') args.scoreConcurrency = parseInt(argv[++i], 10);
     else if (t === '--max-turns') args.maxTurns = parseInt(argv[++i], 10);
     else if (t === '--target-spec') args.targetSpec = path.resolve(argv[++i]);
@@ -146,6 +149,9 @@ function parseArgs(argv) {
     throw new Error('--stress-tid-start must be a non-negative integer');
   }
   if (!args.critics.length) throw new Error('--critics must name at least one critic');
+  if (!Number.isInteger(args.generationConcurrency) || args.generationConcurrency < 1) {
+    throw new Error('--generation-concurrency must be a positive integer');
+  }
   if (!Number.isInteger(args.scoreConcurrency) || args.scoreConcurrency < 1) {
     throw new Error('--score-concurrency must be a positive integer');
   }
@@ -254,6 +260,7 @@ function buildPlan(rawArgs = {}) {
     repeats: args.repeats,
     stressRepeats: args.stressRepeats,
     maxTurns: args.maxTurns,
+    generationConcurrency: args.generationConcurrency,
     scoreConcurrency: args.scoreConcurrency,
     critics: args.critics,
     allUnits: units,
@@ -282,6 +289,8 @@ function generationCommand(unit, args) {
     unit.transcriptsDir,
     '--key',
     unit.keyPath,
+    '--generation-concurrency',
+    String(args.generationConcurrency),
   ];
   if (unit.tidStart != null) cmd.push('--tid-start', String(unit.tidStart));
   if (unit.pairedPolicies) {
@@ -393,6 +402,7 @@ function summarizePlan(plan, args) {
   console.log(`\n══ Poetics production batch ${plan.batchId} ══`);
   console.log(`  root: ${rel(plan.rootDir)}`);
   console.log(`  generator: ${plan.generator}${args.mock ? ' (mock)' : ''}`);
+  console.log(`  generation concurrency: ${plan.generationConcurrency}`);
   console.log(`  units: ${plan.units.length} (${nTargets} target, ${nControls} control, ${nStress} stress)`);
   console.log(`  critics: ${plan.critics.join(', ')}`);
 }
@@ -408,25 +418,43 @@ function runPlan(args) {
 
   if (!args.skipGenerate) {
     console.log('\n── generation ──');
+    const generationProgress = createProgressReporter({
+      label: 'batch generation',
+      total: plan.units.length,
+      enabled: !args.dryRun,
+    });
+    generationProgress.start(`${plan.units.length} unit(s)`);
     for (const unit of plan.units) {
       console.log(`\n# ${unit.id}`);
+      generationProgress.note(`${unit.id} starting`);
       runCommand(generationCommand(unit, args), args);
+      generationProgress.step(`${unit.id} complete`);
     }
+    generationProgress.finish('generation stage complete');
   }
 
   if (!args.skipScore) {
     console.log('\n── scoring ──');
     if (!args.dryRun) fs.mkdirSync(path.join(args.rootDir, 'scores'), { recursive: true });
-    for (const unit of plan.units) {
-      for (const job of scoreJobs(unit, args)) {
-        if (args.skipExistingScores && fs.existsSync(job.outPath)) {
-          console.log(`\n# ${job.id} · ${job.critic} (skip existing)`);
-          continue;
-        }
-        console.log(`\n# ${job.id} · ${job.critic}`);
-        runCommand(scoreCommand(job, args), args);
+    const jobs = plan.units.flatMap((unit) => scoreJobs(unit, args));
+    const scoringProgress = createProgressReporter({
+      label: 'batch scoring',
+      total: jobs.length,
+      enabled: !args.dryRun,
+    });
+    scoringProgress.start(`${jobs.length} scorer job(s)`);
+    for (const job of jobs) {
+      if (args.skipExistingScores && fs.existsSync(job.outPath)) {
+        console.log(`\n# ${job.id} · ${job.critic} (skip existing)`);
+        scoringProgress.step(`${job.id} · ${job.critic} skipped`);
+        continue;
       }
+      console.log(`\n# ${job.id} · ${job.critic}`);
+      scoringProgress.note(`${job.id} · ${job.critic} starting`);
+      runCommand(scoreCommand(job, args), args);
+      scoringProgress.step(`${job.id} · ${job.critic} complete`);
     }
+    scoringProgress.finish('scoring stage complete');
   }
 
   if (!args.dryRun) {

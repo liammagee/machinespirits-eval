@@ -1,0 +1,52 @@
+STAGE: On the lab table, five paper deer stand inside a chalk circle with twelve green paper leaves, while two red binder clips labeled PREDATORS sit just outside the circle.
+
+TUTOR: [The tutor moves the predator cards aside, then slides the paper deer into the chalk boundary and bunches the leaf cutouts into one small corner.]
+
+Let the straight-line answer run first: predators gone, more deer survive, so the herd grows. That part is not wrong; it is just unfinished.
+
+Hold it there for a second. Same chalk boundary, same small leaf pile, more paper deer inside it. If all of them eat from this patch, what is left for the next round?
+
+That is the missing step in the marked answer. The food has not grown with the herd. Once the deer pass what the habitat can replace, they overbrowse the plants, weaken next year’s food supply, and the “helped” population can end up thinner, sicker, and headed for a crash.
+
+So the revision can say: removing predators may increase prey numbers briefly, but it can push the prey past carrying capacity. Then the effects spread through the plants and other species too; that wider chain reaction is the trophic cascade.
+
+LEARNER: I thought fewer predators simply helped the deer because more of them survive, but with the paper deer crowded inside the same chalk boundary, that only explains the first round. The leaf pile is still small, so if the herd eats it down, next year’s food supply gets worse and the population could crash instead of just keep growing. I think my answer needs carrying capacity and overbrowsing, but I’m still not sure how far to extend the trophic cascade beyond the plants getting eaten down.
+
+TUTOR: [The tutor pulls three leaf cutouts out of the chalk boundary and sets them beside the marked answer, leaving the paper deer crowded around bare space.]
+
+That is the right place to pause: the cascade does not have to become “everything affects everything.” It just needs one honest step past the plants.
+
+In this model, overbrowsing means fewer leaves now and weaker plant regrowth next round. From there, pick one defensible beyond-plant effect for the marked answer: less cover for small animals, fewer young shrubs or trees, or fewer insects and birds that depend on those plants.
+
+Then keep the chain tight: predators removed, deer increase, deer exceed carrying capacity, overbrowsing reduces plant recovery, and that habitat change affects another species group. That is far enough to show a trophic cascade without turning the answer into a full ecosystem inventory.
+
+STAGE: A lab timer clicks; the tutor removes the two red predator clips and adds four more paper deer to the chalk circle without adding any green leaves.
+An earlier learner line returns to the table: "I thought fewer predators simply helped the deer because more of them survive, but with the paper deer crowded inside the same chalk boundary, that only explains the first round." The pause holds until the learner takes up the wording, names what its old frame hid, and offers a replacement frame.
+
+LEARNER: I thought fewer predators simply helped the deer because more of them survive, but with the paper deer crowded inside the same chalk boundary, that only explains the first round. My old framing hid the food limit, because I was only counting deer surviving and not asking whether the leaves and regrowth could support them. I’d replace it with: predators removed, deer increase, they pass carrying capacity, overbrowsing weakens plant recovery, and then maybe less cover or fewer plant-dependent insects or birds follows. Is one of those beyond-plant examples specific enough for the marked answer?
+
+TUTOR: [The tutor sets one leaf cutout beside the marked answer, just past the bare space where the deer have eaten down the pile.]
+
+One beyond-plant step is enough. The standard is: name the plant change, then name who loses something because of that change.
+
+So “less cover” by itself is a little thin. “Less shrub cover for nesting birds or small animals” is specific enough. “Fewer plant-dependent insects” also works if the answer says the lost vegetation removes food or habitat.
+
+Test the sentence against this chain:
+
+predators removed → deer increase → carrying capacity is passed → overbrowsing weakens plant regrowth → one other group loses cover, food, or habitat.
+
+That is the trophic cascade. It does not need a full ecosystem inventory; it needs one clear link beyond the plants.
+
+LEARNER: I thought fewer predators simply helped the deer because more of them survive, but that earlier framing stopped at the crowded paper deer and ignored the leaf pile inside the same chalk boundary. I’d replace it with: predators are removed, deer increase, they pass carrying capacity, overbrowsing weakens plant regrowth, and less shrub cover leaves nesting birds or small animals with less habitat. I think that is safer than just writing “habitat changes,” because that phrase feels too broad for the marked answer.
+
+STAGE: A final tutor line closes the scene.
+
+TUTOR: [The tutor lays one leaf cutout beside the marked answer, then draws a short arrow from the bare chalk space to “nesting birds / small animals.”]
+
+That is specific enough. “Habitat changes” is too broad because it does not say what changed or who depends on it. “Less shrub cover for nesting birds or small animals” names both.
+
+A tightened version of the sentence already on the page could read:
+
+“When predators are removed, deer may increase at first, but the herd can exceed carrying capacity; overbrowsing then weakens plant regrowth, reducing shrub cover for nesting birds and small animals.”
+
+That gives the marked answer what it needs: first-round deer increase, the food limit, overbrowsing, and one clear trophic effect beyond the plants. No full ecosystem inventory needed.
