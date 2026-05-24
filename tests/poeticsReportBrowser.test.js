@@ -122,6 +122,29 @@ function seed(db) {
     formClass: 'recognition',
     recontextualization: 75,
     statedInsight: 25,
+    recoheredEarlier: 'I was using the area as if it were the whole map',
+    metadata: {
+      role_symmetric_scores: {
+        learner_self_reframe: {
+          score100: 75,
+          evidence: 'I was using the area as if it were the whole map',
+          source: 'recontextualization_axis',
+        },
+        tutor_contingent_adaptation: {
+          score100: 80,
+          evidence: 'Use that revised map frame to test the next claim.',
+          justification: 'The tutor changes the task around the learner revised frame.',
+          source: 'tutor_contingent_adaptation_axis',
+        },
+        tutor_strategy_reversal: {
+          score100: 70,
+          evidence: 'Let us switch route: test the map claim with a smaller example.',
+          justification: 'The tutor changes route after learner resistance.',
+          triggerLearnerTurn: 2,
+          source: 'tutor_strategy_reversal_axis',
+        },
+      },
+    },
   });
   upsertPoeticsScore(db, {
     itemId: 'poetics-second-run:target-r01:reframe:T03',
@@ -149,7 +172,16 @@ function seed(db) {
     tutorContingentAdaptation: true,
     tutorAdaptationScore: 72,
     evidence: 'post tutor takes up the revised map frame',
-    metadata: {},
+    metadata: {
+      peripeteia: {
+        learner_reversal_pressure: true,
+        tutor_strategy_reversal: true,
+        tutor_peripeteia_score: 68,
+        trigger_type: 'resistance',
+        learner_outcome_after_reversal: 'recognition',
+        evidence: 'pressure learner: But the map still feels wrong.\npost tutor: Let us switch route.',
+      },
+    },
   });
   upsertPoeticsReviewFlag(db, {
     itemId: 'poetics-test-run:control-r01-d25-hard-trap:default:T02',
@@ -202,6 +234,12 @@ describe('poetics sidecar report and browser', () => {
       const adaptiveDetail = getItem(db, 'poetics-second-run:target-r01:reframe:T03');
       assert.equal(adaptiveDetail.tutorAdaptation.tutor_adaptation_score, 72);
       assert.deepEqual(adaptiveDetail.tutorAdaptation.shared_salient_terms, ['projection', 'area', 'scale']);
+      const qwenScore = adaptiveDetail.scores.find((score) => score.critic_model === 'qwen/qwen3.7-max');
+      assert.equal(qwenScore.roleScores.learnerSelfReframeScore, 75);
+      assert.equal(qwenScore.roleScores.tutorContingentAdaptationScore, 80);
+      assert.equal(qwenScore.roleScores.tutorStrategyReversalScore, 70);
+      assert.match(qwenScore.roleScores.tutorContingentAdaptationEvidence, /revised map frame/);
+      assert.equal(adaptiveDetail.tutorAdaptation.metadata.peripeteia.tutor_strategy_reversal, true);
     }));
 
   it('supports blind browser labels without exposing critic scores', () =>

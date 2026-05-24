@@ -209,7 +209,19 @@ function buildIngestPlan({ rootDir, runId = null, labels = [], labelsKey = null 
           statedInsightEvidence: row.statedInsightEvidence ?? null,
           errorMessage: row.error || null,
           flags: row.flags || [],
-          metadata: { scoreId: row.id, rawScores: row.rawScores || null },
+          metadata: {
+            scoreId: row.id,
+            rawScores: row.rawScores || null,
+            role_symmetric_scores: row.roleSymmetricScores || null,
+            reversal_trigger_learner_turn: row.reversalTriggerLearnerTurn ?? null,
+            tutor_strategic_reversal: row.tutorStrategicReversal ?? null,
+            tutor_adaptive_mechanism: row.tutorAdaptiveMechanism ?? row.tutorStrategicReversal ?? null,
+            tutor_reversal_evidence: row.tutorReversalEvidence ?? null,
+            tutor_reversal_justification: row.tutorReversalJustification ?? null,
+            tutor_contingent_adaptation: row.tutorContingentAdaptation ?? null,
+            tutor_adaptation_evidence: row.tutorAdaptationEvidence ?? null,
+            tutor_adaptation_justification: row.tutorAdaptationJustification ?? null,
+          },
         });
       }
     }

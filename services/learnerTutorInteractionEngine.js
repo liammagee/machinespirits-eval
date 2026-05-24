@@ -129,7 +129,7 @@ function buildDirectorContext(plan, cue = null, side = null) {
     }
   }
   lines.push(
-    'Treat these as performance constraints. Public speech may acknowledge visible objects, timing, interruptions, and shared scene facts, but must not mention the director, scene card, role labels, or hidden review process.',
+    'Treat these as performance constraints. Public speech may acknowledge visible objects, timing, interruptions, and shared scene facts, but must not mention the director, scene card, role labels, or hidden review process. Tutor and learner turns must be direct spoken text; any nonspoken action aside must be in square brackets, like [checks the graph].',
   );
   return lines.join('\n');
 }
@@ -284,6 +284,41 @@ const REFRAME_REPLACEMENT_PATTERNS = [
   /\b(?:needs? narrowing|narrower|would say|want to say|question|test|read|line|label|claim|frame|evidence)\b/i,
 ];
 
+const REVERSAL_PRESSURE_PATTERNS = [
+  /\b(?:I don['’]?t|I can['’]?t|I won['’]?t|I still don['’]?t|doesn['’]?t make sense|not buying|stuck|confusing|lost)\b/i,
+  /\b(?:but|no|wait|why|how is that|that seems wrong|that can['’]?t be|isn['’]?t it|I thought)\b/i,
+  /\b(?:this feels|that feels|you keep|we keep|I keep)\b[\s\S]{0,90}\b(?:wrong|circular|too fast|not enough|same|missing)\b/i,
+  /\b(?:just tell me|give me the answer|so it is just|now I get it)\b/i,
+];
+
+function learnerReversalPressureScore(text) {
+  const learnerText = String(text || '');
+  const patternHits = REVERSAL_PRESSURE_PATTERNS.reduce((sum, pattern) => sum + (pattern.test(learnerText) ? 1 : 0), 0);
+  const contradiction = /\b(?:but|no|wait|still|unless|except)\b/i.test(learnerText) ? 1 : 0;
+  const question = /\?/.test(learnerText) ? 1 : 0;
+  const confidence = Math.min(1, Math.round(((patternHits * 0.35) + (contradiction * 0.2) + (question * 0.15)) * 100) / 100);
+  return {
+    confidence,
+    patternHits,
+    contradiction: Boolean(contradiction),
+    question: Boolean(question),
+  };
+}
+
+function classifyReversalPressure(text) {
+  const learnerText = String(text || '');
+  if (/\b(?:just tell me|give me the answer|now I get it|so it is just)\b/i.test(learnerText)) {
+    return 'false_closure';
+  }
+  if (/\b(?:I don['’]?t|I can['’]?t|stuck|lost|confusing|doesn.t make sense)\b/i.test(learnerText)) {
+    return 'breakdown';
+  }
+  if (/\b(?:no|not buying|that seems wrong|but|wait|why)\b/i.test(learnerText)) {
+    return 'resistance';
+  }
+  return 'misfit';
+}
+
 function learnerReframeScore(anchor, learnerText) {
   const revoice = anchor ? anchorOverlap(anchor, learnerText) >= 0.2 : /\b(?:earlier|old|first)\b/i.test(learnerText);
   const problemNamed = REFRAME_PROBLEM_PATTERNS.some((pattern) => pattern.test(learnerText));
@@ -346,6 +381,25 @@ function buildLearnerReframeEvent({
   };
 }
 
+function buildLearnerReversalEvent({ learnerMessage, conversationHistory = [], turnNumber = null } = {}) {
+  const text = extractExternalSection(learnerMessage || '');
+  if (!text) return null;
+  const score = learnerReversalPressureScore(text);
+  if (score.confidence < 0.5) return null;
+  const previousTutor = [...(conversationHistory || [])]
+    .reverse()
+    .find((message) => message?.role === 'tutor' && String(message.content || '').trim());
+  return {
+    kind: 'learner_reversal_pressure_event',
+    triggerType: classifyReversalPressure(text),
+    turnNumber,
+    learnerUtterance: clipDirectorAnchor(text, 420),
+    previousTutorMove: previousTutor ? clipDirectorAnchor(previousTutor.content, 320) : null,
+    confidence: score.confidence,
+    evidence: score,
+  };
+}
+
 function buildTutorReframeEventContext(event, policy = 'none') {
   if (policy !== 'uptake') return '';
   if (!event) {
@@ -364,6 +418,45 @@ function buildTutorReframeEventContext(event, policy = 'none') {
     '- Adapt visibly to this changed learner framing. Choose one uptake move: contrast old and new frames; change the task/question; update the evidence standard; or hand the replacement frame back to the learner for testing.',
     '- Do not mention hidden state, director cues, ego/superego, or this private note in public speech.',
   ].join('\n');
+}
+
+function policyIncludes(policy, facet) {
+  return String(policy || '')
+    .split(/[,+]/)
+    .map((part) => part.trim())
+    .includes(facet);
+}
+
+function buildTutorReversalEventContext(event, policy = 'none') {
+  if (!policyIncludes(policy, 'peripeteia')) return '';
+  if (!event) {
+    return [
+      'Tutor-private reversal state:',
+      '- No learner resistance, breakdown, false-closure, or misfit event was detected on the immediately preceding learner turn.',
+      '- Continue the lesson normally; do not invent a crisis or adaptive mechanism.',
+    ].join('\n');
+  }
+  return [
+    'Tutor-private peripeteia event:',
+    `- Trigger type: ${event.triggerType}`,
+    `- Learner pressure line: ${event.learnerUtterance}`,
+    `- Previous tutor move: ${event.previousTutorMove || '(not captured)'}`,
+    `- Confidence: ${event.confidence}`,
+    '- The tutor ego/superego exchange must take stock, break the failed tutoring habit, and invent an adaptive learning mechanism if the prior move is no longer working.',
+    '- Draw structurally, not stylistically, on dramatic repertoire: Aristotelian/Sophoclean reversal-recognition, Shakespearean role or phrase turn, Brechtian interruption, Miller/social-realist pressure, object work, counterexample, or representational shift. Keep public speech in modern standard English idiom unless the scene explicitly says otherwise.',
+    '- Make the public change visible through a changed task, changed question, changed evidence standard, lowered load, confrontation of resistance, role reversal, external interruption, social consequence, affective register, or a new representational route.',
+    '- Cheerful informality, reassurance, and validation are available moves, not defaults. Use them only if they sharpen learning rather than softening away the resistance.',
+    '- Do not mention hidden state, director cues, ego/superego, peripeteia, or this private note in public speech.',
+  ].join('\n');
+}
+
+function buildTutorAdaptationContext({ learnerReframeEvent = null, learnerReversalEvent = null, policy = 'none' } = {}) {
+  return [
+    buildTutorReframeEventContext(learnerReframeEvent, policyIncludes(policy, 'uptake') ? 'uptake' : 'none'),
+    buildTutorReversalEventContext(learnerReversalEvent, policy),
+  ]
+    .filter(Boolean)
+    .join('\n\n');
 }
 
 function combineDirectorCues(matches, timing) {
@@ -664,6 +757,7 @@ export async function runInteraction(config, llmCall, options = {}) {
   const conversationHistory = resumed?.conversationHistory || [];
 
   let currentLearnerMessage;
+  let openingLearnerReversalEvent = null;
   const openingSpeaker = directorPlan?.opening_speaker || 'learner';
   if (resumed) {
     currentLearnerMessage = resumed.currentLearnerMessage;
@@ -681,10 +775,17 @@ export async function runInteraction(config, llmCall, options = {}) {
       directorPlan,
     );
 
+    openingLearnerReversalEvent = buildLearnerReversalEvent({
+      learnerMessage: currentLearnerMessage.externalMessage,
+      conversationHistory,
+      turnNumber: 0,
+    });
+
     conversationHistory.push({
       role: 'learner',
       content: currentLearnerMessage.externalMessage,
       internalDeliberation: observeInternals ? currentLearnerMessage.internalDeliberation : null,
+      learnerReversalEvent: openingLearnerReversalEvent,
     });
 
     interactionTrace.turns.push({
@@ -694,6 +795,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       internalDeliberation: currentLearnerMessage.internalDeliberation,
       emotionalState: currentLearnerMessage.emotionalState,
       understandingLevel: currentLearnerMessage.understandingLevel,
+      learnerReversalEvent: openingLearnerReversalEvent,
       timestamp: new Date().toISOString(),
     });
   } else {
@@ -716,6 +818,7 @@ export async function runInteraction(config, llmCall, options = {}) {
   let turnCount = resumed?.turnCount || 0;
   let interactionContinues = true;
   let latestLearnerReframeEvent = resumed?.latestLearnerReframeEvent || null;
+  let latestLearnerReversalEvent = resumed?.latestLearnerReversalEvent || openingLearnerReversalEvent;
 
   const runLearnerPhase = async (phaseTurnCount, tutorResponse) => {
     const learnerDirectorCue = directorCueFor(directorPlan, phaseTurnCount, 'before_learner', conversationHistory);
@@ -737,12 +840,18 @@ export async function runInteraction(config, llmCall, options = {}) {
       directorCue: learnerDirectorCue,
       turnNumber: phaseTurnCount,
     });
+    const learnerReversalEvent = buildLearnerReversalEvent({
+      learnerMessage: learnerResponse.externalMessage,
+      conversationHistory,
+      turnNumber: phaseTurnCount,
+    });
 
     conversationHistory.push({
       role: 'learner',
       content: learnerResponse.externalMessage,
       internalDeliberation: observeInternals ? learnerResponse.internalDeliberation : null,
       learnerReframeEvent,
+      learnerReversalEvent,
     });
 
     interactionTrace.turns.push({
@@ -753,6 +862,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       emotionalState: learnerResponse.emotionalState,
       understandingLevel: learnerResponse.understandingLevel,
       learnerReframeEvent,
+      learnerReversalEvent,
       timestamp: new Date().toISOString(),
     });
 
@@ -760,6 +870,7 @@ export async function runInteraction(config, llmCall, options = {}) {
     interactionTrace.outcomes.push(...detectTurnOutcomes(learnerResponse, tutorResponse));
     currentLearnerMessage = learnerResponse;
     latestLearnerReframeEvent = learnerReframeEvent;
+    latestLearnerReversalEvent = learnerReversalEvent;
     return learnerResponse;
   };
 
@@ -776,10 +887,13 @@ export async function runInteraction(config, llmCall, options = {}) {
     // ================ TUTOR TURN ================
     const tutorDirectorCue = directorCueFor(directorPlan, turnCount, 'before_tutor');
     recordDirectorCue(interactionTrace, turnCount, tutorDirectorCue);
+    const tutorAdaptationPolicy = directorPlan?.tutor_adaptation_policy || 'none';
     const tutorPrivateState = {
-      tutorAdaptationPolicy: directorPlan?.tutor_adaptation_policy || 'none',
-      learnerReframeEvent:
-        directorPlan?.tutor_adaptation_policy === 'uptake' ? latestLearnerReframeEvent || null : null,
+      tutorAdaptationPolicy,
+      learnerReframeEvent: policyIncludes(tutorAdaptationPolicy, 'uptake') ? latestLearnerReframeEvent || null : null,
+      learnerReversalEvent: policyIncludes(tutorAdaptationPolicy, 'peripeteia')
+        ? latestLearnerReversalEvent || null
+        : null,
     };
     const tutorResponse = await runTutorTurn(
       learnerId,
@@ -795,6 +909,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       tutorPrivateState,
     );
     latestLearnerReframeEvent = null;
+    latestLearnerReversalEvent = null;
 
     conversationHistory.push({
       role: 'tutor',
@@ -809,6 +924,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       internalDeliberation: tutorResponse.internalDeliberation,
       strategy: tutorResponse.strategy,
       learnerReframeEventUsed: tutorResponse.learnerReframeEventUsed || null,
+      learnerReversalEventUsed: tutorResponse.learnerReversalEventUsed || null,
       timestamp: new Date().toISOString(),
     });
 
@@ -839,10 +955,13 @@ export async function runInteraction(config, llmCall, options = {}) {
       reasoning: 'Director requested a tutor closing beat.',
     };
     recordDirectorCue(interactionTrace, turnCount + 1, closingCue);
+    const tutorAdaptationPolicy = directorPlan?.tutor_adaptation_policy || 'none';
     const tutorPrivateState = {
-      tutorAdaptationPolicy: directorPlan?.tutor_adaptation_policy || 'none',
-      learnerReframeEvent:
-        directorPlan?.tutor_adaptation_policy === 'uptake' ? latestLearnerReframeEvent || null : null,
+      tutorAdaptationPolicy,
+      learnerReframeEvent: policyIncludes(tutorAdaptationPolicy, 'uptake') ? latestLearnerReframeEvent || null : null,
+      learnerReversalEvent: policyIncludes(tutorAdaptationPolicy, 'peripeteia')
+        ? latestLearnerReversalEvent || null
+        : null,
     };
     const tutorResponse = await runTutorTurn(
       learnerId,
@@ -858,6 +977,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       tutorPrivateState,
     );
     latestLearnerReframeEvent = null;
+    latestLearnerReversalEvent = null;
     conversationHistory.push({
       role: 'tutor',
       content: tutorResponse.externalMessage,
@@ -870,6 +990,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       internalDeliberation: tutorResponse.internalDeliberation,
       strategy: tutorResponse.strategy,
       learnerReframeEventUsed: tutorResponse.learnerReframeEventUsed || null,
+      learnerReversalEventUsed: tutorResponse.learnerReversalEventUsed || null,
       timestamp: new Date().toISOString(),
       directorClosing: true,
     });
@@ -948,7 +1069,7 @@ Review the EGO's first impression. Is it too superficial? What's being avoided? 
 
 ${
   role === 'unified_learner'
-    ? 'Generate only what the learner would actually say out loud as an opening message about this topic.'
+    ? 'Generate only what the learner would actually say out loud as an opening message about this topic. If any nonspoken action aside is needed, put it in square brackets.'
     : "Generate this agent's internal voice as the learner approaches this topic for the first time."
 }`;
     }
@@ -1013,13 +1134,13 @@ Consider this feedback as the same Ego that made the initial suggestion. You hav
 The learner wants to open with this message: "${scenario.learnerOpening}"
 Lightly adapt this opening to feel natural given the internal deliberation, but keep the core content and question intact.
 The adapted message should be 1-3 sentences and maintain the original meaning.
-Do NOT include internal thoughts or meta-commentary.`;
+Do NOT include internal thoughts or meta-commentary. If any nonspoken action aside is needed, put it in square brackets.`;
     } else {
       revisionContext += `
 
 Respond with ONLY what the learner would say out loud as their opening message to a tutor about: ${topic}
 The message should feel authentic - not too polished, showing real confusion or interest.
-Keep it 1-3 sentences. Do NOT include internal thoughts or meta-commentary.`;
+Keep it 1-3 sentences. Do NOT include internal thoughts or meta-commentary. If any nonspoken action aside is needed, put it in square brackets.`;
     }
 
     const revisionSystemPrompt = buildLearnerPrompt(egoConfig, persona, revisionContext);
@@ -1058,7 +1179,7 @@ The learner wants to open with this message: "${scenario.learnerOpening}"
 
 Lightly adapt this opening to feel natural given the internal deliberation, but keep the core content and question intact.
 The adapted message should be 1-3 sentences and maintain the original meaning.
-Do NOT include internal thoughts or meta-commentary.`;
+Do NOT include internal thoughts or meta-commentary. If any nonspoken action aside is needed, put it in square brackets.`;
 
     const adaptResponse = await llmCall(
       lastConfig.model,
@@ -1176,8 +1297,15 @@ async function runTutorTurn(
   const tutorAdaptationPolicy =
     tutorPrivateState?.tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none';
   const learnerReframeEvent =
-    tutorAdaptationPolicy === 'uptake' ? tutorPrivateState?.learnerReframeEvent || null : null;
-  const tutorReframeContext = buildTutorReframeEventContext(learnerReframeEvent, tutorAdaptationPolicy);
+    policyIncludes(tutorAdaptationPolicy, 'uptake') ? tutorPrivateState?.learnerReframeEvent || null : null;
+  const learnerReversalEvent = policyIncludes(tutorAdaptationPolicy, 'peripeteia')
+    ? tutorPrivateState?.learnerReversalEvent || null
+    : null;
+  const tutorAdaptationContext = buildTutorAdaptationContext({
+    learnerReframeEvent,
+    learnerReversalEvent,
+    policy: tutorAdaptationPolicy,
+  });
 
   // Tutor internal deliberation
   const internalDeliberation = [];
@@ -1194,7 +1322,7 @@ Recent conversation:
 ${conversationContext}
 
 ${directorContext ? `${directorContext}\n` : ''}
-${tutorReframeContext ? `${tutorReframeContext}\n` : ''}
+${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}
 
 The learner just said:
 "${learnerMessage}"
@@ -1204,10 +1332,11 @@ Draft your INITIAL response as a tutor. Consider:
 2. What strategy would work best? (scaffolding, questioning, direct explanation, validation)
 3. How can you advance their understanding while respecting their current position?
 ${learnerReframeEvent ? '4. How should your strategy change now that the learner has revised an earlier frame?' : ''}
+${learnerReversalEvent ? '4. What adaptive learning mechanism is needed now that the learner is resisting, stuck, or falsely closing?' : ''}
 
-Be warm but intellectually challenging. Don't be condescending. Build on their words.
+Choose the affective register that serves learning pressure. Warmth may help, but so may restraint, formality, silence, briskness, or public accountability. Do not use cheeriness or informality to soften away the conceptual resistance. Don't be condescending. Build on their words.
 
-Provide ONLY your draft response text (it will be reviewed by your pedagogical critic).`;
+Provide ONLY your draft response text (it will be reviewed by your pedagogical critic). The draft must be direct public tutor speech. If you include a nonspoken action aside, put it in square brackets.`;
 
   const tutorModel = egoConfig?.model || tutorConfig.getProviderConfig('openrouter')?.default_model;
 
@@ -1245,7 +1374,7 @@ Recent conversation:
 ${conversationContext}
 
 ${directorContext ? `${directorContext}\n` : ''}
-${tutorReframeContext ? `${tutorReframeContext}\n` : ''}
+${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}
 
 The learner said:
 "${learnerMessage}"
@@ -1259,6 +1388,8 @@ CRITIQUE this draft. Consider:
 3. Socratic method: Does it ask generative questions or just lecture?
 4. ZPD awareness: Is the scaffolding appropriate for their level?
 ${learnerReframeEvent ? "5. Tutor adaptation: Does the draft take up the learner's revised framing, or does it merely continue the prior lesson plan?" : ''}
+${learnerReversalEvent ? '5. Tutor peripeteia: Does the draft take stock of the learner pressure and invent an adaptive mechanism, or does it repeat the failed move?' : ''}
+${learnerReversalEvent ? '6. Tutor habit/register: Does the draft default to cheerful reassurance or informal coaching when a different register would create better learning pressure?' : ''}
 
 Do NOT write the tutor's replacement response. You are advisory, not the public speaker.
 Comment on the draft and name what should be kept, questioned, or changed.
@@ -1267,6 +1398,8 @@ Format:
 
 FEEDBACK: [your critique of the draft, including what is working and what risks flattening the scene]
 ${learnerReframeEvent ? 'UPTAKE_CHECK: [does the draft adapt to the learner reframe? name the best uptake move]' : ''}
+${learnerReversalEvent ? 'PERIPETEIA_CHECK: [does the draft change strategy in response to the learner pressure? name the adaptive mechanism it should use]' : ''}
+${learnerReversalEvent ? 'REGISTER_CHECK: [does the affective register serve the mechanism, or should it become warmer, cooler, more formal, quieter, more direct, or more accountable?]' : ''}
 KEEP_OR_CHANGE: [keep as-is | revise lightly | revise substantially, with reasons]`;
 
     const superegoModel = superegoConfig.model || tutorModel;
@@ -1301,7 +1434,7 @@ Recent conversation:
 ${conversationContext}
 
 ${directorContext ? `${directorContext}\n` : ''}
-${tutorReframeContext ? `${tutorReframeContext}\n` : ''}
+${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}
 
 The learner just said:
 "${learnerMessage}"
@@ -1315,13 +1448,14 @@ Internal teaching review feedback:
 You are the same tutor persona who wrote the initial response. The internal review does not draft public speech; it only comments on your suggestion.
 Adjudicate the feedback: keep the initial response if it is better, revise lightly if needed, or revise substantially if the critique reveals a real problem.
 ${learnerReframeEvent ? 'Because a learner reframe event is present, your final answer must make one tutor adaptation move legible: contrast the old and new frames, change the task/question, update the evidence standard, or hand the replacement frame back to the learner for testing. Choose the move that best fits the scene; do not simply praise the insight and proceed.' : ''}
+${learnerReversalEvent ? 'Because a peripeteia event is present, your final answer must make an adaptive learning mechanism legible: take stock of the learner pressure, stop repeating the prior move, and switch route, task, evidence standard, role, object, counterexample, interruption, social consequence, representation, affective register, or cognitive load. The mechanism should come from your ego adjudicating the internal review, not from a public narrator.' : ''}
 
 Return exactly:
 PRIVATE_DECISION: [one short private sentence naming keep/revise and why]
 FINAL:
 [the final tutor message to the learner]
 
-The FINAL section must contain only public tutor speech. Do not mention the Ego, Superego, director, scene card, critique, draft, or review process in FINAL.`;
+The FINAL section must contain only public tutor speech. Do not mention the Ego, Superego, director, scene card, critique, draft, or review process in FINAL. If you include a nonspoken action aside, put it in square brackets.`;
 
     const egoFinalResponse = await llmCall(tutorModel, egoAdjudicationPrompt, [{ role: 'user', content: egoDraft }], {
       temperature: getRequiredTemperature(egoConfig, 'tutor_ego'),
@@ -1368,6 +1502,7 @@ The FINAL section must contain only public tutor speech. Do not mention the Ego,
     internalDeliberation,
     strategy,
     learnerReframeEventUsed: learnerReframeEvent,
+    learnerReversalEventUsed: learnerReversalEvent,
     suggestsEnding:
       externalMessage.toLowerCase().includes('good place to pause') ||
       externalMessage.toLowerCase().includes('think about this'),
@@ -1829,7 +1964,7 @@ export async function generateLearnerResponse(options) {
     if (profileContext) {
       egoContext += `\n\n${profileContext}`;
     }
-    egoContext += `\n\nGenerate your initial internal reaction as the learner's ego. Keep hidden reasoning private and put only the learner's actual wording in your final answer.`;
+    egoContext += `\n\nGenerate your initial internal reaction as the learner's ego. Keep hidden reasoning private and put only the learner's actual wording in your final answer. If any nonspoken action aside is needed, put it in square brackets.`;
     const egoSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoContext);
 
     const egoInitialResponse = await callLLM(
@@ -1902,7 +2037,7 @@ export async function generateLearnerResponse(options) {
     if (profileContext) {
       egoRevisionContext += `\n\n${profileContext}`;
     }
-    egoRevisionContext += `\n\nYou are the same learner persona who made the initial suggestion. Adjudicate the feedback: keep your initial response if it is better, revise lightly if needed, or revise substantially if the review reveals a real problem.\n\nReturn exactly:\nPRIVATE_DECISION: [one short private sentence naming keep/revise and why]\nFINAL:\n[what the learner would say out loud to the tutor, 1-4 sentences]\n\nThe FINAL section must contain only public learner speech. Do NOT include internal thoughts, meta-commentary, references to any review process, or <think> blocks in FINAL.`;
+    egoRevisionContext += `\n\nYou are the same learner persona who made the initial suggestion. Adjudicate the feedback: keep your initial response if it is better, revise lightly if needed, or revise substantially if the review reveals a real problem.\n\nReturn exactly:\nPRIVATE_DECISION: [one short private sentence naming keep/revise and why]\nFINAL:\n[what the learner would say out loud to the tutor, 1-4 sentences]\n\nThe FINAL section must contain only public learner speech. Do NOT include internal thoughts, meta-commentary, references to any review process, or <think> blocks in FINAL. If any nonspoken action aside is needed, put it in square brackets.`;
     const egoRevisionSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoRevisionContext);
 
     // Build combined history for ego revision: external + ego internal + superego feedback
@@ -1966,7 +2101,7 @@ export async function generateLearnerResponse(options) {
       }
       roleContext +=
         role === 'unified_learner'
-          ? '\n\nRespond with ONLY what the learner would actually say out loud next to the tutor (1-4 sentences). Do NOT include internal monologue, tags, meta-commentary, or <think> blocks.'
+          ? '\n\nRespond with ONLY what the learner would actually say out loud next to the tutor (1-4 sentences). Do NOT include internal monologue, tags, meta-commentary, or <think> blocks. If any nonspoken action aside is needed, put it in square brackets.'
           : "\n\nGenerate your internal reaction as this dimension of the learner's experience.";
 
       const systemPrompt = buildLearnerPrompt(agentConfig, persona, roleContext);
@@ -2018,7 +2153,10 @@ export {
   sanitizeLearnerReusableText,
   buildAnchoredRevisitCue,
   buildLearnerReframeEvent,
+  buildLearnerReversalEvent,
   buildTutorReframeEventContext,
+  buildTutorReversalEventContext,
+  buildTutorAdaptationContext,
   calculateMemoryDelta,
   callLearnerAI,
   INTERACTION_OUTCOMES,

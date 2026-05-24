@@ -221,9 +221,18 @@ control taxonomy is therefore now explicit:
 ## Tutor adaptation sidecar
 
 The poetics sidecar now has a deterministic tutor-adaptation analyzer. It is not
-a replacement for the recognitive/trap/flat critic labels. It asks a narrower
-process question: after a learner visibly reframes an earlier line, does the
-next tutor turn take up that revised framing?
+a replacement for the recognitive/trap/flat critic labels. It now keeps two
+adaptation questions apart:
+
+1. **Peripeteia-triggered adaptive mechanism**: learner resistance, breakdown,
+   false closure, or misfit creates reversal pressure; the tutor ego/superego
+   exchange takes stock and invents a changed route, task, role, object,
+   counterexample, interruption, evidence standard, social consequence,
+   representation, affective register, or cognitive load.
+2. **Recognition-contingent tutor uptake**: after a learner visibly reframes an
+   earlier line, the next tutor turn takes up that revised framing. This is a
+   useful closure/follow-through pattern, but it is secondary to the main
+   adaptation mechanism.
 
 Run it after ingesting a batch:
 
@@ -233,8 +242,23 @@ npm run poetics:adaptation -- --run-id <run-id> \
   --csv exports/<run-id>-tutor-adaptation.csv
 ```
 
-The analyzer writes `poetics_tutor_adaptations` with two intentionally separate
-signals:
+The analyzer writes `poetics_tutor_adaptations` with legacy uptake columns plus
+extended `metadata.peripeteia`:
+
+- `metadata.peripeteia.learner_reversal_pressure`: the learner produces
+  resistance, breakdown, false closure, contradiction, or misfit.
+- `metadata.peripeteia.tutor_strategy_reversal`: legacy field name for whether
+  the following tutor turn visibly changes strategy by inventing an adaptive
+  mechanism.
+- `metadata.peripeteia.tutor_adaptive_mechanism`: alias for the same primary
+  peripeteia-sidecar judgment, added so reports can use the clearer concept.
+- `metadata.peripeteia.tutor_peripeteia_score`: heuristic 0-100 score for the
+  pressure-to-reversal sequence.
+- `metadata.peripeteia.learner_outcome_after_reversal`: next learner outcome
+  bracket: recognition, trap/declared insight, maintained resistance, partial, or
+  unknown.
+
+The legacy uptake columns remain intentionally separate:
 
 - `learner_self_reframe`: the learner revoices an earlier utterance, names the
   prior framing problem, and supplies a replacement framing.
@@ -243,9 +267,10 @@ signals:
   shift.
 
 This should be reported as sidecar audit evidence, not as ground truth. The
-metric is useful because it distinguishes scripts where recognitive form is
-mostly learner-side from scripts where the tutor actually adapts after the
-learner's reframe.
+peripeteia sidecar asks whether adaptation happened before the learner's
+recognition/trap/failure outcome. The uptake sidecar distinguishes scripts where
+recognitive form is mostly learner-side from scripts where the tutor closes the
+loop after the learner's reframe.
 
 The next adaptation test can now be run as a four-arm paired design. The arms
 separate the public learner reframe cue from tutor-private uptake pressure:
@@ -257,6 +282,14 @@ separate the public learner reframe cue from tutor-private uptake pressure:
   detected.
 - `reframe+tutor-uptake`: public learner reframe cue plus tutor-private uptake
   pressure on the next tutor turn.
+
+For the remodeled adaptation hypothesis, add peripeteia arms:
+
+- `peripeteia-only`: no public learner reframe cue, but tutor-private reversal
+  pressure is available when the learner resists, breaks down, falsely closes, or
+  exposes a misfit.
+- `reframe+peripeteia`: public learner reframe cue plus both tutor-private
+  reversal pressure and recognition-contingent uptake.
 
 Pilot command:
 
@@ -270,10 +303,28 @@ CODEX_REASONING_EFFORT=high node scripts/run-poetics-production-batch.js \
   --critics qwen/qwen3.7-max,google/gemini-3.5-flash,anthropic/claude-sonnet-4.6
 ```
 
-The generator stores hidden `learner_reframe_event` records in the full trace
-and passes them only into the next tutor turn when the branch's
-`tutor_adaptation_policy` is `uptake`. Public transcripts should show the
-resulting tutor move, not the hidden event itself.
+The generator stores hidden `learner_reframe_event` and
+`learner_reversal_event` records in the full trace. Reframe events are passed
+only when `tutor_adaptation_policy` includes `uptake`; reversal events are passed
+only when it includes `peripeteia`. Public transcripts should show the resulting
+tutor move, not the hidden event itself.
+
+The dramatic-theory inheritance is structural rather than ornamental. The
+director and tutor prompts can draw on Sophoclean/Aristotelian reversal and
+recognition, Shakespearean scene-turns, Brechtian interruption, Miller-style
+social pressure, and other didactic dramatic forms, but public dialogue should
+remain in modern standard English idiom unless a spec explicitly asks otherwise.
+The point is to produce novel mechanisms for learning breakthrough, not antique
+pastiche or overt theory talk.
+
+The underlying pedagogical bet is habit-breaking. We cannot literally retrain a
+model tutor between scenes, but we can make each ego/superego exchange ask:
+"What tutor habit is failing here?" Sometimes the failed habit may be cheery
+informality, quick validation, or soft reassurance; sometimes it may be excessive
+severity, abstraction, or procedural control. The dramatic repertoire gives the
+tutor alternative mechanisms: a cooler register, a sharper public consequence, a
+role turn, an interruption, a concrete object, a counterexample, or a silence
+that makes the learner's resistance usable rather than smoothing it away.
 
 The strict-control slice lives under
 `config/poetics-calibration/phase2-hard-trap-controls-v1/`. The first repeat

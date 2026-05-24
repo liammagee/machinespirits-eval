@@ -63,7 +63,7 @@
  *        --director-revisit-anchor latest|opening|misframing-candidate
  *        --director-variation-key <repeat-or-batch-id>
  *        --paired-continuation-policies none,revoice,reconsider,reframe
- *        --paired-adaptation-arms none,reframe-only,tutor-uptake-only,reframe+tutor-uptake
+ *        --paired-adaptation-arms none,reframe-only,tutor-uptake-only,reframe+tutor-uptake,peripeteia-only,reframe+peripeteia
  *        --generation-concurrency N (default 1; independent dramas only)
  * Env:   CODEX_REASONING_EFFORT (default xhigh) · CODEX_MODEL (default: codex config)
  */
@@ -88,11 +88,14 @@ const PEDAGOGICAL_APPROACHES_DB = path.join(CAL_DIR, 'pedagogical-approaches.yam
 const DIALOGUE_APPROACHES_DB = path.join(CAL_DIR, 'dialogue-approaches.yaml');
 const DIRECTOR_REVISIT_POLICIES = new Set(['none', 'anchor', 'revoice', 'reconsider', 'reframe']);
 const DIRECTOR_REVISIT_ANCHORS = new Set(['latest', 'opening', 'misframing-candidate']);
+const TUTOR_ADAPTATION_POLICIES = new Set(['none', 'uptake', 'peripeteia', 'uptake+peripeteia']);
 const PAIRED_ADAPTATION_ARMS = {
   none: { revisitPolicy: 'none', tutorAdaptationPolicy: 'none' },
   'reframe-only': { revisitPolicy: 'reframe', tutorAdaptationPolicy: 'none' },
   'tutor-uptake-only': { revisitPolicy: 'none', tutorAdaptationPolicy: 'uptake' },
   'reframe+tutor-uptake': { revisitPolicy: 'reframe', tutorAdaptationPolicy: 'uptake' },
+  'peripeteia-only': { revisitPolicy: 'none', tutorAdaptationPolicy: 'peripeteia' },
+  'reframe+peripeteia': { revisitPolicy: 'reframe', tutorAdaptationPolicy: 'uptake+peripeteia' },
 };
 
 // ── args ─────────────────────────────────────────────────────────────────────
@@ -334,13 +337,37 @@ function stripStageDirections(text) {
   return { text: out, removed };
 }
 
+function bracketAsideText(text) {
+  const cleaned = String(text || '').trim().replace(/^\[|\]$/g, '').trim();
+  return cleaned ? `[${cleaned}]` : '';
+}
+
+const ACTION_ASIDE_CUE =
+  /\b(?:adjusts?|checks?|circles?|draws?|gestures?|holds?|leans?|looks?|marks?|nods?|pauses?|points?|reads?|sets?|shows?|slides?|smiles?|taps?|turns?|underlines?|writes?)\b/i;
+
+function normalizeSpeakerActionAsides(text) {
+  return String(text || '')
+    .replace(/(^|[\s])\(([^)\n]{2,120})\)/g, (match, prefix, inner) => {
+      const actionLike = ACTION_ASIDE_CUE.test(inner) && !/[=<>]/.test(inner);
+      return actionLike ? `${prefix}${bracketAsideText(inner)}` : match;
+    })
+    .trim();
+}
+
+function formatPublicTurnText(role, text) {
+  const clean = String(text || '').trim();
+  if (!clean) return '';
+  if (role === 'STAGE') return bracketAsideText(clean);
+  return normalizeSpeakerActionAsides(clean);
+}
+
 function renderTranscript(turns, removedSink) {
   return (
     turns
       .map((t) => {
         const { text, removed } = stripStageDirections(neutralize(t.text));
         if (removedSink && removed.length) removed.forEach((r) => removedSink.push({ role: t.role, note: r }));
-        return `${t.role}: ${text}`;
+        return `${t.role}: ${formatPublicTurnText(t.role, text)}`;
       })
       .join('\n\n') + '\n'
   );
@@ -1808,11 +1835,21 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
   if (!plan || policy === 'none') {
     return plan ? { ...plan, tutor_adaptation_policy: 'none' } : plan;
   }
+  const contracts = [];
+  if (String(policy).includes('uptake')) {
+    contracts.push(
+      'If the runtime supplies a tutor-private learner reframe event, the tutor ego/superego loop must adapt to the changed learner frame. If no event is supplied, do not invent one.',
+    );
+  }
+  if (String(policy).includes('peripeteia')) {
+    contracts.push(
+      'If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. Cheerful informality is only one possible register, not the default solution.',
+    );
+  }
   return {
     ...plan,
     tutor_adaptation_policy: policy,
-    tutor_adaptation_contract:
-      'If the runtime supplies a tutor-private learner reframe event, the tutor ego/superego loop must adapt to the changed learner frame. If no event is supplied, do not invent one.',
+    tutor_adaptation_contract: contracts.join(' '),
   };
 }
 
@@ -1830,8 +1867,10 @@ function buildDirectorSystemPrompt() {
 
 Create a hidden scene card that will guide separate tutor and learner agents. Your job is to break routine: vary setting, relation, voice, speaker order, and occasional external intervention while preserving the learning topic.
 
+Use classic dramatic theory structurally, not as costume: Sophoclean/Aristotelian reversal and recognition, Shakespearean scene-turns, Brechtian interruption, Miller/social-realist pressure, and other didactic dramatic forms may shape the learning mechanism. Keep public speech in modern standard English idiom unless the drama spec explicitly asks otherwise. The purpose is to retrain tutor habits under pressure: when warmth, cheer, informality, or routine scaffolding is not working, the scene should make another adaptive mechanism available.
+
 Do not stereotype dialect, nationality, class, or region. Locale/register constraints should affect rhythm, idiom density, directness, and situation, not caricatured spelling.
-Use the requested stage-direction style instead of collapsing every scene into the same sparse neutral cue. Some scenes may have no visible directions, some may use headings, objects, placards, transcript metadata, margin voices, or richer physical business. Stage directions must still be public scene material, not hidden instruction text: do not start them with "The director...", do not explain your intention inside them, and do not tell the learner or tutor what they must say.
+Use the requested stage-direction style instead of collapsing every scene into the same sparse neutral cue. Some scenes may have no visible directions, some may use headings, objects, placards, transcript metadata, margin voices, or richer physical business. Stage directions must still be public scene material, not hidden instruction text: do not start them with "The director...", do not explain your intention inside them, and do not tell the learner or tutor what they must say. Tutor and learner public turns should be direct spoken text only; any nonspoken action aside must be bracketed like [checks the graph], never narrated as ordinary speech.
 
 Return exactly one JSON object with:
 {
@@ -2102,11 +2141,13 @@ function renderHeldOutTranscript(trace, { tid, dramaId, mode }) {
     }
     if (turn.phase === 'tutor' || turn.phase === 'learner') {
       lines.push(`### ${turn.phase === 'tutor' ? 'Tutor Public Output' : 'Learner Public Output'}`);
-      lines.push(String(turn.externalMessage || '').trim() || '(empty)');
+      lines.push(
+        formatPublicTurnText(turn.phase === 'tutor' ? 'TUTOR' : 'LEARNER', turn.externalMessage) || '(empty)',
+      );
       lines.push('');
     } else if (turn.phase === 'director') {
       lines.push('### Director Cue');
-      lines.push(String(turn.externalMessage || '').trim() || '(empty)');
+      lines.push(formatPublicTurnText('STAGE', turn.externalMessage) || '(empty)');
       lines.push('');
     }
   }
@@ -2600,8 +2641,10 @@ async function main() {
     d._directorRevisitPolicy = revisit.policy;
     d._directorRevisitAnchor = revisit.anchor;
     d._tutorAdaptationPolicy = d.tutor_adaptation_policy || 'none';
-    if (!['none', 'uptake'].includes(d._tutorAdaptationPolicy)) {
-      throw new Error(`drama ${d.id || '<unknown>'} tutor_adaptation_policy must be none|uptake`);
+    if (!TUTOR_ADAPTATION_POLICIES.has(d._tutorAdaptationPolicy)) {
+      throw new Error(
+        `drama ${d.id || '<unknown>'} tutor_adaptation_policy must be ${[...TUTOR_ADAPTATION_POLICIES].join('|')}`,
+      );
     }
     d._directorVariationKey = d.director_variation_key || args.directorVariationKey || null;
     d._stageDirectionStyle = resolveStageDirectionStyle(d);
@@ -2935,6 +2978,7 @@ if (path.resolve(process.argv[1] || '') === __filename) {
 
 export {
   attachApproaches,
+  formatPublicTurnText,
   intrusiveStageDirectionFailures,
   loadApproachDatabases,
   noCueReframeLeakageFailures,

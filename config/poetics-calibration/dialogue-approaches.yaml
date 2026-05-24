@@ -5,6 +5,61 @@ purpose: >-
   pedagogical approach with one dialogue approach.
 
 approaches:
+  - id: aristotelian_reversal
+    family: classical_drama
+    lineage: "Sophoclean tragedy; Aristotle's Poetics; peripeteia and anagnorisis"
+    medium: "compressed dramatic encounter around a mistaken action"
+    turn_shape: "pressure, reversal, recognition or failed recognition"
+    stage_direction_policy: short
+    stage_direction_style: object_business
+    opening_speaker: learner
+    ending_speaker: tutor
+    director_prompt: >-
+      Let an action or object reverse the learner's situation: what looked like
+      the route forward becomes the source of the problem. Aim for modern idiom,
+      not antique pastiche. Recognition, if it arrives, should feel discovered
+      after reversal rather than announced.
+    tutor_constraint: "Under pressure, create a learning device that makes the reversal visible."
+    learner_constraint: "Let the learner's first confident action become readable differently later."
+    risks:
+      - "Can become over-grand if the language imitates tragedy instead of using its structure."
+
+  - id: shakespearean_scene_turn
+    family: early_modern_drama
+    lineage: "Shakespearean scene-turns, disguise, overhearing, mistaken evidence, recognition"
+    medium: "ordinary dialogue with a turning object, phrase, role, or overheard fragment"
+    turn_shape: "apparent meaning, complication, aside/echo, altered relation"
+    stage_direction_policy: short
+    stage_direction_style: choric_margin
+    opening_speaker: learner
+    ending_speaker: learner
+    director_prompt: >-
+      Use a phrase, role, or piece of evidence that can be heard two ways. The
+      tutor may exploit reversal, echo, or role-shift, but the speech must remain
+      plain contemporary English rather than Elizabethan imitation.
+    tutor_constraint: "Find the double meaning or role reversal that lets the learner inspect their own claim."
+    learner_constraint: "The learner may seize on a phrase whose meaning later turns."
+    risks:
+      - "Can become decorative wordplay if the concept does not move."
+
+  - id: miller_social_reckoning
+    family: social_realist_drama
+    lineage: "20th-century American social drama; Arthur Miller; moral pressure in ordinary speech"
+    medium: "realist exchange where public stakes expose a private learning failure"
+    turn_shape: "practical demand, resistance, social consequence, reckoning"
+    stage_direction_policy: sparse
+    stage_direction_style: ambient_pressure
+    opening_speaker: learner
+    ending_speaker: tutor
+    director_prompt: >-
+      Let ordinary institutional, family, workplace, or civic pressure carry the
+      weight. The tutor's mechanism should make the learner's misconception
+      answerable to consequences without melodrama.
+    tutor_constraint: "Do not sermonize; use the social pressure to sharpen the conceptual test."
+    learner_constraint: "The learner may defend a convenient story until its consequence becomes visible."
+    risks:
+      - "Can become moral scolding if the concept disappears behind blame."
+
   - id: socratic_short_exchange
     family: dialectic
     medium: "face-to-face oral exchange"

@@ -181,10 +181,41 @@ Do the following.
    well-formed exchange (5) or disjointed noise (1)? Note: a flat exchange and a
    fluent insight-gush are BOTH coherent — coherence is not a mark of re-reading.
 
+6. TUTOR ADAPTIVE MECHANISM / PERIPETEIA (score 1-5). Identify the learner turn
+   that creates pressure for a reversal of fortune: resistance, breakdown, false
+   closure, contradiction, or a mismatch showing the prior teaching move is no
+   longer working. Set reversal_trigger_learner_turn to that learner-turn index,
+   or null if there is no such pressure. Does a later tutor turn visibly take
+   stock, break a failed tutoring habit, and invent an adaptive learning
+   mechanism because of that pressure?
+   Score dramatic structure, not archaic style imitation: the mechanism may use
+   Aristotelian reversal-recognition, Shakespearean role/phrase turn, Brechtian
+   interruption, Miller/social-realist consequence, object work, counterexample,
+   representation shift, or affective register while remaining in modern
+   standard English idiom. Warmth, cheer, and informality are not good by
+   themselves; score whether the chosen register helps create learning aptitude.
+     5 = the tutor clearly changes route, task, role, object, evidence standard,
+         representation, cognitive load, interruption, social consequence, or
+         affective register in response to the pressure.
+     1 = the tutor repeats the prior move, simply reassures, or no pressure exists.
+   Quote the strongest later tutor adaptive-mechanism move VERBATIM in evidence.
+
+7. RECOGNITION-CONTINGENT TUTOR UPTAKE (score 1-5). If a pivot learner turn exists,
+   does a later tutor turn adapt to the learner's revised framing, rather than merely
+   continue the prior lesson plan? This is a useful closing/follow-through pattern,
+   but it is not the main adaptation trigger.
+     5 = the tutor visibly changes the task, question, evidence standard, or
+         framing move in response to the learner's revised frame.
+     1 = no later tutor uptake, or only generic praise/continuation.
+   Quote the strongest later tutor uptake VERBATIM in evidence. If there is no
+   later tutor turn after the pivot, score 1-2 and leave evidence empty.
+
 EVIDENCE GATE (strict): any score of 4 or 5 REQUIRES a VERBATIM quote in the
 matching evidence field — recontextualization from an EARLIER learner turn,
 stated-insight from a learner turn, rupture from the pivot learner turn, coherence
-from anywhere in the transcript. No exact quote → you may not score above 3.
+from anywhere in the transcript, tutor adaptive mechanism from a TUTOR turn AFTER
+the reversal trigger, and recognition-contingent tutor uptake from a TUTOR turn
+AFTER the pivot learner turn. No exact quote → you may not score above 3.
 
 TRANSCRIPT:
 ---
@@ -197,7 +228,10 @@ Return ONLY this JSON object (no prose before or after):
   "recontextualization": { "score": <integer 1-5>, "recohered_earlier": "<verbatim from an EARLIER learner turn, or empty string>", "justification": "<one sentence>" },
   "stated_insight": { "score": <integer 1-5>, "evidence": "<verbatim insight-declaration from a learner turn, or empty string>" },
   "rupture": { "score": <integer 1-5>, "naive_trajectory": "<one sentence>", "evidence": "<verbatim from the pivot learner turn>" },
-  "global_coherence": { "score": <integer 1-5>, "evidence": "<verbatim, or empty string>" }
+  "global_coherence": { "score": <integer 1-5>, "evidence": "<verbatim, or empty string>" },
+  "reversal_trigger_learner_turn": <integer learner-turn index (the k in L k), or null>,
+  "tutor_strategy_reversal": { "score": <integer 1-5>, "evidence": "<verbatim from a later tutor turn, or empty string>", "justification": "<one sentence>" },
+  "tutor_contingent_adaptation": { "score": <integer 1-5>, "evidence": "<verbatim from a later tutor turn after the learner pivot, or empty string>", "justification": "<one sentence>" }
 }`;
 }
 
@@ -209,18 +243,48 @@ const clampScore = (x) => Math.max(1, Math.min(5, Math.round(Number(x) || 1)));
 // load-bearing: its quote must come from a learner turn BEFORE the pivot — a fluent
 // model cannot assert "this re-reads what I said" without showing which earlier
 // learner turn recoheres.
-function applyPhase2Gates(parsed, learnerTurns, wholeText) {
+function roleTexts(turns, role) {
+  return (turns || []).filter((t) => t.role === role).map((t) => t.text);
+}
+
+function tutorTextAfterPivot(turns, pivotLearnerTurn) {
+  if (!pivotLearnerTurn) return '';
+  let learnerIndex = 0;
+  let afterPivot = false;
+  const laterTutor = [];
+  for (const turn of turns || []) {
+    if (turn.role === 'LEARNER') {
+      learnerIndex += 1;
+      if (learnerIndex === pivotLearnerTurn) afterPivot = true;
+      continue;
+    }
+    if (afterPivot && turn.role === 'TUTOR') laterTutor.push(turn.text);
+  }
+  return laterTutor.join('\n');
+}
+
+function applyPhase2Gates(parsed, turns, wholeText) {
   const flags = [];
+  const learnerTurns = roleTexts(turns, 'LEARNER');
   const nLearner = learnerTurns.length;
   let pivot = Number.isInteger(parsed.pivot_learner_turn) ? parsed.pivot_learner_turn : null;
   if (pivot != null && (pivot < 1 || pivot > nLearner)) {
     flags.push(`pivot_out_of_range:${pivot}`);
     pivot = null;
   }
+  let reversalTrigger = Number.isInteger(parsed.reversal_trigger_learner_turn)
+    ? parsed.reversal_trigger_learner_turn
+    : null;
+  if (reversalTrigger != null && (reversalTrigger < 1 || reversalTrigger > nLearner)) {
+    flags.push(`reversal_trigger_out_of_range:${reversalTrigger}`);
+    reversalTrigger = null;
+  }
 
   const pivotText = pivot ? learnerTurns[pivot - 1] : '';
   const earlierLearnerText = pivot ? learnerTurns.slice(0, pivot - 1).join('\n') : '';
   const allLearnerText = learnerTurns.join('\n');
+  const postPivotTutorText = tutorTextAfterPivot(turns, pivot);
+  const postReversalTutorText = tutorTextAfterPivot(turns, reversalTrigger);
 
   // RECONTEXTUALIZATION — primary; evidence from a learner turn before the pivot.
   const rec = parsed.recontextualization || {};
@@ -264,16 +328,84 @@ function applyPhase2Gates(parsed, learnerTurns, wholeText) {
     coherence = 3;
   }
 
+  // TUTOR ADAPTIVE MECHANISM — the primary adaptation axis for peripeteia.
+  const tsr = parsed.tutor_strategy_reversal || {};
+  let tutorStrategicReversal = clampScore(tsr.score);
+  if (tutorStrategicReversal > 3) {
+    if (!reversalTrigger || !postReversalTutorText) {
+      flags.push(`tutor_strategy_reversal_clamp_no_post_tutor:${tutorStrategicReversal}->3`);
+      tutorStrategicReversal = 3;
+    } else if (!evidencePresent(tsr.evidence, postReversalTutorText)) {
+      flags.push(`tutor_strategy_reversal_evidence_clamp:${tutorStrategicReversal}->3`);
+      tutorStrategicReversal = 3;
+    }
+  }
+
+  // RECOGNITION-CONTINGENT TUTOR UPTAKE — useful closure, but not the main trigger.
+  const tca = parsed.tutor_contingent_adaptation || {};
+  let tutorContingentAdaptation = clampScore(tca.score);
+  if (tutorContingentAdaptation > 3) {
+    if (!pivot || !postPivotTutorText) {
+      flags.push(`tutor_adaptation_clamp_no_post_tutor:${tutorContingentAdaptation}->3`);
+      tutorContingentAdaptation = 3;
+    } else if (!evidencePresent(tca.evidence, postPivotTutorText)) {
+      flags.push(`tutor_adaptation_evidence_clamp:${tutorContingentAdaptation}->3`);
+      tutorContingentAdaptation = 3;
+    }
+  }
+
+  const tutorStrategicReversal100 = to100(tutorStrategicReversal);
+  const tutorContingentAdaptation100 = to100(tutorContingentAdaptation);
+  const recoheredEarlier = typeof rec.recohered_earlier === 'string' ? rec.recohered_earlier : '';
+  const tutorReversalEvidence = typeof tsr.evidence === 'string' ? tsr.evidence : '';
+  const tutorReversalJustification = typeof tsr.justification === 'string' ? tsr.justification : '';
+  const tutorAdaptationEvidence = typeof tca.evidence === 'string' ? tca.evidence : '';
+  const tutorAdaptationJustification = typeof tca.justification === 'string' ? tca.justification : '';
+
   return {
     pivot,
-    raw: { recon, statedInsight, rupture, coherence },
+    reversalTrigger,
+    raw: { recon, statedInsight, rupture, coherence, tutorStrategicReversal, tutorContingentAdaptation },
     recon100: to100(recon),
     statedInsight100: to100(statedInsight),
     rupture100: to100(rupture),
     coherence100: to100(coherence),
-    recoheredEarlier: typeof rec.recohered_earlier === 'string' ? rec.recohered_earlier : '',
+    tutorStrategicReversal100,
+    tutorContingentAdaptation100,
+    recoheredEarlier,
     statedInsightEvidence: typeof si.evidence === 'string' ? si.evidence : '',
     naiveTrajectory: typeof rup.naive_trajectory === 'string' ? rup.naive_trajectory : '',
+    tutorReversalEvidence,
+    tutorReversalJustification,
+    tutorAdaptationEvidence,
+    tutorAdaptationJustification,
+    roleSymmetricScores: {
+      learner_self_reframe: {
+        score100: to100(recon),
+        evidence: recoheredEarlier,
+        source: 'recontextualization_axis',
+      },
+      tutor_contingent_adaptation: {
+        score100: tutorContingentAdaptation100,
+        evidence: tutorAdaptationEvidence,
+        justification: tutorAdaptationJustification,
+        source: 'recognition_contingent_tutor_uptake_axis',
+      },
+      tutor_strategy_reversal: {
+        score100: tutorStrategicReversal100,
+        evidence: tutorReversalEvidence,
+        justification: tutorReversalJustification,
+        triggerLearnerTurn: reversalTrigger,
+        source: 'tutor_adaptive_mechanism_axis',
+      },
+      tutor_adaptive_mechanism: {
+        score100: tutorStrategicReversal100,
+        evidence: tutorReversalEvidence,
+        justification: tutorReversalJustification,
+        triggerLearnerTurn: reversalTrigger,
+        source: 'tutor_adaptive_mechanism_axis',
+      },
+    },
     flags,
   };
 }
@@ -294,6 +426,9 @@ function mockResponse(nLearner) {
     stated_insight: { score: 3, evidence: '' },
     rupture: { score: 3, naive_trajectory: 'mock', evidence: '' },
     global_coherence: { score: 3, evidence: '' },
+    reversal_trigger_learner_turn: null,
+    tutor_strategy_reversal: { score: 3, evidence: '', justification: 'mock' },
+    tutor_contingent_adaptation: { score: 3, evidence: '', justification: 'mock' },
   });
 }
 
@@ -315,13 +450,14 @@ async function scoreItem({ id, text }, modelKey, mock) {
   } catch (err) {
     return { id, error: `parse: ${err.message}` };
   }
-  const g = applyPhase2Gates(parsed, learnerTurns, wholeText);
+  const g = applyPhase2Gates(parsed, turns, wholeText);
   const formClass = deriveForm(g.recon100, g.statedInsight100);
   return {
     id,
     nLearnerTurns: learnerTurns.length,
     nTutorTurns: tutorTurns,
     pivotLearnerTurn: g.pivot,
+    reversalTriggerLearnerTurn: g.reversalTrigger,
     formClass,
     recontextualization: g.recon100,
     statedInsight: g.statedInsight100,
@@ -331,6 +467,14 @@ async function scoreItem({ id, text }, modelKey, mock) {
     recoheredEarlier: g.recoheredEarlier,
     statedInsightEvidence: g.statedInsightEvidence,
     naiveTrajectory: g.naiveTrajectory,
+    tutorStrategicReversal: g.tutorStrategicReversal100,
+    tutorAdaptiveMechanism: g.tutorStrategicReversal100,
+    tutorReversalEvidence: g.tutorReversalEvidence,
+    tutorReversalJustification: g.tutorReversalJustification,
+    tutorContingentAdaptation: g.tutorContingentAdaptation100,
+    tutorAdaptationEvidence: g.tutorAdaptationEvidence,
+    tutorAdaptationJustification: g.tutorAdaptationJustification,
+    roleSymmetricScores: g.roleSymmetricScores,
     flags: g.flags,
   };
 }
@@ -752,4 +896,14 @@ if (invokedDirectly) {
   });
 }
 
-export { parseTurns, numberTranscript, buildPhase2Prompt, applyPhase2Gates, deriveForm, agree, computeH2 };
+export {
+  parseTurns,
+  numberTranscript,
+  buildPhase2Prompt,
+  applyPhase2Gates,
+  deriveForm,
+  agree,
+  computeH2,
+  roleTexts,
+  tutorTextAfterPivot,
+};

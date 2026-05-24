@@ -217,6 +217,34 @@ function parseCriticForms(value) {
     });
 }
 
+function scoreValue(value) {
+  return value == null || value === '' ? null : Number(value);
+}
+
+function roleSymmetricScoresForScore(row) {
+  const metadata = row.metadata || {};
+  const roleScores = metadata.role_symmetric_scores || {};
+  const learner = roleScores.learner_self_reframe || {};
+  const tutor = roleScores.tutor_contingent_adaptation || {};
+  const reversal = roleScores.tutor_adaptive_mechanism || roleScores.tutor_strategy_reversal || {};
+  return {
+    learnerSelfReframeScore: scoreValue(learner.score100 ?? row.recontextualization),
+    learnerSelfReframeEvidence: learner.evidence || row.recohered_earlier || '',
+    learnerSelfReframeSource: learner.source || 'recontextualization_axis',
+    tutorContingentAdaptationScore: scoreValue(tutor.score100 ?? metadata.tutor_contingent_adaptation),
+    tutorContingentAdaptationEvidence: tutor.evidence || metadata.tutor_adaptation_evidence || '',
+    tutorContingentAdaptationJustification: tutor.justification || metadata.tutor_adaptation_justification || '',
+    tutorContingentAdaptationSource: tutor.source || (metadata.tutor_contingent_adaptation == null ? null : 'metadata'),
+    tutorStrategyReversalScore: scoreValue(
+      reversal.score100 ?? metadata.tutor_adaptive_mechanism ?? metadata.tutor_strategic_reversal,
+    ),
+    tutorStrategyReversalEvidence: reversal.evidence || metadata.tutor_reversal_evidence || '',
+    tutorStrategyReversalJustification: reversal.justification || metadata.tutor_reversal_justification || '',
+    tutorStrategyReversalTrigger: reversal.triggerLearnerTurn || metadata.reversal_trigger_learner_turn || null,
+    tutorStrategyReversalSource: reversal.source || (metadata.tutor_strategic_reversal == null ? null : 'metadata'),
+  };
+}
+
 function getItem(db, id) {
   const item = db
     .prepare(
@@ -248,7 +276,8 @@ function getItem(db, id) {
       ...row,
       flags: decodeJson(row.flags, []),
       metadata: decodeJson(row.metadata, {}),
-    }));
+    }))
+    .map((row) => ({ ...row, roleScores: roleSymmetricScoresForScore(row) }));
   const labels = db
     .prepare(
       `
@@ -662,6 +691,26 @@ th {
   font-size: 12px;
   font-weight: 650;
 }
+.score-note {
+  border: 1px solid var(--line);
+  background: #fff;
+  padding: 10px 12px;
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.metric-help {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+  margin-top: 3px;
+}
+.score-table {
+  margin-bottom: 16px;
+}
+.evidence-cell {
+  max-width: 420px;
+}
 .empty {
   color: var(--muted);
   padding: 20px;
@@ -790,6 +839,38 @@ const state = {
 };
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const scoreOrNA = (value) => value == null || value === '' || Number.isNaN(Number(value)) ? 'n/a' : Number(value).toFixed(1);
+const boolOrNA = (value) => value == null ? 'n/a' : value ? 'true' : 'false';
+
+function metricLabel(label, help) {
+  return esc(label) + '<div class="metric-help">' + esc(help) + '</div>';
+}
+
+function renderAdaptationSidecar(adaptation) {
+  if (!adaptation) return '<div class="empty">No tutor adaptation sidecar row found.</div>';
+  const strategy = [adaptation.tutor_strategy_before, adaptation.tutor_strategy_after].filter(Boolean).join(' -> ');
+  const peripeteia = adaptation.metadata?.peripeteia || null;
+  const peripeteiaHtml = peripeteia ? '<h3>Peripeteia adaptive-mechanism sidecar</h3>' +
+    '<div class="score-note"><strong>Main adaptation target.</strong> This checks whether learner resistance, breakdown, false closure, or misfit creates dramatic pressure, and whether the tutor breaks a failed tutoring habit by inventing a new learning mechanism after the ego/superego review.</div>' +
+    '<table><tbody>' +
+    '<tr><th>' + metricLabel('Learner reversal pressure', 'Rule detection of resistance, breakdown, false closure, contradiction, or mismatch in the learner turn.') + '</th><td>' + esc(boolOrNA(peripeteia.learner_reversal_pressure)) + '</td></tr>' +
+    '<tr><th>' + metricLabel('Tutor mechanism invention', 'Rule detection that the following tutor turn changes route, task, role, object, evidence standard, representation, cognitive load, interruption, social consequence, or affective register.') + '</th><td>' + esc(boolOrNA(peripeteia.tutor_strategy_reversal)) + '</td></tr>' +
+    '<tr><th>' + metricLabel('Peripeteia adaptation score', '0-100 heuristic score for resistance pressure plus tutor mechanism shift. This does not require a learner self-reframe.') + '</th><td>' + esc(scoreOrNA(peripeteia.tutor_peripeteia_score)) + '</td></tr>' +
+    '<tr><th>' + metricLabel('Trigger / outcome', 'Trigger type and next learner outcome: recognition, trap, maintained resistance, flat, or unknown.') + '</th><td>' + esc([peripeteia.trigger_type, peripeteia.learner_outcome_after_reversal].filter(Boolean).join(' -> ') || 'n/a') + '</td></tr>' +
+    '<tr><th>' + metricLabel('Rule evidence excerpts', 'Excerpt pair used by the peripeteia analyzer.') + '</th><td class="evidence-cell">' + esc(peripeteia.evidence || '') + '</td></tr>' +
+    '</tbody></table>' : '';
+  return peripeteiaHtml + '<h3>Recognition-contingent tutor uptake sidecar</h3>' +
+    '<div class="score-note"><strong>Secondary closure pattern.</strong> This deterministic analyzer is not an LLM critic score. It checks whether a learner self-reframe is followed by a tutor move that takes up that changed frame. Useful, but not the main adaptation trigger.</div>' +
+    '<table><tbody>' +
+    '<tr><th>' + metricLabel('Learner self-reframe (sidecar)', 'Rule detection that a later learner turn revisits or reframes the learner\\'s own earlier wording.') + '</th><td>' + esc(boolOrNA(adaptation.learner_self_reframe)) + '</td></tr>' +
+    '<tr><th>' + metricLabel('Recognition-contingent tutor uptake (sidecar)', 'Rule detection that the next tutor turn takes up the learner\\'s revised frame rather than merely continuing the old plan.') + '</th><td>' + esc(boolOrNA(adaptation.tutor_contingent_adaptation)) + '</td></tr>' +
+    '<tr><th>' + metricLabel('Heuristic uptake score', '0-100 sidecar score combining post-tutor overlap, positive uptake delta, novel shared terms, and strategy shift; gated by learner self-reframe.') + '</th><td>' + esc(scoreOrNA(adaptation.tutor_adaptation_score)) + '</td></tr>' +
+    '<tr><th>' + metricLabel('Tutor uptake delta', 'Post-tutor overlap with learner pivot terms minus pre-tutor overlap. Negative means the next tutor reused fewer pivot terms.') + '</th><td>' + esc(scoreOrNA(adaptation.uptake_delta)) + '</td></tr>' +
+    '<tr><th>' + metricLabel('Tutor strategy before -> after', 'Coarse rule-coded strategy on the tutor turn before and after the learner pivot.') + '</th><td>' + esc(strategy || 'n/a') + '</td></tr>' +
+    '<tr><th>' + metricLabel('Novel shared pivot terms', 'Salient learner-pivot terms that appear in the next tutor turn and did not appear in the previous tutor turn.') + '</th><td>' + esc((adaptation.shared_salient_terms || []).join(', ') || 'n/a') + '</td></tr>' +
+    '<tr><th>' + metricLabel('Rule evidence excerpts', 'Excerpt pair used by the sidecar analyzer.') + '</th><td class="evidence-cell">' + esc(adaptation.evidence || '') + '</td></tr>' +
+    '</tbody></table>';
+}
 
 async function getJson(url) {
   const res = await fetch(url);
@@ -922,20 +1003,24 @@ function renderPane() {
     pane.innerHTML = '<pre>' + esc(detail.fullTranscriptText || 'No full transcript found.') + '</pre>';
   } else if (state.tab === 'scores') {
     const adaptation = detail.tutorAdaptation;
-    const adaptationHtml = adaptation ? '<h3>Tutor adaptation sidecar</h3>' +
-      '<table><tbody>' +
-      '<tr><th>Learner self-reframe</th><td>' + esc(adaptation.learner_self_reframe) + '</td></tr>' +
-      '<tr><th>Tutor contingent adaptation</th><td>' + esc(adaptation.tutor_contingent_adaptation) + '</td></tr>' +
-      '<tr><th>Adaptation score</th><td>' + esc(adaptation.tutor_adaptation_score) + '</td></tr>' +
-      '<tr><th>Uptake delta</th><td>' + esc(adaptation.uptake_delta) + '</td></tr>' +
-      '<tr><th>Strategy</th><td>' + esc([adaptation.tutor_strategy_before, adaptation.tutor_strategy_after].filter(Boolean).join(' -> ')) + '</td></tr>' +
-      '<tr><th>Shared terms</th><td>' + esc((adaptation.shared_salient_terms || []).join(', ')) + '</td></tr>' +
-      '<tr><th>Evidence</th><td>' + esc(adaptation.evidence || '') + '</td></tr>' +
-      '</tbody></table>' : '<div class="empty">No tutor adaptation sidecar row found.</div>';
-    pane.innerHTML = '<table><thead><tr><th>Critic</th><th>Form</th><th>Recon</th><th>Insight</th><th>Pivot</th><th>Evidence</th></tr></thead><tbody>' +
-      detail.scores.map((s) => '<tr><td>' + esc(s.critic_model) + '</td><td>' + esc(s.form_class) + '</td><td>' +
-      esc(s.recontextualization) + '</td><td>' + esc(s.stated_insight) + '</td><td>' + esc(s.pivot_learner_turn) +
-      '</td><td>' + esc([s.recohered_earlier, s.stated_insight_evidence].filter(Boolean).join(' / ')) + '</td></tr>').join('') +
+    const adaptationHtml = renderAdaptationSidecar(adaptation);
+    pane.innerHTML = '<div class="score-note"><strong>LLM critic scores.</strong> Each row is one critic model judging the same public transcript. Learner self-reframe is the existing recontextualization axis. Tutor adaptive mechanism is the main adaptation axis: did the tutor break a failed habit and choose a mechanism, including register when needed? Recognition-contingent uptake is a secondary closure axis. New tutor axes show n/a for older scorer artifacts.</div>' +
+      '<table class="score-table"><thead><tr><th>Critic</th><th>Form</th><th>Learner reframe (LLM)</th><th>Tutor adaptive mechanism (LLM)</th><th>Recog. uptake (LLM)</th><th>Insight</th><th>Pivot</th><th>Evidence</th></tr></thead><tbody>' +
+      detail.scores.map((s) => {
+        const role = s.roleScores || {};
+        const evidence = [
+          role.learnerSelfReframeEvidence ? 'learner: ' + role.learnerSelfReframeEvidence : '',
+          role.tutorStrategyReversalEvidence ? 'mechanism: ' + role.tutorStrategyReversalEvidence : '',
+          role.tutorContingentAdaptationEvidence ? 'tutor: ' + role.tutorContingentAdaptationEvidence : '',
+          s.stated_insight_evidence ? 'insight: ' + s.stated_insight_evidence : '',
+        ].filter(Boolean).join(' / ');
+        return '<tr><td>' + esc(s.critic_model) + '</td><td>' + esc(s.form_class) + '</td><td>' +
+          esc(scoreOrNA(role.learnerSelfReframeScore)) + '</td><td>' +
+          esc(scoreOrNA(role.tutorStrategyReversalScore)) + '</td><td>' +
+          esc(scoreOrNA(role.tutorContingentAdaptationScore)) + '</td><td>' +
+          esc(scoreOrNA(s.stated_insight)) + '</td><td>' + esc(s.pivot_learner_turn ?? 'n/a') +
+          '</td><td class="evidence-cell">' + esc(evidence) + '</td></tr>';
+      }).join('') +
       '</tbody></table>' + adaptationHtml;
   } else {
     pane.innerHTML =

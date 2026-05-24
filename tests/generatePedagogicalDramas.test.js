@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import yaml from 'yaml';
 import {
   attachApproaches,
+  formatPublicTurnText,
   intrusiveStageDirectionFailures,
   loadApproachDatabases,
   noCueReframeLeakageFailures,
@@ -43,6 +44,15 @@ function warningsForReframeLine({ tid, dramaId, anchor, learnerText }) {
 }
 
 describe('generate-pedagogical-dramas', () => {
+  it('renders public speaker turns as direct speech with square-bracket action asides', () => {
+    assert.equal(
+      formatPublicTurnText('TUTOR', '(points at the graph) Try line two.'),
+      '[points at the graph] Try line two.',
+    );
+    assert.equal(formatPublicTurnText('LEARNER', 'I think (x + 1) still matters.'), 'I think (x + 1) still matters.');
+    assert.equal(formatPublicTurnText('STAGE', 'A timer clicks.'), '[A timer clicks.]');
+  });
+
   it('resolves genre approach databases for the genre calibration spec', () => {
     const args = {
       pedagogyDb: path.join(ROOT, 'config/poetics-calibration/pedagogical-approaches.yaml'),
@@ -56,6 +66,9 @@ describe('generate-pedagogical-dramas', () => {
       attachApproaches(drama, databases);
       assert.equal(drama._pedagogicalApproach.id, drama.pedagogical_approach);
       assert.equal(drama._dialogueApproach.id, drama.dialogue_approach);
+    }
+    for (const id of ['aristotelian_reversal', 'shakespearean_scene_turn', 'miller_social_reckoning']) {
+      assert.ok(databases.dialogue.byId.has(id), `expected classic dramatic dialogue source ${id}`);
     }
   });
 
@@ -116,7 +129,14 @@ describe('generate-pedagogical-dramas', () => {
 
   it('maps paired adaptation arms onto learner-cue and tutor-uptake factors', () => {
     const branches = pairedBranchDefinitions({
-      pairedAdaptationArms: ['none', 'reframe-only', 'tutor-uptake-only', 'reframe+tutor-uptake'],
+      pairedAdaptationArms: [
+        'none',
+        'reframe-only',
+        'tutor-uptake-only',
+        'reframe+tutor-uptake',
+        'peripeteia-only',
+        'reframe+peripeteia',
+      ],
     });
 
     assert.deepEqual(branches, [
@@ -124,6 +144,8 @@ describe('generate-pedagogical-dramas', () => {
       { key: 'reframe-only', revisitPolicy: 'reframe', tutorAdaptationPolicy: 'none' },
       { key: 'tutor-uptake-only', revisitPolicy: 'none', tutorAdaptationPolicy: 'uptake' },
       { key: 'reframe+tutor-uptake', revisitPolicy: 'reframe', tutorAdaptationPolicy: 'uptake' },
+      { key: 'peripeteia-only', revisitPolicy: 'none', tutorAdaptationPolicy: 'peripeteia' },
+      { key: 'reframe+peripeteia', revisitPolicy: 'reframe', tutorAdaptationPolicy: 'uptake+peripeteia' },
     ]);
   });
 
@@ -138,6 +160,17 @@ describe('generate-pedagogical-dramas', () => {
     assert.equal(plan.tutor_adaptation_policy, 'uptake');
     assert.match(plan.tutor_adaptation_contract, /tutor-private learner reframe event/);
     assert.equal(plan.interventions.length, 1);
+  });
+
+  it('adds peripeteia tutor adaptation policy to director plans', () => {
+    const plan = withTutorAdaptationPolicy({ interventions: [] }, 'peripeteia');
+
+    assert.equal(plan.tutor_adaptation_policy, 'peripeteia');
+    assert.match(plan.tutor_adaptation_contract, /learner resistance, breakdown, false-closure, or misfit event/);
+    assert.match(plan.tutor_adaptation_contract, /invent an adaptive learning mechanism/);
+    assert.match(plan.tutor_adaptation_contract, /break the failed tutoring habit/);
+    assert.match(plan.tutor_adaptation_contract, /object, counterexample, interruption, social consequence, representation, or affective register/);
+    assert.match(plan.tutor_adaptation_contract, /Cheerful informality is only one possible register/);
   });
 
   it('flags explicit public self-reframing in no-cue branches', () => {

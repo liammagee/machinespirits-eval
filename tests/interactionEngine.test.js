@@ -313,4 +313,111 @@ describe('runInteraction (multi-turn)', () => {
       'tutor ego adjudication should choose an uptake move',
     );
   });
+
+  it('passes learner reversal pressure into the tutor ego/superego peripeteia prompt', async () => {
+    const calls = [];
+    async function llmCall(model, systemPrompt, messages, options = {}) {
+      calls.push({ model, systemPrompt, messages, options });
+      const user = messages?.[0]?.content || '';
+      if (options.agentRole === 'learner_superego') {
+        return { content: 'Keep the resistance visible; do not fake understanding.', usage: {} };
+      }
+      if (options.agentRole === 'learner_ego' && /Produce your final response/.test(user)) {
+        return { content: "FINAL:\nBut that still doesn't make sense; I don't see why the old route works.", usage: {} };
+      }
+      if (options.agentRole === 'learner_ego' && /opening message/.test(user)) {
+        return { content: 'FINAL:\nI think loose means no gravity.', usage: {} };
+      }
+      if (options.agentRole === 'learner_ego') {
+        return { content: "But that still doesn't make sense; I don't see why the old route works.", usage: {} };
+      }
+      if (options.agentRole === 'tutor_superego') {
+        return {
+          content:
+            'FEEDBACK: The draft repeats the old move.\nPERIPETEIA_CHECK: Switch route and lower the load.\nKEEP_OR_CHANGE: revise substantially',
+          usage: {},
+        };
+      }
+      if (options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(systemPrompt)) {
+        return {
+          content:
+            'PRIVATE_DECISION: revise because the learner is resisting the route.\nFINAL:\nLet us back up and try a different route: draw the string first, then test what force remains.',
+          usage: {},
+        };
+      }
+      if (options.agentRole === 'tutor_ego') {
+        return { content: 'Check the list again and write the force name.', usage: {} };
+      }
+      return { content: 'stub', usage: {} };
+    }
+
+    const directorPlan = {
+      opening_speaker: 'learner',
+      tutor_adaptation_policy: 'peripeteia',
+    };
+
+    const result = await runInteraction(
+      {
+        learnerId: 'test-learner-peripeteia',
+        personaId: 'eager_novice',
+        tutorProfile: 'recognition',
+        topic: 'Gravity and loose strings',
+        scenario: {
+          name: 'Tutor peripeteia test',
+          learnerStartState: 'The learner treats loose as no gravity.',
+          directorPlan,
+        },
+      },
+      llmCall,
+      {
+        maxTurns: 2,
+        forceMaxTurns: true,
+        observeInternals: true,
+        learnerProfile: 'ego_superego',
+        directorPlan,
+      },
+    );
+
+    const pressureTurn = result.turns.find((turn) => turn.phase === 'learner' && turn.learnerReversalEvent);
+    assert.ok(pressureTurn, 'expected learner turn to carry hidden reversal-pressure event');
+    assert.match(pressureTurn.learnerReversalEvent.triggerType, /breakdown|resistance/);
+
+    const tutorUseTurn = result.turns.find((turn) => turn.phase === 'tutor' && turn.learnerReversalEventUsed);
+    assert.ok(tutorUseTurn, 'expected following tutor turn to consume hidden reversal event');
+    assert.match(tutorUseTurn.externalMessage, /different route/);
+
+    const tutorSuperegoPrompts = calls
+      .filter((call) => call.options.agentRole === 'tutor_superego')
+      .map((call) => call.systemPrompt);
+    assert.ok(
+      tutorSuperegoPrompts.some((prompt) => /Tutor-private peripeteia event/.test(prompt)),
+      'tutor superego should see private peripeteia state',
+    );
+    assert.ok(
+      tutorSuperegoPrompts.some((prompt) => /PERIPETEIA_CHECK/.test(prompt)),
+      'tutor superego should evaluate adaptive mechanism invention',
+    );
+    assert.ok(
+      tutorSuperegoPrompts.some((prompt) => /REGISTER_CHECK/.test(prompt)),
+      'tutor superego should evaluate whether the register serves the mechanism',
+    );
+    assert.ok(
+      tutorSuperegoPrompts.some((prompt) => /cheerful reassurance or informal coaching/.test(prompt)),
+      'tutor superego should catch over-cheery default habits',
+    );
+
+    const tutorAdjudicationPrompts = calls
+      .filter(
+        (call) => call.options.agentRole === 'tutor_ego' && /Your initial tutor response was/.test(call.systemPrompt),
+      )
+      .map((call) => call.systemPrompt);
+    assert.ok(
+      tutorAdjudicationPrompts.some((prompt) => /adaptive learning mechanism legible/.test(prompt)),
+      'tutor ego adjudication should force the adaptive mechanism after internal review',
+    );
+    assert.ok(
+      tutorAdjudicationPrompts.some((prompt) => /affective register/.test(prompt)),
+      'tutor ego adjudication should allow register shift as an adaptive mechanism',
+    );
+  });
 });

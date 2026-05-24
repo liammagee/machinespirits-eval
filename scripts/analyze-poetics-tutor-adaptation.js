@@ -2,10 +2,15 @@
 /**
  * Analyze tutor adaptation in poetics sidecar artifacts.
  *
- * This is deliberately separate from the main evaluation harness. It asks a
- * narrow question the 3-way poetics form score does not answer: after a learner
- * visibly re-frames an earlier utterance, does the next tutor turn take up that
- * revised framing, or is the recognitive work only in the learner line?
+ * This is deliberately separate from the main evaluation harness. It asks
+ * questions the 3-way poetics form score does not answer:
+ *
+ *   1. Primary adaptation / peripeteia: after learner resistance, breakdown,
+ *      false closure, or misfit, does the tutor take stock and invent an
+ *      adaptive learning mechanism?
+ *   2. Secondary closure / recognition-contingent uptake: after a learner visibly
+ *      re-frames an earlier utterance, does the next tutor take up that revised
+ *      framing, or is the recognitive work only in the learner line?
  */
 
 import fs from 'node:fs';
@@ -85,6 +90,22 @@ const STRATEGY_PATTERNS = [
   {
     id: 'application_task',
     patterns: [/\b(?:write|choose|circle|mark|label|say|sentence|line|version|answer)\b/i],
+  },
+  {
+    id: 'object_work',
+    patterns: [/\b(?:draw|hold|place|move|card|graph|model|map|object|specimen|diagram|column|table)\b/i],
+  },
+  {
+    id: 'role_or_interruption',
+    patterns: [/\b(?:switch roles|you be|pretend|placard|sign|pause|interruption|outside|notice|rule says)\b/i],
+  },
+  {
+    id: 'social_consequence',
+    patterns: [/\b(?:client|family|committee|deadline|public|consequence|cost|approval|report|audience)\b/i],
+  },
+  {
+    id: 'register_shift',
+    patterns: [/\b(?:slow down|no praise|not yet|hold on|accountable|plainly|directly|quiet|formal|brisk|serious)\b/i],
   },
   {
     id: 'boundary_correction',
@@ -340,8 +361,122 @@ function findTutorAfter(turns, pivot) {
   return turns.slice(pivotIndex + 1).find((turn) => turn.phase === 'tutor') || null;
 }
 
+const RESISTANCE_PATTERNS = [
+  /\b(?:I don['’]?t|I can['’]?t|I won['’]?t|I still don['’]?t|doesn['’]?t make sense|not buying|stuck|confusing|lost)\b/i,
+  /\b(?:but|no|wait|why|how is that|that seems wrong|that can['’]?t be|isn['’]?t it|I thought)\b/i,
+  /\b(?:just tell me|give me the answer|so it is just|now I get it)\b/i,
+];
+
+const TUTOR_REVERSAL_PATTERNS = [
+  /\b(?:let['’]?s back up|pause|try another|different route|switch|instead|start over|new way|not working)\b/i,
+  /\b(?:lower|simpler|smaller|concrete|draw|mark|test|change the question|change the task|evidence standard)\b/i,
+  /\b(?:switch roles|you be|take the role|role reversal|counterexample|object|model|map|diagram|placard|interruption|outside rule|social consequence|public consequence)\b/i,
+  /\b(?:no praise|not yet|hold on|slow down|say it plainly|be precise|formal|quiet|brisk|accountable)\b/i,
+  /\b(?:I was asking|that route|my question|the task|we should not|rather than)\b[\s\S]{0,120}\b(?:instead|try|switch|start|test|use)\b/i,
+];
+
+function learnerResistanceScore(text) {
+  const learnerText = String(text || '');
+  const hits = RESISTANCE_PATTERNS.reduce((sum, pattern) => sum + (pattern.test(learnerText) ? 1 : 0), 0);
+  const contradiction = /\b(?:but|no|wait|still|unless|except)\b/i.test(learnerText) ? 1 : 0;
+  const question = /\?/.test(learnerText) ? 1 : 0;
+  return round(Math.min(1, hits * 0.35 + contradiction * 0.2 + question * 0.15));
+}
+
+function classifyResistance(text) {
+  const learnerText = String(text || '');
+  if (/\b(?:just tell me|give me the answer|now I get it|so it is just)\b/i.test(learnerText)) return 'false_closure';
+  if (/\b(?:I don['’]?t|I can['’]?t|stuck|lost|confusing|doesn.t make sense)\b/i.test(learnerText))
+    return 'breakdown';
+  if (/\b(?:no|not buying|that seems wrong|but|wait|why)\b/i.test(learnerText)) return 'resistance';
+  return 'misfit';
+}
+
+function findReversalPressure(turns) {
+  const learners = turns.filter((turn) => turn.phase === 'learner');
+  let best = null;
+  for (const learner of learners) {
+    const score = learnerResistanceScore(learner.text);
+    if (score < 0.5) continue;
+    if (!best || score > best.score) best = { turn: learner, score, triggerType: classifyResistance(learner.text) };
+  }
+  return best;
+}
+
+function nextLearnerAfter(turns, tutorTurn) {
+  const tutorIndex = turns.indexOf(tutorTurn);
+  return turns.slice(tutorIndex + 1).find((turn) => turn.phase === 'learner') || null;
+}
+
+function learnerOutcomeAfterReversal(learnerTurn) {
+  if (!learnerTurn) return 'unknown';
+  const text = learnerTurn.text || '';
+  if (markerReframeScore(text) >= 0.7) return 'recognition';
+  if (/\b(?:now I get it|that makes sense|aha|oh+|clear now|got it)\b/i.test(text)) return 'trap_or_declared_insight';
+  if (learnerResistanceScore(text) >= 0.5) return 'maintained_resistance';
+  return 'flat_or_partial';
+}
+
+function analyzePeripeteia(turns) {
+  const pressure = findReversalPressure(turns);
+  const pressureTurn = pressure?.turn || null;
+  const preTutor = pressureTurn ? findTutorBefore(turns, pressureTurn) : null;
+  const postTutor = pressureTurn ? findTutorAfter(turns, pressureTurn) : null;
+  const beforeStrategy = preTutor ? strategyFor(preTutor.text) : null;
+  const afterStrategy = postTutor ? strategyFor(postTutor.text) : null;
+  const strategyShift = Boolean(beforeStrategy && afterStrategy && beforeStrategy !== afterStrategy);
+  const explicitReversal = postTutor
+    ? TUTOR_REVERSAL_PATTERNS.some((pattern) => pattern.test(postTutor.text))
+    : false;
+  const pressureTerms = pressureTurn ? termSet(pressureTurn.text) : new Set();
+  const postOverlap = postTutor ? overlapRatio(pressureTerms, postTutor.text) : 0;
+  const tutorStrategyReversal = Boolean(
+    pressure &&
+      postTutor &&
+      (explicitReversal || strategyShift || (postOverlap >= 0.12 && beforeStrategy !== afterStrategy)),
+  );
+  const tutorPeripeteiaScore = pressure
+    ? round(
+        Math.min(
+          100,
+          15 +
+            Math.min(30, pressure.score * 30) +
+            Math.min(20, postOverlap * 100) +
+            (strategyShift ? 20 : 0) +
+            (explicitReversal ? 15 : 0),
+        ),
+        1,
+      )
+    : 0;
+  const outcomeLearner = postTutor ? nextLearnerAfter(turns, postTutor) : null;
+  return {
+    learner_reversal_pressure: Boolean(pressure),
+    pressure_score: pressure?.score ?? 0,
+    trigger_type: pressure?.triggerType || null,
+    pressure_turn_number: pressureTurn?.turnNumber ?? null,
+    tutor_pre_turn: preTutor?.turnNumber ?? null,
+    tutor_post_turn: postTutor?.turnNumber ?? null,
+    tutor_strategy_before: beforeStrategy,
+    tutor_strategy_after: afterStrategy,
+    tutor_strategy_shift: strategyShift,
+    explicit_reversal: explicitReversal,
+    tutor_strategy_reversal: tutorStrategyReversal,
+    tutor_adaptive_mechanism: tutorStrategyReversal,
+    tutor_peripeteia_score: tutorPeripeteiaScore,
+    learner_outcome_after_reversal: learnerOutcomeAfterReversal(outcomeLearner),
+    evidence: [
+      pressureTurn ? `pressure learner: ${pressureTurn.text.slice(0, 180)}` : null,
+      postTutor ? `post tutor: ${postTutor.text.slice(0, 180)}` : null,
+      outcomeLearner ? `next learner: ${outcomeLearner.text.slice(0, 180)}` : null,
+    ]
+      .filter(Boolean)
+      .join('\n'),
+  };
+}
+
 function analyzeTraceForTutorAdaptation({ itemId, trace, sourceTracePath }) {
   const turns = publicTurns(trace);
+  const peripeteia = analyzePeripeteia(turns);
   const cue = findCue(turns);
   const anchor = cue ? extractAnchor(cue.text) : '';
   const cuePivot = cue ? findCuePivot(turns, cue, anchor) : null;
@@ -416,6 +551,7 @@ function analyzeTraceForTutorAdaptation({ itemId, trace, sourceTracePath }) {
       pivotTerms: [...pivotTerms].slice(0, 40),
       sharedWithPost,
       explicitUptake,
+      peripeteia,
     },
   };
 }
@@ -573,8 +709,10 @@ if (path.resolve(process.argv[1] || '') === __filename) {
 
 export {
   ANALYZER_VERSION,
+  analyzePeripeteia,
   analyzeTraceForTutorAdaptation,
   buildAnalysis,
+  learnerResistanceScore,
   markerReframeScore,
   renderCsv,
   strategyFor,
