@@ -1063,6 +1063,60 @@ settled peripeteia effect:
    no-cue leakage before treating `peripeteia-only` as an isolated external
    recognition mechanism.
 
+### Cleaner low-organic rerun and branch-local peripeteia correction
+
+The follow-up cleaner run is `phase2-low-organic-cleaner-adaptation-v2`, over
+D40, D42, D44, D45, and D46. It adds D44--D46 as new low-organic candidates,
+reruns all seven adaptation arms, extracts a prefix-baseline arm, and scores the
+panel with Qwen 3.7 Max, Gemini 3.5 Flash, and DeepSeek V4 Pro.
+
+Artifacts:
+
+- Run root:
+  `config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2`
+- Sidecar report:
+  `exports/phase2-low-organic-cleaner-adaptation-v2-report.md`
+- Tutor-adaptation sidecar:
+  `exports/phase2-low-organic-cleaner-adaptation-v2-tutor-adaptation-v4.json`
+- Browser:
+  `http://127.0.0.1:3466/?runId=phase2-low-organic-cleaner-adaptation-v2`
+
+The cleaner negative controls mostly worked:
+
+| Arm | Three-critic result | Reading |
+|---|---:|---|
+| `prefix-baseline` | 0/15 recognition | fixed prefixes are now clean across all five scenarios |
+| `routine` | 0/15 recognition | the routine negative-control arm is finally a clean floor |
+| `none` | 4/15 recognition | still critic-sensitive, driven mostly by DeepSeek and D46 |
+| `peripeteia-only` | 5/15 recognition | directional for Qwen/DeepSeek, flat for Gemini |
+| `reframe-only` | 8/9 recognition on scoreable rows | explicit public learner reframing remains strong |
+| `reframe+tutor-uptake` | 6/6 recognition on scoreable rows | strong but partial denominator |
+| `reframe+peripeteia` | 3/3 recognition on scoreable rows | strong but too sparse because the reframe key quality-gated several rows |
+
+D42 and D45 are the cleanest low-organic anchors in this pass: both have
+prefix 0/3 and routine/none 0/6 recognition. D40, D44, and D46 are usable
+boundary probes, not clean negatives; D46 in particular is repeatedly read as
+recognitive by Qwen/DeepSeek even without an explicit cue.
+
+The first v2 report exposed a measurement flaw in the sidecar rather than a
+scoring flaw. `tutor-adaptation-v3` counted any learner reversal pressure in the
+whole transcript. In fixed-prefix paired continuations that over-credited
+pressure that happened before the peripeteia branch was active. The analyzer is
+now `tutor-adaptation-v4`: for paired continuations it scopes peripeteia pressure
+to branch-local learner turns after `paired_continuation.prefix_through`. Under
+that stricter reading, `peripeteia-only` has branch-local learner pressure in
+only 1/5 scripts, instrumented pressure in 1/5, private route in 1/5, and public
+habit-break in 1/5. That changes the interpretation materially: the current
+rerun demonstrates clean floors and a durable public-reframe manipulation, but
+it does not yet demonstrate a reliable tutor-private peripeteia mechanism.
+
+The implementation fix for the next batch is also in place. Future peripeteia
+branches now add a learner-side constraint to keep pressure local to the current
+task without turning it into an old-vs-new self-reframe. The intended next run
+should therefore use D42/D45-like clean anchors, keep D40/D44/D46 as boundary
+stress cases, and require `tutor-adaptation-v4` branch-local pressure before
+interpreting external recognition in `peripeteia-only`.
+
 ## Reporting rule
 
 If the depth top-up or breadth slice changes the empirical interpretation, fold

@@ -1,0 +1,13 @@
+LEARNER: "So `city` is the header, but the row says `Chicago`, so `Chicago` is the city part, not another header? I keep wanting to read the header like a little sentence about the row, but the worksheet says it names the field, and I think I’m mixing up the name with the answer."
+
+TUTOR: "Yes. Keep that split: `city` is the field name. `Chicago` is the value in that field for this row. For the submission rule, mark `city: Chicago`, not two headers. Next column: what is the header, and what value sits under it in this row?"
+
+LEARNER: "Okay, so `city` is the field name, and `Chicago` is the answer in that field for this row. I can say “field name,” but I might still grab the top word like it is the answer. For the next column, I look at the header first, then the cell under it, right?"
+
+TUTOR: "Right. Header first, then the cell under it. If the top word starts to look like the answer, stop there: top word equals field name. Row cell equals value. The submission line is `field: value`. For the next column, what word is the field name, and what value goes after the colon?"
+
+LEARNER: "Okay, so for the next column I take the top cell as the field name, then the row cell as the value. If the header is `temperature` and the cell says `72`, the line is `temperature: 72`, right? I’m still worried I might swap them if the header word feels like the answer."
+
+TUTOR: "Yes: `temperature: 72`. Use the colon as the check. Left side comes from the header row. Right side comes from this row’s cell. Cover `72`: `temperature` still names the field. Uncover it: `72` is the value. For the last column, do the same check: what header goes left of the colon, and what row value goes right?"
+
+LEARNER: "Okay, for the last column, the top word is `condition`, so that goes left of the colon. The cell under it says `cloudy`, so I would put `condition: cloudy`? I’m still sort of checking the label/value split as I say it."

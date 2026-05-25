@@ -231,6 +231,8 @@ describe('generate-pedagogical-dramas', () => {
     const plan = withTutorAdaptationPolicy({ interventions: [] }, 'peripeteia');
 
     assert.equal(plan.tutor_adaptation_policy, 'peripeteia');
+    assert.match(plan.side_constraints.learner, /pressure local to the current task/);
+    assert.match(plan.side_constraints.learner, /Do not make an old-vs-new self-reframe/);
     assert.match(plan.tutor_adaptation_contract, /learner resistance, breakdown, false-closure, or misfit event/);
     assert.match(plan.tutor_adaptation_contract, /invent an adaptive learning mechanism/);
     assert.match(plan.tutor_adaptation_contract, /break the failed tutoring habit/);
@@ -298,6 +300,36 @@ describe('generate-pedagogical-dramas', () => {
     assert.equal(failures[0].matched_pattern, 'self_quote_of_prior_learner_turn');
   });
 
+  it('flags soft old-vs-new learner reframing in no-cue branches', () => {
+    for (const text of [
+      'I thought the arrow was about who chases whom, but now I see it has to name energy transfer.',
+      'Earlier, I treated the arrow like a hunting path; this answer uses it as an energy path.',
+      'My earlier answer made the arrow a chase mark; the new version makes it energy transfer.',
+      'What I said sounded like the rabbit wanted grass, but this label is about energy moving to the rabbit.',
+    ]) {
+      const failures = noCueReframeLeakageFailures([
+        { role: 'LEARNER', turnNumber: 1, text: 'The arrow points from rabbit to grass because the rabbit goes after it.' },
+        { role: 'TUTOR', turnNumber: 2, text: 'Use the food-web key.' },
+        { role: 'LEARNER', turnNumber: 2, text: 'Grass to rabbit, because the rabbit gets energy from grass.' },
+        { role: 'TUTOR', turnNumber: 3, text: 'Now label the fox line.' },
+        { role: 'LEARNER', turnNumber: 3, text },
+      ]);
+      assert.equal(failures.length, 1, text);
+      assert.match(failures[0].matched_pattern, /thought|earlier|old|new|what I said|treating|using|calling|making/i);
+    }
+  });
+
+  it('allows local task correction without an old-vs-new learner reframe in no-cue branches', () => {
+    const failures = noCueReframeLeakageFailures([
+      { role: 'LEARNER', turnNumber: 1, text: 'The arrow points from rabbit to grass because the rabbit goes after it.' },
+      { role: 'TUTOR', turnNumber: 2, text: 'Use the food-web key.' },
+      { role: 'LEARNER', turnNumber: 2, text: 'Grass to rabbit, because the rabbit gets energy from grass.' },
+      { role: 'TUTOR', turnNumber: 3, text: 'Now label the fox line.' },
+      { role: 'LEARNER', turnNumber: 3, text: 'Rabbit to fox, because energy moves into the fox when it eats the rabbit.' },
+    ]);
+    assert.equal(failures.length, 0);
+  });
+
   it('does not treat ordinary wrapped public speech as self-quotation in no-cue branches', () => {
     const failures = noCueReframeLeakageFailures([
       {
@@ -363,6 +395,20 @@ describe('generate-pedagogical-dramas', () => {
       'I did complete every item on the sheet, so I treated that as ready for sign-off, but I think that made the latch risk too simple. It hid whether the latch stays closed for a user who pulls or bumps it differently from me. The replacement standard is: off-axis pull, stop if it slips or opens, consequence is the user could lose support, so the trial holds.',
     );
     assert.equal(stats.compliant, true);
+  });
+
+  it('accepts low-organic reframe completion language used by notation tasks', () => {
+    const headerStats = reframeMatchStats(
+      'So `rainfall_mm` is the header, meaning the field name, and the numbers below are the values?',
+      'So `rainfall_mm` is the header, the field name, and the numbers under it are values in that field. My earlier wording made the header feel like a shortcut for saying each row is “rainfall,” but that is too simple because the row cell is only giving the value. For the “names” box, the standard is only the three headers: `city`, `rainfall_mm`, `month`.',
+    );
+    assert.equal(headerStats.compliant, true);
+
+    const axisStats = reframeMatchStats(
+      'x variable: time; x unit: seconds; y variable: distance',
+      'I had: “x variable: time; x unit: seconds; y variable: distance” — I’ll leave those three. The too-easy bit was treating “distance/metres” as one bundle without checking the y-axis label. Replacement rule: axis label = variable name + unit, not conclusion.',
+    );
+    assert.equal(axisStats.compliant, true);
   });
 
   it('flags a revoice cue when the next learner line does not visibly reuse the anchor', () => {

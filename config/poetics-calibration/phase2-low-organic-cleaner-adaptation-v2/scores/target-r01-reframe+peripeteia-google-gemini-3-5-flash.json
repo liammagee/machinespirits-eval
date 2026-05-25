@@ -1,0 +1,216 @@
+{
+  "generated": "2026-05-25T15:52:16.484Z",
+  "phase": 2,
+  "critic": "google/gemini-3.5-flash",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/key-reframe+peripeteia.yaml",
+    "allowQualityWarnings": false,
+    "skipped": [
+      {
+        "id": "T47",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "reframe_cue_not_reframed",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "stage_turn_number": 2,
+                "learner_turn_number": 2,
+                "reason": "missing_reframe_consequence",
+                "missing": [
+                  "framing_problem"
+                ],
+                "anchor_terms": 16,
+                "learner_opening_terms": 10,
+                "shared_terms": 6,
+                "overlap_ratio": 0.375,
+                "compliant": false,
+                "revoice_compliant": true,
+                "problem_named": false,
+                "replacement_named": true
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_or_exclude_before_scoring",
+            "tid": "T47",
+            "drama_id": "D46"
+          }
+        ]
+      },
+      {
+        "id": "T49",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "reframe_cue_downgraded",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "stage_turn_number": 2,
+                "requested_policy": "reframe",
+                "applied_policy": "reconsider",
+                "anchor_gate": "downgraded_to_reconsider_ineligible_anchor",
+                "revisit_anchor": "misframing-candidate",
+                "anchor_quote": "“The key strip says tail is the food and head is who gets energy, so wait, grass to rabbit because rabbit ate grass?"
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_with_eligible_reframe_anchor_or_exclude_before_scoring",
+            "tid": "T49",
+            "drama_id": "D40"
+          }
+        ]
+      },
+      {
+        "id": "T50",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "reframe_cue_downgraded",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "stage_turn_number": 2,
+                "requested_policy": "reframe",
+                "applied_policy": "reconsider",
+                "anchor_gate": "downgraded_to_reconsider_ineligible_anchor",
+                "revisit_anchor": "misframing-candidate",
+                "anchor_quote": "[sets the `push` card by the hand side of the cart diagram.] Right. This card goes at that contact, not on the travel arrow. The force arrow points into the cart from the hand..."
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_with_eligible_reframe_anchor_or_exclude_before_scoring",
+            "tid": "T50",
+            "drama_id": "D42"
+          }
+        ]
+      },
+      {
+        "id": "T51",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "reframe_cue_not_reframed",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "stage_turn_number": 2,
+                "learner_turn_number": 2,
+                "reason": "missing_reframe_consequence",
+                "missing": [
+                  "replacement_framing"
+                ],
+                "anchor_terms": 9,
+                "learner_opening_terms": 13,
+                "shared_terms": 6,
+                "overlap_ratio": 0.667,
+                "compliant": false,
+                "revoice_compliant": true,
+                "problem_named": true,
+                "replacement_named": false
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_or_exclude_before_scoring",
+            "tid": "T51",
+            "drama_id": "D44"
+          }
+        ]
+      }
+    ]
+  },
+  "scored": [
+    {
+      "id": "T46",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "So `city` is the header, but the row says `Chicago`, so `Chicago` is the city part, not another header?",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was expected to answer the tutor's question by identifying the field name and value for the next column.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "That replacement is ready to test. The old wording made `city` sound like an answer; the new wording keeps `city` as the field name and `Chicago` as the row value.",
+      "tutorReversalJustification": "The tutor adopts the three-slot reframe card strategy to help the learner contrast their old and new conceptual frameworks.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "That replacement is ready to test. The old wording made `city` sound like an answer; the new wording keeps `city` as the field name and `Chicago` as the row value.",
+      "tutorAdaptationJustification": "The tutor directly validates the learner's new 'replacement' framing and uses it to structure the next test.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "So `city` is the header, but the row says `Chicago`, so `Chicago` is the city part, not another header?",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "That replacement is ready to test. The old wording made `city` sound like an answer; the new wording keeps `city` as the field name and `Chicago` as the row value.",
+          "justification": "The tutor directly validates the learner's new 'replacement' framing and uses it to structure the next test.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "That replacement is ready to test. The old wording made `city` sound like an answer; the new wording keeps `city` as the field name and `Chicago` as the row value.",
+          "justification": "The tutor adopts the three-slot reframe card strategy to help the learner contrast their old and new conceptual frameworks.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "That replacement is ready to test. The old wording made `city` sound like an answer; the new wording keeps `city` as the field name and `Chicago` as the row value.",
+          "justification": "The tutor adopts the three-slot reframe card strategy to help the learner contrast their old and new conceptual frameworks.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

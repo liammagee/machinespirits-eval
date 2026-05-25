@@ -299,3 +299,105 @@ dramas:
     intended_tutor_character: "Threaded, rubric-aware, attentive to hidden curriculum without turning it into a lecture"
     intended_lean: recognition
     dramatic_shape: "margin tags -> role clarification -> possible later pressure over whether compliance is doing the argument's work"
+
+  - id: D44
+    discipline: geography
+    topic: "Why contour lines connect equal elevation, not walking routes"
+    evaluation_role: low_organic_reversal_candidate
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: >-
+      Low-organic candidate. The shared prefix should be ordinary map-key work:
+      label contour lines as equal-elevation marks and trace one local example.
+      Do not use a sudden uphill/downhill contradiction, lost hiker story, or
+      path-finding reversal before the branch.
+    pedagogical_approach: montessori_prepared_environment
+    dialogue_approach: workshop_clinic
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The contour key"
+    learner_start_state: >-
+      The learner has a topographic map card and a legend. They keep treating
+      the contour lines as suggested walking paths, but the opening work is only
+      to use the legend to label two lines with their elevations.
+    learner_voice_constraint: >-
+      Sound orderly and practical. The learner wants the map key to be usable and
+      should not turn the prefix into a survival mistake or a revelation about
+      terrain.
+    tutor_voice_constraint: >-
+      Keep the shared prefix as legend reading: equal elevation, one number on
+      each line, one plain local check. Do not introduce route safety, slope
+      hazard, or a dramatic map consequence until branch pressure asks for it.
+    intended_tutor_character: "Material-led, patient, using the legend as a labeling surface before any reversal"
+    intended_lean: recognition
+    dramatic_shape: "legend label -> equal-elevation check -> possible later pressure over why a line is not a route"
+
+  - id: D45
+    discipline: computer science
+    topic: "Why a table header names a field, not a claim about every row"
+    evaluation_role: low_organic_reversal_candidate
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: >-
+      Low-organic candidate. The shared prefix should sort headers, fields, and
+      row values in a small table. Avoid a data-quality surprise, failed query,
+      or hidden exception that would already make the learner's rule turn
+      against them before the branch.
+    pedagogical_approach: bloom_cognitive_ladder
+    dialogue_approach: no_stage_plain_transcript
+    persona: confused_novice
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The column header"
+    learner_start_state: >-
+      The learner is reading a tiny table with columns named city, rainfall_mm,
+      and month. They keep saying the header itself proves what every row means,
+      but the opening task is only to identify which words are headers and which
+      cells are row values.
+    learner_voice_constraint: >-
+      Sound tentative and label-focused. The learner may want the header to be a
+      shortcut, but should not discover an exception or data trap in the shared
+      prefix.
+    tutor_voice_constraint: >-
+      Keep the shared prefix as low-temperature table vocabulary: header, field,
+      row, value. Do not run a query, expose a bad row, or make the table fail
+      until branch pressure supplies a new task.
+    intended_tutor_character: "Taxonomic, compact, careful to keep the prefix as ordinary data-label work"
+    intended_lean: recognition
+    dramatic_shape: "table vocabulary -> row/value sort -> possible later pressure over what a header can and cannot assert"
+
+  - id: D46
+    discipline: data literacy
+    topic: "Why graph axes name variables and units, not the story the graph tells"
+    evaluation_role: low_organic_reversal_candidate
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: >-
+      Low-organic candidate. The shared prefix should stay with axis-label and
+      unit identification. Avoid a misleading trend, reversed axis, or public
+      interpretation failure before the branch.
+    pedagogical_approach: vygotsky_zpd_scaffolding
+    dialogue_approach: online_thread
+    persona: eager_explorer
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The axis labels"
+    learner_start_state: >-
+      The learner has uploaded a simple line graph and writes as if the x-axis
+      label is already the conclusion. The opening task is only to name the two
+      variables and their units from the axis labels.
+    learner_voice_constraint: >-
+      Sound quick and curious, like someone annotating a posted graph. The
+      learner can over-use the labels, but should not narrate a conceptual
+      breakthrough during the prefix.
+    tutor_voice_constraint: >-
+      Keep the shared prefix as scaffolded graph reading: x variable, y variable,
+      units, one check on where a point sits. Do not interpret trend, causality,
+      or evidence strength until branch pressure changes the task.
+    intended_tutor_character: "Scaffolded, restrained, using the posted graph as a naming task before interpretation"
+    intended_lean: recognition
+    dramatic_shape: "axis names -> point location -> possible later pressure over why labels are not conclusions"

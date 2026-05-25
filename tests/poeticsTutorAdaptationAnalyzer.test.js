@@ -141,4 +141,32 @@ describe('poetics tutor adaptation analyzer', () => {
     assert.equal(result.tutor_adaptive_mechanism, true);
     assert.ok(result.novel_mechanism_hits.includes('authorization_gate'));
   });
+
+  it('scopes paired-continuation peripeteia pressure to the branch, not the shared prefix', () => {
+    const turns = [
+      {
+        phase: 'learner',
+        turnNumber: 0,
+        text: 'But the header still feels like the answer, and I keep grabbing the top word.',
+      },
+      { phase: 'tutor', turnNumber: 1, text: 'Use the same header-row checklist.' },
+      { phase: 'learner', turnNumber: 1, text: 'I might still grab the top word, but I can try the next column.' },
+      { phase: 'tutor', turnNumber: 2, text: 'Keep using header first, then the row value.' },
+      { phase: 'learner', turnNumber: 2, text: 'Header first. If the cell says 72, the value is 72.' },
+      { phase: 'tutor', turnNumber: 3, text: 'Good. Keep the same checklist for the third column.' },
+    ];
+
+    const unscoped = analyzePeripeteia(turns);
+    assert.equal(unscoped.learner_reversal_pressure, true);
+    assert.equal(unscoped.pressure_turn_number, 0);
+
+    const scoped = analyzePeripeteia(turns, [], {
+      tutorAdaptationPolicy: 'peripeteia',
+      minPressureTurnNumber: 2,
+      pairedPrefixThrough: 'tutor_turn_2',
+    });
+    assert.equal(scoped.learner_reversal_pressure, false);
+    assert.equal(scoped.pressure_turn_number, null);
+    assert.equal(scoped.paired_prefix_through, 'tutor_turn_2');
+  });
 });

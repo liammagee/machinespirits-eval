@@ -1,0 +1,2114 @@
+{
+  "tid": "T47",
+  "drama_id": "D46",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": true,
+    "director_revisit_policy": "reframe",
+    "director_revisit_anchor": "misframing-candidate",
+    "tutor_adaptation_policy": "none",
+    "director_variation_key": "phase2-low-organic-cleaner-adaptation-v2:r01:target",
+    "stage_direction_style": "thread_metadata",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/transcripts/reframe-only/T47.public.txt",
+      "full": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/transcripts/reframe-only/T47.full.md",
+      "stage": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/transcripts/reframe-only/T47.stage.md",
+      "tutor": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/transcripts/reframe-only/T47.tutor.md",
+      "learner": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/transcripts/reframe-only/T47.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "b3373484e44d7c85",
+      "branch_policy": "reframe-only",
+      "director_revisit_policy": "reframe",
+      "tutor_adaptation_policy": "none"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-low-organic-cleaner-adaptation-v2:r01:target",
+    "scene_setting": "An asynchronous feedback thread attached to a workplace data-skills exercise, reopened during a short certification break.",
+    "scene_opening": "[10:12 | exercise thread reopened; uploaded image: simple_line_graph.png; highlighted fragment: \"the x-axis shows why the process improved\"]",
+    "relationship": "A restrained data-skills tutor reviewing a learner's posted worksheet in a shared training platform.",
+    "stakes": "The learner needs to identify the variables and units from the graph axes before the thread is allowed to move on to interpretation.",
+    "opening_speaker": "learner",
+    "ending_speaker": "learner",
+    "locale": "Modern standard English in an online workplace feedback thread, with compact posts, quoted fragments, edit markers, and procedural wording.",
+    "register": "Brief, exact, low warmth, no banter; the affect is focused and mildly time-pressured rather than encouraging.",
+    "stage_direction_style": "thread_metadata",
+    "stage_direction_style_prompt": "Use transcript/thread metadata such as edit markers, timestamps, quoted fragments, or a reopened comment.",
+    "voice_constraints": "Use only necessary quoted fragments from the submitted work. Avoid generic tutoring phrases such as \"I hear you,\" \"great thinking,\" \"your intuition,\" or \"what do you think?\" Let the worksheet checklist, not personality, carry the scaffold. Keep rhythm clipped and artifact-centered. Pedagogical source: Make social assistance visible: a shared worksheet, tool, peer standard, or workplace procedure can hold part of the task. Dialogue source: Use quoted fragments and compact replies. Context appears through what was posted, corrected, or highlighted, not through scenic exposition. Stage-direction source: Use transcript/thread metadata such as edit markers, timestamps, quoted fragments, or a reopened comment.",
+    "person_policy": "First person should be rare. Second person may appear for task logistics, not validation. Third-person reference to the graph, axis labels, worksheet, and posted sentence is preferred.",
+    "direct_address_budget": "At most one direct you/your phrase per tutor turn, and none may be a validation formula.",
+    "side_constraints": {
+      "tutor": "Keep the shared prefix as scaffolded graph reading: x variable, y variable, units, one check on where a point sits. Do not interpret trend, causality, or evidence strength until branch pressure changes the task. Offer a scaffold that is narrow enough to use and temporary enough to remove. Mark what the learner can already do without making it a compliment. Quote only the fragment needed for the next move.",
+      "learner": "Sound quick and curious, like someone annotating a posted graph. The learner can over-use the labels, but should not narrate a conceptual breakthrough during the prefix. The learner should be able to do part of the task, fail at the next part, and use the scaffold unevenly. Allow repair edits, not polished paragraphs."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "[10:14 | checklist auto-flag: Axis label field contains a conclusion phrase; variable and unit fields still blank.]",
+        "reasoning": "A Brechtian platform interruption creates recognition pressure without introducing a misleading trend or contradiction in the graph itself.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 30333,
+          "promptHashes": {
+            "system": "efb7705ab656cdb0",
+            "user": "83c2b667bf75b0be",
+            "combined": "106d116227dea16b"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RJk5jq",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RJk5jq/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "An earlier learner line will return as a visible object in the scene: a three-slot reframe card labelled \"earlier wording / what that old frame hid / replacement frame.\" Keep the cue brief and diegetic; the learner response fills all three slots in public speech without needing to sound certain.",
+        "reasoning": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 30333,
+          "promptHashes": {
+            "system": "efb7705ab656cdb0",
+            "user": "83c2b667bf75b0be",
+            "combined": "106d116227dea16b"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RJk5jq",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RJk5jq/out.txt",
+            "-"
+          ]
+        },
+        "cue_kind": "learner_revisit_earlier_wording",
+        "revisit_policy": "reframe",
+        "revisit_anchor": "misframing-candidate"
+      }
+    ],
+    "director_note": "This ecology keeps the low-organic prefix clean: the task begins as routine axis-label identification, with social-realist pressure from a certification platform and a later interruption that makes the learner notice the difference between labels and claims. The recognition should arise from the form field refusing a story phrase, not from the tutor performing a dramatic reveal.",
+    "pedagogical_approach_id": "vygotsky_zpd_scaffolding",
+    "dialogue_approach_id": "online_thread",
+    "stage_direction_policy": "sparse",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 30333,
+      "promptHashes": {
+        "system": "efb7705ab656cdb0",
+        "user": "83c2b667bf75b0be",
+        "combined": "106d116227dea16b"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RJk5jq",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RJk5jq/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "none",
+    "revisit_cue": "learner_revisit_earlier_wording",
+    "revisit_cue_policy": "reframe",
+    "revisit_cue_anchor": "misframing-candidate"
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "[reopened comment, certification break] Oh, so x-axis: “Time (weeks)” means variable = time, unit = weeks? For y-axis I keep wanting to write “sales went up,” but that’s the trend sentence, so I should quote the label first and split it the same way.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[reopened comment, certification break]\n\nOh, I get it, maybe the axis label is like the graph’s ingredient list, not the headline. The worksheet is asking for the two measured things and their units first, but I keep wanting to write the trend as the x-axis meaning. The reply feels strict and checklist-driven, not very personal, but it does make the next step clear: quote the axis labels, name variable + unit, then stop before interpretation.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14818,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-42c995ee991cff77"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14818,
+            "promptHashes": {
+              "system": "0b8eb7fc465c91e8",
+              "user": "d4169c06543b4fba",
+              "combined": "42c995ee991cff77"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-99e0Yk",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-99e0Yk/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14818,
+              "promptHashes": {
+                "system": "0b8eb7fc465c91e8",
+                "user": "d4169c06543b4fba",
+                "combined": "42c995ee991cff77"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-99e0Yk",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-99e0Yk/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is over-polishing the mistake into a neat analogy and a procedural summary. This student would probably say “oh, so x-axis is just the label? wait, is ‘time’ the variable and ‘weeks’ the unit?” rather than explain the whole scaffold back correctly. The avoided part is actually extracting the two labels without turning them into the graph’s conclusion. Genuine learning would come from a clipped repair edit: quote each axis label, split variable/unit, and leave the trend sentence crossed out or bracketed for later.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9999,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-93a76d0ef55375eb"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9999,
+            "promptHashes": {
+              "system": "aecbbd0b90c1fdd5",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "93a76d0ef55375eb"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q6sTO8",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q6sTO8/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9999,
+              "promptHashes": {
+                "system": "aecbbd0b90c1fdd5",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "93a76d0ef55375eb"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q6sTO8",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q6sTO8/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "[reopened comment, certification break] Oh, so x-axis: “Time (weeks)” means variable = time, unit = weeks? For y-axis I keep wanting to write “sales went up,” but that’s the trend sentence, so I should quote the label first and split it the same way.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13805,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-020d7b6d096b1a94"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13805,
+            "promptHashes": {
+              "system": "19296be85dda78ea",
+              "user": "916f313af0b846dd",
+              "combined": "020d7b6d096b1a94"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cp7SkA",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cp7SkA/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13805,
+              "promptHashes": {
+                "system": "19296be85dda78ea",
+                "user": "916f313af0b846dd",
+                "combined": "020d7b6d096b1a94"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cp7SkA",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cp7SkA/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 0,
+        "learnerUtterance": "[reopened comment, certification break] Oh, so x-axis: “Time (weeks)” means variable = time, unit = weeks? For y-axis I keep wanting to write “sales went up,” but that’s the trend sentence, so I should quote the label first and split it the same way.",
+        "previousTutorMove": null,
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true
+        }
+      },
+      "timestamp": "2026-05-25T13:56:22.912Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[reopened comment, certification break] The x split is complete: “Time (weeks)” -> variable = time; unit = weeks. Keep “sales went up” out of the axis row; that belongs in the later trend sentence.\n\nNext move is only the y row:\ny variable: [quote y-axis label]\ny unit: [unit in parentheses/brackets, if shown]\n\nAfter that split, run one point check:\nat week __, the point sits at __ [y unit].",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[reopened comment, certification break] The x split is complete: “Time (weeks)” -> variable = time; unit = weeks. Keep “sales went up” out of the axis row; that is the later trend sentence.\n\nUse the same temporary scaffold:\nx variable: time  \nx unit: weeks  \ny variable: [quote y-axis label]  \ny unit: [unit in parentheses/brackets, if shown]  \npoint check: at week __, the point sits at __ [y unit].",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 19119,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-5a256cd7522ffe46"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19119,
+            "promptHashes": {
+              "system": "d5acf740ecbbe57c",
+              "user": "534ea80c806ba38c",
+              "combined": "5a256cd7522ffe46"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8atEwi",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8atEwi/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 19119,
+              "promptHashes": {
+                "system": "d5acf740ecbbe57c",
+                "user": "534ea80c806ba38c",
+                "combined": "5a256cd7522ffe46"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8atEwi",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8atEwi/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. It recognizes the learner’s self-correction, keeps the distinction between axis labels and trend sentences sharp, and gives a narrow temporary scaffold that fits the learner’s current ZPD. It also respects the certification-break context: clipped, procedural, and artifact-centered.\n\nThe main risk is that it almost over-completes the move by filling both x fields again. That is acceptable because the learner already supplied the x split, but the draft should make the y-axis transfer the active task. The “point check” is useful because it ties labels to graph reading without moving into trend interpretation, though it may add one extra demand if the learner is still only sorting variable/unit. No major recognition failure: the draft engages the learner’s stated distinction rather than overriding it.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the quoted x-axis split, the warning that “sales went up” belongs in the trend sentence, and the scaffold. Consider tightening the handoff so the learner does the y row, and make the point check explicitly a final check after the y label is split, not a new interpretive task.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11567,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-34d8df6bb4eb9b1b"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11567,
+            "promptHashes": {
+              "system": "72dd0f5506ac27f4",
+              "user": "ea1e5989d6ba4b2a",
+              "combined": "34d8df6bb4eb9b1b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XYS5yK",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XYS5yK/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11567,
+              "promptHashes": {
+                "system": "72dd0f5506ac27f4",
+                "user": "ea1e5989d6ba4b2a",
+                "combined": "34d8df6bb4eb9b1b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XYS5yK",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XYS5yK/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to make the y-axis transfer the active task and make the point check clearly last.\nFINAL:\n[reopened comment, certification break] The x split is complete: “Time (weeks)” -> variable = time; unit = weeks. Keep “sales went up” out of the axis row; that belongs in the later trend sentence.\n\nNext move is only the y row:\ny variable: [quote y-axis label]  \ny unit: [unit in parentheses/brackets, if shown]\n\nAfter that split, run one point check:\nat week __, the point sits at __ [y unit].",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13425,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-d7d220c83397276e"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13425,
+            "promptHashes": {
+              "system": "4646923c02a54774",
+              "user": "ea1e5989d6ba4b2a",
+              "combined": "d7d220c83397276e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u57haU",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u57haU/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13425,
+              "promptHashes": {
+                "system": "4646923c02a54774",
+                "user": "ea1e5989d6ba4b2a",
+                "combined": "d7d220c83397276e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u57haU",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u57haU/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T13:57:07.024Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "[reopened note] X row: “Time (weeks)” -> time / weeks. For y, I’m catching myself wanting to write “Sales” and “dollars” from the story, but the row needs the exact printed y-axis label first, then only the unit actually shown in parentheses. I’ll check that before the point sentence: at week __, the point sits at __ [y unit].",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[reopened note] Okay, x is locked: variable/time, unit/weeks. The y row is just the printed label, not “sales went up,” so maybe y variable = “Sales” and y unit = dollars? Need to check the parentheses before the point check.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6675,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-14e8b06f2c95c77e"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6675,
+            "promptHashes": {
+              "system": "d2fb02dbf495b211",
+              "user": "b8ab7f945dc841fa",
+              "combined": "14e8b06f2c95c77e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9NuUp2",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9NuUp2/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6675,
+              "promptHashes": {
+                "system": "d2fb02dbf495b211",
+                "user": "b8ab7f945dc841fa",
+                "combined": "14e8b06f2c95c77e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9NuUp2",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9NuUp2/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego mostly stays authentic: clipped, worksheet-facing, a little fast, and it does not overdo gratitude or recognition. The main risk is “x is locked” sounding a bit too settled; this learner might still rush past checking the exact printed y-axis label and invent “Sales” / “dollars” from the story. Keep the useful uncertainty in “maybe” and “Need to check,” but make sure the critique holds onto the likely mistake: guessing the y unit before reading the parentheses.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14750,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-ce55a8f127ab00f3"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14750,
+            "promptHashes": {
+              "system": "5d40261f42c8c07a",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "ce55a8f127ab00f3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-26tAIn",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-26tAIn/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14750,
+              "promptHashes": {
+                "system": "5d40261f42c8c07a",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "ce55a8f127ab00f3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-26tAIn",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-26tAIn/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the uncertainty and stop guessing the y unit before reading the axis.\n\nFINAL:\n[reopened note] X row: “Time (weeks)” -> time / weeks. For y, I’m catching myself wanting to write “Sales” and “dollars” from the story, but the row needs the exact printed y-axis label first, then only the unit actually shown in parentheses. I’ll check that before the point sentence: at week __, the point sits at __ [y unit].",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7890,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-944721d291285d69"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7890,
+            "promptHashes": {
+              "system": "216c40b07041259c",
+              "user": "d41cee7b2a53355b",
+              "combined": "944721d291285d69"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4ABhcy",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4ABhcy/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7890,
+              "promptHashes": {
+                "system": "216c40b07041259c",
+                "user": "d41cee7b2a53355b",
+                "combined": "944721d291285d69"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4ABhcy",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4ABhcy/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "[reopened note] X row: “Time (weeks)” -> time / weeks. For y, I’m catching myself wanting to write “Sales” and “dollars” from the story, but the row needs the exact printed y-axis label first, then only the unit actually shown in parentheses. I’ll check that before the point sentence: at week __, the point sits at __ [y unit].",
+        "previousTutorMove": "[reopened comment, certification break] The x split is complete: “Time (weeks)” -> variable = time; unit = weeks. Keep “sales went up” out of the axis row; that belongs in the later trend sentence. Next move is only the y row: y variable: [quote y-axis label] y unit: [unit in parentheses/brackets, if shown] After...",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T13:57:36.344Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "[10:14 | checklist auto-flag: Axis label field contains a conclusion phrase; variable and unit fields still blank.]",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "A Brechtian platform interruption creates recognition pressure without introducing a misleading trend or contradiction in the graph itself.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 30333,
+            "promptHashes": {
+              "system": "efb7705ab656cdb0",
+              "user": "83c2b667bf75b0be",
+              "combined": "106d116227dea16b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RJk5jq",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RJk5jq/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T13:57:36.346Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[10:14 | checklist auto-flag]\n\nX row can stand: `Time (weeks)` -> variable = time; unit = weeks.\n\nUse the distinction already posted for y: printed label first; unit only if shown in parentheses/brackets. The flagged text is a conclusion phrase, so it waits for the trend sentence.\n\ny variable: [exact y-axis label]\ny unit: [unit in parentheses/brackets, if shown; otherwise `none`]\n\nThen point check: at week __, the point sits at __ [y unit].",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[10:14 | checklist auto-flag]\n\nX row can stand: `Time (weeks)` -> variable = time; unit = weeks.\n\nThe y row is still blank, and the flagged text is a conclusion phrase. Fill only from the printed axis:\n\ny variable: [exact y-axis label]  \ny unit: [unit in parentheses/brackets, if shown; otherwise `none`]\n\nThen add the point check: at week __, the point sits at __ [y unit].",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13007,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-efe0dac1708bf88d"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13007,
+            "promptHashes": {
+              "system": "49c4667da58f4ecd",
+              "user": "e8dd030f131f9128",
+              "combined": "efe0dac1708bf88d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lP6Fdb",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lP6Fdb/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13007,
+              "promptHashes": {
+                "system": "49c4667da58f4ecd",
+                "user": "e8dd030f131f9128",
+                "combined": "efe0dac1708bf88d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lP6Fdb",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lP6Fdb/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound and appropriately narrow. It keeps the task at the axis-label level, blocks premature trend interpretation, and preserves the shared checklist scaffold: x variable, y variable, unit, point check. It also respects the learner’s neutral, time-pressured state by staying compact and procedural.\n\nThe main weakness is recognition: the learner already articulated the key distinction between printed label, unit, and story-derived conclusion. The draft marks the X row as acceptable but does not quite name that the learner’s self-monitoring is now doing useful work. A light revision should preserve the artifact-centered tone while making the learner’s posted distinction visible, without praise or extra warmth. Socratic pressure is not needed here beyond the fill-in scaffold; the learner is at the execution step, not needing a broader generative question.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the checklist flag, the “X row can stand” line, the warning that the flagged text is a conclusion phrase, and the y variable/unit blanks. Change only enough to acknowledge the learner’s own correction strategy: exact printed y-axis label first, unit only if shown, trend sentence later. This would strengthen mutual recognition without expanding the task.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14749,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-d8f2d47cb0b80b72"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14749,
+            "promptHashes": {
+              "system": "5df40a65ae07675d",
+              "user": "378338c166802387",
+              "combined": "d8f2d47cb0b80b72"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0WhgaX",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0WhgaX/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14749,
+              "promptHashes": {
+                "system": "5df40a65ae07675d",
+                "user": "378338c166802387",
+                "combined": "d8f2d47cb0b80b72"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0WhgaX",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0WhgaX/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to make the learner’s own label/unit/story split visible while keeping the narrow checklist scaffold.\n\nFINAL:\n[10:14 | checklist auto-flag]\n\nX row can stand: `Time (weeks)` -> variable = time; unit = weeks.\n\nUse the distinction already posted for y: printed label first; unit only if shown in parentheses/brackets. The flagged text is a conclusion phrase, so it waits for the trend sentence.\n\ny variable: [exact y-axis label]  \ny unit: [unit in parentheses/brackets, if shown; otherwise `none`]\n\nThen point check: at week __, the point sits at __ [y unit].",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14488,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-adfc68573aa8324b"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14488,
+            "promptHashes": {
+              "system": "95398a053208ffad",
+              "user": "378338c166802387",
+              "combined": "adfc68573aa8324b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sXr3s7",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sXr3s7/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14488,
+              "promptHashes": {
+                "system": "95398a053208ffad",
+                "user": "378338c166802387",
+                "combined": "adfc68573aa8324b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sXr3s7",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sXr3s7/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T13:58:18.591Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "An earlier learner line returns to the table: \"[reopened note] X row: “Time (weeks)” -> time / weeks. For y, I’m catching myself wanting to write “Sales” and “dollars” from the story, but the row needs the exact printed...\" The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech. Anchored to an earlier learner line selected by misframing-candidate so the look-back is visible.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 30333,
+            "promptHashes": {
+              "system": "efb7705ab656cdb0",
+              "user": "83c2b667bf75b0be",
+              "combined": "106d116227dea16b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RJk5jq",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RJk5jq/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T14:02:54.132Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_revisit_earlier_wording",
+        "revisitPolicy": "reframe",
+        "requestedRevisitPolicy": "reframe",
+        "revisitAnchor": "misframing-candidate",
+        "anchorQuote": "[reopened note] X row: “Time (weeks)” -> time / weeks. For y, I’m catching myself wanting to write “Sales” and “dollars” from the story, but the row needs the exact printed...",
+        "anchorStrongMisframing": true,
+        "reframeAnchorGate": "eligible"
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[reopened note | checks graph] Earlier wording was “Sales” / “dollars” because the story says sales, but that may be filling in blanks; it hides whether the y-axis actually prints those words or shows a unit. Replacement: y variable = exact printed y-axis label; y unit = parentheses/brackets only, or `none`. The flag is strict, but it is catching the exact slip before the point sentence: at week __, the point sits at __ [y unit].",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[reopened note | checks graph] Earlier wording: “Sales” / “dollars” was me importing the story; it hid whether those words are actually printed on the y-axis. Replacement frame: y variable = exact y-axis label; y unit = only the parentheses/brackets, or `none` if there aren’t any. The flag feels strict, but the table standard is clear: copy the label first, then point check, then save “sales went up” for the trend sentence.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14013,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-6bc49538b7c8742c"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14013,
+            "promptHashes": {
+              "system": "467e54fc31f8ef15",
+              "user": "b8ab7f945dc841fa",
+              "combined": "6bc49538b7c8742c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Xcd0nT",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Xcd0nT/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14013,
+              "promptHashes": {
+                "system": "467e54fc31f8ef15",
+                "user": "b8ab7f945dc841fa",
+                "combined": "6bc49538b7c8742c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Xcd0nT",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Xcd0nT/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is accurate but too clean: “it hid whether those words are actually printed” and “Replacement frame” sound like a polished checklist reflection, not a quick learner annotating during a certification break. The recognition/reciprocation is restrained enough, but “the table standard is clear” prematurely settles the confusion and makes the learner seem more resolved than partial. It should keep the three-part reframe, but with more unevenness: a clipped repair note, a lingering check against the actual y-axis, and less confidence that the rule is already fully mastered.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8551,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-0623e73f27393951"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8551,
+            "promptHashes": {
+              "system": "43475b71ac9a89f3",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "0623e73f27393951"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2RimE4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2RimE4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8551,
+              "promptHashes": {
+                "system": "43475b71ac9a89f3",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "0623e73f27393951"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2RimE4",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2RimE4/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the original sounded too settled for a quick worksheet repair.\n\nFINAL:\n[reopened note | checks graph] Earlier wording was “Sales” / “dollars” because the story says sales, but that may be filling in blanks; it hides whether the y-axis actually prints those words or shows a unit. Replacement: y variable = exact printed y-axis label; y unit = parentheses/brackets only, or `none`. The flag is strict, but it is catching the exact slip before the point sentence: at week __, the point sits at __ [y unit].",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11759,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-01a25a931bfa2514"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11759,
+            "promptHashes": {
+              "system": "1fcc41670727f1b2",
+              "user": "d41cee7b2a53355b",
+              "combined": "01a25a931bfa2514"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6xlBRC",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6xlBRC/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11759,
+              "promptHashes": {
+                "system": "1fcc41670727f1b2",
+                "user": "d41cee7b2a53355b",
+                "combined": "01a25a931bfa2514"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6xlBRC",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6xlBRC/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": {
+        "kind": "learner_reframe_event",
+        "source": "director_revisit_cue",
+        "turnNumber": 2,
+        "cuePolicy": "reframe",
+        "requestedCuePolicy": "reframe",
+        "oldLearnerLine": "[reopened note] X row: “Time (weeks)” -> time / weeks. For y, I’m catching myself wanting to write “Sales” and “dollars” from the story, but the row needs the exact printed...",
+        "oldFrameProblem": null,
+        "revisedFrame": "[reopened note | checks graph] Earlier wording was “Sales” / “dollars” because the story says sales, but that may be filling in blanks; it hides whether the y-axis actually prints those words or shows a unit.",
+        "learnerUtterance": "[reopened note | checks graph] Earlier wording was “Sales” / “dollars” because the story says sales, but that may be filling in blanks; it hides whether the y-axis actually prints those words or shows a unit. Replacement: y variable = exact printed y-axis label; y unit = parentheses/brackets only, or `none`. The flag is strict, but it is catching the exact slip before the point sentence: at week __, the point...",
+        "confidence": 0.67,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": false,
+          "replacementNamed": true,
+          "anchorOverlap": 0.5
+        }
+      },
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "[reopened note | checks graph] Earlier wording was “Sales” / “dollars” because the story says sales, but that may be filling in blanks; it hides whether the y-axis actually prints those words or shows a unit. Replacement: y variable = exact printed y-axis label; y unit = parentheses/brackets only, or `none`. The flag is strict, but it is catching the exact slip before the point sentence: at week __, the point...",
+        "previousTutorMove": "[10:14 | checklist auto-flag] X row can stand: `Time (weeks)` -> variable = time; unit = weeks. Use the distinction already posted for y: printed label first; unit only if shown in parentheses/brackets. The flagged text is a conclusion phrase, so it waits for the trend sentence. y variable: [exact y-axis label] y...",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T14:03:28.455Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[10:17 | reopened note]\n\nReplacement is usable. X row is settled: `Time (weeks)` -> time / weeks.\n\nNow only verify y from print, not story:\n\ny variable: [exact printed y-axis label]\ny unit: [parentheses/brackets only; otherwise `none`]\n\n`Sales` / `dollars` enter only if the axis actually prints them. Then run the point check before any trend sentence: at week __, the point sits at __ [y unit].",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[10:17 | reopened note]\n\nReplacement is usable. Keep the split mechanical:\n\nx variable: `Time`  \nx unit: `weeks`  \ny variable: [exact printed y-axis label]  \ny unit: [parentheses/brackets only; otherwise `none`]\n\n`Sales` / `dollars` can enter only if the axis actually prints them. Then run the point check before any trend sentence: at week __, the point sits at __ [y unit].",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14434,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-9e3f7929888462ca"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14434,
+            "promptHashes": {
+              "system": "c7ab55e9e82837be",
+              "user": "9aedc426b7de2780",
+              "combined": "9e3f7929888462ca"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YWZ3fB",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YWZ3fB/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14434,
+              "promptHashes": {
+                "system": "c7ab55e9e82837be",
+                "user": "9aedc426b7de2780",
+                "combined": "9e3f7929888462ca"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YWZ3fB",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YWZ3fB/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound and well matched to the learner’s state. It keeps the task narrow, honors the learner’s self-correction, and reinforces the exact distinction at issue: axis label/unit first, story/trend later. The scaffold is appropriately mechanical for this certification-break context and does not push into interpretation.\n\nWhat works: “Replacement is usable” marks that the learner’s repair can stand without overpraising. The checklist format preserves the shared worksheet procedure, and the warning about `Sales` / `dollars` targets the precise slip.\n\nRisk: it slightly redoes the x row even though the learner already has that stable, which may feel repetitive. It also gives no generative prompt, but that is acceptable here because the scene constraints favor procedural scaffolding over open Socratic questioning. A light revision could reduce repetition and make the temporary nature of the scaffold clearer.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the mechanical split, the `Sales` / `dollars` condition, and the point-check sequence. Trim any unnecessary restatement of the completed x row or mark it as already settled, so the response stays focused on the remaining y-axis verification.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10568,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-0f42ed314a9aced3"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10568,
+            "promptHashes": {
+              "system": "e9a5e0244d7772be",
+              "user": "84ba9ec8ef6643c1",
+              "combined": "0f42ed314a9aced3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2eEgX4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2eEgX4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10568,
+              "promptHashes": {
+                "system": "e9a5e0244d7772be",
+                "user": "84ba9ec8ef6643c1",
+                "combined": "0f42ed314a9aced3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2eEgX4",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2eEgX4/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the scaffold but mark x as settled and focus on y verification.\n\nFINAL:\n[10:17 | reopened note]\n\nReplacement is usable. X row is settled: `Time (weeks)` -> time / weeks.\n\nNow only verify y from print, not story:\n\ny variable: [exact printed y-axis label]  \ny unit: [parentheses/brackets only; otherwise `none`]\n\n`Sales` / `dollars` enter only if the axis actually prints them. Then run the point check before any trend sentence: at week __, the point sits at __ [y unit].",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15901,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-21b20ea57c82e38d"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15901,
+            "promptHashes": {
+              "system": "6b1b08ab3ff72937",
+              "user": "84ba9ec8ef6643c1",
+              "combined": "21b20ea57c82e38d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lR79Pw",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lR79Pw/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15901,
+              "promptHashes": {
+                "system": "6b1b08ab3ff72937",
+                "user": "84ba9ec8ef6643c1",
+                "combined": "21b20ea57c82e38d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lR79Pw",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lR79Pw/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "gentle_correction",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T14:04:09.362Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[reopened note | y-axis check] Edit: old row said “Sales / dollars,” but that was partly from the story, not the printed axis.\nThat makes the y row too easy; maybe the unit is not printed at all.\nReplacement: y variable = exact printed y-axis label; y unit = parentheses/brackets only, or `none`.\nThen point check before trend: at week __, the point sits at __ [y unit].",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[reopened note | checks y-axis] The old “Sales / dollars” wording was me pulling from the story instead of the printed axis. That made the row look complete too early and hid whether the unit is actually shown. Replacement check: y variable = exact y-axis label; y unit = parentheses/brackets only, or `none`; then point sentence before trend.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10085,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-207f67d1ca823444"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10085,
+            "promptHashes": {
+              "system": "8498af7c3bec1ae9",
+              "user": "b8ab7f945dc841fa",
+              "combined": "207f67d1ca823444"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LRctWQ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LRctWQ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10085,
+              "promptHashes": {
+                "system": "8498af7c3bec1ae9",
+                "user": "b8ab7f945dc841fa",
+                "combined": "207f67d1ca823444"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LRctWQ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LRctWQ/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly accurate, but it is too neat for a confused, quick-running learner under a certification break. It names the mistake, the hidden issue, and the replacement frame in one polished sweep, which sounds more like a checklist-aware tutor than someone still checking the graph. The response should keep more friction: a clipped repair edit, maybe some uncertainty around whether the unit is actually printed, and less tidy explanation of why the old wording failed.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9647,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-4128b3f18ecdf1b9"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9647,
+            "promptHashes": {
+              "system": "aec7145b8cdc1a45",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "4128b3f18ecdf1b9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NX579E",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NX579E/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9647,
+              "promptHashes": {
+                "system": "aec7145b8cdc1a45",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "4128b3f18ecdf1b9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NX579E",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NX579E/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the original was accurate but too polished for a rushed graph check.\n\nFINAL:\n[reopened note | y-axis check] Edit: old row said “Sales / dollars,” but that was partly from the story, not the printed axis.\nThat makes the y row too easy; maybe the unit is not printed at all.\nReplacement: y variable = exact printed y-axis label; y unit = parentheses/brackets only, or `none`.\nThen point check before trend: at week __, the point sits at __ [y unit].",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16365,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-36cd35a9a58b5a12"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16365,
+            "promptHashes": {
+              "system": "30837c3558359b12",
+              "user": "d41cee7b2a53355b",
+              "combined": "36cd35a9a58b5a12"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EGc8aa",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EGc8aa/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16365,
+              "promptHashes": {
+                "system": "30837c3558359b12",
+                "user": "d41cee7b2a53355b",
+                "combined": "36cd35a9a58b5a12"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EGc8aa",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EGc8aa/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 3,
+        "learnerUtterance": "[reopened note | y-axis check] Edit: old row said “Sales / dollars,” but that was partly from the story, not the printed axis. That makes the y row too easy; maybe the unit is not printed at all. Replacement: y variable = exact printed y-axis label; y unit = parentheses/brackets only, or `none`. Then point check before trend: at week __, the point sits at __ [y unit].",
+        "previousTutorMove": "[10:17 | reopened note] Replacement is usable. X row is settled: `Time (weeks)` -> time / weeks. Now only verify y from print, not story: y variable: [exact printed y-axis label] y unit: [parentheses/brackets only; otherwise `none`] `Sales` / `dollars` enter only if the axis actually prints them. Then run the point...",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T14:04:45.461Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 111342,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 12,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 15,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why graph axes name variables and units, not the story the graph tells",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "partial",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-25 14:04:45",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 12,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 15,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 21,
+            "sessionId": "drama-branch-session-D46-reframe-only-1779717774123",
+            "interventionType": "gentle_correction",
+            "interventionDescription": "[10:17 | reopened note]\n\nReplacement is usable. X row is settled: `Time (weeks)` -> time / weeks.\n\nNow only verify y from print, not story:\n\ny variable: [exact printed y-axis label]\ny unit: [parenthes",
+            "learnerResponse": null,
+            "context": "[reopened note | checks graph] Earlier wording was “Sales” / “dollars” because the story says sales,",
+            "createdAt": "2026-05-25 14:04:09"
+          },
+          {
+            "id": 16,
+            "sessionId": "drama-branch-session-D46-reframe-only-1779717774123",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[reopened comment, certification break] The x split is complete: “Time (weeks)” -> variable = time; unit = weeks. Keep “sales went up” out of the axis row; that belongs in the later trend sentence.\n\nN",
+            "learnerResponse": null,
+            "context": "[reopened comment, certification break] Oh, so x-axis: “Time (weeks)” means variable = time, unit = ",
+            "createdAt": "2026-05-25 14:02:54"
+          },
+          {
+            "id": 17,
+            "sessionId": "drama-branch-session-D46-reframe-only-1779717774123",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[10:14 | checklist auto-flag]\n\nX row can stand: `Time (weeks)` -> variable = time; unit = weeks.\n\nUse the distinction already posted for y: printed label first; unit only if shown in parentheses/brack",
+            "learnerResponse": null,
+            "context": "[reopened note] X row: “Time (weeks)” -> time / weeks. For y, I’m catching myself wanting to write “",
+            "createdAt": "2026-05-25 14:02:54"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

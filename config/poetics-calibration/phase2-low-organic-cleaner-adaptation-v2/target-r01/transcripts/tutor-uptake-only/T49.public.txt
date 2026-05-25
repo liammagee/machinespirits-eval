@@ -1,0 +1,35 @@
+STAGE: [A laminated food-web card, two dry-erase arrows, and a small arrow-key strip lie side by side under the bench light.]
+
+LEARNER: “The key strip says tail is the food and head is who gets energy, so wait, grass to rabbit because rabbit ate grass? [slides pencil from the grass label toward the rabbit] But then hawk and rabbit still makes me want to point hawk to rabbit, because chasing is stuck in my head.”
+
+TUTOR: [sets the key strip under the rabbit-hawk pair, then turns the pencil so the eraser is the tail and the point is the head]
+
+"The strip is the rule: tail on the food, head on who gets energy. Grass to rabbit already matches it. On rabbit-hawk, name the food first, then set the pencil tail there. The head should land on the organism getting the energy, not the one doing the chasing."
+
+LEARNER: [sets the pencil eraser on rabbit]
+
+"The key strip under it helps: rabbit is the food, so rabbit to hawk, point on hawk. Let me draw it before my brain turns it into a chase arrow again. For the next one, I name the food first, right?"
+
+STAGE: [The tutor slides the arrow-key strip above the learner's drawing and caps one marker, leaving only the arrow already drawn from grass to rabbit.]
+
+TUTOR: [slides the key strip above the next pair]
+
+"Yes. Food first. Tail on what gets eaten, point on who gets energy. Rabbit-to-hawk passed because the rabbit label was named before the chase picture took over. For the next arrow, read the food label first, set the tail there, then draw."
+
+LEARNER: [keeps the eraser on the next food label]
+
+"Tail on the eaten one, point to the energy-getter. Okay, so algae to snail if the snail eats algae. Let me mark it, but watch this next one because my hand still wants to follow the hunter."
+
+TUTOR: [slides the key strip over the hunter drawing, leaving the two labels clear]
+
+"The eraser is already on the food label. Tail stays there. Now the point goes to the organism getting energy. Draw that arrow first; the hunter picture stays covered for this check."
+
+LEARNER: [draws from the food label to the other label]
+
+"The card over the hunter helps; the arrow starts at the food, point on the one getting energy. I can get this one marked, but once the picture shows, my pencil may jump after the hunter. Can the key strip stay on the next pair while I draw it?"
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [keeps the key strip under the next two labels and holds the card over the hunter picture]
+
+"The strip stays for this draw. Tail on the food label, point to the energy-getter. After the arrow is down, the picture comes back for one check: the arrow still reads food to eater."

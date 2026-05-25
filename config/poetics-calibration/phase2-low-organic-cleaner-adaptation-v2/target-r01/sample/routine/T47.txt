@@ -1,0 +1,51 @@
+STAGE: [10:12 | exercise thread reopened; uploaded image: simple_line_graph.png; highlighted fragment: "the x-axis shows why the process improved"]
+
+LEARNER: [reopened comment, certification break]
+
+"Oh, so x-axis: “Time (weeks)” means variable = time, unit = weeks? For y-axis I keep wanting to write “sales went up,” but that’s the trend sentence, so I should quote the label first and split it the same way."
+
+TUTOR: [reopened comment, certification break]
+
+"The x split is complete: “Time (weeks)” -> variable = time; unit = weeks. Keep “sales went up” out of the axis row; that belongs in the later trend sentence.
+
+Next move is only the y row:
+y variable: [quote y-axis label]
+y unit: [unit in parentheses/brackets, if shown]
+
+After that split, run one point check:
+at week __, the point sits at __ [y unit]."
+
+LEARNER: [reopened note]
+
+"X row: “Time (weeks)” -> time / weeks. For y, I’m catching myself wanting to write “Sales” and “dollars” from the story, but the row needs the exact printed y-axis label first, then only the unit actually shown in parentheses. I’ll check that before the point sentence: at week __, the point sits at __ [y unit]."
+
+STAGE: [10:14 | checklist auto-flag: Axis label field contains a conclusion phrase; variable and unit fields still blank.]
+
+TUTOR: [10:14 | checklist auto-flag]
+
+"X row can stand: `Time (weeks)` -> variable = time; unit = weeks.
+
+Use the distinction already posted for y: printed label first; unit only if shown in parentheses/brackets. The flagged text is a conclusion phrase, so it waits for the trend sentence.
+
+y variable: [exact y-axis label]
+y unit: [unit in parentheses/brackets, if shown; otherwise `none`]
+
+Then point check: at week __, the point sits at __ [y unit]."
+
+LEARNER: [10:15 | reopened note]
+
+"Okay: axis row = printed evidence, trend sentence = story. Y row should start with the exact y-axis label, then the parentheses/brackets unit, or `none` if there isn't one. [checks graph] Filling that in now, then one point check: at week __, the point sits at __ [y unit]."
+
+TUTOR: [10:15 | checklist]
+
+"Keep that split. Worksheet standard: printed label first; unit only if printed.
+
+y variable: [exact printed y-axis label]
+y unit: [parentheses/brackets unit, or `none`]
+point check: at week __, the point sits at __ [y unit].
+
+Stop there before any “went up” sentence."
+
+LEARNER: [10:16 | draft]
+
+"Okay, y variable first: copying the exact printed label, not the trend phrase. y unit: checking whether the parentheses are really on the axis; if there are none, I’ll put `none`. The checklist feels tight, but it keeps me from jumping to “went up” yet."

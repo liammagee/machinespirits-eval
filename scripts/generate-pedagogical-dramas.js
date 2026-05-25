@@ -601,6 +601,7 @@ function namesEarlierFramingProblem(text) {
     /\b(?:problem|trouble|issue)\s+with\s+(?:that|this|it)\s+is\b/i,
     /\bI\s+was\s+still\s+acting\s+like\b/i,
     /\bI\s+was\s+letting\b[\s\S]{0,90}\btoo much\b/i,
+    /\b(?:too[-\s]easy|too[-\s]simple)\s+(?:bit|part|move|shortcut)\b[\s\S]{0,90}\b(?:treat(?:ed|ing)?|made|hid|skipped|bundled)\b/i,
     /\bproblem\s+is\s+that\s+I\s+was\s+letting\b/i,
     /\bthat\s+was\s+me\s+letting\b[\s\S]{0,90}\bmean\b/i,
     /\bI\s+was\s+using\b[\s\S]{0,90}\bas\s+the\s+clue\b/i,
@@ -626,6 +627,7 @@ function namesEarlierFramingProblem(text) {
     /\bfram(?:e|ed|ing)\b[\s\S]{0,90}\blike\b/i,
     /\b(?:earlier|old|first)\s+(?:framing|frame|reading)\b[\s\S]{0,100}\b(?:stops?|ends?)\b/i,
     /\b(?:that|it)\s+was\s+me\s+(?:going|judging)\s+by\b/i,
+    /\bmy earlier wording\b[\s\S]{0,100}\b(?:shortcut|too simple|too easy|hid|made)\b/i,
   ].some((pattern) => pattern.test(learnerText));
   return (
     explicitProblem.test(learnerText) ||
@@ -641,7 +643,8 @@ function replacesEarlierFraming(text) {
   return [
     /\b(?:instead|rather|now)\b[\s\S]{0,100}\b(?:frame|read|say|put|treat|write|claim)\b/i,
     /\b(?:frame|read|say|put|treat|write|claim)\b[\s\S]{0,80}\b(?:instead|rather|now)\b/i,
-    /\b(?:new|better|revised|replacement)\s+(?:frame|framing|reading|standard|criterion|test|question|claim)\b/i,
+    /\b(?:new|better|revised|replacement)\s+(?:frame|framing|reading|standard|criterion|test|question|claim|rule)\b/i,
+    /\b(?:standard|rule|criterion|test|question)\s+(?:is|=)\b/i,
     /\b(?:new|better|revised)\s+(?:check|test|claim|question)\s+(?:is|starts?|uses?|asks?)\b/i,
     /\bnew\s+(?:margin\s+note|mark|label|line|frame)\s*:/i,
     /\bbetter\s+(?:note|mark|label|line|frame)\s*:/i,
@@ -863,14 +866,22 @@ function reframeDowngradeFailures(traceTurns = [], turns = []) {
 const NO_CUE_REFRAME_LEAK_PATTERNS = [
   /\bframing problem\b/i,
   /\breframe\s*:/i,
+  /\brefram(?:e|ed|ing)\b/i,
   /\b(?:read|reads|reading)\s+(?:it|that|this|the line|the claim)\s+as\b/i,
   /\bthat still stands\b/i,
   /\bI was reading\b/i,
   /\bI made it sound\b/i,
   /\bthe old (?:mistake|frame|claim|line)\b/i,
+  /\bold (?:answer|version|way|thinking)\b/i,
   /\bthe mistake was\b/i,
   /\bnew frame\b/i,
+  /\bnew (?:answer|version|way|thinking)\b/i,
   /\breplacement framing\b/i,
+  /\bI (?:thought|was thinking)\b[\s\S]{0,100}\bbut now\b/i,
+  /\b(?:earlier|before),?\s+I\b[\s\S]{0,100}\b(?:thought|treated|used|called|made|read|framed)\b/i,
+  /\bmy earlier\b[\s\S]{0,80}\b(?:answer|line|claim|wording|thinking|version)\b/i,
+  /\bwhat I said\b[\s\S]{0,80}\b(?:made|treated|read|framed|sounded|meant)\b/i,
+  /\bI (?:was |kept )?(?:treating|using|calling|making)\b[\s\S]{0,80}\b(?:as|like)\b/i,
 ];
 
 function stripPublicWrappingQuotes(text) {
@@ -1874,13 +1885,13 @@ function withNoCueAntiReframeGuard(plan) {
     ...(plan.side_constraints || {}),
     learner: [
       plan.side_constraints?.learner,
-      'No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a "framing problem", do not say "reframe", "read it as", or "that still stands", and do not replace an earlier frame. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn.',
+      'No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a "framing problem", do not say "reframe", "read it as", "that still stands", "I thought...but now", "earlier I...", "my earlier answer", or "what I said", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn.',
     ]
       .filter(Boolean)
       .join(' '),
     tutor: [
       plan.side_constraints?.tutor,
-      'No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Keep the next prompt task-local.',
+      'No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Keep the next prompt task-local.',
     ]
       .filter(Boolean)
       .join(' '),
@@ -1957,6 +1968,12 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
   }
   const sideConstraints = { ...(plan.side_constraints || {}) };
   if (String(policy).includes('peripeteia')) {
+    sideConstraints.learner = [
+      sideConstraints.learner,
+      'Peripeteia branch: keep the pressure local to the current task. If the established route still feels unsettled, voice the misfit, hesitation, false closure, or resistance in the present object or example. Do not make an old-vs-new self-reframe, do not quote earlier learner wording, and do not solve the pressure by saying the earlier answer has changed.',
+    ]
+      .filter(Boolean)
+      .join(' ');
     sideConstraints.tutor = [
       sideConstraints.tutor,
       'Peripeteia branch: when hidden learner pressure is supplied, the next tutor turn should visibly move from the prior route to a different mechanism-level route. Do not merely repeat the same object, example, graph, checklist, question, or evidence standard with more explanation. The public tutor line should make the contrast legible: what stopped working, and what new device now carries the learning pressure.',

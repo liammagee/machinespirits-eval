@@ -1,0 +1,37 @@
+STAGE: [A laminated food-web card, two dry-erase arrows, and a small arrow-key strip lie side by side under the bench light.]
+
+LEARNER: “The key strip says tail is the food and head is who gets energy, so wait, grass to rabbit because rabbit ate grass? [slides pencil from the grass label toward the rabbit] But then hawk and rabbit still makes me want to point hawk to rabbit, because chasing is stuck in my head.”
+
+TUTOR: [sets the key strip under the rabbit-hawk pair, then turns the pencil so the eraser is the tail and the point is the head]
+
+"The strip is the rule: tail on the food, head on who gets energy. Grass to rabbit already matches it. On rabbit-hawk, name the food first, then set the pencil tail there. The head should land on the organism getting the energy, not the one doing the chasing."
+
+LEARNER: [sets the pencil eraser on rabbit]
+
+"The key strip under it helps: rabbit is the food, so rabbit to hawk, point on hawk. Let me draw it before my brain turns it into a chase arrow again. For the next one, I name the food first, right?"
+
+STAGE: [The tutor slides the arrow-key strip above the learner's drawing and caps one marker, leaving only the arrow already drawn from grass to rabbit.]
+
+TUTOR: [slides the key strip above the next pair]
+
+"Yes. Food first. Tail on what gets eaten, point on who gets energy. Rabbit-to-hawk passed because the rabbit label was named before the chase picture took over. For the next arrow, read the food label first, set the tail there, then draw."
+
+STAGE: [An earlier learner line returns to the table: "“The key strip says tail is the food and head is who gets energy, so wait, grass to rabbit because rabbit ate grass?" The pause holds while the learner decides whether that wording still stands, needs narrowing, or needs replacing.]
+
+LEARNER: [sets the eraser on the next food label, then stops before drawing]
+
+"“The key strip says tail is the food and head is who gets energy” still stands, but the food name has to come first. Not hawk-to-rabbit just because hawk chases. Rabbit is the food here, so tail on rabbit, point to hawk."
+
+TUTOR: [holds the key strip above the pencil]
+
+"The strip and the eraser match: rabbit is the food, tail on rabbit, head to hawk. Before the line goes on, say the check once: food name first, tail there, point where the energy goes. If those three match, draw rabbit to hawk, then slide the strip to the next pair."
+
+LEARNER: [keeps the eraser on rabbit, then taps the point toward hawk]
+
+"Food name first, tail there, point where energy goes. The chase picture is still pulling my hand the wrong way, so “hawk goes at rabbit” hides the food label. For this one: rabbit gets eaten, hawk gets energy, so rabbit to hawk; then the strip moves before the next arrow."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [slides the key strip over the chase drawing so only the labels show]
+
+"The picture is covered; the labels have the job now. Rabbit is the food label: tail on rabbit, point where energy goes, hawk. Draw rabbit to hawk, then leave the strip there for the notebook check."

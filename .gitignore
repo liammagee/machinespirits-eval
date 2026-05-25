@@ -11,8 +11,9 @@ node_modules
 # Private research artifacts (symlinked from ../machinespirits-eval-private/)
 data
 logs
-notes
 exports
+notes/private/
+notes/local/
 
 # SQLite databases and temp files
 *.db

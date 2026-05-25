@@ -157,7 +157,10 @@ const STRONG_MISFRAMING_ANCHOR_PATTERNS = [
   /\b(?:does that mean|so maybe)\b/i,
   /\b(?:still|kept|keep)\b[\s\S]{0,90}\b(?:want|wanted|treat(?:ed|ing)?|read(?:ing)?|using)\b[\s\S]{0,90}\b(?:settle|prove|proof|whole|enough|excuse|verdict)\b/i,
   /\b(?:exact wording|checklist|graph|quote|price|drawing|scale|average|caption)\b[\s\S]{0,90}\b(?:settle|prove|stands?|counts?|means?)\b/i,
-  /\b(?:calling|called|treat(?:ed|ing)|read(?:ing)?|using)\b[\s\S]{0,90}\b(?:as|like)\b[\s\S]{0,90}\b(?:the whole|proof|verdict|answer|excuse|sign-?off)\b/i,
+  /\b(?:calling|called|treat(?:ed|ing)|read(?:ing)?|using)\b[\s\S]{0,90}\b(?:as|like)\b[\s\S]{0,90}\b(?:the whole|proof|proves?|verdict|answer|excuse|sign-?off)\b/i,
+  /\b(?:keep|kept|still|nearly|almost)\b[\s\S]{0,90}\b(?:read|trace|treat|use|using|call|put|write)\b[\s\S]{0,90}\b(?:as|like|as if)\b/i,
+  /\b(?:header|axis label|x-axis|y-axis|contour|arrow)\b[\s\S]{0,90}\b(?:prove|proves|claim|conclusion|story|route|path|chases|chasing)\b/i,
+  /\bnot\s+[“"']?(?:up|down|left|right|motion|direction|a route|route name|path)[”"']?\b/i,
 ];
 
 const MISFRAMING_ANCHOR_PATTERNS = [...STRONG_MISFRAMING_ANCHOR_PATTERNS, /\bI think\b/i];

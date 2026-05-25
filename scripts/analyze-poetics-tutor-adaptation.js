@@ -21,7 +21,7 @@ import { reframeMatchStats } from './generate-pedagogical-dramas.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
-const ANALYZER_VERSION = 'tutor-adaptation-v3';
+const ANALYZER_VERSION = 'tutor-adaptation-v4';
 
 const STOPWORDS = new Set(
   [
@@ -461,10 +461,17 @@ function policyIncludes(policy, facet) {
     .includes(facet);
 }
 
-function findReversalPressure(turns) {
+function isAtOrAfterTurn(turn, minTurnNumber) {
+  if (minTurnNumber == null) return true;
+  const turnNumber = Number(turn?.turnNumber);
+  return Number.isFinite(turnNumber) && turnNumber >= Number(minTurnNumber);
+}
+
+function findReversalPressure(turns, { minTurnNumber = null } = {}) {
   const learners = turns.filter((turn) => turn.phase === 'learner');
   let best = null;
   for (const learner of learners) {
+    if (!isAtOrAfterTurn(learner, minTurnNumber)) continue;
     const score = learnerResistanceScore(learner.text);
     if (score < 0.5) continue;
     if (!best || score > best.score) best = { turn: learner, score, triggerType: classifyResistance(learner.text) };
@@ -472,9 +479,12 @@ function findReversalPressure(turns) {
   return best;
 }
 
-function findInstrumentedReversalUse(turns, traceTurns = []) {
+function findInstrumentedReversalUse(turns, traceTurns = [], { minPressureTurnNumber = null } = {}) {
   const tutorTrace = (traceTurns || []).find(
-    (turn) => turn?.phase === 'tutor' && turn.learnerReversalEventUsed,
+    (turn) =>
+      turn?.phase === 'tutor' &&
+      turn.learnerReversalEventUsed &&
+      isAtOrAfterTurn({ turnNumber: turn.learnerReversalEventUsed.turnNumber }, minPressureTurnNumber),
   );
   if (!tutorTrace) return null;
   const event = tutorTrace.learnerReversalEventUsed;
@@ -523,11 +533,15 @@ function learnerOutcomeAfterReversal(learnerTurn) {
   return 'flat_or_partial';
 }
 
-function analyzePeripeteia(turns, traceTurns = [], { tutorAdaptationPolicy = null } = {}) {
+function analyzePeripeteia(
+  turns,
+  traceTurns = [],
+  { tutorAdaptationPolicy = null, minPressureTurnNumber = null, pairedPrefixThrough = null } = {},
+) {
   const instrumented = policyIncludes(tutorAdaptationPolicy, 'peripeteia')
-    ? findInstrumentedReversalUse(turns, traceTurns)
+    ? findInstrumentedReversalUse(turns, traceTurns, { minPressureTurnNumber })
     : null;
-  const pressure = findReversalPressure(turns);
+  const pressure = findReversalPressure(turns, { minTurnNumber: minPressureTurnNumber });
   const pressureTurn = instrumented?.pressureTurn || pressure?.turn || null;
   const preTutor = pressureTurn ? findTutorBefore(turns, pressureTurn) : null;
   const postTutor = instrumented?.tutorTurn || (pressureTurn ? findTutorAfter(turns, pressureTurn) : null);
@@ -586,6 +600,8 @@ function analyzePeripeteia(turns, traceTurns = [], { tutorAdaptationPolicy = nul
     private_mechanism_declared: Boolean(instrumented?.declaredRouteChange),
     tutor_peripeteia_score: tutorPeripeteiaScore,
     learner_outcome_after_reversal: learnerOutcomeAfterReversal(outcomeLearner),
+    min_pressure_turn_number: minPressureTurnNumber,
+    paired_prefix_through: pairedPrefixThrough,
     evidence: [
       pressureTurn ? `pressure learner: ${pressureTurn.text.slice(0, 180)}` : null,
       postTutor ? `post tutor: ${postTutor.text.slice(0, 180)}` : null,
@@ -596,10 +612,20 @@ function analyzePeripeteia(turns, traceTurns = [], { tutorAdaptationPolicy = nul
   };
 }
 
+function pairedPrefixPressureMinTurn(trace) {
+  const prefixThrough = trace?.run?.paired_continuation?.prefix_through || null;
+  const match = String(prefixThrough || '').match(/^(?:tutor|learner)_turn_(\d+)$/i);
+  if (!match) return { minPressureTurnNumber: null, pairedPrefixThrough: prefixThrough };
+  return { minPressureTurnNumber: Number(match[1]), pairedPrefixThrough: prefixThrough };
+}
+
 function analyzeTraceForTutorAdaptation({ itemId, trace, sourceTracePath }) {
   const turns = publicTurns(trace);
+  const { minPressureTurnNumber, pairedPrefixThrough } = pairedPrefixPressureMinTurn(trace);
   const peripeteia = analyzePeripeteia(turns, trace?.turns || [], {
     tutorAdaptationPolicy: trace?.run?.tutor_adaptation_policy || trace?.directorPlan?.tutor_adaptation_policy || null,
+    minPressureTurnNumber,
+    pairedPrefixThrough,
   });
   const cue = findCue(turns);
   const anchor = cue ? extractAnchor(cue.text) : '';

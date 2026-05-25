@@ -1,0 +1,27 @@
+STAGE: [A laminated cart diagram, four magnetic label cards, and one blank force-arrow card sit on the tray; the cart's motion arrow is printed faintly in grey, apart from the force arrows.]
+
+TUTOR: [sets the cart diagram in the centre of the metal tray and fans the four cards beside it.]
+
+“The travel arrow can wait. These cards name interactions on the cart. Start with this card: push. Which contact gives that force? Place it on the diagram.”
+
+LEARNER: [sets the `push` card by the hand side of the cart diagram.]
+
+"Right. This card goes at that contact, not on the travel arrow. The force arrow points into the cart from the hand side, yes?"
+
+STAGE: [The blank force-arrow card is turned over; its printed side reads: 'force = interaction on the cart'. The earlier arrow placements remain visible.]
+
+TUTOR: [slides the printed card under `push`, clear of the travel arrow, then taps the hand contact.]
+
+“Yes. This card names hand-on-cart. From that contact, the force arrow goes into the cart. The travel arrow stays out. Friction next: which contact gives that?”
+
+LEARNER: [sets the `friction` card at the cart-tray contact.]
+
+"This contact, where the cart touches the tray. The card belongs here, not on the travel arrow. If the cart is moving right along the tray, does the friction arrow point left?"
+
+TUTOR: [sets the arrow shaft at the cart-tray contact and leaves the arrowhead tile beside its left end.]
+
+“If it is sliding right over the tray, yes: friction from the tray on the cart points left. Put the arrowhead on the left end. Then `gravity`: which interaction gives that force?”
+
+LEARNER: [puts the arrowhead on the left end, then holds `gravity` just below the cart diagram.]
+
+"Friction is tray-on-cart, left if the cart is sliding right. `Gravity` is Earth-on-cart, so the force arrow points straight down on the cart. There is no tray contact for this card; does it sit below the cart?"

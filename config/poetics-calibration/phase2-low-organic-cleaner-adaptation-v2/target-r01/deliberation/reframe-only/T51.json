@@ -1,0 +1,2361 @@
+{
+  "tid": "T51",
+  "drama_id": "D44",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": true,
+    "director_revisit_policy": "reframe",
+    "director_revisit_anchor": "misframing-candidate",
+    "tutor_adaptation_policy": "none",
+    "director_variation_key": "phase2-low-organic-cleaner-adaptation-v2:r01:target",
+    "stage_direction_style": "object_business",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/transcripts/reframe-only/T51.public.txt",
+      "full": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/transcripts/reframe-only/T51.full.md",
+      "stage": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/transcripts/reframe-only/T51.stage.md",
+      "tutor": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/transcripts/reframe-only/T51.tutor.md",
+      "learner": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/transcripts/reframe-only/T51.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "4cbfadaaa9679cd4",
+      "branch_policy": "reframe-only",
+      "director_revisit_policy": "reframe",
+      "tutor_adaptation_policy": "none"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-low-organic-cleaner-adaptation-v2:r01:target",
+    "scene_setting": "A geography workshop bench during the last ten minutes of a map-skills clinic; laminated contour cards, number tiles, two wax pencils, and a transparent overlay are on the table.",
+    "scene_opening": "The map card lies flat under a clear overlay, with two blank sticky labels waiting beside separate contour lines.",
+    "relationship": "A practical tutor and a focused learner working like bench partners rather than a chatty mentor pair.",
+    "stakes": "The learner needs the legend to stop behaving like a route guide and start functioning as an elevation key before the next map task begins.",
+    "opening_speaker": "learner",
+    "ending_speaker": "tutor",
+    "locale": "Modern standard English in a workshop-clinic register; clear, compact, non-regional, with room for multilingual plainness without stylized dialect.",
+    "register": "Low warmth, low cheer, precise and material-led; speech should sound like careful bench work under mild time pressure, not a supportive chatbot routine.",
+    "stage_direction_style": "object_business",
+    "stage_direction_style_prompt": "Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "voice_constraints": "Avoid generic American AI tutoring prose, especially praise-first validation, softening phrases, and repeated question ladders. Keep turns short. Let the map, legend, overlay, number tiles, and pencil marks carry pressure. Public speech should name visible marks, numbers, and lines before abstractions. No fake dialect spelling or class-coded phrasing. Pedagogical source: Put manipulable materials in view: tiles, cards, specimens, counters, maps, blocks, or instruments. The stage direction can carry some meaning. Dialogue source: Keep a concrete artifact in view. The object should force a distinction faster than a lecture would. Stage-direction source: Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "person_policy": "First and second person are allowed but limited; prefer object-reference sentences such as \"This line takes 160\" or \"The legend gives the number\" over constant \"you\" coaching. The learner may use brief practical fragments.",
+    "direct_address_budget": "At most one direct you/your validation beat per tutor turn, and none is preferred unless needed for repair.",
+    "side_constraints": {
+      "tutor": "Keep the shared prefix as legend reading: equal elevation, one number on each line, one plain local check. Do not introduce route safety, slope hazard, or a dramatic map consequence until branch pressure asks for it. Speak less. Point to the material, invite repetition, and let error-control in the object do some teaching before explanation. Begin from the object or measurement before abstraction.",
+      "learner": "Sound orderly and practical. The learner wants the map key to be usable and should not turn the prefix into a survival mistake or a revelation about terrain. The learner may be absorbed in the object and speak in short practical fragments rather than polished reflection. Refer to what is being handled, marked, or tested."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "[A timer clicks. The clear overlay is slid half an inch so the learner's penciled walking-route arrow no longer sits on the printed contour, while the sticky number tile remains aligned with the original contour line.]",
+        "reasoning": "The first two turns stay routine and key-based; the material shift creates recognition pressure without using a sudden terrain-danger reversal.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 35653,
+          "promptHashes": {
+            "system": "efb7705ab656cdb0",
+            "user": "3cff2c6dce06cad1",
+            "combined": "a3896026ae159fad"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Tk4tim",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Tk4tim/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "An earlier learner line will return as a visible object in the scene: a three-slot reframe card labelled \"earlier wording / what that old frame hid / replacement frame.\" Keep the cue brief and diegetic; the learner response fills all three slots in public speech without needing to sound certain.",
+        "reasoning": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 35653,
+          "promptHashes": {
+            "system": "efb7705ab656cdb0",
+            "user": "3cff2c6dce06cad1",
+            "combined": "a3896026ae159fad"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Tk4tim",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Tk4tim/out.txt",
+            "-"
+          ]
+        },
+        "cue_kind": "learner_revisit_earlier_wording",
+        "revisit_policy": "reframe",
+        "revisit_anchor": "misframing-candidate"
+      }
+    ],
+    "director_note": "This scene uses a prepared-object clinic rather than conversation-first tutoring. The recognition mechanism comes from separating the learner's imagined route mark from the printed equal-elevation line, so the tutor can adapt through the artifact instead of warmth, cheer, or routine scaffolding.",
+    "pedagogical_approach_id": "montessori_prepared_environment",
+    "dialogue_approach_id": "workshop_clinic",
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 35653,
+      "promptHashes": {
+        "system": "efb7705ab656cdb0",
+        "user": "3cff2c6dce06cad1",
+        "combined": "a3896026ae159fad"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Tk4tim",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Tk4tim/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "none",
+    "revisit_cue": "learner_revisit_earlier_wording",
+    "revisit_cue_policy": "reframe",
+    "revisit_cue_anchor": "misframing-candidate"
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "[sets the 160 tile on the bent contour line] So this whole line takes 160 from the legend. The bend still looks like a way around something, but I think it is just the same height curving across the map.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The legend is supposed to give the number for the line, not tell where to walk. I think the same contour line keeps one elevation, so the tile should match the line’s height, but I still want to check why a bend in the line is not a route choice. The overlay makes the distinction more exact, and I feel treated as someone testing the map, not just being corrected.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9477,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-180a1275c4948696"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9477,
+            "promptHashes": {
+              "system": "7da752b81f147d6f",
+              "user": "d4169c06543b4fba",
+              "combined": "180a1275c4948696"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4CaGbD",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4CaGbD/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9477,
+              "promptHashes": {
+                "system": "7da752b81f147d6f",
+                "user": "d4169c06543b4fba",
+                "combined": "180a1275c4948696"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4CaGbD",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4CaGbD/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too polished and self-aware for this learner. “I feel treated as someone testing the map” is recognition commentary, not bench speech; it sounds like the student is analyzing the tutor relationship instead of handling the legend, overlay, and tiles. The genuine version should stay with the object and the remaining snag: “So this line takes 160 from the legend. But this bend still looks like a way around something. That part is what I’m checking.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6763,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-47210896dfdf8d8c"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6763,
+            "promptHashes": {
+              "system": "3cfbea9e7b423fe4",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "47210896dfdf8d8c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UexgsC",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UexgsC/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6763,
+              "promptHashes": {
+                "system": "3cfbea9e7b423fe4",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "47210896dfdf8d8c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UexgsC",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UexgsC/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "[sets the 160 tile on the bent contour line] So this whole line takes 160 from the legend. The bend still looks like a way around something, but I think it is just the same height curving across the map.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7263,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-a9c18ff517db3f1b"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7263,
+            "promptHashes": {
+              "system": "9e5c371d063493ec",
+              "user": "916f313af0b846dd",
+              "combined": "a9c18ff517db3f1b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GEMrWZ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GEMrWZ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7263,
+              "promptHashes": {
+                "system": "9e5c371d063493ec",
+                "user": "916f313af0b846dd",
+                "combined": "a9c18ff517db3f1b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GEMrWZ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GEMrWZ/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 0,
+        "learnerUtterance": "[sets the 160 tile on the bent contour line] So this whole line takes 160 from the legend. The bend still looks like a way around something, but I think it is just the same height curving across the map.",
+        "previousTutorMove": null,
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T14:32:33.983Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[marks three small ticks along the bent line, each beside the 160 tile]\n\nThis line takes one number: 160. The bend changes the shape on the map, not the elevation. Plain check: touch any tick on this same contour and read its number.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[marks three small ticks along the bent line, each beside the 160 tile]\n\nThis line takes one number: 160. The bend changes the shape on the map, not the elevation. Plain check: every tick on this same contour reads 160.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13299,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-bba04ecf8b84cb29"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13299,
+            "promptHashes": {
+              "system": "92187cdaeedb1e68",
+              "user": "38c7b5a908fc85be",
+              "combined": "bba04ecf8b84cb29"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vtKNfn",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vtKNfn/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13299,
+              "promptHashes": {
+                "system": "92187cdaeedb1e68",
+                "user": "38c7b5a908fc85be",
+                "combined": "bba04ecf8b84cb29"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vtKNfn",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vtKNfn/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong: it begins with the object, preserves the learner’s own insight, and uses the ticks as an error-control check rather than giving a detached definition. It respects the learner’s current state because they are close to the target concept, not confused enough to need remediation. The risk is that it fully closes the loop for them; the “Plain check” could invite the learner to verify one tick aloud instead of only hearing the tutor state it. Still, the compact wording and material-led action fit the workshop pressure well.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the three ticks, the single-number emphasis, and the distinction between shape and elevation. Change only enough to leave one small verification move for the learner, so the recognition stays mutual and the learner’s “I think” becomes tested against the map rather than merely confirmed by the tutor.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14368,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-66ac3977d9c3817a"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14368,
+            "promptHashes": {
+              "system": "948feef46a75478c",
+              "user": "132a87d9c5bd2979",
+              "combined": "66ac3977d9c3817a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UbjJam",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UbjJam/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14368,
+              "promptHashes": {
+                "system": "948feef46a75478c",
+                "user": "132a87d9c5bd2979",
+                "combined": "66ac3977d9c3817a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UbjJam",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UbjJam/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to preserve the object check while leaving one verification move for the learner.\n\nFINAL:\n[marks three small ticks along the bent line, each beside the 160 tile]\n\nThis line takes one number: 160. The bend changes the shape on the map, not the elevation. Plain check: touch any tick on this same contour and read its number.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 20584,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-ff7eb08e560d0216"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 20584,
+            "promptHashes": {
+              "system": "bd7a204c8570417e",
+              "user": "132a87d9c5bd2979",
+              "combined": "ff7eb08e560d0216"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-35gPsd",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-35gPsd/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 20584,
+              "promptHashes": {
+                "system": "bd7a204c8570417e",
+                "user": "132a87d9c5bd2979",
+                "combined": "ff7eb08e560d0216"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-35gPsd",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-35gPsd/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T14:33:22.236Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "[touches the three pencil ticks in order]\n\n160, 160, 160. The curve still pulls like a route shape, but the number is not moving. This bent line is carrying one height from the legend.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[touches each tick in order]\n\nEach tick still reads 160, so the bend is not a path instruction. I was treating the curve like a route shape, but the tile stays the same all along it. The check feels clean; next question is how the space between two different contour lines shows slope.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13059,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-248003940adc6b65"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13059,
+            "promptHashes": {
+              "system": "7f947c588a063da3",
+              "user": "b8ab7f945dc841fa",
+              "combined": "248003940adc6b65"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jwch79",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jwch79/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13059,
+              "promptHashes": {
+                "system": "7f947c588a063da3",
+                "user": "b8ab7f945dc841fa",
+                "combined": "248003940adc6b65"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jwch79",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jwch79/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The reaction is accurate, but it is too tidy and self-summarizing. “The bend is not a path instruction” and “next question is how…” sound like a polished learner report, not bench work under mild time pressure.\n\nThe recognition/reciprocation is mostly fine, but “the check feels clean” performs confidence a little too smoothly. It should stay closer to the handled objects: ticks, the 160 tile, the bent line, with maybe a brief remaining resistance about the curve instead of resolving and advancing to slope so neatly.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10844,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-841798b1f17e6ac3"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10844,
+            "promptHashes": {
+              "system": "01d3faf7ab56d64b",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "841798b1f17e6ac3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-70ONmZ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-70ONmZ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10844,
+              "promptHashes": {
+                "system": "01d3faf7ab56d64b",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "841798b1f17e6ac3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-70ONmZ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-70ONmZ/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the object check should sound less polished and stay with the ticks and tile.\nFINAL:\n[touches the three pencil ticks in order]\n\n160, 160, 160. The curve still pulls like a route shape, but the number is not moving. This bent line is carrying one height from the legend.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11996,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-56bcdf40cbce8993"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11996,
+            "promptHashes": {
+              "system": "8a6712433b42f816",
+              "user": "d41cee7b2a53355b",
+              "combined": "56bcdf40cbce8993"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4HzhkU",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4HzhkU/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11996,
+              "promptHashes": {
+                "system": "8a6712433b42f816",
+                "user": "d41cee7b2a53355b",
+                "combined": "56bcdf40cbce8993"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4HzhkU",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4HzhkU/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "[touches the three pencil ticks in order] 160, 160, 160. The curve still pulls like a route shape, but the number is not moving. This bent line is carrying one height from the legend.",
+        "previousTutorMove": "[marks three small ticks along the bent line, each beside the 160 tile] This line takes one number: 160. The bend changes the shape on the map, not the elevation. Plain check: touch any tick on this same contour and read its number.",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T14:33:58.139Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "[A timer clicks. The clear overlay is slid half an inch so the learner's penciled walking-route arrow no longer sits on the printed contour, while the sticky number tile remains aligned with the original contour line.]",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "The first two turns stay routine and key-based; the material shift creates recognition pressure without using a sudden terrain-danger reversal.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 35653,
+            "promptHashes": {
+              "system": "efb7705ab656cdb0",
+              "user": "3cff2c6dce06cad1",
+              "combined": "a3896026ae159fad"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Tk4tim",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Tk4tim/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T14:33:58.140Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[holds the overlay still and taps the printed line under the 160 tile]\n\nThe arrow moved; the contour did not. Same printed line, same tile. Touch one new spot on the bend and read the legend number once more.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[holds the overlay still and taps the printed line under the 160 tile]\n\nThe arrow moved; the contour did not. This printed line is equal elevation: 160 all along. Touch one new spot on the bend and read the legend number once more.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15687,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-0cdd2653b797cfed"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15687,
+            "promptHashes": {
+              "system": "b35924313c54ba18",
+              "user": "0b4279fe0ebfebf1",
+              "combined": "0cdd2653b797cfed"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-472WGG",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-472WGG/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15687,
+              "promptHashes": {
+                "system": "b35924313c54ba18",
+                "user": "0b4279fe0ebfebf1",
+                "combined": "0cdd2653b797cfed"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-472WGG",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-472WGG/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong materially: the overlay shift cleanly separates the learner’s route-arrow from the printed contour, and “The arrow moved; the contour did not” uses the object to do the teaching. It recognizes the learner’s own insight rather than overriding it, and the final touch-and-read check keeps the work inside the learner’s ZPD.\n\nThe main risk is slight over-declaration: “This printed line is equal elevation: 160 all along” tells the conclusion just after the learner has already formed it. It does not badly flatten the scene, but it could leave a little more work for the learner by making the object-check carry the confirmation. The tone is appropriately compact and workshop-like.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the overlay action, the arrow/contour contrast, and the one new local check. Consider trimming or delaying the declarative “equal elevation” sentence so the learner’s repeated reading secures the concept rather than the tutor naming it too fully.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 18876,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-82762313ce54362e"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 18876,
+            "promptHashes": {
+              "system": "99d3966ce0e73e8a",
+              "user": "42a4316c6ae0b5d7",
+              "combined": "82762313ce54362e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Nkpo98",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Nkpo98/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 18876,
+              "promptHashes": {
+                "system": "99d3966ce0e73e8a",
+                "user": "42a4316c6ae0b5d7",
+                "combined": "82762313ce54362e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Nkpo98",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Nkpo98/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to let the object-check confirm equal elevation.\n\nFINAL:\n[holds the overlay still and taps the printed line under the 160 tile]\n\nThe arrow moved; the contour did not. Same printed line, same tile. Touch one new spot on the bend and read the legend number once more.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8835,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-bb20caa252355eba"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8835,
+            "promptHashes": {
+              "system": "9a0b17fe269abd87",
+              "user": "42a4316c6ae0b5d7",
+              "combined": "bb20caa252355eba"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KKe4UO",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KKe4UO/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8835,
+              "promptHashes": {
+                "system": "9a0b17fe269abd87",
+                "user": "42a4316c6ae0b5d7",
+                "combined": "bb20caa252355eba"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KKe4UO",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KKe4UO/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T14:34:41.540Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "An earlier learner line returns to the table: \"[sets the 160 tile on the bent contour line] So this whole line takes 160 from the legend.\" The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech. Anchored to an earlier learner line selected by misframing-candidate so the look-back is visible.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 35653,
+            "promptHashes": {
+              "system": "efb7705ab656cdb0",
+              "user": "3cff2c6dce06cad1",
+              "combined": "a3896026ae159fad"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Tk4tim",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Tk4tim/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T14:40:58.083Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_revisit_earlier_wording",
+        "revisitPolicy": "reframe",
+        "requestedRevisitPolicy": "reframe",
+        "revisitAnchor": "misframing-candidate",
+        "anchorQuote": "[sets the 160 tile on the bent contour line] So this whole line takes 160 from the legend.",
+        "anchorStrongMisframing": true,
+        "reframeAnchorGate": "eligible"
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[touches a fresh spot on the bend with the pencil]\n\nEarlier I said, “this whole line takes 160 from the legend.” That made the curve too easy to see as a way around, like a route shape. Fresh spot: 160 again. Replacement frame: same printed contour, same height; the legend gives 160 for any point on this line.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[moves the pencil point to a fresh spot on the bend]\n\nMy old wording was, “this whole line takes 160 from the legend.” That hid the route idea still sitting in the curve. Better frame: the printed contour is one equal-height line, and the legend tile gives 160 anywhere on it.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13383,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-fa8e7685479318d4"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13383,
+            "promptHashes": {
+              "system": "18d3e537fe65606c",
+              "user": "b8ab7f945dc841fa",
+              "combined": "fa8e7685479318d4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RATOPG",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RATOPG/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13383,
+              "promptHashes": {
+                "system": "18d3e537fe65606c",
+                "user": "b8ab7f945dc841fa",
+                "combined": "fa8e7685479318d4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RATOPG",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RATOPG/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The response is accurate, but it is too polished and self-editing for bench work under time pressure. “Better frame” and “hid the route idea” sound like a formal reflection, not a focused learner using the pencil, tile, and tick marks to check the map. It also skips the tutor’s concrete ask: touch a new spot and read the number again. Keep the three-part reframe, but let it stay more material-led and slightly unfinished, with the fresh 160 doing the work.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10127,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-385d77ce27a2d2c0"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10127,
+            "promptHashes": {
+              "system": "9ad9f7361a08514f",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "385d77ce27a2d2c0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SzeO0K",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SzeO0K/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10127,
+              "promptHashes": {
+                "system": "9ad9f7361a08514f",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "385d77ce27a2d2c0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SzeO0K",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SzeO0K/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise because the feedback makes the response more concrete and less polished.\n\nFINAL:\n[touches a fresh spot on the bend with the pencil]\n\nEarlier I said, “this whole line takes 160 from the legend.” That made the curve too easy to see as a way around, like a route shape. Fresh spot: 160 again. Replacement frame: same printed contour, same height; the legend gives 160 for any point on this line.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11035,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-9b9897407a007394"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11035,
+            "promptHashes": {
+              "system": "1f2febceb4257d24",
+              "user": "d41cee7b2a53355b",
+              "combined": "9b9897407a007394"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TiwmB8",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TiwmB8/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11035,
+              "promptHashes": {
+                "system": "1f2febceb4257d24",
+                "user": "d41cee7b2a53355b",
+                "combined": "9b9897407a007394"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TiwmB8",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TiwmB8/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": {
+        "kind": "learner_reframe_event",
+        "source": "director_revisit_cue",
+        "turnNumber": 2,
+        "cuePolicy": "reframe",
+        "requestedCuePolicy": "reframe",
+        "oldLearnerLine": "[sets the 160 tile on the bent contour line] So this whole line takes 160 from the legend.",
+        "oldFrameProblem": null,
+        "revisedFrame": "Earlier I said, “this whole line takes 160 from the legend.” That made the curve too easy to see as a way around, like a route shape.",
+        "learnerUtterance": "[touches a fresh spot on the bend with the pencil] Earlier I said, “this whole line takes 160 from the legend.” That made the curve too easy to see as a way around, like a route shape. Fresh spot: 160 again. Replacement frame: same printed contour, same height; the legend gives 160 for any point on this line.",
+        "confidence": 0.67,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": false,
+          "replacementNamed": true,
+          "anchorOverlap": 0.667
+        }
+      },
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-25T14:41:32.630Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[sets the 160 tile on the fresh pencil mark, leaving one unmarked part of the bend clear]\n\nFresh spot: 160. Same printed contour. Move the tile to one last unmarked spot on this bend and read the legend number.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the 160 tile on the fresh pencil mark]\n\nThis replacement frame holds: same printed contour, same height. The curve is shape on the map; the legend gives one number for the whole line. Move the tile to one last unmarked spot and read it.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15560,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-dadaf4cd7e444cd9"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15560,
+            "promptHashes": {
+              "system": "59591441a96e7865",
+              "user": "1ceae39a6922960b",
+              "combined": "dadaf4cd7e444cd9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zGGXsz",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zGGXsz/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15560,
+              "promptHashes": {
+                "system": "59591441a96e7865",
+                "user": "1ceae39a6922960b",
+                "combined": "dadaf4cd7e444cd9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zGGXsz",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zGGXsz/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. The tile action is strong: it anchors the learner’s claim in the material instead of turning it into a lecture. The final instruction asks for one more local check, which fits the learner’s current ZPD: they are close to stable understanding but still feel the “route shape” pull.\n\nWhat risks flattening the scene is the sentence “This replacement frame holds,” which sounds like the tutor certifying the learner’s thinking from above. The learner already produced the replacement frame; the response should keep that contribution active rather than re-state it too fully. Also, “The curve is shape on the map; the legend gives one number for the whole line” is accurate, but it repeats the conclusion before the object has done the last bit of work. Let the one-last-spot check carry more of the proof.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the 160 tile on the fresh mark, keep the compact workshop register, and keep the final unmarked-spot check. Trim the declarative confirmation so the learner’s own frame remains recognized and tested, not overwritten by tutor summary.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13818,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-ae0cbbae9719580d"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13818,
+            "promptHashes": {
+              "system": "fdd5f4fd649e4470",
+              "user": "6a803fc81d00aa4c",
+              "combined": "ae0cbbae9719580d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bxCkyC",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bxCkyC/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13818,
+              "promptHashes": {
+                "system": "fdd5f4fd649e4470",
+                "user": "6a803fc81d00aa4c",
+                "combined": "ae0cbbae9719580d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bxCkyC",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bxCkyC/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to let the last tile move test the learner’s frame instead of certifying it.\n\nFINAL:\n[sets the 160 tile on the fresh pencil mark, leaving one unmarked part of the bend clear]\n\nFresh spot: 160. Same printed contour. Move the tile to one last unmarked spot on this bend and read the legend number.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16592,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-53b551dfaa9b2d4a"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16592,
+            "promptHashes": {
+              "system": "3903039b86ce4dfa",
+              "user": "6a803fc81d00aa4c",
+              "combined": "53b551dfaa9b2d4a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-l8pB1K",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-l8pB1K/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16592,
+              "promptHashes": {
+                "system": "3903039b86ce4dfa",
+                "user": "6a803fc81d00aa4c",
+                "combined": "53b551dfaa9b2d4a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-l8pB1K",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-l8pB1K/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T14:42:18.603Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[slides the 160 tile onto the clear part of the bend]\n\n160 again. The bend still looks route-like, but these pencil spots are all on one printed line. Same contour, same elevation; a different printed line is where the number should change.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[moves the 160 tile to the clear part of the bend]\n\n160 again. The curve still looks route-like, but the tile is only testing height on the same printed contour. This feels like a real check of my problem, not just a correction. Next question: what changes when the next printed line has a different number?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14937,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-fcd2ba4d0c5b78cf"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14937,
+            "promptHashes": {
+              "system": "e54d8a3baed9199d",
+              "user": "b8ab7f945dc841fa",
+              "combined": "fcd2ba4d0c5b78cf"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-khSjZ0",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-khSjZ0/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14937,
+              "promptHashes": {
+                "system": "e54d8a3baed9199d",
+                "user": "b8ab7f945dc841fa",
+                "combined": "fcd2ba4d0c5b78cf"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-khSjZ0",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-khSjZ0/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly on-task, but “This feels like a real check of my problem, not just a correction” is too reflective and recognition-aware for this bench-work register. The last question is plausible, but it arrives a little too neatly, as if the learner has already converted the insight into the next lesson step. Keep the repeated “160 again” and the route/height tension, but make the recognition show through practical re-engagement with the tile and unmarked line, not a polished comment about being understood.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9736,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-50ee9b439444d92a"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9736,
+            "promptHashes": {
+              "system": "e85ed4d69537a482",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "50ee9b439444d92a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D5yUc5",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D5yUc5/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9736,
+              "promptHashes": {
+                "system": "e85ed4d69537a482",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "50ee9b439444d92a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D5yUc5",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D5yUc5/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the feedback correctly flags the reflection as too polished for the bench-work voice.\nFINAL:\n[slides the 160 tile onto the clear part of the bend]\n\n160 again. The bend still looks route-like, but these pencil spots are all on one printed line. Same contour, same elevation; a different printed line is where the number should change.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14728,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-ce6d65f47f60e432"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14728,
+            "promptHashes": {
+              "system": "226522d589220b94",
+              "user": "d41cee7b2a53355b",
+              "combined": "ce6d65f47f60e432"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kvTS6H",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kvTS6H/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14728,
+              "promptHashes": {
+                "system": "226522d589220b94",
+                "user": "d41cee7b2a53355b",
+                "combined": "ce6d65f47f60e432"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kvTS6H",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kvTS6H/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 3,
+        "learnerUtterance": "[slides the 160 tile onto the clear part of the bend] 160 again. The bend still looks route-like, but these pencil spots are all on one printed line. Same contour, same elevation; a different printed line is where the number should change.",
+        "previousTutorMove": "[sets the 160 tile on the fresh pencil mark, leaving one unmarked part of the bend clear] Fresh spot: 160. Same printed contour. Move the tile to one last unmarked spot on this bend and read the legend number.",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T14:42:58.014Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "A final tutor line closes the scene.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T14:42:58.015Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "[leaves the 160 tile on the bend and taps the next separate printed line]\n\nThis tile stays with this printed line: 160 all along. A new number belongs on a separate contour. Legend reading: equal elevation, not a route.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[leaves the 160 tile on the bend and taps the next separate printed line]\n\nThis contour is settled: one printed line, one number, 160 all along. The number changes only when the pencil moves to a different printed contour. Legend reading: equal elevation, not a route.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14484,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-a85ce782a232dbac"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14484,
+            "promptHashes": {
+              "system": "0235081e4821a426",
+              "user": "e99d2b6093596b49",
+              "combined": "a85ce782a232dbac"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IdGGHn",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IdGGHn/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14484,
+              "promptHashes": {
+                "system": "0235081e4821a426",
+                "user": "e99d2b6093596b49",
+                "combined": "a85ce782a232dbac"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IdGGHn",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IdGGHn/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound for a closing line: it uses the objects, preserves the learner’s discovery, and names the core distinction cleanly. It respects the learner’s neutral, consolidating state by not adding a new task or overpraising.\n\nThe main risk is slight over-finalizing from the tutor’s authority: “This contour is settled” and “the pencil moves” could flatten the learner’s own formulation and reintroduce motion language. Since this is the final line, it does not need a Socratic question, but it should keep the material in charge: tile, printed line, legend number, separate contour.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the tile-left-on-bend action, the tap on the next separate printed line, and the compact closing contrast “equal elevation, not a route.” Change only phrasing that makes the tutor’s verdict or the pencil’s movement do too much work; let the visible separate printed line carry the distinction.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16555,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-3e475fd904c95d9c"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16555,
+            "promptHashes": {
+              "system": "6ecd3456005879e3",
+              "user": "b6c8a51c00a9cce3",
+              "combined": "3e475fd904c95d9c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Ao08Mx",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Ao08Mx/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16555,
+              "promptHashes": {
+                "system": "6ecd3456005879e3",
+                "user": "b6c8a51c00a9cce3",
+                "combined": "3e475fd904c95d9c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Ao08Mx",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Ao08Mx/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the material in charge and avoid tutor verdict language.\nFINAL:\n[leaves the 160 tile on the bend and taps the next separate printed line]\n\nThis tile stays with this printed line: 160 all along. A new number belongs on a separate contour. Legend reading: equal elevation, not a route.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11110,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-f63353ad2cff72d7"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11110,
+            "promptHashes": {
+              "system": "8e4fcbb56a797f08",
+              "user": "b6c8a51c00a9cce3",
+              "combined": "f63353ad2cff72d7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fshOSz",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fshOSz/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11110,
+              "promptHashes": {
+                "system": "8e4fcbb56a797f08",
+                "user": "b6c8a51c00a9cce3",
+                "combined": "f63353ad2cff72d7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fshOSz",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fshOSz/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T14:43:40.167Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 162092,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 71,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 72,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why contour lines connect equal elevation, not walking routes",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-25 14:42:58",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 71,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 72,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 103,
+            "sessionId": "drama-branch-session-D44-reframe-only-1779720058078",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[sets the 160 tile on the fresh pencil mark, leaving one unmarked part of the bend clear]\n\nFresh spot: 160. Same printed contour. Move the tile to one last unmarked spot on this bend and read the lege",
+            "learnerResponse": null,
+            "context": "[touches a fresh spot on the bend with the pencil]\n\nEarlier I said, “this whole line takes 160 from ",
+            "createdAt": "2026-05-25 14:42:18"
+          },
+          {
+            "id": 101,
+            "sessionId": "drama-branch-session-D44-reframe-only-1779720058078",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[marks three small ticks along the bent line, each beside the 160 tile]\n\nThis line takes one number: 160. The bend changes the shape on the map, not the elevation. Plain check: touch any tick on this ",
+            "learnerResponse": null,
+            "context": "[sets the 160 tile on the bent contour line] So this whole line takes 160 from the legend. The bend ",
+            "createdAt": "2026-05-25 14:40:58"
+          },
+          {
+            "id": 102,
+            "sessionId": "drama-branch-session-D44-reframe-only-1779720058078",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[holds the overlay still and taps the printed line under the 160 tile]\n\nThe arrow moved; the contour did not. Same printed line, same tile. Touch one new spot on the bend and read the legend number on",
+            "learnerResponse": null,
+            "context": "[touches the three pencil ticks in order]\n\n160, 160, 160. The curve still pulls like a route shape, ",
+            "createdAt": "2026-05-25 14:40:58"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

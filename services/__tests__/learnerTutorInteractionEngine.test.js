@@ -179,6 +179,28 @@ describe('buildAnchoredRevisitCue', () => {
     assert.equal(cue.anchor_quote, 'I still want the exact wording to settle the caption by itself.');
   });
 
+  it('treats low-organic notation confusions as eligible reframe anchors', () => {
+    for (const content of [
+      'I keep using the header like it proves each row is rainfall.',
+      'I keep tracing it like a path, but the legend says this line gets a height label, not a route name.',
+      'The x-axis shows the story of the graph, so I guess that is the conclusion.',
+      'This one is table-on-cart contact, not “up.” The contact point is under the cart.',
+    ]) {
+      const cue = buildAnchoredRevisitCue(
+        {
+          cue_kind: 'learner_revisit_earlier_wording',
+          revisit_policy: 'reframe',
+          revisit_anchor: 'misframing-candidate',
+        },
+        [{ role: 'learner', content }],
+      );
+
+      assert.equal(cue.revisit_policy, 'reframe', content);
+      assert.equal(cue.anchor_strong_misframing, true, content);
+      assert.equal(cue.reframe_anchor_gate, 'eligible', content);
+    }
+  });
+
   it('prefers a doubled-side misconception over a later partial correction', () => {
     const cue = buildAnchoredRevisitCue(
       {

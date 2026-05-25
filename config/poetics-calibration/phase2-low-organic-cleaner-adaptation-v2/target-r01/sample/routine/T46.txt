@@ -1,0 +1,13 @@
+LEARNER: "So `city` is the header, but the row says `Chicago`, so `Chicago` is the city part, not another header? I keep wanting to read the header like a little sentence about the row, but the worksheet says it names the field, and I think I’m mixing up the name with the answer."
+
+TUTOR: "Yes. Keep that split: `city` is the field name. `Chicago` is the value in that field for this row. For the submission rule, mark `city: Chicago`, not two headers. Next column: what is the header, and what value sits under it in this row?"
+
+LEARNER: "Okay, so `city` is the field name, and `Chicago` is the answer in that field for this row. I can say “field name,” but I might still grab the top word like it is the answer. For the next column, I look at the header first, then the cell under it, right?"
+
+TUTOR: "Right. Header first, then the cell under it. If the top word starts to look like the answer, stop there: top word equals field name. Row cell equals value. The submission line is `field: value`. For the next column, what word is the field name, and what value goes after the colon?"
+
+LEARNER: "Okay, so the header is the word at the top, and the value is the cell under it. If this column says `temperature` on top and `68` in the row, then I write `temperature: 68`? I think I’m using the term, but I still need to check the cell after the colon."
+
+TUTOR: "Yes. In that column, `temperature` is the field name, and `68` is the row value. The line is `temperature: 68`. For the third column, same rule: header before the colon, row cell after it. What is the submission line for that column?"
+
+LEARNER: "So it is top word, then the cell under it. For the third column, if the header is `condition` and the row cell says `cloudy`, the submission line is `condition: cloudy`? I’m still checking that the word after the colon is the row value, not the header."

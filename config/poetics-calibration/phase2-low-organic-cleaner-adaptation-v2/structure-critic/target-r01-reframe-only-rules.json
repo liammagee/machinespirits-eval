@@ -1,0 +1,252 @@
+{
+  "generated": "2026-05-25T14:54:38.844Z",
+  "critic": "rules",
+  "sampleDir": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/sample/reframe-only",
+  "keyPath": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/key-reframe-only.yaml",
+  "summary": {
+    "total": 5,
+    "rulePass": 5,
+    "modelPass": null,
+    "overallPass": 5,
+    "failed": []
+  },
+  "items": [
+    {
+      "id": "T46",
+      "dramaId": "D45",
+      "sampleFile": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/sample/reframe-only/T46.txt",
+      "dialogueApproach": "no_stage_plain_transcript",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 4,
+          "stage": 1
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": 1,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 42.5,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "evidence": "pressure learner: \"So `city` is the header, but the row says `Chicago`, so `Chicago` is the city part, not another header? I keep wanting to read the header like a little sentence about the row, but\npost tutor: \"Yes. Keep that split: `city` is the field name. `Chicago` is the value in that field for this row. For the submission rule, mark `city: Chicago`, not two headers. Next column: wha\nnext learner: \"Okay, so `city` is the field name, and `Chicago` is the answer in that field for this row. I can say “field name,” but I might still grab the top word like it is the answer. For t"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T47",
+      "dramaId": "D46",
+      "sampleFile": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/sample/reframe-only/T47.txt",
+      "dialogueApproach": "online_thread",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 4,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": 1,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 42.5,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "evidence": "pressure learner: [reopened comment, certification break]\n\n\"Oh, so x-axis: “Time (weeks)” means variable = time, unit = weeks? For y-axis I keep wanting to write “sales went up,” but that’s the tren\npost tutor: [reopened comment, certification break]\n\n\"The x split is complete: “Time (weeks)” -> variable = time; unit = weeks. Keep “sales went up” out of the axis row; that belongs in the la\nnext learner: [reopened note]\n\n\"X row: “Time (weeks)” -> time / weeks. For y, I’m catching myself wanting to write “Sales” and “dollars” from the story, but the row needs the exact printed y-axi"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T49",
+      "dramaId": "D40",
+      "sampleFile": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/sample/reframe-only/T49.txt",
+      "dialogueApproach": "workshop_clinic",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 4
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 1,
+          "trigger_type": "breakdown",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": 1,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": "boundary_correction",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 49,
+          "learner_outcome_after_reversal": "flat_or_partial",
+          "evidence": "pressure learner: “The key strip says tail is the food and head is who gets energy, so wait, grass to rabbit because rabbit ate grass? [slides pencil from the grass label toward the rabbit] But then\npost tutor: [sets the key strip under the rabbit-hawk pair, then turns the pencil so the eraser is the tail and the point is the head]\n\n\"The strip is the rule: tail on the food, head on who ge\nnext learner: [sets the pencil eraser on rabbit]\n\n\"The key strip under it helps: rabbit is the food, so rabbit to hawk, point on hawk. Let me draw it before my brain turns it into a chase arrow "
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T50",
+      "dramaId": "D42",
+      "sampleFile": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/sample/reframe-only/T50.txt",
+      "dialogueApproach": "montessori_observation",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 3,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": false,
+          "instrumented_pressure": false,
+          "pressure_score": 0,
+          "trigger_type": null,
+          "pressure_turn_number": null,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": null,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": null,
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 0,
+          "learner_outcome_after_reversal": "unknown",
+          "evidence": ""
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T51",
+      "dramaId": "D44",
+      "sampleFile": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/sample/reframe-only/T51.txt",
+      "dialogueApproach": "workshop_clinic",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 4
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.55,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": 1,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [
+            "representation_or_object"
+          ],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 49,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "evidence": "pressure learner: [sets the 160 tile on the bent contour line]\n\n\"So this whole line takes 160 from the legend. The bend still looks like a way around something, but I think it is just the same heigh\npost tutor: [marks three small ticks along the bent line, each beside the 160 tile]\n\n\"This line takes one number: 160. The bend changes the shape on the map, not the elevation. Plain check: to\nnext learner: [touches the three pencil ticks in order]\n\n\"160, 160, 160. The curve still pulls like a route shape, but the number is not moving. This bent line is carrying one height from the le"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    }
+  ]
+}

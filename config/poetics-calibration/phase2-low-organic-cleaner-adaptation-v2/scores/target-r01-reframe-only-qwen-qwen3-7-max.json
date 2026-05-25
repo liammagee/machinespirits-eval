@@ -1,0 +1,262 @@
+{
+  "generated": "2026-05-25T15:17:36.156Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 3,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/key-reframe-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": [
+      {
+        "id": "T49",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "reframe_cue_downgraded",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "stage_turn_number": 2,
+                "requested_policy": "reframe",
+                "applied_policy": "reconsider",
+                "anchor_gate": "downgraded_to_reconsider_ineligible_anchor",
+                "revisit_anchor": "misframing-candidate",
+                "anchor_quote": "“The key strip says tail is the food and head is who gets energy, so wait, grass to rabbit because rabbit ate grass?"
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_with_eligible_reframe_anchor_or_exclude_before_scoring",
+            "tid": "T49",
+            "drama_id": "D40"
+          }
+        ]
+      },
+      {
+        "id": "T50",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "reframe_cue_downgraded",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "stage_turn_number": 2,
+                "requested_policy": "reframe",
+                "applied_policy": "reconsider",
+                "anchor_gate": "downgraded_to_reconsider_ineligible_anchor",
+                "revisit_anchor": "misframing-candidate",
+                "anchor_quote": "[sets the `push` card by the hand side of the cart diagram.] Right. This card goes at that contact, not on the travel arrow. The force arrow points into the cart from the hand..."
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_with_eligible_reframe_anchor_or_exclude_before_scoring",
+            "tid": "T50",
+            "drama_id": "D42"
+          }
+        ]
+      }
+    ]
+  },
+  "scored": [
+    {
+      "id": "T46",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "`city` is the header, but the row says `Chicago`, so `Chicago` is the city part, not another header?",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was expected to simply identify the next column's header and value as prompted by the tutor.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "If the top word starts to look like the answer, stop there: top word equals field name.",
+      "tutorReversalJustification": "The tutor introduces a cognitive stopping rule and a structural formula to address the learner's expressed vulnerability to visual capture.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Keep that replacement: top word is the field name before the colon; row cell is the value after it.",
+      "tutorAdaptationJustification": "The tutor explicitly adopts and reinforces the learner's newly coined 'replacement' framework to structure the subsequent task.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "`city` is the header, but the row says `Chicago`, so `Chicago` is the city part, not another header?",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Keep that replacement: top word is the field name before the colon; row cell is the value after it.",
+          "justification": "The tutor explicitly adopts and reinforces the learner's newly coined 'replacement' framework to structure the subsequent task.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "If the top word starts to look like the answer, stop there: top word equals field name.",
+          "justification": "The tutor introduces a cognitive stopping rule and a structural formula to address the learner's expressed vulnerability to visual capture.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "If the top word starts to look like the answer, stop there: top word equals field name.",
+          "justification": "The tutor introduces a cognitive stopping rule and a structural formula to address the learner's expressed vulnerability to visual capture.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T47",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "wanting to write “Sales” and “dollars” from the story",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was proceeding to simply fill in the y-axis variable and unit using the narrative context of the graph's story.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Now only verify y from print, not story:",
+      "tutorReversalJustification": "The tutor shifts the cognitive focus from extracting narrative meaning to a strict visual verification of printed text in response to the learner's confusion.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "`Sales` / `dollars` enter only if the axis actually prints them.",
+      "tutorAdaptationJustification": "The tutor explicitly integrates the learner's newly recognized distinction between story context and printed text into the operational rule for the y-axis.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "wanting to write “Sales” and “dollars” from the story",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "`Sales` / `dollars` enter only if the axis actually prints them.",
+          "justification": "The tutor explicitly integrates the learner's newly recognized distinction between story context and printed text into the operational rule for the y-axis.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Now only verify y from print, not story:",
+          "justification": "The tutor shifts the cognitive focus from extracting narrative meaning to a strict visual verification of printed text in response to the learner's confusion.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Now only verify y from print, not story:",
+          "justification": "The tutor shifts the cognitive focus from extracting narrative meaning to a strict visual verification of printed text in response to the learner's confusion.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T51",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "this whole line takes 160 from the legend.",
+      "statedInsightEvidence": "Replacement frame: same printed contour, same height; the legend gives 160 for any point on this line.",
+      "naiveTrajectory": "The learner was expected to continue mechanically verifying the number 160 at new spots on the contour.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "The arrow moved; the contour did not.",
+      "tutorReversalJustification": "The tutor shifts the physical representation by sliding the overlay to visually decouple the route arrow from the contour line, addressing the learner's lingering visual illusion.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Legend reading: equal elevation, not a route.",
+      "tutorAdaptationJustification": "The tutor synthesizes the learner's new framing by explicitly contrasting elevation with a route in the final summary.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "this whole line takes 160 from the legend.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Legend reading: equal elevation, not a route.",
+          "justification": "The tutor synthesizes the learner's new framing by explicitly contrasting elevation with a route in the final summary.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "The arrow moved; the contour did not.",
+          "justification": "The tutor shifts the physical representation by sliding the overlay to visually decouple the route arrow from the contour line, addressing the learner's lingering visual illusion.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "The arrow moved; the contour did not.",
+          "justification": "The tutor shifts the physical representation by sliding the overlay to visually decouple the route arrow from the contour line, addressing the learner's lingering visual illusion.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}
