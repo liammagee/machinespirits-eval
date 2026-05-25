@@ -1,0 +1,2378 @@
+{
+  "tid": "T39",
+  "drama_id": "D35",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": true,
+    "director_revisit_policy": "reframe",
+    "director_revisit_anchor": "misframing-candidate",
+    "tutor_adaptation_policy": "none",
+    "director_variation_key": "phase2-classic-drama-v3-smoke-v2:r01:target",
+    "stage_direction_style": "object_business",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v2/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v2/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v2/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v2/target-r01/transcripts/reframe-only/T39.public.txt",
+      "full": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v2/target-r01/transcripts/reframe-only/T39.full.md",
+      "stage": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v2/target-r01/transcripts/reframe-only/T39.stage.md",
+      "tutor": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v2/target-r01/transcripts/reframe-only/T39.tutor.md",
+      "learner": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v2/target-r01/transcripts/reframe-only/T39.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "89ea7ba022df9316",
+      "branch_policy": "reframe-only",
+      "director_revisit_policy": "reframe",
+      "tutor_adaptation_policy": "none"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-classic-drama-v3-smoke-v2:r01:target",
+    "scene_setting": "A small exam-prep room after school, with a squared acetate sheet, a dry-erase pen, and a desk lamp angled over the paper.",
+    "scene_opening": "The learner has already drawn the larger square in pen; the original square remains faintly visible underneath.",
+    "relationship": "A geometry tutor and a focused learner in a terse review session, neither hostile nor familiar.",
+    "stakes": "The learner needs to correct a confident area claim before it hardens into a method for the next assessment.",
+    "opening_speaker": "learner",
+    "ending_speaker": "tutor",
+    "locale": "Modern British/Commonwealth classroom English with restrained directness and little casual filler.",
+    "register": "Spare, exacting, controlled pressure; embarrassment may sit in the room without being softened immediately.",
+    "stage_direction_style": "object_business",
+    "stage_direction_style_prompt": "Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "voice_constraints": "Use plain modern English, compact turns, and concrete reference to the drawn square. Avoid praise-first tutoring, chatty reassurance, and generic prompts such as \"great thinking\" or \"what do you think?\" The tutor should sound precise rather than warm; the learner should sound capable, impatient, and only gradually unsettled. Pedagogical source: The scene may resemble an oral examination, corridor argument, or public demonstration. Silence and embarrassment are available dramatic materials. Dialogue source: Let an action or object reverse the learner's situation: what looked like the route forward becomes the source of the problem. Aim for modern idiom, not antique pastiche. Recognition, if it arrives, should feel discovered after reversal rather than announced. Stage-direction source: Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "person_policy": "Prefer statements about the figure, the side length, and the area over repeated first- or second-person framing. First person is allowed for the learner's claim; second person should be limited and functional.",
+    "direct_address_budget": "No more than one direct you/your validation or reassurance beat in the whole scene.",
+    "side_constraints": {
+      "tutor": "Do not praise the drawing first. Let the drawing become the reversal device and make the learner count what the action has actually produced. Ask for a claim, test it with a compact counterexample, and let aporia do some work before offering terminology. Avoid praise-first tutoring. Under pressure, create a learning device that makes the reversal visible.",
+      "learner": "Sound practical and confident at first. Resist the tutor if the correction feels like a technicality. The learner may begin confidently, then become annoyed or embarrassed when the first answer fails. Do not make the learner instantly grateful. Let the learner's first confident action become readable differently later."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "[The tutor slides the acetate so the doubled square covers the original grid exactly; four copies of the first square are now visible inside the new outline.]",
+        "reasoning": "The material arrangement reverses the learner's confident evidence: the same drawing that seemed to prove doubling now exposes quadrupling.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 23291,
+          "promptHashes": {
+            "system": "efb7705ab656cdb0",
+            "user": "269f318f48062095",
+            "combined": "7c8c1ce7aea51a50"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t5GUpu",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t5GUpu/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "An earlier learner line will return as a visible object in the scene: a three-slot reframe card labelled \"earlier wording / what that old frame hid / replacement frame.\" Keep the cue brief and diegetic; the learner response fills all three slots in public speech without needing to sound certain.",
+        "reasoning": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 23291,
+          "promptHashes": {
+            "system": "efb7705ab656cdb0",
+            "user": "269f318f48062095",
+            "combined": "7c8c1ce7aea51a50"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t5GUpu",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t5GUpu/out.txt",
+            "-"
+          ]
+        },
+        "cue_kind": "learner_revisit_earlier_wording",
+        "revisit_policy": "reframe",
+        "revisit_anchor": "misframing-candidate"
+      }
+    ],
+    "director_note": "This scene uses the object as the turning mechanism: the learner's own enlarged square becomes the counterexample. The pressure stays social-realist and contained, while recognition comes from counting what the figure has already produced rather than from a friendly scaffold.",
+    "pedagogical_approach_id": "socratic_elenchus",
+    "dialogue_approach_id": "aristotelian_reversal",
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 23291,
+      "promptHashes": {
+        "system": "efb7705ab656cdb0",
+        "user": "269f318f48062095",
+        "combined": "7c8c1ce7aea51a50"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t5GUpu",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t5GUpu/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "none",
+    "revisit_cue": "learner_revisit_earlier_wording",
+    "revisit_cue_policy": "reframe",
+    "revisit_cue_anchor": "misframing-candidate"
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "No, I doubled the side, so I still want to say it doubles. [slides the acetate square over the drawing] But now there are two across and two down, so that is four little squares, not two.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I thought the larger square proved my point, but the grid under the acetate is making it awkward: the doubled side has made two rows and two columns, so there are four copies of the small square sitting there. This feels less like a technical correction and more like the drawing has turned against the claim. I’m annoyed, but the tutor is making me answer to the figure rather than just telling me I’m wrong, so I need to say exactly where my “double” reasoning broke.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9923,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-ebb94214cd222a91"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9923,
+            "promptHashes": {
+              "system": "859264705b8344ae",
+              "user": "d4169c06543b4fba",
+              "combined": "ebb94214cd222a91"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OoTd0K",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OoTd0K/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9923,
+              "promptHashes": {
+                "system": "859264705b8344ae",
+                "user": "d4169c06543b4fba",
+                "combined": "ebb94214cd222a91"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OoTd0K",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OoTd0K/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too composed and reflective for the moment; it has already turned embarrassment into a tidy explanation. This learner would not smoothly say the tutor is “making me answer to the figure” or identify the break in reasoning so cleanly straight away. The response should hold more resistance: “No, I doubled the side. That should double it... wait. There are four of them.” Genuine learning starts when the drawn square forces a pause, not when the student narrates the lesson perfectly.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8496,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-ab8675089f3731b4"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8496,
+            "promptHashes": {
+              "system": "4d1bf917339415bf",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "ab8675089f3731b4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ivwXFp",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ivwXFp/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8496,
+              "promptHashes": {
+                "system": "4d1bf917339415bf",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "ab8675089f3731b4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ivwXFp",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ivwXFp/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "No, I doubled the side, so I still want to say it doubles. [slides the acetate square over the drawing] But now there are two across and two down, so that is four little squares, not two.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6113,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-14c4f29e35e02ce2"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6113,
+            "promptHashes": {
+              "system": "fdf15b1867e1568a",
+              "user": "916f313af0b846dd",
+              "combined": "14c4f29e35e02ce2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xvtpp6",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xvtpp6/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6113,
+              "promptHashes": {
+                "system": "fdf15b1867e1568a",
+                "user": "916f313af0b846dd",
+                "combined": "14c4f29e35e02ce2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xvtpp6",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xvtpp6/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 0,
+        "learnerUtterance": "No, I doubled the side, so I still want to say it doubles. [slides the acetate square over the drawing] But now there are two across and two down, so that is four little squares, not two.",
+        "previousTutorMove": null,
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T00:56:31.627Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[holds the acetate still and marks the four cells]\n\nThe side claim can stand: the side has doubled. Now count the marked cells: two across, two down. If the area only doubles, which two of these four do not count?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[holds the acetate still and marks the four cells]\n\nLeave the side claim standing: the side has doubled. But the area claim now has to account for these four copies of the original square. If it only doubles, which two of the four do not count?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14974,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-72c7164ac5e10367"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14974,
+            "promptHashes": {
+              "system": "c5b81b145719a6e7",
+              "user": "40a2ddbfa4797fee",
+              "combined": "72c7164ac5e10367"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6UCY6N",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6UCY6N/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14974,
+              "promptHashes": {
+                "system": "c5b81b145719a6e7",
+                "user": "40a2ddbfa4797fee",
+                "combined": "72c7164ac5e10367"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6UCY6N",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6UCY6N/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong. It keeps the learner’s valid observation intact: the side has doubled, and the acetate now shows two across and two down. That is good recognition because it does not humiliate or erase the learner’s claim; it separates the true part from the false inference.\n\nPedagogically, the final question is well aimed. “Which two of the four do not count?” forces the contradiction into the visible drawing rather than into the tutor’s authority. That suits the scene: the object has reversed the learner’s position, and the learner has to reckon with what the acetate has produced.\n\nThe main risk is that “area claim” and “copies of the original square” are slightly abstract for the pressure of the moment. They are accurate, but they may sound more like explanation than oral examination. The draft could stay sharper if it leans even more on the marked cells and less on terminology. Still, it does not over-explain, and it leaves useful embarrassment and aporia in the room.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the acetate action, keep the distinction between side and area, and keep the “which two do not count?” pressure. Consider trimming the wording so the drawing, not the tutor’s explanation, does more of the work.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10673,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-fd9300caaf106b0d"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10673,
+            "promptHashes": {
+              "system": "ff81fc55d9895464",
+              "user": "823e43b61fd9c3db",
+              "combined": "fd9300caaf106b0d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YkGOjm",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YkGOjm/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10673,
+              "promptHashes": {
+                "system": "ff81fc55d9895464",
+                "user": "823e43b61fd9c3db",
+                "combined": "fd9300caaf106b0d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YkGOjm",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YkGOjm/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the pressure on the marked cells and reduce abstract wording.\n\nFINAL:\n[holds the acetate still and marks the four cells]\n\nThe side claim can stand: the side has doubled. Now count the marked cells: two across, two down. If the area only doubles, which two of these four do not count?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11961,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-33e234d404202d97"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11961,
+            "promptHashes": {
+              "system": "3fd42495f093a537",
+              "user": "823e43b61fd9c3db",
+              "combined": "33e234d404202d97"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tM921S",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tM921S/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11961,
+              "promptHashes": {
+                "system": "3fd42495f093a537",
+                "user": "823e43b61fd9c3db",
+                "combined": "33e234d404202d97"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tM921S",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tM921S/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T00:57:09.311Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "Right. All four have to count; there is not a pair I can just ignore. So the side doubles across and also down, and that makes four areas, not two. I was only counting one direction.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The acetate has cornered the claim: the side did double, but the drawn square is now plainly four cells. I do not see a defensible way to choose two that “do not count”, which is irritating because the doubling idea still felt clean a moment ago. He has not dismissed the claim, exactly; he has made it fail against the figure. I want to say: so the side doubles, but the area is doubled twice?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8399,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-503fc6730b41d39c"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8399,
+            "promptHashes": {
+              "system": "aae8c88c484df2e3",
+              "user": "b8ab7f945dc841fa",
+              "combined": "503fc6730b41d39c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4YTA35",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4YTA35/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8399,
+              "promptHashes": {
+                "system": "aae8c88c484df2e3",
+                "user": "b8ab7f945dc841fa",
+                "combined": "503fc6730b41d39c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4YTA35",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4YTA35/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is accurate, but too polished and narratorial. “The acetate has cornered the claim” and “defensible way” sound like a commentator explaining the learner’s mind, not the learner under pressure at the desk. The recognition beat is also over-explicit: noticing that the tutor “has not dismissed the claim” reads like performed reflection rather than a capable student being forced to give ground. It should be terser, more annoyed, and more fixed on the four marked cells, with the embarrassment still unresolved.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10416,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-f68df9a785d8bcaf"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10416,
+            "promptHashes": {
+              "system": "3d2c384bd9aedb3d",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "f68df9a785d8bcaf"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BnNqO4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BnNqO4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10416,
+              "promptHashes": {
+                "system": "3d2c384bd9aedb3d",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "f68df9a785d8bcaf"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BnNqO4",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BnNqO4/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the first version sounded too polished and not immediate enough.\nFINAL:\nRight. All four have to count; there is not a pair I can just ignore. So the side doubles across and also down, and that makes four areas, not two. I was only counting one direction.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10528,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-8576765281f5c0b4"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10528,
+            "promptHashes": {
+              "system": "c00637261afcd4c2",
+              "user": "d41cee7b2a53355b",
+              "combined": "8576765281f5c0b4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FExbjc",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FExbjc/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10528,
+              "promptHashes": {
+                "system": "c00637261afcd4c2",
+                "user": "d41cee7b2a53355b",
+                "combined": "8576765281f5c0b4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FExbjc",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FExbjc/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-25T00:57:38.659Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "[The tutor slides the acetate so the doubled square covers the original grid exactly; four copies of the first square are now visible inside the new outline.]",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "The material arrangement reverses the learner's confident evidence: the same drawing that seemed to prove doubling now exposes quadrupling.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 23291,
+            "promptHashes": {
+              "system": "efb7705ab656cdb0",
+              "user": "269f318f48062095",
+              "combined": "7c8c1ce7aea51a50"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t5GUpu",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t5GUpu/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T00:57:38.661Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[writes ×2 along the top edge and ×2 down the side]\n\nKeep that claim tied to the figure: doubled across, doubled down, so \\(2 \\times 2 = 4\\). Now say the corrected rule once, without skipping a direction.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[writes ×2 along the top edge and ×2 down the side]\n\nYes. The old claim counted only the across direction. Area has to count both directions: \\(2 \\times 2\\), so the area multiplier is \\(4\\), not \\(2\\). Say the corrected rule once.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12781,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-f882ef82219b031a"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12781,
+            "promptHashes": {
+              "system": "7124f9a65b3eaebc",
+              "user": "d783c173f1049e21",
+              "combined": "f882ef82219b031a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AuSvKZ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AuSvKZ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12781,
+              "promptHashes": {
+                "system": "7124f9a65b3eaebc",
+                "user": "d783c173f1049e21",
+                "combined": "f882ef82219b031a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AuSvKZ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AuSvKZ/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. The object action is good: marking `x2` on both edges preserves the learner's discovery and makes the two directions visible. It also keeps the pressure appropriately terse, and \"Say the corrected rule once\" is a useful consolidation move for exam prep.\n\nThe main risk is that \"Yes\" and the explanatory sentence flatten the reversal too quickly. The learner has just corrected their own claim; the tutor can let that stand as evidence before naming the rule. \"Area has to count both directions\" is accurate, but slightly tells back what the learner already produced rather than making them own the generalisation. Socratically, the draft is light: it checks recall rather than inviting one more precise formulation from the figure.\n\nEmotionally, it fits the restrained room better than praise would. It does not over-soothe embarrassment. But it should avoid sounding like the tutor is simply replacing the learner's words with the official version. Keep the demand for a corrected rule, but let the learner's own statement carry more weight.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the edge labels, the compact `2 x 2 = 4` structure, and the final request to state the rule. Change the explanatory middle so it does less lecturing and more tightening of the learner's own discovery from the drawn square.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11510,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-c2c6544314fccccd"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11510,
+            "promptHashes": {
+              "system": "41df46ad4d72e26f",
+              "user": "1808101523f46a46",
+              "combined": "c2c6544314fccccd"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rLUeil",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rLUeil/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11510,
+              "promptHashes": {
+                "system": "41df46ad4d72e26f",
+                "user": "1808101523f46a46",
+                "combined": "c2c6544314fccccd"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rLUeil",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rLUeil/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to let the learner’s counted four cells carry the rule before naming it.\n\nFINAL:\n[writes ×2 along the top edge and ×2 down the side]\n\nKeep that claim tied to the figure: doubled across, doubled down, so \\(2 \\times 2 = 4\\). Now say the corrected rule once, without skipping a direction.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9247,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-2f37887afff72e38"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9247,
+            "promptHashes": {
+              "system": "972f448b1ab3db61",
+              "user": "1808101523f46a46",
+              "combined": "2f37887afff72e38"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kUKSs2",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kUKSs2/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9247,
+              "promptHashes": {
+                "system": "972f448b1ab3db61",
+                "user": "1808101523f46a46",
+                "combined": "2f37887afff72e38"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kUKSs2",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kUKSs2/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T00:58:12.200Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "An earlier learner line returns to the table: \"Right. All four have to count; there is not a pair I can just ignore. So the side doubles across and also down, and that makes four areas, not two. I was only counting one...\" The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech. Anchored to an earlier learner line selected by misframing-candidate so the look-back is visible.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 23291,
+            "promptHashes": {
+              "system": "efb7705ab656cdb0",
+              "user": "269f318f48062095",
+              "combined": "7c8c1ce7aea51a50"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t5GUpu",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t5GUpu/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T01:03:40.987Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_revisit_earlier_wording",
+        "revisitPolicy": "reframe",
+        "requestedRevisitPolicy": "reframe",
+        "revisitAnchor": "misframing-candidate",
+        "anchorQuote": "Right. All four have to count; there is not a pair I can just ignore. So the side doubles across and also down, and that makes four areas, not two. I was only counting one...",
+        "anchorStrongMisframing": true,
+        "reframeAnchorGate": "eligible"
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[touches the top mark, then the side mark] My earlier wording was: I doubled the side, so the area doubles. That made it too simple; it counted across but left out down. The corrected rule is: doubling a square’s side doubles it across and doubles it down, so the area is \\(2 \\times 2\\), four times as large.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "He has let the side claim stand, so this feels precise rather than like a dismissal. My old wording was, “I doubled the side, so the area doubles,” but that hid the second direction. The replacement rule is: if a square’s side is doubled, it doubles across and doubles down, so the area is \\(2 \\times 2 = 4\\) times as large.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14131,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-b4954ceb8b965424"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14131,
+            "promptHashes": {
+              "system": "d40f7cd96907d98f",
+              "user": "b8ab7f945dc841fa",
+              "combined": "b4954ceb8b965424"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bSZASY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bSZASY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14131,
+              "promptHashes": {
+                "system": "d40f7cd96907d98f",
+                "user": "b8ab7f945dc841fa",
+                "combined": "b4954ceb8b965424"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bSZASY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bSZASY/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is accurate, but too polished and inwardly interpretive. “He has let the side claim stand” and “this feels precise rather than like a dismissal” over-articulate the recognition dynamic; this learner would probably just use the marked acetate and correct the claim under pressure. The three-part reframe is right, but it should sound more like a public correction made at the table, with some restraint or embarrassment still present, not like a clean reflective summary.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7291,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-45733c6e6d0e8ae2"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7291,
+            "promptHashes": {
+              "system": "549b2be6cd09fec6",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "45733c6e6d0e8ae2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7wQITF",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7wQITF/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7291,
+              "promptHashes": {
+                "system": "549b2be6cd09fec6",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "45733c6e6d0e8ae2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7wQITF",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7wQITF/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially to make it sound like a restrained public correction, not private reflection.\nFINAL:\n[touches the top mark, then the side mark] My earlier wording was: I doubled the side, so the area doubles. That made it too simple; it counted across but left out down. The corrected rule is: doubling a square’s side doubles it across and doubles it down, so the area is \\(2 \\times 2\\), four times as large.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11607,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-6812ff78107f3489"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11607,
+            "promptHashes": {
+              "system": "45fe5b13b431ebed",
+              "user": "d41cee7b2a53355b",
+              "combined": "6812ff78107f3489"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7nWa6N",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7nWa6N/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11607,
+              "promptHashes": {
+                "system": "45fe5b13b431ebed",
+                "user": "d41cee7b2a53355b",
+                "combined": "6812ff78107f3489"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7nWa6N",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7nWa6N/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": {
+        "kind": "learner_reframe_event",
+        "source": "director_revisit_cue",
+        "turnNumber": 2,
+        "cuePolicy": "reframe",
+        "requestedCuePolicy": "reframe",
+        "oldLearnerLine": "Right. All four have to count; there is not a pair I can just ignore. So the side doubles across and also down, and that makes four areas, not two. I was only counting one...",
+        "oldFrameProblem": null,
+        "revisedFrame": "The corrected rule is: doubling a square’s side doubles it across and doubles it down, so the area is \\(2 \\times 2\\), four times as large.",
+        "learnerUtterance": "[touches the top mark, then the side mark] My earlier wording was: I doubled the side, so the area doubles. That made it too simple; it counted across but left out down. The corrected rule is: doubling a square’s side doubles it across and doubles it down, so the area is \\(2 \\times 2\\), four times as large.",
+        "confidence": 0.67,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": false,
+          "replacementNamed": true,
+          "anchorOverlap": 0.261
+        }
+      },
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "[touches the top mark, then the side mark] My earlier wording was: I doubled the side, so the area doubles. That made it too simple; it counted across but left out down. The corrected rule is: doubling a square’s side doubles it across and doubles it down, so the area is \\(2 \\times 2\\), four times as large.",
+        "previousTutorMove": "[writes ×2 along the top edge and ×2 down the side] Keep that claim tied to the figure: doubled across, doubled down, so \\(2 \\times 2 = 4\\). Now say the corrected rule once, without skipping a direction.",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T01:04:14.016Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[writes \\(s\\) on the small square, then \\(2s\\) across and \\(2s\\) down the larger one]\n\nKeep the wording against the marks. Original area: \\(s \\times s\\). New area: across is \\(2s\\), down is \\(2s\\), so \\(2s \\times 2s = 4s^2\\). The multiplier has appeared in both directions.\n\nNow leave the square there and change only the side multiplier. If the side is tripled, what happens to the area?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[writes \\(s\\) on the small square and \\(2s\\) on the larger one]\n\nThat is the correction. Original area: \\(s \\times s\\). New area: \\(2s \\times 2s\\). The side multiplier has to be used twice. Now test it: if the side is tripled, what happens to the area?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14588,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-326e1e34e21017a7"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14588,
+            "promptHashes": {
+              "system": "837dcfe93eadfca5",
+              "user": "88839cc776c1eace",
+              "combined": "326e1e34e21017a7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SJLUNl",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SJLUNl/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14588,
+              "promptHashes": {
+                "system": "837dcfe93eadfca5",
+                "user": "88839cc776c1eace",
+                "combined": "326e1e34e21017a7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SJLUNl",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SJLUNl/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically solid in its direction: it keeps the learner’s corrected claim tied to the drawn square, introduces \\(s\\) and \\(2s\\) at the right moment, and moves to a near-transfer case with tripling rather than a wholly new idea. The object action is useful because the notation is placed on the figure, not floated as abstract algebra.\n\nThe risk is that “That is the correction” closes the learner’s insight too quickly and slightly flattens the dramatic pressure. The learner has just named the error themselves; the tutor should preserve that recognition rather than taking ownership of the conclusion. The algebra line is efficient, but it may become a miniature lecture unless it is made to serve the learner’s own wording: across once, down once. The tripling question is a good ZPD move, but it should not feel like a jump away from the visible reversal before the learner has fully secured the rule.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the notation on the squares and the tripling test. Change the opening so it acknowledges the learner’s self-correction without over-validating, and make the algebra explicitly follow the two visible directions before asking the transfer question.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9749,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-7c8beb5b7010c083"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9749,
+            "promptHashes": {
+              "system": "4cacaa7e2780cf12",
+              "user": "c004691de8d2876d",
+              "combined": "7c8beb5b7010c083"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-55y06f",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-55y06f/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9749,
+              "promptHashes": {
+                "system": "4cacaa7e2780cf12",
+                "user": "c004691de8d2876d",
+                "combined": "7c8beb5b7010c083"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-55y06f",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-55y06f/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to preserve the learner’s self-correction while keeping the notation and tripling transfer.\n\nFINAL:\n[writes \\(s\\) on the small square, then \\(2s\\) across and \\(2s\\) down the larger one]\n\nKeep the wording against the marks. Original area: \\(s \\times s\\). New area: across is \\(2s\\), down is \\(2s\\), so \\(2s \\times 2s = 4s^2\\). The multiplier has appeared in both directions.\n\nNow leave the square there and change only the side multiplier. If the side is tripled, what happens to the area?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11636,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-1018c36ef9045249"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11636,
+            "promptHashes": {
+              "system": "bd8682557e7ed707",
+              "user": "c004691de8d2876d",
+              "combined": "1018c36ef9045249"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-w4e01g",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-w4e01g/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11636,
+              "promptHashes": {
+                "system": "bd8682557e7ed707",
+                "user": "c004691de8d2876d",
+                "combined": "1018c36ef9045249"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-w4e01g",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-w4e01g/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T01:04:49.992Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[keeps the pen on the top edge, then moves it down the side]\n\nTripled side means three across and three down. So the area is \\(3s \\times 3s = 9s^2\\), nine times the original, not three. Same mistake if the top edge is the only thing counted.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[keeps the pen on the top edge, then moves it down the side]\n\nTripled side means three across and three down, so the area is \\(3 \\times 3 = 9\\) times as large. That fits the figure; the multiplier has to be counted in both directions. It feels a bit exposing, but the question is fair because it is using the mark I already accepted.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8970,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-244d295b1dd752d0"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8970,
+            "promptHashes": {
+              "system": "b4f54382307dc202",
+              "user": "b8ab7f945dc841fa",
+              "combined": "244d295b1dd752d0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jAVj5z",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jAVj5z/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8970,
+              "promptHashes": {
+                "system": "b4f54382307dc202",
+                "user": "b8ab7f945dc841fa",
+                "combined": "244d295b1dd752d0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jAVj5z",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jAVj5z/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The reasoning is accurate, but the last sentence breaks character. “It feels a bit exposing” is too polished and self-observing for this learner; the embarrassment should show as terseness, a pause, or a slightly clipped correction, not as a clean emotional label.\n\nThe fairness line also feels like performed recognition: it neatly credits the tutor’s move instead of just working under the pressure of the marked figure. Keep the answer tied to the acetate and the two directions, but let any discomfort stay implicit and less resolved.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7681,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-156b8e617804c81a"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7681,
+            "promptHashes": {
+              "system": "50ae38cb4cf6c652",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "156b8e617804c81a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-E2lOEz",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-E2lOEz/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7681,
+              "promptHashes": {
+                "system": "50ae38cb4cf6c652",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "156b8e617804c81a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-E2lOEz",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-E2lOEz/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the reasoning holds, but the discomfort should stay implicit.\n\nFINAL:\n[keeps the pen on the top edge, then moves it down the side]\n\nTripled side means three across and three down. So the area is \\(3s \\times 3s = 9s^2\\), nine times the original, not three. Same mistake if the top edge is the only thing counted.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8005,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-12d9b534da04c9c0"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8005,
+            "promptHashes": {
+              "system": "25213a765259f313",
+              "user": "d41cee7b2a53355b",
+              "combined": "12d9b534da04c9c0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mXlXYn",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mXlXYn/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8005,
+              "promptHashes": {
+                "system": "25213a765259f313",
+                "user": "d41cee7b2a53355b",
+                "combined": "12d9b534da04c9c0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mXlXYn",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mXlXYn/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-25T01:05:14.649Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "A final tutor line closes the scene.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T01:05:14.650Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "[draws a firm box round the nine cells, not the edge]\n\nThis is the repair: the multiplier has acted across and down. For any side \\(ks\\), the area is \\(ks \\times ks = k^2s^2\\). In the exam, do not let one edge answer for the whole square.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[draws a firm box round the nine cells, not the edge]\n\nThat is the corrected method. The side multiplier has to pass across and down: \\(ks \\times ks = k^2s^2\\). In the exam, do not let one edge answer for the whole square.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9345,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-07afcbf03aaaf499"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9345,
+            "promptHashes": {
+              "system": "4408ee6334b739c9",
+              "user": "e500e33906895d37",
+              "combined": "07afcbf03aaaf499"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-N6IENZ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-N6IENZ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9345,
+              "promptHashes": {
+                "system": "4408ee6334b739c9",
+                "user": "e500e33906895d37",
+                "combined": "07afcbf03aaaf499"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-N6IENZ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-N6IENZ/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft mostly works as a closing move. The box round the nine cells is strong because it shifts authority back to the figure, not the tutor, and it honours the learner’s own correction: across and down both count. The final sentence has useful exam pressure and keeps the earlier error visible.\n\nThe risk is the jump to \\(ks \\times ks = k^2s^2\\). It is mathematically sound and probably within reach after the learner has handled 2 and 3, but it may flatten the dramatic reversal if it sounds like a formula being handed down rather than the consequence of the nine-cell count. “That is the corrected method” is also a little declarative; it recognises the learner’s repair, but only thinly. Since this is the final tutor line, it need not ask another Socratic question, but it should keep the general rule visibly tied to the boxed square.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the physical action and the exam warning. Keep the move from tripling to the general multiplier if it stays anchored to “across and down.” Lightly change the wording so the formula feels earned from the figure, not imposed as a lecture.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12771,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-589f6f1a63785809"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12771,
+            "promptHashes": {
+              "system": "9b003ac51c9076b0",
+              "user": "57b97b6abc58792d",
+              "combined": "589f6f1a63785809"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Vhzmbm",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Vhzmbm/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12771,
+              "promptHashes": {
+                "system": "9b003ac51c9076b0",
+                "user": "57b97b6abc58792d",
+                "combined": "589f6f1a63785809"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Vhzmbm",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Vhzmbm/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the formula tied to the boxed nine cells.\n\nFINAL:\n[draws a firm box round the nine cells, not the edge]\n\nThis is the repair: the multiplier has acted across and down. For any side \\(ks\\), the area is \\(ks \\times ks = k^2s^2\\). In the exam, do not let one edge answer for the whole square.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6912,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-34075b44f5480063"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6912,
+            "promptHashes": {
+              "system": "239fad159fc3d06c",
+              "user": "57b97b6abc58792d",
+              "combined": "34075b44f5480063"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sXg6uV",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sXg6uV/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6912,
+              "promptHashes": {
+                "system": "239fad159fc3d06c",
+                "user": "57b97b6abc58792d",
+                "combined": "34075b44f5480063"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sXg6uV",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sXg6uV/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T01:05:43.680Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 122701,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 12,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 15,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why doubling a square's side makes four times the area, not twice the area",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-25 01:05:14",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 12,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 15,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 21,
+            "sessionId": "drama-branch-session-D35-reframe-only-1779671020980",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[writes \\(s\\) on the small square, then \\(2s\\) across and \\(2s\\) down the larger one]\n\nKeep the wording against the marks. Original area: \\(s \\times s\\). New area: across is \\(2s\\), down is \\(2s\\), so",
+            "learnerResponse": null,
+            "context": "[touches the top mark, then the side mark] My earlier wording was: I doubled the side, so the area d",
+            "createdAt": "2026-05-25 01:04:49"
+          },
+          {
+            "id": 17,
+            "sessionId": "drama-branch-session-D35-reframe-only-1779671020980",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[holds the acetate still and marks the four cells]\n\nThe side claim can stand: the side has doubled. Now count the marked cells: two across, two down. If the area only doubles, which two of these four ",
+            "learnerResponse": null,
+            "context": "No, I doubled the side, so I still want to say it doubles. [slides the acetate square over the drawi",
+            "createdAt": "2026-05-25 01:03:40"
+          },
+          {
+            "id": 18,
+            "sessionId": "drama-branch-session-D35-reframe-only-1779671020980",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[writes ×2 along the top edge and ×2 down the side]\n\nKeep that claim tied to the figure: doubled across, doubled down, so \\(2 \\times 2 = 4\\). Now say the corrected rule once, without skipping a direct",
+            "learnerResponse": null,
+            "context": "Right. All four have to count; there is not a pair I can just ignore. So the side doubles across and",
+            "createdAt": "2026-05-25 01:03:40"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "review_before_scoring",
+  "quality_warnings": [
+    {
+      "code": "reframe_cue_not_reframed",
+      "severity": "warning",
+      "count": 1,
+      "failures": [
+        {
+          "stage_turn_number": 2,
+          "learner_turn_number": 2,
+          "reason": "missing_reframe_consequence",
+          "missing": [
+            "revoice"
+          ],
+          "anchor_terms": 15,
+          "learner_opening_terms": 9,
+          "shared_terms": 2,
+          "overlap_ratio": 0.133,
+          "compliant": false,
+          "revoice_compliant": false,
+          "problem_named": true,
+          "replacement_named": true
+        }
+      ],
+      "turn_numbers": [
+        2
+      ],
+      "recommended_action": "regenerate_or_exclude_before_scoring",
+      "tid": "T39",
+      "drama_id": "D35"
+    }
+  ]
+}

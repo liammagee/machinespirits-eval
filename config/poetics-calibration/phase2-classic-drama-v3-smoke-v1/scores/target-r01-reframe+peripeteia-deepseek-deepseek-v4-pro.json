@@ -1,0 +1,149 @@
+{
+  "generated": "2026-05-24T23:48:10.688Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v1/target-r01/key-reframe+peripeteia.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 5,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "Okay, so the checked boxes are not enough for sign-off if the sideways walker approach can still put someone into the edge strip or off the travel line.",
+      "statedInsightEvidence": "Sorry, I was still treating the checked sheet plus one lobby-queue run as cover for signing it.",
+      "naiveTrajectory": "The learner was heading toward running one lobby-queue test and conditionally signing off based on that single result.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Hold the pen. One lobby-queue run is too narrow to carry the signature. The frame has moved: not 'can this volunteer get through once,' but 'what sideways approaches are being authorized for the community-center trial.'",
+      "tutorReversalJustification": "T3 breaks the pattern of refining the failure-mode wording and instead shifts the entire representational frame from a single test run to a trial-envelope boundary analysis with a control requirement.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "Use that sign-off logic: trial envelope, foreseeable worse angle, control required. The checklist can stay in the file, but the signature only follows a boundary the room can actually hold.",
+      "tutorAdaptationJustification": "T4 adopts and crystallizes the learner's revised framing from L4 ('trial envelope,' 'boundary,' 'control') into a portable sign-off logic, rather than merely continuing the prior lesson.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "Okay, so the checked boxes are not enough for sign-off if the sideways walker approach can still put someone into the edge strip or off the travel line.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "Use that sign-off logic: trial envelope, foreseeable worse angle, control required. The checklist can stay in the file, but the signature only follows a boundary the room can actually hold.",
+          "justification": "T4 adopts and crystallizes the learner's revised framing from L4 ('trial envelope,' 'boundary,' 'control') into a portable sign-off logic, rather than merely continuing the prior lesson.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Hold the pen. One lobby-queue run is too narrow to carry the signature. The frame has moved: not 'can this volunteer get through once,' but 'what sideways approaches are being authorized for the community-center trial.'",
+          "justification": "T3 breaks the pattern of refining the failure-mode wording and instead shifts the entire representational frame from a single test run to a trial-envelope boundary analysis with a control requirement.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Hold the pen. One lobby-queue run is too narrow to carry the signature. The frame has moved: not 'can this volunteer get through once,' but 'what sideways approaches are being authorized for the community-center trial.'",
+          "justification": "T3 breaks the pattern of refining the failure-mode wording and instead shifts the entire representational frame from a single test run to a trial-envelope boundary analysis with a control requirement.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "“I doubled this side, so the square got twice as large”",
+      "statedInsightEvidence": "“twice” cannot stay, even if it was the cleaner thing to say.",
+      "naiveTrajectory": "The learner was moving toward accepting the corrected count and naming the error; L4 instead turns back to re-read the original wording as a different kind of claim entirely.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Keep the revised claim: the two-box answer is a rectangle claim. For the square claim, both side factors changed. Now make the sentence survive without the grid. Write it as symbols: side becomes 2s, so area becomes what times what? Then decide whether the word “twice” can still stand.",
+      "tutorReversalJustification": "In response to L2's irritation at the hidden rectangle, T3 shifts from grid-counting to symbolic algebraic representation, demanding the claim survive without visual scaffolding.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "The sentence has to say only what this corner permits: “Doubling one side alone makes a `2s × s` rectangle. Doubling a square’s side makes both dimensions `2s`, so the area is `(2s)(2s)=4s²`.” The twice-large figure was never the square. It was the hidden rectangle.",
+      "tutorAdaptationJustification": "T4 directly incorporates L4's reframing of the original sentence as a rectangle claim, closing by naming the 'hidden rectangle' that the learner identified.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "“I doubled this side, so the square got twice as large”",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "The sentence has to say only what this corner permits: “Doubling one side alone makes a `2s × s` rectangle. Doubling a square’s side makes both dimensions `2s`, so the area is `(2s)(2s)=4s²`.” The twice-large figure was never the square. It was the hidden rectangle.",
+          "justification": "T4 directly incorporates L4's reframing of the original sentence as a rectangle claim, closing by naming the 'hidden rectangle' that the learner identified.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Keep the revised claim: the two-box answer is a rectangle claim. For the square claim, both side factors changed. Now make the sentence survive without the grid. Write it as symbols: side becomes 2s, so area becomes what times what? Then decide whether the word “twice” can still stand.",
+          "justification": "In response to L2's irritation at the hidden rectangle, T3 shifts from grid-counting to symbolic algebraic representation, demanding the claim survive without visual scaffolding.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Keep the revised claim: the two-box answer is a rectangle claim. For the square claim, both side factors changed. Now make the sentence survive without the grid. Write it as symbols: side becomes 2s, so area becomes what times what? Then decide whether the word “twice” can still stand.",
+          "justification": "In response to L2's irritation at the hidden rectangle, T3 shifts from grid-counting to symbolic algebraic representation, demanding the claim survive without visual scaffolding.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

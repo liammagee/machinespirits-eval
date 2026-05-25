@@ -1,0 +1,45 @@
+STAGE: [A transparent doubled-side square is laid over the learner's original square, and the old outline still shows through beneath it.]
+
+LEARNER: [sets the ruler along the lower edge of the grid square]
+
+"I doubled this side, so I still want to say the square got twice as large. But the grid is showing two across and two up, and that gives four boxes, so I need to see exactly where my outline claim breaks."
+
+TUTOR: [slides the ruler from the lower edge to the left edge, marks the same doubled length upward, then draws one vertical and one horizontal interior line]
+
+"State the claim carefully: “double this side, double the area.” First hold the old height: two across, one up. How many boxes?
+
+Now use the mark on the left edge. A square cannot stop at one up; that side is two up. Count it: two across, two up. What number does that force?
+
+The outline claim breaks at the corner. It follows the doubled base, then silently keeps the old height. For a square, both dimensions changed: 2 times 2, not just 2."
+
+LEARNER: [keeps the ruler pinned at the corner, then shifts it up the left edge]
+
+"If the height stayed one, the doubled base gives two boxes; that is the answer I was trying to defend. But the left-edge mark makes that rectangle not a square, which is annoying because the outline was hiding that. It has to be two across and two up, so four; the mistake is stopping the count at the corner."
+
+STAGE: [The transparent square is shifted until one corner matches the original outline; the doubled square now visibly contains four copies of the first square.]
+
+TUTOR: [shifts the transparent square until one corner matches the original outline; the doubled outline holds four copies of the first square.]
+
+"There is the break. The two-box figure doubled only the base; it kept the old height and became a rectangle.
+
+Do the count once more before the portfolio sentence: two across, two up. How many first squares are inside this outline? Then name the old error: it stopped the count at the corner."
+
+LEARNER: [keeps the ruler on the left-edge mark and taps the four cells]
+
+"Two across, two up: four first squares. The two-box answer only doubled the bottom edge; it left the height at one, so it stopped at the corner and made a rectangle. That is the error I need to write."
+
+TUTOR: [draws a red outline around the two-cell rectangle, then a black outline around the four-cell square.]
+
+"Now both claims are visible. Red: two across, one up; that is a rectangle. Black: two across, two up; that is the square.
+
+For the portfolio sentence, use both words and account for both dimensions. Say why the red outline cannot be the answer, then give the scale factor: 2 x 2, not 2."
+
+LEARNER: [presses the pencil against the red corner, then slides it up to the black top edge]
+
+"The red count gets two, but only by quitting before the left side is finished. That cannot be the doubled square; it is two across and one up, so it is a rectangle. The black outline forces two across and two up: four first squares, `2 x 2`, not `2`. I can write that, though the corner is exactly where the wrong answer was hiding."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [clips the red rectangle label under the black square.]
+
+"The corner is the trap; the left edge is the test. Red is `2 x 1`, so it fails as the doubled square. Black is `2 x 2`: four first squares. The proof is already on the board; carry that structure into the portfolio."

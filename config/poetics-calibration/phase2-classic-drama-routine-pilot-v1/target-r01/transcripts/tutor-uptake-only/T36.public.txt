@@ -1,0 +1,29 @@
+STAGE: [4:55 p.m. A clipboard with every box ticked sits beside a small powered prototype; beyond the glass, a volunteer waits with a staff badge in hand.]
+
+LEARNER: “I’m sorry, I thought the sign-off sheet was the thing that made it okay to take out there. I did each item, so I’m not sure what else I was supposed to judge before someone else handles the prototype.”
+
+TUTOR: [sets the checklist next to the prototype]
+
+“The sheet says each required check was done. It is evidence, not permission by itself. The next person will not have the build in their hands the way the maker does. Before this leaves the bench, look at the prototype, not the clipboard: what is the first reasonable thing a new handler might do that could make it unsafe?”
+
+LEARNER: “I think maybe the sheet only says I did those items, not that this is ready for anyone to pick up. I’m worried I was leaning on the clipboard because it felt safer than making the call myself. If someone in the demo room grabs it by that loose side panel, it might shift or come off, maybe that is the first unsafe thing?”
+
+STAGE: [The volunteer at the glass door raises the prototype request form, then lowers it when no one signs.]
+
+TUTOR: [keeps the pen off the signature line and turns the prototype so the loose panel faces up]
+
+“The loose panel is a serious candidate for the safety decision, not a box the sheet can settle. Test it out loud before I sign: a new handler lifts here, the panel shifts, then what moves, who is exposed, and what control changes that today?”
+
+LEARNER: “I think if someone lifts it here, the panel could twist and pull this bracket, and then the wiring or the moving edge is exposed near their hand. Sorry, I’m not fully sure if I’m naming the hazard correctly. A label feels too weak if the panel can still move, so I think it should either be fastened now or not leave the bench yet. Is that the control change?”
+
+TUTOR: [glances toward the demo-room door, then keeps the pen beside the unsigned sheet]
+
+“The control change is physical, not a label. The hazard name can be cleaned up on the form; the failure path is already clear: lift point, panel shift, bracket pull, exposed hand zone. Before this gets signed, state the condition: after fastening, what lift check must pass here, and what movement means the prototype stays on the bench?”
+
+LEARNER: "Okay, so after I fasten it, the lift check is that someone can pick it up from that side panel and the panel does not shift, twist the bracket, or open that hand zone. If I see the panel move or the bracket pull at all, I should stop and keep it on the bench, not ask for the signature yet. Is that specific enough, or do I need a measured amount of movement?"
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [keeps the signature line open as the demo-room door clicks behind the waiting group]
+
+“Specific enough for this decision. Put the standard you just named on the form as a pass/fail release condition: after fastening, lift from the side panel; any panel shift, bracket pull, or opening of that hand zone means the prototype stays on the bench. A measurement matters only if the design drawing gives a tolerance; today the limit is zero visible movement in that failure path. Fasten it, run the lift check with another handler watching, and the signature follows only if that condition holds.”

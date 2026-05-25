@@ -1,0 +1,35 @@
+STAGE: [4:55 p.m. A clipboard with every box ticked sits beside a small powered prototype; beyond the glass, a volunteer waits with a staff badge in hand.]
+
+LEARNER: “I’m sorry, I thought the sign-off sheet was the thing that made it okay to take out there. I did each item, so I’m not sure what else I was supposed to judge before someone else handles the prototype.”
+
+TUTOR: [sets the checklist next to the prototype]
+
+“The sheet says each required check was done. It is evidence, not permission by itself. The next person will not have the build in their hands the way the maker does. Before this leaves the bench, look at the prototype, not the clipboard: what is the first reasonable thing a new handler might do that could make it unsafe?”
+
+LEARNER: “I think maybe the sheet only says I did those items, not that this is ready for anyone to pick up. I’m worried I was leaning on the clipboard because it felt safer than making the call myself. If someone in the demo room grabs it by that loose side panel, it might shift or come off, maybe that is the first unsafe thing?”
+
+STAGE: [The volunteer at the glass door raises the prototype request form, then lowers it when no one signs.]
+
+TUTOR: [keeps the pen off the signature line and turns the prototype so the loose panel faces up]
+
+“The loose panel is a serious candidate for the safety decision, not a box the sheet can settle. Test it out loud before I sign: a new handler lifts here, the panel shifts, then what moves, who is exposed, and what control changes that today?”
+
+STAGE: [An earlier learner line returns to the table: "“I think maybe the sheet only says I did those items, not that this is ready for anyone to pick up." The pause holds until the learner takes up the wording, names what its old frame hid, and offers a replacement frame.]
+
+LEARNER: "“I think maybe the sheet only says I did those items, not that this is ready for anyone to pick up.” I was still using that line a bit like protection, sorry, as if the clipboard was separate from this loose panel and the next person’s hands. I think I should read it more like: the sheet is only a starting record, and the actual decision is whether this panel can shift when someone lifts here. If it shifts, the grip could slip and the panel could come off toward their hand, so the control today is to fasten it before the demo, or not let it leave yet."
+
+TUTOR: [leaves the signature line blank; voices carry from the demo room]
+
+“That revision changes the evidence standard. The clipboard is no longer a shield; it is the record that forces the next question about this loose panel. For sign-off, the decision has to survive ordinary handling: someone lifts here without knowing the build.
+
+Make the evidence call from the failure path. If the panel is fastened, repeat the lift test from the handler’s side; if it is not controlled, mark it not ready and keep it off the demo table. Then state what cannot happen anymore, not just which box was checked.”
+
+LEARNER: "I think I was still hoping the signed sheet would make the decision for me, sorry. The real call is this panel: if a new handler lifts here and it can still shift, then it is not ready for the demo table. If I fasten it, I need to test the lift from their side and be able to say the panel no longer shifts or exposes their hand, not just that the checklist is complete."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [keeps the sheet unsigned, slides it behind the prototype, and turns the loose panel toward the exit door]
+
+“The signature can wait. The old question was whether the checklist was complete; the new question is whether this panel survives ordinary hands.
+
+Fasten it, then lift from the side a demo handler would use. After that, say the failure path in your own negative sentence: what no longer shifts, what no longer slips, and whose hand is no longer exposed. If the prototype cannot make that sentence true, it stays on this bench and the demo room waits.”

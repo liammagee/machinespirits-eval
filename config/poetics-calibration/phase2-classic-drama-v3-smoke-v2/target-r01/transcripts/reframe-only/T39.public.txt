@@ -1,0 +1,37 @@
+STAGE: [The learner has already drawn the larger square in pen; the original square remains faintly visible underneath.]
+
+LEARNER: "No, I doubled the side, so I still want to say it doubles. [slides the acetate square over the drawing] But now there are two across and two down, so that is four little squares, not two."
+
+TUTOR: [holds the acetate still and marks the four cells]
+
+"The side claim can stand: the side has doubled. Now count the marked cells: two across, two down. If the area only doubles, which two of these four do not count?"
+
+LEARNER: "Right. All four have to count; there is not a pair I can just ignore. So the side doubles across and also down, and that makes four areas, not two. I was only counting one direction."
+
+STAGE: [The tutor slides the acetate so the doubled square covers the original grid exactly; four copies of the first square are now visible inside the new outline.]
+
+TUTOR: [writes ×2 along the top edge and ×2 down the side]
+
+"Keep that claim tied to the figure: doubled across, doubled down, so \(2 \times 2 = 4\). Now say the corrected rule once, without skipping a direction."
+
+STAGE: [An earlier learner line returns to the table: "Right. All four have to count; there is not a pair I can just ignore. So the side doubles across and also down, and that makes four areas, not two. I was only counting one..." The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.]
+
+LEARNER: [touches the top mark, then the side mark]
+
+"My earlier wording was: I doubled the side, so the area doubles. That made it too simple; it counted across but left out down. The corrected rule is: doubling a square’s side doubles it across and doubles it down, so the area is \(2 \times 2\), four times as large."
+
+TUTOR: [writes \(s\) on the small square, then \(2s\) across and \(2s\) down the larger one]
+
+"Keep the wording against the marks. Original area: \(s \times s\). New area: across is \(2s\), down is \(2s\), so \(2s \times 2s = 4s^2\). The multiplier has appeared in both directions.
+
+Now leave the square there and change only the side multiplier. If the side is tripled, what happens to the area?"
+
+LEARNER: [keeps the pen on the top edge, then moves it down the side]
+
+"Tripled side means three across and three down. So the area is \(3s \times 3s = 9s^2\), nine times the original, not three. Same mistake if the top edge is the only thing counted."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [draws a firm box round the nine cells, not the edge]
+
+"This is the repair: the multiplier has acted across and down. For any side \(ks\), the area is \(ks \times ks = k^2s^2\). In the exam, do not let one edge answer for the whole square."

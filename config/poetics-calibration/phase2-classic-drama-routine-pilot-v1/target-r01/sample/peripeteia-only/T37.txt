@@ -1,0 +1,27 @@
+STAGE: [Margin voice: Same sentence, different room.]
+
+LEARNER: "Oh, I get it, but I still want the exact wording to settle the caption. Wait, if the mayor says the same line to the crowd and then in CLOSED MEETING NOTES, it could mean public promise in one tray and private limiting or hiding in the other, so my label may be too clean."
+
+TUTOR: [slides the quote card between the two trays]
+
+"Keep the exact wording. Now make the mayor change rooms: at the microphone, the line sounds like a promise to the crowd; in the closed notes, it may work as a way to narrow what counts. Write the caption once under PUBLIC STATEMENT and once under CLOSED MEETING NOTES. Which version still lets visitors see who heard the line, who said it, and what the room allowed it to do?"
+
+LEARNER: [Label copy pending.]
+
+"Oh, I get it: the quote card can stay exact, but the tray has to name the room. Under PUBLIC STATEMENT, I’d say the mayor’s line sounds like a promise to the crowd; under CLOSED MEETING NOTES, the same line may let the committee narrow what counts. I’m still stuck on “closed,” because I don’t want the label to accuse hiding unless the document itself supports that."
+
+STAGE: [Margin voice: The quote has not changed; the room has.]
+
+TUTOR: [sets the quote card back under CLOSED MEETING NOTES]
+
+"The quote has not changed; the room has. Let “closed” name access, not motive. If the notes show the committee setting limits, the label can say “may narrow what counts.” If they only show the line moved into a restricted room, keep it plainer: “In the closed meeting notes, the same line appears inside committee discussion.” “Hiding” waits for another document."
+
+LEARNER: "Okay, I get it: same quote card, different tray, so the caption has to name the room before it claims the job. For CLOSED MEETING NOTES, I’ll write that the mayor’s line appears inside committee discussion, and only add “may narrow what counts” if the notes actually show the committee setting limits. “Hiding” stays out unless another document proves it."
+
+TUTOR: [The tray label stays visible; the quote card rests between the two trays.]
+
+"That keeps motive off the label until a source can bear it. The same sentence is exact, but exact is not neutral: at the microphone it depends on the crowd hearing a promise; in the notes it depends on committee access and procedure.
+
+If a visitor reads the copied line with the tray label covered, public promise and restricted committee record blur together. So the caption has to carry three small facts after the citation: who said it, who could hear or access it, and what situation held it. If the document only proves the room, the label names the room. If it proves a limiting action, the label may name that job."
+
+LEARNER: "Oh, I get it: even exact wording cannot sit in the exhibit like it explains itself. After the citation I should add the mayor as speaker, who could hear or access the line, and what room or procedure held it. For the closed notes, I’ll keep it to committee discussion unless the notes actually show the sentence being used to set limits."

@@ -1,0 +1,43 @@
+STAGE: [A transparent doubled-side square is laid over the learner's original square, and the old outline still shows through beneath it.]
+
+LEARNER: [sets the ruler along the lower edge of the grid square]
+
+"I doubled this side, so I still want to say the square got twice as large. But the grid is showing two across and two up, and that gives four boxes, so I need to see exactly where my outline claim breaks."
+
+TUTOR: [slides the ruler from the lower edge to the left edge, marks the same doubled length upward, then draws one vertical and one horizontal interior line]
+
+"State the claim carefully: “double this side, double the area.” First hold the old height: two across, one up. How many boxes?
+
+Now use the mark on the left edge. A square cannot stop at one up; that side is two up. Count it: two across, two up. What number does that force?
+
+The outline claim breaks at the corner. It follows the doubled base, then silently keeps the old height. For a square, both dimensions changed: 2 times 2, not just 2."
+
+LEARNER: [keeps the ruler pinned at the corner, then shifts it up the left edge]
+
+"If the height stayed one, the doubled base gives two boxes; that is the answer I was trying to defend. But the left-edge mark makes that rectangle not a square, which is annoying because the outline was hiding that. It has to be two across and two up, so four; the mistake is stopping the count at the corner."
+
+STAGE: [The transparent square is shifted until one corner matches the original outline; the doubled square now visibly contains four copies of the first square.]
+
+TUTOR: [shifts the transparent square until one corner matches the original outline; the doubled outline holds four copies of the first square.]
+
+"There is the break. The two-box figure doubled only the base; it kept the old height and became a rectangle.
+
+Do the count once more before the portfolio sentence: two across, two up. How many first squares are inside this outline? Then name the old error: it stopped the count at the corner."
+
+STAGE: [An earlier learner line returns to the table: "[sets the ruler along the lower edge of the grid square] I doubled this side, so I still want to say the square got twice as large." The pause holds while the learner decides whether that wording still stands, needs narrowing, or needs replacing.]
+
+LEARNER: "“I doubled this side, so the square got twice as large” does not stand as a square claim; it only describes the two-by-one rectangle. That is irritating, because the ruler made the base look like the whole argument, but the left-edge mark forces two up as well. So the count is four first squares, and the old error is stopping at the corner as if the height stayed one."
+
+TUTOR: [sets the ruler along the doubled base, then turns it upright at the far corner.]
+
+"The old claim names this two-by-one rectangle. The square claim has to survive the turn at the corner: two across, two up. Make the portfolio sentence from that count, and name the area factor."
+
+LEARNER: [holds the ruler upright at the far corner, then taps the two-by-one strip]
+
+"“Double this side, double the area” only names this rectangle, not the square. It hid the turn at the corner and made the height look unchanged. The replacement sentence is: doubling a square’s side makes two across and two up, so the area factor is four."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [sets the ruler across the strip, then turns it upright to trace the missing height.]
+
+"That is the portfolio claim the drawing now permits. The strip is the old error: two across, one up, rectangle. The square survives the corner: two across, two up, four first squares. Side factor two; area factor four."

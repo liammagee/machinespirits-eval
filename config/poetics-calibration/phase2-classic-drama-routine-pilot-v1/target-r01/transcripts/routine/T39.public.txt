@@ -1,0 +1,35 @@
+STAGE: [The learner has just drawn a larger square by doubling the side of a smaller one, leaving both outlines visible on the same grid.]
+
+LEARNER: [slides the four tiles into the doubled outline]
+
+"I thought doubling the side would just double the square, but this is two across and two down. That makes four tiles, not two, which is annoying because it breaks the shortcut I was using."
+
+TUTOR: [sets the ruler along the bottom edge, then turns it up the left edge]
+
+"The shortcut doubled one direction. This outline doubles two: two across, two up. The tiles already show the count. What claim survives that?"
+
+LEARNER: "The shortcut only works if one direction changes. Here it is two across and two up, so... four tiles. I still want to call it doubled, but the grid will not back that up."
+
+STAGE: [A proctor sets four loose unit-square tiles beside the clipboard and walks on without comment.]
+
+TUTOR: [sets two tiles in one row, then places the other two above them]
+
+“This is the hidden step. The side doubled in both directions. The area became four times as large, not twice. Say that claim from the grid.”
+
+LEARNER: [taps the bottom row, then the left column]
+
+"The grid gives two across and two up. That is \(2 \times 2\), so four unit squares, not two. My shortcut only doubled one edge."
+
+TUTOR: [marks “×2” along the bottom edge and “×2” up the side]
+
+"That claim survives: side length doubled in two directions, so area is multiplied by \(2 \times 2\). For the exam: doubled side length, quadrupled area; the grid supplies the reason."
+
+LEARNER: [keeps the four tiles pressed into a two-by-two block]
+
+"So for the exam: doubled side length, but area is \(2 \times 2\), four times the original. Calling the whole square “doubled” is the sloppy part. It still feels like a technical trap, but the tiles make it hard to argue with."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [boxes the two “×2” marks on the clipboard]
+
+"Keep “doubled” attached to the side. For area, the grid has the final word: two across, two up, \(2 \times 2\), quadrupled."

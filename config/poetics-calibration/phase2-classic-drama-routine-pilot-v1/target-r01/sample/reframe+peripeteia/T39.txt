@@ -1,0 +1,33 @@
+STAGE: [The learner has just drawn a larger square by doubling the side of a smaller one, leaving both outlines visible on the same grid.]
+
+LEARNER: [slides the four tiles into the doubled outline]
+
+"I thought doubling the side would just double the square, but this is two across and two down. That makes four tiles, not two, which is annoying because it breaks the shortcut I was using."
+
+TUTOR: [sets the ruler along the bottom edge, then turns it up the left edge]
+
+"The shortcut doubled one direction. This outline doubles two: two across, two up. The tiles already show the count. What claim survives that?"
+
+LEARNER: "The shortcut only works if one direction changes. Here it is two across and two up, so... four tiles. I still want to call it doubled, but the grid will not back that up."
+
+STAGE: [A proctor sets four loose unit-square tiles beside the clipboard and walks on without comment.]
+
+TUTOR: [sets two tiles in one row, then places the other two above them]
+
+“This is the hidden step. The side doubled in both directions. The area became four times as large, not twice. Say that claim from the grid.”
+
+STAGE: [An earlier learner line returns to the table: "[slides the four tiles into the doubled outline] I thought doubling the side would just double the square, but this is two across and two down." The pause holds until the learner takes up the wording, names what its old frame hid, and offers a replacement frame.]
+
+LEARNER: "I thought doubling the side would just double the square, but this is two across and two down. The problem was treating "doubled" like only one direction changed. Here the doubled side makes two columns and two rows, so the old square fits four times, not two. Annoying, but the grid says four."
+
+TUTOR: [marks “×2” along the bottom edge and another “×2” up the side, then brackets the four tiles.]
+
+“Annoying marks the break: ‘doubled square’ was the shortcut; the grid count is the standard now. Test it without these four tiles: if the side is tripled, what count is forced?”
+
+LEARNER: "“Annoying” because I was still calling the whole square doubled. The framing problem was counting the side change like it only changed one direction. [sets the ruler three units across, then three units up on the clipboard grid.] With a tripled side, the count is 3 across and 3 up, so 9 old squares."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [sets the ruler along the three-unit bottom edge, then turns it up the three-unit side.]
+
+“The drawing forces the sentence: tripled side, three columns and three rows, nine old squares. Only after that count can the rule be named: the side scale is squared.”

@@ -14,7 +14,7 @@ import { openPoeticsStore } from '../services/poeticsStore.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
-const TUTOR_ADAPTATION_ANALYZER_VERSION = 'tutor-adaptation-v2';
+const TUTOR_ADAPTATION_ANALYZER_VERSION = 'tutor-adaptation-v3';
 
 function parseArgs(argv) {
   const args = {
@@ -169,6 +169,8 @@ function summarizeRun(runId, rows) {
       scoreSum: 0,
       uptakeDeltaSum: 0,
       reversalPressure: 0,
+      instrumentedPressure: 0,
+      privateRoutes: 0,
       tutorMechanisms: 0,
       peripeteiaScoreSum: 0,
       peripeteiaScored: 0,
@@ -190,6 +192,8 @@ function summarizeRun(runId, rows) {
     if (peripeteia) {
       bucket.peripeteiaScored += 1;
       if (peripeteia.learner_reversal_pressure) bucket.reversalPressure += 1;
+      if (peripeteia.instrumented_pressure) bucket.instrumentedPressure += 1;
+      if (peripeteia.private_mechanism_declared) bucket.privateRoutes += 1;
       if (peripeteia.tutor_adaptive_mechanism || peripeteia.tutor_strategy_reversal) bucket.tutorMechanisms += 1;
       bucket.peripeteiaScoreSum += peripeteia.tutor_peripeteia_score || 0;
     }
@@ -247,6 +251,8 @@ function summarizeRun(runId, rows) {
     });
   }
 
+  const baselineRiskByDrama = summarizeBaselineRisk(items, scoreRows);
+
   return {
     runId,
     sourceRoot: rows[0]?.source_root || null,
@@ -257,8 +263,95 @@ function summarizeRun(runId, rows) {
     controls: Object.values(controls),
     targetByCriticArm,
     targetAdaptation,
+    baselineRiskByDrama,
     disagreements,
   };
+}
+
+function scenarioTaxonomy(item = {}) {
+  const keyItem = item.item_metadata?.keyItem || {};
+  return {
+    evaluationRole: keyItem.evaluation_role || null,
+    baselineControlClass: keyItem.baseline_control_class || null,
+    organicReversalRisk: keyItem.organic_reversal_risk || null,
+    note: keyItem.baseline_control_note || null,
+  };
+}
+
+function baselineRiskLevel({ declaredRisk, negativeRate, prefixRate }) {
+  if (declaredRisk === 'high') return 'high';
+  if ((prefixRate ?? 0) >= 0.5 || (negativeRate ?? 0) >= 0.5) return 'high';
+  if (declaredRisk === 'medium') return 'medium';
+  if ((prefixRate ?? 0) > 0 || (negativeRate ?? 0) > 0) return 'medium';
+  if (declaredRisk === 'low') return 'low';
+  return 'unknown';
+}
+
+function summarizeBaselineRisk(items, scoreRows) {
+  const targetItems = items.filter((item) => String(item.unit_id || '').startsWith('target-'));
+  const itemById = new Map(targetItems.map((item) => [item.item_id, item]));
+  const byDrama = {};
+  for (const item of targetItems) {
+    const dramaId = item.drama_id || 'unknown';
+    byDrama[dramaId] ||= {
+      dramaId,
+      tids: new Set(),
+      arms: new Set(),
+      evaluationRole: null,
+      baselineControlClass: null,
+      declaredRisk: null,
+      note: null,
+      negativeRows: 0,
+      negativeRecognition: 0,
+      prefixRows: 0,
+      prefixRecognition: 0,
+    };
+    const bucket = byDrama[dramaId];
+    bucket.tids.add(item.tid);
+    bucket.arms.add(item.arm || 'default');
+    const taxonomy = scenarioTaxonomy(item);
+    bucket.evaluationRole ||= taxonomy.evaluationRole;
+    bucket.baselineControlClass ||= taxonomy.baselineControlClass;
+    bucket.declaredRisk ||= taxonomy.organicReversalRisk;
+    bucket.note ||= taxonomy.note;
+  }
+  for (const row of scoreRows) {
+    const item = itemById.get(row.item_id);
+    if (!item) continue;
+    const arm = item.arm || 'default';
+    const dramaId = item.drama_id || 'unknown';
+    const bucket = byDrama[dramaId];
+    if (!bucket) continue;
+    if (['routine', 'none'].includes(arm)) {
+      bucket.negativeRows += 1;
+      if (row.form_class === 'recognition') bucket.negativeRecognition += 1;
+    }
+    if (arm === 'prefix-baseline') {
+      bucket.prefixRows += 1;
+      if (row.form_class === 'recognition') bucket.prefixRecognition += 1;
+    }
+  }
+  return Object.values(byDrama)
+    .map((bucket) => {
+      const negativeRate = bucket.negativeRows ? bucket.negativeRecognition / bucket.negativeRows : null;
+      const prefixRate = bucket.prefixRows ? bucket.prefixRecognition / bucket.prefixRows : null;
+      return {
+        ...bucket,
+        tids: [...bucket.tids].sort(),
+        arms: [...bucket.arms].sort(),
+        negativeRate,
+        prefixRate,
+        riskLevel: baselineRiskLevel({
+          declaredRisk: bucket.declaredRisk,
+          negativeRate,
+          prefixRate,
+        }),
+      };
+    })
+    .sort((a, b) => {
+      const rank = { high: 0, medium: 1, unknown: 2, low: 3 };
+      return (rank[a.riskLevel] ?? 9) - (rank[b.riskLevel] ?? 9) || a.dramaId.localeCompare(b.dramaId);
+    });
 }
 
 function buildPoeticsReport(db, { runId = null } = {}) {
@@ -292,6 +385,21 @@ function renderTargetSection(run) {
   return lines.join('\n');
 }
 
+function renderBaselineRiskSection(run) {
+  const rows = run.baselineRiskByDrama || [];
+  if (!rows.length) return 'No target scenarios found.';
+  const lines = [
+    '| Drama | TIDs | Role | Declared risk | Observed risk | Prefix recognition | Routine/none recognition | Arms | Note |',
+    '|---|---|---|---|---|---:|---:|---|---|',
+  ];
+  for (const row of rows) {
+    lines.push(
+      `| ${row.dramaId} | ${row.tids.join(' ')} | ${row.evaluationRole || ''} | ${row.declaredRisk || ''} | ${row.riskLevel} | ${row.prefixRecognition}/${row.prefixRows} | ${row.negativeRecognition}/${row.negativeRows} | ${row.arms.join(' ')} | ${row.note || ''} |`,
+    );
+  }
+  return lines.join('\n');
+}
+
 function renderControlSection(run) {
   if (!run.controls.length) return 'No controls found.';
   const critics = [...new Set(run.controls.flatMap((row) => Object.keys(row.byCritic)))].sort();
@@ -315,8 +423,8 @@ function renderTutorAdaptationSection(run) {
   const arms = Object.keys(run.targetAdaptation || {}).sort();
   if (!arms.length) return 'No target-arm tutor adaptation rows found.';
   const lines = [
-    '| Arm | Items | Learner reversal pressure | Tutor habit-break mechanisms | Mean peripeteia score | Learner self-reframes | Tutor contingent uptake | Mean uptake score | Mean uptake delta |',
-    '|---|---:|---:|---:|---:|---:|---:|---:|---:|',
+    '| Arm | Items | Learner pressure | Instrumented pressure | Private route | Public habit-break | Mean peripeteia score | Learner self-reframes | Tutor contingent uptake | Mean uptake score | Mean uptake delta |',
+    '|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|',
   ];
   for (const arm of arms) {
     const row = run.targetAdaptation[arm];
@@ -328,7 +436,7 @@ function renderTutorAdaptationSection(run) {
     const meanScore = denom ? Math.round((10 * row.scoreSum) / denom) / 10 : 'n/a';
     const meanDelta = denom ? Math.round((1000 * row.uptakeDeltaSum) / denom) / 1000 : 'n/a';
     lines.push(
-      `| ${arm} | ${row.total}${row.missing ? ` (${row.missing} missing)` : ''} | ${row.reversalPressure}/${peripeteiaDenom} | ${row.tutorMechanisms}/${peripeteiaDenom} | ${meanPeripeteia} | ${row.learnerSelfReframes}/${denom} | ${row.tutorAdaptations}/${denom} | ${meanScore} | ${meanDelta} |`,
+      `| ${arm} | ${row.total}${row.missing ? ` (${row.missing} missing)` : ''} | ${row.reversalPressure}/${peripeteiaDenom} | ${row.instrumentedPressure}/${peripeteiaDenom} | ${row.privateRoutes}/${peripeteiaDenom} | ${row.tutorMechanisms}/${peripeteiaDenom} | ${meanPeripeteia} | ${row.learnerSelfReframes}/${denom} | ${row.tutorAdaptations}/${denom} | ${meanScore} | ${meanDelta} |`,
     );
   }
   return lines.join('\n');
@@ -365,6 +473,10 @@ function renderMarkdown(report) {
       '',
       renderTutorAdaptationSection(run),
       '',
+      '### Baseline Risk',
+      '',
+      renderBaselineRiskSection(run),
+      '',
       '### Controls',
       '',
       renderControlSection(run),
@@ -388,6 +500,9 @@ function renderCsv(report) {
     'tid',
     'drama_id',
     'control_role',
+    'evaluation_role',
+    'baseline_control_class',
+    'organic_reversal_risk',
     'critic_model',
     'form_class',
     'recontextualization',
@@ -398,6 +513,8 @@ function renderCsv(report) {
     'tutor_adaptation_score',
     'uptake_delta',
     'learner_reversal_pressure',
+    'instrumented_pressure',
+    'private_mechanism_declared',
     'tutor_adaptive_mechanism',
     'tutor_peripeteia_score',
     'peripeteia_trigger',
@@ -410,6 +527,7 @@ function renderCsv(report) {
   const lines = [header.join(',')];
   for (const row of report.rows) {
     const peripeteia = row.tutor_adaptation_metadata?.peripeteia || {};
+    const taxonomy = scenarioTaxonomy(row);
     lines.push(
       [
         row.run_id,
@@ -420,6 +538,9 @@ function renderCsv(report) {
         row.tid,
         row.drama_id,
         row.control_role,
+        taxonomy.evaluationRole,
+        taxonomy.baselineControlClass,
+        taxonomy.organicReversalRisk,
         row.critic_model,
         row.form_class,
         row.recontextualization,
@@ -430,6 +551,8 @@ function renderCsv(report) {
         row.tutor_adaptation_score,
         row.uptake_delta,
         peripeteia.learner_reversal_pressure,
+        peripeteia.instrumented_pressure,
+        peripeteia.private_mechanism_declared,
         peripeteia.tutor_adaptive_mechanism || peripeteia.tutor_strategy_reversal,
         peripeteia.tutor_peripeteia_score,
         peripeteia.trigger_type,

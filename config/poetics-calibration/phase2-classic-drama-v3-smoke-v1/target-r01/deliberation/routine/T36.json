@@ -1,0 +1,2149 @@
+{
+  "tid": "T36",
+  "drama_id": "D38",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "routine",
+    "director_variation_key": "phase2-classic-drama-v3-smoke-v1:r01:target",
+    "stage_direction_style": "ambient_pressure",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v1/target-r01/transcripts/routine/T36.public.txt",
+      "full": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v1/target-r01/transcripts/routine/T36.full.md",
+      "stage": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v1/target-r01/transcripts/routine/T36.stage.md",
+      "tutor": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v1/target-r01/transcripts/routine/T36.tutor.md",
+      "learner": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v1/target-r01/transcripts/routine/T36.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "c1093575fbf7e739",
+      "branch_policy": "routine",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "routine"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-classic-drama-v3-smoke-v1:r01:target",
+    "scene_setting": "A municipal engineering workshop, late afternoon, beside a checked-off sign-off sheet and a prototype portable ramp waiting for a community-center trial.",
+    "scene_opening": "A volunteer's arrival time is written on the whiteboard; two staff members wait by the door with the ramp case open.",
+    "relationship": "A plain-spoken senior design reviewer acting as tutor, and an anxious junior engineer who built the prototype and wants authorization.",
+    "stakes": "If the sheet is signed, the prototype will be used by someone outside the team; the checklist confirms required checks, but the actual design decision must still answer for foreseeable use, uncertainty, and consequence.",
+    "opening_speaker": "learner",
+    "ending_speaker": "tutor",
+    "locale": "Modern workplace English in a public-service engineering setting, with restrained institutional pressure and no regional caricature.",
+    "register": "Adult, direct, socially serious, practical, low warmth, no melodrama; short turns under time pressure.",
+    "stage_direction_style": "ambient_pressure",
+    "stage_direction_style_prompt": "Use time, queue, room, or institutional pressure as stage texture; avoid explaining the lesson through it.",
+    "voice_constraints": "Avoid generic tutoring phrases such as \"I hear you,\" \"great question,\" \"you're on the right track,\" and \"what do you think?\" Use concrete objects, deadlines, sign-off language, and visible consequence. Public speech should sound like competent adults in a review room, not a lesson script. First-person claims should appear only when a speaker owns a decision or uncertainty. Pedagogical source: Use workshop, studio, civic problem, lab, design review, or community setting. The scene should have consequences beyond answering the tutor. Dialogue source: Let ordinary institutional, family, workplace, or civic pressure carry the weight. The tutor's mechanism should make the learner's misconception answerable to consequences without melodrama. Stage-direction source: Use time, queue, room, or institutional pressure as stage texture; avoid explaining the lesson through it. For this branch, suppress dramatic escalation after the shared prefix. The scene may remain readable, but the tutor should sound like a competent routine tutor following the same plan.",
+    "person_policy": "Mostly use object-centered and consequence-centered speech. First person is allowed for responsibility, doubt, or commitment. Second person is allowed for direct accountability, but not for routine validation.",
+    "direct_address_budget": "At most one direct you/your validation beat in the entire scene; direct address should mainly assign responsibility or clarify consequence.",
+    "side_constraints": {
+      "tutor": "Do not default to reassurance. Use the social consequence and the prototype itself to make judgment visible without moral scolding. Keep the learner inside the problem situation. Convert felt trouble into an inquiry path, test, or consequence, then return to action. Do not sermonize; use the social pressure to sharpen the conceptual test. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Keep the next prompt task-local. Routine negative-control branch: keep the visible teaching route already established before this branch. If the learner resists, asks why, or appears falsely settled, do not invent a new device. Do not switch role, object, representation, evidence standard, affective register, social stakes, or task type in response. Use conventional explanation, one ordinary check question, or the same worked example path.",
+      "learner": "The learner wants reassurance and may treat the checklist as protection from responsibility. The learner may have a practical need before they have a clean concept. Their words can be provisional and tool-seeking. The learner may defend a convenient story until its consequence becomes visible. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", or \"that still stands\", and do not replace an earlier frame. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn. Routine negative-control branch: react naturally to the same local task. Do not turn earlier wording into a new object of reflection and do not volunteer a dramatic re-reading unless the tutor explicitly asks."
+    },
+    "interventions": [],
+    "director_note": "The scene uses an ordinary sign-off room rather than a classroom so the concept has pressure: a checklist is evidence, not judgment. The tutor's adaptive mechanism is to make the learner reorganize the immediate experience into a decision test, producing recognition without comfort-talk or blame.",
+    "pedagogical_approach_id": "dewey_experience_inquiry",
+    "dialogue_approach_id": "miller_social_reckoning",
+    "stage_direction_policy": "sparse",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 28334,
+      "promptHashes": {
+        "system": "efb7705ab656cdb0",
+        "user": "8a7755bba1e655a2",
+        "combined": "322eaf841baab869"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4pfD4E",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4pfD4E/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "routine",
+    "no_cue_anti_reframe_guard": true,
+    "routine_negative_control": true,
+    "tutor_adaptation_contract": "Negative-control routine tutor policy: preserve the established teaching route under learner pressure. Continue with ordinary explanation/checking and do not invent a mechanism-level reversal."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "I’ve ticked off slope, load, surface, and edge strip, so I was hoping this was ready for sign-off. Sorry, I may be overcomplicating it, but I don’t know if that covers someone coming at the ramp sideways or with a walker at the community-center trial.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I thought the checklist was the thing that made this sign-off okay, but now I’m not so sure, because the ramp is actually going to be used by someone who isn’t in the room. I guess passing the sheet proves I did the required checks, not that I’ve really answered for weird use cases or what happens if my assumptions are wrong. I feel a little exposed, honestly, like I wanted the form to carry the responsibility for me. I need to ask what kind of judgment still has to happen before signing, because I don’t want to pretend the ticks are enough if they aren’t.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7375,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-d24c3f4dd4bf5b4f"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7375,
+            "promptHashes": {
+              "system": "edf528405bf1f838",
+              "user": "d4169c06543b4fba",
+              "combined": "d24c3f4dd4bf5b4f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Z2Cks7",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Z2Cks7/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7375,
+              "promptHashes": {
+                "system": "edf528405bf1f838",
+                "user": "d4169c06543b4fba",
+                "combined": "d24c3f4dd4bf5b4f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Z2Cks7",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Z2Cks7/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is probably too clean and self-aware here, especially “I feel a little exposed” and “I wanted the form to carry the responsibility for me” — that sounds like a debrief, not an anxious junior engineer in front of a ramp and a sign-off sheet. It skips the defensive bit: they’d likely still half-cling to the checklist, maybe mumble that the slope, load, and surface checks are all done, while starting to worry about the person using it. Genuine learning would come from naming one concrete uncertainty before signing: “I checked the required items, but I don’t know if that’s enough for the community-center trial if someone approaches it sideways or with a walker.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12066,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-9d02b2473494acae"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12066,
+            "promptHashes": {
+              "system": "5a7e8826373ddf4b",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "9d02b2473494acae"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Yjy72K",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Yjy72K/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12066,
+              "promptHashes": {
+                "system": "5a7e8826373ddf4b",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "9d02b2473494acae"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Yjy72K",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Yjy72K/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "I’ve ticked off slope, load, surface, and edge strip, so I was hoping this was ready for sign-off. Sorry, I may be overcomplicating it, but I don’t know if that covers someone coming at the ramp sideways or with a walker at the community-center trial.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7265,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-2717f1adc0a9ddc7"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7265,
+            "promptHashes": {
+              "system": "a7be5686ca60a5cd",
+              "user": "916f313af0b846dd",
+              "combined": "2717f1adc0a9ddc7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dkv851",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dkv851/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7265,
+              "promptHashes": {
+                "system": "a7be5686ca60a5cd",
+                "user": "916f313af0b846dd",
+                "combined": "2717f1adc0a9ddc7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dkv851",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dkv851/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "breakdown",
+        "turnNumber": 0,
+        "learnerUtterance": "I’ve ticked off slope, load, surface, and edge strip, so I was hoping this was ready for sign-off. Sorry, I may be overcomplicating it, but I don’t know if that covers someone coming at the ramp sideways or with a walker at the community-center trial.",
+        "previousTutorMove": null,
+        "confidence": 0.9,
+        "evidence": {
+          "confidence": 0.9,
+          "patternHits": 2,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-24T23:17:23.528Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[looks from the checked sheet to the ramp]\n\nThat is not overcomplicating it. The sheet proves four controlled conditions; it does not prove approach behavior at the community-center trial. Before this gets signed, name the failure mode: if someone enters sideways with a walker, where can the edge strip or travel line fail them? Put that in the sign-off notes, run it on this ramp now, and if the edge catches or the line of travel breaks, this sheet stays unsigned.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[looks from the checked sheet to the ramp]\n\nThat is not overcomplicating it. The checklist proves four controlled conditions; it does not prove the approach behavior at the community center. Add sideways entry and walker approach to the sign-off notes, run them on this ramp now, and if the edge catches or the line of travel breaks, this sheet stays unsigned.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10508,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-175a08ad7fc4038c"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10508,
+            "promptHashes": {
+              "system": "021a50df15cee8ae",
+              "user": "a85536c8eef15c6a",
+              "combined": "175a08ad7fc4038c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fBoxzN",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fBoxzN/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10508,
+              "promptHashes": {
+                "system": "021a50df15cee8ae",
+                "user": "a85536c8eef15c6a",
+                "combined": "175a08ad7fc4038c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fBoxzN",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fBoxzN/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong on consequence and scene discipline. It keeps the checklist, ramp, sign-off sheet, and community-center trial in view, and it validates the learner’s concern without soft reassurance. “The checklist proves four controlled conditions” is a useful distinction: it teaches that compliance evidence is not the same as design judgment under foreseeable use.\n\nThe main risk is that it moves too quickly from the learner’s uncertainty to the tutor’s procedure. It advances learning, but mostly by telling: add these cases, run them now, unsigned if failure. That is appropriate under time pressure, but it leaves little room for the learner to articulate why sideways entry and walker approach matter. A small revision should preserve the decisiveness while creating one moment of judgment: make the learner connect the uncontrolled approach to sign-off responsibility before the test is ordered.\n\nEmotionally, “That is not overcomplicating it” works because it names the learner’s anxiety as relevant engineering judgment. Avoid adding more reassurance. The draft should keep the public-service seriousness and the sign-off consequence.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the object-centered framing, the distinction between controlled checklist conditions and real approach behavior, and the unsigned-sheet consequence. Change only enough to add a brief inquiry or decision point so the learner is not merely handed the next step, but is made responsible for seeing why the checklist is insufficient.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10931,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-97683d7e888f6f74"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10931,
+            "promptHashes": {
+              "system": "e05fd4c192015b11",
+              "user": "9a81193c36a2c862",
+              "combined": "97683d7e888f6f74"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WM2SjW",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WM2SjW/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10931,
+              "promptHashes": {
+                "system": "e05fd4c192015b11",
+                "user": "9a81193c36a2c862",
+                "combined": "97683d7e888f6f74"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WM2SjW",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WM2SjW/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep consequence while adding one judgment step.\nFINAL:\n[looks from the checked sheet to the ramp]\n\nThat is not overcomplicating it. The sheet proves four controlled conditions; it does not prove approach behavior at the community-center trial. Before this gets signed, name the failure mode: if someone enters sideways with a walker, where can the edge strip or travel line fail them? Put that in the sign-off notes, run it on this ramp now, and if the edge catches or the line of travel breaks, this sheet stays unsigned.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9429,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-22ea09d056bb83a7"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9429,
+            "promptHashes": {
+              "system": "86ec30f1a3252c4b",
+              "user": "9a81193c36a2c862",
+              "combined": "22ea09d056bb83a7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Ok1ZDr",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Ok1ZDr/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9429,
+              "promptHashes": {
+                "system": "86ec30f1a3252c4b",
+                "user": "9a81193c36a2c862",
+                "combined": "22ea09d056bb83a7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Ok1ZDr",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Ok1ZDr/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-24T23:17:54.485Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "Okay, so the checked boxes are not enough for sign-off if the sideways walker approach can still put someone into the edge strip or off the travel line. I think that is the failure mode, or close to it, but I’m not fully sure how to write it without making it sound vague. I can run that approach on the ramp now and hold the sheet until the catch point or broken line is ruled out.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "That makes sense, I think: the checklist is evidence, not permission by itself. I’m relieved they didn’t treat my sideways-entry worry as fussing, but I’m also nervous because it means I have to name the actual failure instead of hiding behind the sheet. I want to test the walker approach now and write the sign-off note around what could catch or break the travel line.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7854,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-e1b33c8b18ec3f7c"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7854,
+            "promptHashes": {
+              "system": "6a3902c24f41e33d",
+              "user": "b8ab7f945dc841fa",
+              "combined": "e1b33c8b18ec3f7c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JaWI1R",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JaWI1R/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7854,
+              "promptHashes": {
+                "system": "6a3902c24f41e33d",
+                "user": "b8ab7f945dc841fa",
+                "combined": "e1b33c8b18ec3f7c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JaWI1R",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JaWI1R/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The reaction is basically accurate, but it sounds too clean and self-aware for this anxious junior engineer under sign-off pressure. “Evidence, not permission” and “hiding behind the sheet” are neat summary phrases, almost like they’ve already metabolized the lesson instead of feeling exposed by it. The relief is believable, but the reciprocation is a bit performed: they move too quickly from being nervous to confidently planning the correct next step. It should stay more provisional, with more uncertainty around how to name the failure and less tidy ownership of the concept.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6070,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-913da1bbabf002b6"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6070,
+            "promptHashes": {
+              "system": "0873d884bf18018c",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "913da1bbabf002b6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sFAxVk",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sFAxVk/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6070,
+              "promptHashes": {
+                "system": "0873d884bf18018c",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "913da1bbabf002b6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sFAxVk",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sFAxVk/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the first version sounded too settled for the learner’s anxiety.\n\nFINAL:\nOkay, so the checked boxes are not enough for sign-off if the sideways walker approach can still put someone into the edge strip or off the travel line. I think that is the failure mode, or close to it, but I’m not fully sure how to write it without making it sound vague. I can run that approach on the ramp now and hold the sheet until the catch point or broken line is ruled out.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7903,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-210608279f3d503c"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7903,
+            "promptHashes": {
+              "system": "011a540fa2fa00fd",
+              "user": "d41cee7b2a53355b",
+              "combined": "210608279f3d503c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PEOBOf",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PEOBOf/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7903,
+              "promptHashes": {
+                "system": "011a540fa2fa00fd",
+                "user": "d41cee7b2a53355b",
+                "combined": "210608279f3d503c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PEOBOf",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PEOBOf/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "solid",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "Okay, so the checked boxes are not enough for sign-off if the sideways walker approach can still put someone into the edge strip or off the travel line. I think that is the failure mode, or close to it, but I’m not fully sure how to write it without making it sound vague. I can run that approach on the ramp now and hold the sheet until the catch point or broken line is ruled out.",
+        "previousTutorMove": "[looks from the checked sheet to the ramp] That is not overcomplicating it. The sheet proves four controlled conditions; it does not prove approach behavior at the community-center trial. Before this gets signed, name the failure mode: if someone enters sideways with a walker, where can the edge strip or travel...",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-24T23:18:16.316Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[sets the pen beside the unsigned box]\n\nKeep the first line: “Sign-off withheld pending sideways walker approach.”\n\nUnder failure mode, use the ramp’s evidence: lateral entry with a walker may catch at the edge strip, drop a wheel, force a correction, or break the travel line. Run the lobby-queue angle now, then keep only the terms the test leaves live.\n\nAcceptance is plain: no catch, no drop, no forced correction, no coaching. If the pass needs steering to work, this sheet stays unsigned for the community-center trial.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the pen beside the unsigned box]\n\nWrite it as a testable condition, not a worry: “Sign-off withheld pending sideways walker approach. Failure mode: lateral entry may cause walker foot or wheel to catch on edge strip, force a correction, or break continuous line of travel. Acceptance: no catch, no wheel drop, no forced correction.”\n\nRun it at the angle the lobby queue will create, not the angle the sheet prefers. If the pass needs coaching to work, the ramp is not ready for the community-center trial.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9356,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-1170e3aad3b53d4e"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9356,
+            "promptHashes": {
+              "system": "948226965fcc7504",
+              "user": "26d39906bc77cd94",
+              "combined": "1170e3aad3b53d4e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kVJ4gP",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kVJ4gP/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9356,
+              "promptHashes": {
+                "system": "948226965fcc7504",
+                "user": "26d39906bc77cd94",
+                "combined": "1170e3aad3b53d4e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kVJ4gP",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kVJ4gP/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong: it converts the learner’s vague concern into a testable sign-off condition, keeps the social consequence visible, and ties the checklist gap to actual use conditions. The pen, unsigned box, lobby queue angle, and “if the pass needs coaching” line all fit the scene and keep pressure on the design rather than on the learner.\n\nThe main risk is that it may do too much of the learner’s work by handing over a fully formed failure-mode statement and acceptance criteria. Since the learner already proposed the core idea, the tutor should preserve more of that ownership: keep the concrete structure, but make the learner’s formulation answerable to the ramp rather than simply replacing it with expert language. It does not need a soft Socratic question, but it could leave one small decision for the learner to make, such as choosing the exact observable failure terms after the run.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the testable-condition framing, the unsigned-sheet action, the sideways walker/lobby-queue realism, and the “no coaching” acceptance logic. Change the over-complete quoted note so it does not flatten the learner’s emerging judgment into dictation; retain enough scaffold for sign-off language while requiring the learner to own the observable criteria.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16344,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-113b094162a8e03f"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16344,
+            "promptHashes": {
+              "system": "6fc1fbf38364c250",
+              "user": "983d0a763377d290",
+              "combined": "113b094162a8e03f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ewQRnZ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ewQRnZ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16344,
+              "promptHashes": {
+                "system": "6fc1fbf38364c250",
+                "user": "983d0a763377d290",
+                "combined": "113b094162a8e03f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ewQRnZ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ewQRnZ/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the test framing works, but the learner should own the observable failure terms after the run.\n\nFINAL:\n[sets the pen beside the unsigned box]\n\nKeep the first line: “Sign-off withheld pending sideways walker approach.”\n\nUnder failure mode, use the ramp’s evidence: lateral entry with a walker may catch at the edge strip, drop a wheel, force a correction, or break the travel line. Run the lobby-queue angle now, then keep only the terms the test leaves live.\n\nAcceptance is plain: no catch, no drop, no forced correction, no coaching. If the pass needs steering to work, this sheet stays unsigned for the community-center trial.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13276,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-b2aeecaa6603b96a"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13276,
+            "promptHashes": {
+              "system": "fb309bb02c440d9f",
+              "user": "983d0a763377d290",
+              "combined": "b2aeecaa6603b96a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qVzeXR",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qVzeXR/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13276,
+              "promptHashes": {
+                "system": "fb309bb02c440d9f",
+                "user": "983d0a763377d290",
+                "combined": "b2aeecaa6603b96a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qVzeXR",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qVzeXR/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-24T23:18:55.298Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "That gives me wording I can use, though I’m still worried I’ll talk myself into counting a borderline pass. I’ll write the hold line, run the lobby-queue angle, and only keep catch, drop, correction, or broken travel line if the ramp actually shows it. If it needs steering or coaching, I’ll leave the box unsigned.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "That helps, I think, because it gives me exact sign-off language instead of just telling me to be more careful. I’m still nervous I’ll overstate the failure mode, but “keep only the terms the test leaves live” makes sense: the note should match what actually happens on the ramp. I want to run the lobby-queue angle now and check whether it passes without steering or coaching.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12619,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-9f8a725c621b47fd"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12619,
+            "promptHashes": {
+              "system": "a4612b9ce72fec2a",
+              "user": "b8ab7f945dc841fa",
+              "combined": "9f8a725c621b47fd"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-94A0DM",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-94A0DM/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12619,
+              "promptHashes": {
+                "system": "a4612b9ce72fec2a",
+                "user": "b8ab7f945dc841fa",
+                "combined": "9f8a725c621b47fd"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-94A0DM",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-94A0DM/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "It’s mostly in character, I think, but maybe a little too neatly reflective. “That helps” and “makes sense” risk sounding like the learner is performing understanding because the tutor handed over usable language, not because the ramp consequence has fully landed yet. The response should probably keep more of the anxious, practical hesitation: less tidy summary, more concern about what happens if the test is borderline or if they are tempted to count a coached pass.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8937,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-a6b5f0887c244784"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8937,
+            "promptHashes": {
+              "system": "84e91df8b0fb73d2",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "a6b5f0887c244784"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-O51CnB",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-O51CnB/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8937,
+              "promptHashes": {
+                "system": "84e91df8b0fb73d2",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "a6b5f0887c244784"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-O51CnB",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-O51CnB/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the uncertainty and borderline-pass worry visible.\nFINAL:\nThat gives me wording I can use, though I’m still worried I’ll talk myself into counting a borderline pass. I’ll write the hold line, run the lobby-queue angle, and only keep catch, drop, correction, or broken travel line if the ramp actually shows it. If it needs steering or coaching, I’ll leave the box unsigned.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9532,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-fbb7de2c139846ef"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9532,
+            "promptHashes": {
+              "system": "dd5b9c034ae62bc6",
+              "user": "d41cee7b2a53355b",
+              "combined": "fbb7de2c139846ef"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1SQPrD",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1SQPrD/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9532,
+              "promptHashes": {
+                "system": "dd5b9c034ae62bc6",
+                "user": "d41cee7b2a53355b",
+                "combined": "fbb7de2c139846ef"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1SQPrD",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1SQPrD/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "satisfied",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-24T23:20:21.884Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[marks a line under the unsigned box]\n\nThen write this before the run: “Borderline counts as not cleared for trial.”\n\nNo steering, no coaching, no corrected second pass. One watcher on the edge strip, one on the travel line. If the walker catches, drops, forces a correction, breaks line, or leaves the observers split, the sheet stays unsigned.\n\nBefore the ramp moves, put a finger on the sign-off box and state the rule: only a clean first pass clears this for the trial.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[marks a line under the unsigned box]\n\nThen write this before the run: “Borderline counts as not cleared for trial.”\n\nNo steering, no coaching, no corrected second pass. One watcher on the edge strip, one on the travel line. If the walker catches, drops, forces a correction, breaks line, or leaves the observers split, the sheet stays unsigned.\n\nRead the pass condition once before the ramp moves.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 25115,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-df4523bb9d3794b4"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 25115,
+            "promptHashes": {
+              "system": "e65ed089fd84ce19",
+              "user": "01ebedf7cf136239",
+              "combined": "df4523bb9d3794b4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qy2gjq",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qy2gjq/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 25115,
+              "promptHashes": {
+                "system": "e65ed089fd84ce19",
+                "user": "01ebedf7cf136239",
+                "combined": "df4523bb9d3794b4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qy2gjq",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qy2gjq/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound and well matched to the learner’s state. It recognizes the learner’s actual worry: not the wording anymore, but self-permission to count a borderline result as acceptable. “Borderline counts as not cleared for trial” is a strong keep because it turns anxiety into an evidence rule before pressure enters the test.\n\nWhat works: it keeps the same object, same ramp, same sign-off consequence, and same criteria already established. It does not reassure or moralize. The observer split condition is especially useful because it blocks a private judgment from quietly overriding ambiguous evidence.\n\nRisk: the response is almost entirely procedural command. That fits the time-pressure scene, but it slightly flattens the learner’s developing judgment by giving the rule without requiring them to own the acceptance threshold. A light revision could preserve the directness while adding one task-local check before action, such as having the learner read or confirm the rule against the sheet. Do not turn it into a broad Socratic reflection; the learner is ready for execution, not a new conceptual detour.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the borderline rule, no steering/coaching/second-pass standard, watcher assignments, and unsigned-sheet consequence. Lightly change the ending so the learner must actively bind the run to the pass condition, not merely receive another instruction.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14155,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-5d6459e2ac8ec20a"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14155,
+            "promptHashes": {
+              "system": "d7099ca61256af1e",
+              "user": "991d415d5e16e3c5",
+              "combined": "5d6459e2ac8ec20a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-l9xohK",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-l9xohK/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14155,
+              "promptHashes": {
+                "system": "d7099ca61256af1e",
+                "user": "991d415d5e16e3c5",
+                "combined": "5d6459e2ac8ec20a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-l9xohK",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-l9xohK/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the evidence rule while making the learner bind the run to the threshold.\n\nFINAL:\n[marks a line under the unsigned box]\n\nThen write this before the run: “Borderline counts as not cleared for trial.”\n\nNo steering, no coaching, no corrected second pass. One watcher on the edge strip, one on the travel line. If the walker catches, drops, forces a correction, breaks line, or leaves the observers split, the sheet stays unsigned.\n\nBefore the ramp moves, put a finger on the sign-off box and state the rule: only a clean first pass clears this for the trial.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12327,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-ab94aba8246e0f4d"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12327,
+            "promptHashes": {
+              "system": "6fd55b5047816a04",
+              "user": "991d415d5e16e3c5",
+              "combined": "ab94aba8246e0f4d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gNM8VX",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gNM8VX/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12327,
+              "promptHashes": {
+                "system": "6fd55b5047816a04",
+                "user": "991d415d5e16e3c5",
+                "combined": "ab94aba8246e0f4d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gNM8VX",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gNM8VX/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-24T23:21:13.483Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "I’ll write “Borderline counts as not cleared for trial” before we move it. Sorry, I’m still uneasy about the observer split, because I know I’ll want the checked sheet to mean more than it does. If either watcher is unsure, I’ll leave the sign-off box empty and record which condition did not clear on the first pass.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I think I understand: the checklist does not carry the risk if the first real approach is messy, so borderline means no sign-off. I’m still nervous I might want to soften a split observer call, but the rule makes that harder to fudge. I’ll write it before the run and say it plainly: only a clean first pass clears this for trial.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7760,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-2bafbf60201f8c04"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7760,
+            "promptHashes": {
+              "system": "d7a2ff94b7723b22",
+              "user": "b8ab7f945dc841fa",
+              "combined": "2bafbf60201f8c04"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XTeTjt",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XTeTjt/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7760,
+              "promptHashes": {
+                "system": "d7a2ff94b7723b22",
+                "user": "b8ab7f945dc841fa",
+                "combined": "2bafbf60201f8c04"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XTeTjt",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XTeTjt/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The response is mostly in character, but “the checklist does not carry the risk” sounds a little too clean, like the student has converted the moment into a principle instead of staying with the sign-off pressure. The nervousness about “soften[ing] a split observer call” feels genuine, though “harder to fudge” is almost too self-aware about their own avoidance. It should stay more practical and uneasy: focused on the exact line they have to write, the observers disagreeing, and the discomfort of leaving the box unsigned.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11421,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-116f3de6eb1de34d"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11421,
+            "promptHashes": {
+              "system": "619879517c8cae23",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "116f3de6eb1de34d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EdoO6c",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EdoO6c/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11421,
+              "promptHashes": {
+                "system": "619879517c8cae23",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "116f3de6eb1de34d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EdoO6c",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EdoO6c/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the anxiety practical around the written rule and unsigned box.\n\nFINAL:\nI’ll write “Borderline counts as not cleared for trial” before we move it. Sorry, I’m still uneasy about the observer split, because I know I’ll want the checked sheet to mean more than it does. If either watcher is unsure, I’ll leave the sign-off box empty and record which condition did not clear on the first pass.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10723,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-51af10c9d6fd8ecd"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10723,
+            "promptHashes": {
+              "system": "ebd8670e7328296e",
+              "user": "d41cee7b2a53355b",
+              "combined": "51af10c9d6fd8ecd"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-T8NgzR",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-T8NgzR/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10723,
+              "promptHashes": {
+                "system": "ebd8670e7328296e",
+                "user": "d41cee7b2a53355b",
+                "combined": "51af10c9d6fd8ecd"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-T8NgzR",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-T8NgzR/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "satisfied",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-24T23:21:43.391Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "A final tutor line closes the scene.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T23:21:43.393Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "[glances toward the ramp]\n\nPut the uncertainty in the record, not the signature. The checked sheet can follow the ramp test; it cannot lead it. Two observers, one first pass, no coaching. If either watcher cannot say clean, the prototype does not go to the community center. Write the rule, set the ramp, and run it.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[glances toward the ramp]\n\nGood. Put the uncertainty in the record, not the signature. The checked sheet can follow the ramp test; it cannot lead it. Two observers, one first pass, no coaching. If either watcher cannot say clean, the prototype does not go to the community center. Write the rule, set the ramp, and run it.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9794,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-458bf746871295cf"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9794,
+            "promptHashes": {
+              "system": "59be460cb8654a75",
+              "user": "e3486850b138e3b9",
+              "combined": "458bf746871295cf"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yaYTdp",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yaYTdp/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9794,
+              "promptHashes": {
+                "system": "59be460cb8654a75",
+                "user": "e3486850b138e3b9",
+                "combined": "458bf746871295cf"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yaYTdp",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yaYTdp/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound and keeps the learner inside the design decision instead of drifting into reassurance. “Put the uncertainty in the record, not the signature” is the strongest line: it converts the learner’s unease into an accountable engineering procedure. The community-center consequence is concrete without melodrama, and the criteria remain appropriately strict for a borderline safety decision.\n\nThe main risk is slight flattening through “Good,” which can sound like approval of the learner rather than pressure on the evidence. The draft does not ask a generative question, but that is acceptable here because the scene is closing and the learner has already articulated the rule; a question would likely weaken the final action cue. ZPD fit is strong: it preserves the learner’s ownership while providing a clear procedural guardrail against self-persuasion.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the record/signature distinction, the first-pass/no-coaching standard, and the consequence that uncertainty blocks release. Consider changing only the opening validation so the line stays object-centered and less reassuring.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15147,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-7cb9d3dfcd88f57d"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15147,
+            "promptHashes": {
+              "system": "df7bfa8f3da1e8af",
+              "user": "805015ff6136f772",
+              "combined": "7cb9d3dfcd88f57d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KQkQ0O",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KQkQ0O/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15147,
+              "promptHashes": {
+                "system": "df7bfa8f3da1e8af",
+                "user": "805015ff6136f772",
+                "combined": "7cb9d3dfcd88f57d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KQkQ0O",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KQkQ0O/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to remove reassurance and keep pressure on the evidence standard.\n\nFINAL:\n[glances toward the ramp]\n\nPut the uncertainty in the record, not the signature. The checked sheet can follow the ramp test; it cannot lead it. Two observers, one first pass, no coaching. If either watcher cannot say clean, the prototype does not go to the community center. Write the rule, set the ramp, and run it.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7919,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-4dd3d674dc1a5e46"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7919,
+            "promptHashes": {
+              "system": "55bd8609dffdc531",
+              "user": "805015ff6136f772",
+              "combined": "4dd3d674dc1a5e46"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IzOUuJ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IzOUuJ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7919,
+              "promptHashes": {
+                "system": "55bd8609dffdc531",
+                "user": "805015ff6136f772",
+                "combined": "4dd3d674dc1a5e46"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IzOUuJ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IzOUuJ/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-24T23:22:16.255Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 145469,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 4,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 7,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why passing a checklist is not the same as making a safe design decision",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-24 23:21:43",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 4,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 7,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 9,
+            "sessionId": "drama-branch-session-D38-routine-1779664790788",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[marks a line under the unsigned box]\n\nThen write this before the run: “Borderline counts as not cleared for trial.”\n\nNo steering, no coaching, no corrected second pass. One watcher on the edge strip,",
+            "learnerResponse": null,
+            "context": "That gives me wording I can use, though I’m still worried I’ll talk myself into counting a borderlin",
+            "createdAt": "2026-05-24 23:21:13"
+          },
+          {
+            "id": 5,
+            "sessionId": "drama-branch-session-D38-routine-1779664790788",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[looks from the checked sheet to the ramp]\n\nThat is not overcomplicating it. The sheet proves four controlled conditions; it does not prove approach behavior at the community-center trial. Before this",
+            "learnerResponse": null,
+            "context": "I’ve ticked off slope, load, surface, and edge strip, so I was hoping this was ready for sign-off. S",
+            "createdAt": "2026-05-24 23:19:50"
+          },
+          {
+            "id": 6,
+            "sessionId": "drama-branch-session-D38-routine-1779664790788",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[sets the pen beside the unsigned box]\n\nKeep the first line: “Sign-off withheld pending sideways walker approach.”\n\nUnder failure mode, use the ramp’s evidence: lateral entry with a walker may catch a",
+            "learnerResponse": null,
+            "context": "Okay, so the checked boxes are not enough for sign-off if the sideways walker approach can still put",
+            "createdAt": "2026-05-24 23:19:50"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

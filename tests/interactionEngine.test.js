@@ -398,6 +398,14 @@ describe('runInteraction (multi-turn)', () => {
       'tutor superego should evaluate adaptive mechanism invention',
     );
     assert.ok(
+      tutorSuperegoPrompts.some((prompt) => /MECHANISM_ROUTE/.test(prompt)),
+      'tutor superego should name old and new routes for peripeteia',
+    );
+    assert.ok(
+      tutorSuperegoPrompts.some((prompt) => /PUBLIC_DEVICE_CHECK/.test(prompt)),
+      'tutor superego should check that the private route becomes a public device',
+    );
+    assert.ok(
       tutorSuperegoPrompts.some((prompt) => /REGISTER_CHECK/.test(prompt)),
       'tutor superego should evaluate whether the register serves the mechanism',
     );
@@ -414,6 +422,14 @@ describe('runInteraction (multi-turn)', () => {
     assert.ok(
       tutorAdjudicationPrompts.some((prompt) => /adaptive learning mechanism legible/.test(prompt)),
       'tutor ego adjudication should force the adaptive mechanism after internal review',
+    );
+    assert.ok(
+      tutorAdjudicationPrompts.some((prompt) => /ADAPTIVE_MECHANISM: old route -> new route/.test(prompt)),
+      'tutor ego adjudication should require a private route-change verdict',
+    );
+    assert.ok(
+      tutorAdjudicationPrompts.some((prompt) => /stock-taking contrast/.test(prompt) && /new public device/.test(prompt)),
+      'tutor ego adjudication should force a public contrast plus new device',
     );
     assert.ok(
       tutorAdjudicationPrompts.some((prompt) => /affective register/.test(prompt)),

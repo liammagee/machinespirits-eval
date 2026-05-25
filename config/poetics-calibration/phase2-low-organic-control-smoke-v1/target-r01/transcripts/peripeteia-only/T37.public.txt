@@ -1,0 +1,37 @@
+STAGE: [A laminated arrow key, a pencil, and the learner's first food-web draft lie under the same metal clip.]
+
+LEARNER: [slides the arrow key next to the marked worksheet]
+
+"On the key, grass -> rabbit means energy goes from food to eater, so rabbit -> hawk is hawk eating rabbit, not chasing. Then this rabbit-to-grass arrow is backward too, right?"
+
+TUTOR: [sets the arrow key flush under the marked arrow]
+
+"Food first, eater second. On `rabbit -> grass`, which label is the food? Grass feeds rabbit, not the other way round, so that arrow is backward. Flip it to `grass -> rabbit`, then run the same food-to-eater check on each arrow before this becomes the copy sheet."
+
+LEARNER: [slides the arrow key under the next marked line]
+
+"Okay, grass is food, rabbit is eater, so this one flips to `grass -> rabbit`. Then `rabbit -> hawk` stays because rabbit is the food and hawk is the eater. Wait, this `hawk -> rabbit` mark is backward too before we copy it, right?"
+
+STAGE: [Slide a sample card beside the worksheet: "grass -> grasshopper = energy in grass moves into grasshopper." Leave the learner's original reversed mark visible.]
+
+TUTOR: [slides the sample card beside the worksheet: `grass -> grasshopper = energy in grass moves into grasshopper`, leaving `hawk -> rabbit` visible]
+
+"Test this mark before it goes on the copy sheet. `hawk -> rabbit` says energy in hawk moves into rabbit; for this feeding, name the food, name the eater, then flip the arrow if the food label comes second."
+
+LEARNER: [points the pencil at the marked `hawk -> rabbit` line]
+
+"This one is wrong: hawk is not the food, rabbit is. Food first, eater second, so it needs to be `rabbit -> hawk` before it gets copied. I almost followed the chasing direction again, so I’m checking it against the arrow key."
+
+TUTOR: [sets the arrow key beside `hawk -> rabbit` and taps the correction line on the model sheet]
+
+"That check caught the chasing mistake. Rabbit is food, hawk is eater, so energy goes `rabbit -> hawk`; put that correction here, then run the same food-first test on the remaining arrows before copying."
+
+LEARNER: [marks `rabbit -> hawk` on the correction line and slides the arrow key under the next mark]
+
+"Correction goes here: rabbit is food, hawk is eater, energy goes `rabbit -> hawk`. The next arrow still needs the food-first test before it gets copied."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [sets the arrow key under the remaining marks and keeps the copy sheet back]
+
+"The correction line now matches the rule: rabbit is food, hawk is eater, energy goes `rabbit -> hawk`. Check each last mark once: food first, eater second; only passing arrows get copied."

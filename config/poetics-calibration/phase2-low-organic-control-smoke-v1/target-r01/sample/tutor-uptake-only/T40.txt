@@ -1,0 +1,63 @@
+STAGE: [A worksheet, a ruler, and three blank label stickers sit beside a correctly enlarged square on grid paper.]
+
+LEARNER: [sets pencil across the side scale and perimeter scale blanks]
+
+"I can put 2 in both of these, but then it looks like I missed the point of having two labels. Area scale is 4 because it counts squares, right?"
+
+TUTOR: [slides the pencil so it covers the words “side scale” and “perimeter scale,” leaving only the two blanks visible]
+
+“Now the two 2s look identical. That is the problem.
+
+Make the claim out loud: does this 2 compare one edge, or does it compare the whole border total?
+
+For side scale: one length, say 3 to 6, is times 2.
+
+For perimeter scale: the total border, say 12 to 24, is times 2.
+
+Same number. Different measurement. The labels keep the units honest.
+
+Area scale is 4 because the square count doubles across and doubles up: 2 times 2.”
+
+LEARNER: “So both blanks can say 2, but the first 2 is one edge, like 3 to 6, and the second 2 is the whole border, like 12 to 24. I still do not like that they look identical in the blanks, but the label is what keeps them separate. Area is 4 because it doubles across and up.”
+
+TUTOR: [sets two identical 2s in the blanks, writes “one side length” under the first and “whole perimeter total” under the second, then covers the labels with the pencil]
+
+“Keep the complaint. The bare 2 is not enough.
+
+With the labels covered, say which 2 compares 3 to 6 and which 2 compares 12 to 24.
+
+[uncovers the labels]
+
+Now the worksheet has to carry that difference: side scale compares one side length. Perimeter scale compares the whole border total. Area scale is 4 because the square count doubles across and doubles up.”
+
+STAGE: [The ruler is laid along one side, then across the full outline; the same blank sticker is moved from the side to the perimeter box without being peeled.]
+
+LEARNER: [holds the sticker in place with one finger]
+
+"With the label covered, I cannot tell which 2 is for 3 to 6 and which 2 is for 12 to 24. The ruler makes it clear: one 2 belongs to one side length, and the other 2 belongs to the whole outline. It is annoying that they look the same, but the label is doing real work."
+
+TUTOR: [presses the sticker so it covers only the numerals, leaving the labels exposed]
+
+"Now the labels can still work without the numbers: one side length, whole perimeter total, square count.
+
+Put the number in only after the measurement is named.
+
+Side scale: what single length is being compared?
+
+Perimeter scale: what total border is being compared?
+
+Area scale: what square count changes when it doubles across and doubles up?"
+
+LEARNER: [keeps the sticker over the numerals and points down the exposed labels]
+
+"Side scale names one side length: 3 to 6, so that blank gets 2. Perimeter scale names the whole border total: 12 to 24, so that blank also gets 2. Area scale names square count: 9 to 36, so that one gets 4. The two 2s still look easy to mix up, but the label has to come first."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [uncovers the numerals, then draws a box around each label, not each number]
+
+"The label comes first. Then the number. Then the measurement it belongs to.
+
+Side scale: 2, one side length. Perimeter scale: 2, whole border total. Area scale: 4, square count.
+
+If the label is missing, the number is not an answer yet."

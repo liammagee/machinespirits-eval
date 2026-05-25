@@ -1,0 +1,61 @@
+STAGE: [The learner doubles the side of a marked square on the grid, then sets the marker down as if the proof is finished.]
+
+LEARNER: "I doubled the side with the ruler, so I was calling that double the square, but the grid is turning it into four copies. [draws the marker lines through the larger square] Is that just a drawing trick, or is area actually doubling both ways at once?"
+
+TUTOR: [sets the ruler along the original side, then turns it ninety degrees up the larger square]
+
+"Old side: one length. New side: two lengths across. Turn the ruler. Two lengths up.
+
+Now use the marker lines. How many old squares are inside the new one?
+
+[waits]
+
+So the ruler proves one claim: the side doubled. The grid tests the other claim: area. If area means the space covered, can “double the square” still mean double the area here, or does the drawing force a different claim?"
+
+LEARNER: [keeps the ruler on the doubled side, then taps the four marked boxes]
+
+"The side is doubled, yes. But if these are old squares, there are four of them, not two. So “double the square” only works for the side, not the area, which is annoying because that was the evidence I was using."
+
+STAGE: [The tutor slides the ruler across the larger square, drawing one vertical and one horizontal line through the old square's far edges; the large square is now visibly split into four equal smaller squares.]
+
+TUTOR: [marks the four boxes 1, 2, 3, 4.]
+
+“Then the evidence has turned against that claim. It is not a drawing trick.
+
+Say the two claims separately.
+
+Side: doubled.
+
+Area: count it.
+
+One, two, three, four old squares. Two across and two up does not leave two boxes. It makes four.
+
+So this drawing proves double side length. It also proves four times the area. If the target is two old squares of area, which part of the construction cannot stay as it is?”
+
+STAGE: [An earlier learner line returns to the table: "I doubled the side with the ruler, so I was calling that double the square, but the grid is turning it into four copies." The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.]
+
+LEARNER: [slides the ruler back from the edge, leaving the four numbered boxes exposed]
+
+"I doubled the side with the ruler and called that double the square, but that was too quick. It hid the other direction, and now the grid makes that pretty annoying: two across and two up is four old squares, not two. So the better test is ruler for side length, grid count for area, and if the target is two old squares, the doubled-side construction cannot stay."
+
+TUTOR: [sets the ruler corner to corner across one old square, leaving the four numbered boxes exposed]
+
+"Keep the four boxes visible. They show what the doubled side actually made.
+
+Now look at this line: longer than one side, shorter than two. It is only a candidate.
+
+Before naming it, make the square from it and count the area."
+
+LEARNER: [keeps the four numbered boxes uncovered and sets the ruler along the diagonal]
+
+"The four boxes still say the doubled side made four, not two, so that evidence is not helping me anymore. The diagonal looks more plausible, but that is still just a length guess. I need to make the square on this line and let the area count decide before I call it double."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [keeps the four numbered boxes visible, then draws the square on the diagonal and marks the half-boxes without numbering them.]
+
+"Now this square is under test.
+
+Do not use the look of the diagonal. Number the half-boxes inside it, then say only what the count permits.
+
+The ruler gets no vote now. The count does."

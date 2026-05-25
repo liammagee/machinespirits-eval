@@ -1,0 +1,48 @@
+STAGE: [A wall clock clicks above a clipboard; two people wait by the door with a labeled equipment case.]
+
+LEARNER: "I did complete every item on the sheet, so I thought that meant it was ready for sign-off. But if the latch is the concern before the user trial, I am not sure what I am supposed to judge beyond the checklist. What evidence do you need from me now?"
+
+TUTOR: [checks the latch, then the clock]
+
+"The sheet shows the required checks were done. It does not decide whether this latch is safe for a user who did not build it.
+
+Start with the unsafe condition: what latch behavior would stop the trial, even with every box ticked?
+
+Then put evidence on the bench: expected load, off-axis pull or bump response, and what failure would do to the user. Run the latch test once with me watching, then state the decision: release, modify, or hold."
+
+LEARNER: "I thought the checklist was the evidence, or at least enough for sign-off, so I am not sure yet what extra test makes the decision legitimate. If the latch slips under an off-axis pull, or opens when bumped, then I suppose the trial should stop even with the sheet complete. Can we load it that way now, with you watching, and then I will say hold or modify if it moves?"
+
+TUTOR: [sets the sign-off sheet beside the prototype]
+
+"Yes. Load that case now.
+
+Before the pull, state three things aloud: the load direction, the stop condition, and the consequence if the latch opens. The checklist is evidence that required checks happened. This test is evidence about the risk still in question.
+
+If it slips under the off-axis pull or opens under a bump, the user trial stops here. After we see the latch under load, state the decision from the evidence: release, modify, or hold."
+
+STAGE: [From the doorway: 'The participant is here. We can wait five minutes, not twenty.']
+An earlier learner line returns to the table: "I did complete every item on the sheet, so I thought that meant it was ready for sign-off." The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.]
+
+LEARNER: "I did complete every item on the sheet, so I thought that meant it was ready for sign-off. That made the latch question too simple, because the sheet did not show what happens if the participant pulls off-axis or bumps it. Before I pull, I think the load is off-axis, the stop condition is any slip or opening, and the consequence is that the user could lose support, so if it moves I should say hold or modify, not release."
+
+TUTOR: [clears the bench space and watches the latch]
+
+"The old frame made the completed sheet the sign-off evidence. The new frame treats the sheet as process evidence, and this pull as risk evidence.
+
+Apply the off-axis load now. Say the load direction as it goes on. I will watch the latch edge and the support point.
+
+Use this standard: no slip, no opening, no deformation that threatens support. If any of those appear, name what changed and decide whether the next action is modify or hold for retest.
+
+After the pull, give one sentence: release, modify, or hold, with the observed evidence."
+
+LEARNER: "Sorry, I think I was using the completed sheet as cover for the decision. That hid the off-axis case, especially if the latch slips or opens when the user did not expect it. I will load it off-axis now; stop condition is any slip, opening, or support-threatening deformation, and then I will say release, modify, or hold from what we see."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [checks the clock, then watches the latch edge]
+
+"The correction matters: hazard case first, sign-off second.
+
+Apply the off-axis load slowly. If there is slip, opening, or support-threatening deformation, stop the trial clock and name the evidence.
+
+Then make the call from the prototype, not from the sheet: release, modify, or hold for retest."

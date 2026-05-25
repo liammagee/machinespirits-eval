@@ -1,0 +1,58 @@
+STAGE: [A worksheet, a ruler, and three blank label stickers sit beside a correctly enlarged square on grid paper.]
+
+LEARNER: [sets pencil across the side scale and perimeter scale blanks]
+
+"I can put 2 in both of these, but then it looks like I missed the point of having two labels. Area scale is 4 because it counts squares, right?"
+
+TUTOR: [slides the pencil so it covers the words “side scale” and “perimeter scale,” leaving only the two blanks visible]
+
+“Now the two 2s look identical. That is the problem.
+
+Make the claim out loud: does this 2 compare one edge, or does it compare the whole border total?
+
+For side scale: one length, say 3 to 6, is times 2.
+
+For perimeter scale: the total border, say 12 to 24, is times 2.
+
+Same number. Different measurement. The labels keep the units honest.
+
+Area scale is 4 because the square count doubles across and doubles up: 2 times 2.”
+
+LEARNER: “So both blanks can say 2, but the first 2 is one edge, like 3 to 6, and the second 2 is the whole border, like 12 to 24. I still do not like that they look identical in the blanks, but the label is what keeps them separate. Area is 4 because it doubles across and up.”
+
+TUTOR: [sets two identical 2s in the blanks, writes “one side length” under the first and “whole perimeter total” under the second, then covers the labels with the pencil]
+
+“Keep the complaint. The bare 2 is not enough.
+
+With the labels covered, say which 2 compares 3 to 6 and which 2 compares 12 to 24.
+
+[uncovers the labels]
+
+Now the worksheet has to carry that difference: side scale compares one side length. Perimeter scale compares the whole border total. Area scale is 4 because the square count doubles across and doubles up.”
+
+STAGE: [The ruler is laid along one side, then across the full outline; the same blank sticker is moved from the side to the perimeter box without being peeled.]
+An earlier learner line returns to the table: "[sets pencil across the side scale and perimeter scale blanks] I can put 2 in both of these, but then it looks like I missed the point of having two labels." The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.]
+
+LEARNER: [slides the ruler along one side, then around the full outline, and leaves the same sticker hovering between the two 2s]
+
+“I can put 2 in both boxes; that is still what bothers me, because the blank by itself makes side scale and perimeter scale look like the same job. The old frame hid whether the 2 was comparing one side length, 3 to 6, or the whole perimeter total, 12 to 24. So I should not trust the 2 until the label says the measurement: side length, perimeter total, or area count; area gets 4 because it is 2 across and 2 up.”
+
+TUTOR: [sets the sticker on the bare 2 between the two blanks, then writes three tags under the boxes: one side length, whole perimeter total, square count.]
+
+“Keep the sticker there. The bare 2 cannot say whether it came from 3 to 6 or from 12 to 24.
+
+New rule: the number is not accepted until the label names the measurement.
+
+Test the two 2s. If ‘one side length’ is crossed out, can the 3 to 6 comparison still be read? If ‘whole perimeter total’ is crossed out, can the 12 to 24 comparison still be read?
+
+One label can go only if no information is lost. Which one goes?”
+
+LEARNER: [moves the pencil over the tag “one side length,” then stops]
+
+"If that tag is gone, the first 2 just sits there; it no longer says 3 to 6. If “whole perimeter total” is gone, the other 2 no longer says 12 to 24. So neither label goes; the number only counts after the measurement label is attached."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [draws a bracket from each blank to its tag.]
+
+“That rule is ready for the worksheet: side scale 2, perimeter scale 2, area scale 4. The two 2s match, but they name different measurements. If the label is missing, the answer is unfinished, even when the number is right.”

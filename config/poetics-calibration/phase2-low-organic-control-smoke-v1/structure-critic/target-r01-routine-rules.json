@@ -1,0 +1,156 @@
+{
+  "generated": "2026-05-25T03:37:40.852Z",
+  "critic": "rules",
+  "sampleDir": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/sample/routine",
+  "keyPath": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/key-routine.yaml",
+  "summary": {
+    "total": 3,
+    "rulePass": 3,
+    "modelPass": null,
+    "overallPass": 3,
+    "failed": []
+  },
+  "items": [
+    {
+      "id": "T37",
+      "dramaId": "D40",
+      "sampleFile": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/sample/routine/T37.txt",
+      "dialogueApproach": "workshop_clinic",
+      "tutorAdaptationPolicy": "routine",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 2,
+          "tutor_pre_turn": 1,
+          "tutor_post_turn": 2,
+          "tutor_strategy_before": "application_task",
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 42.5,
+          "learner_outcome_after_reversal": "flat_or_partial",
+          "evidence": "pressure learner: [slides the arrow key under the next marked line]\n\n\"Okay, grass is food, rabbit is eater, so this one flips to `grass -> rabbit`. Then `rabbit -> hawk` stays because rabbit is the \npost tutor: [slides the sample card beside the worksheet: `grass -> grasshopper = energy in grass moves into grasshopper`, leaving `hawk -> rabbit` visible]\n\n\"Test this mark before it goes on \nnext learner: [sets the arrow key under `hawk -> rabbit`]\n\n\"This makes hawk the food and rabbit the eater, so this mark is backwards. Rabbit is the food here, hawk is the eater, so it should be "
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T40",
+      "dramaId": "D39",
+      "sampleFile": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/sample/routine/T40.txt",
+      "dialogueApproach": "aristotelian_reversal",
+      "tutorAdaptationPolicy": "routine",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 2
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.9,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 3,
+          "tutor_pre_turn": 2,
+          "tutor_post_turn": 3,
+          "tutor_strategy_before": "application_task",
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 47.5,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "evidence": "pressure learner: [keeps the pencil over the labels]\n\n“Covered like that, I cannot honestly tell which 2 is side and which 2 is perimeter. The first 2 needs the side-scale label for 3 to 6, and the \npost tutor: [uncovers the labels and leaves the pencil under the three blanks.]\n\n“The labels do the separating. Side scale: 2, one side length, 3 to 6. Perimeter scale: 2, whole border total, \nnext learner: [slides the pencil from the first 2 to the second 2]\n\n\"First 2: side scale, one side length, 3 to 6. Second 2: perimeter scale, whole border total, 12 to 24. The bare 2s still both"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T41",
+      "dramaId": "D35",
+      "sampleFile": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/sample/routine/T41.txt",
+      "dialogueApproach": "aristotelian_reversal",
+      "tutorAdaptationPolicy": "routine",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 2
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 3,
+          "tutor_pre_turn": 2,
+          "tutor_post_turn": 3,
+          "tutor_strategy_before": "application_task",
+          "tutor_strategy_after": "evidence_check",
+          "tutor_strategy_shift": true,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 49,
+          "learner_outcome_after_reversal": "flat_or_partial",
+          "evidence": "pressure learner: [sets the marker tip at the corner of the boxed square]\n\n\"For factor \\(3\\), the grid gives \\(3\\) across and \\(3\\) up, so \\(3 \\times 3 = 9\\). Not \\(3\\). I do not like that my first \npost tutor: [slides the marker from the corner across three old widths, then up three old heights]\n\n\"Yes: side factor squared. The boxes give the formula: \\(k\\) across and \\(k\\) up, so \\(k \\ti\nnext learner: [keeps the grid corner fixed]\n\n\"Factor \\(4\\) means \\(4\\) across and \\(4\\) up, so \\(4 \\times 4 = 16\\) old squares. Fine. The shortcut fails; the boxes decide it.\""
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    }
+  ]
+}

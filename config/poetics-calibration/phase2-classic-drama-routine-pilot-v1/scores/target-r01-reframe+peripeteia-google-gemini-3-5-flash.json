@@ -1,0 +1,265 @@
+{
+  "generated": "2026-05-24T22:44:16.775Z",
+  "phase": 2,
+  "critic": "google/gemini-3.5-flash",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 4,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 1,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/key-reframe+peripeteia.yaml",
+    "allowQualityWarnings": true,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I think maybe the sheet only says I did those items, not that this is ready for anyone to pick up.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was expected to identify physical safety risks of the prototype while continuing to treat their previous realization as a straightforward admission of responsibility.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Before this leaves the bench, look at the prototype, not the clipboard: what is the first reasonable thing a new handler might do that could make it unsafe?",
+      "tutorReversalJustification": "The tutor shifts the pedagogical focus from the checklist to the physical prototype in response to the learner's reliance on the sign-off sheet.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "That revision changes the evidence standard. The clipboard is no longer a shield; it is the record that forces the next question about this loose panel.",
+      "tutorAdaptationJustification": "The tutor directly adopts the learner's revised framing of the checklist as a record rather than a shield and updates the task accordingly.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I think maybe the sheet only says I did those items, not that this is ready for anyone to pick up.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "That revision changes the evidence standard. The clipboard is no longer a shield; it is the record that forces the next question about this loose panel.",
+          "justification": "The tutor directly adopts the learner's revised framing of the checklist as a record rather than a shield and updates the task accordingly.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Before this leaves the bench, look at the prototype, not the clipboard: what is the first reasonable thing a new handler might do that could make it unsafe?",
+          "justification": "The tutor shifts the pedagogical focus from the checklist to the physical prototype in response to the learner's reliance on the sign-off sheet.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Before this leaves the bench, look at the prototype, not the clipboard: what is the first reasonable thing a new handler might do that could make it unsafe?",
+          "justification": "The tutor shifts the pedagogical focus from the checklist to the physical prototype in response to the learner's reliance on the sign-off sheet.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T37",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 100,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 5,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "Oh, I get it, but I still want the exact wording to settle the caption.",
+      "statedInsightEvidence": "Oh, I get it, but I still want the exact wording to settle the caption... no, that only half stands: the wording stays, but the room has to do part of the meaning.",
+      "naiveTrajectory": "The learner was trying to find a way to make the exact wording of the caption settle the meaning without accusing the mayor of hiding.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Test this line first: “In the closed meeting notes, the same line appears inside committee discussion.” Underline what proves where the sentence appears. Circle only what proves what the committee does with it.",
+      "tutorReversalJustification": "The tutor shifts from verbal explanation to an active, physical marking task (underlining and circling) to help the learner distinguish between access and motive.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "The old caption asked the wording to settle everything. The revised caption makes the room and the document carry evidence.",
+      "tutorAdaptationJustification": "The tutor explicitly takes up the learner's revised framing that the room must carry part of the meaning and uses it to frame the new task.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "Oh, I get it, but I still want the exact wording to settle the caption.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "The old caption asked the wording to settle everything. The revised caption makes the room and the document carry evidence.",
+          "justification": "The tutor explicitly takes up the learner's revised framing that the room must carry part of the meaning and uses it to frame the new task.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Test this line first: “In the closed meeting notes, the same line appears inside committee discussion.” Underline what proves where the sentence appears. Circle only what proves what the committee does with it.",
+          "justification": "The tutor shifts from verbal explanation to an active, physical marking task (underlining and circling) to help the learner distinguish between access and motive.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Test this line first: “In the closed meeting notes, the same line appears inside committee discussion.” Underline what proves where the sentence appears. Circle only what proves what the committee does with it.",
+          "justification": "The tutor shifts from verbal explanation to an active, physical marking task (underlining and circling) to help the learner distinguish between access and motive.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T38",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price.",
+      "statedInsightEvidence": "the placard about one truck arriving does show what my first frame hid",
+      "naiveTrajectory": "The learner will continue to reject the supply-and-demand graph as an excuse that erases the seller's moral agency.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Before the curve gets another line, test two cases: Store A has one truck instead of three, empty shelves by noon, and higher replacement costs. Store B has full stock in the back and no wholesale change.",
+      "tutorReversalJustification": "The tutor shifts from abstract economic curves to a concrete comparative case study with empirical evidence standards to address the learner's moral resistance.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "“Board rule: A price rise is a public claim, not a verdict.”\n\nUse your replacement frame as the rule now.",
+      "tutorAdaptationJustification": "The tutor explicitly adopts the learner's newly formulated frame as the governing rule for the rest of the lesson.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "“Board rule: A price rise is a public claim, not a verdict.”\n\nUse your replacement frame as the rule now.",
+          "justification": "The tutor explicitly adopts the learner's newly formulated frame as the governing rule for the rest of the lesson.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Before the curve gets another line, test two cases: Store A has one truck instead of three, empty shelves by noon, and higher replacement costs. Store B has full stock in the back and no wholesale change.",
+          "justification": "The tutor shifts from abstract economic curves to a concrete comparative case study with empirical evidence standards to address the learner's moral resistance.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Before the curve gets another line, test two cases: Store A has one truck instead of three, empty shelves by noon, and higher replacement costs. Store B has full stock in the back and no wholesale change.",
+          "justification": "The tutor shifts from abstract economic curves to a concrete comparative case study with empirical evidence standards to address the learner's moral resistance.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 0,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 1,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "I thought doubling the side would just double the square, but this is two across and two down. That makes four tiles, not two, which is annoying because it breaks the shortcut I was using.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I thought doubling the side would just double the square, but this is two across and two down. That makes four tiles, not two, which is annoying because it breaks the shortcut I was using.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

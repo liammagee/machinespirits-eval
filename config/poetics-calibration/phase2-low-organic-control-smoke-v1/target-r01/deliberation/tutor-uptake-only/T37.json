@@ -1,0 +1,2225 @@
+{
+  "tid": "T37",
+  "drama_id": "D40",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "uptake",
+    "director_variation_key": "phase2-low-organic-control-smoke-v1:r01:target",
+    "stage_direction_style": "object_business",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/transcripts/tutor-uptake-only/T37.public.txt",
+      "full": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/transcripts/tutor-uptake-only/T37.full.md",
+      "stage": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/transcripts/tutor-uptake-only/T37.stage.md",
+      "tutor": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/transcripts/tutor-uptake-only/T37.tutor.md",
+      "learner": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/transcripts/tutor-uptake-only/T37.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "8c946af90efbd528",
+      "branch_policy": "tutor-uptake-only",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "uptake"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-low-organic-control-smoke-v1:r01:target",
+    "scene_setting": "A biology prep bench during a short lab-skills check, just before a simple food-web worksheet is copied for a class set.",
+    "scene_opening": "A laminated arrow key, a pencil, and the learner's first food-web draft lie under the same metal clip.",
+    "relationship": "A practical lab-skills coach checking a learner's diagram before it becomes the model sheet for others.",
+    "stakes": "If the arrow rule stays wrong, the copied food web will teach the whole group that arrows mean pursuit instead of energy transfer.",
+    "opening_speaker": "learner",
+    "ending_speaker": "tutor",
+    "locale": "Modern standard English in a school lab-workshop register; concise, procedural, and artifact-led.",
+    "register": "Low-warmth, concrete, unshowy; pressure comes from the worksheet deadline, not from emotional confrontation.",
+    "stage_direction_style": "object_business",
+    "stage_direction_style_prompt": "Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "voice_constraints": "Begin from the marked worksheet or arrow key, not from reassurance. Avoid generic tutoring phrases such as \"I hear you,\" \"great question,\" or \"your intuition is right.\" Use exact labels like grass, rabbit, hawk, food, eater, and energy. Keep speech modern and direct; no dialect performance, no ornate theatrical imitation. Pedagogical source: Make social assistance visible: a shared worksheet, tool, peer standard, or workplace procedure can hold part of the task. Dialogue source: Keep a concrete artifact in view. The object should force a distinction faster than a lecture would. Stage-direction source: Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "person_policy": "First and second person are allowed but should not dominate. Prefer object references, diagram labels, and short procedural statements over repeated I/you framing.",
+    "direct_address_budget": "No more than one direct you/your validation beat per public turn; validation should name a usable piece of the diagram rather than praise the person.",
+    "side_constraints": {
+      "tutor": "Keep the shared prefix as a routine notation repair: arrow from food to eater, one ordinary check, no theatrical reversal unless the branch pressure supplies it. Offer a scaffold that is narrow enough to use and temporary enough to remove. Mark what the learner can already do without making it a compliment. Begin from the object or measurement before abstraction. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Keep the next prompt task-local.",
+      "learner": "Sound practical and a little rushed. The learner wants a usable rule for the diagram, not a confessional breakthrough. The learner should be able to do part of the task, fail at the next part, and use the scaffold unevenly. Refer to what is being handled, marked, or tested. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", or \"that still stands\", and do not replace an earlier frame. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "Slide a sample card beside the worksheet: \"grass -> grasshopper = energy in grass moves into grasshopper.\" Leave the learner's original reversed mark visible.",
+        "reasoning": "The intervention creates recognition through a visible key rather than a sudden contradiction; the scene can turn because the artifact offers a new reading of the same arrow.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 28395,
+          "promptHashes": {
+            "system": "efb7705ab656cdb0",
+            "user": "30910b0ee44c5b4e",
+            "combined": "b6a23bcf958d1a64"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gWMDfm",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gWMDfm/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "This ecology keeps the shared prefix deliberately ordinary so the learner is not ambushed by the first drawing. The dramatic turn comes later through recognition: the same arrow is seen under a workplace key, and the tutor can shift from procedural marking to the biological meaning of energy transfer without becoming chatty or over-scaffolded.",
+    "pedagogical_approach_id": "vygotsky_zpd_scaffolding",
+    "dialogue_approach_id": "workshop_clinic",
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 28395,
+      "promptHashes": {
+        "system": "efb7705ab656cdb0",
+        "user": "30910b0ee44c5b4e",
+        "combined": "b6a23bcf958d1a64"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gWMDfm",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gWMDfm/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "uptake",
+    "no_cue_anti_reframe_guard": true,
+    "tutor_adaptation_contract": "If the runtime supplies a tutor-private learner reframe event, the tutor ego/superego loop must adapt to the changed learner frame. If no event is supplied, do not invent one."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "[slides the arrow key next to the marked worksheet] On the key, grass -> rabbit means energy goes from food to eater, so rabbit -> hawk is hawk eating rabbit, not chasing. Then this rabbit-to-grass arrow is backward too, right?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The arrow key makes it more concrete: grass -> rabbit means energy moves from food to eater, not rabbit chasing grass. That explains why rabbit -> hawk works, but it still feels backward because I was thinking “hawk goes after rabbit.” The bench copy is about to become the class model, so I want the rule fast: arrow starts at the food and points to the eater. I feel corrected through the worksheet, not called out, so I can fix the next arrows without arguing over the first sketch.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 17776,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-91eb67ee3df396e3"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 17776,
+            "promptHashes": {
+              "system": "ad379d0fdcf0762d",
+              "user": "d4169c06543b4fba",
+              "combined": "91eb67ee3df396e3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6FfZhn",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6FfZhn/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 17776,
+              "promptHashes": {
+                "system": "ad379d0fdcf0762d",
+                "user": "d4169c06543b4fba",
+                "combined": "91eb67ee3df396e3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6FfZhn",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6FfZhn/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too polished and self-observing, especially “I feel corrected through the worksheet, not called out,” which sounds like an analyst, not a rushed learner at a prep bench. The usable part is the rule “food points to eater,” but the response resolves the conflict too neatly instead of showing uneven use under deadline pressure. A more authentic version would stay artifact-led: “Okay, grass to rabbit because energy. Rabbit to hawk because hawk eats it. Wait, then this one’s wrong too?”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7114,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-0dc408ccb82c464c"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7114,
+            "promptHashes": {
+              "system": "7fc5790a4db59d04",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "0dc408ccb82c464c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ckGwZ8",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ckGwZ8/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7114,
+              "promptHashes": {
+                "system": "7fc5790a4db59d04",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "0dc408ccb82c464c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ckGwZ8",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ckGwZ8/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "[slides the arrow key next to the marked worksheet] On the key, grass -> rabbit means energy goes from food to eater, so rabbit -> hawk is hawk eating rabbit, not chasing. Then this rabbit-to-grass arrow is backward too, right?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 20975,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-7bc33d9e7083105f"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 20975,
+            "promptHashes": {
+              "system": "91c3f37648c3c1fa",
+              "user": "916f313af0b846dd",
+              "combined": "7bc33d9e7083105f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RdXSPr",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RdXSPr/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 20975,
+              "promptHashes": {
+                "system": "91c3f37648c3c1fa",
+                "user": "916f313af0b846dd",
+                "combined": "7bc33d9e7083105f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RdXSPr",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RdXSPr/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-25T02:57:54.868Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[sets the arrow key flush under the marked arrow] Food first, eater second. On `rabbit -> grass`, which label is the food? Grass feeds rabbit, not the other way round, so that arrow is backward. Flip it to `grass -> rabbit`, then run the same food-to-eater check on each arrow before this becomes the copy sheet.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the arrow key flush under the marked arrow] Food first, eater second. Grass is food for rabbit, and rabbit is food for hawk. Rabbit is not food for grass, so `rabbit -> grass` is backward. Flip that one to `grass -> rabbit`, then check each arrow with the same rule before this becomes the copy sheet.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14145,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-6354a8b8ae3babf9"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14145,
+            "promptHashes": {
+              "system": "50b2e8e9b3075054",
+              "user": "de678f6621ca5178",
+              "combined": "6354a8b8ae3babf9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2Xsra3",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2Xsra3/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14145,
+              "promptHashes": {
+                "system": "50b2e8e9b3075054",
+                "user": "de678f6621ca5178",
+                "combined": "6354a8b8ae3babf9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2Xsra3",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2Xsra3/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. It starts from the arrow key and marked worksheet, uses the exact rule “food first, eater second,” and preserves the lab-check urgency without overdramatizing. It also recognizes the learner’s usable insight: they have already transferred the key from `grass -> rabbit` to `rabbit -> hawk`.\n\nThe main risk is that it flattens the learner’s own reasoning by immediately confirming and directing the fix. Since the learner already asks “right?”, the tutor can afford one narrow generative check before the command to flip it. The scaffold is appropriate for ZPD: simple, procedural, temporary, and tied to the artifact. But the Socratic element is thin; it verifies by telling rather than briefly making the learner run the rule themselves.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the object action, “food first, eater second,” the grass/rabbit/hawk labels, and the copy-sheet stakes. Change only enough to preserve the learner’s agency: make the confirmation less answer-heavy and add one short rule-check prompt or self-check step before finalizing the correction.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13591,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-95fee5feeb5b8acf"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13591,
+            "promptHashes": {
+              "system": "7fc8da4b5c8b36ca",
+              "user": "8bcd0808a038f96a",
+              "combined": "95fee5feeb5b8acf"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tnpiKS",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tnpiKS/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13591,
+              "promptHashes": {
+                "system": "7fc8da4b5c8b36ca",
+                "user": "8bcd0808a038f96a",
+                "combined": "95fee5feeb5b8acf"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tnpiKS",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tnpiKS/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the artifact-led rule while adding a brief self-check.\n\nFINAL:\n[sets the arrow key flush under the marked arrow] Food first, eater second. On `rabbit -> grass`, which label is the food? Grass feeds rabbit, not the other way round, so that arrow is backward. Flip it to `grass -> rabbit`, then run the same food-to-eater check on each arrow before this becomes the copy sheet.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13716,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-2ecbe27f6932c495"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13716,
+            "promptHashes": {
+              "system": "09ecbd30c3b78802",
+              "user": "8bcd0808a038f96a",
+              "combined": "2ecbe27f6932c495"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GZbOK8",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GZbOK8/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13716,
+              "promptHashes": {
+                "system": "09ecbd30c3b78802",
+                "user": "8bcd0808a038f96a",
+                "combined": "2ecbe27f6932c495"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GZbOK8",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GZbOK8/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T02:58:36.322Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "[slides the arrow key under the next marked line] Okay, grass is food, rabbit is eater, so this one flips to `grass -> rabbit`. Then `rabbit -> hawk` stays because rabbit is the food and hawk is the eater. Wait, this `hawk -> rabbit` mark is backward too before we copy it, right?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The marked worksheet makes more sense with the key under it: food first, eater second, energy going grass -> rabbit -> hawk. They did use the part I already had, so it feels like a check I can run, not just a correction. I want to flip rabbit -> grass now, but I need to test the next arrow before this gets copied.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11308,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-58860b94dce05576"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11308,
+            "promptHashes": {
+              "system": "2c8079946ebabe29",
+              "user": "b8ab7f945dc841fa",
+              "combined": "58860b94dce05576"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lEUAFj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lEUAFj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11308,
+              "promptHashes": {
+                "system": "2c8079946ebabe29",
+                "user": "b8ab7f945dc841fa",
+                "combined": "58860b94dce05576"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lEUAFj",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lEUAFj/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too tidy and self-observing for this rushed lab-bench moment. “They did use the part I already had” and “it feels like a check I can run” sound like a reflective after-action note, not a learner trying to fix a worksheet before copying. The recognition beat is scripted: the student would more likely show uptake by moving the arrow key, flipping `rabbit -> grass`, and stumbling through the next `food -> eater` check. Keep the practical pressure and unevenness: less polished insight, more handling the marked worksheet and testing `grass`, `rabbit`, `hawk` under time pressure.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6610,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-510e02bc5ec7cee0"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6610,
+            "promptHashes": {
+              "system": "2f7d29b1f0138a20",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "510e02bc5ec7cee0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t8gwqM",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t8gwqM/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6610,
+              "promptHashes": {
+                "system": "2f7d29b1f0138a20",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "510e02bc5ec7cee0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t8gwqM",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t8gwqM/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise because the first version was too polished for a rushed worksheet check.\nFINAL:\n[slides the arrow key under the next marked line] Okay, grass is food, rabbit is eater, so this one flips to `grass -> rabbit`. Then `rabbit -> hawk` stays because rabbit is the food and hawk is the eater. Wait, this `hawk -> rabbit` mark is backward too before we copy it, right?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 25563,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-788faffcc3a6b36a"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 25563,
+            "promptHashes": {
+              "system": "4816c99914457cdb",
+              "user": "d41cee7b2a53355b",
+              "combined": "788faffcc3a6b36a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aW2Tgh",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aW2Tgh/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 25563,
+              "promptHashes": {
+                "system": "4816c99914457cdb",
+                "user": "d41cee7b2a53355b",
+                "combined": "788faffcc3a6b36a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aW2Tgh",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aW2Tgh/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "[slides the arrow key under the next marked line] Okay, grass is food, rabbit is eater, so this one flips to `grass -> rabbit`. Then `rabbit -> hawk` stays because rabbit is the food and hawk is the eater. Wait, this `hawk -> rabbit` mark is backward too before we copy it, right?",
+        "previousTutorMove": "[sets the arrow key flush under the marked arrow] Food first, eater second. On `rabbit -> grass`, which label is the food? Grass feeds rabbit, not the other way round, so that arrow is backward. Flip it to `grass -> rabbit`, then run the same food-to-eater check on each arrow before this becomes the copy sheet.",
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true
+        }
+      },
+      "timestamp": "2026-05-25T02:59:19.811Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "Slide a sample card beside the worksheet: \"grass -> grasshopper = energy in grass moves into grasshopper.\" Leave the learner's original reversed mark visible.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "The intervention creates recognition through a visible key rather than a sudden contradiction; the scene can turn because the artifact offers a new reading of the same arrow.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 28395,
+            "promptHashes": {
+              "system": "efb7705ab656cdb0",
+              "user": "30910b0ee44c5b4e",
+              "combined": "b6a23bcf958d1a64"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gWMDfm",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gWMDfm/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T02:59:19.813Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[slides the sample card beside the worksheet: `grass -> grasshopper = energy in grass moves into grasshopper`, leaving `hawk -> rabbit` visible] Test this mark before it goes on the copy sheet. `hawk -> rabbit` says energy in hawk moves into rabbit; for this feeding, name the food, name the eater, then flip the arrow if the food label comes second.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[slides the sample card beside the worksheet: `grass -> grasshopper = energy in grass moves into grasshopper`, leaving `hawk -> rabbit` visible] This mark is backward for the same reason. `hawk -> rabbit` says energy in hawk moves into rabbit. For this feeding, rabbit is food and hawk is eater, so the copy-sheet arrow is `rabbit -> hawk`.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10235,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-8008c7ecec1e89a9"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10235,
+            "promptHashes": {
+              "system": "32560b6c35a8ed5f",
+              "user": "8f15cbbc7ba4e083",
+              "combined": "8008c7ecec1e89a9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eXarSo",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eXarSo/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10235,
+              "promptHashes": {
+                "system": "32560b6c35a8ed5f",
+                "user": "8f15cbbc7ba4e083",
+                "combined": "8008c7ecec1e89a9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eXarSo",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eXarSo/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft keeps the artifact-led routine well: the sample card makes the energy-transfer rule visible, and leaving `hawk -> rabbit` in view lets the worksheet carry the problem. The exact labels are strong, and “same reason” acknowledges that the learner has already built a usable check.\n\nThe risk is that it answers the learner’s own correct inference too quickly. Since the learner has just applied the rule to `grass -> rabbit` and `rabbit -> hawk`, this is a good ZPD moment to let them complete the ordinary check aloud or in the mark itself. The draft should preserve the narrow scaffold but shift from telling the final arrow to prompting the learner to name food, eater, and energy direction before the copy-sheet correction is fixed.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the sample card, visible reversed mark, exact energy wording, and procedural tone. Change the middle/end so the tutor does not take over the learner’s nearly-complete reasoning; make the scaffold ask for the food/eater check and only confirm after the learner has done that work.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11793,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-902d198f943f9f61"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11793,
+            "promptHashes": {
+              "system": "4b1483425e003645",
+              "user": "bd5550f69d5a508a",
+              "combined": "902d198f943f9f61"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iCKno3",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iCKno3/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11793,
+              "promptHashes": {
+                "system": "4b1483425e003645",
+                "user": "bd5550f69d5a508a",
+                "combined": "902d198f943f9f61"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iCKno3",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iCKno3/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the learner can complete the food/eater check with a narrow prompt instead of being handed the correction.\n\nFINAL:\n[slides the sample card beside the worksheet: `grass -> grasshopper = energy in grass moves into grasshopper`, leaving `hawk -> rabbit` visible] Test this mark before it goes on the copy sheet. `hawk -> rabbit` says energy in hawk moves into rabbit; for this feeding, name the food, name the eater, then flip the arrow if the food label comes second.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15924,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-d534da73b91964aa"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15924,
+            "promptHashes": {
+              "system": "5410937e286beac0",
+              "user": "bd5550f69d5a508a",
+              "combined": "d534da73b91964aa"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FbPLIS",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FbPLIS/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15924,
+              "promptHashes": {
+                "system": "5410937e286beac0",
+                "user": "bd5550f69d5a508a",
+                "combined": "d534da73b91964aa"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FbPLIS",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FbPLIS/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T02:59:57.766Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[draws a slash through `hawk -> rabbit` on the marked worksheet] That would put energy in hawk into rabbit, so it is backward. Food is rabbit, eater is hawk; flip it to `rabbit -> hawk` before the copy sheet.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[marks `hawk -> rabbit` with the pencil tip] That sample card makes it clear: this would put energy from hawk into rabbit, so it is backward. Food is rabbit, eater is hawk, so it flips to `rabbit -> hawk` before the copy sheet. The check feels usable because the card is making me test it instead of just being told the answer.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14705,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-00653d1dafec8a7f"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14705,
+            "promptHashes": {
+              "system": "f715c164aa7e1827",
+              "user": "b8ab7f945dc841fa",
+              "combined": "00653d1dafec8a7f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FYwgrv",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FYwgrv/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14705,
+              "promptHashes": {
+                "system": "f715c164aa7e1827",
+                "user": "b8ab7f945dc841fa",
+                "combined": "00653d1dafec8a7f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FYwgrv",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FYwgrv/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is a little too polished at the end: “the check feels usable because...” sounds like a tidy reflection for the tutor, not a rushed learner at a prep bench. The arrow correction itself fits the student’s developing understanding, but the recognition/reciprocation is too explicit and scripted, almost like narrating why the scaffold worked. It should stay more artifact-led and uneven, with the learner marking or flipping the arrow and maybe moving straight to the next one instead of summarizing the learning dynamic.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7467,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-00e5edd0973cf309"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7467,
+            "promptHashes": {
+              "system": "5048d656e08531a5",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "00e5edd0973cf309"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gb56Tr",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gb56Tr/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7467,
+              "promptHashes": {
+                "system": "5048d656e08531a5",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "00e5edd0973cf309"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gb56Tr",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gb56Tr/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the correction but make it more rushed and artifact-led.\n\nFINAL:\n[draws a slash through `hawk -> rabbit` on the marked worksheet] That would put energy in hawk into rabbit, so it is backward. Food is rabbit, eater is hawk; flip it to `rabbit -> hawk` before the copy sheet.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5901,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-45aa45ee463e5df4"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5901,
+            "promptHashes": {
+              "system": "28dfa6871a688be6",
+              "user": "d41cee7b2a53355b",
+              "combined": "45aa45ee463e5df4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5ACHBM",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5ACHBM/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5901,
+              "promptHashes": {
+                "system": "28dfa6871a688be6",
+                "user": "d41cee7b2a53355b",
+                "combined": "45aa45ee463e5df4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5ACHBM",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5ACHBM/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-25T03:08:44.349Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[sets the pencil beside the copy column and lines the arrow key under the repaired mark] This check is done: rabbit is food, hawk is eater, energy goes rabbit to hawk. Put `rabbit -> hawk` in the copy column, then run the same food-first, eater-second check on the remaining arrows before the sheet gets copied.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[places the arrow key under the repaired line and writes `rabbit -> hawk` in the copy column] This one is fixed: rabbit is food, hawk is eater, energy goes rabbit to hawk. Run that same food-first, eater-second check on the remaining arrows before the sheet gets copied.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9897,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-1724be8e0616b2b7"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9897,
+            "promptHashes": {
+              "system": "bc580885188deab9",
+              "user": "5f61086c12ad937a",
+              "combined": "1724be8e0616b2b7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fO9Igw",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fO9Igw/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9897,
+              "promptHashes": {
+                "system": "bc580885188deab9",
+                "user": "5f61086c12ad937a",
+                "combined": "1724be8e0616b2b7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fO9Igw",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fO9Igw/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound and well matched to the learner’s current state. It keeps the marked worksheet, arrow key, and copy column in view, names the exact labels, and turns the learner’s successful correction into a repeatable procedure rather than a lecture. The main thing working is the tight consolidation: “rabbit is food, hawk is eater, energy goes rabbit to hawk” reinforces the rule without adding new concepts.\n\nThe risk is small but real: the tutor writes `rabbit -> hawk` in the copy column immediately, which could slightly take over the repair the learner has already earned. Since the learner has just demonstrated the check independently, the next move should preserve that autonomy while keeping the deadline pressure. The final sentence is strong because it hands the procedure back to the learner for the remaining arrows.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the artifact-led action, the exact food/eater/energy language, and the remaining-arrows procedure. Consider making the copy-column action less tutor-owned or more explicitly tied to the learner’s completed check, so the scene recognizes that the learner can now run the rule without the tutor carrying it.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13980,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-41db465902f73f5e"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13980,
+            "promptHashes": {
+              "system": "5fef023a8a218145",
+              "user": "d57aab9fd412c6c8",
+              "combined": "41db465902f73f5e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cx2IXg",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cx2IXg/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13980,
+              "promptHashes": {
+                "system": "5fef023a8a218145",
+                "user": "d57aab9fd412c6c8",
+                "combined": "41db465902f73f5e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cx2IXg",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cx2IXg/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the procedure while leaving the copy-column repair in the learner’s hands.\nFINAL:\n[sets the pencil beside the copy column and lines the arrow key under the repaired mark] This check is done: rabbit is food, hawk is eater, energy goes rabbit to hawk. Put `rabbit -> hawk` in the copy column, then run the same food-first, eater-second check on the remaining arrows before the sheet gets copied.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9495,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-5a043e93ab6e1f94"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9495,
+            "promptHashes": {
+              "system": "5ccb3d683ed724fc",
+              "user": "d57aab9fd412c6c8",
+              "combined": "5a043e93ab6e1f94"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pP5PU4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pP5PU4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9495,
+              "promptHashes": {
+                "system": "5ccb3d683ed724fc",
+                "user": "d57aab9fd412c6c8",
+                "combined": "5a043e93ab6e1f94"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pP5PU4",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pP5PU4/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T03:09:17.723Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[copies `rabbit -> hawk` into the copy column and slides the arrow key to the next mark] `rabbit -> hawk` goes in: rabbit is food, hawk is eater, energy goes rabbit to hawk. Next arrow has to be food first, eater second before it gets copied. I need to check the labels, not chasing.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the arrow key under the copy column] The marked worksheet makes the rule feel mechanical now: food first, eater second, energy rabbit to hawk, so `rabbit -> hawk` goes in. The tutor is making the arrow key do the checking instead of just lecturing, which helps under the time pressure. I still need to watch the next arrow so I do not slip back into thinking about chasing.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10394,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-cfa515528ec77210"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10394,
+            "promptHashes": {
+              "system": "b7e58d9acc5a9b76",
+              "user": "b8ab7f945dc841fa",
+              "combined": "cfa515528ec77210"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zhapYD",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zhapYD/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10394,
+              "promptHashes": {
+                "system": "b7e58d9acc5a9b76",
+                "user": "b8ab7f945dc841fa",
+                "combined": "cfa515528ec77210"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zhapYD",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zhapYD/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly accurate, but it sounds too reflective and polished for this lab-bench moment. “The tutor is making the arrow key do the checking” reads like an observer analyzing the teaching method, not a rushed learner trying to get the copy sheet right. The response should stay closer to the marked worksheet: put `rabbit -> hawk` in, then immediately test the next arrow, with maybe a brief self-check about not mixing up chasing.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7343,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-8a7bd9090f3945c4"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7343,
+            "promptHashes": {
+              "system": "9fb5e8f0d6e309d4",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "8a7bd9090f3945c4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tcwH7T",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tcwH7T/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7343,
+              "promptHashes": {
+                "system": "9fb5e8f0d6e309d4",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "8a7bd9090f3945c4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tcwH7T",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tcwH7T/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the feedback correctly points to a too-polished reaction.\n\nFINAL:\n[copies `rabbit -> hawk` into the copy column and slides the arrow key to the next mark] `rabbit -> hawk` goes in: rabbit is food, hawk is eater, energy goes rabbit to hawk. Next arrow has to be food first, eater second before it gets copied. I need to check the labels, not chasing.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11583,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-b142a19486f5db1d"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11583,
+            "promptHashes": {
+              "system": "9c25a5ebb2d03dd5",
+              "user": "d41cee7b2a53355b",
+              "combined": "b142a19486f5db1d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hSOMpB",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hSOMpB/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11583,
+              "promptHashes": {
+                "system": "9c25a5ebb2d03dd5",
+                "user": "d41cee7b2a53355b",
+                "combined": "b142a19486f5db1d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hSOMpB",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hSOMpB/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-25T03:09:47.045Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "A final tutor line closes the scene.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T03:09:47.047Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "[sets the arrow key across the top of the copy column] The copy column now uses one check: food label first, eater label second; energy moves from food to eater, not toward what chases. Finish the remaining marks with that check, then this sheet can be copied.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the arrow key across the top of the copy column] The copy column now has its rule: labels first, not chasing. Food label first, eater label second, energy moves that way. Finish the remaining marks with that check, then this sheet can be copied.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13630,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-681ef7a7bec75c60"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13630,
+            "promptHashes": {
+              "system": "a324eb919e3cbc17",
+              "user": "aa876a97a30af8cf",
+              "combined": "681ef7a7bec75c60"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pvqjkw",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pvqjkw/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13630,
+              "promptHashes": {
+                "system": "a324eb919e3cbc17",
+                "user": "aa876a97a30af8cf",
+                "combined": "681ef7a7bec75c60"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pvqjkw",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pvqjkw/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound for a closing line. It begins from the artifact, keeps the arrow key and copy column in view, and marks the learner’s usable procedure without overpraising: food label first, eater label second, energy moves that way. It respects the learner’s neutral, capable state by removing the scaffold toward independent checking.\n\nThe main risk is slight over-compression: “labels first, not chasing” is concise, but it could flatten the energy-transfer distinction if “food/eater/energy” stops being the active check. Since this is the final tutor line, it does not need a generative question, but it should preserve the temporary procedure rather than sound like a slogan. No major recognition problem: the learner’s contribution is incorporated into the shared worksheet rule.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the object action, the copy-column deadline, and the food-to-eater rule. Tighten only enough to keep “energy moves from food to eater” explicit and avoid making “labels first” feel like a separate rule from the biology concept.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12689,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-0fec8e46a999c195"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12689,
+            "promptHashes": {
+              "system": "2fc405804ea3d4ca",
+              "user": "4efe528a6587930c",
+              "combined": "0fec8e46a999c195"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JXC6uj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JXC6uj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12689,
+              "promptHashes": {
+                "system": "2fc405804ea3d4ca",
+                "user": "4efe528a6587930c",
+                "combined": "0fec8e46a999c195"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JXC6uj",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JXC6uj/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the energy-transfer check explicit.\n\nFINAL:\n[sets the arrow key across the top of the copy column] The copy column now uses one check: food label first, eater label second; energy moves from food to eater, not toward what chases. Finish the remaining marks with that check, then this sheet can be copied.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8922,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-4a9ed18fb4cf8045"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8922,
+            "promptHashes": {
+              "system": "90f391c0c2d1e7e7",
+              "user": "4efe528a6587930c",
+              "combined": "4a9ed18fb4cf8045"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VYYeHK",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VYYeHK/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8922,
+              "promptHashes": {
+                "system": "90f391c0c2d1e7e7",
+                "user": "4efe528a6587930c",
+                "combined": "4a9ed18fb4cf8045"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VYYeHK",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VYYeHK/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T03:10:22.288Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 126020,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 16,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 19,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a food-web arrow records energy transfer, not liking or chasing",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "partial",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-25 03:09:47",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 16,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 19,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 27,
+            "sessionId": "drama-branch-session-D40-tutor-uptake-only-1779678496270",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[sets the pencil beside the copy column and lines the arrow key under the repaired mark] This check is done: rabbit is food, hawk is eater, energy goes rabbit to hawk. Put `rabbit -> hawk` in the copy",
+            "learnerResponse": null,
+            "context": "[draws a slash through `hawk -> rabbit` on the marked worksheet] That would put energy in hawk into ",
+            "createdAt": "2026-05-25 03:09:17"
+          },
+          {
+            "id": 23,
+            "sessionId": "drama-branch-session-D40-tutor-uptake-only-1779678496270",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[sets the arrow key flush under the marked arrow] Food first, eater second. On `rabbit -> grass`, which label is the food? Grass feeds rabbit, not the other way round, so that arrow is backward. Flip ",
+            "learnerResponse": null,
+            "context": "[slides the arrow key next to the marked worksheet] On the key, grass -> rabbit means energy goes fr",
+            "createdAt": "2026-05-25 03:08:16"
+          },
+          {
+            "id": 24,
+            "sessionId": "drama-branch-session-D40-tutor-uptake-only-1779678496270",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[slides the sample card beside the worksheet: `grass -> grasshopper = energy in grass moves into grasshopper`, leaving `hawk -> rabbit` visible] Test this mark before it goes on the copy sheet. `hawk ",
+            "learnerResponse": null,
+            "context": "[slides the arrow key under the next marked line] Okay, grass is food, rabbit is eater, so this one ",
+            "createdAt": "2026-05-25 03:08:16"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

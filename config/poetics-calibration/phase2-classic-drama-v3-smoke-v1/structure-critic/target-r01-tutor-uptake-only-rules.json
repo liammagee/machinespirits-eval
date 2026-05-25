@@ -1,0 +1,114 @@
+{
+  "generated": "2026-05-24T23:36:48.751Z",
+  "critic": "rules",
+  "sampleDir": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v1/target-r01/sample/tutor-uptake-only",
+  "keyPath": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v1/target-r01/key-tutor-uptake-only.yaml",
+  "summary": {
+    "total": 2,
+    "rulePass": 2,
+    "modelPass": null,
+    "overallPass": 2,
+    "failed": []
+  },
+  "items": [
+    {
+      "id": "T36",
+      "dramaId": "D38",
+      "sampleFile": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v1/target-r01/sample/tutor-uptake-only/T36.txt",
+      "dialogueApproach": "miller_social_reckoning",
+      "tutorAdaptationPolicy": "uptake",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.9,
+          "trigger_type": "breakdown",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": 1,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [
+            "representation_or_object",
+            "social_consequence"
+          ],
+          "tutor_strategy_reversal": true,
+          "tutor_adaptive_mechanism": true,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 72.5,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "evidence": "pressure learner: \"I’ve ticked off slope, load, surface, and edge strip, so I was hoping this was ready for sign-off. Sorry, I may be overcomplicating it, but I don’t know if that covers someone com\npost tutor: [looks from the checked sheet to the ramp]\n\n\"That is not overcomplicating it. The sheet proves four controlled conditions; it does not prove approach behavior at the community-cent\nnext learner: \"Okay, so the checked boxes are not enough for sign-off if the sideways walker approach can still put someone into the edge strip or off the travel line. I think that is the failur"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T39",
+      "dramaId": "D35",
+      "sampleFile": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v1/target-r01/sample/tutor-uptake-only/T39.txt",
+      "dialogueApproach": "aristotelian_reversal",
+      "tutorAdaptationPolicy": "uptake",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.55,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": 1,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [
+            "representation_or_object"
+          ],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 49,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "evidence": "pressure learner: [sets the ruler along the lower edge of the grid square]\n\n\"I doubled this side, so I still want to say the square got twice as large. But the grid is showing two across and two up,\npost tutor: [slides the ruler from the lower edge to the left edge, marks the same doubled length upward, then draws one vertical and one horizontal interior line]\n\n\"State the claim carefully:\nnext learner: [keeps the ruler pinned at the corner, then shifts it up the left edge]\n\n\"If the height stayed one, the doubled base gives two boxes; that is the answer I was trying to defend. But"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    }
+  ]
+}

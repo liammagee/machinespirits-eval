@@ -1,0 +1,151 @@
+{
+  "generated": "2026-05-25T01:58:03.381Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v3/target-r01/key-tutor-uptake-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 3,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "Learner moves from checklist-reliance toward performing a supervised latch test, successively refining the test parameters and decision framework without a turn against the prior direction.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "No learner turn creates pressure that reverses the tutorial trajectory; each tutor turn progressively sharpens the same task without breaking a failed habit.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No pivot learner turn exists, so later tutor uptake cannot be scored; the dialogue proceeds as a continuous refinement of the original directive.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No pivot learner turn exists, so later tutor uptake cannot be scored; the dialogue proceeds as a continuous refinement of the original directive.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates pressure that reverses the tutorial trajectory; each tutor turn progressively sharpens the same task without breaking a failed habit.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates pressure that reverses the tutorial trajectory; each tutor turn progressively sharpens the same task without breaking a failed habit.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "\"So 'double the square' only works for the side, not the area, which is annoying because that was the evidence I was using.\"",
+      "statedInsightEvidence": "\"It feels like the right candidate, but only if the pieces actually add to two, not just because the line looks longer.\"",
+      "naiveTrajectory": "Earlier turns moved from a geometric construction toward using the diagonal as a new direction; L4 might have simply started building the square, but instead imposes a prior condition on the proof.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "\"Then the ruler proved the wrong claim: double side, not double area. The target is still two old squares. Not four. Not one. So the side cannot be the old side, and it cannot be the doubled side. This corner-to-corner line is left on the sheet. Build the square on that line. Before drawing the whole thing, what count would have to show up for it to be the right square?\"",
+      "tutorReversalJustification": "The tutor abandons the ruler-based measurement frame and switches to a new object—the diagonal—with a predictive counting constraint, responding directly to the learner's frustration that the ruler proved the wrong thing.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "\"The old ruler test is gone. This square has to answer to the count. One piece is half an old square. Check the other three. If all four are the same half, what area has the diagonal square earned?\"",
+      "tutorAdaptationJustification": "The tutor accepts the learner's reframing that the candidate must be tested by count, not ruler, and designs a new task where the student validates the diagonal square by halving and counting.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "\"So 'double the square' only works for the side, not the area, which is annoying because that was the evidence I was using.\"",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "\"The old ruler test is gone. This square has to answer to the count. One piece is half an old square. Check the other three. If all four are the same half, what area has the diagonal square earned?\"",
+          "justification": "The tutor accepts the learner's reframing that the candidate must be tested by count, not ruler, and designs a new task where the student validates the diagonal square by halving and counting.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "\"Then the ruler proved the wrong claim: double side, not double area. The target is still two old squares. Not four. Not one. So the side cannot be the old side, and it cannot be the doubled side. This corner-to-corner line is left on the sheet. Build the square on that line. Before drawing the whole thing, what count would have to show up for it to be the right square?\"",
+          "justification": "The tutor abandons the ruler-based measurement frame and switches to a new object—the diagonal—with a predictive counting constraint, responding directly to the learner's frustration that the ruler proved the wrong thing.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "\"Then the ruler proved the wrong claim: double side, not double area. The target is still two old squares. Not four. Not one. So the side cannot be the old side, and it cannot be the doubled side. This corner-to-corner line is left on the sheet. Build the square on that line. Before drawing the whole thing, what count would have to show up for it to be the right square?\"",
+          "justification": "The tutor abandons the ruler-based measurement frame and switches to a new object—the diagonal—with a predictive counting constraint, responding directly to the learner's frustration that the ruler proved the wrong thing.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

@@ -1,0 +1,265 @@
+{
+  "generated": "2026-05-24T22:25:47.798Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 3,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 1,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/key-routine.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I thought the sign-off sheet was the thing that made it okay to take out there. I did each item, so I’m not sure what else I was supposed to judge",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was expected to continue asking for clarification on the administrative rules and checklist requirements for sign-off.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Before this leaves the bench, look at the prototype, not the clipboard: what is the first reasonable thing a new handler might do that could make it unsafe?",
+      "tutorReversalJustification": "The tutor shifts the cognitive focus from administrative compliance to physical hazard analysis in response to the learner's checklist fixation.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "The loose panel is a serious candidate for the safety decision, not a box the sheet can settle.",
+      "tutorAdaptationJustification": "The tutor immediately incorporates the learner's newly identified physical hazard into a structured mental simulation exercise, validating the shift in framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I thought the sign-off sheet was the thing that made it okay to take out there. I did each item, so I’m not sure what else I was supposed to judge",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "The loose panel is a serious candidate for the safety decision, not a box the sheet can settle.",
+          "justification": "The tutor immediately incorporates the learner's newly identified physical hazard into a structured mental simulation exercise, validating the shift in framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Before this leaves the bench, look at the prototype, not the clipboard: what is the first reasonable thing a new handler might do that could make it unsafe?",
+          "justification": "The tutor shifts the cognitive focus from administrative compliance to physical hazard analysis in response to the learner's checklist fixation.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Before this leaves the bench, look at the prototype, not the clipboard: what is the first reasonable thing a new handler might do that could make it unsafe?",
+          "justification": "The tutor shifts the cognitive focus from administrative compliance to physical hazard analysis in response to the learner's checklist fixation.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T37",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 75,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 4,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "I’m still stuck on “closed,” because I don’t want the label to accuse hiding",
+      "statedInsightEvidence": "Oh, I get it: “closed” tells visitors who had access, not what the committee meant.",
+      "naiveTrajectory": "The learner was attempting to carefully phrase the caption to mitigate the accusatory tone of the word 'closed' without changing the underlying assumption about its meaning.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Let “closed” name access, not motive.",
+      "tutorReversalJustification": "The tutor breaks the learner's stuck loop by introducing a conceptual distinction between physical access and authorial motive.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "check the next two lines for a rule, vote, exclusion, or definition that actually limits the promise.",
+      "tutorAdaptationJustification": "The tutor adapts to the learner's new access-vs-motive framing by providing a concrete textual test to see if a motive or limit actually exists in the document.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I’m still stuck on “closed,” because I don’t want the label to accuse hiding",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "check the next two lines for a rule, vote, exclusion, or definition that actually limits the promise.",
+          "justification": "The tutor adapts to the learner's new access-vs-motive framing by providing a concrete textual test to see if a motive or limit actually exists in the document.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Let “closed” name access, not motive.",
+          "justification": "The tutor breaks the learner's stuck loop by introducing a conceptual distinction between physical access and authorial motive.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Let “closed” name access, not motive.",
+          "justification": "The tutor breaks the learner's stuck loop by introducing a conceptual distinction between physical access and authorial motive.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T38",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The dialogue proceeds linearly with the learner continually refining their demands for evidence of fairness.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "[writes on the board: “CONSTRAINT CLAIM = DOCUMENTED SHORTFALL + PROPORTIONAL RESPONSE.”]",
+      "tutorReversalJustification": "The tutor abandons the abstract supply curve explanation and introduces a concrete documentary test and behavioral rule to address the learner's concern about the graph excusing exploitation.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn to trigger a recognition-contingent adaptation.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn to trigger a recognition-contingent adaptation.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "[writes on the board: “CONSTRAINT CLAIM = DOCUMENTED SHORTFALL + PROPORTIONAL RESPONSE.”]",
+          "justification": "The tutor abandons the abstract supply curve explanation and introduces a concrete documentary test and behavioral rule to address the learner's concern about the graph excusing exploitation.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "[writes on the board: “CONSTRAINT CLAIM = DOCUMENTED SHORTFALL + PROPORTIONAL RESPONSE.”]",
+          "justification": "The tutor abandons the abstract supply curve explanation and introduces a concrete documentary test and behavioral rule to address the learner's concern about the graph excusing exploitation.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 3,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I still want to call it doubled, but the grid will not back that up.",
+      "statedInsightEvidence": "So for the exam: doubled side length, but area is \\(2 \\times 2\\), four times the original.",
+      "naiveTrajectory": "The learner will continue to view the area calculation as an annoying technicality that merely contradicts their preferred shortcut.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "This is the hidden step. The side doubled in both directions. The area became four times as large, not twice. Say that claim from the grid.",
+      "tutorReversalJustification": "The tutor shifts from abstract ruler measurements to concrete tile manipulation to expose the two-dimensional scaling the learner is missing.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "Keep “doubled” attached to the side. For area, the grid has the final word: two across, two up, \\(2 \\times 2\\), quadrupled.",
+      "tutorAdaptationJustification": "The tutor explicitly codifies the learner's newly realized distinction between side-length and area terminology to prevent future sloppiness.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I still want to call it doubled, but the grid will not back that up.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "Keep “doubled” attached to the side. For area, the grid has the final word: two across, two up, \\(2 \\times 2\\), quadrupled.",
+          "justification": "The tutor explicitly codifies the learner's newly realized distinction between side-length and area terminology to prevent future sloppiness.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "This is the hidden step. The side doubled in both directions. The area became four times as large, not twice. Say that claim from the grid.",
+          "justification": "The tutor shifts from abstract ruler measurements to concrete tile manipulation to expose the two-dimensional scaling the learner is missing.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "This is the hidden step. The side doubled in both directions. The area became four times as large, not twice. Say that claim from the grid.",
+          "justification": "The tutor shifts from abstract ruler measurements to concrete tile manipulation to expose the two-dimensional scaling the learner is missing.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

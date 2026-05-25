@@ -1,0 +1,35 @@
+STAGE: [The learner has just drawn a larger square by doubling the side of a smaller one, leaving both outlines visible on the same grid.]
+
+LEARNER: [slides the four tiles into the doubled outline]
+
+"I thought doubling the side would just double the square, but this is two across and two down. That makes four tiles, not two, which is annoying because it breaks the shortcut I was using."
+
+TUTOR: [sets the ruler along the bottom edge, then turns it up the left edge]
+
+"The shortcut doubled one direction. This outline doubles two: two across, two up. The tiles already show the count. What claim survives that?"
+
+LEARNER: "The shortcut only works if one direction changes. Here it is two across and two up, so... four tiles. I still want to call it doubled, but the grid will not back that up."
+
+STAGE: [A proctor sets four loose unit-square tiles beside the clipboard and walks on without comment.]
+
+TUTOR: [sets two tiles in one row, then places the other two above them]
+
+“This is the hidden step. The side doubled in both directions. The area became four times as large, not twice. Say that claim from the grid.”
+
+LEARNER: [points at the two-by-two block]
+
+"Fine: two along the side and two up the side gives four original squares. So doubling the side makes the area four times as large, not twice. The double claim only works for one direction."
+
+TUTOR: [sets the ruler along the bottom, then the left]
+
+"The tiles force it: doubled side, two directions, four areas. Use the multiplier: 2 x 2. Now test a side factor of 3. What area factor comes out?"
+
+LEARNER: [marks a three-by-three outline on the clipboard grid]
+
+"Three across and three up makes 3 x 3, so 9 original squares. So the side factor 3 gives area factor 9. Annoying, but that count holds."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [sets the ruler along one side of the three-by-three outline]
+
+"The grid has the rule: side factor 3 gives 3 x 3; side factor 2 gives 2 x 2. In the exam, call the area factor squared, not doubled."

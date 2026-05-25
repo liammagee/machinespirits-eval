@@ -105,8 +105,9 @@ describe('buildAnchoredRevisitCue', () => {
     );
 
     assert.match(cue.instruction, /"I kept treating the decimal as the proof\."/);
-    assert.match(cue.instruction, /names what its old frame hid/i);
-    assert.match(cue.instruction, /offers a replacement frame/i);
+    assert.match(cue.instruction, /three-slot reframe card/i);
+    assert.match(cue.instruction, /old frame hid/i);
+    assert.match(cue.instruction, /replacement frame/i);
   });
 
   it('downgrades reframe to reconsider when the selected learner anchor is only procedural', () => {
@@ -154,6 +155,52 @@ describe('buildAnchoredRevisitCue', () => {
     assert.equal(cue.anchor_strong_misframing, true);
     assert.equal(cue.reframe_anchor_gate, 'eligible');
     assert.match(cue.instruction, /old frame hid/i);
+  });
+
+  it('prefers an eligible misframing anchor when a later learner line is procedural', () => {
+    const cue = buildAnchoredRevisitCue(
+      {
+        cue_kind: 'learner_revisit_earlier_wording',
+        revisit_policy: 'reframe',
+        revisit_anchor: 'misframing-candidate',
+      },
+      [
+        {
+          role: 'learner',
+          content: 'I still want the exact wording to settle the caption by itself.',
+        },
+        { role: 'tutor', content: 'Try changing the speaker and audience.' },
+        { role: 'learner', content: 'The next step is to compare the public statement with the meeting note.' },
+      ],
+    );
+
+    assert.equal(cue.revisit_policy, 'reframe');
+    assert.equal(cue.anchor_strong_misframing, true);
+    assert.equal(cue.anchor_quote, 'I still want the exact wording to settle the caption by itself.');
+  });
+
+  it('prefers a doubled-side misconception over a later partial correction', () => {
+    const cue = buildAnchoredRevisitCue(
+      {
+        cue_kind: 'learner_revisit_earlier_wording',
+        revisit_policy: 'reframe',
+        revisit_anchor: 'misframing-candidate',
+      },
+      [
+        {
+          role: 'learner',
+          content: 'I doubled this side, so I still want to say the square got twice as large.',
+        },
+        { role: 'tutor', content: 'Count across and down.' },
+        {
+          role: 'learner',
+          content: 'All four have to count, so I was only counting one direction.',
+        },
+      ],
+    );
+
+    assert.equal(cue.revisit_policy, 'reframe');
+    assert.equal(cue.anchor_quote, 'I doubled this side, so I still want to say the square got twice as large.');
   });
 
   it('lets the reconsider policy publicly keep, narrow, or replace the anchor', () => {

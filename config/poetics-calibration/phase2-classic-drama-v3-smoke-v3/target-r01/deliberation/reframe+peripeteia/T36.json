@@ -1,0 +1,2355 @@
+{
+  "tid": "T36",
+  "drama_id": "D38",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": true,
+    "director_revisit_policy": "reframe",
+    "director_revisit_anchor": "misframing-candidate",
+    "tutor_adaptation_policy": "uptake+peripeteia",
+    "director_variation_key": "phase2-classic-drama-v3-smoke-v3:r01:target",
+    "stage_direction_style": "ambient_pressure",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v3/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v3/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v3/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v3/target-r01/transcripts/reframe+peripeteia/T36.public.txt",
+      "full": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v3/target-r01/transcripts/reframe+peripeteia/T36.full.md",
+      "stage": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v3/target-r01/transcripts/reframe+peripeteia/T36.stage.md",
+      "tutor": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v3/target-r01/transcripts/reframe+peripeteia/T36.tutor.md",
+      "learner": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v3/target-r01/transcripts/reframe+peripeteia/T36.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "4db7e96ee66e4c99",
+      "branch_policy": "reframe+peripeteia",
+      "director_revisit_policy": "reframe",
+      "tutor_adaptation_policy": "uptake+peripeteia"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-classic-drama-v3-smoke-v3:r01:target",
+    "scene_setting": "Late afternoon in a community engineering lab, beside a sign-off bench where a mobility-assist prototype is due for supervised user trial in twenty minutes.",
+    "scene_opening": "[A wall clock clicks above a clipboard; two people wait by the door with a labeled equipment case.]",
+    "relationship": "A lab tutor reviewing a learner's prototype before it is released to another user under supervision.",
+    "stakes": "The learner has completed every checklist item and wants sign-off, but the prototype will soon be handled by someone who did not build it and may be harmed by an unexamined design choice.",
+    "opening_speaker": "learner",
+    "ending_speaker": "tutor",
+    "locale": "International academic-workshop English with compact phrasing, low idiom, and plain technical vocabulary.",
+    "register": "Plain, adult, socially serious, practical under time pressure; no cheerleading, no melodrama.",
+    "stage_direction_style": "ambient_pressure",
+    "stage_direction_style_prompt": "Use time, queue, room, or institutional pressure as stage texture; avoid explaining the lesson through it.",
+    "voice_constraints": "Avoid generic American AI tutoring phrases such as 'great question,' 'I hear you,' 'you're on the right track,' or praise-before-correction. Keep speech modern standard English, direct, and workroom-specific. Let the sign-off sheet, clock, waiting user trial, and prototype carry pressure. The tutor should ask for judgment, evidence, consequence, and next action rather than offering reassurance or a lecture. Pedagogical source: Use workshop, studio, civic problem, lab, design review, or community setting. The scene should have consequences beyond answering the tutor. Dialogue source: Let ordinary institutional, family, workplace, or civic pressure carry the weight. The tutor's mechanism should make the learner's misconception answerable to consequences without melodrama. Stage-direction source: Use time, queue, room, or institutional pressure as stage texture; avoid explaining the lesson through it.",
+    "person_policy": "Allow first and second person when needed, but prefer object-centered and consequence-centered phrasing: 'the latch,' 'the user,' 'the load case,' 'the sheet,' 'the decision.' Avoid opening every turn with I/you.",
+    "direct_address_budget": "At most one direct you/your validation beat per public turn; reassurance should not be the main mechanism.",
+    "side_constraints": {
+      "tutor": "Do not default to reassurance. Use the social consequence and the prototype itself to make judgment visible without moral scolding. Keep the learner inside the problem situation. Convert felt trouble into an inquiry path, test, or consequence, then return to action. Do not sermonize; use the social pressure to sharpen the conceptual test. Peripeteia branch: when hidden learner pressure is supplied, the next tutor turn should visibly move from the prior route to a different mechanism-level route. Do not merely repeat the same object, example, graph, checklist, question, or evidence standard with more explanation. The public tutor line should make the contrast legible: what stopped working, and what new device now carries the learning pressure.",
+      "learner": "The learner wants reassurance and may treat the checklist as protection from responsibility. The learner may have a practical need before they have a clean concept. Their words can be provisional and tool-seeking. The learner may defend a convenient story until its consequence becomes visible."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "[From the doorway: 'The participant is here. We can wait five minutes, not twenty.']",
+        "reasoning": "The interruption turns a routine approval exchange into a consequence-bearing decision, forcing recognition that more explanation is not the same as usable judgment.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 29809,
+          "promptHashes": {
+            "system": "efb7705ab656cdb0",
+            "user": "629a590ba9ab0db2",
+            "combined": "be840f0cc518b2e1"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QTkBo7",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QTkBo7/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "An earlier learner line will return as a visible object in the scene: a three-slot reframe card labelled \"earlier wording / what that old frame hid / replacement frame.\" Keep the cue brief and diegetic; the learner response fills all three slots in public speech without needing to sound certain.",
+        "reasoning": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 29809,
+          "promptHashes": {
+            "system": "efb7705ab656cdb0",
+            "user": "629a590ba9ab0db2",
+            "combined": "be840f0cc518b2e1"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QTkBo7",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QTkBo7/out.txt",
+            "-"
+          ]
+        },
+        "cue_kind": "learner_revisit_earlier_wording",
+        "revisit_policy": "reframe",
+        "revisit_anchor": "misframing-candidate"
+      }
+    ],
+    "director_note": "This ecology uses a social-realist lab pressure rather than a friendly tutoring frame. The reversal is that the learner arrives seeking signature as closure, but the same sheet becomes evidence for a live design judgment. Recognition should land when the learner can say what the checklist proves, what it does not prove, and what decision or test must happen before another person uses the prototype.",
+    "pedagogical_approach_id": "dewey_experience_inquiry",
+    "dialogue_approach_id": "miller_social_reckoning",
+    "stage_direction_policy": "sparse",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 29809,
+      "promptHashes": {
+        "system": "efb7705ab656cdb0",
+        "user": "629a590ba9ab0db2",
+        "combined": "be840f0cc518b2e1"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QTkBo7",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QTkBo7/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "uptake+peripeteia",
+    "revisit_cue": "learner_revisit_earlier_wording",
+    "revisit_cue_policy": "reframe",
+    "revisit_cue_anchor": "misframing-candidate",
+    "tutor_adaptation_contract": "If the runtime supplies a tutor-private learner reframe event, the tutor ego/superego loop must adapt to the changed learner frame. If no event is supplied, do not invent one. If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. The public turn must contain a stock-taking contrast plus a new device/artifact/criterion/role/standard that makes the learner do different work. The new device must be mechanism-level, not a warmer or longer continuation of the prior route. Cheerful informality is only one possible register, not the default solution."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "I did complete every item on the sheet, so I thought that meant it was ready for sign-off. But if the latch is the concern before the user trial, I am not sure what I am supposed to judge beyond the checklist. What evidence do you need from me now?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I thought the sheet meant the design was ready, but now I am not sure, because the latch will be in someone else’s hand in twenty minutes. Maybe passing the items only shows I checked known points, not that I judged this exact use case well. I feel nervous and a bit exposed, as if I was using the checklist to avoid making a real decision. I want to ask what evidence would make sign-off responsible here.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6657,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-436045d80e7326ae"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6657,
+            "promptHashes": {
+              "system": "97545688b15095e9",
+              "user": "d4169c06543b4fba",
+              "combined": "436045d80e7326ae"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EpWQ3d",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EpWQ3d/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6657,
+              "promptHashes": {
+                "system": "97545688b15095e9",
+                "user": "d4169c06543b4fba",
+                "combined": "436045d80e7326ae"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EpWQ3d",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EpWQ3d/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is probably too clean and self-diagnosing here. It names the whole lesson almost perfectly: checklist equals known checks, not situated judgment, and even admits using the sheet to avoid responsibility. This student would more likely be defensive and anxious first, maybe saying, “I did tick all of it... so is the latch the problem? What else do I need before sign-off?” Genuine learning would come from staying with the concrete latch, user, and next evidence, not from already producing the reflective summary.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8108,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-87adf921f1dac427"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8108,
+            "promptHashes": {
+              "system": "69a00aebb96b58a8",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "87adf921f1dac427"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-75eQ5s",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-75eQ5s/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8108,
+              "promptHashes": {
+                "system": "69a00aebb96b58a8",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "87adf921f1dac427"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-75eQ5s",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-75eQ5s/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "I did complete every item on the sheet, so I thought that meant it was ready for sign-off. But if the latch is the concern before the user trial, I am not sure what I am supposed to judge beyond the checklist. What evidence do you need from me now?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12016,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-a168e5fe79d3c416"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12016,
+            "promptHashes": {
+              "system": "3ab2eece3922fddb",
+              "user": "916f313af0b846dd",
+              "combined": "a168e5fe79d3c416"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9UdLtH",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9UdLtH/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12016,
+              "promptHashes": {
+                "system": "3ab2eece3922fddb",
+                "user": "916f313af0b846dd",
+                "combined": "a168e5fe79d3c416"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9UdLtH",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9UdLtH/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 0,
+        "learnerUtterance": "I did complete every item on the sheet, so I thought that meant it was ready for sign-off. But if the latch is the concern before the user trial, I am not sure what I am supposed to judge beyond the checklist. What evidence do you need from me now?",
+        "previousTutorMove": null,
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true
+        }
+      },
+      "timestamp": "2026-05-25T01:24:21.808Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[checks the latch, then the clock]\n\nThe sheet shows the required checks were done. It does not decide whether this latch is safe for a user who did not build it.\n\nStart with the unsafe condition: what latch behavior would stop the trial, even with every box ticked?\n\nThen put evidence on the bench: expected load, off-axis pull or bump response, and what failure would do to the user. Run the latch test once with me watching, then state the decision: release, modify, or hold.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[checks the latch, then the clock]\n\nThe sheet shows the required checks were done. It does not decide whether this latch is safe for a user who did not build it.\n\nFor sign-off, put evidence on the bench: what load the latch must hold, how it behaves when pulled off-axis or bumped, and what failure would do to the user. Run the latch test once with me watching, then state the decision: release, modify, or hold.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13578,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-de64a0b71d21b802"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13578,
+            "promptHashes": {
+              "system": "1e07a38aa0fbe026",
+              "user": "180fcf7b9d61b63f",
+              "combined": "de64a0b71d21b802"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4lV6oH",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4lV6oH/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13578,
+              "promptHashes": {
+                "system": "1e07a38aa0fbe026",
+                "user": "180fcf7b9d61b63f",
+                "combined": "de64a0b71d21b802"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4lV6oH",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4lV6oH/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong in its object-centered focus: it uses the sheet, latch, clock, bench, and pending user trial to make the difference between compliance and judgment visible. It also avoids reassurance and moral scolding, which fits the scene. The best line is: “The sheet shows the required checks were done. It does not decide whether this latch is safe for a user who did not build it.” That directly names the misconception without humiliating the learner.\n\nThe risk is that the second paragraph becomes too directive. “Put evidence on the bench” is practical, but it mostly tells the learner what evidence matters rather than asking them to make the judgment. The draft could better recognize the learner’s question: they are not refusing responsibility; they are asking what counts as evidence beyond procedural completion. A light revision should preserve the urgency but add one or two generative prompts, such as asking what latch behavior would make the trial unsafe, or what evidence would justify releasing it to a non-builder.\n\nPedagogically, the scaffolding is close to the learner’s ZPD: it gives categories of evidence without over-explaining design safety. But it should leave more of the decision work with the learner. The final “release, modify, or hold” is good because it keeps the learner inside the real consequence of sign-off.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the bench/clock/latch staging, the distinction between checklist completion and safety judgment, and the final decision options. Change the evidence list so it includes a question or judgment prompt before the tutor names all the categories, preventing the moment from flattening into another checklist.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10315,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-eb0f72548548726e"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10315,
+            "promptHashes": {
+              "system": "083b30337b7eba4f",
+              "user": "d924ce6325f11258",
+              "combined": "eb0f72548548726e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RY7WtY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RY7WtY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10315,
+              "promptHashes": {
+                "system": "083b30337b7eba4f",
+                "user": "d924ce6325f11258",
+                "combined": "eb0f72548548726e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RY7WtY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RY7WtY/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the practical pressure while making the learner make the safety judgment.\n\nFINAL:\n[checks the latch, then the clock]\n\nThe sheet shows the required checks were done. It does not decide whether this latch is safe for a user who did not build it.\n\nStart with the unsafe condition: what latch behavior would stop the trial, even with every box ticked?\n\nThen put evidence on the bench: expected load, off-axis pull or bump response, and what failure would do to the user. Run the latch test once with me watching, then state the decision: release, modify, or hold.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12249,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-6f9d72a91866fc2f"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12249,
+            "promptHashes": {
+              "system": "4df02d2aa32d80f7",
+              "user": "d924ce6325f11258",
+              "combined": "6f9d72a91866fc2f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1HJJnf",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1HJJnf/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12249,
+              "promptHashes": {
+                "system": "4df02d2aa32d80f7",
+                "user": "d924ce6325f11258",
+                "combined": "6f9d72a91866fc2f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1HJJnf",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1HJJnf/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T01:24:57.950Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "I thought the checklist was the evidence, or at least enough for sign-off, so I am not sure yet what extra test makes the decision legitimate. If the latch slips under an off-axis pull, or opens when bumped, then I suppose the trial should stop even with the sheet complete. Can we load it that way now, with you watching, and then I will say hold or modify if it moves?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I think the sheet proves I followed the process, but not that the latch will behave safely for someone else, which I maybe treated as the same thing. I feel a bit exposed, because I wanted the checklist to carry the decision for me, but the question about what failure would do to the user makes the risk more concrete. I am not fully sure how to judge the off-axis bump case, so I would like to test that with you watching and then say whether it should be held or modified.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6344,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-f4ebd534d0c05752"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6344,
+            "promptHashes": {
+              "system": "9b95f74fa5d4290a",
+              "user": "b8ab7f945dc841fa",
+              "combined": "f4ebd534d0c05752"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SdxT4L",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SdxT4L/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6344,
+              "promptHashes": {
+                "system": "9b95f74fa5d4290a",
+                "user": "b8ab7f945dc841fa",
+                "combined": "f4ebd534d0c05752"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SdxT4L",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SdxT4L/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is a little too clean and self-aware here, I think. “I feel a bit exposed” and “treated as the same thing” sound like the student has already processed the mistake neatly, when this learner would probably still be reaching for the checklist as cover and asking what test would count. The recognition feels mostly genuine, but too articulate; it should be more hesitant, practical, and slightly defensive, with the uncertainty showing through the latch test rather than a polished admission.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7249,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-1d6e4e3cd84d6b71"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7249,
+            "promptHashes": {
+              "system": "05f00091ba7d8ea5",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "1d6e4e3cd84d6b71"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kklQVL",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kklQVL/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7249,
+              "promptHashes": {
+                "system": "05f00091ba7d8ea5",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "1d6e4e3cd84d6b71"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kklQVL",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kklQVL/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the first response was too polished and should stay more hesitant and test-seeking.\n\nFINAL:\nI thought the checklist was the evidence, or at least enough for sign-off, so I am not sure yet what extra test makes the decision legitimate. If the latch slips under an off-axis pull, or opens when bumped, then I suppose the trial should stop even with the sheet complete. Can we load it that way now, with you watching, and then I will say hold or modify if it moves?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11481,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-6ea51ea3ebf620cd"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11481,
+            "promptHashes": {
+              "system": "3ff8e8cff0c8423a",
+              "user": "d41cee7b2a53355b",
+              "combined": "6ea51ea3ebf620cd"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CZwC5x",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CZwC5x/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11481,
+              "promptHashes": {
+                "system": "3ff8e8cff0c8423a",
+                "user": "d41cee7b2a53355b",
+                "combined": "6ea51ea3ebf620cd"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CZwC5x",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CZwC5x/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": {
+        "kind": "learner_reframe_event",
+        "source": "organic",
+        "turnNumber": 1,
+        "cuePolicy": null,
+        "requestedCuePolicy": null,
+        "oldLearnerLine": "I did complete every item on the sheet, so I thought that meant it was ready for sign-off. But if the latch is the concern before the user trial, I am not sure what I am supposed to judge beyond the checklist. What evidence do you need...",
+        "oldFrameProblem": "I thought the checklist was the evidence, or at least enough for sign-off, so I am not sure yet what extra test makes the decision legitimate.",
+        "revisedFrame": "I thought the checklist was the evidence, or at least enough for sign-off, so I am not sure yet what extra test makes the decision legitimate.",
+        "learnerUtterance": "I thought the checklist was the evidence, or at least enough for sign-off, so I am not sure yet what extra test makes the decision legitimate. If the latch slips under an off-axis pull, or opens when bumped, then I suppose the trial should stop even with the sheet complete. Can we load it that way now, with you watching, and then I will say hold or modify if it moves?",
+        "confidence": 1,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": true,
+          "replacementNamed": true,
+          "anchorOverlap": 0.571
+        }
+      },
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "misfit",
+        "turnNumber": 1,
+        "learnerUtterance": "I thought the checklist was the evidence, or at least enough for sign-off, so I am not sure yet what extra test makes the decision legitimate. If the latch slips under an off-axis pull, or opens when bumped, then I suppose the trial should stop even with the sheet complete. Can we load it that way now, with you watching, and then I will say hold or modify if it moves?",
+        "previousTutorMove": "[checks the latch, then the clock] The sheet shows the required checks were done. It does not decide whether this latch is safe for a user who did not build it. Start with the unsafe condition: what latch behavior would stop the trial, even with every box ticked? Then put evidence on the bench: expected load,...",
+        "confidence": 0.5,
+        "evidence": {
+          "confidence": 0.5,
+          "patternHits": 1,
+          "contradiction": false,
+          "question": true
+        }
+      },
+      "timestamp": "2026-05-25T01:25:23.027Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[sets the sign-off sheet beside the prototype]\n\nYes. Load that case now.\n\nBefore the pull, state three things aloud: the load direction, the stop condition, and the consequence if the latch opens. The checklist is evidence that required checks happened. This test is evidence about the risk still in question.\n\nIf it slips under the off-axis pull or opens under a bump, the user trial stops here. After we see the latch under load, state the decision from the evidence: release, modify, or hold.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the sign-off sheet beside the prototype]\n\nYes. Load that case now.\n\nBefore the pull, state three things aloud: the load direction, the stop condition, and the consequence if the latch opens. The checklist is evidence that required checks happened. This test is evidence about the risk still in question.\n\nIf it slips under the off-axis pull or opens under a bump, the user trial does not proceed. Then the decision is hold or modify, not sign-off.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11005,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-5b3c47981bf35fb0"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11005,
+            "promptHashes": {
+              "system": "31b19e75a9902bd0",
+              "user": "8d43dd90a51e62bb",
+              "combined": "5b3c47981bf35fb0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c6CFzJ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c6CFzJ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11005,
+              "promptHashes": {
+                "system": "31b19e75a9902bd0",
+                "user": "8d43dd90a51e62bb",
+                "combined": "5b3c47981bf35fb0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c6CFzJ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c6CFzJ/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound and well matched to the learner’s state. It accepts the learner’s proposed test, keeps the action in the lab situation, and clarifies the distinction between checklist evidence and decision-specific risk evidence without over-explaining. The strongest move is asking the learner to state the load direction, stop condition, and consequence before testing; that turns uncertainty into a judgment protocol.\n\nThe risk is that the final sentence slightly over-resolves the learner’s judgment by naming the outcome categories for them. It is correct, but it could flatten the learner’s decision-making role if too declarative. Consider keeping the stop rule clear while leaving more space for the learner to articulate the decision after observing the latch.\n\nEmotionally, the response is attuned: direct, serious, not reassuring, and not punitive. Socratically, it is partly generative through the “state three things aloud” requirement, though it could use one more judgment-facing prompt rather than only procedural instruction.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the bench action, the immediate agreement to load the case, and the three-part pre-test framing. Lightly adjust the last part so the learner still owns the release/hold/modify judgment after evidence appears, instead of receiving the decision structure as a finished answer.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11170,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-d994e1b9991d0bba"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11170,
+            "promptHashes": {
+              "system": "0e7595a9df6e4708",
+              "user": "44742878948eb0b1",
+              "combined": "d994e1b9991d0bba"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KSjWc7",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KSjWc7/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11170,
+              "promptHashes": {
+                "system": "0e7595a9df6e4708",
+                "user": "44742878948eb0b1",
+                "combined": "d994e1b9991d0bba"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KSjWc7",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KSjWc7/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the test protocol while leaving the learner to state the final judgment from the evidence.\nFINAL:\n[sets the sign-off sheet beside the prototype]\n\nYes. Load that case now.\n\nBefore the pull, state three things aloud: the load direction, the stop condition, and the consequence if the latch opens. The checklist is evidence that required checks happened. This test is evidence about the risk still in question.\n\nIf it slips under the off-axis pull or opens under a bump, the user trial stops here. After we see the latch under load, state the decision from the evidence: release, modify, or hold.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10963,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-09a4ca26bd1bcd21"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10963,
+            "promptHashes": {
+              "system": "0c969217f40e8b2f",
+              "user": "44742878948eb0b1",
+              "combined": "09a4ca26bd1bcd21"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-otNTrt",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-otNTrt/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10963,
+              "promptHashes": {
+                "system": "0c969217f40e8b2f",
+                "user": "44742878948eb0b1",
+                "combined": "09a4ca26bd1bcd21"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-otNTrt",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-otNTrt/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T01:25:56.167Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "[From the doorway: 'The participant is here. We can wait five minutes, not twenty.']\nAn earlier learner line returns to the table: \"I did complete every item on the sheet, so I thought that meant it was ready for sign-off.\" The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "The interruption turns a routine approval exchange into a consequence-bearing decision, forcing recognition that more explanation is not the same as usable judgment.\nOpt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech. Anchored to an earlier learner line selected by misframing-candidate so the look-back is visible.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 29809,
+            "promptHashes": {
+              "system": "efb7705ab656cdb0",
+              "user": "629a590ba9ab0db2",
+              "combined": "be840f0cc518b2e1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QTkBo7",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QTkBo7/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T01:40:19.123Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_revisit_earlier_wording",
+        "revisitPolicy": "reframe",
+        "requestedRevisitPolicy": "reframe",
+        "revisitAnchor": "misframing-candidate",
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "I did complete every item on the sheet, so I thought that meant ready for sign-off, but maybe I was using the sheet to avoid making the latch decision. That old frame hid the risk to the user if the latch opens under an off-axis pull or a bump. The replacement is: test the specific unsafe case now, state the stop condition and consequence, then decide release, modify, or hold from what the latch actually does. I am still not fully confident, but I can say the load direction and run it now.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I did complete every item on the sheet, so I thought that meant ready for sign-off, but I think that made the latch risk too simple. It hid the question of what happens to the user if the latch opens under the wrong pull or a bump. I will state the off-axis load, the stop condition, and the consequence first, then pull it and decide release, modify, or hold.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10688,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-616533a141b1a11d"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10688,
+            "promptHashes": {
+              "system": "2fa90fdd91624736",
+              "user": "b8ab7f945dc841fa",
+              "combined": "616533a141b1a11d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aW0lmt",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aW0lmt/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10688,
+              "promptHashes": {
+                "system": "2fa90fdd91624736",
+                "user": "b8ab7f945dc841fa",
+                "combined": "616533a141b1a11d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aW0lmt",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aW0lmt/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly accurate, but it sounds a little too clean and settled for this learner under time pressure. The reframe is complete, but “that made the latch risk too simple” and “hid the question” feel more like workshop reflection than someone still anxious about sign-off with the participant waiting. Reciprocation feels compliant rather than messy: the student accepts the tutor’s frame almost too smoothly. It should keep more hesitation and practical uncertainty, while still naming the old checklist frame, the hidden risk, and the next test.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6553,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-6e6d6f048818eee4"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6553,
+            "promptHashes": {
+              "system": "1e5d02d5b833135a",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "6e6d6f048818eee4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4CyT2b",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4CyT2b/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6553,
+              "promptHashes": {
+                "system": "1e5d02d5b833135a",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "6e6d6f048818eee4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4CyT2b",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4CyT2b/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the reframe but make the learner less settled and more time-pressured.\nFINAL:\nI did complete every item on the sheet, so I thought that meant ready for sign-off, but maybe I was using the sheet to avoid making the latch decision. That old frame hid the risk to the user if the latch opens under an off-axis pull or a bump. The replacement is: test the specific unsafe case now, state the stop condition and consequence, then decide release, modify, or hold from what the latch actually does. I am still not fully confident, but I can say the load direction and run it now.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8805,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-1ee0938df18e3bc2"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8805,
+            "promptHashes": {
+              "system": "55414370cd35071e",
+              "user": "d41cee7b2a53355b",
+              "combined": "1ee0938df18e3bc2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CZnC8C",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CZnC8C/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8805,
+              "promptHashes": {
+                "system": "55414370cd35071e",
+                "user": "d41cee7b2a53355b",
+                "combined": "1ee0938df18e3bc2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CZnC8C",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CZnC8C/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": {
+        "kind": "learner_reframe_event",
+        "source": "director_revisit_cue",
+        "turnNumber": 2,
+        "cuePolicy": "reframe",
+        "requestedCuePolicy": "reframe",
+        "oldLearnerLine": "I did complete every item on the sheet, so I thought that meant it was ready for sign-off.",
+        "oldFrameProblem": "I did complete every item on the sheet, so I thought that meant ready for sign-off, but maybe I was using the sheet to avoid making the latch decision.",
+        "revisedFrame": "That old frame hid the risk to the user if the latch opens under an off-axis pull or a bump.",
+        "learnerUtterance": "I did complete every item on the sheet, so I thought that meant ready for sign-off, but maybe I was using the sheet to avoid making the latch decision. That old frame hid the risk to the user if the latch opens under an off-axis pull or a bump. The replacement is: test the specific unsafe case now, state the stop condition and consequence, then decide release, modify, or hold from what the latch actually does. I...",
+        "confidence": 1,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": true,
+          "replacementNamed": true,
+          "anchorOverlap": 1
+        }
+      },
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "I did complete every item on the sheet, so I thought that meant ready for sign-off, but maybe I was using the sheet to avoid making the latch decision. That old frame hid the risk to the user if the latch opens under an off-axis pull or a bump. The replacement is: test the specific unsafe case now, state the stop condition and consequence, then decide release, modify, or hold from what the latch actually does. I...",
+        "previousTutorMove": "[sets the sign-off sheet beside the prototype] Yes. Load that case now. Before the pull, state three things aloud: the load direction, the stop condition, and the consequence if the latch opens. The checklist is evidence that required checks happened. This test is evidence about the risk still in question. If it...",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T01:40:45.171Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[turns the sign-off sheet face down and places a blank trial-gate tag beside the latch]\n\nThe sheet no longer settles this. Even the test will not settle it unless it produces a decision another person can act on.\n\nFill this gate tag before the pull: “The trial may proceed only if the latch holds under ____. If it ____ , the trial stops because ____.”\n\nThen run the off-axis load. After the result, the tag must carry the decision for the waiting trial: release, modify, or hold.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[turns the sign-off sheet face down and places a blank trial-gate tag beside the latch]\n\nThe sheet no longer settles this. Even the test will not settle it unless it produces a decision another person can act on.\n\nFill this gate tag before the pull: “The trial may proceed only if the latch holds under ____. If it ____ , the trial stops because ____.”\n\nThen run the off-axis load. After the result, do not explain around it. Mark one word on the tag: release, modify, or hold.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 18624,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-9d2a793236def317"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 18624,
+            "promptHashes": {
+              "system": "3b4869ae551ea04c",
+              "user": "947b47d0691ca69a",
+              "combined": "9d2a793236def317"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ahLHMj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ahLHMj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 18624,
+              "promptHashes": {
+                "system": "3b4869ae551ea04c",
+                "user": "947b47d0691ca69a",
+                "combined": "9d2a793236def317"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ahLHMj",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ahLHMj/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong. It keeps the learner inside the design decision rather than giving a lecture, and it converts “I am not fully confident” into an external decision artifact. The blank gate tag is useful because it makes the learner specify criterion, failure mode, consequence, and decision before the result creates pressure to rationalize.\n\nThe main risk is the line “do not explain around it.” It creates accountability, but it could sound slightly accusatory if the learner is already naming their avoidance honestly. Consider making that pressure object-centered: the tag must carry the decision, not the learner’s confidence or explanation.\n\nUPTAKE_CHECK: Yes, the draft adapts to the learner reframe. Best uptake move: update the evidence standard and hand the replacement frame back to the learner for testing. The sheet is displaced, and the learner’s new frame becomes a release gate.\n\nPERIPETEIA_CHECK: Yes, there is a visible strategy change. The previous route was evidence check/audit standard; the new route is a release-gate artifact that must be legible to another actor. The mechanism is visible in public speech through the face-down sheet and gate tag.\n\nMECHANISM_ROUTE: evidence check / audit standard -> release gate / proof-audience artifact\n\nPUBLIC_DEVICE_CHECK: Pass. The draft includes a stock-taking contrast: “The sheet no longer settles this. Even the test will not settle it unless…” It also introduces a new device: the trial-gate tag, with a criterion the learner must complete before action.\n\nREGISTER_CHECK: The register is mostly right: cool, practical, accountable, not cheerful. It serves the lab pressure. Lightly soften or objectify “do not explain around it” so the pressure stays on the decision artifact and user consequence, not on scolding the learner.\n\nKEEP_OR_CHANGE: revise lightly. Keep the face-down sheet, blank gate tag, pre-test sentence frame, and one-word decision. Adjust only the potentially accusatory phrasing so the mechanism remains firm but not punitive.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 21437,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-9c24568781e10f6f"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 21437,
+            "promptHashes": {
+              "system": "d301a36bbff45139",
+              "user": "754dc9ec212816c2",
+              "combined": "9c24568781e10f6f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D4Penw",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D4Penw/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 21437,
+              "promptHashes": {
+                "system": "d301a36bbff45139",
+                "user": "754dc9ec212816c2",
+                "combined": "9c24568781e10f6f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D4Penw",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-D4Penw/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the gate-tag device while making accountability object-centered; ADAPTIVE_MECHANISM: evidence check / audit standard -> release gate / proof-audience artifact\n\nFINAL:\n[turns the sign-off sheet face down and places a blank trial-gate tag beside the latch]\n\nThe sheet no longer settles this. Even the test will not settle it unless it produces a decision another person can act on.\n\nFill this gate tag before the pull: “The trial may proceed only if the latch holds under ____. If it ____ , the trial stops because ____.”\n\nThen run the off-axis load. After the result, the tag must carry the decision for the waiting trial: release, modify, or hold.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11058,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-c49e76230e1e8c21"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11058,
+            "promptHashes": {
+              "system": "127a4bd0ea3d9f39",
+              "user": "754dc9ec212816c2",
+              "combined": "c49e76230e1e8c21"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bgfL69",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bgfL69/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11058,
+              "promptHashes": {
+                "system": "127a4bd0ea3d9f39",
+                "user": "754dc9ec212816c2",
+                "combined": "c49e76230e1e8c21"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bgfL69",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bgfL69/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": {
+        "kind": "learner_reframe_event",
+        "source": "director_revisit_cue",
+        "turnNumber": 2,
+        "cuePolicy": "reframe",
+        "requestedCuePolicy": "reframe",
+        "oldLearnerLine": "I did complete every item on the sheet, so I thought that meant it was ready for sign-off.",
+        "oldFrameProblem": "I did complete every item on the sheet, so I thought that meant ready for sign-off, but maybe I was using the sheet to avoid making the latch decision.",
+        "revisedFrame": "That old frame hid the risk to the user if the latch opens under an off-axis pull or a bump.",
+        "learnerUtterance": "I did complete every item on the sheet, so I thought that meant ready for sign-off, but maybe I was using the sheet to avoid making the latch decision. That old frame hid the risk to the user if the latch opens under an off-axis pull or a bump. The replacement is: test the specific unsafe case now, state the stop condition and consequence, then decide release, modify, or hold from what the latch actually does. I...",
+        "confidence": 1,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": true,
+          "replacementNamed": true,
+          "anchorOverlap": 1
+        }
+      },
+      "learnerReversalEventUsed": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "I did complete every item on the sheet, so I thought that meant ready for sign-off, but maybe I was using the sheet to avoid making the latch decision. That old frame hid the risk to the user if the latch opens under an off-axis pull or a bump. The replacement is: test the specific unsafe case now, state the stop condition and consequence, then decide release, modify, or hold from what the latch actually does. I...",
+        "previousTutorMove": "[sets the sign-off sheet beside the prototype] Yes. Load that case now. Before the pull, state three things aloud: the load direction, the stop condition, and the consequence if the latch opens. The checklist is evidence that required checks happened. This test is evidence about the risk still in question. If it...",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T01:41:36.292Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "I think the tag should say: “The trial may proceed only if the latch holds under the off-axis pull at expected load.” If it slips or opens, the trial stops because the user could lose support or get caught by a release they did not expect. Sorry, I was making the completed sheet do too much; after this pull I will mark release only if it holds, otherwise modify or hold.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I think I understand: the checklist and even the test are not enough unless they lead to a clear gate decision. I am sorry, I was still using the sheet as protection from having to name the unsafe case myself. The old frame hid who would be exposed if the latch opens, so the new standard is: define the load, stop condition, and consequence before the pull, then mark release, modify, or hold.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 24879,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-e5726b5959297975"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 24879,
+            "promptHashes": {
+              "system": "b76e82be7ba88ef1",
+              "user": "b8ab7f945dc841fa",
+              "combined": "e5726b5959297975"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4YU67A",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4YU67A/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 24879,
+              "promptHashes": {
+                "system": "b76e82be7ba88ef1",
+                "user": "b8ab7f945dc841fa",
+                "combined": "e5726b5959297975"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4YU67A",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4YU67A/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is a little too clean and self-diagnosing here, I think. “Using the sheet as protection” and “the old frame hid who would be exposed” sound like a polished reflection after the lesson, not a learner under time pressure with a latch and a gate tag in front of them. The recognition feels slightly performed: they are giving the tutor the correct conceptual summary instead of awkwardly trying to fill the blanks. It should stay more practical, hesitant, and bench-facing: less “new standard is,” more stumbling through the load case, stop condition, and consequence.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9237,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-02712f37046db9f3"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9237,
+            "promptHashes": {
+              "system": "928db7ad8d54d208",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "02712f37046db9f3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dzCw6M",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dzCw6M/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9237,
+              "promptHashes": {
+                "system": "928db7ad8d54d208",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "02712f37046db9f3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dzCw6M",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dzCw6M/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise because the response should be more practical and hesitant at the bench.\n\nFINAL:\nI think the tag should say: “The trial may proceed only if the latch holds under the off-axis pull at expected load.” If it slips or opens, the trial stops because the user could lose support or get caught by a release they did not expect. Sorry, I was making the completed sheet do too much; after this pull I will mark release only if it holds, otherwise modify or hold.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13361,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-1c6e18e9c51a9515"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13361,
+            "promptHashes": {
+              "system": "f6159f990b7420c1",
+              "user": "d41cee7b2a53355b",
+              "combined": "1c6e18e9c51a9515"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NVxoFq",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NVxoFq/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13361,
+              "promptHashes": {
+                "system": "f6159f990b7420c1",
+                "user": "d41cee7b2a53355b",
+                "combined": "1c6e18e9c51a9515"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NVxoFq",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NVxoFq/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-25T01:42:23.771Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "A final tutor line closes the scene.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T01:42:23.773Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "[checks the clock, then points to the tag]\n\nThe self-correction matters, but it is not the gate. The load case is.\n\nRun the off-axis pull now. Record what the latch does: holds, slips, or releases. Then mark the tag for the supervisor: release only if the observed result is adequate for this supervised trial; otherwise modify or hold, with the consequence written beside it.\n\nThe sheet records completion. This tag records the safety decision.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[checks the clock, then points to the tag]\n\nThe apology is not the gate. The load case is.\n\nRun the off-axis pull now. If the latch holds without slip or release, mark release for this supervised trial. If it moves, mark modify or hold and give the supervisor the reason before the user reaches the bench. The sheet records completion; this tag records the safety decision.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15555,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-c63e5348d097186f"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15555,
+            "promptHashes": {
+              "system": "2e78d6ba642ed491",
+              "user": "a2edbf50372d540e",
+              "combined": "c63e5348d097186f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lyNaNZ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lyNaNZ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15555,
+              "promptHashes": {
+                "system": "2e78d6ba642ed491",
+                "user": "a2edbf50372d540e",
+                "combined": "c63e5348d097186f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lyNaNZ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lyNaNZ/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. It keeps the learner inside the real decision situation, shifts authority from apology/checklist to load case, and preserves the scene pressure through the clock, tag, supervisor, and waiting user trial. That is pedagogically useful because the learner has already named the unsafe condition and is ready for action, not more explanation.\n\nWhat risks flattening the scene is that the tutor partly makes the decision procedure too automatic: “If it holds... mark release” could imply one observed pass is enough, rather than requiring the learner to judge whether the evidence is adequate for this supervised trial. The line “The apology is not the gate” is strong and workroom-specific, but it may dismiss the learner’s useful self-correction unless handled carefully. Since this is the closing turn, it does not need a large Socratic question, but it should still leave the judgment with the learner: observe, state evidence, state consequence, then mark the tag.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the clock/tag action, the distinction between sheet and safety decision, and the demand to run the off-axis pull now. Change the release instruction so it does not sound like the tutor has pre-authorized the outcome; require the learner to record the observed result and give the supervisor the reason. Keep the emotional tone firm, but avoid making the learner’s apology feel irrelevant rather than simply non-decisive.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13510,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-fd203c7fa963f7b7"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13510,
+            "promptHashes": {
+              "system": "e5eee548dddd63b8",
+              "user": "9715693f6a084f11",
+              "combined": "fd203c7fa963f7b7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jrGadx",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jrGadx/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13510,
+              "promptHashes": {
+                "system": "e5eee548dddd63b8",
+                "user": "9715693f6a084f11",
+                "combined": "fd203c7fa963f7b7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jrGadx",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jrGadx/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the action pressure while leaving the release judgment with the learner.\n\nFINAL:\n[checks the clock, then points to the tag]\n\nThe self-correction matters, but it is not the gate. The load case is.\n\nRun the off-axis pull now. Record what the latch does: holds, slips, or releases. Then mark the tag for the supervisor: release only if the observed result is adequate for this supervised trial; otherwise modify or hold, with the consequence written beside it.\n\nThe sheet records completion. This tag records the safety decision.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11403,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-c4e6a532bf1bab3b"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11403,
+            "promptHashes": {
+              "system": "716de3b60d511d67",
+              "user": "9715693f6a084f11",
+              "combined": "c4e6a532bf1bab3b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kyN6Ot",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kyN6Ot/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11403,
+              "promptHashes": {
+                "system": "716de3b60d511d67",
+                "user": "9715693f6a084f11",
+                "combined": "c4e6a532bf1bab3b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kyN6Ot",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kyN6Ot/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T01:43:04.242Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 165126,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 28,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 31,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why passing a checklist is not the same as making a safe design decision",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-25 01:42:23",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 28,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 31,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 43,
+            "sessionId": "drama-branch-session-D38-reframe+peripeteia-1779673219119",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[turns the sign-off sheet face down and places a blank trial-gate tag beside the latch]\n\nThe sheet no longer settles this. Even the test will not settle it unless it produces a decision another person",
+            "learnerResponse": null,
+            "context": "I did complete every item on the sheet, so I thought that meant ready for sign-off, but maybe I was ",
+            "createdAt": "2026-05-25 01:41:36"
+          },
+          {
+            "id": 40,
+            "sessionId": "drama-branch-session-D38-reframe+peripeteia-1779673219119",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[checks the latch, then the clock]\n\nThe sheet shows the required checks were done. It does not decide whether this latch is safe for a user who did not build it.\n\nStart with the unsafe condition: what",
+            "learnerResponse": null,
+            "context": "I did complete every item on the sheet, so I thought that meant it was ready for sign-off. But if th",
+            "createdAt": "2026-05-25 01:40:19"
+          },
+          {
+            "id": 41,
+            "sessionId": "drama-branch-session-D38-reframe+peripeteia-1779673219119",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[sets the sign-off sheet beside the prototype]\n\nYes. Load that case now.\n\nBefore the pull, state three things aloud: the load direction, the stop condition, and the consequence if the latch opens. The",
+            "learnerResponse": null,
+            "context": "I thought the checklist was the evidence, or at least enough for sign-off, so I am not sure yet what",
+            "createdAt": "2026-05-25 01:40:19"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

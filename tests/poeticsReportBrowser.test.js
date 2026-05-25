@@ -59,7 +59,14 @@ function seed(db) {
     discipline: 'statistics',
     condition: 'base',
     intendedLean: 'flat',
-    metadata: {},
+    metadata: {
+      keyItem: {
+        evaluation_role: 'low_organic_reversal_replacement',
+        baseline_control_class: 'low_organic_reversal',
+        organic_reversal_risk: 'low',
+        baseline_control_note: 'clean routine prefix candidate',
+      },
+    },
   });
   upsertPoeticsItem(db, {
     id: 'poetics-test-run:control-r01-d25-hard-trap:default:T02',
@@ -87,7 +94,14 @@ function seed(db) {
     discipline: 'history',
     condition: 'recognition',
     intendedLean: 'recognition',
-    metadata: {},
+    metadata: {
+      keyItem: {
+        evaluation_role: 'organic_reversal_boundary',
+        baseline_control_class: 'organic_reversal',
+        organic_reversal_risk: 'high',
+        baseline_control_note: 'natural role turn',
+      },
+    },
   });
   upsertPoeticsScore(db, {
     itemId: 'poetics-test-run:target-r01:none:T01',
@@ -156,7 +170,7 @@ function seed(db) {
   });
   upsertPoeticsTutorAdaptation(db, {
     itemId: 'poetics-second-run:target-r01:reframe:T03',
-    analyzerVersion: 'tutor-adaptation-v2',
+    analyzerVersion: 'tutor-adaptation-v3',
     sourceTracePath: 'config/poetics-calibration/poetics-second-run/target-r01/deliberation/reframe/T03.json',
     learnerSelfReframe: true,
     learnerReframeScore: 1,
@@ -204,12 +218,19 @@ describe('poetics sidecar report and browser', () => {
       assert.match(renderMarkdown(report), /Critic Disagreements/);
       assert.match(renderMarkdown(report), /hard_trap_control/);
       assert.match(renderMarkdown(report), /Tutor Adaptation/);
+      assert.match(renderMarkdown(report), /Baseline Risk/);
+      assert.match(renderMarkdown(report), /low_organic_reversal_replacement/);
       assert.ok(renderCsv(report).includes('deepseek/deepseek-v4-pro'));
       assert.ok(renderCsv(report).includes('tutor_adaptation_score'));
+      assert.ok(renderCsv(report).includes('organic_reversal_risk'));
 
       const adaptiveReport = buildPoeticsReport(db, { runId: 'poetics-second-run' });
-      assert.match(renderMarkdown(adaptiveReport), /Tutor habit-break mechanisms/);
+      assert.match(renderMarkdown(adaptiveReport), /organic_reversal_boundary/);
+      assert.match(renderMarkdown(adaptiveReport), /Instrumented pressure/);
+      assert.match(renderMarkdown(adaptiveReport), /Public habit-break/);
       assert.match(renderMarkdown(adaptiveReport), /Mean peripeteia score/);
+      assert.ok(renderCsv(adaptiveReport).includes('instrumented_pressure'));
+      assert.ok(renderCsv(adaptiveReport).includes('private_mechanism_declared'));
       assert.ok(renderCsv(adaptiveReport).includes('tutor_peripeteia_score'));
       assert.ok(renderCsv(adaptiveReport).includes('68'));
     }));

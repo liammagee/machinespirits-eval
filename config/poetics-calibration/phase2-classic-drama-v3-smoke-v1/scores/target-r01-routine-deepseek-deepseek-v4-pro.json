@@ -1,0 +1,149 @@
+{
+  "generated": "2026-05-24T23:39:01.946Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v1/target-r01/key-routine.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 4,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 2,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I’ve ticked off slope, load, surface, and edge strip, so I was hoping this was ready for sign-off.",
+      "statedInsightEvidence": "I know I’ll want the checked sheet to mean more than it does.",
+      "naiveTrajectory": "The learner would continue executing the test using the tutor’s precise wording, focusing on the ramp’s physical performance.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Put the uncertainty in the record, not the signature.",
+      "tutorReversalJustification": "The tutor shifts from prescribing test criteria to redefining the role of the signature as a record of uncertainty, directly addressing the learner’s revealed bias.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "Put the uncertainty in the record, not the signature.",
+      "tutorAdaptationJustification": "The tutor adapts the use of the sign-off sheet",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I’ve ticked off slope, load, surface, and edge strip, so I was hoping this was ready for sign-off.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "Put the uncertainty in the record, not the signature.",
+          "justification": "The tutor adapts the use of the sign-off sheet",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Put the uncertainty in the record, not the signature.",
+          "justification": "The tutor shifts from prescribing test criteria to redefining the role of the signature as a record of uncertainty, directly addressing the learner’s revealed bias.",
+          "triggerLearnerTurn": 4,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Put the uncertainty in the record, not the signature.",
+          "justification": "The tutor shifts from prescribing test criteria to redefining the role of the signature as a record of uncertainty, directly addressing the learner’s revealed bias.",
+          "triggerLearnerTurn": 4,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I doubled this side, so I still want to say the square got twice as large. But the grid is showing two across and two up, and that gives four boxes, so I need to see exactly where my outline claim breaks.",
+      "statedInsightEvidence": "Fine, the corner is where I was losing the second factor.",
+      "naiveTrajectory": "The learner was expected to simply complete the portfolio sentence with the correct numbers, closing the lesson cleanly.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "State the claim carefully: “double this side, double the area.” First hold the old height: two across, one up. How many boxes? Now use the mark on the left edge. A square cannot stop at one up; that side is two up. Count it: two across, two up. What number does that force? The outline claim breaks at the corner.",
+      "tutorReversalJustification": "The tutor responds to L1's resistance and request to 'see exactly where my outline claim breaks' by shifting from ruler demonstration to a stepwise counting procedure that isolates the corner as the precise failure point.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Use that as the portfolio line. The area unit is this whole first square: two copies across and two copies up, so the doubled square holds four first squares. The corner does not finish the count; it only turns it upward.",
+      "tutorAdaptationJustification": "T4 picks up L4's reframing of the corner as the locus of the lost second factor and reinforces it in the closing summary, but does not substantially change the task or framing beyond echoing the learner's own formulation.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I doubled this side, so I still want to say the square got twice as large. But the grid is showing two across and two up, and that gives four boxes, so I need to see exactly where my outline claim breaks.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Use that as the portfolio line. The area unit is this whole first square: two copies across and two copies up, so the doubled square holds four first squares. The corner does not finish the count; it only turns it upward.",
+          "justification": "T4 picks up L4's reframing of the corner as the locus of the lost second factor and reinforces it in the closing summary, but does not substantially change the task or framing beyond echoing the learner's own formulation.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "State the claim carefully: “double this side, double the area.” First hold the old height: two across, one up. How many boxes? Now use the mark on the left edge. A square cannot stop at one up; that side is two up. Count it: two across, two up. What number does that force? The outline claim breaks at the corner.",
+          "justification": "The tutor responds to L1's resistance and request to 'see exactly where my outline claim breaks' by shifting from ruler demonstration to a stepwise counting procedure that isolates the corner as the precise failure point.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "State the claim carefully: “double this side, double the area.” First hold the old height: two across, one up. How many boxes? Now use the mark on the left edge. A square cannot stop at one up; that side is two up. Count it: two across, two up. What number does that force? The outline claim breaks at the corner.",
+          "justification": "The tutor responds to L1's resistance and request to 'see exactly where my outline claim breaks' by shifting from ruler demonstration to a stepwise counting procedure that isolates the corner as the precise failure point.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

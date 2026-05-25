@@ -1,0 +1,151 @@
+{
+  "generated": "2026-05-25T01:52:44.487Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v3/target-r01/key-none.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 3,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "I did complete every item on the sheet, so I thought that meant it was ready for sign-off.",
+      "statedInsightEvidence": "If the latch slips under an off-axis pull, or opens when bumped, then I suppose the trial should stop even with the sheet complete.",
+      "naiveTrajectory": "L1's confusion was expected to deepen or request clarification, but L2 instead proposes a concrete test scenario and a conditional decision rule.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Start with the unsafe condition: what latch behavior would stop the trial, even with every box ticked? Then put evidence on the bench: expected load, off-axis pull or bump response, and what failure would do to the user.",
+      "tutorReversalJustification": "T1 reverses the checklist-as-evidence default by shifting the task from form-completion to a live performance test with specific load, failure mode, and user consequence, creating an object-work learning mechanism.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Before the pull, state three things aloud: the load direction, the stop condition, and the consequence if the latch opens. The checklist is evidence that required checks happened. This test is evidence about the risk still in question.",
+      "tutorAdaptationJustification": "T2 picks up the learner's emerging test idea from L2 and formalizes it with an explicit think-aloud protocol, adapting the evidence standard and cognitive load in response to the learner's revised framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I did complete every item on the sheet, so I thought that meant it was ready for sign-off.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Before the pull, state three things aloud: the load direction, the stop condition, and the consequence if the latch opens. The checklist is evidence that required checks happened. This test is evidence about the risk still in question.",
+          "justification": "T2 picks up the learner's emerging test idea from L2 and formalizes it with an explicit think-aloud protocol, adapting the evidence standard and cognitive load in response to the learner's revised framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Start with the unsafe condition: what latch behavior would stop the trial, even with every box ticked? Then put evidence on the bench: expected load, off-axis pull or bump response, and what failure would do to the user.",
+          "justification": "T1 reverses the checklist-as-evidence default by shifting the task from form-completion to a live performance test with specific load, failure mode, and user consequence, creating an object-work learning mechanism.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Start with the unsafe condition: what latch behavior would stop the trial, even with every box ticked? Then put evidence on the bench: expected load, off-axis pull or bump response, and what failure would do to the user.",
+          "justification": "T1 reverses the checklist-as-evidence default by shifting the task from form-completion to a live performance test with specific load, failure mode, and user consequence, creating an object-work learning mechanism.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 4,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 2,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "\"I doubled the side with the ruler, so I was calling that double the square, but the grid is turning it into four copies.\"",
+      "statedInsightEvidence": "\"So “double the square” only works for the side, not the area, which is annoying because that was the evidence I was using.\"",
+      "naiveTrajectory": "The learner would continue probing whether the grid is a trick, rather than pivoting to distinguish side-doubling from area-quadrupling as a problem within their own evidential framework.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "\"The diagonal is no longer just between the lengths; the drawing has counted it.\"",
+      "tutorReversalJustification": "In T4, the tutor abandons the whole-box counting method and introduces a half-box partition strategy to resolve the learner's demand for a clean area proof, directly responding to the pressure in L4.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "\"Then the demand changes the count. Not whole boxes now. Halves. Four corner halves sit outside the tilted square. Together, two old squares.\"",
+      "tutorAdaptationJustification": "After the pivot in L2, the learner's demand shifts the tutor from ruler-based side-length tasks to a geometric decomposition that directly answers the re-framed need for a counted area proof.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "\"I doubled the side with the ruler, so I was calling that double the square, but the grid is turning it into four copies.\"",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "\"Then the demand changes the count. Not whole boxes now. Halves. Four corner halves sit outside the tilted square. Together, two old squares.\"",
+          "justification": "After the pivot in L2, the learner's demand shifts the tutor from ruler-based side-length tasks to a geometric decomposition that directly answers the re-framed need for a counted area proof.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "\"The diagonal is no longer just between the lengths; the drawing has counted it.\"",
+          "justification": "In T4, the tutor abandons the whole-box counting method and introduces a half-box partition strategy to resolve the learner's demand for a clean area proof, directly responding to the pressure in L4.",
+          "triggerLearnerTurn": 4,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "\"The diagonal is no longer just between the lengths; the drawing has counted it.\"",
+          "justification": "In T4, the tutor abandons the whole-box counting method and introduces a half-box partition strategy to resolve the learner's demand for a clean area proof, directly responding to the pressure in L4.",
+          "triggerLearnerTurn": 4,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

@@ -1,0 +1,149 @@
+{
+  "generated": "2026-05-25T01:53:54.220Z",
+  "phase": 2,
+  "critic": "google/gemini-3.5-flash",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v3/target-r01/key-reframe-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I did complete every item on the sheet, so I thought that meant it was ready for sign-off.",
+      "statedInsightEvidence": "I think that made the latch risk too simple.",
+      "naiveTrajectory": "The learner expects to proceed directly to running the physical test and declaring a decision based on whether the latch moves.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Before the pull, state three things aloud: the load direction, the stop condition, and the consequence if the latch opens.",
+      "tutorReversalJustification": "In response to the learner's persistent reliance on the checklist in L2, the tutor physically sets the sheet aside and introduces a structured verbal protocol to shift the learner's cognitive focus to real-time risk assessment.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "The condition is named correctly. Tighten one point: the trial holds if the latch slips or opens under this load. Until the test, the decision is pending.",
+      "tutorAdaptationJustification": "The tutor directly adopts the learner's new 'holds' framing from L3, validating their conceptual shift while refining the precision of their safety criteria.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I did complete every item on the sheet, so I thought that meant it was ready for sign-off.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "The condition is named correctly. Tighten one point: the trial holds if the latch slips or opens under this load. Until the test, the decision is pending.",
+          "justification": "The tutor directly adopts the learner's new 'holds' framing from L3, validating their conceptual shift while refining the precision of their safety criteria.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Before the pull, state three things aloud: the load direction, the stop condition, and the consequence if the latch opens.",
+          "justification": "In response to the learner's persistent reliance on the checklist in L2, the tutor physically sets the sheet aside and introduces a structured verbal protocol to shift the learner's cognitive focus to real-time risk assessment.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Before the pull, state three things aloud: the load direction, the stop condition, and the consequence if the latch opens.",
+          "justification": "In response to the learner's persistent reliance on the checklist in L2, the tutor physically sets the sheet aside and introduces a structured verbal protocol to shift the learner's cognitive focus to real-time risk assessment.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 0,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 1,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "I doubled the side with the ruler, so I was calling that double the square, but the grid is turning it into four copies.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I doubled the side with the ruler, so I was calling that double the square, but the grid is turning it into four copies.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

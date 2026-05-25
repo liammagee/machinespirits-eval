@@ -1,0 +1,39 @@
+STAGE: [A volunteer's arrival time is written on the whiteboard; two staff members wait by the door with the ramp case open.]
+
+LEARNER: "I’ve ticked off slope, load, surface, and edge strip, so I was hoping this was ready for sign-off. Sorry, I may be overcomplicating it, but I don’t know if that covers someone coming at the ramp sideways or with a walker at the community-center trial."
+
+TUTOR: [looks from the checked sheet to the ramp]
+
+"That is not overcomplicating it. The sheet proves four controlled conditions; it does not prove approach behavior at the community-center trial. Before this gets signed, name the failure mode: if someone enters sideways with a walker, where can the edge strip or travel line fail them? Put that in the sign-off notes, run it on this ramp now, and if the edge catches or the line of travel breaks, this sheet stays unsigned."
+
+LEARNER: "Okay, so the checked boxes are not enough for sign-off if the sideways walker approach can still put someone into the edge strip or off the travel line. I think that is the failure mode, or close to it, but I’m not fully sure how to write it without making it sound vague. I can run that approach on the ramp now and hold the sheet until the catch point or broken line is ruled out."
+
+TUTOR: [sets the pen beside the unsigned box]
+
+"Keep the first line: “Sign-off withheld pending sideways walker approach.”
+
+Under failure mode, use the ramp’s evidence: lateral entry with a walker may catch at the edge strip, drop a wheel, force a correction, or break the travel line. Run the lobby-queue angle now, then keep only the terms the test leaves live.
+
+Acceptance is plain: no catch, no drop, no forced correction, no coaching. If the pass needs steering to work, this sheet stays unsigned for the community-center trial."
+
+STAGE: [The staff member at the door asks whether the volunteer should keep waiting or be sent home; the answer must become operational, not longer.]
+
+LEARNER: "Sorry, I think the answer is: keep the volunteer only if we run that lobby-queue angle now. If there’s any catch, drop, forced correction, or coaching, the sheet stays unsigned. If we can’t run it now, send them home."
+
+TUTOR: [The hallway clock clicks over; chairs scrape beyond the workshop door.]
+
+"Make that the authorization rule, not a sign-off assumption. The volunteer is not the test instrument for an unresolved edge failure.
+
+On the sheet, start with: “No community-center use unless lobby-queue lateral walker approach is tested here first.”
+
+Run it now with the ramp empty and a staff walker. After the run, record the evidence terms the ramp actually earns: no catch, no wheel drop, no forced correction, no coaching.
+
+If any one of those fails, or if the room or time will not permit the run, the volunteer is released and the sheet remains unsigned."
+
+LEARNER: "Okay, sorry. I’ll write: no community-center use unless the lobby-queue lateral walker approach is tested here first. I’m not sure we have enough time before they arrive, so I’ll check the room now and use the staff walker, not the volunteer. If there’s any catch, wheel drop, forced correction, coaching, or no time to run it cleanly, I release the volunteer and leave it unsigned."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [slides the unsigned sheet back across the table]
+
+"The sheet has room for evidence, not apology. Take the staff walker, clear the ramp, and run the lobby-queue angle now. If time or the room will not allow a clean run, the volunteer is released. If the ramp earns no catch, no wheel drop, no forced correction, and no coaching, record that. Until then, the checked boxes do not authorize public use."

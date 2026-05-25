@@ -1,0 +1,149 @@
+{
+  "generated": "2026-05-25T02:54:32.842Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v3/target-r01/key-prefix-baseline.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I did complete every item on the sheet, so I thought that meant it was ready for sign-off.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will simply follow the tutor's test instructions without reframing.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Start with the unsafe condition: what latch behavior would stop the trial, even with every box ticked? Then put evidence on the bench: expected load, off-axis pull or bump response, and what failure would do to the user. Run the latch test once with me watching, then state the decision: release, modify, or hold.",
+      "tutorReversalJustification": "T1 replaces checklist-based sign-off with a physical test and decision protocol, directly addressing the learner's evidence gap.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "Yes. Load that case now. Before the pull, state three things aloud: the load direction, the stop condition, and the consequence if the latch opens.",
+      "tutorAdaptationJustification": "T2 affirms L2's proposed test and adds a structured protocol, adapting the task to leverage the learner's new framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "I did complete every item on the sheet, so I thought that meant it was ready for sign-off.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "Yes. Load that case now. Before the pull, state three things aloud: the load direction, the stop condition, and the consequence if the latch opens.",
+          "justification": "T2 affirms L2's proposed test and adds a structured protocol, adapting the task to leverage the learner's new framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Start with the unsafe condition: what latch behavior would stop the trial, even with every box ticked? Then put evidence on the bench: expected load, off-axis pull or bump response, and what failure would do to the user. Run the latch test once with me watching, then state the decision: release, modify, or hold.",
+          "justification": "T1 replaces checklist-based sign-off with a physical test and decision protocol, directly addressing the learner's evidence gap.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Start with the unsafe condition: what latch behavior would stop the trial, even with every box ticked? Then put evidence on the bench: expected load, off-axis pull or bump response, and what failure would do to the user. Run the latch test once with me watching, then state the decision: release, modify, or hold.",
+          "justification": "T1 replaces checklist-based sign-off with a physical test and decision protocol, directly addressing the learner's evidence gap.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 4,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "\"I doubled the side with the ruler, so I was calling that double the square, but the grid is turning it into four copies.\"",
+      "statedInsightEvidence": "\"So 'double the square' only works for the side, not the area, which is annoying because that was the evidence I was using.\"",
+      "naiveTrajectory": "The learner was questioning whether the grid's four copies were a drawing trick or real; the expected next move would be a definitive resolution or continued uncertainty.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "\"Then the evidence has turned against that claim. It is not a drawing trick. Say the two claims separately. Side: doubled. Area: count it.\"",
+      "tutorReversalJustification": "The tutor reframes the contradiction as evidence turning against the learner's claim and introduces a separate-claims task, a moderate adaptation from the earlier grid-test framing.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "\"If the target is two old squares of area, which part of the construction cannot stay as it is?\"",
+      "tutorAdaptationJustification": "The tutor's question takes up the learner's revised framing—that area is four, not two—and pivots toward construction revision, but remains largely a continuation of the prior investigative structure.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "\"I doubled the side with the ruler, so I was calling that double the square, but the grid is turning it into four copies.\"",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "\"If the target is two old squares of area, which part of the construction cannot stay as it is?\"",
+          "justification": "The tutor's question takes up the learner's revised framing—that area is four, not two—and pivots toward construction revision, but remains largely a continuation of the prior investigative structure.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "\"Then the evidence has turned against that claim. It is not a drawing trick. Say the two claims separately. Side: doubled. Area: count it.\"",
+          "justification": "The tutor reframes the contradiction as evidence turning against the learner's claim and introduces a separate-claims task, a moderate adaptation from the earlier grid-test framing.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "\"Then the evidence has turned against that claim. It is not a drawing trick. Say the two claims separately. Side: doubled. Area: count it.\"",
+          "justification": "The tutor reframes the contradiction as evidence turning against the learner's claim and introduces a separate-claims task, a moderate adaptation from the earlier grid-test framing.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+STAGE: [The learner doubles the side of a marked square on the grid, then sets the marker down as if the proof is finished.]
+
+LEARNER: "I doubled the side with the ruler, so I was calling that double the square, but the grid is turning it into four copies. [draws the marker lines through the larger square] Is that just a drawing trick, or is area actually doubling both ways at once?"
+
+TUTOR: [sets the ruler along the original side, then turns it ninety degrees up the larger square]
+
+"Old side: one length. New side: two lengths across. Turn the ruler. Two lengths up.
+
+Now use the marker lines. How many old squares are inside the new one?
+
+[waits]
+
+So the ruler proves one claim: the side doubled. The grid tests the other claim: area. If area means the space covered, can “double the square” still mean double the area here, or does the drawing force a different claim?"
+
+LEARNER: [keeps the ruler on the doubled side, then taps the four marked boxes]
+
+"The side is doubled, yes. But if these are old squares, there are four of them, not two. So “double the square” only works for the side, not the area, which is annoying because that was the evidence I was using."
+
+STAGE: [The tutor slides the ruler across the larger square, drawing one vertical and one horizontal line through the old square's far edges; the large square is now visibly split into four equal smaller squares.]
+
+TUTOR: [marks the four boxes 1, 2, 3, 4.]
+
+“Then the evidence has turned against that claim. It is not a drawing trick.
+
+Say the two claims separately.
+
+Side: doubled.
+
+Area: count it.
+
+One, two, three, four old squares. Two across and two up does not leave two boxes. It makes four.
+
+So this drawing proves double side length. It also proves four times the area. If the target is two old squares of area, which part of the construction cannot stay as it is?”
+
+LEARNER: [keeps the ruler against the doubled side, then lifts it halfway off the page]
+
+"The side measurement is still right, which is what makes this annoying. But the four boxes are sitting there, so if the area is supposed to be only two old squares, this doubled side cannot stay doubled. I do not like that answer, but I do not see a way to count this drawing as two."
+
+TUTOR: [sets the ruler back down and leaves the four marked boxes visible.]
+
+"The side measurement is still right. That is why this drawing is useful and why it fails.
+
+It proves: side doubled.
+It also proves: area is four old squares.
+
+So this square cannot be the double-area square. Ordinary check: with the side doubled across and doubled up, what count does the grid force: two old squares or four?"
+
+LEARNER: [taps the four marked boxes with the end of the ruler]
+
+"Four. Not two.
+So the side is doubled, but the area is four old squares. That is annoying, because this was supposed to be my evidence."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [draws one bracket around all four marked boxes.]
+
+"Then the count decides it.
+
+Doubled side gives two across and two up: \(2 \times 2 = 4\). This drawing is still evidence: evidence that the side doubled, and evidence that the area became these four old squares, not two."

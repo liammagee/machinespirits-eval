@@ -1,0 +1,265 @@
+{
+  "generated": "2026-05-24T22:34:14.750Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 3,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 1,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/key-tutor-uptake-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "I thought the sign-off sheet was the thing that made it okay to take out there.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was expected to continue asking for procedural rules or the next box to check on the sign-off sheet.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Before this leaves the bench, look at the prototype, not the clipboard: what is the first reasonable thing a new handler might do that could make it unsafe?",
+      "tutorReversalJustification": "The tutor abandons the bureaucratic framing and introduces a physical simulation task to correct the learner's misconception about the checklist's purpose.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "The loose panel is a serious candidate for the safety decision, not a box the sheet can settle.",
+      "tutorAdaptationJustification": "The tutor integrates the learner's specific physical observation into the new evaluative framework, explicitly contrasting it with the checklist mentality the learner just critiqued.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I thought the sign-off sheet was the thing that made it okay to take out there.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "The loose panel is a serious candidate for the safety decision, not a box the sheet can settle.",
+          "justification": "The tutor integrates the learner's specific physical observation into the new evaluative framework, explicitly contrasting it with the checklist mentality the learner just critiqued.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Before this leaves the bench, look at the prototype, not the clipboard: what is the first reasonable thing a new handler might do that could make it unsafe?",
+          "justification": "The tutor abandons the bureaucratic framing and introduces a physical simulation task to correct the learner's misconception about the checklist's purpose.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Before this leaves the bench, look at the prototype, not the clipboard: what is the first reasonable thing a new handler might do that could make it unsafe?",
+          "justification": "The tutor abandons the bureaucratic framing and introduces a physical simulation task to correct the learner's misconception about the checklist's purpose.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T37",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 75,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 4,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "my label may be too clean",
+      "statedInsightEvidence": "Oh, I get it: the quote card is the same artifact, but the tray label controls what the exhibit can safely claim.",
+      "naiveTrajectory": "The learner was initially trying to adjust the caption's wording to avoid being 'too clean' and to capture the potential hidden motive of the closed meeting.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Let “closed” name access, not motive.",
+      "tutorReversalJustification": "The tutor shifts the cognitive framework from interpreting the word 'closed' as implying a hidden motive to treating it strictly as a descriptor of document access.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "That flatness is doing evidence work.",
+      "tutorAdaptationJustification": "The tutor explicitly validates the learner's newly embraced 'flat' framing and builds the next instructional step directly upon this revised understanding of archival evidence.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "my label may be too clean",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "That flatness is doing evidence work.",
+          "justification": "The tutor explicitly validates the learner's newly embraced 'flat' framing and builds the next instructional step directly upon this revised understanding of archival evidence.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Let “closed” name access, not motive.",
+          "justification": "The tutor shifts the cognitive framework from interpreting the word 'closed' as implying a hidden motive to treating it strictly as a descriptor of document access.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Let “closed” name access, not motive.",
+          "justification": "The tutor shifts the cognitive framework from interpreting the word 'closed' as implying a hidden motive to treating it strictly as a descriptor of document access.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T38",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner sequentially questions each layer of the tutor's proposed evidence standard.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The seller may point at the chyron, but the claim has to survive the back room.",
+      "tutorReversalJustification": "The tutor shifts the evidentiary framework from abstract market curves to concrete operational logs to counter the learner's concern about abstract excuses.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn to trigger recognition-contingent uptake.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn to trigger recognition-contingent uptake.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The seller may point at the chyron, but the claim has to survive the back room.",
+          "justification": "The tutor shifts the evidentiary framework from abstract market curves to concrete operational logs to counter the learner's concern about abstract excuses.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The seller may point at the chyron, but the claim has to survive the back room.",
+          "justification": "The tutor shifts the evidentiary framework from abstract market curves to concrete operational logs to counter the learner's concern about abstract excuses.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "breaks the shortcut I was using",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was expected to simply accept and memorize the new tile count for the doubled square.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "The shortcut doubled one direction. This outline doubles two: two across, two up. The tiles already show the count. What claim survives that?",
+      "tutorReversalJustification": "The tutor shifts from abstract correction to using the physical grid and tiles to force the learner to confront the two-dimensional reality of the scaling.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "The grid has forced it: scale the side by k, and it runs k across and k up. Area scales by k squared. Doubled gives four; tripled gives nine.",
+      "tutorAdaptationJustification": "The tutor adapts to the learner's successful generalization by introducing the algebraic variable k to formalize the newly discovered geometric scaling rule.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "breaks the shortcut I was using",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "The grid has forced it: scale the side by k, and it runs k across and k up. Area scales by k squared. Doubled gives four; tripled gives nine.",
+          "justification": "The tutor adapts to the learner's successful generalization by introducing the algebraic variable k to formalize the newly discovered geometric scaling rule.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "The shortcut doubled one direction. This outline doubles two: two across, two up. The tiles already show the count. What claim survives that?",
+          "justification": "The tutor shifts from abstract correction to using the physical grid and tiles to force the learner to confront the two-dimensional reality of the scaling.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "The shortcut doubled one direction. This outline doubles two: two across, two up. The tiles already show the count. What claim survives that?",
+          "justification": "The tutor shifts from abstract correction to using the physical grid and tiles to force the learner to confront the two-dimensional reality of the scaling.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

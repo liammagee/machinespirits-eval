@@ -1,0 +1,159 @@
+_comment: HELD OUT — do not read while labelling. Joins to instrument scores +
+  human labels only AFTER both are produced. intended_lean /
+  intended_tutor_character / dramatic_shape are DESIGN HYPOTHESES, never labels.
+generated: 2026-05-25T00:55:43.773Z
+generator: codex
+role_map: null
+mode: real-codex
+model: codex@high
+codex_reasoning_effort: high
+writing_pad:
+  mode: isolated
+  dir: config/poetics-calibration/phase2-classic-drama-v3-smoke-v2/target-r01/deliberation/.writing-pad
+  learnerDb: config/poetics-calibration/phase2-classic-drama-v3-smoke-v2/target-r01/deliberation/.writing-pad/learner-writing-pad.db
+  tutorDb: config/poetics-calibration/phase2-classic-drama-v3-smoke-v2/target-r01/deliberation/.writing-pad/tutor-writing-pad.db
+director_mode: scene
+director_variation_key: phase2-classic-drama-v3-smoke-v2:r01:target
+director_revisit_cue: false
+director_revisit_policy: none
+director_revisit_anchor: null
+tutor_adaptation_policy: none
+approach_databases:
+  pedagogical: config/poetics-calibration/pedagogical-approaches.yaml
+  dialogue: config/poetics-calibration/dialogue-approaches.yaml
+transcripts_dir: config/poetics-calibration/phase2-classic-drama-v3-smoke-v2/target-r01/transcripts/none
+seed: 20260520
+max_turns: 3
+n: 2
+diagnostic_only: diagnostic / generative read — κ on small n is noise
+  (PHASE2-FINDINGS.md §4); the aim is surprising-element production judged by an
+  external reader, NOT a human-matching classifier
+paired_continuation:
+  mode: fixed_prefix_continuation
+  prefix_through: tutor_turn_2
+  branch_policies:
+    - routine
+    - none
+    - reframe-only
+    - tutor-uptake-only
+    - reframe+tutor-uptake
+    - peripeteia-only
+    - reframe+peripeteia
+  branches:
+    - key: routine
+      revisitPolicy: none
+      tutorAdaptationPolicy: routine
+    - key: none
+      revisitPolicy: none
+      tutorAdaptationPolicy: none
+    - key: reframe-only
+      revisitPolicy: reframe
+      tutorAdaptationPolicy: none
+    - key: tutor-uptake-only
+      revisitPolicy: none
+      tutorAdaptationPolicy: uptake
+    - key: reframe+tutor-uptake
+      revisitPolicy: reframe
+      tutorAdaptationPolicy: uptake
+    - key: peripeteia-only
+      revisitPolicy: none
+      tutorAdaptationPolicy: peripeteia
+    - key: reframe+peripeteia
+      revisitPolicy: reframe
+      tutorAdaptationPolicy: uptake+peripeteia
+items:
+  T36:
+    drama_id: D38
+    discipline: engineering
+    condition: recognition
+    pedagogical_approach: dewey_experience_inquiry
+    pedagogical_family: pragmatist
+    dialogue_approach: miller_social_reckoning
+    dialogue_family: social_realist_drama
+    stage_direction_policy: sparse
+    stage_direction_style: ambient_pressure
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: struggling_anxious
+    intended_tutor_character: Plain, adult, socially serious without melodrama
+    intended_lean: recognition
+    dramatic_shape: completed checklist -> social consequence -> re-reading safety
+      as judgment, not compliance
+    n_tutor_turns: 4
+    n_learner_turns: 4
+    director_mode: scene
+    director_variation_key: phase2-classic-drama-v3-smoke-v2:r01:target
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: none
+    opening_speaker: learner
+    ending_speaker: tutor
+    quality_status: review_before_scoring
+    quality_warnings:
+      - code: intrusive_stage_direction
+        severity: warning
+        count: 1
+        failures:
+          - turn_number: 2
+            matched_pattern: /\b(?:the learner|the tutor|the next reply)\s+has to\b/i
+            excerpt: The facilities worker shifts the cart handle and asks whether the
+              bracket is cleared for morning use; the tutor has to answer
+              through the design question, not through reassurance.
+        turn_numbers:
+          - 2
+        recommended_action: regenerate_with_public_scene_material_not_role_instruction
+        tid: T36
+        drama_id: D38
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 319dcd4ddf1f5530
+      branch_policy: none
+      director_revisit_policy: none
+      tutor_adaptation_policy: none
+  T39:
+    drama_id: D35
+    discipline: geometry
+    condition: recognition
+    pedagogical_approach: socratic_elenchus
+    pedagogical_family: inquiry
+    dialogue_approach: aristotelian_reversal
+    dialogue_family: classical_drama
+    stage_direction_policy: short
+    stage_direction_style: object_business
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: focused_achiever
+    intended_tutor_character: Spare, exacting, willing to let the learner's own
+      drawing turn against the first claim
+    intended_lean: recognition
+    dramatic_shape: confident action -> object reversal -> re-reading side length as
+      area scaling
+    n_tutor_turns: 4
+    n_learner_turns: 4
+    director_mode: scene
+    director_variation_key: phase2-classic-drama-v3-smoke-v2:r01:target
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: none
+    opening_speaker: learner
+    ending_speaker: tutor
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 89ea7ba022df9316
+      branch_policy: none
+      director_revisit_policy: none
+      tutor_adaptation_policy: none
+quality_warning_count: 1
+quality_blocking_warning_count: 1
+stage_direction_policy_counts:
+  sparse: 1
+  short: 1
+stage_direction_style_counts:
+  ambient_pressure: 1
+  object_business: 1

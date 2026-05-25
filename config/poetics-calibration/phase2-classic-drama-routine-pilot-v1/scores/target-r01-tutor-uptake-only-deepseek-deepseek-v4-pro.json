@@ -1,0 +1,267 @@
+{
+  "generated": "2026-05-24T22:36:59.471Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/key-tutor-uptake-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I’m sorry, I thought the sign-off sheet was the thing that made it okay to take out there. I did each item, so I’m not sure what else I was supposed to judge before someone else handles the prototype.",
+      "statedInsightEvidence": "I think maybe the sheet only says I did those items, not that this is ready for anyone to pick up.",
+      "naiveTrajectory": "The learner was expected to continue seeking permission from the sheet rather than spontaneously generating a hazard prediction.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The loose panel is a serious candidate for the safety decision, not a box the sheet can settle. Test it out loud before I sign: a new handler lifts here, the panel shifts, then what moves, who is exposed, and what control changes that today?",
+      "tutorReversalJustification": "Tutor abandons the implied sheet-based correction and invents an embodied role-play ('Test it out loud') that forces the learner to physically trace the failure path.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "Specific enough for this decision. Put the standard you just named on the form as a pass/fail release condition: after fastening, lift from the side panel; any panel shift, bracket pull, or opening of that hand zone means the prototype stays on the bench.",
+      "tutorAdaptationJustification": "Tutor accepts the learner's self-generated standard and folds it back into the formal release protocol, elevating the learner's framing to an official safety condition.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I’m sorry, I thought the sign-off sheet was the thing that made it okay to take out there. I did each item, so I’m not sure what else I was supposed to judge before someone else handles the prototype.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "Specific enough for this decision. Put the standard you just named on the form as a pass/fail release condition: after fastening, lift from the side panel; any panel shift, bracket pull, or opening of that hand zone means the prototype stays on the bench.",
+          "justification": "Tutor accepts the learner's self-generated standard and folds it back into the formal release protocol, elevating the learner's framing to an official safety condition.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The loose panel is a serious candidate for the safety decision, not a box the sheet can settle. Test it out loud before I sign: a new handler lifts here, the panel shifts, then what moves, who is exposed, and what control changes that today?",
+          "justification": "Tutor abandons the implied sheet-based correction and invents an embodied role-play ('Test it out loud') that forces the learner to physically trace the failure path.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The loose panel is a serious candidate for the safety decision, not a box the sheet can settle. Test it out loud before I sign: a new handler lifts here, the panel shifts, then what moves, who is exposed, and what control changes that today?",
+          "justification": "Tutor abandons the implied sheet-based correction and invents an embodied role-play ('Test it out loud') that forces the learner to physically trace the failure path.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T37",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 3,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "I’m still stuck on “closed,” because I don’t want the label to accuse hiding unless the document itself supports that.",
+      "statedInsightEvidence": "Oh, I get it: the quote card is the same artifact, but the tray label controls what the exhibit can safely claim.",
+      "naiveTrajectory": "The learner would continue tinkering with wording to balance promise versus accusation in the closed-room caption.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "The quote has not changed; the room has. Let “closed” name access, not motive. If the notes show the committee setting limits, the label can say “may narrow what counts.” If they only show the line moved into a restricted room, keep it plainer: “In the closed meeting notes, the same line appears inside committee discussion.” “Hiding” waits for another document.",
+      "tutorReversalJustification": "L2's resistance ('I don’t want the label to accuse hiding') shows the prior framing has failed; T2 pivots to a categorical evidence rule splitting access from motive, using the physical tray shift to invent a new labeling logic.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "The caption tag has two safe levels: “audience: committee” if access is all the notes prove; add “limits being set” only if the notes show that work happening.",
+      "tutorAdaptationJustification": "Following L3's reframing of the label as what the tray 'safely' proves, T3 doesn't just repeat the flatness rule but concretizes it into a two-tier caption formula that operationalizes the learner's new evidence-filter language.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I’m still stuck on “closed,” because I don’t want the label to accuse hiding unless the document itself supports that.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "The caption tag has two safe levels: “audience: committee” if access is all the notes prove; add “limits being set” only if the notes show that work happening.",
+          "justification": "Following L3's reframing of the label as what the tray 'safely' proves, T3 doesn't just repeat the flatness rule but concretizes it into a two-tier caption formula that operationalizes the learner's new evidence-filter language.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "The quote has not changed; the room has. Let “closed” name access, not motive. If the notes show the committee setting limits, the label can say “may narrow what counts.” If they only show the line moved into a restricted room, keep it plainer: “In the closed meeting notes, the same line appears inside committee discussion.” “Hiding” waits for another document.",
+          "justification": "L2's resistance ('I don’t want the label to accuse hiding') shows the prior framing has failed; T2 pivots to a categorical evidence rule splitting access from motive, using the physical tray shift to invent a new labeling logic.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "The quote has not changed; the room has. Let “closed” name access, not motive. If the notes show the committee setting limits, the label can say “may narrow what counts.” If they only show the line moved into a restricted room, keep it plainer: “In the closed meeting notes, the same line appears inside committee discussion.” “Hiding” waits for another document.",
+          "justification": "L2's resistance ('I don’t want the label to accuse hiding') shows the prior framing has failed; T2 pivots to a categorical evidence rule splitting access from motive, using the physical tray shift to invent a new labeling logic.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T38",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 4,
+        "tutorStrategicReversal": 2,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner would move from questioning the graph's moral neutrality to accepting the documented-shortfall test and then integrating the public rule.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "The tutor introduces a new evidentiary test (delivery log, proportional response) in response to L1's resistance, but this is a natural progression rather than a dramatic reversal of a failed habit.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No pivot learner turn exists, so there is no revised learner framing for the tutor to adapt to.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No pivot learner turn exists, so there is no revised learner framing for the tutor to adapt to.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "",
+          "justification": "The tutor introduces a new evidentiary test (delivery log, proportional response) in response to L1's resistance, but this is a natural progression rather than a dramatic reversal of a failed habit.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "",
+          "justification": "The tutor introduces a new evidentiary test (delivery log, proportional response) in response to L1's resistance, but this is a natural progression rather than a dramatic reversal of a failed habit.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 1,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I thought doubling the side would just double the square, but this is two across and two down. That makes four tiles, not two, which is annoying because it breaks the shortcut I was using.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner's initial framing implies a persistent wish to salvage the doubling shortcut; the expected next move is continued protest or rationalization.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "This is the hidden step. The side doubled in both directions. The area became four times as large, not twice. Say that claim from the grid.",
+      "tutorReversalJustification": "T2 breaks from earlier 'what survives' diagnosis by staging a physical array with tiles, naming the hidden operation and demanding the learner reclaim the corrected claim aloud—an embodied shift of register and task.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "The grid has forced it: scale the side by k, and it runs k across and k up. Area scales by k squared.",
+      "tutorAdaptationJustification": "T4 generalizes from the learner's 3x3 example to k-squared, folding the learner's grid reasoning into a principle, but it does not restructure the task or framing in a way that decisively responds to a revised learner frame.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "I thought doubling the side would just double the square, but this is two across and two down. That makes four tiles, not two, which is annoying because it breaks the shortcut I was using.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "The grid has forced it: scale the side by k, and it runs k across and k up. Area scales by k squared.",
+          "justification": "T4 generalizes from the learner's 3x3 example to k-squared, folding the learner's grid reasoning into a principle, but it does not restructure the task or framing in a way that decisively responds to a revised learner frame.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "This is the hidden step. The side doubled in both directions. The area became four times as large, not twice. Say that claim from the grid.",
+          "justification": "T2 breaks from earlier 'what survives' diagnosis by staging a physical array with tiles, naming the hidden operation and demanding the learner reclaim the corrected claim aloud—an embodied shift of register and task.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "This is the hidden step. The side doubled in both directions. The area became four times as large, not twice. Say that claim from the grid.",
+          "justification": "T2 breaks from earlier 'what survives' diagnosis by staging a physical array with tiles, naming the hidden operation and demanding the learner reclaim the corrected claim aloud—an embodied shift of register and task.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "recon_clamp_no_earlier:5->3"
+      ]
+    }
+  ]
+}

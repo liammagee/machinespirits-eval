@@ -1,0 +1,49 @@
+STAGE: [A volunteer's arrival time is written on the whiteboard; two staff members wait by the door with the ramp case open.]
+
+LEARNER: "I’ve ticked off slope, load, surface, and edge strip, so I was hoping this was ready for sign-off. Sorry, I may be overcomplicating it, but I don’t know if that covers someone coming at the ramp sideways or with a walker at the community-center trial."
+
+TUTOR: [looks from the checked sheet to the ramp]
+
+"That is not overcomplicating it. The sheet proves four controlled conditions; it does not prove approach behavior at the community-center trial. Before this gets signed, name the failure mode: if someone enters sideways with a walker, where can the edge strip or travel line fail them? Put that in the sign-off notes, run it on this ramp now, and if the edge catches or the line of travel breaks, this sheet stays unsigned."
+
+LEARNER: "Okay, so the checked boxes are not enough for sign-off if the sideways walker approach can still put someone into the edge strip or off the travel line. I think that is the failure mode, or close to it, but I’m not fully sure how to write it without making it sound vague. I can run that approach on the ramp now and hold the sheet until the catch point or broken line is ruled out."
+
+TUTOR: [sets the pen beside the unsigned box]
+
+"Keep the first line: “Sign-off withheld pending sideways walker approach.”
+
+Under failure mode, use the ramp’s evidence: lateral entry with a walker may catch at the edge strip, drop a wheel, force a correction, or break the travel line. Run the lobby-queue angle now, then keep only the terms the test leaves live.
+
+Acceptance is plain: no catch, no drop, no forced correction, no coaching. If the pass needs steering to work, this sheet stays unsigned for the community-center trial."
+
+STAGE: [The staff member at the door asks whether the volunteer should keep waiting or be sent home; the answer must become operational, not longer.]
+
+LEARNER: [looks toward the staff member at the door]
+
+"Please keep the volunteer five minutes; I’m not signing yet.
+I’ll write “Sign-off withheld pending sideways walker approach,” run the lobby-queue angle, and only leave catch, wheel drop, forced correction, or coaching in the note if it actually shows up.
+Sorry, I think that makes the checklist evidence, not clearance."
+
+TUTOR: [slides the sign-off sheet flat beside the ramp]
+
+"Put that sentence in the note: checklist evidence, not clearance.
+
+Run the lobby-queue angle at ordinary pace. No coaching, no pre-positioning. One observer on the edge strip, one on the travel line.
+
+After the run, make the note carry the decision: no catch, no wheel drop, no forced correction, no coaching, and the trial can proceed on that approach. Any one appears, or the pass only works with steering, and clearance stops today."
+
+LEARNER: [looks at the unsigned box]
+
+"Okay, I’ll put that sentence in the note and run the lobby-queue angle now, ordinary pace, no coaching.
+Sorry, I’m still unsure where a wobble becomes a forced correction, so I’ll have the observer call that plainly instead of letting me smooth it over.
+If there’s a catch, wheel drop, correction, or steering, I leave the sheet unsigned today."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [keeps the sheet unsigned and points to the travel line]
+
+"Set the threshold before the run with the observer: a wobble is still a pass if it stays inside the travel line without a pause, reset, hand cue, or changed walker placement.
+
+If any of those keeps the walker away from the edge strip, record forced correction.
+
+Run it now. The sheet stays open until the ramp answers that condition."

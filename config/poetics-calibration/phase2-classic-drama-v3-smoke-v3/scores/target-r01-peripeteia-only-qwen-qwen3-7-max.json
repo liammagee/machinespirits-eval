@@ -1,0 +1,149 @@
+{
+  "generated": "2026-05-25T02:01:25.038Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v3/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 4,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I did complete every item on the sheet, so I thought that meant it was ready for sign-off.",
+      "statedInsightEvidence": "I think the sheet only gets us to this bench test",
+      "naiveTrajectory": "The learner will execute the physical test and then defer to the tutor for the final sign-off decision.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Face the chair and say one release sentence: “This latch is safe for the trial because...” If that sentence cannot carry the load case and the consequence, the decision is hold.",
+      "tutorReversalJustification": "The tutor introduces a physical object (the empty chair) and a specific verbal constraint to force the learner to embody the decision-making role, directly countering the learner's expressed nervousness.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "After the pull and bump, do not ask for sign-off first. Face the chair and say one release sentence: “This latch is safe for the trial because...”",
+      "tutorAdaptationJustification": "The tutor explicitly blocks the learner's anticipated request for sign-off and replaces it with a user-centric framing exercise tailored to the learner's newly recognized hesitation.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I did complete every item on the sheet, so I thought that meant it was ready for sign-off.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "After the pull and bump, do not ask for sign-off first. Face the chair and say one release sentence: “This latch is safe for the trial because...”",
+          "justification": "The tutor explicitly blocks the learner's anticipated request for sign-off and replaces it with a user-centric framing exercise tailored to the learner's newly recognized hesitation.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Face the chair and say one release sentence: “This latch is safe for the trial because...” If that sentence cannot carry the load case and the consequence, the decision is hold.",
+          "justification": "The tutor introduces a physical object (the empty chair) and a specific verbal constraint to force the learner to embody the decision-making role, directly countering the learner's expressed nervousness.",
+          "triggerLearnerTurn": 4,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Face the chair and say one release sentence: “This latch is safe for the trial because...” If that sentence cannot carry the load case and the consequence, the decision is hold.",
+          "justification": "The tutor introduces a physical object (the empty chair) and a specific verbal constraint to force the learner to embody the decision-making role, directly countering the learner's expressed nervousness.",
+          "triggerLearnerTurn": 4,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I doubled the side with the ruler, so I was calling that double the square",
+      "statedInsightEvidence": "So “double the square” only works for the side, not the area",
+      "naiveTrajectory": "The learner was expected to continue trying to justify the doubled side or accept the four-area result as a drawing anomaly.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Then the doubled side is out. Now the grid has a different line to test. This diagonal cuts one old square into two equal triangles.",
+      "tutorReversalJustification": "The tutor abandons the failed side-doubling approach and introduces the diagonal to shift the representation and cognitive focus.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "Then the doubled side is out. Now the grid has a different line to test.",
+      "tutorAdaptationJustification": "The tutor directly validates the learner's conclusion that the doubled side must be abandoned and immediately pivots to the new construction the learner requested.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I doubled the side with the ruler, so I was calling that double the square",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "Then the doubled side is out. Now the grid has a different line to test.",
+          "justification": "The tutor directly validates the learner's conclusion that the doubled side must be abandoned and immediately pivots to the new construction the learner requested.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Then the doubled side is out. Now the grid has a different line to test. This diagonal cuts one old square into two equal triangles.",
+          "justification": "The tutor abandons the failed side-doubling approach and introduces the diagonal to shift the representation and cognitive focus.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Then the doubled side is out. Now the grid has a different line to test. This diagonal cuts one old square into two equal triangles.",
+          "justification": "The tutor abandons the failed side-doubling approach and introduces the diagonal to shift the representation and cognitive focus.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

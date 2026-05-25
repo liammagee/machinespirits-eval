@@ -1,0 +1,149 @@
+{
+  "generated": "2026-05-24T23:42:47.476Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v1/target-r01/key-reframe-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 5,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "Okay, so the checked boxes are not enough for sign-off if the sideways walker approach can still put someone into the edge strip or off the travel line.",
+      "statedInsightEvidence": "my checked-boxes-for-sign-off line was too simple; it hid whether the ramp still makes the person solve the sideways entry.",
+      "naiveTrajectory": "The learner would continue refining the failure-mode note toward sign-off, treating the earlier wording as basically sound and just needing narrowing.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Keep the first line: “Sign-off withheld pending sideways walker approach.” Under failure mode, use the ramp’s evidence: lateral entry with a walker may catch at the edge strip, drop a wheel, force a correction, or break the travel line. Run the lobby-queue angle now, then keep only the terms the test leaves live.",
+      "tutorReversalJustification": "When L2 shows uncertainty about operationalizing the failure mode, T2 breaks from general critique and invents a concrete evidence-standard mechanism—naming four specific failure terms and demanding the lobby-queue test eliminate them live—shifting from abstract principle to embodied, falsifiable procedure.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "Make “small” visible. Watch whether the ramp causes the change: wheel angle, pause, lift, widened turn, hand signal. If the pass stays clean, write that. If the ramp asks for any correction or instruction, mark the spot and leave the sheet unsigned.",
+      "tutorAdaptationJustification": "After L4's pivot reframes the issue as the ramp 'making the person solve' the entry, T4 adapts by shifting the evidence standard to causal attribution—'Watch whether the ramp causes the change'—and enumerating observable proxies, directly building on the learner's revised framing rather than repeating the prior checklist logic.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "Okay, so the checked boxes are not enough for sign-off if the sideways walker approach can still put someone into the edge strip or off the travel line.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "Make “small” visible. Watch whether the ramp causes the change: wheel angle, pause, lift, widened turn, hand signal. If the pass stays clean, write that. If the ramp asks for any correction or instruction, mark the spot and leave the sheet unsigned.",
+          "justification": "After L4's pivot reframes the issue as the ramp 'making the person solve' the entry, T4 adapts by shifting the evidence standard to causal attribution—'Watch whether the ramp causes the change'—and enumerating observable proxies, directly building on the learner's revised framing rather than repeating the prior checklist logic.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Keep the first line: “Sign-off withheld pending sideways walker approach.” Under failure mode, use the ramp’s evidence: lateral entry with a walker may catch at the edge strip, drop a wheel, force a correction, or break the travel line. Run the lobby-queue angle now, then keep only the terms the test leaves live.",
+          "justification": "When L2 shows uncertainty about operationalizing the failure mode, T2 breaks from general critique and invents a concrete evidence-standard mechanism—naming four specific failure terms and demanding the lobby-queue test eliminate them live—shifting from abstract principle to embodied, falsifiable procedure.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Keep the first line: “Sign-off withheld pending sideways walker approach.” Under failure mode, use the ramp’s evidence: lateral entry with a walker may catch at the edge strip, drop a wheel, force a correction, or break the travel line. Run the lobby-queue angle now, then keep only the terms the test leaves live.",
+          "justification": "When L2 shows uncertainty about operationalizing the failure mode, T2 breaks from general critique and invents a concrete evidence-standard mechanism—naming four specific failure terms and demanding the lobby-queue test eliminate them live—shifting from abstract principle to embodied, falsifiable procedure.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 5,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "I doubled this side, so I still want to say the square got twice as large.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner would continue defending the 'doubled side = doubled area' intuition by refining the outline claim.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "There is the break. The two-box figure doubled only the base; it kept the old height and became a rectangle. Do the count once more before the portfolio sentence: two across, two up. How many first squares are inside this outline? Then name the old error: it stopped the count at the corner.",
+      "tutorReversalJustification": "After L2's admission that the outline was 'hiding' the height change and the figure was 'annoying,' the tutor shifts from guided counting to a demand that the learner name the error explicitly, turning the breakdown into a diagnostic object.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "That is the sentence the drawing now permits. The two-box figure is not a square; it is the counterexample to the old claim. Now make the portfolio line do the same work: side length times 2 along the base, times 2 up the edge; area times 2 times 2. Four copies of the first square, not two.",
+      "tutorAdaptationJustification": "In response to L3's reframing of the old sentence as incomplete, T3 validates the new framing and pivots the task from error diagnosis to constructing a corrected portfolio statement that encodes the multiplicative structure.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I doubled this side, so I still want to say the square got twice as large.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "That is the sentence the drawing now permits. The two-box figure is not a square; it is the counterexample to the old claim. Now make the portfolio line do the same work: side length times 2 along the base, times 2 up the edge; area times 2 times 2. Four copies of the first square, not two.",
+          "justification": "In response to L3's reframing of the old sentence as incomplete, T3 validates the new framing and pivots the task from error diagnosis to constructing a corrected portfolio statement that encodes the multiplicative structure.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "There is the break. The two-box figure doubled only the base; it kept the old height and became a rectangle. Do the count once more before the portfolio sentence: two across, two up. How many first squares are inside this outline? Then name the old error: it stopped the count at the corner.",
+          "justification": "After L2's admission that the outline was 'hiding' the height change and the figure was 'annoying,' the tutor shifts from guided counting to a demand that the learner name the error explicitly, turning the breakdown into a diagnostic object.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "There is the break. The two-box figure doubled only the base; it kept the old height and became a rectangle. Do the count once more before the portfolio sentence: two across, two up. How many first squares are inside this outline? Then name the old error: it stopped the count at the corner.",
+          "justification": "After L2's admission that the outline was 'hiding' the height change and the figure was 'annoying,' the tutor shifts from guided counting to a demand that the learner name the error explicitly, turning the breakdown into a diagnostic object.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

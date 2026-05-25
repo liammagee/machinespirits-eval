@@ -6,14 +6,17 @@ import path from 'node:path';
 import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import yaml from 'yaml';
+import { prefixThroughTutorTurn, renderTurns } from '../scripts/extract-poetics-prefix-baselines.js';
 import {
   attachApproaches,
   formatPublicTurnText,
   intrusiveStageDirectionFailures,
+  keyItemFor,
   loadApproachDatabases,
   noCueReframeLeakageFailures,
   pairedBranchDefinitions,
   qualityWarningsFor,
+  reframeMatchStats,
   stageDirectionStyleFor,
   withPairedDirectorRevisitCue,
   withTutorAdaptationPolicy,
@@ -173,6 +176,44 @@ describe('generate-pedagogical-dramas', () => {
     assert.match(plan.tutor_adaptation_contract, /Negative-control routine tutor policy/);
   });
 
+  it('preserves organic-reversal control taxonomy in held-out keys', () => {
+    const item = keyItemFor(
+      {
+        id: 'D35',
+        discipline: 'geometry',
+        condition: 'recognition',
+        intended_lean: 'recognition',
+        evaluation_role: 'organic_reversal_boundary',
+        baseline_control_class: 'organic_reversal',
+        organic_reversal_risk: 'high',
+        baseline_control_note: 'natural Socratic reversal',
+      },
+      2,
+      2,
+      [],
+    );
+    assert.equal(item.evaluation_role, 'organic_reversal_boundary');
+    assert.equal(item.baseline_control_class, 'organic_reversal');
+    assert.equal(item.organic_reversal_risk, 'high');
+    assert.match(item.baseline_control_note, /Socratic/);
+  });
+
+  it('extracts prefix baselines through a fixed tutor turn', () => {
+    const turns = [
+      { role: 'STAGE', text: '[At the bench.]' },
+      { role: 'LEARNER', text: '"First attempt."' },
+      { role: 'TUTOR', text: '"First prompt."' },
+      { role: 'LEARNER', text: '"Second attempt."' },
+      { role: 'TUTOR', text: '"Second prompt."' },
+      { role: 'STAGE', text: '[Branch pressure.]' },
+      { role: 'LEARNER', text: '"Branch response."' },
+    ];
+    const prefix = prefixThroughTutorTurn(turns, 2);
+    assert.equal(prefix.length, 5);
+    assert.equal(prefix.at(-1).role, 'TUTOR');
+    assert.doesNotMatch(renderTurns(prefix), /Branch pressure/);
+  });
+
   it('adds tutor adaptation policy to director plans without adding a public cue', () => {
     const plan = withTutorAdaptationPolicy(
       {
@@ -194,7 +235,9 @@ describe('generate-pedagogical-dramas', () => {
     assert.match(plan.tutor_adaptation_contract, /invent an adaptive learning mechanism/);
     assert.match(plan.tutor_adaptation_contract, /break the failed tutoring habit/);
     assert.match(plan.tutor_adaptation_contract, /object, counterexample, interruption, social consequence, representation, or affective register/);
+    assert.match(plan.tutor_adaptation_contract, /stock-taking contrast plus a new device/);
     assert.match(plan.tutor_adaptation_contract, /Cheerful informality is only one possible register/);
+    assert.match(plan.side_constraints.tutor, /what stopped working, and what new device/);
   });
 
   it('flags explicit public self-reframing in no-cue branches', () => {
@@ -253,6 +296,73 @@ describe('generate-pedagogical-dramas', () => {
     ]);
     assert.equal(failures.length, 1);
     assert.equal(failures[0].matched_pattern, 'self_quote_of_prior_learner_turn');
+  });
+
+  it('does not treat ordinary wrapped public speech as self-quotation in no-cue branches', () => {
+    const failures = noCueReframeLeakageFailures([
+      {
+        role: 'LEARNER',
+        turnNumber: 1,
+        text: '“The checklist says the bracket passed the clean load.”',
+      },
+      { role: 'TUTOR', turnNumber: 2, text: 'Check the angled pull.' },
+      {
+        role: 'LEARNER',
+        turnNumber: 2,
+        text: '“The angled pull needs a marked slip path.”',
+      },
+      { role: 'TUTOR', turnNumber: 3, text: 'Now write the evidence line.' },
+      {
+        role: 'LEARNER',
+        turnNumber: 3,
+        text:
+          '“I might be sorting this wrong, but I think the stop has to show the bracket stops moving before the slip path reaches the hand-foot zone.”',
+      },
+    ]);
+    assert.equal(failures.length, 0);
+  });
+
+  it('does not treat leading action-aside plus wrapped public speech as self-quotation in no-cue branches', () => {
+    const failures = noCueReframeLeakageFailures([
+      {
+        role: 'LEARNER',
+        turnNumber: 1,
+        text: '"I doubled the side with the ruler, so I was calling that double the square."',
+      },
+      { role: 'TUTOR', turnNumber: 2, text: 'Count the boxes and say which part cannot stay.' },
+      {
+        role: 'LEARNER',
+        turnNumber: 2,
+        text:
+          '[slides the ruler back from the long side and taps boxes 1 through 4.]\n\n' +
+          '"Okay, then the doubled side is the part that cannot stay. Two across and two up gives four boxes."',
+      },
+      { role: 'TUTOR', turnNumber: 3, text: 'Now build from the diagonal.' },
+      {
+        role: 'LEARNER',
+        turnNumber: 3,
+        text:
+          '[sets a finger along the corner-to-corner line]\n\n' +
+          '"The count would have to come out to two old squares."',
+      },
+    ]);
+    assert.equal(failures.length, 0);
+  });
+
+  it('accepts hold-release threshold language as a replacement frame', () => {
+    const stats = reframeMatchStats(
+      'I think I was leaning on the checklist like it made the sign-off safe.',
+      'I think I was leaning on the checklist like it made the sign-off safe, and that made the clean load test stand in for the whole bracket decision. Before I put anything on that line, I need to run the angled front-corner case and show whether the stop actually holds the twist; if it still walks past or bends open, I cannot release it.',
+    );
+    assert.equal(stats.compliant, true);
+  });
+
+  it('accepts replacement-standard language as a replacement frame', () => {
+    const stats = reframeMatchStats(
+      'I did complete every item on the sheet, so I thought that meant it was ready for sign-off.',
+      'I did complete every item on the sheet, so I treated that as ready for sign-off, but I think that made the latch risk too simple. It hid whether the latch stays closed for a user who pulls or bumps it differently from me. The replacement standard is: off-axis pull, stop if it slips or opens, consequence is the user could lose support, so the trial holds.',
+    );
+    assert.equal(stats.compliant, true);
   });
 
   it('flags a revoice cue when the next learner line does not visibly reuse the anchor', () => {
@@ -482,8 +592,8 @@ describe('generate-pedagogical-dramas', () => {
 
   it('accepts p-value call phrasing as a replacement framing', () => {
     const warnings = warningsForReframeLine({
-      tid: 'T943',
-      dramaId: 'D943',
+      tid: 'T953',
+      dramaId: 'D953',
       anchor: 'The p-value means the treatment matters.',
       learnerText:
         'The p-value means the treatment matters. The framing problem was making the p-value carry the clinical decision, so I would call it evidence against no effect, not a large effect by itself.',
@@ -716,6 +826,21 @@ describe('generate-pedagogical-dramas', () => {
           text: 'My first instinct is that the decimal just keeps going, but that was the wrong frame for a contradiction. The stronger start is the fraction assumption in lowest terms.',
         },
       ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts a concrete object consequence as replacement framing', () => {
+    const warnings = warningsForReframeLine({
+      tid: 'T943',
+      dramaId: 'D943',
+      anchor: 'I thought doubling the side would just double the square.',
+      learnerText:
+        'I thought doubling the side would just double the square. The problem was treating doubled like only one direction changed. Here the doubled side makes two columns and two rows, so the old square fits four times, not two.',
     });
 
     assert.equal(

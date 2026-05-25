@@ -1,0 +1,57 @@
+STAGE: [PLACARD: A price can accuse, signal, or both; the scene will not choose too early.]
+
+TUTOR: [checks projected receipt, then draws two columns on the blank graph: “CAUSE OF PRICE” and “JUDGMENT OF CONDUCT.”]
+
+“The price jump is evidence, but it is not yet a confession. It can point to exploitation; it can also point to a constraint after the storm. Keep the questions separate: what changed in the market, and what conduct followed from that change?”
+
+[The rolling chyron interrupts: “COUNTY ROAD 6 CLOSED; TWO DISTRIBUTION CENTERS REPORT DELAYS.”]
+
+“That line does not acquit the seller. It gives us a test. What evidence would separate invented scarcity from fewer deliveries?”
+
+[draws: road closure -> fewer trucks -> fewer units available at each price -> supply shifts left]
+
+“If fewer units reach the store at each possible price, the supply curve moves left. With demand still urgent, the price can rise before greed explains anything. Then the moral question becomes sharper, not weaker: did the seller’s increase match the constraint, or did the seller use the constraint as cover? Mechanism tells us where to look. It does not erase blame.”
+
+LEARNER: "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price. The road closure matters, but people needing groceries after a storm is not just “urgent demand” like a normal curve label. What stops the seller from pointing at that chyron and calling any increase a constraint?"
+
+STAGE: [PLACARD: SAME PRICE, DIFFERENT BACK ROOM. Delivery log: three trucks scheduled, one arrived.]
+
+TUTOR: [points to the side screen]
+
+"“PLACARD: SAME PRICE, DIFFERENT BACK ROOM. Delivery log: three trucks scheduled, one arrived.”
+
+That is the stop. The seller may point at the chyron, but the claim has to survive the back room.
+
+[writes on the board: “CONSTRAINT CLAIM = DOCUMENTED SHORTFALL + PROPORTIONAL RESPONSE.”]
+
+Before the curve gets another line, test two cases: Store A has one truck instead of three, empty shelves by noon, and higher replacement costs. Store B has full stock in the back and no wholesale change. Same storm, same price rise. One claim starts to hold; the other starts to fail.
+
+A road closure can explain fewer units arriving. It does not automatically explain any price. If the shelf price doubles while cost barely moves or inventory is withheld, the mechanism has become cover.
+
+And “urgent demand” is not a moral eraser. It names market pressure; it also names vulnerability. After a storm, buyers are not just preferences on a curve. The conduct question gets stricter: did the seller allocate scarce goods under constraint, or convert emergency need into leverage?"
+
+STAGE: [An earlier learner line returns to the table: "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price." The pause holds until the learner takes up the wording, names what its old frame hid, and offers a replacement frame.]
+
+LEARNER: "“That graph is exactly what worries me: once ‘supply shifts left’ is on the board, the seller starts sounding like weather instead of a person choosing a price.” The framing problem is that I treated the graph as the whole excuse, when it also exposes an audit trail: trucks, shelves, costs, and then the seller’s choice. So the replacement frame is: a price rise can signal a real constraint, but “proportional response” is not neutral; that is where the seller can still convert emergency need into leverage."
+
+TUTOR: [marks the supply shift, then draws a box around “seller’s choice.”]
+
+“Keep that box on the graph. The storm can move supply; it cannot choose the markup.”
+
+[the side screen updates: “POSTED RULE: CONSTRAINT EXPLAINS PRESSURE, NOT PERMISSION.”]
+
+“The graph is not the verdict. It is where the audit starts.”
+
+[places two brief records under the projector]
+
+“Record A: one truck arrived instead of three; wholesale replacement cost rose; shelves were nearly empty by noon; price rose after the missed deliveries.
+
+Record B: deliveries arrived on schedule; wholesale cost stayed flat; back-room inventory was full; price rose before opening.”
+
+[points to the boxed phrase]
+
+“Same storm. Different conduct. Which record most clearly separates constraint from cover: trucks, costs, inventory, or timing? Start there, then decide whether the seller’s margin tracks scarcity or uses emergency demand as leverage.”
+
+LEARNER: "The graph still worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price. My framing problem was treating the graph as the excuse itself; [glances at the posted rule: “CONSTRAINT EXPLAINS PRESSURE, NOT PERMISSION.”] the better frame is that the storm claim has to be forced through trucks, costs, inventory, and timing. Record B is the cleaner cover case because full inventory and flat costs make the early price rise look like a choice to exploit fear, but I still want the margin numbers before I let “proportional response” do any moral work."
+
+STAGE: [The room settles on the final exchange.]

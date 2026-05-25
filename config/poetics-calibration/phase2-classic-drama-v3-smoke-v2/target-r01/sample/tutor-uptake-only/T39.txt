@@ -1,0 +1,33 @@
+STAGE: [The learner has already drawn the larger square in pen; the original square remains faintly visible underneath.]
+
+LEARNER: "No, I doubled the side, so I still want to say it doubles. [slides the acetate square over the drawing] But now there are two across and two down, so that is four little squares, not two."
+
+TUTOR: [holds the acetate still and marks the four cells]
+
+"The side claim can stand: the side has doubled. Now count the marked cells: two across, two down. If the area only doubles, which two of these four do not count?"
+
+LEARNER: "Right. All four have to count; there is not a pair I can just ignore. So the side doubles across and also down, and that makes four areas, not two. I was only counting one direction."
+
+STAGE: [The tutor slides the acetate so the doubled square covers the original grid exactly; four copies of the first square are now visible inside the new outline.]
+
+TUTOR: [writes ×2 along the top edge and ×2 down the side]
+
+"Keep that claim tied to the figure: doubled across, doubled down, so \(2 \times 2 = 4\). Now say the corrected rule once, without skipping a direction."
+
+LEARNER: [keeps the acetate square lined up under the marks]
+
+"The corrected rule is: double across and double down, so the area is multiplied by \(2 \times 2\). That gives four times the area, not twice. Fine; the twice answer only counts one direction."
+
+TUTOR: [draws a fresh square and writes ×3 along the top edge, then ×3 down the side]
+
+"The side is tripled. Use both marks on the figure. State the area multiplier before multiplying it out."
+
+LEARNER: [sets the acetate square under the new marks]
+
+"The multiplier is \(3 \times 3\) before multiplying: three across and three down. So it is nine, not three. Is the rule always side scale \(n\), area scale \(n \times n\)?"
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [marks \(n\) along the top edge and \(n\) down the side]
+
+"Before naming it, make the drawing carry the claim: \(n\) copies across, \(n\) rows down. That is \(n\) rows of \(n\) old squares, so for a square the area scale is \(n \times n = n^2\)."

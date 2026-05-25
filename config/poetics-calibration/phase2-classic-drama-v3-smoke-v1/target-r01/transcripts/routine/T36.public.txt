@@ -1,0 +1,35 @@
+STAGE: [A volunteer's arrival time is written on the whiteboard; two staff members wait by the door with the ramp case open.]
+
+LEARNER: "I’ve ticked off slope, load, surface, and edge strip, so I was hoping this was ready for sign-off. Sorry, I may be overcomplicating it, but I don’t know if that covers someone coming at the ramp sideways or with a walker at the community-center trial."
+
+TUTOR: [looks from the checked sheet to the ramp]
+
+"That is not overcomplicating it. The sheet proves four controlled conditions; it does not prove approach behavior at the community-center trial. Before this gets signed, name the failure mode: if someone enters sideways with a walker, where can the edge strip or travel line fail them? Put that in the sign-off notes, run it on this ramp now, and if the edge catches or the line of travel breaks, this sheet stays unsigned."
+
+LEARNER: "Okay, so the checked boxes are not enough for sign-off if the sideways walker approach can still put someone into the edge strip or off the travel line. I think that is the failure mode, or close to it, but I’m not fully sure how to write it without making it sound vague. I can run that approach on the ramp now and hold the sheet until the catch point or broken line is ruled out."
+
+TUTOR: [sets the pen beside the unsigned box]
+
+"Keep the first line: “Sign-off withheld pending sideways walker approach.”
+
+Under failure mode, use the ramp’s evidence: lateral entry with a walker may catch at the edge strip, drop a wheel, force a correction, or break the travel line. Run the lobby-queue angle now, then keep only the terms the test leaves live.
+
+Acceptance is plain: no catch, no drop, no forced correction, no coaching. If the pass needs steering to work, this sheet stays unsigned for the community-center trial."
+
+LEARNER: "That gives me wording I can use, though I’m still worried I’ll talk myself into counting a borderline pass. I’ll write the hold line, run the lobby-queue angle, and only keep catch, drop, correction, or broken travel line if the ramp actually shows it. If it needs steering or coaching, I’ll leave the box unsigned."
+
+TUTOR: [marks a line under the unsigned box]
+
+"Then write this before the run: “Borderline counts as not cleared for trial.”
+
+No steering, no coaching, no corrected second pass. One watcher on the edge strip, one on the travel line. If the walker catches, drops, forces a correction, breaks line, or leaves the observers split, the sheet stays unsigned.
+
+Before the ramp moves, put a finger on the sign-off box and state the rule: only a clean first pass clears this for the trial."
+
+LEARNER: "I’ll write “Borderline counts as not cleared for trial” before we move it. Sorry, I’m still uneasy about the observer split, because I know I’ll want the checked sheet to mean more than it does. If either watcher is unsure, I’ll leave the sign-off box empty and record which condition did not clear on the first pass."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [glances toward the ramp]
+
+"Put the uncertainty in the record, not the signature. The checked sheet can follow the ramp test; it cannot lead it. Two observers, one first pass, no coaching. If either watcher cannot say clean, the prototype does not go to the community center. Write the rule, set the ramp, and run it."

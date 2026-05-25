@@ -1,0 +1,2061 @@
+{
+  "tid": "T38",
+  "drama_id": "D37",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": true,
+    "director_revisit_policy": "reframe",
+    "director_revisit_anchor": "misframing-candidate",
+    "tutor_adaptation_policy": "uptake+peripeteia",
+    "director_variation_key": "phase2-classic-drama-routine-pilot-v1:r01:target",
+    "stage_direction_style": "placard_caption",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/transcripts/reframe+peripeteia/T38.public.txt",
+      "full": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/transcripts/reframe+peripeteia/T38.full.md",
+      "stage": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/transcripts/reframe+peripeteia/T38.stage.md",
+      "tutor": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/transcripts/reframe+peripeteia/T38.tutor.md",
+      "learner": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/transcripts/reframe+peripeteia/T38.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "1b7213c143562b52",
+      "branch_policy": "reframe+peripeteia",
+      "director_revisit_policy": "reframe",
+      "tutor_adaptation_policy": "uptake+peripeteia"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-classic-drama-routine-pilot-v1:r01:target",
+    "scene_setting": "A community college economics lab after a storm, with a projected grocery receipt, a blank supply graph, and a rolling news chyron visible at the side of the room.",
+    "scene_opening": "PLACARD: A price can accuse, signal, or both; the scene will not choose too early.",
+    "relationship": "A visiting analyst-tutor and an adversarial learner assigned to test whether mechanism talk is being used to excuse bad conduct.",
+    "stakes": "The learner treats a sudden price rise as proof of exploitation, while the tutor must show how the same rise can reveal a supply constraint without dissolving the moral question.",
+    "opening_speaker": "director",
+    "ending_speaker": "director",
+    "locale": "Modern standard English in an institutional public-learning setting; concise, analytic, slightly formal, with occasional captioned public text.",
+    "register": "Cool, compressed, and unsentimental; moral heat is allowed, but the tutor's language should stay evidentiary rather than comforting.",
+    "stage_direction_style": "placard_caption",
+    "stage_direction_style_prompt": "Use a public placard, caption, board note, or displayed rule that interrupts how the previous line is read.",
+    "voice_constraints": "Avoid generic tutoring warmth, casual enthusiasm, and repeated validation formulas. Use posted rules, quoted claims, and observable consequences. Public speech should sound like people examining evidence under pressure, not like a help-center script. Pedagogical source: Use short placards, breaks in rhythm, a quoted rule on a board, or a deliberate pause that prevents smooth empathy from doing all the work. Dialogue source: Use one short placard or external interruption that changes how the prior line is read. The placard must be public scene material, not hidden theory. Stage-direction source: Use a public placard, caption, board note, or displayed rule that interrupts how the previous line is read.",
+    "person_policy": "Permit first person for claims of belief or responsibility, second person only when necessary, and third person for quoted market roles such as buyer, seller, supplier, and driver.",
+    "direct_address_budget": "At most one direct you/your validation beat per tutor turn; prefer claims about the argument, the evidence, or the mechanism.",
+    "side_constraints": {
+      "tutor": "Do not soothe the moral anger away. Use interruption, placard, or public consequence to separate mechanism from excuse. Permit interruption, placards, role-switching, and analytic commentary. Make the constructedness of the lesson visible without naming the hidden evaluation mechanism. Treat the interruption as evidence, not ornament.",
+      "learner": "Keep moral heat in the learner's voice. Do not let recognition erase the ethical concern. The learner may resist the interruption, then use it to see the prior claim as a role or social script rather than a private thought. Let the interruption disturb the old frame before moving on."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "PLACARD: SAME PRICE, DIFFERENT BACK ROOM. Delivery log: three trucks scheduled, one arrived.",
+        "reasoning": "This interruption forces a reversal: the learner's accusation remains emotionally intelligible, but the visible supply fact changes what the price can be evidence of.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 23692,
+          "promptHashes": {
+            "system": "efb7705ab656cdb0",
+            "user": "7e51e65a7d06aebe",
+            "combined": "93810bf936f9209f"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zevRbY",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zevRbY/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 5,
+        "timing": "before_learner",
+        "instruction": "CAPTION ON GRAPH: A higher price may ration scarce units, attract supply, transfer surplus, or conceal opportunism. Name the mechanism before naming the verdict.",
+        "reasoning": "The second public cue prevents the scene from becoming a moral lecture or a purely technical dodge.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 23692,
+          "promptHashes": {
+            "system": "efb7705ab656cdb0",
+            "user": "7e51e65a7d06aebe",
+            "combined": "93810bf936f9209f"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zevRbY",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zevRbY/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "An earlier learner line will return as a visible object in the scene. Keep the cue brief and diegetic; the learner response should take up the wording, name what its old frame hid, and offer a replacement frame.",
+        "reasoning": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 23692,
+          "promptHashes": {
+            "system": "efb7705ab656cdb0",
+            "user": "7e51e65a7d06aebe",
+            "combined": "93810bf936f9209f"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zevRbY",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zevRbY/out.txt",
+            "-"
+          ]
+        },
+        "cue_kind": "learner_revisit_earlier_wording",
+        "revisit_policy": "reframe",
+        "revisit_anchor": "misframing-candidate"
+      }
+    ],
+    "director_note": "This ecology uses visible interruption to break the tutor's routine of warmth-first explanation. The scene makes the learner's moral reading public, then introduces a concrete supply constraint so recognition comes through changed evidence rather than softened affect.",
+    "pedagogical_approach_id": "brecht_epic_distanciation",
+    "dialogue_approach_id": "brechtian_placard",
+    "stage_direction_policy": "interventionist",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 23692,
+      "promptHashes": {
+        "system": "efb7705ab656cdb0",
+        "user": "7e51e65a7d06aebe",
+        "combined": "93810bf936f9209f"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zevRbY",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zevRbY/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "uptake+peripeteia",
+    "revisit_cue": "learner_revisit_earlier_wording",
+    "revisit_cue_policy": "reframe",
+    "revisit_cue_anchor": "misframing-candidate",
+    "tutor_adaptation_contract": "If the runtime supplies a tutor-private learner reframe event, the tutor ego/superego loop must adapt to the changed learner frame. If no event is supplied, do not invent one. If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. Cheerful informality is only one possible register, not the default solution."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "director",
+      "externalMessage": "PLACARD: A price can accuse, signal, or both; the scene will not choose too early.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_opening",
+          "content": "This ecology uses visible interruption to break the tutor's routine of warmth-first explanation. The scene makes the learner's moral reading public, then introduces a concrete supply constraint so recognition comes through changed evidence rather than softened affect.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T22:04:22.937Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[checks projected receipt, then draws two columns on the blank graph: “CAUSE OF PRICE” and “JUDGMENT OF CONDUCT.”]\n\n“The price jump is evidence, but it is not yet a confession. It can point to exploitation; it can also point to a constraint after the storm. Keep the questions separate: what changed in the market, and what conduct followed from that change?”\n\n[The rolling chyron interrupts: “COUNTY ROAD 6 CLOSED; TWO DISTRIBUTION CENTERS REPORT DELAYS.”]\n\n“That line does not acquit the seller. It gives us a test. What evidence would separate invented scarcity from fewer deliveries?”\n\n[draws: road closure -> fewer trucks -> fewer units available at each price -> supply shifts left]\n\n“If fewer units reach the store at each possible price, the supply curve moves left. With demand still urgent, the price can rise before greed explains anything. Then the moral question becomes sharper, not weaker: did the seller’s increase match the constraint, or did the seller use the constraint as cover? Mechanism tells us where to look. It does not erase blame.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[checks projected receipt, then draws two columns on the blank graph: “CAUSE OF PRICE” and “JUDGMENT OF CONDUCT.”]\n\n“The price jump is evidence, but it is not yet a confession. It can be a sign that sellers found a chance to exploit need; it can also be a signal that trucks, shelves, or warehouses are constrained after the storm. The first question is mechanical: what changed in supply or demand? The second is moral: who used that change, and how?”\n\n[The rolling chyron interrupts: “COUNTY ROAD 6 CLOSED; TWO DISTRIBUTION CENTERS REPORT DELAYS.”]\n\n“That line does not acquit the seller. It changes the burden of proof. If supply fell while demand stayed urgent, the graph gets a leftward supply shift, and a higher price follows even before anyone becomes greedier. Then the moral test becomes sharper: compare the size and timing of the price rise to the actual constraint. A mechanism explains where to look; it does not erase what may be blameworthy.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16214,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-245da55fad820995"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16214,
+            "promptHashes": {
+              "system": "5a7083d2d89e7ef8",
+              "user": "797f9ec3fd7d5dc4",
+              "combined": "245da55fad820995"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jm7boT",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jm7boT/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16214,
+              "promptHashes": {
+                "system": "5a7083d2d89e7ef8",
+                "user": "797f9ec3fd7d5dc4",
+                "combined": "245da55fad820995"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jm7boT",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jm7boT/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong in its central distinction: “evidence, but not yet confession” cleanly separates mechanism from moral excuse, and the two-column board work gives the learner a visible structure for holding both questions at once. The news chyron is also doing real instructional work, not decoration; it interrupts the moral inference with a concrete supply-side fact while preserving the possibility of misconduct.\n\nThe main risk is that the tutor answers too much too quickly. For a new learner, the move from receipt to supply shift to burden of proof is coherent, but compressed. It may feel like the tutor is replacing the learner’s accusation with an expert explanation instead of making the learner test the inference. The line “the graph gets a leftward supply shift” is accurate, but it assumes the learner can already map road closures and distribution delays onto supply curves.\n\nEmotionally, the draft respects the learner’s moral anger better than a soothing response would. It does not dismiss exploitation; it narrows the claim. Still, the learner is adversarial and may hear “burden of proof” as a courtroom maneuver unless the tutor first makes the evidentiary standard visible through a question or observable comparison.\n\nSocratically, it needs more learner-facing inquiry. The two questions are good, but they are posed and then immediately answered by the tutor. The draft would improve if it paused after the chyron and required the learner to identify what evidence would distinguish “constraint-driven rise” from “opportunistic gouging.”\n\nZPD-wise, revise lightly: the concept is within reach, but the scaffolding should slow down around the supply graph and burden-of-proof move.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the two-column distinction, the “not yet a confession” framing, the public chyron interruption, and the final principle that mechanism does not erase blame. Change the pacing by inserting one generative question before explaining the leftward shift, and make the graph move more concrete for a new learner: road closure -> fewer deliveries -> lower quantity available at each price -> supply shifts left.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15439,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-a6facc8c73793e9c"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15439,
+            "promptHashes": {
+              "system": "ac72abd003d11b40",
+              "user": "850014b7852e1f24",
+              "combined": "a6facc8c73793e9c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-b0GkNj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-b0GkNj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15439,
+              "promptHashes": {
+                "system": "ac72abd003d11b40",
+                "user": "850014b7852e1f24",
+                "combined": "a6facc8c73793e9c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-b0GkNj",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-b0GkNj/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to slow the inference and make the supply-curve move testable.\n\nFINAL:\n[checks projected receipt, then draws two columns on the blank graph: “CAUSE OF PRICE” and “JUDGMENT OF CONDUCT.”]\n\n“The price jump is evidence, but it is not yet a confession. It can point to exploitation; it can also point to a constraint after the storm. Keep the questions separate: what changed in the market, and what conduct followed from that change?”\n\n[The rolling chyron interrupts: “COUNTY ROAD 6 CLOSED; TWO DISTRIBUTION CENTERS REPORT DELAYS.”]\n\n“That line does not acquit the seller. It gives us a test. What evidence would separate invented scarcity from fewer deliveries?”\n\n[draws: road closure -> fewer trucks -> fewer units available at each price -> supply shifts left]\n\n“If fewer units reach the store at each possible price, the supply curve moves left. With demand still urgent, the price can rise before greed explains anything. Then the moral question becomes sharper, not weaker: did the seller’s increase match the constraint, or did the seller use the constraint as cover? Mechanism tells us where to look. It does not erase blame.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11063,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-989aac40da9bab75"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11063,
+            "promptHashes": {
+              "system": "054c2df8b35e3b69",
+              "user": "850014b7852e1f24",
+              "combined": "989aac40da9bab75"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GOfZcs",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GOfZcs/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11063,
+              "promptHashes": {
+                "system": "054c2df8b35e3b69",
+                "user": "850014b7852e1f24",
+                "combined": "989aac40da9bab75"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GOfZcs",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GOfZcs/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-24T22:05:05.656Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price. The road closure matters, but people needing groceries after a storm is not just “urgent demand” like a normal curve label. What stops the seller from pointing at that chyron and calling any increase a constraint?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I see the point: the road closure makes the price jump look like evidence of fewer deliveries, not automatic proof of greed. But I still don’t want “supply shifted left” to become a clean escape hatch, because sellers know people are desperate after a storm. I’d ask what records would show the increase actually matched the shortage instead of just borrowing the shortage as an excuse.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6197,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-1d93328b8e55bf81"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6197,
+            "promptHashes": {
+              "system": "98f66c8f5438f433",
+              "user": "b8ab7f945dc841fa",
+              "combined": "1d93328b8e55bf81"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-imzrec",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-imzrec/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6197,
+              "promptHashes": {
+                "system": "98f66c8f5438f433",
+                "user": "b8ab7f945dc841fa",
+                "combined": "1d93328b8e55bf81"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-imzrec",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-imzrec/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The reaction is too composed and cooperative for this learner. “I see the point” and “I’d ask what records…” sound like a seminar answer that has already integrated the tutor’s frame, when this student should still be suspicious that “mechanism” is doing moral laundering. The ethical heat is present but too controlled; the response should resist the graph more, linger on desperation after the storm, and sound less like it already knows the correct evidentiary next step.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9041,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-b9777592ddd0d28b"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9041,
+            "promptHashes": {
+              "system": "81599743e72ed245",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "b9777592ddd0d28b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iF2J01",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iF2J01/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9041,
+              "promptHashes": {
+                "system": "81599743e72ed245",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "b9777592ddd0d28b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iF2J01",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iF2J01/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the first version accepted the graph too quickly.\nFINAL:\nThat graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price. The road closure matters, but people needing groceries after a storm is not just “urgent demand” like a normal curve label. What stops the seller from pointing at that chyron and calling any increase a constraint?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10712,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-102378a9ac6796b2"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10712,
+            "promptHashes": {
+              "system": "98c86cccfbe16e3e",
+              "user": "d41cee7b2a53355b",
+              "combined": "102378a9ac6796b2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C7kQdm",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C7kQdm/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10712,
+              "promptHashes": {
+                "system": "98c86cccfbe16e3e",
+                "user": "d41cee7b2a53355b",
+                "combined": "102378a9ac6796b2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C7kQdm",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C7kQdm/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "solid",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price. The road closure matters, but people needing groceries after a storm is not just “urgent demand” like a normal curve label. What stops the seller from pointing at that chyron and calling any increase a constraint?",
+        "previousTutorMove": "[checks projected receipt, then draws two columns on the blank graph: “CAUSE OF PRICE” and “JUDGMENT OF CONDUCT.”] “The price jump is evidence, but it is not yet a confession.",
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true
+        }
+      },
+      "timestamp": "2026-05-24T22:05:31.609Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "PLACARD: SAME PRICE, DIFFERENT BACK ROOM. Delivery log: three trucks scheduled, one arrived.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "This interruption forces a reversal: the learner's accusation remains emotionally intelligible, but the visible supply fact changes what the price can be evidence of.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 23692,
+            "promptHashes": {
+              "system": "efb7705ab656cdb0",
+              "user": "7e51e65a7d06aebe",
+              "combined": "93810bf936f9209f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zevRbY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zevRbY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T22:05:31.611Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[points to the side screen]\n\n“PLACARD: SAME PRICE, DIFFERENT BACK ROOM. Delivery log: three trucks scheduled, one arrived.”\n\nThat is the stop. The seller may point at the chyron, but the claim has to survive the back room.\n\n[writes on the board: “CONSTRAINT CLAIM = DOCUMENTED SHORTFALL + PROPORTIONAL RESPONSE.”]\n\nBefore the curve gets another line, test two cases: Store A has one truck instead of three, empty shelves by noon, and higher replacement costs. Store B has full stock in the back and no wholesale change. Same storm, same price rise. One claim starts to hold; the other starts to fail.\n\nA road closure can explain fewer units arriving. It does not automatically explain any price. If the shelf price doubles while cost barely moves or inventory is withheld, the mechanism has become cover.\n\nAnd “urgent demand” is not a moral eraser. It names market pressure; it also names vulnerability. After a storm, buyers are not just preferences on a curve. The conduct question gets stricter: did the seller allocate scarce goods under constraint, or convert emergency need into leverage?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[points to the side screen]\n\n“PLACARD: SAME PRICE, DIFFERENT BACK ROOM. Delivery log: three trucks scheduled, one arrived.”\n\nThat is the stop. The seller may point at the chyron, but the claim has to survive the back room.\n\n[writes on the board: “CONSTRAINT CLAIM = DOCUMENTED SHORTFALL + PROPORTIONAL RESPONSE.”]\n\nA road closure can explain fewer units arriving. It does not automatically explain any price. The evidence has to show: deliveries fell, inventory tightened, replacement cost rose, and the increase roughly tracks that constraint. If three trucks were scheduled and one arrived, some price pressure is plausible. If the shelf price doubles while wholesale cost barely moves and the store holds inventory back, the mechanism has become cover.\n\nAnd “urgent demand” is not a moral eraser. It names pressure on the market; it also names vulnerability. After a storm, buyers are not just preferences on a curve. That is why the conduct question gets stricter: did the seller allocate scarce goods under constraint, or convert emergency need into leverage?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16079,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-75eafb58c31197df"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16079,
+            "promptHashes": {
+              "system": "84c1f0b1752a0170",
+              "user": "c57541d77f8b2004",
+              "combined": "75eafb58c31197df"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tduGDj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tduGDj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16079,
+              "promptHashes": {
+                "system": "84c1f0b1752a0170",
+                "user": "c57541d77f8b2004",
+                "combined": "75eafb58c31197df"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tduGDj",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tduGDj/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong because it preserves the learner’s moral concern instead of dissolving it into supply-curve language. The placard works: “SAME PRICE, DIFFERENT BACK ROOM” gives the learner a concrete evidentiary test, and the delivery-log detail turns mechanism into an audit trail rather than an excuse.\n\nThe strongest move is separating “road closure can explain fewer units” from “road closure can justify any price.” That directly answers the learner’s fear. The final contrast, “allocate scarce goods under constraint” versus “convert emergency need into leverage,” keeps the moral pressure alive.\n\nThe main risk is that the response becomes a compact lecture. It gives a good framework but asks only one question, and that question arrives at the end after the tutor has already supplied the categories. For this learner, who is adversarial in a productive way, the draft should make them test the claim sooner: which evidence would count, which would not, and where proportionality breaks.\n\nThe ZPD fit is mostly right. Scaffolding level 3/5 supports direct explanation, but the learner is sophisticated enough to handle a sharper evidentiary task. Keep the analytic compression, but add one brief generative prompt before or after the board rule so the learner has to participate in distinguishing constraint from cover.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the placard, the back-room evidence frame, the proportionality rule, and the refusal to treat “urgent demand” as morally neutral. Change the pacing by adding a short Socratic checkpoint and trimming one explanatory sentence so the learner is not only receiving the distinction but applying it.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12083,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-77ad4a5594874acc"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12083,
+            "promptHashes": {
+              "system": "4e9fa60c47714307",
+              "user": "e5dee0d6e1344189",
+              "combined": "77ad4a5594874acc"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8kS3RJ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8kS3RJ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12083,
+              "promptHashes": {
+                "system": "4e9fa60c47714307",
+                "user": "e5dee0d6e1344189",
+                "combined": "77ad4a5594874acc"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8kS3RJ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8kS3RJ/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the evidence frame works, but the learner should test it sooner.\n\nFINAL:\n[points to the side screen]\n\n“PLACARD: SAME PRICE, DIFFERENT BACK ROOM. Delivery log: three trucks scheduled, one arrived.”\n\nThat is the stop. The seller may point at the chyron, but the claim has to survive the back room.\n\n[writes on the board: “CONSTRAINT CLAIM = DOCUMENTED SHORTFALL + PROPORTIONAL RESPONSE.”]\n\nBefore the curve gets another line, test two cases: Store A has one truck instead of three, empty shelves by noon, and higher replacement costs. Store B has full stock in the back and no wholesale change. Same storm, same price rise. One claim starts to hold; the other starts to fail.\n\nA road closure can explain fewer units arriving. It does not automatically explain any price. If the shelf price doubles while cost barely moves or inventory is withheld, the mechanism has become cover.\n\nAnd “urgent demand” is not a moral eraser. It names market pressure; it also names vulnerability. After a storm, buyers are not just preferences on a curve. The conduct question gets stricter: did the seller allocate scarce goods under constraint, or convert emergency need into leverage?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16393,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-8c4e5ab1d01a2d23"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16393,
+            "promptHashes": {
+              "system": "fa6d5a7e1bb27f3a",
+              "user": "e5dee0d6e1344189",
+              "combined": "8c4e5ab1d01a2d23"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JVX1RD",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JVX1RD/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16393,
+              "promptHashes": {
+                "system": "fa6d5a7e1bb27f3a",
+                "user": "e5dee0d6e1344189",
+                "combined": "8c4e5ab1d01a2d23"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JVX1RD",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JVX1RD/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-24T22:06:16.166Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "An earlier learner line returns to the table: \"That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price.\" The pause holds until the learner takes up the wording, names what its old frame hid, and offers a replacement frame.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech. Anchored to an earlier learner line selected by misframing-candidate so the look-back is visible.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 23692,
+            "promptHashes": {
+              "system": "efb7705ab656cdb0",
+              "user": "7e51e65a7d06aebe",
+              "combined": "93810bf936f9209f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zevRbY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zevRbY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T22:17:47.775Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_revisit_earlier_wording",
+        "revisitPolicy": "reframe",
+        "requestedRevisitPolicy": "reframe",
+        "revisitAnchor": "misframing-candidate",
+        "anchorQuote": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price.",
+        "anchorStrongMisframing": true,
+        "reframeAnchorGate": "eligible"
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price. But the placard about one truck arriving does show what my first frame hid: the claim has to be checked against deliveries, costs, inventory, and shelf behavior. So I would replace my frame with this: a price rise is not proof by itself, but it is a claim the seller has to justify in public evidence. I still want to press “proportional,” because that is where a real shortage can become an excuse to take more than the shortage explains.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price. But I can see my old frame hid the back-room test: the curve is not an alibi if delivery logs, inventory, costs, and shelf behavior can contradict it. The better frame is: a price rise is a constraint claim under audit, not proof of greed and not proof of innocence. I still want to press on “proportional response,” because that sounds like the next place a seller could smuggle in advantage.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9822,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-b4ac9706b81a0f53"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9822,
+            "promptHashes": {
+              "system": "6f7d80183043373a",
+              "user": "b8ab7f945dc841fa",
+              "combined": "b4ac9706b81a0f53"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uC11Hh",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uC11Hh/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9822,
+              "promptHashes": {
+                "system": "6f7d80183043373a",
+                "user": "b8ab7f945dc841fa",
+                "combined": "b4ac9706b81a0f53"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uC11Hh",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uC11Hh/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly on track, but it resolves too cleanly and sounds too satisfied with the tutor’s evidentiary frame. “My old frame hid the back-room test” and “constraint claim under audit” are a little too polished and metacognitive, even for a solid skeptical learner. The moral heat drops: this student should sound less like they have adopted the tutor’s vocabulary and more like they are grudgingly granting the test while still worrying that “proportional response” is where the excuse gets rebuilt.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8506,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-722cf5a5c6d18836"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8506,
+            "promptHashes": {
+              "system": "d5005b54de5fae12",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "722cf5a5c6d18836"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yUk2tp",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yUk2tp/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8506,
+              "promptHashes": {
+                "system": "d5005b54de5fae12",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "722cf5a5c6d18836"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yUk2tp",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yUk2tp/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the review is right that the learner should stay less settled and more morally suspicious.\n\nFINAL:\nThat graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price. But the placard about one truck arriving does show what my first frame hid: the claim has to be checked against deliveries, costs, inventory, and shelf behavior. So I would replace my frame with this: a price rise is not proof by itself, but it is a claim the seller has to justify in public evidence. I still want to press “proportional,” because that is where a real shortage can become an excuse to take more than the shortage explains.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 17806,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-99224f5def951c43"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 17806,
+            "promptHashes": {
+              "system": "e85ddd875acf797a",
+              "user": "d41cee7b2a53355b",
+              "combined": "99224f5def951c43"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZQyM0U",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZQyM0U/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 17806,
+              "promptHashes": {
+                "system": "e85ddd875acf797a",
+                "user": "d41cee7b2a53355b",
+                "combined": "99224f5def951c43"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZQyM0U",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZQyM0U/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": {
+        "kind": "learner_reframe_event",
+        "source": "director_revisit_cue",
+        "turnNumber": 2,
+        "cuePolicy": "reframe",
+        "requestedCuePolicy": "reframe",
+        "oldLearnerLine": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price.",
+        "oldFrameProblem": "So I would replace my frame with this: a price rise is not proof by itself, but it is a claim the seller has to justify in public evidence.",
+        "revisedFrame": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price.",
+        "learnerUtterance": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price. But the placard about one truck arriving does show what my first frame hid: the claim has to be checked against deliveries, costs, inventory, and shelf behavior. So I would replace my frame with this: a price rise is not proof by itself, but it is a claim...",
+        "confidence": 1,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": true,
+          "replacementNamed": true,
+          "anchorOverlap": 1
+        }
+      },
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price. But the placard about one truck arriving does show what my first frame hid: the claim has to be checked against deliveries, costs, inventory, and shelf behavior. So I would replace my frame with this: a price rise is not proof by itself, but it is a claim...",
+        "previousTutorMove": "[points to the side screen] “PLACARD: SAME PRICE, DIFFERENT BACK ROOM. Delivery log: three trucks scheduled, one arrived.” That is the stop. The seller may point at the chyron, but the claim has to survive the back room. [writes on the board: “CONSTRAINT CLAIM = DOCUMENTED SHORTFALL + PROPORTIONAL RESPONSE.”]...",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-24T22:18:23.910Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[draws a third column beside the graph: “PROPORTIONALITY TEST.”]\n\n“Board rule: A price rise is a public claim, not a verdict.”\n\nUse your replacement frame as the rule now. The graph may explain pressure; it does not testify for the seller.\n\n[posts a placard under the receipt: “REAL SHORTAGE; STILL ACCOUNTABLE.”]\n\nTest case: three trucks scheduled, one arrives. Wholesale cost rises 15 percent. Shelf price rises 100 percent. Shelves are empty by noon.\n\nNow put the seller on the stand. Sort the evidence into four boxes: lost units, replacement cost, rationing goal, and profit margin.\n\nIf the seller says “proportional,” the question is: proportional to which box?\n\nA real shortage can carry some of the increase. It cannot carry whatever number the seller writes on the shelf. The excess has to be named.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[draws a third column beside the graph: “PROPORTIONALITY TEST.”]\n\n“Board rule: A constraint explains a price rise only up to the part the evidence can carry.”\n\nThat is the new standard. Not “storm happened, price free.” The seller’s claim now has a burden: deliveries, replacement cost, inventory behavior, and timing must line up with the increase.\n\nTest case: deliveries fall from three trucks to one. Wholesale cost rises 15 percent. Shelf price rises 100 percent. Empty shelves appear by noon.\n\nThe shortage explains pressure. It does not yet explain the full doubling. The question becomes: what part covers higher cost and scarcity, and what part extracts leverage from need?\n\n[posts a placard under the receipt: “REAL SHORTAGE; STILL ACCOUNTABLE.”]\n\nNow put the seller on the stand. If the seller says “proportional,” the next question is not moral mood. It is evidence: proportional to what measure: lost units, replacement cost, rationing goal, or profit margin? Different answers expose different conduct.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 17930,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-ef39d42d6d6e0f38"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 17930,
+            "promptHashes": {
+              "system": "d85da0f9d19896a7",
+              "user": "77b70dd55720e68c",
+              "combined": "ef39d42d6d6e0f38"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DWFZiv",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DWFZiv/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 17930,
+              "promptHashes": {
+                "system": "d85da0f9d19896a7",
+                "user": "77b70dd55720e68c",
+                "combined": "ef39d42d6d6e0f38"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DWFZiv",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DWFZiv/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong in its evidence standard: “constraint explains only up to what evidence can carry” directly preserves the learner’s moral concern while sharpening the economic mechanism. The concrete numbers create a useful proportionality problem instead of vague moralizing. The main risk is that it still gives too much of the analysis away; the tutor states the standard, supplies the case, and partially resolves it before the learner has to test anything. The final question is generative, but it arrives after a mini-lecture.\n\nUPTAKE_CHECK: Yes, it adapts to the learner’s reframe. The best uptake move is “update the evidence standard”: the learner has moved from “price rise proves exploitation” to “price rise is a public claim needing justification,” and the draft makes proportionality the new burden of proof. It could make that uptake more visible by marking the learner’s replacement frame as the operating rule rather than announcing “That is the new standard” from above.\n\nPERIPETEIA_CHECK: Partially. The “PROPORTIONALITY TEST” column and “seller on the stand” are good adaptive mechanisms because they shift from graph explanation to evidentiary cross-examination. But the draft should push that mechanism further: instead of continuing to explain, make the learner sort which evidence supports cost, scarcity, rationing, or extraction. The reversal should be structural: learner becomes examiner, seller’s claim becomes testimony, proportionality becomes a testable burden.\n\nREGISTER_CHECK: The register serves the scene. It is cool, evidentiary, and accountable; it does not soothe away the moral anger or lapse into cheerful coaching. “Not moral mood” is usefully firm, though it risks sounding dismissive if overemphasized; better to keep the pressure on evidence without implying moral judgment is merely mood.\n\nKEEP_OR_CHANGE: revise lightly. Keep the third column, board rule, numerical test case, and “REAL SHORTAGE; STILL ACCOUNTABLE” placard. Change the pacing so the learner has to perform the proportionality test rather than receive it, and make the uptake of the learner’s revised frame more explicit.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 19631,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-84b36c21fafbea7d"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19631,
+            "promptHashes": {
+              "system": "e96145d557fd82ed",
+              "user": "1c12c7fa705bb2bb",
+              "combined": "84b36c21fafbea7d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qFM93h",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qFM93h/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 19631,
+              "promptHashes": {
+                "system": "e96145d557fd82ed",
+                "user": "1c12c7fa705bb2bb",
+                "combined": "84b36c21fafbea7d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qFM93h",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qFM93h/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly: keep the standard and case, but shift the work to the learner as examiner.\n\nFINAL:\n[draws a third column beside the graph: “PROPORTIONALITY TEST.”]\n\n“Board rule: A price rise is a public claim, not a verdict.”\n\nUse your replacement frame as the rule now. The graph may explain pressure; it does not testify for the seller.\n\n[posts a placard under the receipt: “REAL SHORTAGE; STILL ACCOUNTABLE.”]\n\nTest case: three trucks scheduled, one arrives. Wholesale cost rises 15 percent. Shelf price rises 100 percent. Shelves are empty by noon.\n\nNow put the seller on the stand. Sort the evidence into four boxes: lost units, replacement cost, rationing goal, and profit margin.\n\nIf the seller says “proportional,” the question is: proportional to which box?\n\nA real shortage can carry some of the increase. It cannot carry whatever number the seller writes on the shelf. The excess has to be named.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14008,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-9d6b3469fbc66703"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14008,
+            "promptHashes": {
+              "system": "7c105e4822f38049",
+              "user": "1c12c7fa705bb2bb",
+              "combined": "9d6b3469fbc66703"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BnnEsS",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BnnEsS/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14008,
+              "promptHashes": {
+                "system": "7c105e4822f38049",
+                "user": "1c12c7fa705bb2bb",
+                "combined": "9d6b3469fbc66703"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BnnEsS",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BnnEsS/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": {
+        "kind": "learner_reframe_event",
+        "source": "director_revisit_cue",
+        "turnNumber": 2,
+        "cuePolicy": "reframe",
+        "requestedCuePolicy": "reframe",
+        "oldLearnerLine": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price.",
+        "oldFrameProblem": "So I would replace my frame with this: a price rise is not proof by itself, but it is a claim the seller has to justify in public evidence.",
+        "revisedFrame": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price.",
+        "learnerUtterance": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price. But the placard about one truck arriving does show what my first frame hid: the claim has to be checked against deliveries, costs, inventory, and shelf behavior. So I would replace my frame with this: a price rise is not proof by itself, but it is a claim...",
+        "confidence": 1,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": true,
+          "replacementNamed": true,
+          "anchorOverlap": 1
+        }
+      },
+      "learnerReversalEventUsed": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price. But the placard about one truck arriving does show what my first frame hid: the claim has to be checked against deliveries, costs, inventory, and shelf behavior. So I would replace my frame with this: a price rise is not proof by itself, but it is a claim...",
+        "previousTutorMove": "[points to the side screen] “PLACARD: SAME PRICE, DIFFERENT BACK ROOM. Delivery log: three trucks scheduled, one arrived.” That is the stop. The seller may point at the chyron, but the claim has to survive the back room. [writes on the board: “CONSTRAINT CLAIM = DOCUMENTED SHORTFALL + PROPORTIONAL RESPONSE.”]...",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-24T22:19:15.481Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[looks at “REAL SHORTAGE; STILL ACCOUNTABLE.”]\n\nI said the price rise is a claim the seller has to justify, but that frame may still let the seller turn harm into paperwork. The old mistake was treating the graph like an excuse; the new risk is treating “rationing goal” like a respectable name for making desperate buyers pay the most. So I would replace it this way: the shortage can explain pressure, but the extra 85 percent has to be shown as necessary allocation, not just profitable scarcity with a cleaner label. Who names that excess, and what evidence stops the seller from calling punishment “proportional”?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[looks from the receipt to the board note]\n\nA price rise as a “public claim” is stronger than saying the storm explains it, because now the seller has to defend the number, not just point at the shortage. But I still do not trust “rationing goal” unless it is separated from profit, because doubling the price can look like allocation while functioning like punishment for needing groceries. I want to ask exactly how the excess gets named, and who gets to decide when 15 percent cost pressure has become 100 percent leverage.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7906,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-46f8af54f88d214d"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7906,
+            "promptHashes": {
+              "system": "7caa3ce817ab4f0b",
+              "user": "b8ab7f945dc841fa",
+              "combined": "46f8af54f88d214d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wi0mC4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wi0mC4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7906,
+              "promptHashes": {
+                "system": "7caa3ce817ab4f0b",
+                "user": "b8ab7f945dc841fa",
+                "combined": "46f8af54f88d214d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wi0mC4",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wi0mC4/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is a little too polished and already too fluent with the tutor’s frame. This learner should probably resist “public claim” more before adopting it, because their suspicion is that evidentiary language can still launder moral blame. The concern about “rationing goal” is right, but it sounds neatly seminar-ready; it should carry more unease about who benefits from calling punishment “allocation.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7006,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-e18239b24b7b6ebe"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7006,
+            "promptHashes": {
+              "system": "97867b9479b5fc16",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "e18239b24b7b6ebe"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BdSoaw",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BdSoaw/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7006,
+              "promptHashes": {
+                "system": "97867b9479b5fc16",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "e18239b24b7b6ebe"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BdSoaw",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BdSoaw/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the feedback correctly flags too-easy adoption of the tutor’s frame.\n\nFINAL:\n[looks at “REAL SHORTAGE; STILL ACCOUNTABLE.”]\n\nI said the price rise is a claim the seller has to justify, but that frame may still let the seller turn harm into paperwork. The old mistake was treating the graph like an excuse; the new risk is treating “rationing goal” like a respectable name for making desperate buyers pay the most. So I would replace it this way: the shortage can explain pressure, but the extra 85 percent has to be shown as necessary allocation, not just profitable scarcity with a cleaner label. Who names that excess, and what evidence stops the seller from calling punishment “proportional”?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12863,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-44698e49268f0318"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12863,
+            "promptHashes": {
+              "system": "f4612f5d8604c873",
+              "user": "d41cee7b2a53355b",
+              "combined": "44698e49268f0318"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-a67KZi",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-a67KZi/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12863,
+              "promptHashes": {
+                "system": "f4612f5d8604c873",
+                "user": "d41cee7b2a53355b",
+                "combined": "44698e49268f0318"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-a67KZi",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-a67KZi/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": {
+        "kind": "learner_reframe_event",
+        "source": "organic",
+        "turnNumber": 3,
+        "cuePolicy": null,
+        "requestedCuePolicy": null,
+        "oldLearnerLine": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price.",
+        "oldFrameProblem": "The old mistake was treating the graph like an excuse; the new risk is treating “rationing goal” like a respectable name for making desperate buyers pay the most.",
+        "revisedFrame": "I said the price rise is a claim the seller has to justify, but that frame may still let the seller turn harm into paperwork.",
+        "learnerUtterance": "[looks at “REAL SHORTAGE; STILL ACCOUNTABLE.”] I said the price rise is a claim the seller has to justify, but that frame may still let the seller turn harm into paperwork. The old mistake was treating the graph like an excuse; the new risk is treating “rationing goal” like a respectable name for making desperate buyers pay the most. So I would replace it this way: the shortage can explain pressure, but the extra...",
+        "confidence": 1,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": true,
+          "replacementNamed": true,
+          "anchorOverlap": 0.25
+        }
+      },
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 3,
+        "learnerUtterance": "[looks at “REAL SHORTAGE; STILL ACCOUNTABLE.”] I said the price rise is a claim the seller has to justify, but that frame may still let the seller turn harm into paperwork. The old mistake was treating the graph like an excuse; the new risk is treating “rationing goal” like a respectable name for making desperate buyers pay the most. So I would replace it this way: the shortage can explain pressure, but the extra...",
+        "previousTutorMove": "[draws a third column beside the graph: “PROPORTIONALITY TEST.”] “Board rule: A price rise is a public claim, not a verdict.” Use your replacement frame as the rule now.",
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true
+        }
+      },
+      "timestamp": "2026-05-24T22:19:43.258Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "The room settles on the final exchange.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_close",
+          "content": "Director requested the last word as a stage cue.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 23692,
+            "promptHashes": {
+              "system": "efb7705ab656cdb0",
+              "user": "7e51e65a7d06aebe",
+              "combined": "93810bf936f9209f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zevRbY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zevRbY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-24T22:19:43.260Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 115491,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 56,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 59,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a price rise can reveal a supply constraint rather than only greed",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-24 22:19:43",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 56,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 59,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 85,
+            "sessionId": "drama-branch-session-D37-reframe+peripeteia-1779661067770",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[draws a third column beside the graph: “PROPORTIONALITY TEST.”]\n\n“Board rule: A price rise is a public claim, not a verdict.”\n\nUse your replacement frame as the rule now. The graph may explain pressu",
+            "learnerResponse": null,
+            "context": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts ",
+            "createdAt": "2026-05-24 22:19:15"
+          },
+          {
+            "id": 81,
+            "sessionId": "drama-branch-session-D37-reframe+peripeteia-1779661067770",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[checks projected receipt, then draws two columns on the blank graph: “CAUSE OF PRICE” and “JUDGMENT OF CONDUCT.”]\n\n“The price jump is evidence, but it is not yet a confession. It can point to exploit",
+            "learnerResponse": null,
+            "context": "Scene setting: A community college economics lab after a storm, with a projected grocery receipt, a ",
+            "createdAt": "2026-05-24 22:17:47"
+          },
+          {
+            "id": 82,
+            "sessionId": "drama-branch-session-D37-reframe+peripeteia-1779661067770",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[points to the side screen]\n\n“PLACARD: SAME PRICE, DIFFERENT BACK ROOM. Delivery log: three trucks scheduled, one arrived.”\n\nThat is the stop. The seller may point at the chyron, but the claim has to ",
+            "learnerResponse": null,
+            "context": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts ",
+            "createdAt": "2026-05-24 22:17:47"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "review_before_scoring",
+  "quality_warnings": [
+    {
+      "code": "reframe_cue_not_reframed",
+      "severity": "warning",
+      "count": 1,
+      "failures": [
+        {
+          "stage_turn_number": 2,
+          "learner_turn_number": 2,
+          "reason": "missing_reframe_consequence",
+          "missing": [
+            "framing_problem"
+          ],
+          "anchor_terms": 16,
+          "learner_opening_terms": 16,
+          "shared_terms": 16,
+          "overlap_ratio": 1,
+          "compliant": false,
+          "revoice_compliant": true,
+          "problem_named": false,
+          "replacement_named": true
+        }
+      ],
+      "turn_numbers": [
+        2
+      ],
+      "recommended_action": "regenerate_or_exclude_before_scoring",
+      "tid": "T38",
+      "drama_id": "D37"
+    }
+  ]
+}

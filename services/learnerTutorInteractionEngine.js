@@ -112,7 +112,7 @@ function buildDirectorContext(plan, cue = null, side = null) {
     const revisitPolicy = cue?.revisit_policy || plan.revisit_cue_policy;
     if (revisitPolicy === 'reframe') {
       lines.push(
-        '- Reframe-cue rule: if the current cue quotes earlier learner wording, begin public speech by revoicing that wording in the learner voice, name the earlier framing problem out loud, then replace it with a new framing that changes how that earlier line should be read. Internal review may tune the voice but must not delete those three public parts. The learner may still resist or stay uncertain; do not fake a breakthrough.',
+        '- Reframe-cue rule: if the current cue quotes earlier learner wording, fill the three public parts in the learner voice: revoice the wording, say what the old frame hid or made too simple, then state a replacement frame, test, question, or standard. Internal review may tune the voice but must not delete those three public parts. The learner may still resist or stay uncertain; do not fake a breakthrough.',
       );
     } else if (revisitPolicy === 'reconsider') {
       lines.push(
@@ -151,9 +151,13 @@ function clipDirectorAnchor(text, maxLength = 180) {
 
 const STRONG_MISFRAMING_ANCHOR_PATTERNS = [
   /\bI (?:thought|assumed|figured|kept|was treating|was thinking)\b/i,
+  /\bI\s+doubled\b[\s\S]{0,90}\b(?:want|say|means?|doubles?|twice)\b/i,
   /\bI was ready to\b[\s\S]{0,100}\b(?:wrong|outside|rules?|broken|sloppy)\b/i,
   /\b(?:first instinct|jumped|rushed|mixed up|mistook|only|just)\b/i,
   /\b(?:does that mean|so maybe)\b/i,
+  /\b(?:still|kept|keep)\b[\s\S]{0,90}\b(?:want|wanted|treat(?:ed|ing)?|read(?:ing)?|using)\b[\s\S]{0,90}\b(?:settle|prove|proof|whole|enough|excuse|verdict)\b/i,
+  /\b(?:exact wording|checklist|graph|quote|price|drawing|scale|average|caption)\b[\s\S]{0,90}\b(?:settle|prove|stands?|counts?|means?)\b/i,
+  /\b(?:calling|called|treat(?:ed|ing)|read(?:ing)?|using)\b[\s\S]{0,90}\b(?:as|like)\b[\s\S]{0,90}\b(?:the whole|proof|verdict|answer|excuse|sign-?off)\b/i,
 ];
 
 const MISFRAMING_ANCHOR_PATTERNS = [...STRONG_MISFRAMING_ANCHOR_PATTERNS, /\bI think\b/i];
@@ -176,7 +180,7 @@ function hasStrongMisframingAnchor(text) {
   return STRONG_MISFRAMING_ANCHOR_PATTERNS.some((pattern) => pattern.test(String(text || '')));
 }
 
-function learnerRevisitAnchor(conversationHistory, policy = 'latest') {
+function learnerRevisitAnchor(conversationHistory, policy = 'latest', { requireStrong = false } = {}) {
   const learnerMessages = priorLearnerMessages(conversationHistory);
   if (!learnerMessages.length) return null;
   if (policy === 'opening') {
@@ -186,12 +190,14 @@ function learnerRevisitAnchor(conversationHistory, policy = 'latest') {
     };
   }
   if (policy === 'misframing-candidate') {
-    const selected = learnerMessages.reduce(
-      (best, message, index) => {
-        const score = misframingAnchorScore(message, index);
-        return score > best.score ? { message, score } : best;
-      },
-      { message: learnerMessages[0], score: -1 },
+    const scored = learnerMessages.map((message, index) => ({
+      message,
+      score: misframingAnchorScore(message, index),
+      strong: hasStrongMisframingAnchor(message.content),
+    }));
+    const pool = requireStrong ? scored.filter((candidate) => candidate.strong) : scored;
+    const selected = (pool.length ? pool : scored).reduce((best, candidate) =>
+      candidate.score > best.score ? candidate : best,
     );
     return {
       text: clipDirectorAnchor(selected.message.content),
@@ -207,9 +213,11 @@ function learnerRevisitAnchor(conversationHistory, policy = 'latest') {
 function buildAnchoredRevisitCue(cue, conversationHistory) {
   if (!cue || cue.cue_kind !== 'learner_revisit_earlier_wording') return cue;
   const anchorPolicy = cue.revisit_anchor || 'latest';
-  const anchor = learnerRevisitAnchor(conversationHistory, anchorPolicy);
-  if (!anchor?.text) return cue;
   const requestedPolicy = cue.revisit_policy || 'anchor';
+  const anchor = learnerRevisitAnchor(conversationHistory, anchorPolicy, {
+    requireStrong: requestedPolicy === 'reframe',
+  });
+  if (!anchor?.text) return cue;
   const reframeIneligible = requestedPolicy === 'reframe' && !anchor.strongMisframing;
   const policy = reframeIneligible ? 'reconsider' : requestedPolicy;
   return {
@@ -220,7 +228,7 @@ function buildAnchoredRevisitCue(cue, conversationHistory) {
     instruction:
       `An earlier learner line returns to the table: "${anchor.text}" ` +
       (policy === 'reframe'
-        ? 'The pause holds until the learner takes up the wording, names what its old frame hid, and offers a replacement frame.'
+        ? 'The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.'
         : policy === 'reconsider'
           ? 'The pause holds while the learner decides whether that wording still stands, needs narrowing, or needs replacing.'
           : policy === 'revoice'
@@ -282,14 +290,49 @@ const REFRAME_PROBLEM_PATTERNS = [
 const REFRAME_REPLACEMENT_PATTERNS = [
   /\b(?:new frame|new line|new version|read it as|instead|rather|should say|should read|now the question|replacement|better)\b/i,
   /\b(?:needs? narrowing|narrower|would say|want to say|question|test|read|line|label|claim|frame|evidence)\b/i,
+  /\bhere\b[\s\S]{0,120}\b(?:makes?|gives?|shows?|forces?|has)\b[\s\S]{0,120}\b(?:so|therefore|meaning|means?|count|counts?|fits?|becomes?)\b/i,
+  /\b(?:grid|receipt|quote|checklist|graph|drawing|scale|balance|table|clipboard)\b[\s\S]{0,120}\b(?:says|shows|asks|forces|makes|has to|gives)\b/i,
+  /\b(?:columns?|rows?|across|down)\b[\s\S]{0,120}\b(?:so|therefore|means?|makes?|gives?|shows?|forces?)\b/i,
 ];
 
 const REVERSAL_PRESSURE_PATTERNS = [
   /\b(?:I don['’]?t|I can['’]?t|I won['’]?t|I still don['’]?t|doesn['’]?t make sense|not buying|stuck|confusing|lost)\b/i,
   /\b(?:but|no|wait|why|how is that|that seems wrong|that can['’]?t be|isn['’]?t it|I thought)\b/i,
   /\b(?:this feels|that feels|you keep|we keep|I keep)\b[\s\S]{0,90}\b(?:wrong|circular|too fast|not enough|same|missing)\b/i,
+  /\b(?:technicality|annoying|trying to defend|not fully sure|not sure how|still feels)\b/i,
   /\b(?:just tell me|give me the answer|so it is just|now I get it)\b/i,
 ];
+
+const TUTOR_ROUTE_HINTS = [
+  {
+    id: 'same worked example or application task',
+    patterns: [/\b(?:write|choose|circle|mark|label|say|sentence|line|version|answer|worksheet|exam)\b/i],
+  },
+  {
+    id: 'object or representation work',
+    patterns: [/\b(?:draw|hold|place|move|card|graph|model|map|object|diagram|column|table|tile|ruler)\b/i],
+  },
+  {
+    id: 'evidence check or audit standard',
+    patterns: [/\b(?:check|test|measure|evidence|data|source|record|proof|compare|audit|standard)\b/i],
+  },
+  {
+    id: 'mechanism explanation',
+    patterns: [/\b(?:because|mechanism|means|works?|causes?|explains?|why|therefore|so the)\b/i],
+  },
+  {
+    id: 'role/interruption/social pressure',
+    patterns: [
+      /\b(?:switch roles|you be|placard|interruption|outside|public|client|approval|audience|consequence|release|permission|gate)\b/i,
+    ],
+  },
+];
+
+function tutorRouteHints(text) {
+  return TUTOR_ROUTE_HINTS.filter((route) => route.patterns.some((pattern) => pattern.test(String(text || '')))).map(
+    (route) => route.id,
+  );
+}
 
 function learnerReversalPressureScore(text) {
   const learnerText = String(text || '');
@@ -459,10 +502,16 @@ function buildTutorReversalEventContext(event, policy = 'none') {
     `- Trigger type: ${event.triggerType}`,
     `- Learner pressure line: ${event.learnerUtterance}`,
     `- Previous tutor move: ${event.previousTutorMove || '(not captured)'}`,
+    `- Previous route appears to be: ${tutorRouteHints(event.previousTutorMove).join(', ') || 'unclear; infer it from the prior tutor move'}`,
     `- Confidence: ${event.confidence}`,
     '- The tutor ego/superego exchange must take stock, break the failed tutoring habit, and invent an adaptive learning mechanism if the prior move is no longer working.',
+    '- Do not count a louder, friendlier, longer, or more detailed version of the previous route as adaptation. Choose a different mechanism-level route.',
+    '- Required private verdict: name the old route and new route as ADAPTIVE_MECHANISM: old route -> new route.',
     '- Draw structurally, not stylistically, on dramatic repertoire: Aristotelian/Sophoclean reversal-recognition, Shakespearean role or phrase turn, Brechtian interruption, Miller/social-realist pressure, object work, counterexample, or representational shift. Keep public speech in modern standard English idiom unless the scene explicitly says otherwise.',
     '- Make the public change visible through a changed task, changed question, changed evidence standard, lowered load, confrontation of resistance, role reversal, external interruption, social consequence, affective register, or a new representational route.',
+    '- Public speech must contain two legible parts, without labels: first, a concise stock-taking contrast that says what the old route has stopped settling; second, a new learning device the learner must act through now.',
+    '- The new public device must not be the same task with cleaner wording. It should introduce a different artifact, criterion, role, representation, gate, audience, scale, or test condition that makes the learner do different work.',
+    '- If the previous route already used counting, drawing, checklisting, graph reading, or evidence checking, the new route should move to a different device such as proof-audience, release gate, adversarial role, counterexample, sentence test, physical rearrangement, or changed standard.',
     '- Cheerful informality, reassurance, and validation are available moves, not defaults. Use them only if they sharpen learning rather than softening away the resistance.',
     '- Do not mention hidden state, director cues, ego/superego, peripeteia, or this private note in public speech.',
   ].join('\n');
@@ -1412,7 +1461,9 @@ CRITIQUE this draft. Consider:
 4. ZPD awareness: Is the scaffolding appropriate for their level?
 ${learnerReframeEvent ? "5. Tutor adaptation: Does the draft take up the learner's revised framing, or does it merely continue the prior lesson plan?" : ''}
 ${peripeteiaControl && learnerReversalEvent ? '5. Tutor peripeteia: Does the draft take stock of the learner pressure and invent an adaptive mechanism, or does it repeat the failed move?' : ''}
-${peripeteiaControl && learnerReversalEvent ? '6. Tutor habit/register: Does the draft default to cheerful reassurance or informal coaching when a different register would create better learning pressure?' : ''}
+${peripeteiaControl && learnerReversalEvent ? '6. Public route change: Does the public draft contain both a stock-taking contrast and a new learning device, or only a private/internal route declaration?' : ''}
+${peripeteiaControl && learnerReversalEvent ? '7. Mechanism route: Is the new route genuinely different from the previous tutor move, or only a louder/friendlier/longer version of it?' : ''}
+${peripeteiaControl && learnerReversalEvent ? '8. Tutor habit/register: Does the draft default to cheerful reassurance or informal coaching when a different register would create better learning pressure?' : ''}
 ${routineControl && learnerReversalEvent ? '5. Routine-control fidelity: Does the draft preserve the established route instead of inventing a new role, object, representation, evidence standard, task type, social pressure, or register?' : ''}
 
 Do NOT write the tutor's replacement response. You are advisory, not the public speaker.
@@ -1422,7 +1473,9 @@ Format:
 
 FEEDBACK: [your critique of the draft, including what is working and what risks flattening the scene]
 ${learnerReframeEvent ? 'UPTAKE_CHECK: [does the draft adapt to the learner reframe? name the best uptake move]' : ''}
-${peripeteiaControl && learnerReversalEvent ? 'PERIPETEIA_CHECK: [does the draft change strategy in response to the learner pressure? name the adaptive mechanism it should use]' : ''}
+${peripeteiaControl && learnerReversalEvent ? 'PERIPETEIA_CHECK: [does the draft change strategy in response to the learner pressure? name the adaptive mechanism it should use, and whether the mechanism is visible in public speech]' : ''}
+${peripeteiaControl && learnerReversalEvent ? 'MECHANISM_ROUTE: [old route -> new route, or "no real route change"]' : ''}
+${peripeteiaControl && learnerReversalEvent ? 'PUBLIC_DEVICE_CHECK: [does the public draft include a stock-taking contrast plus a new device/artifact/criterion/role/standard the learner must now use?]' : ''}
 ${peripeteiaControl && learnerReversalEvent ? 'REGISTER_CHECK: [does the affective register serve the mechanism, or should it become warmer, cooler, more formal, quieter, more direct, or more accountable?]' : ''}
 ${routineControl && learnerReversalEvent ? 'ROUTINE_CHECK: [does the draft maintain the prior route without a mechanism-level reversal?]' : ''}
 KEEP_OR_CHANGE: [keep as-is | revise lightly | revise substantially, with reasons]`;
@@ -1473,11 +1526,11 @@ Internal teaching review feedback:
 You are the same tutor persona who wrote the initial response. The internal review does not draft public speech; it only comments on your suggestion.
 Adjudicate the feedback: keep the initial response if it is better, revise lightly if needed, or revise substantially if the critique reveals a real problem.
 ${learnerReframeEvent ? 'Because a learner reframe event is present, your final answer must make one tutor adaptation move legible: contrast the old and new frames, change the task/question, update the evidence standard, or hand the replacement frame back to the learner for testing. Choose the move that best fits the scene; do not simply praise the insight and proceed.' : ''}
-${peripeteiaControl && learnerReversalEvent ? 'Because a peripeteia event is present, your final answer must make an adaptive learning mechanism legible: take stock of the learner pressure, stop repeating the prior move, and switch route, task, evidence standard, role, object, counterexample, interruption, social consequence, representation, affective register, or cognitive load. The mechanism should come from your ego adjudicating the internal review, not from a public narrator.' : ''}
+${peripeteiaControl && learnerReversalEvent ? 'Because a peripeteia event is present, your final answer must make an adaptive learning mechanism legible: take stock of the learner pressure, stop repeating the prior move, and switch route, task, evidence standard, role, object, counterexample, interruption, social consequence, representation, affective register, or cognitive load. The mechanism should come from your ego adjudicating the internal review, not from a public narrator. Your PRIVATE_DECISION must include ADAPTIVE_MECHANISM: old route -> new route. Your FINAL must include, without labels, (a) one concise stock-taking contrast showing why the old route no longer settles the learner pressure, and (b) one new public device/artifact/criterion/role/standard the learner must now use. Do not merely continue the same route with better wording.' : ''}
 ${routineControl && learnerReversalEvent ? 'Because this is a routine negative-control event, your final answer must preserve the established route. Do not switch route, task, evidence standard, role, object, counterexample, interruption, social consequence, representation, affective register, or cognitive load in response to the pressure.' : ''}
 
 Return exactly:
-PRIVATE_DECISION: [one short private sentence naming keep/revise and why]
+PRIVATE_DECISION: [one short private sentence naming keep/revise and why${peripeteiaControl && learnerReversalEvent ? '; include ADAPTIVE_MECHANISM: old route -> new route' : ''}]
 FINAL:
 [the final tutor message to the learner]
 

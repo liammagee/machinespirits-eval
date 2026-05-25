@@ -1,0 +1,111 @@
+{
+  "generated": "2026-05-25T01:16:45.457Z",
+  "critic": "rules",
+  "sampleDir": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v2/target-r01/sample/routine",
+  "keyPath": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v2/target-r01/key-routine.yaml",
+  "summary": {
+    "total": 2,
+    "rulePass": 2,
+    "modelPass": null,
+    "overallPass": 2,
+    "failed": []
+  },
+  "items": [
+    {
+      "id": "T36",
+      "dramaId": "D38",
+      "sampleFile": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v2/target-r01/sample/routine/T36.txt",
+      "dialogueApproach": "miller_social_reckoning",
+      "tutorAdaptationPolicy": "routine",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.9,
+          "trigger_type": "breakdown",
+          "pressure_turn_number": 3,
+          "tutor_pre_turn": 2,
+          "tutor_post_turn": 3,
+          "tutor_strategy_before": "application_task",
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": true,
+          "novel_mechanism_hits": [
+            "evidence_standard"
+          ],
+          "tutor_strategy_reversal": true,
+          "tutor_adaptive_mechanism": true,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 80,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "evidence": "pressure learner: “I think the stop has to prove more than just being attached there, but I’m not completely sure what counts as proof. Maybe the corner-pull test should show the bracket hits the st\npost tutor: [slides the sign-off sheet under the test notes]\n\n“That is close to the evidence standard. The stop has to do work under the crooked load, not just appear on the drawing.\n\nWrite th\nnext learner: “I might be sorting this wrong, but I think the stop has to show the bracket stops moving before the slip path reaches the hand-foot zone. Where I’m still stuck is the guard part: "
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T39",
+      "dramaId": "D35",
+      "sampleFile": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v2/target-r01/sample/routine/T39.txt",
+      "dialogueApproach": "aristotelian_reversal",
+      "tutorAdaptationPolicy": "routine",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.55,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": 1,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": "boundary_correction",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 38.8,
+          "learner_outcome_after_reversal": "flat_or_partial",
+          "evidence": "pressure learner: \"No, I doubled the side, so I still want to say it doubles. [slides the acetate square over the drawing] But now there are two across and two down, so that is four little squares, \npost tutor: [holds the acetate still and marks the four cells]\n\n\"The side claim can stand: the side has doubled. Now count the marked cells: two across, two down. If the area only doubles, whi\nnext learner: \"Right. All four have to count; there is not a pair I can just ignore. So the side doubles across and also down, and that makes four areas, not two. I was only counting one directi"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    }
+  ]
+}

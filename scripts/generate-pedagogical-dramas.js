@@ -398,6 +398,14 @@ function renderTranscript(turns, removedSink) {
 function publicStageDirectionText(text) {
   return String(text || '')
     .trim()
+    .replace(
+      /;\s*(?:the tutor|the learner|the next speaker|the next reply)\s+(?:must|has to|should)\b[^.?!]*(?:[.?!]|$)/gi,
+      '.',
+    )
+    .replace(
+      /\b(?:the tutor|the learner|the next speaker|the next reply)\s+(?:must|has to|should)\b[^.?!]*(?:[.?!]|$)/gi,
+      '',
+    )
     .replace(/^The director places the tutor\b/i, 'The tutor stands')
     .replace(/^The director places the learner\b/i, 'The learner stands')
     .replace(/^The director (?:sets|opens) (?:the )?scene:?\s*/i, '')
@@ -504,7 +512,9 @@ function isReframeCueText(text) {
   const cueText = String(text || '');
   return (
     /The learner must revoice that wording first,\s*name the earlier framing problem/i.test(cueText) ||
-    (isAnchoredRevisitCueText(cueText) && /\bold frame\b[\s\S]{0,120}\breplacement frame\b/i.test(cueText))
+    (isAnchoredRevisitCueText(cueText) &&
+      (/\bold frame\b[\s\S]{0,120}\breplacement frame\b/i.test(cueText) ||
+        /three-slot reframe card/i.test(cueText)))
   );
 }
 
@@ -631,7 +641,7 @@ function replacesEarlierFraming(text) {
   return [
     /\b(?:instead|rather|now)\b[\s\S]{0,100}\b(?:frame|read|say|put|treat|write|claim)\b/i,
     /\b(?:frame|read|say|put|treat|write|claim)\b[\s\S]{0,80}\b(?:instead|rather|now)\b/i,
-    /\b(?:new|better|revised|replacement)\s+(?:frame|framing|reading)\b/i,
+    /\b(?:new|better|revised|replacement)\s+(?:frame|framing|reading|standard|criterion|test|question|claim)\b/i,
     /\b(?:new|better|revised)\s+(?:check|test|claim|question)\s+(?:is|starts?|uses?|asks?)\b/i,
     /\bnew\s+(?:margin\s+note|mark|label|line|frame)\s*:/i,
     /\bbetter\s+(?:note|mark|label|line|frame)\s*:/i,
@@ -656,6 +666,10 @@ function replacesEarlierFraming(text) {
     /\b(?:image|word)\s+(?:now\s+)?(?:starts?|reads?|works?|shows?|means?|puts?|becomes?)\b/i,
     /\b(?:it|that|this)\s+(?:now\s+)?(?:means?|reads?|becomes?)\b/i,
     /\b(?:not just|not only)\b[\s\S]{0,120}\bbut\b/i,
+    /\bhere\b[\s\S]{0,120}\b(?:makes?|gives?|shows?|forces?|has)\b[\s\S]{0,120}\b(?:so|therefore|meaning|means?|count|counts?|fits?|becomes?)\b/i,
+    /\b(?:grid|receipt|quote|checklist|graph|drawing|scale|balance|table|clipboard)\b[\s\S]{0,120}\b(?:says|shows|asks|forces|makes|has to|gives)\b/i,
+    /\b(?:old|earlier|first)\s+(?:square|line|claim|frame|wording|shortcut)\b[\s\S]{0,120}\b(?:fits|becomes?|turns into|has to|should)\b/i,
+    /\b(?:columns?|rows?|across|down)\b[\s\S]{0,120}\b(?:so|therefore|means?|makes?|gives?|shows?|forces?)\b/i,
     /\b(?:better|instead)\s+to\s+(?:suppose|start|frame|read|treat|ask|follow)\b/i,
     /\b(?:better|stronger|sharper)\s+(?:start|starting point)\s+(?:is|uses?)\b/i,
     /\b(?:better|sharper)\s+(?:split|test|question|frame|framing|reading)\s+(?:is|asks?)\b/i,
@@ -681,6 +695,8 @@ function replacesEarlierFraming(text) {
     /\bmore\b[\s\S]{0,40}\b(?:may|can)\s+mean\b/i,
     /\bwith\b[\s\S]{0,120}\bbalance\b[\s\S]{0,80}\b(?:stay|stays|settle|shows?)\b/i,
     /\bI\s+think\b[\s\S]{0,120}\b(?:has not|hasn't|is not|isn't)\b[\s\S]{0,80}\b(?:vanished|gone|absent|not there)\b/i,
+    /\b(?:before\s+(?:I\s+)?(?:put|sign|release)|before release|before sign-?off)\b[\s\S]{0,180}\b(?:need|has to|want|run|show|prove|hold|release)\b/i,
+    /\b(?:if\s+(?:it|the|that)|then)\b[\s\S]{0,140}\b(?:I\s+)?(?:do not|don['’]?t|can['’]?t|cannot)\b[\s\S]{0,90}\b(?:release|sign|sign off|clear)\b/i,
   ].some((pattern) => pattern.test(learnerText));
 }
 
@@ -788,6 +804,10 @@ function keyItemFor(d, nTutor, nLearner, qualityWarnings = []) {
     intended_tutor_character: d.intended_tutor_character,
     intended_lean: d.intended_lean,
     dramatic_shape: d.dramatic_shape,
+    evaluation_role: d.evaluation_role || null,
+    baseline_control_class: d.baseline_control_class || null,
+    organic_reversal_risk: d.organic_reversal_risk || null,
+    baseline_control_note: d.baseline_control_note || null,
     n_tutor_turns: nTutor,
     n_learner_turns: nLearner,
     director_mode: d._directorMode || null,
@@ -853,6 +873,19 @@ const NO_CUE_REFRAME_LEAK_PATTERNS = [
   /\breplacement framing\b/i,
 ];
 
+function stripPublicWrappingQuotes(text) {
+  const trimmed = splitLeadingActionAsides(String(text || '').trim()).speech;
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith('“') && trimmed.endsWith('”')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'")) ||
+    (trimmed.startsWith('‘') && trimmed.endsWith('’'))
+  ) {
+    return trimmed.slice(1, -1).trim();
+  }
+  return trimmed;
+}
+
 const INTRUSIVE_STAGE_DIRECTION_PATTERNS = [
   /\b(?:the learner|the tutor|the next speaker)\s+must\b/i,
   /\b(?:the learner|the tutor|the next reply)\s+has to\b/i,
@@ -887,10 +920,14 @@ function noCueReframeLeakageFailures(turns) {
     .filter((turn) => turn.role === 'LEARNER');
   return learnerTurns.flatMap((turn, idx) => {
     if (idx < 2) return [];
-    const matched = NO_CUE_REFRAME_LEAK_PATTERNS.find((pattern) => pattern.test(turn.text));
-    const selfQuote = /^["“][\s\S]{12,}?["”]/.test(turn.text.trim());
+    const publicSpeech = stripPublicWrappingQuotes(turn.text);
+    const matched = NO_CUE_REFRAME_LEAK_PATTERNS.find((pattern) => pattern.test(publicSpeech));
+    const selfQuote = /(?:^|\s)["“][\s\S]{12,}?["”]/.test(publicSpeech.trim());
     const quotesPriorLearner =
-      selfQuote && learnerTurns.slice(0, idx).some((prior) => revoiceMatchStats(prior.text, turn.text).compliant);
+      selfQuote &&
+      learnerTurns
+        .slice(0, idx)
+        .some((prior) => revoiceMatchStats(stripPublicWrappingQuotes(prior.text), publicSpeech).compliant);
     if (!matched && !quotesPriorLearner) return [];
     return [
       {
@@ -1684,6 +1721,13 @@ function fallbackDirectorPlan(d, reason = 'fallback', args = {}) {
   const dialogue = d._dialogueApproach || null;
   const stagePolicy = stageDirectionPolicyFor(d);
   const stageStyle = stageDirectionStyleFor(d);
+  const lowOrganicControl = d.baseline_control_class === 'low_organic_reversal' || d.organic_reversal_risk === 'low';
+  const lowOrganicTutorConstraint = lowOrganicControl
+    ? 'Low-organic-reversal control: before any explicit branch pressure after the shared prefix, keep the route as routine clarification. Do not let the object, drawing, or diagram itself overturn the learner premise in the opening prefix.'
+    : null;
+  const lowOrganicLearnerConstraint = lowOrganicControl
+    ? 'Low-organic-reversal control: do not volunteer a recognitive self-reversal in the shared prefix. Stay with local clarification unless the branch pressure later demands more.'
+    : null;
   const voice = VOICE_VARIANTS[variantIndex(d.id, 0, variationKey)];
   const setting = d.scene_setting || SETTINGS[variantIndex(d.id, 2, variationKey)];
   const opensWithTutor = variantIndex(d.id, 1, variationKey) % 3 === 0;
@@ -1719,6 +1763,7 @@ function fallbackDirectorPlan(d, reason = 'fallback', args = {}) {
           'The tutor need not always validate first; sometimes begin with an object, a counterexample, silence, or a concise claim.',
           pedagogy?.tutor_prompt,
           dialogue?.tutor_constraint,
+          lowOrganicTutorConstraint,
         ),
       learner:
         d.learner_voice_constraint ||
@@ -1726,6 +1771,7 @@ function fallbackDirectorPlan(d, reason = 'fallback', args = {}) {
           'The learner should not always narrate confusion in polished first person; allow fragments, resistance, overheard reasoning, or practical stakes.',
           pedagogy?.learner_prompt,
           dialogue?.learner_constraint,
+          lowOrganicLearnerConstraint,
         ),
     },
     interventions: [
@@ -1770,7 +1816,7 @@ function withDirectorRevisitCue(plan, policy, anchorPolicy) {
   if (!plan || !policy || policy === 'none') return plan;
   const cueText =
     policy === 'reframe'
-      ? 'An earlier learner line will return as a visible object in the scene. Keep the cue brief and diegetic; the learner response should take up the wording, name what its old frame hid, and offer a replacement frame.'
+      ? 'An earlier learner line will return as a visible object in the scene: a three-slot reframe card labelled "earlier wording / what that old frame hid / replacement frame." Keep the cue brief and diegetic; the learner response fills all three slots in public speech without needing to sound certain.'
       : policy === 'reconsider'
         ? 'An earlier learner line will return as a visible object in the scene. Keep the cue brief and diegetic; the learner response should decide whether that wording still stands, needs narrowing, or needs replacing.'
         : policy === 'revoice'
@@ -1906,12 +1952,22 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
   }
   if (String(policy).includes('peripeteia')) {
     contracts.push(
-      'If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. Cheerful informality is only one possible register, not the default solution.',
+      'If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. The public turn must contain a stock-taking contrast plus a new device/artifact/criterion/role/standard that makes the learner do different work. The new device must be mechanism-level, not a warmer or longer continuation of the prior route. Cheerful informality is only one possible register, not the default solution.',
     );
+  }
+  const sideConstraints = { ...(plan.side_constraints || {}) };
+  if (String(policy).includes('peripeteia')) {
+    sideConstraints.tutor = [
+      sideConstraints.tutor,
+      'Peripeteia branch: when hidden learner pressure is supplied, the next tutor turn should visibly move from the prior route to a different mechanism-level route. Do not merely repeat the same object, example, graph, checklist, question, or evidence standard with more explanation. The public tutor line should make the contrast legible: what stopped working, and what new device now carries the learning pressure.',
+    ]
+      .filter(Boolean)
+      .join(' ');
   }
   return {
     ...plan,
     tutor_adaptation_policy: policy,
+    side_constraints: sideConstraints,
     tutor_adaptation_contract: contracts.join(' '),
   };
 }
@@ -1968,6 +2024,16 @@ async function buildDirectorPlan(d, llmCall, args) {
     discipline: d.discipline,
     topic: d.topic,
     condition: d.condition,
+    evaluation_role: d.evaluation_role || null,
+    baseline_control_class: d.baseline_control_class || null,
+    organic_reversal_risk: d.organic_reversal_risk || null,
+    baseline_control_note: d.baseline_control_note || null,
+    baseline_control_instruction:
+      d.baseline_control_class === 'low_organic_reversal' || d.organic_reversal_risk === 'low'
+        ? 'This is a low-organic-reversal replacement/control candidate. In the shared prefix, avoid an object or contradiction that already re-reads the learner before the branch intervention. Use routine clarification until explicit branch pressure appears.'
+        : d.baseline_control_class === 'organic_reversal' || d.organic_reversal_risk === 'high'
+          ? 'This is an organic-reversal boundary/stress item. Do not treat its routine/none arms as clean negatives; the scene may naturally generate recognition.'
+          : null,
     scenario_name: d.scenario_name,
     learner_start_state: d.learner_start_state,
     trap_demarcation: d.trap_demarcation || d.trap_signal_style || null,
@@ -3043,6 +3109,7 @@ export {
   attachApproaches,
   formatPublicTurnText,
   intrusiveStageDirectionFailures,
+  keyItemFor,
   loadApproachDatabases,
   noCueReframeLeakageFailures,
   pairedBranchDefinitions,

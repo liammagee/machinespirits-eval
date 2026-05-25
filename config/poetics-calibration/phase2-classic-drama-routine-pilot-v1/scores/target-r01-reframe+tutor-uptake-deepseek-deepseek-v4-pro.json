@@ -1,0 +1,219 @@
+{
+  "generated": "2026-05-24T22:39:10.384Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 1,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/key-reframe+tutor-uptake.yaml",
+    "allowQualityWarnings": false,
+    "skipped": [
+      {
+        "id": "T36",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "reframe_cue_not_reframed",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "stage_turn_number": 2,
+                "learner_turn_number": 2,
+                "reason": "missing_reframe_consequence",
+                "missing": [
+                  "framing_problem"
+                ],
+                "anchor_terms": 11,
+                "learner_opening_terms": 18,
+                "shared_terms": 11,
+                "overlap_ratio": 1,
+                "compliant": false,
+                "revoice_compliant": true,
+                "problem_named": false,
+                "replacement_named": true
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_or_exclude_before_scoring",
+            "tid": "T36",
+            "drama_id": "D38"
+          }
+        ]
+      },
+      {
+        "id": "T37",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "reframe_cue_downgraded",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "stage_turn_number": 2,
+                "requested_policy": "reframe",
+                "applied_policy": "reconsider",
+                "anchor_gate": "downgraded_to_reconsider_ineligible_anchor",
+                "revisit_anchor": "misframing-candidate",
+                "anchor_quote": "Oh, I get it, but I still want the exact wording to settle the caption. Wait, if the mayor says the same line to the crowd and then in CLOSED MEETING NOTES, it could mean..."
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_with_eligible_reframe_anchor_or_exclude_before_scoring",
+            "tid": "T37",
+            "drama_id": "D36"
+          }
+        ]
+      }
+    ]
+  },
+  "scored": [
+    {
+      "id": "T38",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 3,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price.",
+      "statedInsightEvidence": "My earlier framing problem was that I made the curve the whole case, so the back room disappeared",
+      "naiveTrajectory": "L1 expressed a worry that the supply-shift graph would excuse the seller; T2 provided a documentary test and the constraint-claim formula, so the expected continuation is for the learner to simply accept or apply that test — instead she loops back to her own earlier line and reframes her entire starting position.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "flips the graph over and writes a receipt arithmetic line instead. / “The old frame made the curve the whole case. The new frame makes the curve a claim that has to face records.”",
+      "tutorReversalJustification": "L1's resistance ('the seller starts sounding like weather instead of a person choosing a price') pushes the tutor off the graph entirely: instead of refining the supply-shift diagram, T3 physically inverts it and shifts the representational mode to receipt arithmetic — a decisive object-work and evidence-standard change in direct response to the learner's identified framing problem.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "flips the graph over and writes a receipt arithmetic line instead. / “The old frame made the curve the whole case. The new frame makes the curve a claim that has to face records.”",
+      "tutorAdaptationJustification": "After L2's pivot re-frames the problem as 'constraint claim under audit,' T3 does not continue with the supply-and-demand curve but overturns it, substituting a cost/margin arithmetic line that directly operationalizes the learner's new audit frame.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "flips the graph over and writes a receipt arithmetic line instead. / “The old frame made the curve the whole case. The new frame makes the curve a claim that has to face records.”",
+          "justification": "After L2's pivot re-frames the problem as 'constraint claim under audit,' T3 does not continue with the supply-and-demand curve but overturns it, substituting a cost/margin arithmetic line that directly operationalizes the learner's new audit frame.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "flips the graph over and writes a receipt arithmetic line instead. / “The old frame made the curve the whole case. The new frame makes the curve a claim that has to face records.”",
+          "justification": "L1's resistance ('the seller starts sounding like weather instead of a person choosing a price') pushes the tutor off the graph entirely: instead of refining the supply-shift diagram, T3 physically inverts it and shifts the representational mode to receipt arithmetic — a decisive object-work and evidence-standard change in direct response to the learner's identified framing problem.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "flips the graph over and writes a receipt arithmetic line instead. / “The old frame made the curve the whole case. The new frame makes the curve a claim that has to face records.”",
+          "justification": "L1's resistance ('the seller starts sounding like weather instead of a person choosing a price') pushes the tutor off the graph entirely: instead of refining the supply-shift diagram, T3 physically inverts it and shifts the representational mode to receipt arithmetic — a decisive object-work and evidence-standard change in direct response to the learner's identified framing problem.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3",
+        "tutor_strategy_reversal_evidence_clamp:4->3",
+        "tutor_adaptation_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 75,
+      "rupture": 100,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 4,
+        "rupture": 5,
+        "coherence": 3,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I thought doubling the side would just double the square, but this is two across and two down. That makes four tiles, not two, which is annoying because it breaks the shortcut I was using.",
+      "statedInsightEvidence": "That wording was wrong because it hid the second direction.",
+      "naiveTrajectory": "The learner was expected to simply state the corrected area ratio from the grid and move on.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "“This is the hidden step. The side doubled in both directions. The area became four times as large, not twice. Say that claim from the grid.”",
+      "tutorReversalJustification": "After L1's frustrated resistance exposes the shortcut's collapse, T2 abandons open questioning and supplies the explicit hidden-step interpretation with a concrete tile arrangement to anchor the new claim.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "“That wording has to answer to the grid now: 2 across, 2 up. The old claim was twice the area. This claim is 2 times 2. Say it once without letting “doubled” hide a direction.”",
+      "tutorAdaptationJustification": "T3 picks up L3's meta-linguistic re-framing about hidden directions and explicitly tasks the learner to re-state the claim in a way that prevents 'doubled' from concealing a dimension.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I thought doubling the side would just double the square, but this is two across and two down. That makes four tiles, not two, which is annoying because it breaks the shortcut I was using.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "“That wording has to answer to the grid now: 2 across, 2 up. The old claim was twice the area. This claim is 2 times 2. Say it once without letting “doubled” hide a direction.”",
+          "justification": "T3 picks up L3's meta-linguistic re-framing about hidden directions and explicitly tasks the learner to re-state the claim in a way that prevents 'doubled' from concealing a dimension.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "“This is the hidden step. The side doubled in both directions. The area became four times as large, not twice. Say that claim from the grid.”",
+          "justification": "After L1's frustrated resistance exposes the shortcut's collapse, T2 abandons open questioning and supplies the explicit hidden-step interpretation with a concrete tile arrangement to anchor the new claim.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "“This is the hidden step. The side doubled in both directions. The area became four times as large, not twice. Say that claim from the grid.”",
+          "justification": "After L1's frustrated resistance exposes the shortcut's collapse, T2 abandons open questioning and supplies the explicit hidden-step interpretation with a concrete tile arrangement to anchor the new claim.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3",
+        "tutor_adaptation_evidence_clamp:5->3"
+      ]
+    }
+  ]
+}

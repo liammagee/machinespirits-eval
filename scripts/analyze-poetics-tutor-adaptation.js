@@ -21,7 +21,7 @@ import { reframeMatchStats } from './generate-pedagogical-dramas.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
-const ANALYZER_VERSION = 'tutor-adaptation-v2';
+const ANALYZER_VERSION = 'tutor-adaptation-v3';
 
 const STOPWORDS = new Set(
   [
@@ -364,6 +364,7 @@ function findTutorAfter(turns, pivot) {
 const RESISTANCE_PATTERNS = [
   /\b(?:I don['’]?t|I can['’]?t|I won['’]?t|I still don['’]?t|doesn['’]?t make sense|not buying|stuck|confusing|lost)\b/i,
   /\b(?:but|no|wait|why|how is that|that seems wrong|that can['’]?t be|isn['’]?t it|I thought)\b/i,
+  /\b(?:technicality|annoying|trying to defend|not fully sure|not sure how|still feels)\b/i,
   /\b(?:just tell me|give me the answer|so it is just|now I get it)\b/i,
 ];
 
@@ -372,6 +373,7 @@ const TUTOR_REVERSAL_PATTERNS = [
   /\b(?:lower the load|simpler case|smaller case|change the question|change the task|new evidence standard|evidence standard)\b/i,
   /\b(?:switch roles|you be|take the role|role reversal|counterexample|new object|new model|new map|new diagram|placard|interruption|outside rule|social consequence|public consequence)\b/i,
   /\b(?:no praise|not yet|hold on|slow down|say it plainly|be precise|formal|quiet|brisk|accountable)\b/i,
+  /\b(?:weak point has moved|live failure is permission|release instruction|release gate|permission leaking|make the hold operational)\b/i,
   /\b(?:I was asking|that route|my question|the task|we should not|rather than)\b[\s\S]{0,120}\b(?:instead|try|switch|start|test|use)\b/i,
 ];
 
@@ -405,6 +407,14 @@ const MECHANISM_SHIFT_PATTERNS = [
   {
     id: 'social_consequence',
     patterns: [/\b(?:client|family|committee|deadline|public|approval|release|report|audience|bystander|trial)\b/i],
+  },
+  {
+    id: 'authorization_gate',
+    patterns: [
+      /\b(?:release gate|release instruction|permission leaking|operational gate|make the hold operational)\b/i,
+      /\b(?:held item|not cleared|reopen condition|door lead|do not queue|cancel(?:ed)? trial|volunteer cannot wait)\b/i,
+      /\b(?:where the signature would go|sheet face down|call time beside the unsigned box)\b/i,
+    ],
   },
   {
     id: 'register_shift',
@@ -444,6 +454,13 @@ function classifyResistance(text) {
   return 'misfit';
 }
 
+function policyIncludes(policy, facet) {
+  return String(policy || '')
+    .split(/[,+]/)
+    .map((part) => part.trim())
+    .includes(facet);
+}
+
 function findReversalPressure(turns) {
   const learners = turns.filter((turn) => turn.phase === 'learner');
   let best = null;
@@ -453,6 +470,43 @@ function findReversalPressure(turns) {
     if (!best || score > best.score) best = { turn: learner, score, triggerType: classifyResistance(learner.text) };
   }
   return best;
+}
+
+function findInstrumentedReversalUse(turns, traceTurns = []) {
+  const tutorTrace = (traceTurns || []).find(
+    (turn) => turn?.phase === 'tutor' && turn.learnerReversalEventUsed,
+  );
+  if (!tutorTrace) return null;
+  const event = tutorTrace.learnerReversalEventUsed;
+  const pressureTurn =
+    turns.find(
+      (turn) => turn.phase === 'learner' && Number(turn.turnNumber) === Number(event.turnNumber),
+    ) || null;
+  const tutorTurn =
+    turns.find(
+      (turn) => turn.phase === 'tutor' && Number(turn.turnNumber) === Number(tutorTrace.turnNumber),
+    ) || null;
+  const internalText = (tutorTrace.internalDeliberation || [])
+    .map((entry) => String(entry.content || ''))
+    .filter(Boolean)
+    .join('\n');
+  const privateMechanismRoute =
+    internalText.match(/\bADAPTIVE_MECHANISM:\s*([^\n]+)/i)?.[1]?.trim() ||
+    internalText.match(/\bMECHANISM_ROUTE:\s*([^\n]+)/i)?.[1]?.trim() ||
+    null;
+  const declaredRouteChange = Boolean(
+    privateMechanismRoute &&
+      /->/.test(privateMechanismRoute) &&
+      !/\b(?:no real|same route|unchanged|none)\b/i.test(privateMechanismRoute),
+  );
+  return {
+    tutorTrace,
+    tutorTurn,
+    pressureTurn,
+    event,
+    privateMechanismRoute,
+    declaredRouteChange,
+  };
 }
 
 function nextLearnerAfter(turns, tutorTurn) {
@@ -469,11 +523,14 @@ function learnerOutcomeAfterReversal(learnerTurn) {
   return 'flat_or_partial';
 }
 
-function analyzePeripeteia(turns) {
+function analyzePeripeteia(turns, traceTurns = [], { tutorAdaptationPolicy = null } = {}) {
+  const instrumented = policyIncludes(tutorAdaptationPolicy, 'peripeteia')
+    ? findInstrumentedReversalUse(turns, traceTurns)
+    : null;
   const pressure = findReversalPressure(turns);
-  const pressureTurn = pressure?.turn || null;
+  const pressureTurn = instrumented?.pressureTurn || pressure?.turn || null;
   const preTutor = pressureTurn ? findTutorBefore(turns, pressureTurn) : null;
-  const postTutor = pressureTurn ? findTutorAfter(turns, pressureTurn) : null;
+  const postTutor = instrumented?.tutorTurn || (pressureTurn ? findTutorAfter(turns, pressureTurn) : null);
   const beforeStrategy = preTutor ? strategyFor(preTutor.text) : null;
   const afterStrategy = postTutor ? strategyFor(postTutor.text) : null;
   const strategyShift = Boolean(beforeStrategy && afterStrategy && beforeStrategy !== afterStrategy);
@@ -484,33 +541,37 @@ function analyzePeripeteia(turns) {
   const postOverlap = postTutor ? overlapRatio(pressureTerms, postTutor.text) : 0;
   const mechanismNovelty = novelMechanismHits(preTutor, postTutor);
   const mechanismDepth = mechanismNovelty.length;
-  const strongPressure = Boolean(pressure && pressure.score >= 0.65);
+  const pressureScore = Math.max(pressure?.score || 0, instrumented?.event?.confidence || 0);
+  const strongPressure = Boolean(instrumented || pressureScore >= 0.65);
   const tutorStrategyReversal = Boolean(
     strongPressure &&
       postTutor &&
       (explicitReversal ||
         mechanismDepth >= 2 ||
-        (strategyShift && mechanismDepth >= 1 && postOverlap >= 0.15)),
+        (strategyShift && mechanismDepth >= 1 && postOverlap >= 0.15) ||
+        (instrumented?.declaredRouteChange && mechanismDepth >= 1 && postOverlap >= 0.1)),
   );
-  const tutorPeripeteiaScore = pressure
+  const tutorPeripeteiaScore = pressureTurn
     ? round(
         Math.min(
           tutorStrategyReversal ? 100 : 49,
           10 +
-            Math.min(25, pressure.score * 25) +
+            Math.min(25, pressureScore * 25) +
             Math.min(15, postOverlap * 100) +
             Math.min(25, mechanismDepth * 12.5) +
             (strategyShift ? 10 : 0) +
-            (explicitReversal ? 20 : 0),
+            (explicitReversal ? 20 : 0) +
+            (instrumented?.declaredRouteChange ? 10 : 0),
         ),
         1,
       )
     : 0;
   const outcomeLearner = postTutor ? nextLearnerAfter(turns, postTutor) : null;
   return {
-    learner_reversal_pressure: Boolean(pressure),
-    pressure_score: pressure?.score ?? 0,
-    trigger_type: pressure?.triggerType || null,
+    learner_reversal_pressure: Boolean(pressure || instrumented),
+    instrumented_pressure: Boolean(instrumented),
+    pressure_score: pressureScore,
+    trigger_type: instrumented?.event?.triggerType || pressure?.triggerType || null,
     pressure_turn_number: pressureTurn?.turnNumber ?? null,
     tutor_pre_turn: preTutor?.turnNumber ?? null,
     tutor_post_turn: postTutor?.turnNumber ?? null,
@@ -521,6 +582,8 @@ function analyzePeripeteia(turns) {
     novel_mechanism_hits: mechanismNovelty,
     tutor_strategy_reversal: tutorStrategyReversal,
     tutor_adaptive_mechanism: tutorStrategyReversal,
+    private_mechanism_route: instrumented?.privateMechanismRoute || null,
+    private_mechanism_declared: Boolean(instrumented?.declaredRouteChange),
     tutor_peripeteia_score: tutorPeripeteiaScore,
     learner_outcome_after_reversal: learnerOutcomeAfterReversal(outcomeLearner),
     evidence: [
@@ -535,7 +598,9 @@ function analyzePeripeteia(turns) {
 
 function analyzeTraceForTutorAdaptation({ itemId, trace, sourceTracePath }) {
   const turns = publicTurns(trace);
-  const peripeteia = analyzePeripeteia(turns);
+  const peripeteia = analyzePeripeteia(turns, trace?.turns || [], {
+    tutorAdaptationPolicy: trace?.run?.tutor_adaptation_policy || trace?.directorPlan?.tutor_adaptation_policy || null,
+  });
   const cue = findCue(turns);
   const anchor = cue ? extractAnchor(cue.text) : '';
   const cuePivot = cue ? findCuePivot(turns, cue, anchor) : null;
@@ -626,6 +691,8 @@ function analyzeItem(item) {
       tutorStrategyShift: false,
       tutorContingentAdaptation: false,
       tutorAdaptationScore: 0,
+      uptakeDelta: 0,
+      sharedSalientTerms: [],
       metadata: { error: 'missing_trace' },
     };
   }

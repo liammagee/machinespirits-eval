@@ -1,0 +1,33 @@
+STAGE: [The learner has already drawn the larger square in pen; the original square remains faintly visible underneath.]
+
+LEARNER: "No, I doubled the side, so I still want to say it doubles. [slides the acetate square over the drawing] But now there are two across and two down, so that is four little squares, not two."
+
+TUTOR: [holds the acetate still and marks the four cells]
+
+"The side claim can stand: the side has doubled. Now count the marked cells: two across, two down. If the area only doubles, which two of these four do not count?"
+
+LEARNER: "Right. All four have to count; there is not a pair I can just ignore. So the side doubles across and also down, and that makes four areas, not two. I was only counting one direction."
+
+STAGE: [The tutor slides the acetate so the doubled square covers the original grid exactly; four copies of the first square are now visible inside the new outline.]
+
+TUTOR: [writes ×2 along the top edge and ×2 down the side]
+
+"Keep that claim tied to the figure: doubled across, doubled down, so \(2 \times 2 = 4\). Now say the corrected rule once, without skipping a direction."
+
+LEARNER: [presses the acetate flat and taps the four marked cells]
+
+"Fine. Doubling the side gives two across and two down, so the area is multiplied by \(2 \times 2\), which is 4. Doubling the side makes four times the area, not twice."
+
+TUTOR: [writes \(2\) across and \(2\) down beside the square, leaving the four marked cells uncovered]
+
+"Keep the four cells visible. The rule has two directions in it: across and down. Test the same rule on a 3 cm square doubled to 6 cm: old area, new area, multiplier."
+
+LEARNER: [keeps the acetate lined up over the four cells]
+
+"Three by three is 9 cm². Six by six is 36 cm², so the multiplier is 4. Fine, it is not just doubled; the other direction doubles it again. Does that mean any side multiplier gets squared for area?"
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [writes \(m\) across the top edge and \(m\) down the side]
+
+"Hold it against the figure: the side multiplier sits across and down, so the area multiplier is \(m \times m = m^2\). If \(m=\tfrac12\), the square is half as wide and half as high, so the area is \(\tfrac12 \times \tfrac12=\tfrac14\), not half. That is the rule."

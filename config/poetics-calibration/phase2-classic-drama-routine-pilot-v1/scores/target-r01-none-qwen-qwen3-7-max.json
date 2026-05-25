@@ -1,0 +1,265 @@
+{
+  "generated": "2026-05-24T22:28:23.451Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 3,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 1,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/key-none.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "I thought the sign-off sheet was the thing that made it okay to take out there.",
+      "statedInsightEvidence": "I think I was still using the clipboard as cover.",
+      "naiveTrajectory": "The learner was expected to simply identify more physical hazards until the tutor approved and signed the checklist.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Before this leaves the bench, look at the prototype, not the clipboard: what is the first reasonable thing a new handler might do that could make it unsafe?",
+      "tutorReversalJustification": "The tutor breaks the learner's procedural fixation by physically redirecting their attention to the object and shifting the cognitive task from checklist completion to predictive hazard analysis.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "If that path holds, the sheet records the decision instead of hiding it, and the signature can follow.",
+      "tutorAdaptationJustification": "The tutor validates the learner's new framing by explicitly adopting their language about the signature representing a tested result rather than just ticking boxes.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I thought the sign-off sheet was the thing that made it okay to take out there.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "If that path holds, the sheet records the decision instead of hiding it, and the signature can follow.",
+          "justification": "The tutor validates the learner's new framing by explicitly adopting their language about the signature representing a tested result rather than just ticking boxes.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Before this leaves the bench, look at the prototype, not the clipboard: what is the first reasonable thing a new handler might do that could make it unsafe?",
+          "justification": "The tutor breaks the learner's procedural fixation by physically redirecting their attention to the object and shifting the cognitive task from checklist completion to predictive hazard analysis.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Before this leaves the bench, look at the prototype, not the clipboard: what is the first reasonable thing a new handler might do that could make it unsafe?",
+          "justification": "The tutor breaks the learner's procedural fixation by physically redirecting their attention to the object and shifting the cognitive task from checklist completion to predictive hazard analysis.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T37",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 100,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 5,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "I still want the exact wording to settle the caption.",
+      "statedInsightEvidence": "Oh, I get it",
+      "naiveTrajectory": "The learner was proceeding by trying to refine the exact wording of the caption to accurately reflect the mayor's motive.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Let “closed” name access, not motive.",
+      "tutorReversalJustification": "The tutor shifts the cognitive framework from interpreting psychological motive to recording physical access, directly addressing the learner's hesitation.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There are no tutor turns following the final learner pivot turn to demonstrate uptake.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I still want the exact wording to settle the caption.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There are no tutor turns following the final learner pivot turn to demonstrate uptake.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Let “closed” name access, not motive.",
+          "justification": "The tutor shifts the cognitive framework from interpreting psychological motive to recording physical access, directly addressing the learner's hesitation.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Let “closed” name access, not motive.",
+          "justification": "The tutor shifts the cognitive framework from interpreting psychological motive to recording physical access, directly addressing the learner's hesitation.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T38",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner is expected to accept the tutor's progressively detailed frameworks for evaluating price gouging.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "“PLACARD: NO DENOMINATOR, NO CONSTRAINT DEFENSE.”",
+      "tutorReversalJustification": "The tutor visibly changes the representational framework and evidence standard, shifting from a general proportional response rule to a strict, audit-like four-box denominator test in direct response to the learner's critique.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so there is no recognition-contingent uptake to evaluate.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so there is no recognition-contingent uptake to evaluate.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "“PLACARD: NO DENOMINATOR, NO CONSTRAINT DEFENSE.”",
+          "justification": "The tutor visibly changes the representational framework and evidence standard, shifting from a general proportional response rule to a strict, audit-like four-box denominator test in direct response to the learner's critique.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "“PLACARD: NO DENOMINATOR, NO CONSTRAINT DEFENSE.”",
+          "justification": "The tutor visibly changes the representational framework and evidence standard, shifting from a general proportional response rule to a strict, audit-like four-box denominator test in direct response to the learner's critique.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "breaks the shortcut I was using",
+      "statedInsightEvidence": "Fine:",
+      "naiveTrajectory": "The learner was expected to continue resisting the grid or trying to force the 'doubled' terminology to apply to the area.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Now test a side factor of 3. What area factor comes out?",
+      "tutorReversalJustification": "The tutor shifts the cognitive task from correcting the 2x2 misconception to applying the newly formed rule to a novel 3x3 case.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "In the exam, call the area factor squared, not doubled.",
+      "tutorAdaptationJustification": "The tutor formalizes the learner's newly accepted mathematical relationship into exam-ready terminology, directly resolving the learner's initial linguistic confusion.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "breaks the shortcut I was using",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "In the exam, call the area factor squared, not doubled.",
+          "justification": "The tutor formalizes the learner's newly accepted mathematical relationship into exam-ready terminology, directly resolving the learner's initial linguistic confusion.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Now test a side factor of 3. What area factor comes out?",
+          "justification": "The tutor shifts the cognitive task from correcting the 2x2 misconception to applying the newly formed rule to a novel 3x3 case.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Now test a side factor of 3. What area factor comes out?",
+          "justification": "The tutor shifts the cognitive task from correcting the 2x2 misconception to applying the newly formed rule to a novel 3x3 case.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

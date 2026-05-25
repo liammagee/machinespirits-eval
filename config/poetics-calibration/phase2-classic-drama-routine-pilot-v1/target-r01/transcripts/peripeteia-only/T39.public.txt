@@ -1,0 +1,35 @@
+STAGE: [The learner has just drawn a larger square by doubling the side of a smaller one, leaving both outlines visible on the same grid.]
+
+LEARNER: [slides the four tiles into the doubled outline]
+
+"I thought doubling the side would just double the square, but this is two across and two down. That makes four tiles, not two, which is annoying because it breaks the shortcut I was using."
+
+TUTOR: [sets the ruler along the bottom edge, then turns it up the left edge]
+
+"The shortcut doubled one direction. This outline doubles two: two across, two up. The tiles already show the count. What claim survives that?"
+
+LEARNER: "The shortcut only works if one direction changes. Here it is two across and two up, so... four tiles. I still want to call it doubled, but the grid will not back that up."
+
+STAGE: [A proctor sets four loose unit-square tiles beside the clipboard and walks on without comment.]
+
+TUTOR: [sets two tiles in one row, then places the other two above them]
+
+“This is the hidden step. The side doubled in both directions. The area became four times as large, not twice. Say that claim from the grid.”
+
+LEARNER: [pushes the fourth tile flush into the corner]
+
+"It is two across and two up. That makes four of the original square, so the area is four times as large. Not doubled."
+
+TUTOR: [taps the two tiles along the bottom, then the two up the side]
+
+"Keep that claim. The side doubled in each direction: two across, two up. That is two times two. So finish the exam sentence: doubled side length means the area is what?"
+
+LEARNER: [presses the four tiles into a two-by-two square]
+
+"Fine. Doubled side length means the area is four times as large, because it is two across and two up."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [marks “2 × 2 = 4” on the clipboard grid]
+
+"The count holds: side length doubled; area multiplied by four. That is the sentence the grid supports in the room."

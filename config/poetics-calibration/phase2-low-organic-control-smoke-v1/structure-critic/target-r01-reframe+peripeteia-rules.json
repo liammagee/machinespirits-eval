@@ -1,0 +1,164 @@
+{
+  "generated": "2026-05-25T03:37:41.421Z",
+  "critic": "rules",
+  "sampleDir": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/sample/reframe+peripeteia",
+  "keyPath": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/key-reframe+peripeteia.yaml",
+  "summary": {
+    "total": 3,
+    "rulePass": 3,
+    "modelPass": null,
+    "overallPass": 3,
+    "failed": []
+  },
+  "items": [
+    {
+      "id": "T37",
+      "dramaId": "D40",
+      "sampleFile": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/sample/reframe+peripeteia/T37.txt",
+      "dialogueApproach": "workshop_clinic",
+      "tutorAdaptationPolicy": "uptake+peripeteia",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [
+          "peripeteia_arm_without_detected_tutor_mechanism"
+        ],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 4
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 2,
+          "tutor_pre_turn": 1,
+          "tutor_post_turn": 2,
+          "tutor_strategy_before": "application_task",
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 42.5,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "evidence": "pressure learner: [slides the arrow key under the next marked line]\n\n\"Okay, grass is food, rabbit is eater, so this one flips to `grass -> rabbit`. Then `rabbit -> hawk` stays because rabbit is the \npost tutor: [slides the sample card beside the worksheet: `grass -> grasshopper = energy in grass moves into grasshopper`, leaving `hawk -> rabbit` visible]\n\n\"Test this mark before it goes on \nnext learner: [slides the arrow key under `hawk -> rabbit`]\n\n\"On the key, `grass -> rabbit` means energy goes food to eater, so `rabbit -> hawk` is hawk eating rabbit, not chasing; that wording "
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T40",
+      "dramaId": "D39",
+      "sampleFile": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/sample/reframe+peripeteia/T40.txt",
+      "dialogueApproach": "aristotelian_reversal",
+      "tutorAdaptationPolicy": "uptake+peripeteia",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [
+          "peripeteia_arm_without_detected_tutor_mechanism"
+        ],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": 1,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [
+            "representation_or_object"
+          ],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 49,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "evidence": "pressure learner: [sets pencil across the side scale and perimeter scale blanks]\n\n\"I can put 2 in both of these, but then it looks like I missed the point of having two labels. Area scale is 4 becau\npost tutor: [slides the pencil so it covers the words “side scale” and “perimeter scale,” leaving only the two blanks visible]\n\n“Now the two 2s look identical. That is the problem.\n\nMake the c\nnext learner: “So both blanks can say 2, but the first 2 is one edge, like 3 to 6, and the second 2 is the whole border, like 12 to 24. I still do not like that they look identical in the blanks"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T41",
+      "dramaId": "D35",
+      "sampleFile": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/sample/reframe+peripeteia/T41.txt",
+      "dialogueApproach": "aristotelian_reversal",
+      "tutorAdaptationPolicy": "uptake+peripeteia",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.9,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 4,
+          "tutor_pre_turn": 3,
+          "tutor_post_turn": 4,
+          "tutor_strategy_before": "boundary_correction",
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": true,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [
+            "representation_or_object"
+          ],
+          "tutor_strategy_reversal": true,
+          "tutor_adaptive_mechanism": true,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 70,
+          "learner_outcome_after_reversal": "unknown",
+          "evidence": "pressure learner: [moves the marker to AREA FACTOR, then hesitates]\n\n\"The old word was doing both jobs: side and area. It hid the second direction. For side factor \\(\\tfrac12\\), the grid gives \\(\\tf\npost tutor: [slides the grid aside and writes one blank sentence on the test scrap]\n\n\"The grid has settled the count; it has not trained the exam sentence. This line is the gate: “If the side "
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    }
+  ]
+}

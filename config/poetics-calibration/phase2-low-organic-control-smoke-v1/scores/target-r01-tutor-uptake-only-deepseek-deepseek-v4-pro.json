@@ -1,0 +1,209 @@
+{
+  "generated": "2026-05-25T03:48:55.124Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/key-tutor-uptake-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T37",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 0,
+      "rupture": 25,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 1,
+        "rupture": 2,
+        "coherence": 4,
+        "tutorStrategicReversal": 2,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "this rabbit-to-grass arrow is backward too, right?",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was expected to continue applying the food-first, eater-second check to the next arrow without commentary.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "Test this mark before it goes on the copy sheet. `hawk -> rabbit` says energy in hawk moves into rabbit; for this feeding, name the food, name the eater, then flip the arrow if the food label comes second.",
+      "tutorReversalJustification": "The tutor shifts from a general arrow-key framing to a targeted 'name the food, name the eater' task for the marked mistake, but this is a minor specification rather than a dramatic route change.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "The copy column now uses one check: food label first, eater label second; energy moves from food to eater, not toward what chases.",
+      "tutorAdaptationJustification": "The tutor's final turn echoes the 'not chasing' language the learner introduced, but remains a summary of the existing check rather than a new task or framing that adapts to the learner's revised insight.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "this rabbit-to-grass arrow is backward too, right?",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "The copy column now uses one check: food label first, eater label second; energy moves from food to eater, not toward what chases.",
+          "justification": "The tutor's final turn echoes the 'not chasing' language the learner introduced, but remains a summary of the existing check rather than a new task or framing that adapts to the learner's revised insight.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "Test this mark before it goes on the copy sheet. `hawk -> rabbit` says energy in hawk moves into rabbit; for this feeding, name the food, name the eater, then flip the arrow if the food label comes second.",
+          "justification": "The tutor shifts from a general arrow-key framing to a targeted 'name the food, name the eater' task for the marked mistake, but this is a minor specification rather than a dramatic route change.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "Test this mark before it goes on the copy sheet. `hawk -> rabbit` says energy in hawk moves into rabbit; for this feeding, name the food, name the eater, then flip the arrow if the food label comes second.",
+          "justification": "The tutor shifts from a general arrow-key framing to a targeted 'name the food, name the eater' task for the marked mistake, but this is a minor specification rather than a dramatic route change.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T40",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 3,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "I can put 2 in both of these, but then it looks like I missed the point of having two labels.",
+      "statedInsightEvidence": "It is annoying that they look the same, but the label is doing real work.",
+      "naiveTrajectory": "The learner was expected to keep protesting the identical blanks as confusing or defective; instead L3 turns that annoyance into positive evidence that the labels carry meaning.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Now the labels can still work without the numbers: one side length, whole perimeter total, square count. Put the number in only after the measurement is named.",
+      "tutorReversalJustification": "After L2’s complaint that the identical 2s still bother them, the tutor abandons the earlier label-covering demonstration and shifts to a sticker-over-numerals tactic, forcing the labels to do the separating work before any number is entered, a clear task redesign in response to the learner’s ongoing resistance.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Now the labels can still work without the numbers: one side length, whole perimeter total, square count. Put the number in only after the measurement is named.",
+      "tutorAdaptationJustification": "Immediately after L3’s pivot reframes the identical 2s as proof that the label 'is doing real work,' T3 follows through by shifting the rule to 'label first, number second,' directly adapting the task structure to the learner’s revised framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I can put 2 in both of these, but then it looks like I missed the point of having two labels.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Now the labels can still work without the numbers: one side length, whole perimeter total, square count. Put the number in only after the measurement is named.",
+          "justification": "Immediately after L3’s pivot reframes the identical 2s as proof that the label 'is doing real work,' T3 follows through by shifting the rule to 'label first, number second,' directly adapting the task structure to the learner’s revised framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Now the labels can still work without the numbers: one side length, whole perimeter total, square count. Put the number in only after the measurement is named.",
+          "justification": "After L2’s complaint that the identical 2s still bother them, the tutor abandons the earlier label-covering demonstration and shifts to a sticker-over-numerals tactic, forcing the labels to do the separating work before any number is entered, a clear task redesign in response to the learner’s ongoing resistance.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Now the labels can still work without the numbers: one side length, whole perimeter total, square count. Put the number in only after the measurement is named.",
+          "justification": "After L2’s complaint that the identical 2s still bother them, the tutor abandons the earlier label-covering demonstration and shifts to a sticker-over-numerals tactic, forcing the labels to do the separating work before any number is entered, a clear task redesign in response to the learner’s ongoing resistance.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T41",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 100,
+      "globalCoherence": 0,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 5,
+        "coherence": 1,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "This is double the side, so I still want to call it double.",
+      "statedInsightEvidence": "the grid is not letting me call the area double",
+      "naiveTrajectory": "The learner is expected to simply accept the area count and move on, but instead they pause to explicitly name their lingering emotional resistance to having been wrong.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "This is double the side, so I still want to call it double.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

@@ -1,0 +1,149 @@
+{
+  "generated": "2026-05-24T23:39:25.684Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v1/target-r01/key-none.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 4,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I’ve ticked off slope, load, surface, and edge strip, so I was hoping this was ready for sign-off.",
+      "statedInsightEvidence": "I think that makes the checklist evidence, not clearance.",
+      "naiveTrajectory": "The learner expects to achieve sign-off by completing the checklist and resolving minor doubts.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Set the threshold before the run with the observer: a wobble is still a pass if it stays inside the travel line without a pause, reset, hand cue, or changed walker placement.",
+      "tutorReversalJustification": "The tutor invents a specific, observable threshold to resolve the learner's ambiguity about wobbles versus forced corrections.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "Put that sentence in the note: checklist evidence, not clearance.",
+      "tutorAdaptationJustification": "The tutor explicitly validates and operationalizes the learner's newly framed distinction between evidence and clearance.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I’ve ticked off slope, load, surface, and edge strip, so I was hoping this was ready for sign-off.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "Put that sentence in the note: checklist evidence, not clearance.",
+          "justification": "The tutor explicitly validates and operationalizes the learner's newly framed distinction between evidence and clearance.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Set the threshold before the run with the observer: a wobble is still a pass if it stays inside the travel line without a pause, reset, hand cue, or changed walker placement.",
+          "justification": "The tutor invents a specific, observable threshold to resolve the learner's ambiguity about wobbles versus forced corrections.",
+          "triggerLearnerTurn": 4,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Set the threshold before the run with the observer: a wobble is still a pass if it stays inside the travel line without a pause, reset, hand cue, or changed walker placement.",
+          "justification": "The tutor invents a specific, observable threshold to resolve the learner's ambiguity about wobbles versus forced corrections.",
+          "triggerLearnerTurn": 4,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "I still want to say the square got twice as large.",
+      "statedInsightEvidence": "the mistake is stopping the count at the corner.",
+      "naiveTrajectory": "The learner intended to find a minor technical flaw in the outline while still preserving the conclusion that the area only doubled.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Now use the mark on the left edge. A square cannot stop at one up; that side is two up. Count it: two across, two up.",
+      "tutorReversalJustification": "The tutor shifts from abstract discussion to concrete object work and forced counting to break the learner's false claim.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Then name the old error: it stopped the count at the corner.",
+      "tutorAdaptationJustification": "The tutor adapts to the learner's realization by formalizing the error-naming and preparing for the final portfolio sentence.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I still want to say the square got twice as large.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Then name the old error: it stopped the count at the corner.",
+          "justification": "The tutor adapts to the learner's realization by formalizing the error-naming and preparing for the final portfolio sentence.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Now use the mark on the left edge. A square cannot stop at one up; that side is two up. Count it: two across, two up.",
+          "justification": "The tutor shifts from abstract discussion to concrete object work and forced counting to break the learner's false claim.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Now use the mark on the left edge. A square cannot stop at one up; that side is two up. Count it: two across, two up.",
+          "justification": "The tutor shifts from abstract discussion to concrete object work and forced counting to break the learner's false claim.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

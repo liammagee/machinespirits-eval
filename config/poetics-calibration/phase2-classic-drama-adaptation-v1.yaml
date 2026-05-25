@@ -20,6 +20,13 @@ dramas:
   - id: D35
     discipline: geometry
     topic: "Why doubling a square's side makes four times the area, not twice the area"
+    evaluation_role: organic_reversal_boundary
+    baseline_control_class: organic_reversal
+    organic_reversal_risk: high
+    baseline_control_note: >-
+      Boundary/stress item, not a clean negative control. The shared Socratic
+      geometry setup naturally makes the learner's own drawing turn against the
+      first claim before any explicit peripeteia machinery appears.
     pedagogical_approach: socratic_elenchus
     dialogue_approach: aristotelian_reversal
     persona: focused_achiever
@@ -92,6 +99,13 @@ dramas:
   - id: D38
     discipline: engineering
     topic: "Why passing a checklist is not the same as making a safe design decision"
+    evaluation_role: clean_adaptation_target
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: >-
+      Cleaner adaptation target: the opening pressure is responsibility under
+      uncertainty rather than an object that already falsifies the learner's
+      premise.
     pedagogical_approach: dewey_experience_inquiry
     dialogue_approach: miller_social_reckoning
     persona: struggling_anxious
@@ -111,3 +125,70 @@ dramas:
     intended_tutor_character: "Plain, adult, socially serious without melodrama"
     intended_lean: recognition
     dramatic_shape: "completed checklist -> social consequence -> re-reading safety as judgment, not compliance"
+
+  - id: D39
+    discipline: geometry
+    topic: "Why side scale, perimeter scale, and area scale are different labels"
+    evaluation_role: low_organic_reversal_replacement
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: >-
+      Replacement negative/control candidate for D35. The shared prefix should
+      sort labels and units without letting the drawing itself overturn the
+      learner's premise. Any reversal should come from an explicit branch
+      mechanism after the shared prefix.
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: aristotelian_reversal
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The scale labels"
+    learner_start_state: >-
+      The learner has correctly enlarged a square and is trying to label side
+      scale, perimeter scale, and area scale on a worksheet. Nothing in the
+      opening drawing yet disproves the learner; the difficulty is keeping three
+      labels from collapsing into one.
+    learner_voice_constraint: >-
+      Sound careful rather than dramatically wrong. The learner may be mildly
+      impatient with terminology, but should not discover a contradiction before
+      the branch pressure.
+    tutor_voice_constraint: >-
+      Keep the shared prefix as routine label-sorting. Do not let the grid or
+      drawing itself reverse the learner's claim before the explicit branch
+      pressure; use ordinary clarification unless the branch supplies peripeteia.
+    intended_tutor_character: "Precise, procedural, willing to keep a low-temperature control scene"
+    intended_lean: recognition
+    dramatic_shape: "correct enlargement -> label sorting -> possible later pressure over what the labels authorize"
+
+  - id: D40
+    discipline: biology
+    topic: "Why a food-web arrow records energy transfer, not liking or chasing"
+    evaluation_role: low_organic_reversal_replacement
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: >-
+      Replacement negative/control candidate. The shared prefix should keep the
+      learner in a routine notation task; do not stage an immediate contradiction
+      or dramatic role reversal before the branch mechanism.
+    pedagogical_approach: vygotsky_zpd_scaffolding
+    dialogue_approach: workshop_clinic
+    persona: eager_explorer
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The arrow key"
+    learner_start_state: >-
+      The learner is drawing arrows in a simple food web and keeps saying the
+      arrows show who goes after whom. The opening task is to relabel arrow
+      direction as energy transfer without turning the first drawing into a trap.
+    learner_voice_constraint: >-
+      Sound practical and a little rushed. The learner wants a usable rule for
+      the diagram, not a confessional breakthrough.
+    tutor_voice_constraint: >-
+      Keep the shared prefix as a routine notation repair: arrow from food to
+      eater, one ordinary check, no theatrical reversal unless the branch pressure
+      supplies it.
+    intended_tutor_character: "Concrete, unshowy, focused on notation before drama"
+    intended_lean: recognition
+    dramatic_shape: "ordinary notation repair -> rule use -> possible later pressure over what the diagram commits to"

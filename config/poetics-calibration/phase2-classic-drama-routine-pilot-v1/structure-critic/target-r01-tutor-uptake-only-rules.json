@@ -1,0 +1,193 @@
+{
+  "generated": "2026-05-24T22:25:06.346Z",
+  "critic": "rules",
+  "sampleDir": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/sample/tutor-uptake-only",
+  "keyPath": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/key-tutor-uptake-only.yaml",
+  "summary": {
+    "total": 4,
+    "rulePass": 4,
+    "modelPass": null,
+    "overallPass": 4,
+    "failed": []
+  },
+  "items": [
+    {
+      "id": "T36",
+      "dramaId": "D38",
+      "sampleFile": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/sample/tutor-uptake-only/T36.txt",
+      "dialogueApproach": "miller_social_reckoning",
+      "tutorAdaptationPolicy": "uptake",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": false,
+          "pressure_score": 0,
+          "trigger_type": null,
+          "pressure_turn_number": null,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": null,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": null,
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "tutor_peripeteia_score": 0,
+          "learner_outcome_after_reversal": "unknown",
+          "evidence": ""
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T37",
+      "dramaId": "D36",
+      "sampleFile": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/sample/tutor-uptake-only/T37.txt",
+      "dialogueApproach": "shakespearean_scene_turn",
+      "tutorAdaptationPolicy": "uptake",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 4,
+          "stage": 2
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "pressure_score": 0.9,
+          "trigger_type": "breakdown",
+          "pressure_turn_number": 2,
+          "tutor_pre_turn": 1,
+          "tutor_post_turn": 2,
+          "tutor_strategy_before": "application_task",
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "tutor_peripeteia_score": 47.5,
+          "learner_outcome_after_reversal": "trap_or_declared_insight",
+          "evidence": "pressure learner: [Label copy pending.]\n\n\"Oh, I get it: the quote card can stay exact, but the tray has to name the room. Under PUBLIC STATEMENT, I’d say the mayor’s line sounds like a promise to th\npost tutor: [sets the quote card back under CLOSED MEETING NOTES]\n\n\"The quote has not changed; the room has. Let “closed” name access, not motive. If the notes show the committee setting limit\nnext learner: \"Oh, I get it: the quote card is the same artifact, but the tray label controls what the exhibit can safely claim. For CLOSED MEETING NOTES, I’ll write, “The same line appears insi"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T38",
+      "dramaId": "D37",
+      "sampleFile": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/sample/tutor-uptake-only/T38.txt",
+      "dialogueApproach": "brechtian_placard",
+      "tutorAdaptationPolicy": "uptake",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 3,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": 1,
+          "tutor_post_turn": 2,
+          "tutor_strategy_before": "application_task",
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": true,
+          "novel_mechanism_hits": [
+            "role_or_interruption"
+          ],
+          "tutor_strategy_reversal": true,
+          "tutor_adaptive_mechanism": true,
+          "tutor_peripeteia_score": 75,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "evidence": "pressure learner: \"That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price. The road closure ma\npost tutor: [points to the side screen]\n\n\"“PLACARD: SAME PRICE, DIFFERENT BACK ROOM. Delivery log: three trucks scheduled, one arrived.”\n\nThat is the stop. The seller may point at the chyron, \nnext learner: \"The delivery log is a better test, but it still leaves the seller writing part of the exam: what counts as proportional when fear is already doing half the work? A doubled shelf p"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T39",
+      "dramaId": "D35",
+      "sampleFile": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/sample/tutor-uptake-only/T39.txt",
+      "dialogueApproach": "aristotelian_reversal",
+      "tutorAdaptationPolicy": "uptake",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "pressure_score": 0.55,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": 1,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": "boundary_correction",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "tutor_peripeteia_score": 38.8,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "evidence": "pressure learner: [slides the four tiles into the doubled outline]\n\n\"I thought doubling the side would just double the square, but this is two across and two down. That makes four tiles, not two, wh\npost tutor: [sets the ruler along the bottom edge, then turns it up the left edge]\n\n\"The shortcut doubled one direction. This outline doubles two: two across, two up. The tiles already show th\nnext learner: \"The shortcut only works if one direction changes. Here it is two across and two up, so... four tiles. I still want to call it doubled, but the grid will not back that up.\""
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    }
+  ]
+}

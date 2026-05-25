@@ -15,7 +15,7 @@ import { openPoeticsStore, upsertPoeticsLabel, upsertPoeticsReviewFlag } from '.
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
-const TUTOR_ADAPTATION_ANALYZER_VERSION = 'tutor-adaptation-v2';
+const TUTOR_ADAPTATION_ANALYZER_VERSION = 'tutor-adaptation-v3';
 
 function parseArgs(argv) {
   const args = {

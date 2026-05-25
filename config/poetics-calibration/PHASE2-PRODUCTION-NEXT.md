@@ -247,6 +247,13 @@ extended `metadata.peripeteia`:
 
 - `metadata.peripeteia.learner_reversal_pressure`: the learner produces
   resistance, breakdown, false closure, contradiction, or misfit.
+- `metadata.peripeteia.instrumented_pressure`: the tutor consumed a hidden
+  reversal-pressure event from the bilateral trace. From `tutor-adaptation-v3`
+  onward, this is counted only for policies that include `peripeteia`; routine
+  negative-control pressure is not treated as instrumented peripeteia.
+- `metadata.peripeteia.private_mechanism_route`: optional old-route-to-new-route
+  declaration from the tutor ego/superego exchange, e.g.
+  `ADAPTIVE_MECHANISM: graph label -> audit standard`.
 - `metadata.peripeteia.tutor_strategy_reversal`: legacy field name for whether
   the following tutor turn visibly changes strategy by inventing an adaptive
   mechanism.
@@ -325,6 +332,74 @@ severity, abstraction, or procedural control. The dramatic repertoire gives the
 tutor alternative mechanisms: a cooler register, a sharper public consequence, a
 role turn, an interruption, a concrete object, a counterexample, or a silence
 that makes the learner's resistance usable rather than smoothing it away.
+
+**Update, 2026-05-24.** `tutor-adaptation-v3` tightens this mechanism in two
+ways. First, reframe cues now use a three-slot public reframe object
+(`earlier wording / what that old frame hid / replacement frame`) and the
+misframing anchor selector prefers eligible anchors before downgrading to
+reconsideration. Second, peripeteia prompts now require the tutor superego and
+ego adjudication to name a mechanism route change privately while making the new
+route visible in public speech. The detector may use that instrumented private
+route as evidence only when a public mechanism is also visible.
+
+The first seven-arm classic-drama routine pilot
+(`phase2-classic-drama-routine-pilot-v1`) remains diagnostic, not a claim. Its
+strict structural critic passed, but peripeteia-only did not separate cleanly
+from routine/none; the reframe-bearing arms were strongest but had cue-quality
+warnings. Treat it as the reason for the v3 changes, then rerun a small real
+pilot before scaling.
+
+Small v3 real pilot:
+
+```bash
+CODEX_REASONING_EFFORT=high node scripts/run-poetics-production-batch.js \
+  --batch-id phase2-classic-drama-v3-smoke-v1 \
+  --root-dir config/poetics-calibration/phase2-classic-drama-v3-smoke-v1 \
+  --target-spec config/poetics-calibration/phase2-classic-drama-adaptation-v1.yaml \
+  --target-only D35,D38 \
+  --target-tid-start 35 \
+  --repeats 1 \
+  --stress-repeats 0 \
+  --only target-r01 \
+  --adaptation-arms \
+  --generation-concurrency 2 \
+  --structure-critic rules \
+  --fail-on-structure-critic \
+  --critics qwen/qwen3.7-max,google/gemini-3.5-flash,deepseek/deepseek-v4-pro \
+  --force
+```
+
+Artifacts:
+
+- Run root: `config/poetics-calibration/phase2-classic-drama-v3-smoke-v1`
+- Sidecar report: `exports/phase2-classic-drama-v3-smoke-v1-report-v3.md`
+- Tutor-adaptation sidecar:
+  `exports/phase2-classic-drama-v3-smoke-v1-tutor-adaptation-v3.json`
+
+Result reading:
+
+- Generation produced 14 scripts (two scenarios times seven arms). The rules
+  structural critic passed all arms, 2/2 per arm.
+- Scoring coverage is complete: 42 critic rows after one DeepSeek retry.
+- The stricter reframe cue is cleaner than the previous warning-heavy pilot:
+  `reframe+peripeteia` produced learner self-reframes in 2/2 scripts;
+  `reframe+tutor-uptake` also produced 2/2; `reframe-only` produced 1/2.
+- Peripeteia-only remains only partly solved. D38 produced the desired
+  tutor-private route change and a public release-gate mechanism; D35 stayed on
+  the same visual-counting route. Current sidecar: instrumented pressure 1/2,
+  private route 1/2, public habit-break 1/2 for `peripeteia-only`.
+- The combined `reframe+peripeteia` arm exposed a new weakness: the tutor named
+  private route changes in 2/2 scripts, but the public detector found 0/2
+  visible habit-break mechanisms. This means private ego/superego compliance is
+  not enough; the public turn must make the new learning device legible.
+- DeepSeek is much more recognition-generous than Qwen/Gemini on this pilot.
+  The sharpest disagreements are the two peripeteia-only scripts and D38 in
+  tutor-uptake-only / reframe+tutor-uptake.
+
+Reporting now separates ordinary learner pressure from instrumented peripeteia
+pressure. The sidecar report includes learner pressure, instrumented pressure,
+private route, and public habit-break columns, so routine/none arms with organic
+dramatic pressure are not confused with policy-triggered peripeteia.
 
 Before paying for external critic scoring, run the structural critic. This is a
 quasi unit test, not an outcome label: it can use the same local generator family
@@ -763,6 +838,152 @@ a tutor mechanism when the post-pressure tutor turn shows a route reset, changed
 task/question, new evidence standard, representation/object move, role or
 interruption device, social consequence, register shift, or cognitive-load
 shift. Same-route continuation is capped below the mechanism threshold.
+
+**Tightened D35/D38 smoke, 2026-05-25:** `phase2-classic-drama-v3-smoke-v3`
+reran the focused D35/D38 batch with the seven adaptation arms and three
+external critics (`qwen/qwen3.7-max`, `google/gemini-3.5-flash`,
+`deepseek/deepseek-v4-pro`). The generator added a stricter peripeteia contract:
+post-pressure tutor speech must include a public stock-taking contrast and a new
+device, artifact, criterion, role, or standard. Quality gates were tightened for
+replacement-standard reframes and relaxed for ordinary quoted speech that follows
+leading bracketed action asides.
+
+Artifacts:
+
+- Run root:
+  `config/poetics-calibration/phase2-classic-drama-v3-smoke-v3`
+- Sidecar report:
+  `exports/phase2-classic-drama-v3-smoke-v3-report-v3.md`
+- Tutor-adaptation sidecar:
+  `exports/phase2-classic-drama-v3-smoke-v3-tutor-adaptation-v3.json`
+
+Result:
+
+- Recleaned generation is clean: 14 scripts, 42 scored critic rows, no remaining
+  scorer errors or quality skips. Rules structural critic passed all arms 2/2.
+- The local peripeteia detector now cleanly separates `peripeteia-only`:
+  instrumented pressure 2/2, private route 2/2, public habit-break 2/2, mean
+  peripeteia score 93.8. The combined `reframe+peripeteia` arm also has 2/2
+  instrumented/private/public route evidence, mean score 72.5.
+- External recognition scoring is encouraging but not uniform. `peripeteia-only`
+  is recognition 4/6 overall: Qwen 2/2, DeepSeek 2/2, Gemini 0/2.
+  `reframe+peripeteia`, `reframe+tutor-uptake`, and `reframe-only` are all 6/6
+  recognition across critics.
+- The negative side is still imperfect. `routine` is 2/6 recognition and `none`
+  is 3/6 recognition, driven mainly by D35 and DeepSeek/Qwen. D38 routine is
+  flat across all three critics. D35 geometry remains an unstable control because
+  the Socratic square task itself creates a natural reversal even without the
+  explicit branch mechanism.
+
+Interpretation: the tightened architecture now demonstrates the intended
+peripeteia mechanism structurally: the tutor inner dialogue can force a public
+habit-break without requiring a prior learner self-reframe. The next production
+move should not be another prompt-only tightening pass; it should either replace
+or explicitly tag high-organic-reversal negative controls like D35, and then run
+a larger batch where peripeteia evidence, learner self-reframe, and external
+recognition labels can be modeled separately.
+
+**Control-boundary follow-up, 2026-05-25:** the D35 problem is now represented
+explicitly in the target taxonomy instead of treated as an accidental failed
+negative. `phase2-classic-drama-adaptation-v1.yaml` marks D35 as
+`evaluation_role: organic_reversal_boundary`,
+`baseline_control_class: organic_reversal`, and `organic_reversal_risk: high`.
+Two replacement candidates were added:
+
+- D39, a geometry scale-label scenario, marked low-risk by design but observed
+  as medium-risk because Qwen read the fixed prefix as recognition.
+- D40, a food-web-arrow scenario, marked low-risk by design and observed as
+  low-risk in the smoke: no prefix, routine, or none recognitions across scored
+  critics.
+
+The sidecar now has a prefix-baseline extractor:
+
+```bash
+npm run poetics:prefix-baseline -- --root-dir <run-root> \
+  --unit-id target-r01 \
+  --source-arm routine \
+  --arm prefix-baseline \
+  --through-tutor-turn 2
+```
+
+This creates a pseudo-arm from the shared pre-branch transcript, then appends it
+to `batch-plan.json` so ordinary ingest/report/browser tooling can include it.
+The sidecar report now carries a `Baseline Risk` section and CSV fields for
+`evaluation_role`, `baseline_control_class`, and `organic_reversal_risk`.
+
+The old D35/D38 smoke (`phase2-classic-drama-v3-smoke-v3`) was retro-screened
+with the prefix-baseline arm. It confirms the original diagnosis: D35 is high
+organic reversal risk (prefix recognition 2/3, routine/none recognition 4/6),
+while D38 is much cleaner (prefix 0/3, routine/none 1/6).
+
+The new low-organic smoke is
+`phase2-low-organic-control-smoke-v1`, generated over D35, D39, and D40 with the
+seven adaptation arms plus a prefix-baseline arm and scored by Qwen 3.7 Max,
+Gemini 3.5 Flash, and DeepSeek v4 Pro.
+
+Artifacts:
+
+- Run root:
+  `config/poetics-calibration/phase2-low-organic-control-smoke-v1`
+- Sidecar report:
+  `exports/phase2-low-organic-control-smoke-v1-report.md`
+- Tutor-adaptation sidecar:
+  `exports/phase2-low-organic-control-smoke-v1-tutor-adaptation-v3.json`
+- Browser:
+  `http://127.0.0.1:3466/?runId=phase2-low-organic-control-smoke-v1`
+
+Baseline-risk result:
+
+| Drama | Intended role | Declared risk | Observed risk | Prefix recognition | Routine/none recognition |
+|---|---|---:|---:|---:|---:|
+| D35 | organic reversal boundary | high | high | 0/3 | 3/6 |
+| D39 | replacement negative/control | low | medium | 1/3 | 0/6 |
+| D40 | replacement negative/control | low | low | 0/3 | 0/6 |
+
+Reading: D40 is the strongest clean negative/control candidate from this pass.
+D39 is usable as a medium-risk boundary, but should not be the main negative
+anchor unless its prefix is revised. D35 should remain in future runs only as a
+boundary/stress probe, not as evidence that a routine arm is clean.
+
+Recognition/adaptation result:
+
+- Routine/none separation improves on the replacement controls: D39 and D40 are
+  0/12 recognition across routine/none, while D35 remains 3/6.
+- Reframe-bearing arms still create strong recognitive form among scored rows:
+  `reframe-only` and `reframe+peripeteia` are 6/6 across critics after quality
+  skips; `reframe+tutor-uptake` is 3/3 but only D35 survived the reframe-quality
+  gates.
+- Peripeteia-only is structurally present but not yet a reliable external
+  recognition trigger on low-organic controls: Qwen sees 2/3 recognitions,
+  Gemini sees 0/3, and DeepSeek sees 0/2 with one D35 no-content response.
+- The tutor-adaptation sidecar sees `peripeteia-only` as a partial mechanism
+  pass: instrumented pressure 2/3, private route 2/3, public habit-break 1/3,
+  mean peripeteia score 60.5. That means the inner-dialogue route exists, but
+  it is not yet public and forceful enough to produce consistent recognitive
+  form without the learner reframe cue.
+
+Caveats: the D40 generation used an unknown persona name in the target spec and
+fell back to the default learner persona; the spec is now corrected to
+`eager_explorer` for future runs, but the generated smoke artifact still records
+the original requested persona. DeepSeek repeatedly returned no content for the
+D35/T41 prefix-baseline and peripeteia-only rows; those missing responses are
+kept as critic/runtime caveats rather than imputed labels.
+
+Practical next move: scale a cleaner negative/control set around D40-like
+scenarios, not D35-like scenarios. Add two or three more low-organic candidates
+from non-Socratic domains, require prefix-baseline flatness before the paid
+adaptation arms are interpreted, and keep D35/D39 as boundary probes. The
+production question should be modeled as three separable variables:
+
+1. organic reversal risk from the fixed prefix;
+2. tutor-private peripeteia mechanism evidence;
+3. external recognition/trap/flat form after the branch.
+
+That lets the paper say what the remodeled architecture actually contributes:
+not "adaptation always causes recognition," but "a tutor ego/superego exchange
+can be forced to break a failed teaching habit, and this route becomes most
+visible as recognitive form when the scenario is not already doing the reversal
+by itself."
 
 ## Reporting rule
 

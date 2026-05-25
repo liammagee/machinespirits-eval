@@ -1,0 +1,27 @@
+STAGE: [Margin voice: Same sentence, different room.]
+
+LEARNER: "Oh, I get it, but I still want the exact wording to settle the caption. Wait, if the mayor says the same line to the crowd and then in CLOSED MEETING NOTES, it could mean public promise in one tray and private limiting or hiding in the other, so my label may be too clean."
+
+TUTOR: [slides the quote card between the two trays]
+
+"Keep the exact wording. Now make the mayor change rooms: at the microphone, the line sounds like a promise to the crowd; in the closed notes, it may work as a way to narrow what counts. Write the caption once under PUBLIC STATEMENT and once under CLOSED MEETING NOTES. Which version still lets visitors see who heard the line, who said it, and what the room allowed it to do?"
+
+LEARNER: [Label copy pending.]
+
+"Oh, I get it: the quote card can stay exact, but the tray has to name the room. Under PUBLIC STATEMENT, I’d say the mayor’s line sounds like a promise to the crowd; under CLOSED MEETING NOTES, the same line may let the committee narrow what counts. I’m still stuck on “closed,” because I don’t want the label to accuse hiding unless the document itself supports that."
+
+STAGE: [Margin voice: The quote has not changed; the room has.]
+
+TUTOR: [sets the quote card back under CLOSED MEETING NOTES]
+
+"The quote has not changed; the room has. Let “closed” name access, not motive. If the notes show the committee setting limits, the label can say “may narrow what counts.” If they only show the line moved into a restricted room, keep it plainer: “In the closed meeting notes, the same line appears inside committee discussion.” “Hiding” waits for another document."
+
+LEARNER: "Oh, I get it: “closed” is the door label, not a charge sheet. Archive note: access, not motive. I still want to say the room changes the force of the mayor’s line, but the notes have to show the committee setting limits before I use “may narrow what counts.” If they do not, I’ll keep the caption plainer so visitors see the sentence inside committee discussion, not proof of hiding."
+
+TUTOR: [Archive margin: ACCESS RECORDED. MOTIVE NOT PROVEN.]
+
+"That rule holds. Now reverse the room: place the closed-note sentence in the public tray. At the microphone, the crowd is at least the named audience; in the committee record, the public is not in the room. The caption can name that changed force. Put the pressure on the verb: “appears in committee discussion” if access is all the notes prove; “may narrow what counts” only if the notes show the committee using the line to set limits."
+
+LEARNER: [checks the tray labels]
+
+"Oh, I get it: the same sentence is like a badge changing rooms, but I need to stop treating the exact words as enough. At the microphone, I can make the mayor and the crowd visible; in the committee notes, I should probably write “appears in committee discussion” unless the page shows them setting limits. I want to test the verb under each tray before the caption goes on the exhibit label."

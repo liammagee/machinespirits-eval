@@ -1,0 +1,29 @@
+STAGE: [Margin voice: Same sentence, different room.]
+
+LEARNER: "Oh, I get it, but I still want the exact wording to settle the caption. Wait, if the mayor says the same line to the crowd and then in CLOSED MEETING NOTES, it could mean public promise in one tray and private limiting or hiding in the other, so my label may be too clean."
+
+TUTOR: [slides the quote card between the two trays]
+
+"Keep the exact wording. Now make the mayor change rooms: at the microphone, the line sounds like a promise to the crowd; in the closed notes, it may work as a way to narrow what counts. Write the caption once under PUBLIC STATEMENT and once under CLOSED MEETING NOTES. Which version still lets visitors see who heard the line, who said it, and what the room allowed it to do?"
+
+LEARNER: [Label copy pending.]
+
+"Oh, I get it: the quote card can stay exact, but the tray has to name the room. Under PUBLIC STATEMENT, I’d say the mayor’s line sounds like a promise to the crowd; under CLOSED MEETING NOTES, the same line may let the committee narrow what counts. I’m still stuck on “closed,” because I don’t want the label to accuse hiding unless the document itself supports that."
+
+STAGE: [Margin voice: The quote has not changed; the room has.]
+
+TUTOR: [sets the quote card back under CLOSED MEETING NOTES]
+
+"The quote has not changed; the room has. Let “closed” name access, not motive. If the notes show the committee setting limits, the label can say “may narrow what counts.” If they only show the line moved into a restricted room, keep it plainer: “In the closed meeting notes, the same line appears inside committee discussion.” “Hiding” waits for another document."
+
+STAGE: [An earlier learner line returns to the table: "Oh, I get it, but I still want the exact wording to settle the caption. Wait, if the mayor says the same line to the crowd and then in CLOSED MEETING NOTES, it could mean..." The pause holds while the learner decides whether that wording still stands, needs narrowing, or needs replacing.]
+
+LEARNER: [keeps finger on CLOSED MEETING NOTES]
+
+"“Oh, I get it, but I still want the exact wording to settle the caption” still half-stands: exact wording settles what the mayor said, not what the sentence is doing in this tray. If the notes show the committee setting limits, I can write “may narrow what counts”; if they only put the same line inside restricted committee discussion, I should not make “closed” mean “hiding.” I want to check the notes before the exhibit label tells visitors more than the document can prove."
+
+TUTOR: [margin note: Access is evidence. Motive needs evidence.]
+
+"Keep that split. Exact wording settles the mayor’s line; the notes have to earn the verb that follows it. Put three possible label verbs beside the tray: “appears,” “may narrow,” “hides.” Then test each verb against the notes and cross out what the evidence cannot support before visitors read it."
+
+LEARNER: "Exact wording settles what the mayor said, not what the sentence is doing here; that was my earlier framing problem. Oh, I get it: the quote card is fixed, but the label verb is where I can overclaim. I’ll start with “appears,” move to “may narrow” only if the committee notes show limits, and leave “hides” crossed out unless another document proves motive."

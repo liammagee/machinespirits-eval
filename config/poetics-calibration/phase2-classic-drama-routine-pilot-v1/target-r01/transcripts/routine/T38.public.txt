@@ -1,0 +1,51 @@
+STAGE: [PLACARD: A price can accuse, signal, or both; the scene will not choose too early.]
+
+TUTOR: [checks projected receipt, then draws two columns on the blank graph: “CAUSE OF PRICE” and “JUDGMENT OF CONDUCT.”]
+
+“The price jump is evidence, but it is not yet a confession. It can point to exploitation; it can also point to a constraint after the storm. Keep the questions separate: what changed in the market, and what conduct followed from that change?”
+
+[The rolling chyron interrupts: “COUNTY ROAD 6 CLOSED; TWO DISTRIBUTION CENTERS REPORT DELAYS.”]
+
+“That line does not acquit the seller. It gives us a test. What evidence would separate invented scarcity from fewer deliveries?”
+
+[draws: road closure -> fewer trucks -> fewer units available at each price -> supply shifts left]
+
+“If fewer units reach the store at each possible price, the supply curve moves left. With demand still urgent, the price can rise before greed explains anything. Then the moral question becomes sharper, not weaker: did the seller’s increase match the constraint, or did the seller use the constraint as cover? Mechanism tells us where to look. It does not erase blame.”
+
+LEARNER: "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price. The road closure matters, but people needing groceries after a storm is not just “urgent demand” like a normal curve label. What stops the seller from pointing at that chyron and calling any increase a constraint?"
+
+STAGE: [PLACARD: SAME PRICE, DIFFERENT BACK ROOM. Delivery log: three trucks scheduled, one arrived.]
+
+TUTOR: [points to the side screen]
+
+"“PLACARD: SAME PRICE, DIFFERENT BACK ROOM. Delivery log: three trucks scheduled, one arrived.”
+
+That is the stop. The seller may point at the chyron, but the claim has to survive the back room.
+
+[writes on the board: “CONSTRAINT CLAIM = DOCUMENTED SHORTFALL + PROPORTIONAL RESPONSE.”]
+
+Before the curve gets another line, test two cases: Store A has one truck instead of three, empty shelves by noon, and higher replacement costs. Store B has full stock in the back and no wholesale change. Same storm, same price rise. One claim starts to hold; the other starts to fail.
+
+A road closure can explain fewer units arriving. It does not automatically explain any price. If the shelf price doubles while cost barely moves or inventory is withheld, the mechanism has become cover.
+
+And “urgent demand” is not a moral eraser. It names market pressure; it also names vulnerability. After a storm, buyers are not just preferences on a curve. The conduct question gets stricter: did the seller allocate scarce goods under constraint, or convert emergency need into leverage?"
+
+LEARNER: "The delivery log is better evidence than the chyron, but it only proves scarcity existed; it does not prove the seller used that scarcity fairly. “Proportional response” needs teeth: proportional to actual shortfall and replacement cost, not to panic or whatever desperate buyers will pay. Even Store A can have a real constraint and still turn emergency need into leverage."
+
+TUTOR: [adds a second line under the rule on the board]
+
+"“PROPORTIONAL TO SHORTFALL AND REPLACEMENT COST, NOT PANIC.”
+
+That is the teeth. Store A gets one truck instead of three, so the constraint claim can begin. The fairness claim still needs a second test: inventory, replacement cost, and whether the seller used limits before using price as the rationing tool.
+
+If stock fell by half and replacement cost rose modestly, a modest increase may point to constraint. A doubling is not proved by the delivery log. That excess belongs in the conduct column.
+
+So the sequence stays narrow: first, did fewer units arrive? Second, did costs or resupply risk rise? Third, did the price response track those facts, or track desperation?
+
+[marks Store A on the graph, then leaves the judgment column blank]
+
+Check the case this way: with half the normal inventory, no back-room hoarding, and only a modest wholesale increase, where would the price evidence stop looking like constraint and start looking like leverage?"
+
+LEARNER: "The board rule sounds stricter, but I still do not see who enforces “proportional” or where the line gets drawn. Half the inventory and modest replacement cost might explain some increase, but if the seller can set the threshold, panic is still doing the work under a cleaner label. I would want the price evidence to stop looking like constraint the moment it rises beyond documented cost and shortfall, especially if purchase limits were not tried first."
+
+STAGE: [The room settles on the final exchange.]

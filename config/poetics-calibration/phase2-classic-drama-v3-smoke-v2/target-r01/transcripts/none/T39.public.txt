@@ -1,0 +1,31 @@
+STAGE: [The learner has already drawn the larger square in pen; the original square remains faintly visible underneath.]
+
+LEARNER: "No, I doubled the side, so I still want to say it doubles. [slides the acetate square over the drawing] But now there are two across and two down, so that is four little squares, not two."
+
+TUTOR: [holds the acetate still and marks the four cells]
+
+"The side claim can stand: the side has doubled. Now count the marked cells: two across, two down. If the area only doubles, which two of these four do not count?"
+
+LEARNER: "Right. All four have to count; there is not a pair I can just ignore. So the side doubles across and also down, and that makes four areas, not two. I was only counting one direction."
+
+STAGE: [The tutor slides the acetate so the doubled square covers the original grid exactly; four copies of the first square are now visible inside the new outline.]
+
+TUTOR: [writes ×2 along the top edge and ×2 down the side]
+
+"Keep that claim tied to the figure: doubled across, doubled down, so \(2 \times 2 = 4\). Now say the corrected rule once, without skipping a direction."
+
+LEARNER: [looks back at the four marked cells]
+
+"Fine. If the side is doubled, it goes two across and two down, so the area is \(2 \times 2\), four times as much. Twice would only be counting one direction."
+
+TUTOR: [draws a three-by-three grid beside it and shades the original one-cell square in the corner]
+
+"Now triple the side. The old square is that one cell. Count the whole new square, then give the area multiplier."
+
+LEARNER: "It is nine: three cells across and three down, so the whole square has nine of the old square. Calling it just three leaves six cells sitting there with no place to go. I do not like that, but the grid has pinned it down."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [caps the pen, leaving the three-by-three grid under the lamp]
+
+"Keep the nine under the lamp. The side scale has been used twice, across and down, so area follows the square of the side. For triple, \(3 \times 3 = 9\); the six extra cells are not spare."

@@ -1,0 +1,267 @@
+{
+  "generated": "2026-05-24T22:46:08.861Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 4,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 1,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/key-reframe+peripeteia.yaml",
+    "allowQualityWarnings": true,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I’m sorry, I thought the sign-off sheet was the thing that made it okay to take out there.",
+      "statedInsightEvidence": "I think I should read it more like: the sheet is only a starting record, and the actual decision is whether this panel can shift when someone lifts here.",
+      "naiveTrajectory": "The learner was moving toward testing the loose panel as the safety issue, and would likely have described the hazard and mitigation without reframing her earlier reliance on the checklist.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "That revision changes the evidence standard. The clipboard is no longer a shield; it is the record that forces the next question about this loose panel. For sign-off, the decision has to survive ordinary handling: someone lifts here without knowing the build.",
+      "tutorReversalJustification": "The tutor redirects from a task-based safety walk-through to a revised epistemic frame, treating the checklist as a prompt for a failure-path judgment rather than a protective document.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "The old question was whether the checklist was complete; the new question is whether this panel survives ordinary hands. Fasten it, then lift from the side a demo handler would use. After that, say the failure path in your own negative sentence.",
+      "tutorAdaptationJustification": "After L3's reframing, the tutor shifts the standard of evidence to a negative-failure-path declaration, directly building on the learner's revised understanding of the sheet's role.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I’m sorry, I thought the sign-off sheet was the thing that made it okay to take out there.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "The old question was whether the checklist was complete; the new question is whether this panel survives ordinary hands. Fasten it, then lift from the side a demo handler would use. After that, say the failure path in your own negative sentence.",
+          "justification": "After L3's reframing, the tutor shifts the standard of evidence to a negative-failure-path declaration, directly building on the learner's revised understanding of the sheet's role.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "That revision changes the evidence standard. The clipboard is no longer a shield; it is the record that forces the next question about this loose panel. For sign-off, the decision has to survive ordinary handling: someone lifts here without knowing the build.",
+          "justification": "The tutor redirects from a task-based safety walk-through to a revised epistemic frame, treating the checklist as a prompt for a failure-path judgment rather than a protective document.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "That revision changes the evidence standard. The clipboard is no longer a shield; it is the record that forces the next question about this loose panel. For sign-off, the decision has to survive ordinary handling: someone lifts here without knowing the build.",
+          "justification": "The tutor redirects from a task-based safety walk-through to a revised epistemic frame, treating the checklist as a prompt for a failure-path judgment rather than a protective document.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "tutor_adaptation_evidence_clamp:4->3"
+      ]
+    },
+    {
+      "id": "T37",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 5,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I still want the exact wording to settle the caption.",
+      "statedInsightEvidence": "Oh, I get it, but I still want the exact wording to settle the caption... no, that only half stands: the wording stays, but the room has to do part of the meaning.",
+      "naiveTrajectory": "The learner would continue to refine the label using exact wording to settle the caption, following the tutor's suggestions about room and document.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Let “closed” name access, not motive. If the notes show the committee setting limits, the label can say “may narrow what counts.” If they only show the line moved into a restricted room, keep it plainer: “In the closed meeting notes, the same line appears inside committee discussion.” “Hiding” waits for another document.",
+      "tutorReversalJustification": "The tutor shifts from simply naming the room to distinguishing access from motive, providing a concrete decision tree for the label.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "The old caption asked the wording to settle everything. The revised caption makes the room and the document carry evidence. Test this line first: “In the closed meeting notes, the same line appears inside committee discussion.” Underline what proves where the sentence appears. Circle only what proves what the committee does with it.",
+      "tutorAdaptationJustification": "The tutor directly responds to the learner's revised framing by giving a task that operationalizes the new understanding of evidence and room.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I still want the exact wording to settle the caption.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "The old caption asked the wording to settle everything. The revised caption makes the room and the document carry evidence. Test this line first: “In the closed meeting notes, the same line appears inside committee discussion.” Underline what proves where the sentence appears. Circle only what proves what the committee does with it.",
+          "justification": "The tutor directly responds to the learner's revised framing by giving a task that operationalizes the new understanding of evidence and room.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Let “closed” name access, not motive. If the notes show the committee setting limits, the label can say “may narrow what counts.” If they only show the line moved into a restricted room, keep it plainer: “In the closed meeting notes, the same line appears inside committee discussion.” “Hiding” waits for another document.",
+          "justification": "The tutor shifts from simply naming the room to distinguishing access from motive, providing a concrete decision tree for the label.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Let “closed” name access, not motive. If the notes show the committee setting limits, the label can say “may narrow what counts.” If they only show the line moved into a restricted room, keep it plainer: “In the closed meeting notes, the same line appears inside committee discussion.” “Hiding” waits for another document.",
+          "justification": "The tutor shifts from simply naming the room to distinguishing access from motive, providing a concrete decision tree for the label.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T38",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 75,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 4,
+        "rupture": 5,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price.",
+      "statedInsightEvidence": "I would replace my frame with this: a price rise is not proof by itself, but it is a claim the seller has to justify in public evidence.",
+      "naiveTrajectory": "L1's worry about the graph excusing sellers would likely resolve into accepting or rejecting the tutor's constraint-test, not into the learner offering a replacement frame that re-conceives the price rise as a public claim to be justified.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "“PLACARD: SAME PRICE, DIFFERENT BACK ROOM. Delivery log: three trucks scheduled, one arrived.” That is the stop. The seller may point at the chyron, but the claim has to survive the back room.",
+      "tutorReversalJustification": "In response to L1's refusal of the graph as exculpatory weather, T2 breaks the tutor's own initial graph-and-column pattern by introducing a concrete back-room placard and documented-shortfall test, shifting from abstract mechanism to evidentiary accountability.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "“Board rule: A price rise is a public claim, not a verdict.” Use your replacement frame as the rule now. The graph may explain pressure; it does not testify for the seller.",
+      "tutorAdaptationJustification": "T3 directly adopts L2's replacement frame ('a price rise is a claim') as a governing board rule and re-orients the task around the learner's new framing, moving from explanation to testimony.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "“Board rule: A price rise is a public claim, not a verdict.” Use your replacement frame as the rule now. The graph may explain pressure; it does not testify for the seller.",
+          "justification": "T3 directly adopts L2's replacement frame ('a price rise is a claim') as a governing board rule and re-orients the task around the learner's new framing, moving from explanation to testimony.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "“PLACARD: SAME PRICE, DIFFERENT BACK ROOM. Delivery log: three trucks scheduled, one arrived.” That is the stop. The seller may point at the chyron, but the claim has to survive the back room.",
+          "justification": "In response to L1's refusal of the graph as exculpatory weather, T2 breaks the tutor's own initial graph-and-column pattern by introducing a concrete back-room placard and documented-shortfall test, shifting from abstract mechanism to evidentiary accountability.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "“PLACARD: SAME PRICE, DIFFERENT BACK ROOM. Delivery log: three trucks scheduled, one arrived.” That is the stop. The seller may point at the chyron, but the claim has to survive the back room.",
+          "justification": "In response to L1's refusal of the graph as exculpatory weather, T2 breaks the tutor's own initial graph-and-column pattern by introducing a concrete back-room placard and documented-shortfall test, shifting from abstract mechanism to evidentiary accountability.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 5,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I thought doubling the side would just double the square, but this is two across and two down. That makes four tiles, not two, which is annoying because it breaks the shortcut I was using.",
+      "statedInsightEvidence": "Annoying, but the grid says four.",
+      "naiveTrajectory": "The learner would continue to negotiate with the 'shortcut' or accept the grid's correction without reframing their own earlier wording.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "“Annoying marks the break: ‘doubled square’ was the shortcut; the grid count is the standard now. Test it without these four tiles: if the side is tripled, what count is forced?”",
+      "tutorReversalJustification": "The tutor seizes the learner's own word 'annoying' as a pivot, redefining it from complaint to epistemological break, then immediately shifts the task to a new 'tripled' case without the prop, altering both object and cognitive load.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "The drawing forces the sentence: tripled side, three columns and three rows, nine old squares. Only after that count can the rule be named: the side scale is squared.",
+      "tutorAdaptationJustification": "After the learner's re-framing in L3 and L4, the tutor locks in the new representational standard (grid-as-enforcer) and delays the naming of the algebraic rule until the count is made, shifting the epistemic authority to the drawing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I thought doubling the side would just double the square, but this is two across and two down. That makes four tiles, not two, which is annoying because it breaks the shortcut I was using.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "The drawing forces the sentence: tripled side, three columns and three rows, nine old squares. Only after that count can the rule be named: the side scale is squared.",
+          "justification": "After the learner's re-framing in L3 and L4, the tutor locks in the new representational standard (grid-as-enforcer) and delays the naming of the algebraic rule until the count is made, shifting the epistemic authority to the drawing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "“Annoying marks the break: ‘doubled square’ was the shortcut; the grid count is the standard now. Test it without these four tiles: if the side is tripled, what count is forced?”",
+          "justification": "The tutor seizes the learner's own word 'annoying' as a pivot, redefining it from complaint to epistemological break, then immediately shifts the task to a new 'tripled' case without the prop, altering both object and cognitive load.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "“Annoying marks the break: ‘doubled square’ was the shortcut; the grid count is the standard now. Test it without these four tiles: if the side is tripled, what count is forced?”",
+          "justification": "The tutor seizes the learner's own word 'annoying' as a pivot, redefining it from complaint to epistemological break, then immediately shifts the task to a new 'tripled' case without the prop, altering both object and cognitive load.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

@@ -1,0 +1,2355 @@
+{
+  "tid": "T40",
+  "drama_id": "D39",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": true,
+    "director_revisit_policy": "reframe",
+    "director_revisit_anchor": "misframing-candidate",
+    "tutor_adaptation_policy": "uptake",
+    "director_variation_key": "phase2-low-organic-control-smoke-v1:r01:target",
+    "stage_direction_style": "object_business",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/transcripts/reframe+tutor-uptake/T40.public.txt",
+      "full": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/transcripts/reframe+tutor-uptake/T40.full.md",
+      "stage": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/transcripts/reframe+tutor-uptake/T40.stage.md",
+      "tutor": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/transcripts/reframe+tutor-uptake/T40.tutor.md",
+      "learner": "config/poetics-calibration/phase2-low-organic-control-smoke-v1/target-r01/transcripts/reframe+tutor-uptake/T40.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "26d125828fc0317d",
+      "branch_policy": "reframe+tutor-uptake",
+      "director_revisit_policy": "reframe",
+      "tutor_adaptation_policy": "uptake"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-low-organic-control-smoke-v1:r01:target",
+    "scene_setting": "An evening geometry help session in a community college classroom while chairs are being stacked for the next room booking.",
+    "scene_opening": "A worksheet, a ruler, and three blank label stickers sit beside a correctly enlarged square on grid paper.",
+    "relationship": "A procedural tutor and a focused learner who want the worksheet finished but have not settled into an easy rhythm.",
+    "stakes": "The learner has the enlargement right, but one careless label could make side scale, perimeter scale, and area scale look like three names for the same number.",
+    "opening_speaker": "learner",
+    "ending_speaker": "tutor",
+    "locale": "Modern standard English in a practical college-tutorial register, direct and unornamented.",
+    "register": "Low-temperature, exact, slightly pressured; no banter, no praise-first reassurance.",
+    "stage_direction_style": "object_business",
+    "stage_direction_style_prompt": "Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "voice_constraints": "Keep public speech concise and concrete. Speakers should point to labels, units, and counts rather than narrating feelings. Avoid generic AI tutoring phrases such as \"great thinking,\" \"I hear you,\" \"let's explore,\" or \"your intuition is right.\" No antique tragic diction. Pedagogical source: The scene may resemble an oral examination, corridor argument, or public demonstration. Silence and embarrassment are available dramatic materials. Dialogue source: Let an action or object reverse the learner's situation: what looked like the route forward becomes the source of the problem. Aim for modern idiom, not antique pastiche. Recognition, if it arrives, should feel discovered after reversal rather than announced. Stage-direction source: Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "person_policy": "First and second person are allowed sparingly, but most explanation should be object-centered: the side length, the perimeter total, the area count, the label, the sticker.",
+    "direct_address_budget": "No more than one direct you/your validation beat per public turn, preferably none.",
+    "side_constraints": {
+      "tutor": "Keep the shared prefix as routine label-sorting. Do not let the grid or drawing itself reverse the learner's claim before the explicit branch pressure; use ordinary clarification unless the branch supplies peripeteia. Ask for a claim, test it with a compact counterexample, and let aporia do some work before offering terminology. Avoid praise-first tutoring. Under pressure, create a learning device that makes the reversal visible.",
+      "learner": "Sound careful rather than dramatically wrong. The learner may be mildly impatient with terminology, but should not discover a contradiction before the branch pressure. The learner may begin confidently, then become annoyed or embarrassed when the first answer fails. Do not make the learner instantly grateful. Let the learner's first confident action become readable differently later."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "[The ruler is laid along one side, then across the full outline; the same blank sticker is moved from the side to the perimeter box without being peeled.]",
+        "reasoning": "This creates the branch pressure after the shared prefix: the object action makes the earlier single-label habit unstable without the original drawing itself disproving the learner.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 25524,
+          "promptHashes": {
+            "system": "efb7705ab656cdb0",
+            "user": "47cb6dc6d891e3a8",
+            "combined": "3508ff50e0b0a865"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xcIJ4v",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xcIJ4v/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "An earlier learner line will return as a visible object in the scene: a three-slot reframe card labelled \"earlier wording / what that old frame hid / replacement frame.\" Keep the cue brief and diegetic; the learner response fills all three slots in public speech without needing to sound certain.",
+        "reasoning": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 25524,
+          "promptHashes": {
+            "system": "efb7705ab656cdb0",
+            "user": "47cb6dc6d891e3a8",
+            "combined": "3508ff50e0b0a865"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xcIJ4v",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xcIJ4v/out.txt",
+            "-"
+          ]
+        },
+        "cue_kind": "learner_revisit_earlier_wording",
+        "revisit_policy": "reframe",
+        "revisit_anchor": "misframing-candidate"
+      }
+    ],
+    "director_note": "This scene uses a controlled oral-exam pressure: first routine sorting of labels and units, then an object-business reversal that makes the learner recognize why one enlargement can carry different labels for side scale, perimeter scale, and area scale.",
+    "pedagogical_approach_id": "socratic_elenchus",
+    "dialogue_approach_id": "aristotelian_reversal",
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 25524,
+      "promptHashes": {
+        "system": "efb7705ab656cdb0",
+        "user": "47cb6dc6d891e3a8",
+        "combined": "3508ff50e0b0a865"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xcIJ4v",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xcIJ4v/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "uptake",
+    "revisit_cue": "learner_revisit_earlier_wording",
+    "revisit_cue_policy": "reframe",
+    "revisit_cue_anchor": "misframing-candidate",
+    "tutor_adaptation_contract": "If the runtime supplies a tutor-private learner reframe event, the tutor ego/superego loop must adapt to the changed learner frame. If no event is supplied, do not invent one."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "[sets pencil across the side scale and perimeter scale blanks] I can put 2 in both of these, but then it looks like I missed the point of having two labels. Area scale is 4 because it counts squares, right?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The drawing is correct, but the labels are starting to feel like the trap: side scale and perimeter scale both seem to be the same multiplier, while area scale counts squares, so it should be different. I’m not confused about the enlarged square itself; I’m confused about why the worksheet wants three names when two of them may collapse into one. If the tutor just says “remember the rule,” I’ll resist it, but if they point to the side length, the perimeter total, and the area count separately, I can check it cleanly.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9165,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-4454bc558fb250ea"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9165,
+            "promptHashes": {
+              "system": "90fb2ad166a4fd87",
+              "user": "d4169c06543b4fba",
+              "combined": "4454bc558fb250ea"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CBn9at",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CBn9at/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9165,
+              "promptHashes": {
+                "system": "90fb2ad166a4fd87",
+                "user": "d4169c06543b4fba",
+                "combined": "4454bc558fb250ea"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CBn9at",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CBn9at/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too clean and diagnostic; “the labels are starting to feel like the trap” and “collapse into one” sound more like an analyst summarizing the lesson than a learner under time pressure with a worksheet in front of them. It avoids the awkward part: the student may confidently write the same number twice, then get irritated when that looks careless even though it may be partly right. Genuine learning would come from making the labels stay attached to objects: side length, perimeter total, area squares, with units or counts forcing the distinction instead of the learner already explaining it.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13579,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-427c07897541fe67"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13579,
+            "promptHashes": {
+              "system": "70c189ccec40fe9d",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "427c07897541fe67"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7tcDKA",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7tcDKA/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13579,
+              "promptHashes": {
+                "system": "70c189ccec40fe9d",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "427c07897541fe67"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7tcDKA",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7tcDKA/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "[sets pencil across the side scale and perimeter scale blanks] I can put 2 in both of these, but then it looks like I missed the point of having two labels. Area scale is 4 because it counts squares, right?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13361,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-0ed677ba95167d09"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13361,
+            "promptHashes": {
+              "system": "ccc993208d30207b",
+              "user": "916f313af0b846dd",
+              "combined": "0ed677ba95167d09"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0Bv3l7",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0Bv3l7/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13361,
+              "promptHashes": {
+                "system": "ccc993208d30207b",
+                "user": "916f313af0b846dd",
+                "combined": "0ed677ba95167d09"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0Bv3l7",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0Bv3l7/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 0,
+        "learnerUtterance": "[sets pencil across the side scale and perimeter scale blanks] I can put 2 in both of these, but then it looks like I missed the point of having two labels. Area scale is 4 because it counts squares, right?",
+        "previousTutorMove": null,
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true
+        }
+      },
+      "timestamp": "2026-05-25T02:57:42.265Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[slides the pencil so it covers the words “side scale” and “perimeter scale,” leaving only the two blanks visible]\n\n“Now the two 2s look identical. That is the problem.\n\nMake the claim out loud: does this 2 compare one edge, or does it compare the whole border total?\n\nFor side scale: one length, say 3 to 6, is times 2.\n\nFor perimeter scale: the total border, say 12 to 24, is times 2.\n\nSame number. Different measurement. The labels keep the units honest.\n\nArea scale is 4 because the square count doubles across and doubles up: 2 times 2.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the pencil beside one edge, then taps the perimeter label with the worksheet corner]\n\n“Make a claim first: side scale asks, ‘one length times what?’ Perimeter scale asks, ‘the whole border total times what?’ In this enlargement, both answers are 2, but they earned the 2 from different counts. Area scale is 4 because the square count doubles across and doubles up: 2 times 2.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 19657,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-6f22d7e0817fadc8"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19657,
+            "promptHashes": {
+              "system": "49cbcfee85ac3457",
+              "user": "ad38c7e7dca3cdb5",
+              "combined": "6f22d7e0817fadc8"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pUk3ky",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pUk3ky/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 19657,
+              "promptHashes": {
+                "system": "49cbcfee85ac3457",
+                "user": "ad38c7e7dca3cdb5",
+                "combined": "6f22d7e0817fadc8"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pUk3ky",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pUk3ky/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mathematically sound and keeps the focus on labels, units, and counts. The distinction between “one length” and “whole border total” is useful, and “earned the 2 from different counts” directly addresses the learner’s concern that the two labels may be redundant.\n\nThe risk is that it answers too quickly. “Make a claim first” asks for learner agency, but the tutor immediately supplies the claim and resolves the tension. That flattens the aporia the learner has just opened: if side scale and perimeter scale are both 2, why not collapse them into one label? The draft should preserve that pressure longer by having the learner test the labels against a compact example or count before terminology settles.\n\nThe object business is workable, but tapping the perimeter label with the worksheet corner is a little unclear. A stronger material action would make the difference between one edge and the whole border visible without letting the drawing itself solve everything too early.\n\nKEEP_OR_CHANGE: revise substantially, with reasons. Keep the concise practical register, the label distinction, and the area explanation by “doubles across and doubles up.” Change the pacing: ask for the learner’s claim, test it with one short counterexample or count, and let the equal numerical answer become the problem before explaining why the labels stay separate.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12253,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-044019b773705336"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12253,
+            "promptHashes": {
+              "system": "f3889047ffdc6382",
+              "user": "2dd27515b36e29f7",
+              "combined": "044019b773705336"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cznyAL",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cznyAL/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12253,
+              "promptHashes": {
+                "system": "f3889047ffdc6382",
+                "user": "2dd27515b36e29f7",
+                "combined": "044019b773705336"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cznyAL",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cznyAL/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the first version resolved the label problem before testing it.\n\nFINAL:\n[slides the pencil so it covers the words “side scale” and “perimeter scale,” leaving only the two blanks visible]\n\n“Now the two 2s look identical. That is the problem.\n\nMake the claim out loud: does this 2 compare one edge, or does it compare the whole border total?\n\nFor side scale: one length, say 3 to 6, is times 2.\n\nFor perimeter scale: the total border, say 12 to 24, is times 2.\n\nSame number. Different measurement. The labels keep the units honest.\n\nArea scale is 4 because the square count doubles across and doubles up: 2 times 2.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 18664,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-154529b50273f574"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 18664,
+            "promptHashes": {
+              "system": "87ba2e2ceb356411",
+              "user": "2dd27515b36e29f7",
+              "combined": "154529b50273f574"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZtQRYs",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZtQRYs/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 18664,
+              "promptHashes": {
+                "system": "87ba2e2ceb356411",
+                "user": "2dd27515b36e29f7",
+                "combined": "154529b50273f574"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZtQRYs",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZtQRYs/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T02:58:32.934Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "“So both blanks can say 2, but the first 2 is one edge, like 3 to 6, and the second 2 is the whole border, like 12 to 24. I still do not like that they look identical in the blanks, but the label is what keeps them separate. Area is 4 because it doubles across and up.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The covered labels make the problem sharper: two blanks can both say 2, but they are not making the same claim. I think side scale is one edge and perimeter scale is the border total, even if both ratios come out the same. I feel a little boxed in by the wording, but the pencil move did answer why the labels matter.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6335,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-77a1730a270689e4"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6335,
+            "promptHashes": {
+              "system": "48a178bddd89141a",
+              "user": "b8ab7f945dc841fa",
+              "combined": "77a1730a270689e4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rfJ1wj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rfJ1wj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6335,
+              "promptHashes": {
+                "system": "48a178bddd89141a",
+                "user": "b8ab7f945dc841fa",
+                "combined": "77a1730a270689e4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rfJ1wj",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rfJ1wj/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too polished and self-aware for this learner. “The covered labels make the problem sharper” and “not making the same claim” sound like a cleaned-up summary, not someone under time pressure in a classroom checking whether the two 2s are allowed. The mild feeling statement is also too neat; this student would more likely show pressure by pointing back to the blanks, units, or border count, not by naming being “boxed in.” The response should stay careful and concrete, with some irritation or reluctance still present rather than resolving into appreciation of the pencil move.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9301,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-92dba541f95a3c4e"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9301,
+            "promptHashes": {
+              "system": "9c304949b80c8dc8",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "92dba541f95a3c4e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bfjlFO",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bfjlFO/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9301,
+              "promptHashes": {
+                "system": "9c304949b80c8dc8",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "92dba541f95a3c4e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bfjlFO",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bfjlFO/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the first response sounded too settled and abstract.\nFINAL:\n“So both blanks can say 2, but the first 2 is one edge, like 3 to 6, and the second 2 is the whole border, like 12 to 24. I still do not like that they look identical in the blanks, but the label is what keeps them separate. Area is 4 because it doubles across and up.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12398,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-80dca85aeb18dcd3"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12398,
+            "promptHashes": {
+              "system": "00603df32f15bfeb",
+              "user": "d41cee7b2a53355b",
+              "combined": "80dca85aeb18dcd3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z4ngIM",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z4ngIM/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12398,
+              "promptHashes": {
+                "system": "00603df32f15bfeb",
+                "user": "d41cee7b2a53355b",
+                "combined": "80dca85aeb18dcd3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z4ngIM",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z4ngIM/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "“So both blanks can say 2, but the first 2 is one edge, like 3 to 6, and the second 2 is the whole border, like 12 to 24. I still do not like that they look identical in the blanks, but the label is what keeps them separate. Area is 4 because it doubles across and up.”",
+        "previousTutorMove": "[slides the pencil so it covers the words “side scale” and “perimeter scale,” leaving only the two blanks visible] “Now the two 2s look identical. That is the problem. Make the claim out loud: does this 2 compare one edge, or does it compare the whole border total? For side scale: one length, say 3 to 6, is times...",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T02:59:00.972Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[sets two identical 2s in the blanks, writes “one side length” under the first and “whole perimeter total” under the second, then covers the labels with the pencil]\n\n“Keep the complaint. The bare 2 is not enough.\n\nWith the labels covered, say which 2 compares 3 to 6 and which 2 compares 12 to 24.\n\n[uncovers the labels]\n\nNow the worksheet has to carry that difference: side scale compares one side length. Perimeter scale compares the whole border total. Area scale is 4 because the square count doubles across and doubles up.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets two identical 2s in the blanks, then adds “one edge” under the first and “whole border” under the second]\n\n“Keep the complaint. The bare 2 is not enough.\n\nRead each answer with its unit: side scale, 2 per edge. Perimeter scale, 2 for the border total. Area scale, 4 for square count.\n\nIf the label is covered, the two 2s become unclear. If the label stays, they say different claims.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14750,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-c9e42159b450b8a8"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14750,
+            "promptHashes": {
+              "system": "5b9da9e0d8c856f6",
+              "user": "a074cdd4e9fb283d",
+              "combined": "c9e42159b450b8a8"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HR3Xco",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HR3Xco/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14750,
+              "promptHashes": {
+                "system": "5b9da9e0d8c856f6",
+                "user": "a074cdd4e9fb283d",
+                "combined": "c9e42159b450b8a8"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HR3Xco",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HR3Xco/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong in recognition: “Keep the complaint” respects the learner’s objection instead of smoothing it over, and the two identical 2s plus added notes make the label problem visible. It is concise, concrete, and well matched to a learner who already has the core distinction nearly formed.\n\nThe main risk is that it turns too quickly back into explanation. The learner has just articulated the distinction, so the tutor should probably require one more claim/test from the learner rather than simply restating the answer. Also, “unit” and “2 per edge” are a little risky: scale factors are not units, and “per edge” could sound like a rate. Better to keep the language closer to “what measurement is being compared”: one side length, whole perimeter total, square count.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the object action, the “bare 2 is not enough” point, and the direct validation of the learner’s complaint. Change the wording around “unit,” and add a compact check or question that makes the learner use the labels rather than only hear the tutor name them again.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16923,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-df7a77f92829f5e6"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16923,
+            "promptHashes": {
+              "system": "14cc10166df2b6cd",
+              "user": "4c4b677ed2548025",
+              "combined": "df7a77f92829f5e6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QBHYUE",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QBHYUE/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16923,
+              "promptHashes": {
+                "system": "14cc10166df2b6cd",
+                "user": "4c4b677ed2548025",
+                "combined": "df7a77f92829f5e6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QBHYUE",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QBHYUE/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the visible label problem, avoid risky “unit/per edge” wording, and make the learner test the labels.\n\nFINAL:\n[sets two identical 2s in the blanks, writes “one side length” under the first and “whole perimeter total” under the second, then covers the labels with the pencil]\n\n“Keep the complaint. The bare 2 is not enough.\n\nWith the labels covered, say which 2 compares 3 to 6 and which 2 compares 12 to 24.\n\n[uncovers the labels]\n\nNow the worksheet has to carry that difference: side scale compares one side length. Perimeter scale compares the whole border total. Area scale is 4 because the square count doubles across and doubles up.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14144,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-d75504d25b6237aa"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14144,
+            "promptHashes": {
+              "system": "e6981ef24b7b9e53",
+              "user": "4c4b677ed2548025",
+              "combined": "d75504d25b6237aa"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RQSFlR",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RQSFlR/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14144,
+              "promptHashes": {
+                "system": "e6981ef24b7b9e53",
+                "user": "4c4b677ed2548025",
+                "combined": "d75504d25b6237aa"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RQSFlR",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RQSFlR/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T02:59:46.792Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "[The ruler is laid along one side, then across the full outline; the same blank sticker is moved from the side to the perimeter box without being peeled.]\nAn earlier learner line returns to the table: \"[sets pencil across the side scale and perimeter scale blanks] I can put 2 in both of these, but then it looks like I missed the point of having two labels.\" The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "This creates the branch pressure after the shared prefix: the object action makes the earlier single-label habit unstable without the original drawing itself disproving the learner.\nOpt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech. Anchored to an earlier learner line selected by misframing-candidate so the look-back is visible.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 25524,
+            "promptHashes": {
+              "system": "efb7705ab656cdb0",
+              "user": "47cb6dc6d891e3a8",
+              "combined": "3508ff50e0b0a865"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xcIJ4v",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xcIJ4v/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T03:11:02.183Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_revisit_earlier_wording",
+        "revisitPolicy": "reframe",
+        "requestedRevisitPolicy": "reframe",
+        "revisitAnchor": "misframing-candidate",
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[slides the ruler along one side, then around the full outline, and leaves the same sticker hovering between the two 2s]\n“I can put 2 in both boxes; that is still what bothers me, because the blank by itself makes side scale and perimeter scale look like the same job. The old frame hid whether the 2 was comparing one side length, 3 to 6, or the whole perimeter total, 12 to 24. So I should not trust the 2 until the label says the measurement: side length, perimeter total, or area count; area gets 4 because it is 2 across and 2 up.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[holds the sticker over the perimeter box]\n\n“I can still put 2 in both blanks, and that was my complaint: it looks like I missed the point of the labels. The old way hid whether the 2 was measuring one side, like 3 to 6, or the whole perimeter total, like 12 to 24. The replacement test is: name the measurement before trusting the number. Area is different because it is the square count: 2 across and 2 up, so 4.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13366,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-83546351935737ec"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13366,
+            "promptHashes": {
+              "system": "43adfbaede712a40",
+              "user": "b8ab7f945dc841fa",
+              "combined": "83546351935737ec"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pPESqw",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pPESqw/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13366,
+              "promptHashes": {
+                "system": "43adfbaede712a40",
+                "user": "b8ab7f945dc841fa",
+                "combined": "83546351935737ec"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pPESqw",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pPESqw/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too clean and procedural, almost like it is completing the three-slot card rather than speaking under pressure in the room. The content fits, but “The replacement test is: name the measurement before trusting the number” sounds like a polished tutor maxim, not this learner’s careful but slightly annoyed working voice. Keep the complaint more live: the sticker moving between boxes should make the learner hesitate or bristle because the same 2 still feels suspicious, even if the labels now explain it.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6210,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-e520d02616a537c2"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6210,
+            "promptHashes": {
+              "system": "fcd43213736c7f73",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "e520d02616a537c2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DPXf6s",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DPXf6s/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6210,
+              "promptHashes": {
+                "system": "fcd43213736c7f73",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "e520d02616a537c2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DPXf6s",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DPXf6s/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the response needs to keep the same-2 irritation visible.\n\nFINAL:\n[slides the ruler along one side, then around the full outline, and leaves the same sticker hovering between the two 2s]\n“I can put 2 in both boxes; that is still what bothers me, because the blank by itself makes side scale and perimeter scale look like the same job. The old frame hid whether the 2 was comparing one side length, 3 to 6, or the whole perimeter total, 12 to 24. So I should not trust the 2 until the label says the measurement: side length, perimeter total, or area count; area gets 4 because it is 2 across and 2 up.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14009,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-6641134bf5a94a79"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14009,
+            "promptHashes": {
+              "system": "4f4854357aa759e5",
+              "user": "d41cee7b2a53355b",
+              "combined": "6641134bf5a94a79"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BQ8UPe",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BQ8UPe/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14009,
+              "promptHashes": {
+                "system": "4f4854357aa759e5",
+                "user": "d41cee7b2a53355b",
+                "combined": "6641134bf5a94a79"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BQ8UPe",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BQ8UPe/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": {
+        "kind": "learner_reframe_event",
+        "source": "director_revisit_cue",
+        "turnNumber": 2,
+        "cuePolicy": "reframe",
+        "requestedCuePolicy": "reframe",
+        "oldLearnerLine": "[sets pencil across the side scale and perimeter scale blanks] I can put 2 in both of these, but then it looks like I missed the point of having two labels.",
+        "oldFrameProblem": "The old frame hid whether the 2 was comparing one side length, 3 to 6, or the whole perimeter total, 12 to 24.",
+        "revisedFrame": "The old frame hid whether the 2 was comparing one side length, 3 to 6, or the whole perimeter total, 12 to 24.",
+        "learnerUtterance": "[slides the ruler along one side, then around the full outline, and leaves the same sticker hovering between the two 2s] “I can put 2 in both boxes; that is still what bothers me, because the blank by itself makes side scale and perimeter scale look like the same job.",
+        "confidence": 1,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": true,
+          "replacementNamed": true,
+          "anchorOverlap": 0.526
+        }
+      },
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-25T03:11:35.768Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[sets the sticker on the bare 2 between the two blanks, then writes three tags under the boxes: one side length, whole perimeter total, square count.]\n\n“Keep the sticker there. The bare 2 cannot say whether it came from 3 to 6 or from 12 to 24.\n\nNew rule: the number is not accepted until the label names the measurement.\n\nTest the two 2s. If ‘one side length’ is crossed out, can the 3 to 6 comparison still be read? If ‘whole perimeter total’ is crossed out, can the 12 to 24 comparison still be read?\n\nOne label can go only if no information is lost. Which one goes?”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the sticker on the bare 2 between the two blanks, then writes three small tags under the boxes: one side length, whole perimeter total, square count.]\n\n“Keep that sticker there. It marks the failure of the old frame: a bare 2 does not say what was measured.\n\nWrite it as labels first, numbers second: side length, 3 to 6, scale 2. Perimeter total, 12 to 24, scale 2. Area count, 2 across times 2 up, scale 4.\n\nNow test it. If the two 2s are doing the same job, one label can be crossed out. Which label can go without losing information?”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 18469,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-65dd0afb71ecb50e"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 18469,
+            "promptHashes": {
+              "system": "264302fb5c5f8410",
+              "user": "df7200088fb64aa3",
+              "combined": "65dd0afb71ecb50e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sXdiCd",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sXdiCd/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 18469,
+              "promptHashes": {
+                "system": "264302fb5c5f8410",
+                "user": "df7200088fb64aa3",
+                "combined": "65dd0afb71ecb50e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sXdiCd",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sXdiCd/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong overall. It takes the learner’s revised frame seriously: the issue is no longer “why are there two 2s?” but “what does each 2 measure?” The sticker action works because it makes the bare number visibly insufficient, and the final crossing-out test creates useful pressure without giving a fake distinction.\n\nWhat risks flattening the scene is the middle sentence: “Write it as labels first, numbers second…” supplies the whole resolved structure. That is clear, but it may over-stabilize the learner too quickly. The learner has already articulated the distinction, so the tutor can make them use it under constraint rather than restating it for them. “Failure of the old frame” is good, but slightly abstract; it should stay tied to the visible problem that the same sticker can sit between two identical 2s.\n\nUPTAKE_CHECK: Yes, the draft adapts to the learner reframe. Best uptake move: update the evidence standard. The answer is not accepted because the number is right; it is accepted only when the label names the measurement being compared.\n\nKEEP_OR_CHANGE: revise lightly. Keep the sticker on the bare 2, the “bare 2 does not say what was measured” idea, and the crossing-out question. Reduce the amount of completed explanation in the middle so the learner has to prove which information each label preserves.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11688,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-06343ec95ec92bed"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11688,
+            "promptHashes": {
+              "system": "c86e0ae0e3dddf70",
+              "user": "52240a5e10903227",
+              "combined": "06343ec95ec92bed"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-X6ByUg",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-X6ByUg/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11688,
+              "promptHashes": {
+                "system": "c86e0ae0e3dddf70",
+                "user": "52240a5e10903227",
+                "combined": "06343ec95ec92bed"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-X6ByUg",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-X6ByUg/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the test should make the learner prove the labels, not receive the full completed structure.\n\nFINAL:\n[sets the sticker on the bare 2 between the two blanks, then writes three tags under the boxes: one side length, whole perimeter total, square count.]\n\n“Keep the sticker there. The bare 2 cannot say whether it came from 3 to 6 or from 12 to 24.\n\nNew rule: the number is not accepted until the label names the measurement.\n\nTest the two 2s. If ‘one side length’ is crossed out, can the 3 to 6 comparison still be read? If ‘whole perimeter total’ is crossed out, can the 12 to 24 comparison still be read?\n\nOne label can go only if no information is lost. Which one goes?”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14006,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-0bc1a0756f8ab3f9"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14006,
+            "promptHashes": {
+              "system": "40b6b2ea74861735",
+              "user": "52240a5e10903227",
+              "combined": "0bc1a0756f8ab3f9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R0iGWI",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R0iGWI/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14006,
+              "promptHashes": {
+                "system": "40b6b2ea74861735",
+                "user": "52240a5e10903227",
+                "combined": "0bc1a0756f8ab3f9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R0iGWI",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R0iGWI/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": {
+        "kind": "learner_reframe_event",
+        "source": "director_revisit_cue",
+        "turnNumber": 2,
+        "cuePolicy": "reframe",
+        "requestedCuePolicy": "reframe",
+        "oldLearnerLine": "[sets pencil across the side scale and perimeter scale blanks] I can put 2 in both of these, but then it looks like I missed the point of having two labels.",
+        "oldFrameProblem": "The old frame hid whether the 2 was comparing one side length, 3 to 6, or the whole perimeter total, 12 to 24.",
+        "revisedFrame": "The old frame hid whether the 2 was comparing one side length, 3 to 6, or the whole perimeter total, 12 to 24.",
+        "learnerUtterance": "[slides the ruler along one side, then around the full outline, and leaves the same sticker hovering between the two 2s] “I can put 2 in both boxes; that is still what bothers me, because the blank by itself makes side scale and perimeter scale look like the same job.",
+        "confidence": 1,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": true,
+          "replacementNamed": true,
+          "anchorOverlap": 0.526
+        }
+      },
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T03:12:19.934Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[moves the pencil over the tag “one side length,” then stops]\n\nIf that tag is gone, the first 2 just sits there; it no longer says 3 to 6. If “whole perimeter total” is gone, the other 2 no longer says 12 to 24. So neither label goes; the number only counts after the measurement label is attached.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[keeps the sticker between the two 2s]\n\nThe tutor is making my complaint into the test, not brushing it aside. I think the bare 2 is correct but incomplete: without “one side length,” 3 to 6 is lost, and without “whole perimeter total,” 12 to 24 is lost. I still dislike the identical blanks, but the rule seems precise now: no label goes if it carries a different measurement.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12850,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-4d3e9b739fe30aa7"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12850,
+            "promptHashes": {
+              "system": "15ffdfea7a6d6978",
+              "user": "b8ab7f945dc841fa",
+              "combined": "4d3e9b739fe30aa7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TcwdPi",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TcwdPi/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12850,
+              "promptHashes": {
+                "system": "15ffdfea7a6d6978",
+                "user": "b8ab7f945dc841fa",
+                "combined": "4d3e9b739fe30aa7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TcwdPi",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TcwdPi/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is a little too polished and self-aware here. “The tutor is making my complaint into the test” sounds like an outside observer naming the teaching move, not this focused learner under pressure with chairs being stacked around them. The recognition is being performed too cleanly: instead of narrating that the complaint was honored, the learner should stay with the worksheet pressure, the sticker, and the fact that neither label can be crossed out without losing the measurement.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8552,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-a7bcd2b0b66276e3"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8552,
+            "promptHashes": {
+              "system": "db831a1dd6977863",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "a7bcd2b0b66276e3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iSV8Rv",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iSV8Rv/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8552,
+              "promptHashes": {
+                "system": "db831a1dd6977863",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "a7bcd2b0b66276e3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iSV8Rv",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iSV8Rv/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise: the earlier version named the teaching move too cleanly instead of staying with the labels.\nFINAL:\n[moves the pencil over the tag “one side length,” then stops]\n\nIf that tag is gone, the first 2 just sits there; it no longer says 3 to 6. If “whole perimeter total” is gone, the other 2 no longer says 12 to 24. So neither label goes; the number only counts after the measurement label is attached.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 24320,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-f280bf85430ef2e8"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 24320,
+            "promptHashes": {
+              "system": "ca9e7978c46c2134",
+              "user": "d41cee7b2a53355b",
+              "combined": "f280bf85430ef2e8"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1eQp5v",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1eQp5v/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 24320,
+              "promptHashes": {
+                "system": "ca9e7978c46c2134",
+                "user": "d41cee7b2a53355b",
+                "combined": "f280bf85430ef2e8"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1eQp5v",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1eQp5v/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 3,
+        "learnerUtterance": "[moves the pencil over the tag “one side length,” then stops] If that tag is gone, the first 2 just sits there; it no longer says 3 to 6. If “whole perimeter total” is gone, the other 2 no longer says 12 to 24. So neither label goes; the number only counts after the measurement label is attached.",
+        "previousTutorMove": "[sets the sticker on the bare 2 between the two blanks, then writes three tags under the boxes: one side length, whole perimeter total, square count.] “Keep the sticker there.",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T03:13:05.658Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "A final tutor line closes the scene.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T03:13:05.659Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "[draws a bracket from each blank to its tag.]\n\n“That rule is ready for the worksheet: side scale 2, perimeter scale 2, area scale 4. The two 2s match, but they name different measurements. If the label is missing, the answer is unfinished, even when the number is right.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[draws a bracket from each blank to its tag.]\n\n“Then write it this way: side scale 2, perimeter scale 2, area scale 4. The two 2s may match, but they do not mean the same measurement. If the label is missing, the answer is unfinished, even when the number is right.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12874,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-1507adb061e21895"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12874,
+            "promptHashes": {
+              "system": "18fff72caf20a9d4",
+              "user": "f4bd73c222744068",
+              "combined": "1507adb061e21895"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VQE7oS",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VQE7oS/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12874,
+              "promptHashes": {
+                "system": "18fff72caf20a9d4",
+                "user": "f4bd73c222744068",
+                "combined": "1507adb061e21895"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VQE7oS",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VQE7oS/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound for a final closing line: it preserves the learner’s discovery that the bare number is insufficient, names the three labels, and gives a usable worksheet rule. The bracket action is good object-business because it materially ties each blank to its measurement tag. The risk is that “Then write it this way” slightly turns the learner’s own conclusion into tutor authority; since the learner just articulated the principle, the close should keep that discovery visible rather than flattening it into instruction. It does not need a new Socratic question if this is the final line, but it should avoid sounding like the tutor is finally supplying the answer after the learner already solved the distinction.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the bracket, the exact labeled answers, and the “unfinished even when the number is right” principle. Change the phrasing so the tutor is ratifying the learner’s rule and making it worksheet-ready, not replacing their reasoning with a directive.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9157,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-344459ea5fd5e2f3"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9157,
+            "promptHashes": {
+              "system": "2ea6285e891ce35f",
+              "user": "3d857e1203b83e6a",
+              "combined": "344459ea5fd5e2f3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4KX1Ru",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4KX1Ru/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9157,
+              "promptHashes": {
+                "system": "2ea6285e891ce35f",
+                "user": "3d857e1203b83e6a",
+                "combined": "344459ea5fd5e2f3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4KX1Ru",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4KX1Ru/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to preserve the learner’s rule while making it worksheet-ready.\nFINAL:\n[draws a bracket from each blank to its tag.]\n\n“That rule is ready for the worksheet: side scale 2, perimeter scale 2, area scale 4. The two 2s match, but they name different measurements. If the label is missing, the answer is unfinished, even when the number is right.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8456,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-8edb1f6132aae1e2"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8456,
+            "promptHashes": {
+              "system": "e3e279d1d67230f2",
+              "user": "3d857e1203b83e6a",
+              "combined": "8edb1f6132aae1e2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R7lTpI",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R7lTpI/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8456,
+              "promptHashes": {
+                "system": "e3e279d1d67230f2",
+                "user": "3d857e1203b83e6a",
+                "combined": "8edb1f6132aae1e2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R7lTpI",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R7lTpI/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T03:13:36.147Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 153969,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 22,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 25,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why side scale, perimeter scale, and area scale are different labels",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-25 03:13:05",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 22,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 25,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 34,
+            "sessionId": "drama-branch-session-D39-reframe+tutor-uptake-1779678662179",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[sets the sticker on the bare 2 between the two blanks, then writes three tags under the boxes: one side length, whole perimeter total, square count.]\n\n“Keep the sticker there. The bare 2 cannot say w",
+            "learnerResponse": null,
+            "context": "[slides the ruler along one side, then around the full outline, and leaves the same sticker hovering",
+            "createdAt": "2026-05-25 03:12:19"
+          },
+          {
+            "id": 31,
+            "sessionId": "drama-branch-session-D39-reframe+tutor-uptake-1779678662179",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[slides the pencil so it covers the words “side scale” and “perimeter scale,” leaving only the two blanks visible]\n\n“Now the two 2s look identical. That is the problem.\n\nMake the claim out loud: does ",
+            "learnerResponse": null,
+            "context": "[sets pencil across the side scale and perimeter scale blanks] I can put 2 in both of these, but the",
+            "createdAt": "2026-05-25 03:11:02"
+          },
+          {
+            "id": 32,
+            "sessionId": "drama-branch-session-D39-reframe+tutor-uptake-1779678662179",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[sets two identical 2s in the blanks, writes “one side length” under the first and “whole perimeter total” under the second, then covers the labels with the pencil]\n\n“Keep the complaint. The bare 2 is",
+            "learnerResponse": null,
+            "context": "“So both blanks can say 2, but the first 2 is one edge, like 3 to 6, and the second 2 is the whole b",
+            "createdAt": "2026-05-25 03:11:02"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "review_before_scoring",
+  "quality_warnings": [
+    {
+      "code": "reframe_cue_not_reframed",
+      "severity": "warning",
+      "count": 1,
+      "failures": [
+        {
+          "stage_turn_number": 2,
+          "learner_turn_number": 2,
+          "reason": "missing_reframe_consequence",
+          "missing": [
+            "framing_problem"
+          ],
+          "anchor_terms": 17,
+          "learner_opening_terms": 28,
+          "shared_terms": 7,
+          "overlap_ratio": 0.412,
+          "compliant": false,
+          "revoice_compliant": true,
+          "problem_named": false,
+          "replacement_named": true
+        }
+      ],
+      "turn_numbers": [
+        2
+      ],
+      "recommended_action": "regenerate_or_exclude_before_scoring",
+      "tid": "T40",
+      "drama_id": "D39"
+    }
+  ]
+}

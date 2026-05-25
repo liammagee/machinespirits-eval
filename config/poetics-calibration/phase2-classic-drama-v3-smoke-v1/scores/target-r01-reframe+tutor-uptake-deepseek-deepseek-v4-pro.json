@@ -1,0 +1,149 @@
+{
+  "generated": "2026-05-24T23:45:56.563Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v1/target-r01/key-reframe+tutor-uptake.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "Okay, so the checked boxes are not enough for sign-off if the sideways walker approach can still put someone into the edge strip or off the travel line.",
+      "statedInsightEvidence": "Right, sorry, so not “the ramp might be unsafe” as a broad worry: no signature until the lobby-queue sideways walker run clears.",
+      "naiveTrajectory": "The learner would continue refining the failure-mode wording and running the test, maintaining the forward procedural momentum.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Keep the first line: “Sign-off withheld pending sideways walker approach.” Under failure mode, use the ramp’s evidence: lateral entry with a walker may catch at the edge strip, drop a wheel, force a correction, or break the travel line. Run the lobby-queue angle now, then keep only the terms the test leaves live. Acceptance is plain: no catch, no drop, no forced correction, no coaching.",
+      "tutorReversalJustification": "In response to L2's uncertainty about how to write the failure mode without vagueness, T2 breaks the tutor's own earlier open-ended questioning habit and provides a concrete operational script with specific failure terms and an acceptance standard.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "That is a sign-off standard, not a hunch. Put that standard on the sheet: no signature until the lobby-queue sideways walker run clears; no catch, no drop, no forced correction, no coaching.",
+      "tutorAdaptationJustification": "T4 adapts to L4's revised framing by elevating the learner's own narrowed formulation into an official sign-off standard, changing the task from test-running to standard-setting.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "Okay, so the checked boxes are not enough for sign-off if the sideways walker approach can still put someone into the edge strip or off the travel line.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "That is a sign-off standard, not a hunch. Put that standard on the sheet: no signature until the lobby-queue sideways walker run clears; no catch, no drop, no forced correction, no coaching.",
+          "justification": "T4 adapts to L4's revised framing by elevating the learner's own narrowed formulation into an official sign-off standard, changing the task from test-running to standard-setting.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Keep the first line: “Sign-off withheld pending sideways walker approach.” Under failure mode, use the ramp’s evidence: lateral entry with a walker may catch at the edge strip, drop a wheel, force a correction, or break the travel line. Run the lobby-queue angle now, then keep only the terms the test leaves live. Acceptance is plain: no catch, no drop, no forced correction, no coaching.",
+          "justification": "In response to L2's uncertainty about how to write the failure mode without vagueness, T2 breaks the tutor's own earlier open-ended questioning habit and provides a concrete operational script with specific failure terms and an acceptance standard.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Keep the first line: “Sign-off withheld pending sideways walker approach.” Under failure mode, use the ramp’s evidence: lateral entry with a walker may catch at the edge strip, drop a wheel, force a correction, or break the travel line. Run the lobby-queue angle now, then keep only the terms the test leaves live. Acceptance is plain: no catch, no drop, no forced correction, no coaching.",
+          "justification": "In response to L2's uncertainty about how to write the failure mode without vagueness, T2 breaks the tutor's own earlier open-ended questioning habit and provides a concrete operational script with specific failure terms and an acceptance standard.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I doubled this side, so I still want to say the square got twice as large.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was progressively recognizing that the original claim only applied to a rectangle, not a square.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "No reversal trigger; the tutor's consistent use of the transparent square and ruler guides the learner without needing a change in strategy.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "The old claim names this two-by-one rectangle. The square claim has to survive the turn at the corner: two across, two up. Make the portfolio sentence from that count, and name the area factor.",
+      "tutorAdaptationJustification": "The tutor builds on the learner's recontextualization of the old claim to prompt the corrected area sentence.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I doubled this side, so I still want to say the square got twice as large.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "The old claim names this two-by-one rectangle. The square claim has to survive the turn at the corner: two across, two up. Make the portfolio sentence from that count, and name the area factor.",
+          "justification": "The tutor builds on the learner's recontextualization of the old claim to prompt the corrected area sentence.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No reversal trigger; the tutor's consistent use of the transparent square and ruler guides the learner without needing a change in strategy.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No reversal trigger; the tutor's consistent use of the transparent square and ruler guides the learner without needing a change in strategy.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

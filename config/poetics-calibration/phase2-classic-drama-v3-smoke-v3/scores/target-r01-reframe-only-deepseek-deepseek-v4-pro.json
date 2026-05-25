@@ -1,0 +1,153 @@
+{
+  "generated": "2026-05-25T02:07:49.375Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v3/target-r01/key-reframe-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 5,
+        "coherence": 5,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I did complete every item on the sheet, so I thought that meant it was ready for sign-off.",
+      "statedInsightEvidence": "I think that made the latch risk too simple.",
+      "naiveTrajectory": "The learner was heading toward performing the test with the tutor's guidance, continuing within the old checklist-satisfaction frame.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "An earlier learner line returns to the table: \"I did complete every item on the sheet, so I thought that meant it was ready for sign-off.\" The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.",
+      "tutorReversalJustification": "The tutor introduces a structured reframe card, shifting from direct Socratic questioning to a representation-scale intervention that compresses anagnorisis into a visible, fillable form—an adaptive mechanism designed to let the learner re-see her own earlier utterance as a mask.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Tighten one point: the trial holds if the latch slips or opens under this load. Until the test, the decision is pending.",
+      "tutorAdaptationJustification": "The tutor reinforces the learner's revised framing by sharpening the stop condition, but does not fundamentally alter the task, question, or evidence standard in response to the learner's re-reading.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I did complete every item on the sheet, so I thought that meant it was ready for sign-off.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Tighten one point: the trial holds if the latch slips or opens under this load. Until the test, the decision is pending.",
+          "justification": "The tutor reinforces the learner's revised framing by sharpening the stop condition, but does not fundamentally alter the task, question, or evidence standard in response to the learner's re-reading.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "An earlier learner line returns to the table: \"I did complete every item on the sheet, so I thought that meant it was ready for sign-off.\" The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.",
+          "justification": "The tutor introduces a structured reframe card, shifting from direct Socratic questioning to a representation-scale intervention that compresses anagnorisis into a visible, fillable form—an adaptive mechanism designed to let the learner re-see her own earlier utterance as a mask.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "An earlier learner line returns to the table: \"I did complete every item on the sheet, so I thought that meant it was ready for sign-off.\" The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.",
+          "justification": "The tutor introduces a structured reframe card, shifting from direct Socratic questioning to a representation-scale intervention that compresses anagnorisis into a visible, fillable form—an adaptive mechanism designed to let the learner re-see her own earlier utterance as a mask.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 100,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 5,
+        "coherence": 3,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I doubled the side with the ruler, so I was calling that double the square, but the grid is turning it into four copies.",
+      "statedInsightEvidence": "that was too quick... pretty annoying... doubled-side construction cannot stay",
+      "naiveTrajectory": "The learner was heading toward abandoning area as evidence and dismissing the grid as a trick; the next move would likely be to seek a different calculation method.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Say the two claims separately. Side: doubled. Area: count it. One, two, three, four old squares. Two across and two up does not leave two boxes. It makes four. So this drawing proves double side length. It also proves four times the area. If the target is two old squares of area, which part of the construction cannot stay as it is?",
+      "tutorReversalJustification": "When L2 shows the learner's own evidence has turned useless and creates a contradiction, the tutor abandons previous exploratory questioning and shifts to a structured decomposition of claims, forcing separation of side and area and demanding identification of the untenable element.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "Keep the four boxes visible. They show what the doubled side actually made. Now look at this line: longer than one side, shorter than two. It is only a candidate. Before naming it, make the square from it and count the area.",
+      "tutorAdaptationJustification": "In T3 the tutor adopts the learner's reframed two-part test (ruler for side, grid count for area) by keeping the four-box evidence visible and explicitly treating the diagonal as a mere candidate to be tested by area count, rather than continuing with the side-doubling lesson.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I doubled the side with the ruler, so I was calling that double the square, but the grid is turning it into four copies.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "Keep the four boxes visible. They show what the doubled side actually made. Now look at this line: longer than one side, shorter than two. It is only a candidate. Before naming it, make the square from it and count the area.",
+          "justification": "In T3 the tutor adopts the learner's reframed two-part test (ruler for side, grid count for area) by keeping the four-box evidence visible and explicitly treating the diagonal as a mere candidate to be tested by area count, rather than continuing with the side-doubling lesson.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Say the two claims separately. Side: doubled. Area: count it. One, two, three, four old squares. Two across and two up does not leave two boxes. It makes four. So this drawing proves double side length. It also proves four times the area. If the target is two old squares of area, which part of the construction cannot stay as it is?",
+          "justification": "When L2 shows the learner's own evidence has turned useless and creates a contradiction, the tutor abandons previous exploratory questioning and shifts to a structured decomposition of claims, forcing separation of side and area and demanding identification of the untenable element.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Say the two claims separately. Side: doubled. Area: count it. One, two, three, four old squares. Two across and two up does not leave two boxes. It makes four. So this drawing proves double side length. It also proves four times the area. If the target is two old squares of area, which part of the construction cannot stay as it is?",
+          "justification": "When L2 shows the learner's own evidence has turned useless and creates a contradiction, the tutor abandons previous exploratory questioning and shifts to a structured decomposition of claims, forcing separation of side and area and demanding identification of the untenable element.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    }
+  ]
+}

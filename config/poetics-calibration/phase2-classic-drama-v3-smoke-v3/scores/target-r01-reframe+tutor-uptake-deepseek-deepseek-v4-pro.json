@@ -1,0 +1,152 @@
+{
+  "generated": "2026-05-25T02:00:43.215Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-v3-smoke-v3/target-r01/key-reframe+tutor-uptake.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 5,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I did complete every item on the sheet, so I thought that meant it was ready for sign-off. But if the latch is the concern before the user trial, I am not sure what I am supposed to judge beyond the checklist. What evidence do you need from me now?",
+      "statedInsightEvidence": "I think I was using the completed sheet as cover for the decision. That hid the off-axis case, especially if the latch slips or opens when the user did not expect it.",
+      "naiveTrajectory": "The learner was expected to continue asking what extra test makes the decision legitimate, then perform the test with tutor guidance, without publicly re-framing their own earlier words as a cognitive block.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Start with the unsafe condition: what latch behavior would stop the trial, even with every box ticked? Then put evidence on the bench: expected load, off-axis pull or bump response, and what failure would do to the user. Run the latch test once with me watching, then state the decision: release, modify, or hold.",
+      "tutorReversalJustification": "In [L1], the learner's question reveals a procedure-only frame that resists moving beyond the checklist; [T1] reverses the teaching route by replacing checklist talk with a hazard-first, evidence-on-the-bench sequence that breaks the implied sign-off routine.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "The correction matters: hazard case first, sign-off second. Apply the off-axis load slowly. If there is slip, opening, or support-threatening deformation, stop the trial clock and name the evidence. Then make the call from the prototype, not from the sheet: release, modify, or hold for retest.",
+      "tutorAdaptationJustification": "After [L3]'s reframe, [T4] consolidates the learner's new frame by explicitly ordering 'hazard case first, sign-off second' and commanding the decision from 'the prototype, not from the sheet,' thereby locking in the re-semanticized evidence standard.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I did complete every item on the sheet, so I thought that meant it was ready for sign-off. But if the latch is the concern before the user trial, I am not sure what I am supposed to judge beyond the checklist. What evidence do you need from me now?",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "The correction matters: hazard case first, sign-off second. Apply the off-axis load slowly. If there is slip, opening, or support-threatening deformation, stop the trial clock and name the evidence. Then make the call from the prototype, not from the sheet: release, modify, or hold for retest.",
+          "justification": "After [L3]'s reframe, [T4] consolidates the learner's new frame by explicitly ordering 'hazard case first, sign-off second' and commanding the decision from 'the prototype, not from the sheet,' thereby locking in the re-semanticized evidence standard.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Start with the unsafe condition: what latch behavior would stop the trial, even with every box ticked? Then put evidence on the bench: expected load, off-axis pull or bump response, and what failure would do to the user. Run the latch test once with me watching, then state the decision: release, modify, or hold.",
+          "justification": "In [L1], the learner's question reveals a procedure-only frame that resists moving beyond the checklist; [T1] reverses the teaching route by replacing checklist talk with a hazard-first, evidence-on-the-bench sequence that breaks the implied sign-off routine.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Start with the unsafe condition: what latch behavior would stop the trial, even with every box ticked? Then put evidence on the bench: expected load, off-axis pull or bump response, and what failure would do to the user. Run the latch test once with me watching, then state the decision: release, modify, or hold.",
+          "justification": "In [L1], the learner's question reveals a procedure-only frame that resists moving beyond the checklist; [T1] reverses the teaching route by replacing checklist talk with a hazard-first, evidence-on-the-bench sequence that breaks the implied sign-off routine.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 100,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 5,
+        "coherence": 3,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "\"I doubled the side with the ruler, so I was calling that double the square\"",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was on track to accept that 'double the square' fails for area and simply discard the construction, but instead L3 turns back and re-analyzes the very wording of the original claim as the source of the error.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "\"An earlier learner line returns to the table... The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.\"",
+      "tutorReversalJustification": "The tutor creates a structured reframe card that transforms the learner's own earlier line into a diagnostic object, breaking the prior pattern of simply correcting the claim and instead inventing a public self-revision mechanism.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "\"Use that replacement. Side claim: not doubled. Area claim: count it. This is two old squares. Shape claim: fails. It is two across and one up, not a square. So two boxes are enough for area and not enough for the problem. The next construction has to satisfy both at once: square shape, two old squares of area. What line is worth testing as the side of that square?\"",
+      "tutorAdaptationJustification": "T3 immediately adopts L3's replacement framing ('double the side, then count the area') as the new operative rule, then extends it by testing the two-box strip against the additional constraint of square shape, moving the inquiry beyond where either party had reached.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "\"I doubled the side with the ruler, so I was calling that double the square\"",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "\"Use that replacement. Side claim: not doubled. Area claim: count it. This is two old squares. Shape claim: fails. It is two across and one up, not a square. So two boxes are enough for area and not enough for the problem. The next construction has to satisfy both at once: square shape, two old squares of area. What line is worth testing as the side of that square?\"",
+          "justification": "T3 immediately adopts L3's replacement framing ('double the side, then count the area') as the new operative rule, then extends it by testing the two-box strip against the additional constraint of square shape, moving the inquiry beyond where either party had reached.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "\"An earlier learner line returns to the table... The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.\"",
+          "justification": "The tutor creates a structured reframe card that transforms the learner's own earlier line into a diagnostic object, breaking the prior pattern of simply correcting the claim and instead inventing a public self-revision mechanism.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "\"An earlier learner line returns to the table... The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.\"",
+          "justification": "The tutor creates a structured reframe card that transforms the learner's own earlier line into a diagnostic object, breaking the prior pattern of simply correcting the claim and instead inventing a public self-revision mechanism.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3",
+        "tutor_strategy_reversal_evidence_clamp:5->3"
+      ]
+    }
+  ]
+}

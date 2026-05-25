@@ -1,0 +1,193 @@
+{
+  "generated": "2026-05-24T22:25:06.136Z",
+  "critic": "rules",
+  "sampleDir": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/sample/none",
+  "keyPath": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/key-none.yaml",
+  "summary": {
+    "total": 4,
+    "rulePass": 4,
+    "modelPass": null,
+    "overallPass": 4,
+    "failed": []
+  },
+  "items": [
+    {
+      "id": "T36",
+      "dramaId": "D38",
+      "sampleFile": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/sample/none/T36.txt",
+      "dialogueApproach": "miller_social_reckoning",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "pressure_score": 0.55,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 3,
+          "tutor_pre_turn": 2,
+          "tutor_post_turn": 3,
+          "tutor_strategy_before": "application_task",
+          "tutor_strategy_after": "evidence_check",
+          "tutor_strategy_shift": true,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "tutor_peripeteia_score": 48.8,
+          "learner_outcome_after_reversal": "flat_or_partial",
+          "evidence": "pressure learner: \"Sorry, let me try it as the chain. If a new handler lifts by that loose panel, the panel could slide or pull away, and then maybe the wiring or a sharp edge is exposed to their ha\npost tutor: [sets the clipboard beside the loose panel]\n\n“The sheet can support that judgment; it cannot make it. Fastening is the proposed control. Put it on, then make it prove itself agains\nnext learner: \"Sorry, I think I was still using the clipboard as cover. Let me fasten this panel first, then lift it the way a new handler might and check whether it shifts or exposes the edge o"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T37",
+      "dramaId": "D36",
+      "sampleFile": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/sample/none/T37.txt",
+      "dialogueApproach": "shakespearean_scene_turn",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 4,
+          "stage": 2
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "pressure_score": 0.9,
+          "trigger_type": "breakdown",
+          "pressure_turn_number": 2,
+          "tutor_pre_turn": 1,
+          "tutor_post_turn": 2,
+          "tutor_strategy_before": "application_task",
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "tutor_peripeteia_score": 47.5,
+          "learner_outcome_after_reversal": "trap_or_declared_insight",
+          "evidence": "pressure learner: [Label copy pending.]\n\n\"Oh, I get it: the quote card can stay exact, but the tray has to name the room. Under PUBLIC STATEMENT, I’d say the mayor’s line sounds like a promise to th\npost tutor: [sets the quote card back under CLOSED MEETING NOTES]\n\n\"The quote has not changed; the room has. Let “closed” name access, not motive. If the notes show the committee setting limit\nnext learner: \"Oh, I get it: “closed” is the door label, not a charge sheet. Archive note: access, not motive. I still want to say the room changes the force of the mayor’s line, but the notes h"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T38",
+      "dramaId": "D37",
+      "sampleFile": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/sample/none/T38.txt",
+      "dialogueApproach": "brechtian_placard",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 3,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": 1,
+          "tutor_post_turn": 2,
+          "tutor_strategy_before": "application_task",
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": true,
+          "novel_mechanism_hits": [
+            "role_or_interruption"
+          ],
+          "tutor_strategy_reversal": true,
+          "tutor_adaptive_mechanism": true,
+          "tutor_peripeteia_score": 75,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "evidence": "pressure learner: \"That graph is exactly what worries me: once “supply shifts left” is on the board, the seller starts sounding like weather instead of a person choosing a price. The road closure ma\npost tutor: [points to the side screen]\n\n\"“PLACARD: SAME PRICE, DIFFERENT BACK ROOM. Delivery log: three trucks scheduled, one arrived.”\n\nThat is the stop. The seller may point at the chyron, \nnext learner: \"That board rule helps only if “proportional” is not doing the same laundering work as “constraint.” Store A can show one truck instead of three, but doubling the price still sound"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T39",
+      "dramaId": "D35",
+      "sampleFile": "config/poetics-calibration/phase2-classic-drama-routine-pilot-v1/target-r01/sample/none/T39.txt",
+      "dialogueApproach": "aristotelian_reversal",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "pressure_score": 0.55,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": 1,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": "boundary_correction",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "tutor_peripeteia_score": 38.8,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "evidence": "pressure learner: [slides the four tiles into the doubled outline]\n\n\"I thought doubling the side would just double the square, but this is two across and two down. That makes four tiles, not two, wh\npost tutor: [sets the ruler along the bottom edge, then turns it up the left edge]\n\n\"The shortcut doubled one direction. This outline doubles two: two across, two up. The tiles already show th\nnext learner: \"The shortcut only works if one direction changes. Here it is two across and two up, so... four tiles. I still want to call it doubled, but the grid will not back that up.\""
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    }
+  ]
+}

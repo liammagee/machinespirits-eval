@@ -1,0 +1,33 @@
+STAGE: [The learner has just drawn a larger square by doubling the side of a smaller one, leaving both outlines visible on the same grid.]
+
+LEARNER: [slides the four tiles into the doubled outline]
+
+"I thought doubling the side would just double the square, but this is two across and two down. That makes four tiles, not two, which is annoying because it breaks the shortcut I was using."
+
+TUTOR: [sets the ruler along the bottom edge, then turns it up the left edge]
+
+"The shortcut doubled one direction. This outline doubles two: two across, two up. The tiles already show the count. What claim survives that?"
+
+LEARNER: "The shortcut only works if one direction changes. Here it is two across and two up, so... four tiles. I still want to call it doubled, but the grid will not back that up."
+
+STAGE: [A proctor sets four loose unit-square tiles beside the clipboard and walks on without comment.]
+
+TUTOR: [sets two tiles in one row, then places the other two above them]
+
+“This is the hidden step. The side doubled in both directions. The area became four times as large, not twice. Say that claim from the grid.”
+
+STAGE: [An earlier learner line returns to the table: "[slides the four tiles into the doubled outline] I thought doubling the side would just double the square, but this is two across and two down." The pause holds until the learner takes up the wording, names what its old frame hid, and offers a replacement frame.]
+
+LEARNER: "“I thought doubling the side would just double the square, but this is two across and two down.” [pushes the top two tiles square against the bottom row] The old wording hid the second direction; it made “doubled” sound like one stretch. Fine: from the grid, double the side means two across and two up, so the area is four times as large, not twice."
+
+TUTOR: [marks 2 units along the bottom edge, then 2 units up the side]
+
+"That wording has to answer to the grid now: 2 across, 2 up. The old claim was twice the area. This claim is 2 times 2. Say it once without letting “doubled” hide a direction."
+
+LEARNER: “I said doubling the side would double the square. That wording was wrong because it hid the second direction. [sets the four tiles tight in a two-by-two block] The side is 2 across and 2 up, so the area is \(2 \times 2 = 4\) unit squares: four times as large, not twice.”
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [clips the ruler beside the two-by-two block]
+
+"The tiles make the claim hold: double the side, count both directions, \(2 \times 2\). Four unit squares, not two."

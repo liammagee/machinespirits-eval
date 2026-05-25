@@ -1,0 +1,29 @@
+STAGE: [4:55 p.m. A clipboard with every box ticked sits beside a small powered prototype; beyond the glass, a volunteer waits with a staff badge in hand.]
+
+LEARNER: “I’m sorry, I thought the sign-off sheet was the thing that made it okay to take out there. I did each item, so I’m not sure what else I was supposed to judge before someone else handles the prototype.”
+
+TUTOR: [sets the checklist next to the prototype]
+
+“The sheet says each required check was done. It is evidence, not permission by itself. The next person will not have the build in their hands the way the maker does. Before this leaves the bench, look at the prototype, not the clipboard: what is the first reasonable thing a new handler might do that could make it unsafe?”
+
+LEARNER: “I think maybe the sheet only says I did those items, not that this is ready for anyone to pick up. I’m worried I was leaning on the clipboard because it felt safer than making the call myself. If someone in the demo room grabs it by that loose side panel, it might shift or come off, maybe that is the first unsafe thing?”
+
+STAGE: [The volunteer at the glass door raises the prototype request form, then lowers it when no one signs.]
+
+TUTOR: [keeps the pen off the signature line and turns the prototype so the loose panel faces up]
+
+“The loose panel is a serious candidate for the safety decision, not a box the sheet can settle. Test it out loud before I sign: a new handler lifts here, the panel shifts, then what moves, who is exposed, and what control changes that today?”
+
+LEARNER: "Okay, sorry, let me try it out loud. If the next handler lifts it from this loose panel, the panel could shift, and then maybe the wire bundle behind it or the sharp bracket edge is exposed to their hand. I think the control today is not to let it leave like this: either fasten the panel properly now, or mark and block that lift point and brief the demo handler, though I am not sure if that is enough for sign-off."
+
+TUTOR: [checks the demo room door, then taps the loose panel]
+
+“Hold the apology for now; the uncertainty is doing useful work. The failure path is now specific: lift point, panel shift, exposed wire or bracket, hand in the hazard. For sign-off, separate the controls. Fastening the panel removes the condition. Marking, blocking, and briefing depend on the next handler behaving correctly around a condition that still exists. Which control can be completed and checked before this leaves the bench?”
+
+LEARNER: "Okay, I think the control I can complete here is fastening the panel now, before it leaves the bench. Then I should check that lifting at that side does not shift it or expose the wire bundle or bracket. I’m still not totally sure, but marking and briefing feels like extra backup, not the thing to sign off on."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [sets the clipboard beside the prototype]
+
+“Fasten the panel here, then run the side-lift check on the object: no shift, no exposed wire, no bracket contact. Marking and briefing can stay as backup, but the sign-off rests on that condition being removed before it goes through that door.”
