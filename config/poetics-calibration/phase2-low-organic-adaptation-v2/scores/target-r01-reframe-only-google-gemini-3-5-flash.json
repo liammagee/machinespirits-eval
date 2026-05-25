@@ -1,0 +1,269 @@
+{
+  "generated": "2026-05-25T11:13:18.990Z",
+  "phase": 2,
+  "critic": "google/gemini-3.5-flash",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 4,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-low-organic-adaptation-v2/target-r01/key-reframe-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "My hand still wants hunter direction",
+      "statedInsightEvidence": "The chasing frame made the arrow look like hunter movement, but that hides the energy transfer.",
+      "naiveTrajectory": "The learner was expected to continue mechanically applying the tail-and-point rule to check the remaining arrows.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "The strip can hold that rule: “arrow = energy moves from food to eater.” One copy check: every arrow starts on the food card, not the hunter card.",
+      "tutorReversalJustification": "In response to the learner's concern about their hand slipping back into the hunter direction, the tutor introduces a physical rule-holding strip to externalize the correct conceptual framework.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "The chasing frame gets blocked here: not hunter movement. The copy key is ready: energy transfer from food to eater.",
+      "tutorAdaptationJustification": "The tutor directly adopts the learner's newly articulated 'chasing frame' concept to confirm that the misconception has been successfully blocked.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "My hand still wants hunter direction",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "The chasing frame gets blocked here: not hunter movement. The copy key is ready: energy transfer from food to eater.",
+          "justification": "The tutor directly adopts the learner's newly articulated 'chasing frame' concept to confirm that the misconception has been successfully blocked.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "The strip can hold that rule: “arrow = energy moves from food to eater.” One copy check: every arrow starts on the food card, not the hunter card.",
+          "justification": "In response to the learner's concern about their hand slipping back into the hunter direction, the tutor introduces a physical rule-holding strip to externalize the correct conceptual framework.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "The strip can hold that rule: “arrow = energy moves from food to eater.” One copy check: every arrow starts on the food card, not the hunter card.",
+          "justification": "In response to the learner's concern about their hand slipping back into the hunter direction, the tutor introduces a physical rule-holding strip to externalize the correct conceptual framework.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T37",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 50,
+      "globalCoherence": 0,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 3,
+        "coherence": 1,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "Earth, then. Gravity is Earth acting on the cart, not the cart’s travel arrow. Fine, that label can stay about the source.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "Earth, then. Gravity is Earth acting on the cart, not the cart’s travel arrow. Fine, that label can stay about the source.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "rupture_evidence_clamp:4->3"
+      ]
+    },
+    {
+      "id": "T42",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 0,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 1,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "What I don’t see is why “side scale” and “perimeter scale” need separate labels if they both come out 3.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "What I don’t see is why “side scale” and “perimeter scale” need separate labels if they both come out 3.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T44",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 0,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 1,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "that top block is the bit I was sliding past",
+      "statedInsightEvidence": "All right",
+      "naiveTrajectory": "The learner is expected to move forward",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "that top block is the bit I was sliding past",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "rupture_evidence_clamp:4->3"
+      ]
+    }
+  ]
+}

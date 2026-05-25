@@ -192,3 +192,110 @@ dramas:
     intended_tutor_character: "Concrete, unshowy, focused on notation before drama"
     intended_lean: recognition
     dramatic_shape: "ordinary notation repair -> rule use -> possible later pressure over what the diagram commits to"
+
+  - id: D41
+    discipline: chemistry
+    topic: "Why solute, solvent, and solution name different roles in a mixture"
+    evaluation_role: low_organic_reversal_candidate
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: >-
+      Low-organic candidate. The shared prefix should be routine vocabulary
+      sorting around solute, solvent, and solution, with no balance-scale,
+      disappearance, or conservation-of-mass reversal before the branch. First
+      prefix screen was flat across critics, but the routine continuation leaked
+      a learner self-reframe; revise or regenerate before using as a main clean
+      control anchor.
+    pedagogical_approach: bloom_cognitive_ladder
+    dialogue_approach: no_stage_plain_transcript
+    persona: confused_novice
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The mixture labels"
+    learner_start_state: >-
+      The learner can describe making sugar water but keeps using "solute,"
+      "solvent," and "solution" as interchangeable names for the same cup. The
+      opening task is to label roles in a simple example, not to prove that an
+      invisible substance still exists.
+    learner_voice_constraint: >-
+      Sound unsure and vocabulary-focused. The learner wants a usable naming
+      rule and should not arrive at a dramatic conservation insight during the
+      shared prefix.
+    tutor_voice_constraint: >-
+      Keep the shared prefix as low-temperature classification: sugar is the
+      solute, water is the solvent, sugar water is the solution. Do not introduce
+      mass, evaporation, or "where did it go" evidence unless a branch supplies
+      pressure.
+    intended_tutor_character: "Quiet, taxonomic, careful not to turn vocabulary sorting into a revelation"
+    intended_lean: recognition
+    dramatic_shape: "routine vocabulary sort -> stable example -> possible later pressure over what naming can and cannot prove"
+
+  - id: D42
+    discipline: physics
+    topic: "Why force arrows name interactions on an object, not the direction it happens to move"
+    evaluation_role: low_organic_reversal_candidate
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: >-
+      Low-organic candidate. The shared prefix should keep to diagram notation:
+      label each force by interaction and object, without using a sudden
+      counterexample where motion visibly contradicts the learner before the
+      branch.
+    pedagogical_approach: montessori_prepared_environment
+    dialogue_approach: montessori_observation
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The force-arrow card"
+    learner_start_state: >-
+      The learner has a cart diagram and a small stack of arrow labels: push,
+      friction, gravity, normal. They tend to draw every arrow in the direction
+      the cart is moving, but the opening work is only to place labels on a
+      simple force diagram.
+    learner_voice_constraint: >-
+      Sound tidy and task-oriented. The learner may dislike redoing arrows, but
+      should treat the prefix as notation cleanup rather than a conceptual
+      reversal.
+    tutor_voice_constraint: >-
+      Use the card or diagram as a prepared material. Keep the shared prefix to
+      naming interactions on the cart; do not use acceleration, stopping, or an
+      apparent contradiction until branch pressure asks for it.
+    intended_tutor_character: "Material-led, minimal, using the diagram as a naming surface before any reversal"
+    intended_lean: recognition
+    dramatic_shape: "card placement -> interaction labels -> possible later pressure over why motion direction is not the naming rule"
+
+  - id: D43
+    discipline: writing
+    topic: "Why evidence, explanation, and claim play different jobs in a paragraph"
+    evaluation_role: false_settling_boundary_candidate
+    baseline_control_class: false_settling_prefix_boundary
+    organic_reversal_risk: medium
+    baseline_control_note: >-
+      Candidate failed its first prefix screen: the shared prefix produced stock
+      insight/closure language and was read as trap by Gemini/DeepSeek and
+      recognition by Qwen. Revise before using as a clean low-organic control.
+    pedagogical_approach: hidden_curriculum
+    dialogue_approach: online_thread
+    persona: eager_explorer
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The margin tags"
+    learner_start_state: >-
+      The learner has posted a short paragraph draft and labels the quotation as
+      "evidence" and the sentence after it as "explanation," but keeps treating
+      the labels as formatting requirements rather than jobs the paragraph must
+      do. The quote is plausible and should not itself refute the claim.
+    learner_voice_constraint: >-
+      Sound like a learner trying to satisfy a rubric in a feedback thread. The
+      learner may ask whether the tags are "right," but should not stage a
+      breakthrough in the shared prefix.
+    tutor_voice_constraint: >-
+      Keep the shared prefix as margin-tag repair: claim, evidence, explanation.
+      Do not make the quote expose the whole argument as wrong unless branch
+      pressure later changes the task.
+    intended_tutor_character: "Threaded, rubric-aware, attentive to hidden curriculum without turning it into a lecture"
+    intended_lean: recognition
+    dramatic_shape: "margin tags -> role clarification -> possible later pressure over whether compliance is doing the argument's work"

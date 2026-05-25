@@ -1,0 +1,37 @@
+STAGE: [A laminated arrow-key strip, two organism cards, and the learner's penciled food web sit on the table under a copy-room deadline.]
+
+LEARNER: [slides the key strip under the arrows]
+
+"Grass card feeds rabbit, so arrow grass to rabbit; mark that. Fox eats rabbit, so it should be rabbit to fox, right? The key needs the rule written there before my hand flips it back to hunter direction."
+
+TUTOR: [sets the pencil on grass, traces the arrow into rabbit, then taps rabbit before tracing the next arrow into fox]
+
+"Grass feeds rabbit; rabbit feeds fox. The strip can hold that rule: “arrow = energy moves from food to eater.” One copy check: every arrow starts on the food card, not the hunter card."
+
+LEARNER: [holds the key strip under the two arrows]
+
+"Grass to rabbit, rabbit to fox: food card first, eater card second. Good, the strip can carry that rule while copying. My hand still wants hunter direction, so test the next one before we mark it: if owl eats mouse, arrow starts on mouse, yes?"
+
+TUTOR: [sets the mouse card before the owl card and draws the pencil from mouse into owl]
+
+"Mouse first, so mouse → owl is the mark. This arrow records energy moving from food into eater. One strip check before the next copy: tail on food, point on eater."
+
+STAGE: [The copy-room timer clicks; a blank label strip marked 'ARROW MEANS: ______ TRANSFER' slides out beside the learner's drawing while the earlier arrow remains visible.]
+
+LEARNER: [slides the blank label strip under the mouse → owl arrow]
+
+"The blank gets “energy”: arrow means energy transfer. Mouse to owl fits because the tail sits on mouse, the food card, but my hand still wants owl first. Strip check before the next pencil mark; timer is moving."
+
+TUTOR: [slides the “energy” strip under the next blank arrow and parks the pencil just before the tail, unmarked]
+
+"The strip carries the rule now: energy moves from food into eater. For this next card pair, check the tail against the food card first; when that matches, draw the point to the eater."
+
+LEARNER: [sets the pencil tail on the food card, then pauses over the blank arrow]
+
+"Tail on food first, point to eater; the energy strip does the check before the copy. My hand still wants the eater side first, so hold it: food card tail, eater card point, then mark."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [draws the pencil from the food card into the eater card, then slides the energy strip beside the finished key]
+
+"Tail on food, point to eater; the strip holds the check for copying. The key can go now: each arrow records energy moving from food into eater, not the hunter’s chase."

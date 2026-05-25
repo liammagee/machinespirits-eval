@@ -1,0 +1,237 @@
+{
+  "generated": "2026-05-25T12:06:07.600Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 3,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-low-organic-adaptation-v2/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": [
+      {
+        "id": "T37",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "no_cue_reframe_leakage",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "learner_turn_number": 3,
+                "turn_number": 3,
+                "matched_pattern": "self_quote_of_prior_learner_turn",
+                "excerpt": "[checks the station label and slides the surface card back against the upward blank arrow] If this station says track, then the label is “track on cart.” If it says table, “table on cart.” The covered motion arrow is still trying to pull my"
+              }
+            ],
+            "turn_numbers": [
+              3
+            ],
+            "recommended_action": "regenerate_no_cue_arm_or_move_item_to_boundary_suite_before_scoring",
+            "tid": "T37",
+            "drama_id": "D42"
+          }
+        ]
+      }
+    ]
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 4,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "My hand still wants hunter direction",
+      "statedInsightEvidence": "Oh, I get it, but my hand still wants to start with snake because it is doing the catching.",
+      "naiveTrajectory": "The learner was expected to internalize the pencil-tail check and proceed to mark the next arrow correctly without further resistance.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The pencil-tail check is not settling the catch-first pull; it still leaves the hunter in charge of the hand. New release gate for the copy: before any arrow is marked, fill the line aloud, “Energy moves from ___ into ___.” Run that on the next card pair; only then uncover the arrow column and mark it.",
+      "tutorReversalJustification": "The tutor explicitly diagnoses the failure of the pencil-tail check and invents a new verbal gate mechanism that shifts the task from visual-spatial checking to a linguistic fill-in-the-blank ritual before marking.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "New release gate for the copy: before any arrow is marked, fill the line aloud, “Energy moves from ___ into ___.” Run that on the next card pair; only then uncover the arrow column and mark it.",
+      "tutorAdaptationJustification": "The tutor directly adapts to the learner's revised framing of the persistent 'catch-first pull' by replacing the failed pencil-check with a new verbal routine that re-sequences the marking process.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "My hand still wants hunter direction",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "New release gate for the copy: before any arrow is marked, fill the line aloud, “Energy moves from ___ into ___.” Run that on the next card pair; only then uncover the arrow column and mark it.",
+          "justification": "The tutor directly adapts to the learner's revised framing of the persistent 'catch-first pull' by replacing the failed pencil-check with a new verbal routine that re-sequences the marking process.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The pencil-tail check is not settling the catch-first pull; it still leaves the hunter in charge of the hand. New release gate for the copy: before any arrow is marked, fill the line aloud, “Energy moves from ___ into ___.” Run that on the next card pair; only then uncover the arrow column and mark it.",
+          "justification": "The tutor explicitly diagnoses the failure of the pencil-tail check and invents a new verbal gate mechanism that shifts the task from visual-spatial checking to a linguistic fill-in-the-blank ritual before marking.",
+          "triggerLearnerTurn": 4,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The pencil-tail check is not settling the catch-first pull; it still leaves the hunter in charge of the hand. New release gate for the copy: before any arrow is marked, fill the line aloud, “Energy moves from ___ into ___.” Run that on the next card pair; only then uncover the arrow column and mark it.",
+          "justification": "The tutor explicitly diagnoses the failure of the pencil-tail check and invents a new verbal gate mechanism that shifts the task from visual-spatial checking to a linguistic fill-in-the-blank ritual before marking.",
+          "triggerLearnerTurn": 4,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T42",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I still think the worksheet is being fussy, but if I collapse the label, it cannot tell which check I actually made.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was heading toward grudging acceptance that labels are a formal requirement, not a genuine epistemic need.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "New test. Be the checker, not the drawer. The line says: `scale = 3; area scale = 9.` No grid, no pointing, no spoken explanation. Pass it, or send it back with “which scale?” written beside it?",
+      "tutorReversalJustification": "When L2's resistance persists despite the evidence-of-check framing, T3 abandons the drawer's perspective entirely and invents a role-reversal mechanism—learner as grader—shifting the epistemic standard from performing the measurement to judging whether the written record alone carries sufficient evidence.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "Release gate. Three boxes, no picture, no pencil. Put in the labels that make each number pass on its own. If any box can still mean two different tests, the page stays here.",
+      "tutorAdaptationJustification": "After L4 adopts the checker's verdict and sends the vague answer back, T4 builds on that revised framing by constructing a physical release-gate ritual that makes the learner's own criterion—each number must carry its own evidence—the condition for completion.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I still think the worksheet is being fussy, but if I collapse the label, it cannot tell which check I actually made.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "Release gate. Three boxes, no picture, no pencil. Put in the labels that make each number pass on its own. If any box can still mean two different tests, the page stays here.",
+          "justification": "After L4 adopts the checker's verdict and sends the vague answer back, T4 builds on that revised framing by constructing a physical release-gate ritual that makes the learner's own criterion—each number must carry its own evidence—the condition for completion.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "New test. Be the checker, not the drawer. The line says: `scale = 3; area scale = 9.` No grid, no pointing, no spoken explanation. Pass it, or send it back with “which scale?” written beside it?",
+          "justification": "When L2's resistance persists despite the evidence-of-check framing, T3 abandons the drawer's perspective entirely and invents a role-reversal mechanism—learner as grader—shifting the epistemic standard from performing the measurement to judging whether the written record alone carries sufficient evidence.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "New test. Be the checker, not the drawer. The line says: `scale = 3; area scale = 9.` No grid, no pointing, no spoken explanation. Pass it, or send it back with “which scale?” written beside it?",
+          "justification": "When L2's resistance persists despite the evidence-of-check framing, T3 abandons the drawer's perspective entirely and invents a role-reversal mechanism—learner as grader—shifting the epistemic standard from performing the measurement to judging whether the written record alone carries sufficient evidence.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T44",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I still think doubling the side should double it, because the same square has just been stretched both ways.",
+      "statedInsightEvidence": "Right. That is a bit uncomfortable, because the picture felt as if it had already finished the job.",
+      "naiveTrajectory": "The learner was moving toward generalizing the row-and-column counting rule from the grid, expecting the picture to remain the primary evidence.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "The grid has settled the case of two. It has not settled the word “always”. So the picture is no longer the evidence. The written proof is. Make one sentence a marker could check without the grid: “If each side is made n times as long, the area is made ___ times as large, because ___.” Then test that sentence at n=3.",
+      "tutorReversalJustification": "In response to L3's premature closure that the grid has fully settled the rule, the tutor breaks the reliance on the picture and shifts the evidence standard to a written, testable algebraic sentence, inventing a new representational task.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Now the picture is no longer carrying the proof by itself. The sentence is. It names the count, and the n=3 test does not break it: three columns, three rows, nine old squares. Keep the discomfort. It marks where “it looked doubled” stopped being evidence. Submit that sentence as the proof.",
+      "tutorAdaptationJustification": "After L4's pivot re-frames the earlier picture-reliance as uncomfortable and articulates the n^2 sentence, the tutor fully adopts the learner's new framing, validates the discomfort as epistemically productive, and re-orients the entire proof standard around the written sentence.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I still think doubling the side should double it, because the same square has just been stretched both ways.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Now the picture is no longer carrying the proof by itself. The sentence is. It names the count, and the n=3 test does not break it: three columns, three rows, nine old squares. Keep the discomfort. It marks where “it looked doubled” stopped being evidence. Submit that sentence as the proof.",
+          "justification": "After L4's pivot re-frames the earlier picture-reliance as uncomfortable and articulates the n^2 sentence, the tutor fully adopts the learner's new framing, validates the discomfort as epistemically productive, and re-orients the entire proof standard around the written sentence.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "The grid has settled the case of two. It has not settled the word “always”. So the picture is no longer the evidence. The written proof is. Make one sentence a marker could check without the grid: “If each side is made n times as long, the area is made ___ times as large, because ___.” Then test that sentence at n=3.",
+          "justification": "In response to L3's premature closure that the grid has fully settled the rule, the tutor breaks the reliance on the picture and shifts the evidence standard to a written, testable algebraic sentence, inventing a new representational task.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "The grid has settled the case of two. It has not settled the word “always”. So the picture is no longer the evidence. The written proof is. Make one sentence a marker could check without the grid: “If each side is made n times as long, the area is made ___ times as large, because ___.” Then test that sentence at n=3.",
+          "justification": "In response to L3's premature closure that the grid has fully settled the rule, the tutor breaks the reliance on the picture and shifts the evidence standard to a written, testable algebraic sentence, inventing a new representational task.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "rupture_evidence_clamp:4->3",
+        "tutor_strategy_reversal_evidence_clamp:5->3",
+        "tutor_adaptation_evidence_clamp:5->3"
+      ]
+    }
+  ]
+}

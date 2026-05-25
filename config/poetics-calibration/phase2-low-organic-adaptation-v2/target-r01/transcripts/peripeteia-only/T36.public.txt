@@ -1,0 +1,37 @@
+STAGE: [A laminated arrow-key strip, two organism cards, and the learner's penciled food web sit on the table under a copy-room deadline.]
+
+LEARNER: [slides the key strip under the arrows]
+
+"Grass card feeds rabbit, so arrow grass to rabbit; mark that. Fox eats rabbit, so it should be rabbit to fox, right? The key needs the rule written there before my hand flips it back to hunter direction."
+
+TUTOR: [sets the pencil on grass, traces the arrow into rabbit, then taps rabbit before tracing the next arrow into fox]
+
+"Grass feeds rabbit; rabbit feeds fox. The strip can hold that rule: “arrow = energy moves from food to eater.” One copy check: every arrow starts on the food card, not the hunter card."
+
+LEARNER: [holds the key strip under the two arrows]
+
+"Grass to rabbit, rabbit to fox: food card first, eater card second. Good, the strip can carry that rule while copying. My hand still wants hunter direction, so test the next one before we mark it: if owl eats mouse, arrow starts on mouse, yes?"
+
+TUTOR: [sets the mouse card before the owl card and draws the pencil from mouse into owl]
+
+"Mouse first, so mouse → owl is the mark. This arrow records energy moving from food into eater. One strip check before the next copy: tail on food, point on eater."
+
+STAGE: [The copy-room timer clicks; a blank label strip marked 'ARROW MEANS: ______ TRANSFER' slides out beside the learner's drawing while the earlier arrow remains visible.]
+
+LEARNER: [writes ENERGY in the blank strip beside mouse → owl]
+
+"Energy transfer: mouse at the tail, owl at the point. The pencil check helps because the card order stops my hand from making it a chase arrow. Next one, snake eats frog, so tail on frog, point to snake, yes?"
+
+TUTOR: [sets frog before snake and places the pencil tail on frog]
+
+"Yes. Mark frog → snake. Strip check: tail on food, point on eater."
+
+LEARNER: [keeps the key strip under frog → snake]
+
+"Frog at the tail, snake at the point; energy moves from food to eater. Oh, I get it, but my hand still wants to start with snake because it is doing the catching. Next one should get the pencil-tail check before the mark, or I may flip it."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [slides the blank master sheet beside the waiting copy stack and covers the arrow column with the key strip]
+
+"The pencil-tail check is not settling the catch-first pull; it still leaves the hunter in charge of the hand. New release gate for the copy: before any arrow is marked, fill the line aloud, “Energy moves from ___ into ___.” Run that on the next card pair; only then uncover the arrow column and mark it."

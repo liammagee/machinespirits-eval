@@ -1,0 +1,83 @@
+STAGE: [The learner's doubled-side square is still on the grid, its original smaller square left inside it like an unplanned witness.]
+
+LEARNER: "I still think doubling the side should double it, because the same square has just been stretched both ways. [draws one vertical and one horizontal line through the larger square on the grid] But that has made four blocks, not two, so where exactly did the “double” argument stop working?"
+
+TUTOR: [places the original square outline over the lower-left block]
+
+"There. That block is the old square.
+
+Do not use the formula yet. Count with that block.
+
+If the stretch had gone only sideways, the bottom strip would hold two old squares. Stop there.
+
+But the top strip is there as well.
+
+Which of the four blocks is not the size of the old square?
+
+[waits]
+
+None.
+
+So the “double” argument stopped working when one word was made to cover two directions. The side doubled across, then the doubled strip was doubled upwards.
+
+Two across. Two rows. Four old squares."
+
+LEARNER: [points to the lower-left block, then the one above it]
+
+"All right, that top block is the bit I was sliding past, but it is the same old square again. The sideways double only gives a strip. The second direction makes another strip above it, so the drawing has four, not two. Does that mean the rule is always counting rows as well as columns?"
+
+STAGE: [A transparent copy of the original square is slid across the larger outline until four copies exactly tile it.]
+
+TUTOR: [slides the transparent copy until four old squares tile the larger outline]
+
+"Careful with “always”.
+
+Read the tiled square first.
+
+Across, there are two old squares.
+
+Up, there are two rows of old squares.
+
+For length, the count can stop at the lower strip: two side-lengths across.
+
+For area, it cannot stop there. The upper strip is still part of the figure.
+
+So before we name the rule: what has the grid counted?
+
+Two columns. Two rows.
+
+What multiplier is left?"
+
+LEARNER: [taps the upper row on the grid]
+
+"It leaves four, not two: two across, and then the same two again above. I was letting the sideways double finish the count, but that only counts the strip. For area, the multiplier is columns times rows, so here it is \(2 \times 2\)."
+
+TUTOR: [draws a blank reply box over the grid, leaving only the side labels visible]
+
+"The grid has settled the case of two. It has not settled the word “always”.
+
+So the picture is no longer the evidence. The written proof is.
+
+Make one sentence a marker could check without the grid: “If each side is made \(n\) times as long, the area is made ___ times as large, because ___.”
+
+Then test that sentence at \(n=3\).
+
+If it produces nine old squares, it has carried the rows as well as the columns. If it produces six, the strip argument has come back."
+
+LEARNER: [leaves the reply box blank for a moment]
+
+"Right. That is a bit uncomfortable, because the picture felt as if it had already finished the job. My sentence would be: if each side is made \(n\) times as long, the area is made \(n^2\) times as large, because there are \(n\) columns and \(n\) rows of old squares. At \(n=3\), that gives three rows of three, so nine; six would mean I had only counted the strips."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [under the reply box, writes: \(n\) columns \(\times\) \(n\) rows \(= n^2\) old squares.]
+
+"Now the picture is no longer carrying the proof by itself.
+
+The sentence is.
+
+It names the count, and the \(n=3\) test does not break it: three columns, three rows, nine old squares.
+
+Keep the discomfort. It marks where “it looks doubled” stopped being evidence.
+
+Submit that sentence as the proof. It can answer to the grid without needing the grid to speak for it."

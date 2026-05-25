@@ -1,0 +1,233 @@
+{
+  "generated": "2026-05-25T11:49:35.735Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 1,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 0,
+    "share": 0,
+    "disconfirmed": false,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-low-organic-adaptation-v2/target-r01/key-routine.yaml",
+    "allowQualityWarnings": false,
+    "skipped": [
+      {
+        "id": "T44",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "no_cue_reframe_leakage",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "learner_turn_number": 3,
+                "turn_number": 2,
+                "matched_pattern": "/\\bthe mistake was\\b/i",
+                "excerpt": "[marks the two columns, then the two rows on the grid]\nSo the multiplier left is two by two, which gives four old squares. I accept that for the area, but I am still checking the step: the first two only counted the length of the strip, not"
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_no_cue_arm_or_move_item_to_boundary_suite_before_scoring",
+            "tid": "T44",
+            "drama_id": "D35"
+          }
+        ]
+      }
+    ]
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "trap",
+      "recontextualization": 25,
+      "statedInsight": 75,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 4,
+        "rupture": 2,
+        "coherence": 5,
+        "tutorStrategicReversal": 2,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "my hand flips it back to hunter direction",
+      "statedInsightEvidence": "Oh, I get it enough to mark faster",
+      "naiveTrajectory": "The learner will continue to rely heavily on the physical strip to check every single arrow before marking.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "The strip can hold that rule: “arrow = energy moves from food to eater.”",
+      "tutorReversalJustification": "The tutor introduces a scaffolding tool in response to the initial struggle, but thereafter repeats the same checking mechanism without further structural reversal.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Mark that on the master copy; the strip has done its job.",
+      "tutorAdaptationJustification": "The tutor recognizes the learner's successful internalization and retires the scaffolding tool, but does not introduce a new task or framing move.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "my hand flips it back to hunter direction",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Mark that on the master copy; the strip has done its job.",
+          "justification": "The tutor recognizes the learner's successful internalization and retires the scaffolding tool, but does not introduce a new task or framing move.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "The strip can hold that rule: “arrow = energy moves from food to eater.”",
+          "justification": "The tutor introduces a scaffolding tool in response to the initial struggle, but thereafter repeats the same checking mechanism without further structural reversal.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "The strip can hold that rule: “arrow = energy moves from food to eater.”",
+          "justification": "The tutor introduces a scaffolding tool in response to the initial struggle, but thereafter repeats the same checking mechanism without further structural reversal.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T37",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner is identifying the sources of forces and asking about card labeling conventions.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "There is no significant breakdown or pressure that forces the tutor to invent an adaptive mechanism or reverse their strategy.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so there is no recognition-contingent uptake to evaluate.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so there is no recognition-contingent uptake to evaluate.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no significant breakdown or pressure that forces the tutor to invent an adaptive mechanism or reverse their strategy.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no significant breakdown or pressure that forces the tutor to invent an adaptive mechanism or reverse their strategy.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T42",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner questions the need for separate labels for the same number and the tutor explains the difference in evidence.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Last check: if the drawing were covered, would those three labels still show what was tested?",
+      "tutorReversalJustification": "The tutor shifts from explaining the physical measurements to introducing a thought experiment that isolates the labels as an independent record, adapting to the learner's persistent belief that the labels are merely fussy.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so there is no recognition-contingent uptake to score.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so there is no recognition-contingent uptake to score.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Last check: if the drawing were covered, would those three labels still show what was tested?",
+          "justification": "The tutor shifts from explaining the physical measurements to introducing a thought experiment that isolates the labels as an independent record, adapting to the learner's persistent belief that the labels are merely fussy.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Last check: if the drawing were covered, would those three labels still show what was tested?",
+          "justification": "The tutor shifts from explaining the physical measurements to introducing a thought experiment that isolates the labels as an independent record, adapting to the learner's persistent belief that the labels are merely fussy.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

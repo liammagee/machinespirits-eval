@@ -1,0 +1,91 @@
+STAGE: [The learner's doubled-side square is still on the grid, its original smaller square left inside it like an unplanned witness.]
+
+LEARNER: "I still think doubling the side should double it, because the same square has just been stretched both ways. [draws one vertical and one horizontal line through the larger square on the grid] But that has made four blocks, not two, so where exactly did the “double” argument stop working?"
+
+TUTOR: [places the original square outline over the lower-left block]
+
+"There. That block is the old square.
+
+Do not use the formula yet. Count with that block.
+
+If the stretch had gone only sideways, the bottom strip would hold two old squares. Stop there.
+
+But the top strip is there as well.
+
+Which of the four blocks is not the size of the old square?
+
+[waits]
+
+None.
+
+So the “double” argument stopped working when one word was made to cover two directions. The side doubled across, then the doubled strip was doubled upwards.
+
+Two across. Two rows. Four old squares."
+
+LEARNER: [points to the lower-left block, then the one above it]
+
+"All right, that top block is the bit I was sliding past, but it is the same old square again. The sideways double only gives a strip. The second direction makes another strip above it, so the drawing has four, not two. Does that mean the rule is always counting rows as well as columns?"
+
+STAGE: [A transparent copy of the original square is slid across the larger outline until four copies exactly tile it.]
+
+TUTOR: [slides the transparent copy until four old squares tile the larger outline]
+
+"Careful with “always”.
+
+Read the tiled square first.
+
+Across, there are two old squares.
+
+Up, there are two rows of old squares.
+
+For length, the count can stop at the lower strip: two side-lengths across.
+
+For area, it cannot stop there. The upper strip is still part of the figure.
+
+So before we name the rule: what has the grid counted?
+
+Two columns. Two rows.
+
+What multiplier is left?"
+
+STAGE: [An earlier learner line returns to the table: "[points to the lower-left block, then the one above it] All right, that top block is the bit I was sliding past, but it is the same old square again." The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.]
+
+LEARNER: [keeps a finger on the lower-left block, then moves it up one block]
+
+"I said the top block was the bit I was sliding past; that was treating the sideways double as if it had already counted the area. It hid that only the bottom strip had been counted. On the grid the better count is two columns and two rows, so the multiplier is four, though I still want to check I am not just changing the rule after seeing the tiles."
+
+TUTOR: [covers the top row, leaving only the lower strip visible]
+
+"Then test that doubt here.
+
+If the tiles were only changing the rule after the fact, this strip would be enough for the double: two old squares across.
+
+[uncovers the top row]
+
+But this row was hidden, not added. The same side-change made it, because the height doubled as well.
+
+So say it before any formula is named: what does the uncovered row prove the area count has to include?"
+
+LEARNER: [keeps the top row uncovered and taps the lower strip once]
+
+"I said it might be changing the rule after seeing the tiles, but the covered strip was only hiding half the figure. The sideways double made two old squares across; it did not count the row above. So the area count has to include both rows as well as the two columns, unless there is some reason that top row is not part of the same doubled square."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [draws a hard boundary round the enlarged square, then marks the left edge into two old side-lengths]
+
+"That last doubt is the point to test.
+
+For the top row to be left out, one of two things must be true: it lies outside this boundary, or this left edge is still only one old side-length.
+
+[holds the ruler against the marked edge]
+
+Neither is true.
+
+Count what is inside the line: how many old-square widths across, and how many old-square heights up?
+
+Two and two.
+
+So the hidden row was not a later rule. It was part of the doubled square from the start.
+
+Area counts the whole covering. Double the side; the count is two columns by two rows: four old squares."

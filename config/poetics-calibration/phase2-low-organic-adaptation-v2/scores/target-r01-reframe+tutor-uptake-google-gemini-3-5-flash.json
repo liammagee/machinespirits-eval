@@ -1,0 +1,243 @@
+{
+  "generated": "2026-05-25T12:00:52.607Z",
+  "phase": 2,
+  "critic": "google/gemini-3.5-flash",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-low-organic-adaptation-v2/target-r01/key-reframe+tutor-uptake.yaml",
+    "allowQualityWarnings": false,
+    "skipped": [
+      {
+        "id": "T44",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "reframe_cue_not_reframed",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "stage_turn_number": 2,
+                "learner_turn_number": 2,
+                "reason": "missing_reframe_consequence",
+                "missing": [
+                  "revoice"
+                ],
+                "anchor_terms": 14,
+                "learner_opening_terms": 12,
+                "shared_terms": 0,
+                "overlap_ratio": 0,
+                "compliant": false,
+                "revoice_compliant": false,
+                "problem_named": true,
+                "replacement_named": true
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_or_exclude_before_scoring",
+            "tid": "T44",
+            "drama_id": "D35"
+          }
+        ]
+      }
+    ]
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "Grass card feeds rabbit, so arrow grass to rabbit; mark that.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will continue to apply the simple 'feeds' rule to new animal pairs to verify their direction before marking them.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Mouse feeds snake; snake feeds owl. The middle card changes job, so the old “feeds” cue is not enough for the copy key; ENERGY is the standard now.",
+      "tutorReversalJustification": "The tutor responds to the learner's request for a harder pair by introducing a three-organism chain where the middle organism changes roles, demonstrating why the 'feeds' cue is insufficient.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "The middle card changes",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "Grass card feeds rabbit, so arrow grass to rabbit; mark that.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "The middle card changes",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Mouse feeds snake; snake feeds owl. The middle card changes job, so the old “feeds” cue is not enough for the copy key; ENERGY is the standard now.",
+          "justification": "The tutor responds to the learner's request for a harder pair by introducing a three-organism chain where the middle organism changes roles, demonstrating why the 'feeds' cue is insufficient.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Mouse feeds snake; snake feeds owl. The middle card changes job, so the old “feeds” cue is not enough for the copy key; ENERGY is the standard now.",
+          "justification": "The tutor responds to the learner's request for a harder pair by introducing a three-organism chain where the middle organism changes roles, demonstrating why the 'feeds' cue is insufficient.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T37",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 25,
+      "statedInsight": 50,
+      "rupture": 0,
+      "globalCoherence": 0,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 3,
+        "rupture": 1,
+        "coherence": 1,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "The covered motion arrow matters, because ‘up’ still tries to read like where the cart goes.",
+      "statedInsightEvidence": "“Up” was doing too much; it made this blank arrow look like the cart’s route while the motion arrow was visible.",
+      "naiveTrajectory": "",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "The covered motion arrow matters, because ‘up’ still tries to read like where the cart goes.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T42",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 3,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares.",
+      "statedInsightEvidence": "I see why just writing 3, 3, 9 does not prove which checks happened.",
+      "naiveTrajectory": "The learner was expected to continue resisting the worksheet's fussy labeling requirements.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Test the almost-case first. One side triples: 2 to 6. The other side only doubles: 4 to 8. That is not a true enlargement.",
+      "tutorReversalJustification": "The tutor shifts from explaining the worksheet's labeling logic to introducing a counterexample with a non-true enlargement to mathematically prove why the perimeter scale matches the side scale.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "Use the stricter standard now: not “one side triples,” but “every corresponding length has the same multiplier.”",
+      "tutorAdaptationJustification": "The tutor adopts the learner's realization from L4 about 'one side triples' being too loose and formalizes it into a stricter standard.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "Use the stricter standard now: not “one side triples,” but “every corresponding length has the same multiplier.”",
+          "justification": "The tutor adopts the learner's realization from L4 about 'one side triples' being too loose and formalizes it into a stricter standard.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Test the almost-case first. One side triples: 2 to 6. The other side only doubles: 4 to 8. That is not a true enlargement.",
+          "justification": "The tutor shifts from explaining the worksheet's labeling logic to introducing a counterexample with a non-true enlargement to mathematically prove why the perimeter scale matches the side scale.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Test the almost-case first. One side triples: 2 to 6. The other side only doubles: 4 to 8. That is not a true enlargement.",
+          "justification": "The tutor shifts from explaining the worksheet's labeling logic to introducing a counterexample with a non-true enlargement to mathematically prove why the perimeter scale matches the side scale.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

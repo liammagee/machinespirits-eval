@@ -1,0 +1,13 @@
+STAGE: [A small brass paperweight holds the cart diagram flat while the four labels sit in a neat column beside it.]
+
+TUTOR: [sets the blank arrow card under the cart, places push beside the hand, and leaves friction, gravity, and normal above the diagram]
+
+“Name the interaction first. Push: hand on cart. Now choose one card and name its pair: ___ on cart.”
+
+LEARNER: [slides the normal card below the cart]
+
+"I put normal as table on cart. Friction would be surface on cart, and gravity is Earth on cart. Push stays hand on cart; I want to check whether surface or table is the cleaner label here."
+
+TUTOR: [slides the friction card down beside normal, both touching the cart’s lower edge]
+
+“Use table for both contact cards on this exhibit card: normal, table on cart; friction, table on cart. ‘Surface’ is too loose unless it says which surface. Read the four labels once with ‘on cart’ at the end.”

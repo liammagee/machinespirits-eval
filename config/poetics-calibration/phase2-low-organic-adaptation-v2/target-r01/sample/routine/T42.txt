@@ -1,0 +1,57 @@
+STAGE: [The learner has written side scale, perimeter scale, and area scale beside the enlarged square, using the same label for all three.]
+
+LEARNER: [slides the grid overlay back onto the worksheet]
+
+"The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares. What I don’t see is why “side scale” and “perimeter scale” need separate labels if they both come out 3."
+
+TUTOR: [sets a second grid overlay beside the worksheet and lays the pencil first along one side, then around the full boundary]
+
+"Put the claim on the counter: same number, same label.
+
+In this enlargement, yes: side scale is 3, perimeter scale is 3. Before the label goes on, what is each 3 comparing? One matching side to one matching side, or the whole boundary to the whole boundary?
+
+That is the split. The number matches because this is a true enlargement. The label names the test, not just the answer.
+
+So the worksheet can honestly say: side scale, 3; perimeter scale, 3; area scale, 9. Same 3 in the first two boxes. Different evidence under each label."
+
+LEARNER: [holds the pencil on one marked side, then moves it around the full boundary]
+
+"So this 3 is not automatically the same piece of evidence twice. One check is side against side; the other is total boundary against total boundary. I still think the worksheet is being fussy, but if I collapse the label, it cannot tell which check I actually made."
+
+STAGE: [The tutor slides a transparent grid overlay onto the worksheet and circles one side segment, then the whole boundary, then the filled square interior without changing the drawing.]
+
+TUTOR: [draws three small boxes on the worksheet margin and writes only 3, 3, 9 above them.]
+
+“Leave the drawing alone. Now the problem is visible: the numbers are correct, but the evidence is unlabeled.
+
+If the first two boxes only say 3 and 3, what can the grader honestly know was checked?
+
+First 3: side against side. Second 3: boundary against boundary. Nine: square units against square units.
+
+Call it fussy. On the submitted worksheet, the label is the record of the test. Write both 3s, but give each one its own check.”
+
+LEARNER: [sets the pencil under the first 3, then under the second 3]
+
+"Fine, the first 3 has to say side, and the second 3 has to say perimeter, or it just looks like two answers with no checks attached. I still think it is a lot of labeling for the same number. But I can write it: side scale 3, perimeter scale 3, area scale 9."
+
+TUTOR: [slides the answer line under the three boxes.]
+
+“Put that on the line.
+
+Side scale: 3, from one side to its matching side.
+
+Perimeter scale: 3, from the whole boundary to the whole boundary.
+
+Area scale: 9, from square units to square units.
+
+The fuss is not over the drawing. The fuss is over the record. Last check: if the drawing were covered, would those three labels still show what was tested?”
+
+LEARNER: [covers the drawing with a grid overlay, leaving only the answer line visible]
+
+"Yes, the labels would still show the three tests: side-to-side, boundary-to-boundary, squares-to-squares. I still think the first two labels feel fussy when both answers are 3. But for the worksheet record, I can write them separately."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [checks the answer line, not the covered drawing.]
+
+“Keep it that way. The two 3s may feel fussy, but now the worksheet says what each 3 measured. Same number, separate test. Side scale 3. Perimeter scale 3. Area scale 9. Submit it.”

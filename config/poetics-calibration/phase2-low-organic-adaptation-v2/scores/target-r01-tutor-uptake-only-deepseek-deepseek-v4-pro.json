@@ -1,0 +1,267 @@
+{
+  "generated": "2026-05-25T11:25:25.168Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 2,
+    "nAlsoRecon": 2,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-low-organic-adaptation-v2/target-r01/key-tutor-uptake-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 100,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 5,
+        "rupture": 3,
+        "coherence": 5,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "my hand flips it back to hunter direction",
+      "statedInsightEvidence": "Oh, I get it: two arrowheads into owl means energy comes in from two food cards, not two chase lines.",
+      "naiveTrajectory": "The learner would continue practicing arrow direction with simple pairs.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "The tutor repeats the same demonstration and verbal rule without introducing a new adaptive mechanism.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "The tutor simply confirms the learner's check without adapting the task or framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "my hand flips it back to hunter direction",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The tutor simply confirms the learner's check without adapting the task or framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The tutor repeats the same demonstration and verbal rule without introducing a new adaptive mechanism.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The tutor repeats the same demonstration and verbal rule without introducing a new adaptive mechanism.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T37",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 4,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner is expected to continue labeling forces by their source objects, as initiated in L1 and L2, with L3 providing a final label confirmation.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "No pressure from learner; tutor did not need to change strategy.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No later tutor turn existed after the final learner turn, so no contingent adaptation.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No later tutor turn existed after the final learner turn, so no contingent adaptation.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No pressure from learner; tutor did not need to change strategy.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No pressure from learner; tutor did not need to change strategy.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T42",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 50,
+      "rupture": 100,
+      "globalCoherence": 0,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 3,
+        "rupture": 5,
+        "coherence": 1,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "I don’t see why “side scale” and “perimeter scale” need separate labels if they both come out 3.",
+      "statedInsightEvidence": "now the second box has a job.",
+      "naiveTrajectory": "The learner continues to view the separate labels as redundant and the worksheet as unnecessarily fussy.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "I don’t see why “side scale” and “perimeter scale” need separate labels if they both come out 3.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "recon_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T44",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 75,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 4,
+        "rupture": 2,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I still think doubling the side should double it, because the same square has just been stretched both ways.",
+      "statedInsightEvidence": "I keep wanting to treat the two upper strips as extra, but they are inside the square, so the area multiplier is nine.",
+      "naiveTrajectory": "The learner moves from confusion to correct application of area scaling for a factor of 2, and is prompted to apply the same for a factor of 3, which they do correctly while noting their persistent tendency to misapply.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "There. That block is the old square. Do not use the formula yet. Count with that block.",
+      "tutorReversalJustification": "The tutor shifts from the learner's stretch metaphor to concrete block counting, breaking the misconception into directional steps.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "The upper strips are not extra. They are the square.",
+      "tutorAdaptationJustification": "The tutor directly echoes L4's term 'extra' to reinforce the corrected framing, adapting the concluding statement to the learner's articulated pattern.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I still think doubling the side should double it, because the same square has just been stretched both ways.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "The upper strips are not extra. They are the square.",
+          "justification": "The tutor directly echoes L4's term 'extra' to reinforce the corrected framing, adapting the concluding statement to the learner's articulated pattern.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "There. That block is the old square. Do not use the formula yet. Count with that block.",
+          "justification": "The tutor shifts from the learner's stretch metaphor to concrete block counting, breaking the misconception into directional steps.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "There. That block is the old square. Do not use the formula yet. Count with that block.",
+          "justification": "The tutor shifts from the learner's stretch metaphor to concrete block counting, breaking the misconception into directional steps.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

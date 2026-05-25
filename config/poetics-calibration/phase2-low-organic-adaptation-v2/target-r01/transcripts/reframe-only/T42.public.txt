@@ -1,0 +1,63 @@
+STAGE: [The learner has written side scale, perimeter scale, and area scale beside the enlarged square, using the same label for all three.]
+
+LEARNER: [slides the grid overlay back onto the worksheet]
+
+"The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares. What I don’t see is why “side scale” and “perimeter scale” need separate labels if they both come out 3."
+
+TUTOR: [sets a second grid overlay beside the worksheet and lays the pencil first along one side, then around the full boundary]
+
+"Put the claim on the counter: same number, same label.
+
+In this enlargement, yes: side scale is 3, perimeter scale is 3. Before the label goes on, what is each 3 comparing? One matching side to one matching side, or the whole boundary to the whole boundary?
+
+That is the split. The number matches because this is a true enlargement. The label names the test, not just the answer.
+
+So the worksheet can honestly say: side scale, 3; perimeter scale, 3; area scale, 9. Same 3 in the first two boxes. Different evidence under each label."
+
+LEARNER: [holds the pencil on one marked side, then moves it around the full boundary]
+
+"So this 3 is not automatically the same piece of evidence twice. One check is side against side; the other is total boundary against total boundary. I still think the worksheet is being fussy, but if I collapse the label, it cannot tell which check I actually made."
+
+STAGE: [The tutor slides a transparent grid overlay onto the worksheet and circles one side segment, then the whole boundary, then the filled square interior without changing the drawing.]
+
+TUTOR: [draws three small boxes on the worksheet margin and writes only 3, 3, 9 above them.]
+
+“Leave the drawing alone. Now the problem is visible: the numbers are correct, but the evidence is unlabeled.
+
+If the first two boxes only say 3 and 3, what can the grader honestly know was checked?
+
+First 3: side against side. Second 3: boundary against boundary. Nine: square units against square units.
+
+Call it fussy. On the submitted worksheet, the label is the record of the test. Write both 3s, but give each one its own check.”
+
+STAGE: [An earlier learner line returns to the table: "[slides the grid overlay back onto the worksheet] The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares." The pause holds while the learner decides whether that wording still stands, needs narrowing, or needs replacing.]
+
+LEARNER: [keeps the pencil on the first 3, then moves it to the second 3]
+
+"The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares. That still stands, but the wording has to narrow: first 3 is side-to-side, second 3 is boundary-to-boundary. If I use one scale label, it hides which test I actually ran."
+
+TUTOR: [slides a blank strip over the labels, leaving only 3, 3, 9 visible.]
+
+"Now the worksheet cannot testify. Correct numbers. Missing evidence.
+
+With the labels hidden, can it prove whether the first 3 came from one side, the whole boundary, or a copied scale factor?
+
+[lifts the strip halfway.]
+
+That is the submission standard. Put the labels back so the record matches the work: first 3, side-to-side; second 3, boundary-to-boundary; 9, square units to square units.
+
+Same enlargement. Three different tests."
+
+LEARNER: [keeps the strip half-lifted with one finger]
+
+"The blank labels make it look like I just copied 3 twice, even though the side and the boundary both really triple. The old “scale factor is 3” wording made that too simple; it hid whether I measured one side or walked the whole perimeter. Fine, I can write two 3s, but the check has to say side-to-side for the first one and boundary-to-boundary for the second."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [sets the strip aside and squares the three boxes with the edge of the pencil.]
+
+“Then the record is clean: side scale, 3, from one matching side; perimeter scale, 3, from the full boundary; area scale, 9, from square units.
+
+The drawing did not change. The measurements did not change. The record now says which test each number came from.
+
+Put the labels back.”

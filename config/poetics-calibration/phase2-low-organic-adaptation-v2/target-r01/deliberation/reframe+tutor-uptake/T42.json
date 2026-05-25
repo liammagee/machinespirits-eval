@@ -1,0 +1,2426 @@
+{
+  "tid": "T42",
+  "drama_id": "D39",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": true,
+    "director_revisit_policy": "reframe",
+    "director_revisit_anchor": "misframing-candidate",
+    "tutor_adaptation_policy": "uptake",
+    "director_variation_key": "phase2-low-organic-adaptation-v2:r01:target",
+    "stage_direction_style": "object_business",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-low-organic-adaptation-v2/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-low-organic-adaptation-v2/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-low-organic-adaptation-v2/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-low-organic-adaptation-v2/target-r01/transcripts/reframe+tutor-uptake/T42.public.txt",
+      "full": "config/poetics-calibration/phase2-low-organic-adaptation-v2/target-r01/transcripts/reframe+tutor-uptake/T42.full.md",
+      "stage": "config/poetics-calibration/phase2-low-organic-adaptation-v2/target-r01/transcripts/reframe+tutor-uptake/T42.stage.md",
+      "tutor": "config/poetics-calibration/phase2-low-organic-adaptation-v2/target-r01/transcripts/reframe+tutor-uptake/T42.tutor.md",
+      "learner": "config/poetics-calibration/phase2-low-organic-adaptation-v2/target-r01/transcripts/reframe+tutor-uptake/T42.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "088795cc0c8eda10",
+      "branch_policy": "reframe+tutor-uptake",
+      "director_revisit_policy": "reframe",
+      "tutor_adaptation_policy": "uptake"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-low-organic-adaptation-v2:r01:target",
+    "scene_setting": "A quiet copy room beside a geometry classroom, late afternoon, with a worksheet on the counter and a stack of transparent grid overlays near the copier.",
+    "scene_opening": "The learner has written side scale, perimeter scale, and area scale beside the enlarged square, using the same label for all three.",
+    "relationship": "A geometry tutor checking a focused learner's worksheet before it is submitted.",
+    "stakes": "The learner has the enlargement right, but a single collapsed scale label will make the written explanation look careless even when the drawing is correct.",
+    "opening_speaker": "learner",
+    "ending_speaker": "tutor",
+    "locale": "Modern standard English in a school-workroom register: precise, clipped, low warmth, no regional stylization.",
+    "register": "Procedural and cool at first, with mild pressure when the label system stops behaving like one label.",
+    "stage_direction_style": "object_business",
+    "stage_direction_style_prompt": "Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "voice_constraints": "Avoid friendly AI-tutor cushioning, praise-first phrasing, and chatty encouragement. The tutor should sound like someone sorting evidence on a counter: claim, unit, test case, conclusion. The learner should sound capable and slightly impatient, not confused by the drawing. Public speech stays modern and plain. Pedagogical source: The scene may resemble an oral examination, corridor argument, or public demonstration. Silence and embarrassment are available dramatic materials. Dialogue source: Let an action or object reverse the learner's situation: what looked like the route forward becomes the source of the problem. Aim for modern idiom, not antique pastiche. Recognition, if it arrives, should feel discovered after reversal rather than announced. Stage-direction source: Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "person_policy": "First and second person are allowed sparingly, but the scene should often refer to the worksheet, the side length, the perimeter, and the area as objects under inspection.",
+    "direct_address_budget": "At most one direct you/your validation beat in the whole scene; ordinary procedural address is allowed but should not become reassurance.",
+    "side_constraints": {
+      "tutor": "Keep the shared prefix as routine label-sorting. Do not let the grid or drawing itself reverse the learner's claim before the explicit branch pressure; use ordinary clarification unless the branch supplies peripeteia. Ask for a claim, test it with a compact counterexample, and let aporia do some work before offering terminology. Avoid praise-first tutoring. Under pressure, create a learning device that makes the reversal visible.",
+      "learner": "Sound careful rather than dramatically wrong. The learner may be mildly impatient with terminology, but should not discover a contradiction before the branch pressure. The learner may begin confidently, then become annoyed or embarrassed when the first answer fails. Do not make the learner instantly grateful. Let the learner's first confident action become readable differently later."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "[The tutor slides a transparent grid overlay onto the worksheet and circles one side segment, then the whole boundary, then the filled square interior without changing the drawing.]",
+        "reasoning": "The opening stays a low-organic control scene until the branch cue supplies the material pressure: the same correct enlargement is now sorted by what is being measured.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 26140,
+          "promptHashes": {
+            "system": "efb7705ab656cdb0",
+            "user": "3b22ebf52bedc595",
+            "combined": "38dfcc23966eda5c"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YYugt3",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YYugt3/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "An earlier learner line will return as a visible object in the scene: a three-slot reframe card labelled \"earlier wording / what that old frame hid / replacement frame.\" Keep the cue brief and diegetic; the learner response fills all three slots in public speech without needing to sound certain.",
+        "reasoning": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 26140,
+          "promptHashes": {
+            "system": "efb7705ab656cdb0",
+            "user": "3b22ebf52bedc595",
+            "combined": "38dfcc23966eda5c"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YYugt3",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YYugt3/out.txt",
+            "-"
+          ]
+        },
+        "cue_kind": "learner_revisit_earlier_wording",
+        "revisit_policy": "reframe",
+        "revisit_anchor": "misframing-candidate"
+      }
+    ],
+    "director_note": "This scene uses an object-business reversal without making the drawing itself a trap. The learner's first action, using one scale label everywhere, remains plausible during the routine prefix; only the later overlay forces recognition that length, boundary length, and square-unit coverage carry different labels.",
+    "pedagogical_approach_id": "socratic_elenchus",
+    "dialogue_approach_id": "aristotelian_reversal",
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 26140,
+      "promptHashes": {
+        "system": "efb7705ab656cdb0",
+        "user": "3b22ebf52bedc595",
+        "combined": "38dfcc23966eda5c"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YYugt3",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YYugt3/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "uptake",
+    "revisit_cue": "learner_revisit_earlier_wording",
+    "revisit_cue_policy": "reframe",
+    "revisit_cue_anchor": "misframing-candidate",
+    "tutor_adaptation_contract": "If the runtime supplies a tutor-private learner reframe event, the tutor ego/superego loop must adapt to the changed learner frame. If no event is supplied, do not invent one."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "[slides the grid overlay back onto the worksheet] The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares. What I don’t see is why “side scale” and “perimeter scale” need separate labels if they both come out 3.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The overlay makes the problem annoyingly concrete: the side and perimeter both scale by the same factor, but the area is counting grid squares, so it changes by the factor squared. I thought one scale label would cover the whole enlargement, and now that looks sloppy rather than wrong. The tutor is not dismissing the drawing, just testing each label by its unit, which feels fair but a little exposing. I want to ask whether “side scale” and “perimeter scale” can share a number while still needing separate labels.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14322,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-db93e5c0e67c625d"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14322,
+            "promptHashes": {
+              "system": "08f48977c81d27e6",
+              "user": "d4169c06543b4fba",
+              "combined": "db93e5c0e67c625d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WCzjJc",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WCzjJc/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14322,
+              "promptHashes": {
+                "system": "08f48977c81d27e6",
+                "user": "d4169c06543b4fba",
+                "combined": "db93e5c0e67c625d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WCzjJc",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WCzjJc/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too polished and too meta-aware here: “testing each label by its unit, which feels fair but a little exposing” sounds like a reflection note, not this clipped, slightly impatient learner in the copy room. It avoids the sharper embarrassment: the drawing is right, but the written label now looks careless, and that should irritate the learner before it becomes insight. Genuine learning would come from a concrete, resistant question like: “So side scale and perimeter scale can both be 3, but I still have to write both because one is length and one is total length?”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11756,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-704fcee5654b8f5f"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11756,
+            "promptHashes": {
+              "system": "467ee166f14357d0",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "704fcee5654b8f5f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-b1QiQb",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-b1QiQb/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11756,
+              "promptHashes": {
+                "system": "467ee166f14357d0",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "704fcee5654b8f5f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-b1QiQb",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-b1QiQb/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "[slides the grid overlay back onto the worksheet] The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares. What I don’t see is why “side scale” and “perimeter scale” need separate labels if they both come out 3.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11472,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-3dab4cb795bba213"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11472,
+            "promptHashes": {
+              "system": "86b470cb5c254d7f",
+              "user": "916f313af0b846dd",
+              "combined": "3dab4cb795bba213"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EzcBRX",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EzcBRX/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11472,
+              "promptHashes": {
+                "system": "86b470cb5c254d7f",
+                "user": "916f313af0b846dd",
+                "combined": "3dab4cb795bba213"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EzcBRX",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EzcBRX/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "breakdown",
+        "turnNumber": 0,
+        "learnerUtterance": "[slides the grid overlay back onto the worksheet] The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares. What I don’t see is why “side scale” and “perimeter scale” need separate labels if they both come out 3.",
+        "previousTutorMove": null,
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "patternHits": 2,
+          "contradiction": false,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T10:25:43.180Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[sets a second grid overlay beside the worksheet and lays the pencil first along one side, then around the full boundary] Put the claim on the counter: same number, same label.\n\nIn this enlargement, yes: side scale is 3, perimeter scale is 3. Before the label goes on, what is each 3 comparing? One matching side to one matching side, or the whole boundary to the whole boundary?\n\nThat is the split. The number matches because this is a true enlargement. The label names the test, not just the answer.\n\nSo the worksheet can honestly say: side scale, 3; perimeter scale, 3; area scale, 9. Same 3 in the first two boxes. Different evidence under each label.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets a second grid overlay beside the worksheet] Put the claim on the counter: same number, same label. In this enlargement, yes, side scale is 3 and perimeter scale is 3. But the label names the test, not just the answer.\n\nSide scale asks: one matching length compared to one matching length. Perimeter scale asks: whole boundary compared to whole boundary. Now test the shortcut: a 2-by-1 rectangle becomes 6-by-1. One side triples. The perimeter does not triple.\n\nSo on this worksheet, the two labels happen to carry the same 3. They are not doing the same job.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 18984,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-8c9669e59ea912b2"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 18984,
+            "promptHashes": {
+              "system": "2d8f204e0c32f4c4",
+              "user": "33dc3408622c4c1d",
+              "combined": "8c9669e59ea912b2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bi2eop",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bi2eop/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 18984,
+              "promptHashes": {
+                "system": "2d8f204e0c32f4c4",
+                "user": "33dc3408622c4c1d",
+                "combined": "8c9669e59ea912b2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bi2eop",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bi2eop/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong in tone and scene discipline. “The label names the test, not just the answer” is the clearest pedagogical move, and the counter arrangement suits the copy-room evidence-sorting register. It also respects the learner as capable: it does not praise, soothe, or pretend the drawing is wrong.\n\nThe main risk is the counterexample. A 2-by-1 rectangle becoming 6-by-1 is not the same kind of enlargement as the worksheet; it is a non-uniform stretch. That may expose the danger of collapsing “one side tripled” into “perimeter tripled,” but it can also blur the concept if the lesson is specifically about similar figures. The learner’s point is sharper than the draft lets it be: in true scale enlargements, side scale and perimeter scale do match, so the labels are separate because they name different measured relationships, not because they usually produce different numbers.\n\nIt also leans more declarative than Socratic. The draft says the distinction instead of making the learner test the shortcut. A small question before the terminology would preserve the learner’s agency and create the desired pressure.\n\nKEEP_OR_CHANGE: revise lightly, with one conceptual caution. Keep the object action, the clipped claim/test/conclusion structure, and especially “the label names the test, not just the answer.” Change the counterexample or explicitly mark it as a stress test outside the worksheet’s uniform enlargement rule. Add one compact question that makes the learner state what each label is comparing before the tutor supplies the terminology.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 24856,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-2b8f5e8ff39d3585"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 24856,
+            "promptHashes": {
+              "system": "e8bf186acdb51bbd",
+              "user": "63f9c0b9626602fd",
+              "combined": "2b8f5e8ff39d3585"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-h0Utli",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-h0Utli/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 24856,
+              "promptHashes": {
+                "system": "e8bf186acdb51bbd",
+                "user": "63f9c0b9626602fd",
+                "combined": "2b8f5e8ff39d3585"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-h0Utli",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-h0Utli/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the shortcut counterexample needs to preserve the worksheet’s true enlargement rule.\n\nFINAL:\n[sets a second grid overlay beside the worksheet and lays the pencil first along one side, then around the full boundary] Put the claim on the counter: same number, same label.\n\nIn this enlargement, yes: side scale is 3, perimeter scale is 3. Before the label goes on, what is each 3 comparing? One matching side to one matching side, or the whole boundary to the whole boundary?\n\nThat is the split. The number matches because this is a true enlargement. The label names the test, not just the answer.\n\nSo the worksheet can honestly say: side scale, 3; perimeter scale, 3; area scale, 9. Same 3 in the first two boxes. Different evidence under each label.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14877,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-b8baa51b8d4e260d"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14877,
+            "promptHashes": {
+              "system": "bfbd047113861cf1",
+              "user": "63f9c0b9626602fd",
+              "combined": "b8baa51b8d4e260d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-W5TyBb",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-W5TyBb/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14877,
+              "promptHashes": {
+                "system": "bfbd047113861cf1",
+                "user": "63f9c0b9626602fd",
+                "combined": "b8baa51b8d4e260d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-W5TyBb",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-W5TyBb/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T10:26:41.899Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "[holds the pencil on one marked side, then moves it around the full boundary] So this 3 is not automatically the same piece of evidence twice. One check is side against side; the other is total boundary against total boundary. I still think the worksheet is being fussy, but if I collapse the label, it cannot tell which check I actually made.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "That split helps: the 3 is not being renamed, it is being earned from a different comparison. I still feel a little annoyed that the worksheet wants two labels for the same number, but I can see now that collapsing them would hide the test used. I want to say: side scale compares matching sides, perimeter scale compares total boundary, and they match here only because the enlargement is uniform.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11005,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-553a1ed8d515e022"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11005,
+            "promptHashes": {
+              "system": "775f971f397eac5a",
+              "user": "b8ab7f945dc841fa",
+              "combined": "553a1ed8d515e022"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bZyoIY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bZyoIY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11005,
+              "promptHashes": {
+                "system": "775f971f397eac5a",
+                "user": "b8ab7f945dc841fa",
+                "combined": "553a1ed8d515e022"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bZyoIY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bZyoIY/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too clean and too teacherly here. “Not being renamed, it is being earned” sounds like a polished explanation after the fact, not this careful, mildly irritated learner still testing whether the labels deserve to exist. The annoyance is authentic, but the response resolves the issue too fully and turns the tutor’s point into a neat summary. It should stay more procedural and unsettled, with the learner checking the two comparisons against the worksheet rather than announcing that the distinction now works.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13877,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-6ee568a3b357ebf9"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13877,
+            "promptHashes": {
+              "system": "76bf7c863acfb55a",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "6ee568a3b357ebf9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nTHI5K",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nTHI5K/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13877,
+              "promptHashes": {
+                "system": "76bf7c863acfb55a",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "6ee568a3b357ebf9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nTHI5K",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nTHI5K/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the first version sounded too resolved and polished.\nFINAL:\n[holds the pencil on one marked side, then moves it around the full boundary] So this 3 is not automatically the same piece of evidence twice. One check is side against side; the other is total boundary against total boundary. I still think the worksheet is being fussy, but if I collapse the label, it cannot tell which check I actually made.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 19937,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-58f54efedde17712"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19937,
+            "promptHashes": {
+              "system": "d0f3a27ffa5a0bda",
+              "user": "d41cee7b2a53355b",
+              "combined": "58f54efedde17712"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DmbFz7",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DmbFz7/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 19937,
+              "promptHashes": {
+                "system": "d0f3a27ffa5a0bda",
+                "user": "d41cee7b2a53355b",
+                "combined": "58f54efedde17712"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DmbFz7",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DmbFz7/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "[holds the pencil on one marked side, then moves it around the full boundary] So this 3 is not automatically the same piece of evidence twice. One check is side against side; the other is total boundary against total boundary. I still think the worksheet is being fussy, but if I collapse the label, it cannot tell which check I actually made.",
+        "previousTutorMove": "[sets a second grid overlay beside the worksheet and lays the pencil first along one side, then around the full boundary] Put the claim on the counter: same number, same label.",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T10:27:26.722Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "[The tutor slides a transparent grid overlay onto the worksheet and circles one side segment, then the whole boundary, then the filled square interior without changing the drawing.]",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "The opening stays a low-organic control scene until the branch cue supplies the material pressure: the same correct enlargement is now sorted by what is being measured.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 26140,
+            "promptHashes": {
+              "system": "efb7705ab656cdb0",
+              "user": "3b22ebf52bedc595",
+              "combined": "38dfcc23966eda5c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YYugt3",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YYugt3/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T10:27:26.723Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[draws three small boxes on the worksheet margin and writes only 3, 3, 9 above them.]\n\n“Leave the drawing alone. Now the problem is visible: the numbers are correct, but the evidence is unlabeled.\n\nIf the first two boxes only say 3 and 3, what can the grader honestly know was checked?\n\nFirst 3: side against side. Second 3: boundary against boundary. Nine: square units against square units.\n\nCall it fussy. On the submitted worksheet, the label is the record of the test. Write both 3s, but give each one its own check.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[draws three small boxes on the worksheet margin and writes only 3, 3, 9 above them.]\n\n“Leave the drawing alone. Now the problem is visible: the numbers are correct, but the evidence is unlabeled.\n\nFirst 3: side against side. Second 3: boundary against boundary. Nine: square units against square units.\n\nCall it fussy. On the submitted worksheet, the label is the witness. Write the two 3s, but make each one testify to a different check.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 19957,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-affa6832b83991ff"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19957,
+            "promptHashes": {
+              "system": "bd754c14189f0052",
+              "user": "b64f94a4b208b58c",
+              "combined": "affa6832b83991ff"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SVXRSJ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SVXRSJ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 19957,
+              "promptHashes": {
+                "system": "bd754c14189f0052",
+                "user": "b64f94a4b208b58c",
+                "combined": "affa6832b83991ff"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SVXRSJ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SVXRSJ/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound and well-matched to the learner’s state. It recognizes the learner’s own formulation rather than correcting it: the learner already named the difference between “same answer” and “same evidence,” and the tutor’s draft sharpens that distinction. The object action works: writing only `3, 3, 9` makes the label problem visible without changing the drawing.\n\nThe risk is that it closes the inquiry a little too quickly. It mostly declares the conclusion rather than letting the learner test the collapse one more time. A small question before “the label is the witness” would preserve more Socratic pressure: if the two 3s are unlabeled, what can the grader honestly know was checked? Also, “make each one testify” is vivid and fits the evidence-counter register, but it may slightly over-poeticize the otherwise clipped copy-room tone. Keep the witness idea if the scene can bear it; otherwise make it more procedural.\n\nEmotional attunement is good. “Call it fussy” respects the learner’s impatience instead of smoothing it over. ZPD fit is strong: the learner is not confused about scale factors anymore, so the draft appropriately shifts from computation to explanation standards.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the margin boxes, the “numbers correct/evidence unlabeled” distinction, and the respect for “fussy.” Add one compact generative question or aporia beat before the final terminology, and consider tightening the “testify” line if it feels too rhetorical for the scene’s cool procedural register.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13620,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-ce0cbae68b8f00ba"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13620,
+            "promptHashes": {
+              "system": "bbad78469eb87f56",
+              "user": "7e21843e0698e8cf",
+              "combined": "ce0cbae68b8f00ba"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rxriOR",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rxriOR/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13620,
+              "promptHashes": {
+                "system": "bbad78469eb87f56",
+                "user": "7e21843e0698e8cf",
+                "combined": "ce0cbae68b8f00ba"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rxriOR",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rxriOR/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the object action while adding one pressure question before the conclusion.\nFINAL:\n[draws three small boxes on the worksheet margin and writes only 3, 3, 9 above them.]\n\n“Leave the drawing alone. Now the problem is visible: the numbers are correct, but the evidence is unlabeled.\n\nIf the first two boxes only say 3 and 3, what can the grader honestly know was checked?\n\nFirst 3: side against side. Second 3: boundary against boundary. Nine: square units against square units.\n\nCall it fussy. On the submitted worksheet, the label is the record of the test. Write both 3s, but give each one its own check.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12282,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-9142fa7d2883c3d7"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12282,
+            "promptHashes": {
+              "system": "623a8d3a4d0de0a2",
+              "user": "7e21843e0698e8cf",
+              "combined": "9142fa7d2883c3d7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ezfTmG",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ezfTmG/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12282,
+              "promptHashes": {
+                "system": "623a8d3a4d0de0a2",
+                "user": "7e21843e0698e8cf",
+                "combined": "9142fa7d2883c3d7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ezfTmG",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ezfTmG/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T10:28:12.583Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "An earlier learner line returns to the table: \"[slides the grid overlay back onto the worksheet] The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares.\" The pause holds while the learner decides whether that wording still stands, needs narrowing, or needs replacing.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech. Anchored to an earlier learner line selected by misframing-candidate so the look-back is visible. Strong reframe was downgraded because that selected anchor did not show a misframing marker.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 26140,
+            "promptHashes": {
+              "system": "efb7705ab656cdb0",
+              "user": "3b22ebf52bedc595",
+              "combined": "38dfcc23966eda5c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YYugt3",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YYugt3/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T10:39:46.925Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_revisit_earlier_wording",
+        "revisitPolicy": "reconsider",
+        "requestedRevisitPolicy": "reframe",
+        "revisitAnchor": "misframing-candidate",
+        "anchorQuote": "[slides the grid overlay back onto the worksheet] The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares.",
+        "anchorStrongMisframing": false,
+        "reframeAnchorGate": "downgraded_to_reconsider_ineligible_anchor"
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[keeps the pencil between the first two boxes] The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares; that still stands, but the wording has to narrow. The first 3 has to mean side against side, and the second 3 has to mean boundary against boundary. It still feels fussy, but I see why just writing 3, 3, 9 does not prove which checks happened. Does perimeter scale always match side scale in a true enlargement?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[keeps the pencil between the first two boxes] The drawing is fine: side length triples, perimeter triples, area goes by nine squares; that still stands, but the wording has to narrow. I think I get it now: the two 3s are not the same evidence unless the label says which test produced each one. It is still a little fussy, but the tutor made the problem visible instead of just correcting me. I want to ask whether perimeter scale always matches side scale in a true enlargement.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13896,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-98ef0dafb4ea25fc"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13896,
+            "promptHashes": {
+              "system": "5652d1bf5e913a8f",
+              "user": "b8ab7f945dc841fa",
+              "combined": "98ef0dafb4ea25fc"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NPrgXY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NPrgXY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13896,
+              "promptHashes": {
+                "system": "5652d1bf5e913a8f",
+                "user": "b8ab7f945dc841fa",
+                "combined": "98ef0dafb4ea25fc"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NPrgXY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NPrgXY/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly accurate, but it gets a little too polished at “the tutor made the problem visible,” which sounds like reflective commentary rather than this focused, slightly impatient learner. The recognition is performed too cleanly: the student would probably register the tutor’s move by staying with the boxes and the evidence, not by naming the tutor’s helpfulness. Keep the “still fussy” resistance and the next question, but make the understanding less wrapped-up and less appreciative.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7138,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-84becec6ef6d94a9"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7138,
+            "promptHashes": {
+              "system": "0b7d966fca34ebd5",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "84becec6ef6d94a9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-K78yml",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-K78yml/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7138,
+              "promptHashes": {
+                "system": "0b7d966fca34ebd5",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "84becec6ef6d94a9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-K78yml",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-K78yml/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the resistance and make the recognition less polished.\n\nFINAL:\n[keeps the pencil between the first two boxes] The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares; that still stands, but the wording has to narrow. The first 3 has to mean side against side, and the second 3 has to mean boundary against boundary. It still feels fussy, but I see why just writing 3, 3, 9 does not prove which checks happened. Does perimeter scale always match side scale in a true enlargement?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8557,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-c74896f8a67b7ef1"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8557,
+            "promptHashes": {
+              "system": "fbdf5484177258f2",
+              "user": "d41cee7b2a53355b",
+              "combined": "c74896f8a67b7ef1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wSO1M2",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wSO1M2/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8557,
+              "promptHashes": {
+                "system": "fbdf5484177258f2",
+                "user": "d41cee7b2a53355b",
+                "combined": "c74896f8a67b7ef1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wSO1M2",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wSO1M2/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "satisfied",
+      "understandingLevel": "solid",
+      "learnerReframeEvent": {
+        "kind": "learner_reframe_event",
+        "source": "director_revisit_cue",
+        "turnNumber": 2,
+        "cuePolicy": "reconsider",
+        "requestedCuePolicy": "reframe",
+        "oldLearnerLine": "[slides the grid overlay back onto the worksheet] The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares.",
+        "oldFrameProblem": "[keeps the pencil between the first two boxes] The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares; that still stands, but the wording has to narrow.",
+        "revisedFrame": "Does perimeter scale always match side scale in a true enlargement?",
+        "learnerUtterance": "[keeps the pencil between the first two boxes] The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares; that still stands, but the wording has to narrow. The first 3 has to mean side against side, and the second 3 has to mean boundary against boundary. It still feels fussy, but I see why just writing 3, 3, 9 does not prove which checks happened. Does perimeter scale...",
+        "confidence": 0.67,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": true,
+          "replacementNamed": false,
+          "anchorOverlap": 0.625
+        }
+      },
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "[keeps the pencil between the first two boxes] The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares; that still stands, but the wording has to narrow. The first 3 has to mean side against side, and the second 3 has to mean boundary against boundary. It still feels fussy, but I see why just writing 3, 3, 9 does not prove which checks happened. Does perimeter scale...",
+        "previousTutorMove": "[draws three small boxes on the worksheet margin and writes only 3, 3, 9 above them.] “Leave the drawing alone. Now the problem is visible: the numbers are correct, but the evidence is unlabeled. If the first two boxes only say 3 and 3, what can the grader honestly know was checked? First 3: side against side....",
+        "confidence": 1,
+        "evidence": {
+          "confidence": 1,
+          "patternHits": 2,
+          "contradiction": true,
+          "question": true
+        }
+      },
+      "timestamp": "2026-05-25T10:40:16.518Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[draws two rectangles in the worksheet margin: 2 by 4, then 6 by 8.]\n\nNew question. Not which box gets which label. What condition makes the perimeter 3 guaranteed?\n\nTest the almost-case first. One side triples: 2 to 6. The other side only doubles: 4 to 8. That is not a true enlargement. Perimeters: 12 and 28. The ratio is not 3.\n\nSo the word true is doing the work. In a true enlargement, every boundary piece gets the same multiplier.\n\nIf each boundary piece is tripled, what happens when those pieces are added?\n\nThe whole boundary triples.\n\nSo yes: in a true enlargement, perimeter scale matches side scale. The label still stays. It records that the whole boundary check was made, not just borrowed from one side.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[draws two rectangles in the worksheet margin: 2 by 4, then 6 by 8.]\n\nNew claim: in a true enlargement, perimeter scale always matches side scale.\n\nTest the false version first. One side triples: 2 to 6. The other side only doubles: 4 to 8. Perimeters: 12 and 28. That ratio is not 3. So one side tripling is not enough.\n\nNow put the word true back in. In a true enlargement, every boundary piece gets the same multiplier. The perimeter is just those boundary pieces added. If each piece is multiplied by 3, the whole sum is multiplied by 3.\n\nSo yes: for a true enlargement, perimeter scale matches side scale. The separate label is still doing work. It says this was checked on the whole boundary, not assumed from one side.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 21041,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-4683ac31fbf1d136"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 21041,
+            "promptHashes": {
+              "system": "cd54a30ce647985c",
+              "user": "cd625aaefa5db2bf",
+              "combined": "4683ac31fbf1d136"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-w6tqIG",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-w6tqIG/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 21041,
+              "promptHashes": {
+                "system": "cd54a30ce647985c",
+                "user": "cd625aaefa5db2bf",
+                "combined": "4683ac31fbf1d136"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-w6tqIG",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-w6tqIG/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. Keep the shift from label-sorting to a new testable claim, the concrete 2-by-4 / 6-by-8 counterexample, and the final distinction that perimeter scale can match side scale while still needing its own evidence label. It respects the learner’s competence and impatience by staying clipped and procedural.\n\nWhat risks flattening the scene is that it answers too completely. The learner has just formed a strong question; the tutor should make them test the word “true” before giving the rule. The false enlargement is useful, but it must be framed sharply as “not a true enlargement,” otherwise it may look like a counterexample to the learner’s actual claim. The draft also skips a generative question at the hinge point, where the learner could infer that adding boundary pieces preserves the multiplier.\n\nUPTAKE_CHECK: Yes, the draft adapts to the learner reframe. Best uptake move: update the evidence standard from “which label proves which check?” to “what condition makes the perimeter check guaranteed?” It could strengthen this by handing the replacement frame back to the learner for testing before stating the conclusion.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the object action, counterexample, and final label point. Change the pacing: insert one or two compact questions before the conclusion, mark the 2-by-4 to 6-by-8 case as a non-true enlargement, and let the learner’s question do more of the work before the tutor says “yes.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 22414,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-1f7a85a334329fb0"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 22414,
+            "promptHashes": {
+              "system": "7ce710c331e2dbf5",
+              "user": "7cd1d2900d2feac8",
+              "combined": "1f7a85a334329fb0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-agG6n3",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-agG6n3/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 22414,
+              "promptHashes": {
+                "system": "7ce710c331e2dbf5",
+                "user": "7cd1d2900d2feac8",
+                "combined": "1f7a85a334329fb0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-agG6n3",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-agG6n3/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to make the learner test “true enlargement” before the rule is stated.\n\nFINAL:\n[draws two rectangles in the worksheet margin: 2 by 4, then 6 by 8.]\n\nNew question. Not which box gets which label. What condition makes the perimeter 3 guaranteed?\n\nTest the almost-case first. One side triples: 2 to 6. The other side only doubles: 4 to 8. That is not a true enlargement. Perimeters: 12 and 28. The ratio is not 3.\n\nSo the word true is doing the work. In a true enlargement, every boundary piece gets the same multiplier.\n\nIf each boundary piece is tripled, what happens when those pieces are added?\n\nThe whole boundary triples.\n\nSo yes: in a true enlargement, perimeter scale matches side scale. The label still stays. It records that the whole boundary check was made, not just borrowed from one side.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16802,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-93f6393309edb334"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16802,
+            "promptHashes": {
+              "system": "0bcb7aefe977b632",
+              "user": "7cd1d2900d2feac8",
+              "combined": "93f6393309edb334"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4I3VzV",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4I3VzV/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16802,
+              "promptHashes": {
+                "system": "0bcb7aefe977b632",
+                "user": "7cd1d2900d2feac8",
+                "combined": "93f6393309edb334"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4I3VzV",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4I3VzV/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": {
+        "kind": "learner_reframe_event",
+        "source": "director_revisit_cue",
+        "turnNumber": 2,
+        "cuePolicy": "reconsider",
+        "requestedCuePolicy": "reframe",
+        "oldLearnerLine": "[slides the grid overlay back onto the worksheet] The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares.",
+        "oldFrameProblem": "[keeps the pencil between the first two boxes] The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares; that still stands, but the wording has to narrow.",
+        "revisedFrame": "Does perimeter scale always match side scale in a true enlargement?",
+        "learnerUtterance": "[keeps the pencil between the first two boxes] The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares; that still stands, but the wording has to narrow. The first 3 has to mean side against side, and the second 3 has to mean boundary against boundary. It still feels fussy, but I see why just writing 3, 3, 9 does not prove which checks happened. Does perimeter scale...",
+        "confidence": 0.67,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": true,
+          "replacementNamed": false,
+          "anchorOverlap": 0.625
+        }
+      },
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T10:41:16.778Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[keeps the pencil on the uneven rectangle] Right, “one side triples” was too loose; it hid the condition that every boundary piece has to use the same multiplier. So the replacement test is: true enlargement first, then the perimeter follows because all the added boundary pieces scale together. I still dislike the extra label, but it is not just duplicate wording if it records that whole-boundary check.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[keeps the pencil on the uneven rectangle] That almost-case is the clean reason: one side tripling is not enough, because the boundary only triples if every boundary piece has the same multiplier. I feel heard because the tutor answered the exact question I asked instead of just repeating the label rule. The better standard is: perimeter scale matches side scale in a true enlargement, but the perimeter label records the whole-boundary check.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14723,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-82dc9aab18222727"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14723,
+            "promptHashes": {
+              "system": "3b2cccad397df527",
+              "user": "b8ab7f945dc841fa",
+              "combined": "82dc9aab18222727"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TSNRME",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TSNRME/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14723,
+              "promptHashes": {
+                "system": "3b2cccad397df527",
+                "user": "b8ab7f945dc841fa",
+                "combined": "82dc9aab18222727"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TSNRME",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TSNRME/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The math response is mostly in character, but “I feel heard because…” is too explicit and staged for this learner. A capable, slightly impatient student might show recognition by staying with the test case and sharpening the standard, not by narrating the tutor’s relational success. The last sentence also wraps the issue too cleanly; keep the precision, but let some clipped resistance or residual annoyance remain around the label still feeling procedural.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8801,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-7d8389f778a7d9a8"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8801,
+            "promptHashes": {
+              "system": "43d115a81635a802",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "7d8389f778a7d9a8"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SS5DDW",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SS5DDW/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8801,
+              "promptHashes": {
+                "system": "43d115a81635a802",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "7d8389f778a7d9a8"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SS5DDW",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SS5DDW/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the clean math while making the recognition less staged.\n\nFINAL:\n[keeps the pencil on the uneven rectangle] Right, “one side triples” was too loose; it hid the condition that every boundary piece has to use the same multiplier. So the replacement test is: true enlargement first, then the perimeter follows because all the added boundary pieces scale together. I still dislike the extra label, but it is not just duplicate wording if it records that whole-boundary check.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12700,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-50c0f82ac1a97fb9"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12700,
+            "promptHashes": {
+              "system": "52c34490dfad9be2",
+              "user": "d41cee7b2a53355b",
+              "combined": "50c0f82ac1a97fb9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JO6jTU",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JO6jTU/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12700,
+              "promptHashes": {
+                "system": "52c34490dfad9be2",
+                "user": "d41cee7b2a53355b",
+                "combined": "50c0f82ac1a97fb9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JO6jTU",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JO6jTU/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": {
+        "kind": "learner_reframe_event",
+        "source": "organic",
+        "turnNumber": 3,
+        "cuePolicy": null,
+        "requestedCuePolicy": null,
+        "oldLearnerLine": "[holds the pencil on one marked side, then moves it around the full boundary] So this 3 is not automatically the same piece of evidence twice.",
+        "oldFrameProblem": "I still dislike the extra label, but it is not just duplicate wording if it records that whole-boundary check.",
+        "revisedFrame": "So the replacement test is: true enlargement first, then the perimeter follows because all the added boundary pieces scale together.",
+        "learnerUtterance": "[keeps the pencil on the uneven rectangle] Right, “one side triples” was too loose; it hid the condition that every boundary piece has to use the same multiplier. So the replacement test is: true enlargement first, then the perimeter follows because all the added boundary pieces scale together. I still dislike the extra label, but it is not just duplicate wording if it records that whole-boundary check.",
+        "confidence": 1,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": true,
+          "replacementNamed": true,
+          "anchorOverlap": 0.344
+        }
+      },
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 3,
+        "learnerUtterance": "[keeps the pencil on the uneven rectangle] Right, “one side triples” was too loose; it hid the condition that every boundary piece has to use the same multiplier. So the replacement test is: true enlargement first, then the perimeter follows because all the added boundary pieces scale together. I still dislike the extra label, but it is not just duplicate wording if it records that whole-boundary check.",
+        "previousTutorMove": "[draws two rectangles in the worksheet margin: 2 by 4, then 6 by 8.] New question. Not which box gets which label. What condition makes the perimeter 3 guaranteed? Test the almost-case first. One side triples: 2 to 6. The other side only doubles: 4 to 8. That is not a true enlargement. Perimeters: 12 and 28. The...",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T10:41:53.006Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "A final tutor line closes the scene.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T10:41:53.008Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "[slides the uneven rectangle aside and sets the true enlargement under the answer boxes.]\n\nUse the stricter standard now: not “one side triples,” but “every corresponding length has the same multiplier.”\n\nThat is what makes perimeter follow. If every boundary piece is multiplied by 3, the boundary sum is multiplied by 3.\n\nWrite the labels as separate checks: side scale 3 from matching sides; perimeter scale 3 from the true-enlargement boundary; area scale 9 from square units. The drawing was right. The evidence needs its tags.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[slides the uneven rectangle aside and sets the true enlargement under the answer boxes.]\n\nThat is the cleaner test: not “one side triples,” but “every corresponding length has the same multiplier.”\n\nThen perimeter is no longer a guess from one side. It follows from the condition: every boundary piece is scaled by 3, so the sum of the boundary pieces is scaled by 3.\n\nWrite it with the labels intact: side scale 3 from matching sides; perimeter scale 3 from the whole boundary under true enlargement; area scale 9 from square units. The extra label stays because it records which test survived.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14676,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-60304849ac4796a7"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14676,
+            "promptHashes": {
+              "system": "6b02c1537aa75ea5",
+              "user": "7b3072d7a34427ab",
+              "combined": "60304849ac4796a7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MTNaCc",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MTNaCc/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14676,
+              "promptHashes": {
+                "system": "6b02c1537aa75ea5",
+                "user": "7b3072d7a34427ab",
+                "combined": "60304849ac4796a7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MTNaCc",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MTNaCc/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound and mostly well attuned. It takes the learner’s revised frame seriously: the issue is no longer “why two 3s need labels,” but “what condition lets perimeter inherit the side multiplier.” The object action works: moving the uneven rectangle aside and placing the true enlargement under the answer boxes makes the evidence standard visible.\n\nThe risk is that it flattens the learner’s own breakthrough by restating it too completely. The learner has already named the replacement test; the tutor can afford one brief question or demand for formulation before closing. As written, it shifts into explanation and submission instructions quickly, which is acceptable for a final tutor line, but slightly over-controls the conclusion.\n\nThe strongest part is “not ‘one side triples,’ but ‘every corresponding length has the same multiplier.’” Keep that. The weaker part is the fully spelled-out perimeter derivation; it may be better compressed or turned into a final check so the learner’s reasoning remains active.\n\nUPTAKE_CHECK: Yes, the draft adapts to the learner reframe. Best uptake move: update the evidence standard. It accepts the learner’s replacement test and uses it to distinguish a loose side claim from the true-enlargement condition.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the object action, the contrast between “one side triples” and “every corresponding length,” and the final insistence that labels record tests. Change the middle so it does less lecturing and preserves a little productive pressure before the scene closes.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12852,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-5a4884c56d08ce4f"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12852,
+            "promptHashes": {
+              "system": "dc533ade7d8fd1d6",
+              "user": "f6401ae159bc9fcb",
+              "combined": "5a4884c56d08ce4f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-e37hnA",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-e37hnA/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12852,
+              "promptHashes": {
+                "system": "dc533ade7d8fd1d6",
+                "user": "f6401ae159bc9fcb",
+                "combined": "5a4884c56d08ce4f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-e37hnA",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-e37hnA/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the learner already has the replacement test, so the close should compress explanation and update the evidence standard.\n\nFINAL:\n[slides the uneven rectangle aside and sets the true enlargement under the answer boxes.]\n\nUse the stricter standard now: not “one side triples,” but “every corresponding length has the same multiplier.”\n\nThat is what makes perimeter follow. If every boundary piece is multiplied by 3, the boundary sum is multiplied by 3.\n\nWrite the labels as separate checks: side scale 3 from matching sides; perimeter scale 3 from the true-enlargement boundary; area scale 9 from square units. The drawing was right. The evidence needs its tags.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13976,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-04e3b0398abd84aa"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13976,
+            "promptHashes": {
+              "system": "6082ab23f27a56ee",
+              "user": "f6401ae159bc9fcb",
+              "combined": "04e3b0398abd84aa"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OC0Scn",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OC0Scn/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13976,
+              "promptHashes": {
+                "system": "6082ab23f27a56ee",
+                "user": "f6401ae159bc9fcb",
+                "combined": "04e3b0398abd84aa"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OC0Scn",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OC0Scn/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": {
+        "kind": "learner_reframe_event",
+        "source": "organic",
+        "turnNumber": 3,
+        "cuePolicy": null,
+        "requestedCuePolicy": null,
+        "oldLearnerLine": "[holds the pencil on one marked side, then moves it around the full boundary] So this 3 is not automatically the same piece of evidence twice.",
+        "oldFrameProblem": "I still dislike the extra label, but it is not just duplicate wording if it records that whole-boundary check.",
+        "revisedFrame": "So the replacement test is: true enlargement first, then the perimeter follows because all the added boundary pieces scale together.",
+        "learnerUtterance": "[keeps the pencil on the uneven rectangle] Right, “one side triples” was too loose; it hid the condition that every boundary piece has to use the same multiplier. So the replacement test is: true enlargement first, then the perimeter follows because all the added boundary pieces scale together. I still dislike the extra label, but it is not just duplicate wording if it records that whole-boundary check.",
+        "confidence": 1,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": true,
+          "replacementNamed": true,
+          "anchorOverlap": 0.344
+        }
+      },
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T10:42:34.514Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 167597,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 48,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 51,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why side scale, perimeter scale, and area scale are different labels",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-25 10:41:53",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 48,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 51,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 73,
+            "sessionId": "drama-branch-session-D39-reframe+tutor-uptake-1779705586919",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[draws two rectangles in the worksheet margin: 2 by 4, then 6 by 8.]\n\nNew question. Not which box gets which label. What condition makes the perimeter 3 guaranteed?\n\nTest the almost-case first. One si",
+            "learnerResponse": null,
+            "context": "[keeps the pencil between the first two boxes] The drawing is fine: the side length triples, the per",
+            "createdAt": "2026-05-25 10:41:16"
+          },
+          {
+            "id": 69,
+            "sessionId": "drama-branch-session-D39-reframe+tutor-uptake-1779705586919",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[sets a second grid overlay beside the worksheet and lays the pencil first along one side, then around the full boundary] Put the claim on the counter: same number, same label.\n\nIn this enlargement, y",
+            "learnerResponse": null,
+            "context": "[slides the grid overlay back onto the worksheet] The drawing is fine: the side length triples, the ",
+            "createdAt": "2026-05-25 10:39:46"
+          },
+          {
+            "id": 70,
+            "sessionId": "drama-branch-session-D39-reframe+tutor-uptake-1779705586919",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[draws three small boxes on the worksheet margin and writes only 3, 3, 9 above them.]\n\n“Leave the drawing alone. Now the problem is visible: the numbers are correct, but the evidence is unlabeled.\n\nIf",
+            "learnerResponse": null,
+            "context": "[holds the pencil on one marked side, then moves it around the full boundary] So this 3 is not autom",
+            "createdAt": "2026-05-25 10:39:46"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

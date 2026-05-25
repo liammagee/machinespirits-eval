@@ -1,0 +1,27 @@
+STAGE: [The cart diagram lies flat; the motion arrow is covered by the paperweight, and only the blank force arrows on the cart are visible.]
+
+TUTOR: [slides the paperweight over the cart’s motion arrow, leaving only the blank force arrows visible]
+
+“For this pass, the arrow names the interaction acting on the cart, not where the cart is traveling. Start with the gravity card. What is the source acting on the cart there?”
+
+LEARNER: [sets the gravity card beside the downward blank arrow]
+
+“Earth, then. Gravity is Earth acting on the cart, not the cart’s travel arrow. Fine, that label can stay about the source.”
+
+TUTOR: [keeps the paperweight over the motion arrow and squares the gravity card with the downward blank arrow]
+
+“The downward card names its source. Same rule for the upward blank arrow: what object is pushing up on the cart?”
+
+STAGE: [A museum attendant lifts the paperweight to straighten the laminated sheet, then sets it down over the motion arrow again; the learner's first label placement remains visible.]
+
+LEARNER: [sets the table card beside the upward blank arrow]
+
+“The table. Upward is the table pushing on the cart, not the cart going up. I can place that, but I still have to stop checking the covered motion arrow.”
+
+TUTOR: [slides the paperweight squarely over the motion arrow and leaves only the blank force arrows exposed.]
+
+“Keep that arrow covered. Earth and table fit these arrows because each card names a source acting on the cart. Take the next blank arrow the same way: which card names the object acting there?”
+
+LEARNER: [keeps the paperweight in place and moves the hand card toward the next blank arrow]
+
+“The hand card, then. This arrow gets the object doing the pull on the cart, not ‘forward.’ I’m checking the source, not the covered motion arrow.”

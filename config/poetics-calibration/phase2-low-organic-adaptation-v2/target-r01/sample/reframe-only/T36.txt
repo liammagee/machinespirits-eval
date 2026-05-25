@@ -1,0 +1,38 @@
+STAGE: [A laminated arrow-key strip, two organism cards, and the learner's penciled food web sit on the table under a copy-room deadline.]
+
+LEARNER: [slides the key strip under the arrows]
+
+"Grass card feeds rabbit, so arrow grass to rabbit; mark that. Fox eats rabbit, so it should be rabbit to fox, right? The key needs the rule written there before my hand flips it back to hunter direction."
+
+TUTOR: [sets the pencil on grass, traces the arrow into rabbit, then taps rabbit before tracing the next arrow into fox]
+
+"Grass feeds rabbit; rabbit feeds fox. The strip can hold that rule: “arrow = energy moves from food to eater.” One copy check: every arrow starts on the food card, not the hunter card."
+
+LEARNER: [holds the key strip under the two arrows]
+
+"Grass to rabbit, rabbit to fox: food card first, eater card second. Good, the strip can carry that rule while copying. My hand still wants hunter direction, so test the next one before we mark it: if owl eats mouse, arrow starts on mouse, yes?"
+
+TUTOR: [sets the mouse card before the owl card and draws the pencil from mouse into owl]
+
+"Mouse first, so mouse → owl is the mark. This arrow records energy moving from food into eater. One strip check before the next copy: tail on food, point on eater."
+
+STAGE: [The copy-room timer clicks; a blank label strip marked 'ARROW MEANS: ______ TRANSFER' slides out beside the learner's drawing while the earlier arrow remains visible.
+An earlier learner line returns to the table: "[slides the key strip under the arrows] Grass card feeds rabbit, so arrow grass to rabbit; mark that." The pause holds while the learner decides whether that wording still stands, needs narrowing, or needs replacing.]
+
+LEARNER: [slides the blank label strip under grass → rabbit and mouse → owl]
+
+"Grass card feeds rabbit, so arrow grass to rabbit; that still stands, but the label needs narrowing: ARROW MEANS: ENERGY TRANSFER. Mouse to owl passes the same check: tail on mouse, point on owl. Put energy in the blank before hunter direction gets copied."
+
+TUTOR: [prints ENERGY TRANSFER on the label strip, then sets the pencil tail on mouse and grass]
+
+"Energy transfer goes in the blank. The copy check is now narrow: tail on food, point on eater. Hold the strip under fox and owl; if each tail sits on the food card, the key is ready to copy."
+
+LEARNER: [slides the key strip under rabbit → fox, then mouse → owl]
+
+"Tail on food, point on eater; fox still pulls my hand toward fox-to-rabbit, so the strip says stop: rabbit first, fox second. The chasing frame made the arrow look like hunter movement, but that hides the energy transfer. For owl, mouse first into owl; check the tail is on mouse before this gets copied?"
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [sets the pencil tail on mouse, then lines the key strip under both arrows]
+
+"Tail on mouse, point on owl. Tail on rabbit, point on fox. The chasing frame gets blocked here: not hunter movement. The copy key is ready: energy transfer from food to eater."

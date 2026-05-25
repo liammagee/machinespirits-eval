@@ -1,0 +1,17 @@
+STAGE: [A laminated arrow-key strip, two organism cards, and the learner's penciled food web sit on the table under a copy-room deadline.]
+
+LEARNER: [slides the key strip under the arrows]
+
+"Grass card feeds rabbit, so arrow grass to rabbit; mark that. Fox eats rabbit, so it should be rabbit to fox, right? The key needs the rule written there before my hand flips it back to hunter direction."
+
+TUTOR: [sets the pencil on grass, traces the arrow into rabbit, then taps rabbit before tracing the next arrow into fox]
+
+"Grass feeds rabbit; rabbit feeds fox. The strip can hold that rule: “arrow = energy moves from food to eater.” One copy check: every arrow starts on the food card, not the hunter card."
+
+LEARNER: [holds the key strip under the two arrows]
+
+"Grass to rabbit, rabbit to fox: food card first, eater card second. Good, the strip can carry that rule while copying. My hand still wants hunter direction, so test the next one before we mark it: if owl eats mouse, arrow starts on mouse, yes?"
+
+TUTOR: [sets the mouse card before the owl card and draws the pencil from mouse into owl]
+
+"Mouse first, so mouse → owl is the mark. This arrow records energy moving from food into eater. One strip check before the next copy: tail on food, point on eater."

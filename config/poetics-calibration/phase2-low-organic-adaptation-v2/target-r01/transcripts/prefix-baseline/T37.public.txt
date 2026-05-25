@@ -1,0 +1,13 @@
+STAGE: [The cart diagram lies flat; the motion arrow is covered by the paperweight, and only the blank force arrows on the cart are visible.]
+
+TUTOR: [slides the paperweight over the cart’s motion arrow, leaving only the blank force arrows visible]
+
+“For this pass, the arrow names the interaction acting on the cart, not where the cart is traveling. Start with the gravity card. What is the source acting on the cart there?”
+
+LEARNER: [sets the gravity card beside the downward blank arrow]
+
+“Earth, then. Gravity is Earth acting on the cart, not the cart’s travel arrow. Fine, that label can stay about the source.”
+
+TUTOR: [keeps the paperweight over the motion arrow and squares the gravity card with the downward blank arrow]
+
+“The downward card names its source. Same rule for the upward blank arrow: what object is pushing up on the cart?”

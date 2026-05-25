@@ -1,0 +1,83 @@
+STAGE: [The learner's doubled-side square is still on the grid, its original smaller square left inside it like an unplanned witness.]
+
+LEARNER: "I still think doubling the side should double it, because the same square has just been stretched both ways. [draws one vertical and one horizontal line through the larger square on the grid] But that has made four blocks, not two, so where exactly did the “double” argument stop working?"
+
+TUTOR: [places the original square outline over the lower-left block]
+
+"There. That block is the old square.
+
+Do not use the formula yet. Count with that block.
+
+If the stretch had gone only sideways, the bottom strip would hold two old squares. Stop there.
+
+But the top strip is there as well.
+
+Which of the four blocks is not the size of the old square?
+
+[waits]
+
+None.
+
+So the “double” argument stopped working when one word was made to cover two directions. The side doubled across, then the doubled strip was doubled upwards.
+
+Two across. Two rows. Four old squares."
+
+LEARNER: [points to the lower-left block, then the one above it]
+
+"All right, that top block is the bit I was sliding past, but it is the same old square again. The sideways double only gives a strip. The second direction makes another strip above it, so the drawing has four, not two. Does that mean the rule is always counting rows as well as columns?"
+
+STAGE: [A transparent copy of the original square is slid across the larger outline until four copies exactly tile it.]
+
+TUTOR: [slides the transparent copy until four old squares tile the larger outline]
+
+"Careful with “always”.
+
+Read the tiled square first.
+
+Across, there are two old squares.
+
+Up, there are two rows of old squares.
+
+For length, the count can stop at the lower strip: two side-lengths across.
+
+For area, it cannot stop there. The upper strip is still part of the figure.
+
+So before we name the rule: what has the grid counted?
+
+Two columns. Two rows.
+
+What multiplier is left?"
+
+LEARNER: [keeps the pencil on the lower strip, then moves it up to the second row]
+
+"I was going to say two. No, that leaves out the row above. Two columns and two rows makes four old squares, so the multiplier is four."
+
+TUTOR: [draws a bracket under the two columns, then another up the two rows]
+
+"Two across.
+
+Two rows.
+
+Four old squares.
+
+Leave the formula out for one more case.
+
+If the new side is three old sides long, the bottom strip holds three old squares.
+
+Now the question is not how long the strip is. It is how many such strips the square must have.
+
+How many rows are there, and what multiplier does the area get?"
+
+LEARNER: [marks three squares along the bottom strip, then draws two more strips above it]
+
+"There are three along the bottom, but that is only one strip. If the side is three old sides high as well, there must be three strips, so that is nine old squares. I keep wanting to treat the two upper strips as extra, but they are inside the square, so the area multiplier is nine."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [boxes the whole three-by-three square]
+
+"The upper strips are not extra. They are the square.
+
+For a side three old sides long, the grid has made three columns and three rows. Area counts every place a column meets a row.
+
+So the side scale is 3. The area scale is the count now visible in the square: 3 by 3, nine old squares."

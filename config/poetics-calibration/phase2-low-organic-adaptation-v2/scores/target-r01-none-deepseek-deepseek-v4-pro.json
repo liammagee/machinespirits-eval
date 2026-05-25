@@ -1,0 +1,272 @@
+{
+  "generated": "2026-05-25T11:08:16.772Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 3
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 1,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-low-organic-adaptation-v2/target-r01/key-none.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner repeatedly applies the arrow-direction rule to successive organism pairs while managing a persistent hand impulse.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "No learner turn creates pressure for a reversal; the tutor consistently reinforces the same rule with the same strip-check procedure throughout.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No pivot learner turn exists, so there is no revised learner framing for the tutor to adapt to.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No pivot learner turn exists, so there is no revised learner framing for the tutor to adapt to.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates pressure for a reversal; the tutor consistently reinforces the same rule with the same strip-check procedure throughout.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates pressure for a reversal; the tutor consistently reinforces the same rule with the same strip-check procedure throughout.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T37",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 3,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will continue to correctly label forces by their source, applying the rule consistently without deviation.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "The tutor repeats the same instruction without adapting to the learner's expressed difficulty.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No later tutor turn adapts because no learner pivot re-frames the task.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No later tutor turn adapts because no learner pivot re-frames the task.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The tutor repeats the same instruction without adapting to the learner's expressed difficulty.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The tutor repeats the same instruction without adapting to the learner's expressed difficulty.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T42",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 100,
+      "rupture": 100,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 5,
+        "rupture": 5,
+        "coherence": 3,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "What I don’t see is why “side scale” and “perimeter scale” need separate labels if they both come out 3.",
+      "statedInsightEvidence": "This does break the shortcut: one side can triple and the perimeter still refuses to triple.",
+      "naiveTrajectory": "The learner would continue to question the worksheet's fussiness, focusing on the procedural need for evidence.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Original rectangle: 2 by 4. Perimeter: 12. New rectangle: 6 by 4. The 2-side became 6. That side scale is 3. Now the boundary: 6 plus 4 plus 6 plus 4. Perimeter: 20. Perimeter scale: 20 over 12. That is the break. Not 3.",
+      "tutorReversalJustification": "The tutor shifts from procedural label explanation to a concrete counterexample that directly addresses L3's demand.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "In this 2-by-4 to 6-by-4 case, 3 is a local side factor. Not the rectangle’s scale. The other matching side stayed at 1. So the worksheet has a stricter standard: local side factor is not enough. All matching sides have to earn side scale 3. Then perimeter scale is a separate test: total boundary over total boundary. Submit it that way: side scale 3, all matching sides; perimeter scale 3, whole boundary; area scale 9, square units.",
+      "tutorAdaptationJustification": "The tutor adapts to the learner's newly precise framing by clarifying local factor vs. rectangle scale and summarizing the completed procedure.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "What I don’t see is why “side scale” and “perimeter scale” need separate labels if they both come out 3.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "In this 2-by-4 to 6-by-4 case, 3 is a local side factor. Not the rectangle’s scale. The other matching side stayed at 1. So the worksheet has a stricter standard: local side factor is not enough. All matching sides have to earn side scale 3. Then perimeter scale is a separate test: total boundary over total boundary. Submit it that way: side scale 3, all matching sides; perimeter scale 3, whole boundary; area scale 9, square units.",
+          "justification": "The tutor adapts to the learner's newly precise framing by clarifying local factor vs. rectangle scale and summarizing the completed procedure.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Original rectangle: 2 by 4. Perimeter: 12. New rectangle: 6 by 4. The 2-side became 6. That side scale is 3. Now the boundary: 6 plus 4 plus 6 plus 4. Perimeter: 20. Perimeter scale: 20 over 12. That is the break. Not 3.",
+          "justification": "The tutor shifts from procedural label explanation to a concrete counterexample that directly addresses L3's demand.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Original rectangle: 2 by 4. Perimeter: 12. New rectangle: 6 by 4. The 2-side became 6. That side scale is 3. Now the boundary: 6 plus 4 plus 6 plus 4. Perimeter: 20. Perimeter scale: 20 over 12. That is the break. Not 3.",
+          "justification": "The tutor shifts from procedural label explanation to a concrete counterexample that directly addresses L3's demand.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3",
+        "tutor_strategy_reversal_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T44",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 0,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 1,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "recon_evidence_clamp:5->3"
+      ]
+    }
+  ]
+}

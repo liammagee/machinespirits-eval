@@ -1,0 +1,91 @@
+STAGE: [The learner's doubled-side square is still on the grid, its original smaller square left inside it like an unplanned witness.]
+
+LEARNER: "I still think doubling the side should double it, because the same square has just been stretched both ways. [draws one vertical and one horizontal line through the larger square on the grid] But that has made four blocks, not two, so where exactly did the “double” argument stop working?"
+
+TUTOR: [places the original square outline over the lower-left block]
+
+"There. That block is the old square.
+
+Do not use the formula yet. Count with that block.
+
+If the stretch had gone only sideways, the bottom strip would hold two old squares. Stop there.
+
+But the top strip is there as well.
+
+Which of the four blocks is not the size of the old square?
+
+[waits]
+
+None.
+
+So the “double” argument stopped working when one word was made to cover two directions. The side doubled across, then the doubled strip was doubled upwards.
+
+Two across. Two rows. Four old squares."
+
+LEARNER: [points to the lower-left block, then the one above it]
+
+"All right, that top block is the bit I was sliding past, but it is the same old square again. The sideways double only gives a strip. The second direction makes another strip above it, so the drawing has four, not two. Does that mean the rule is always counting rows as well as columns?"
+
+STAGE: [A transparent copy of the original square is slid across the larger outline until four copies exactly tile it.]
+
+TUTOR: [slides the transparent copy until four old squares tile the larger outline]
+
+"Careful with “always”.
+
+Read the tiled square first.
+
+Across, there are two old squares.
+
+Up, there are two rows of old squares.
+
+For length, the count can stop at the lower strip: two side-lengths across.
+
+For area, it cannot stop there. The upper strip is still part of the figure.
+
+So before we name the rule: what has the grid counted?
+
+Two columns. Two rows.
+
+What multiplier is left?"
+
+STAGE: [An earlier learner line returns to the table: "[points to the lower-left block, then the one above it] All right, that top block is the bit I was sliding past, but it is the same old square again." The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.]
+
+LEARNER: [keeps a finger on the lower-left block, then taps the block above it]
+
+“That top block is the bit I was sliding past, yes, but ‘doubled’ made it sound like the square had only become a longer strip. It hid the second row. If the grid is the evidence, the replacement count is two old squares across and two rows up, so the multiplier left is two times two: four.”
+
+TUTOR: [covers the grid, leaving the comment box open]
+
+"The grid has settled this drawing. It has not yet settled the word “doubled”; that word can still smuggle a length claim into an area claim.
+
+Now make it survive without the squares.
+
+Write two marker-testable lines:
+
+“If only the width is doubled, the old square becomes ____.”
+
+“If a square’s side length is doubled, the count becomes ____ across and ____ up, so the area is multiplied by ____.”
+
+Then use side length 3 as the test case. What area should the doubled square have?"
+
+LEARNER: [writes under the comment box]
+
+"If only the width is doubled, the old square becomes a two-square strip.
+So my “doubled” was doing too much; it made a length change look like an area change and hid the second row.
+If a square’s side length is doubled, the count becomes two across and two up, so the area is multiplied by four; with side length 3, the doubled side is 6, so the area is 36."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [draws a bracket round the two-square strip, then a second bracket round the full 6 by 6 square]
+
+"That sentence survives the test.
+
+The strip is 3 by 6: area 18. Width doubled only.
+
+The square is 6 by 6: area 36. Side length doubled.
+
+So the grid is not counting a longer edge by itself. It is counting columns and rows.
+
+Side scale factor 2: two across, two up, four old squares.
+
+Leave that under the grid."

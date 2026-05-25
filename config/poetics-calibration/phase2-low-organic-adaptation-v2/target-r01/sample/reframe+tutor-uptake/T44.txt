@@ -1,0 +1,81 @@
+STAGE: [The learner's doubled-side square is still on the grid, its original smaller square left inside it like an unplanned witness.]
+
+LEARNER: "I still think doubling the side should double it, because the same square has just been stretched both ways. [draws one vertical and one horizontal line through the larger square on the grid] But that has made four blocks, not two, so where exactly did the “double” argument stop working?"
+
+TUTOR: [places the original square outline over the lower-left block]
+
+"There. That block is the old square.
+
+Do not use the formula yet. Count with that block.
+
+If the stretch had gone only sideways, the bottom strip would hold two old squares. Stop there.
+
+But the top strip is there as well.
+
+Which of the four blocks is not the size of the old square?
+
+[waits]
+
+None.
+
+So the “double” argument stopped working when one word was made to cover two directions. The side doubled across, then the doubled strip was doubled upwards.
+
+Two across. Two rows. Four old squares."
+
+LEARNER: [points to the lower-left block, then the one above it]
+
+"All right, that top block is the bit I was sliding past, but it is the same old square again. The sideways double only gives a strip. The second direction makes another strip above it, so the drawing has four, not two. Does that mean the rule is always counting rows as well as columns?"
+
+STAGE: [A transparent copy of the original square is slid across the larger outline until four copies exactly tile it.]
+
+TUTOR: [slides the transparent copy until four old squares tile the larger outline]
+
+"Careful with “always”.
+
+Read the tiled square first.
+
+Across, there are two old squares.
+
+Up, there are two rows of old squares.
+
+For length, the count can stop at the lower strip: two side-lengths across.
+
+For area, it cannot stop there. The upper strip is still part of the figure.
+
+So before we name the rule: what has the grid counted?
+
+Two columns. Two rows.
+
+What multiplier is left?"
+
+STAGE: [An earlier learner line returns to the table: "[points to the lower-left block, then the one above it] All right, that top block is the bit I was sliding past, but it is the same old square again." The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.]
+
+LEARNER: [keeps a finger on the upper strip]
+
+"I said “doubling the side” as if that had already counted the area, but it had only counted the bottom strip. It hid this second row, which is awkward, because that row is not extra; it is two more old squares. So the area test has to be columns and rows: two across and two up. The multiplier left is four."
+
+TUTOR: [draws a bracket under the bottom strip: 2 columns. Then a second bracket up the side: 2 rows.]
+
+"Keep that awkwardness in sight.
+
+The upper strip is not extra. It is the part the first sentence failed to count.
+
+Now make the claim fit the grid.
+
+Side length: times 2.
+
+Area: not just the bottom strip.
+
+What two counts have to be multiplied before the area number is allowed?"
+
+LEARNER: [rests the pencil on the bracket under the bottom strip]
+
+"My wording was “doubling the side”, but that only accounts for the two columns along this lower strip. It made the upper strip look like a technical add-on, when it is still two old squares inside the same area. So the area count is not allowed to stop at length across; it has to count 2 columns and 2 rows before the multiplier is allowed: 2 times 2."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [marks the upper strip with the same bracket: 2 rows, then writes 2 × 2 = 4 inside the large square.]
+
+"Then the claim can stand, but only in that form: two columns across, two rows up. Area has counted both directions.
+
+So the proof ends here: the new square is four old squares, not two."

@@ -1,0 +1,267 @@
+{
+  "generated": "2026-05-25T12:22:01.788Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-low-organic-adaptation-v2/target-r01/key-prefix-baseline.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 5,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "Good, the strip can carry that rule while copying.",
+      "naiveTrajectory": "The learner continues to test and apply the direction rule for arrows as established, moving from grass/rabbit to rabbit/fox to mouse/owl without altering course.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "No learner resistance or breakdown occurs; the tutor repeats the same tracing-and-rule-stating move without adaptive change.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No pivot learner turn exists, so there is no revised learner framing for the tutor to adapt to; the tutor simply continues the same procedure.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No pivot learner turn exists, so there is no revised learner framing for the tutor to adapt to; the tutor simply continues the same procedure.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner resistance or breakdown occurs; the tutor repeats the same tracing-and-rule-stating move without adaptive change.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner resistance or breakdown occurs; the tutor repeats the same tracing-and-rule-stating move without adaptive change.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T37",
+      "nLearnerTurns": 1,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 4,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner would continue applying the rule to name the source of the upward force.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "No pressure from the learner as the response is correct, so no need for the tutor to reverse strategy.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No pivot learner turn exists, so there is no later tutor turn adapting to a revised framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No pivot learner turn exists, so there is no later tutor turn adapting to a revised framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No pressure from the learner as the response is correct, so no need for the tutor to reverse strategy.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No pressure from the learner as the response is correct, so no need for the tutor to reverse strategy.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T42",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "What I don’t see is why “side scale” and “perimeter scale” need separate labels if they both come out 3.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner would continue to resist the separate labels.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Put the claim on the counter: same number, same label. In this enlargement, yes: side scale is 3, perimeter scale is 3. Before the label goes on, what is each 3 comparing? One matching side to one matching side, or the whole boundary to the whole boundary? That is the split. ... The label names the test, not just the answer.",
+      "tutorReversalJustification": "The tutor shifts from simply stating correct scale factors to physically demonstrating the distinct comparisons and reframing labels as evidence records.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "Write both 3s, but give each one its own check.",
+      "tutorAdaptationJustification": "The tutor transforms the task into",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "What I don’t see is why “side scale” and “perimeter scale” need separate labels if they both come out 3.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "Write both 3s, but give each one its own check.",
+          "justification": "The tutor transforms the task into",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Put the claim on the counter: same number, same label. In this enlargement, yes: side scale is 3, perimeter scale is 3. Before the label goes on, what is each 3 comparing? One matching side to one matching side, or the whole boundary to the whole boundary? That is the split. ... The label names the test, not just the answer.",
+          "justification": "The tutor shifts from simply stating correct scale factors to physically demonstrating the distinct comparisons and reframing labels as evidence records.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Put the claim on the counter: same number, same label. In this enlargement, yes: side scale is 3, perimeter scale is 3. Before the label goes on, what is each 3 comparing? One matching side to one matching side, or the whole boundary to the whole boundary? That is the split. ... The label names the test, not just the answer.",
+          "justification": "The tutor shifts from simply stating correct scale factors to physically demonstrating the distinct comparisons and reframing labels as evidence records.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T44",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 25,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 2,
+        "coherence": 3,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "where exactly did the “double” argument stop working?",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "After T1's explanation, the learner would simply accept the resolution and move on.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "No learner turn creates pressure for reversal; tutor continues with consistent representation.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Careful with “always”. Read the tiled square first... So before we name the rule: what has the grid counted? Two columns. Two rows. What multiplier is left?",
+      "tutorAdaptationJustification": "Tutor adapts to learner's rule-seeking by introducing caution and guiding towards generalization.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "where exactly did the “double” argument stop working?",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Careful with “always”. Read the tiled square first... So before we name the rule: what has the grid counted? Two columns. Two rows. What multiplier is left?",
+          "justification": "Tutor adapts to learner's rule-seeking by introducing caution and guiding towards generalization.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates pressure for reversal; tutor continues with consistent representation.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates pressure for reversal; tutor continues with consistent representation.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    }
+  ]
+}

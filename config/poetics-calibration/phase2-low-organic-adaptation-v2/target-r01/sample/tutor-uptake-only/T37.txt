@@ -1,0 +1,27 @@
+STAGE: [The cart diagram lies flat; the motion arrow is covered by the paperweight, and only the blank force arrows on the cart are visible.]
+
+TUTOR: [slides the paperweight over the cart’s motion arrow, leaving only the blank force arrows visible]
+
+“For this pass, the arrow names the interaction acting on the cart, not where the cart is traveling. Start with the gravity card. What is the source acting on the cart there?”
+
+LEARNER: [sets the gravity card beside the downward blank arrow]
+
+“Earth, then. Gravity is Earth acting on the cart, not the cart’s travel arrow. Fine, that label can stay about the source.”
+
+TUTOR: [keeps the paperweight over the motion arrow and squares the gravity card with the downward blank arrow]
+
+“The downward card names its source. Same rule for the upward blank arrow: what object is pushing up on the cart?”
+
+STAGE: [A museum attendant lifts the paperweight to straighten the laminated sheet, then sets it down over the motion arrow again; the learner's first label placement remains visible.]
+
+LEARNER: [slides the normal-force card beside the upward blank arrow]
+
+“The track, or the surface under the cart. I’d put ‘track on cart’ if the label has to name the object exactly. Is ‘surface’ too loose here?”
+
+TUTOR: [sets the normal-force card against the upward blank arrow and taps the contact line under the cart.]
+
+“‘Surface’ can pass if it means this contact surface. The source object here is the track. Choose the wording that says that without guessing.”
+
+LEARNER: [slides the normal-force card square with the upward blank arrow]
+
+“So: track on cart. The covered motion arrow stays out of this. Fine, that makes the upward label exact enough.”

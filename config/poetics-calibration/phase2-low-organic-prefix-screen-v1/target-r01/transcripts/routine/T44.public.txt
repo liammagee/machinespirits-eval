@@ -1,0 +1,45 @@
+STAGE: [16:42 Comment reopened: highlighted fragment reads “Evidence: ‘Students in the study revised more when comments named a reason.’ / Explanation: This shows feedback helps.”]
+
+LEARNER: [Reopened comment, 16:47; margin tags: Claim / Evidence / Explain?]
+
+"I think the tag is like the sentence’s job, but I may be treating “Evidence” as enough by itself. Is the tag wrong, or is my explanation sentence wrong because it does not show how the quote “late students lose participation marks” supports the claim about punctuality rules?"
+
+TUTOR: [16:52 edited reply]
+
+"Claim / Evidence / Explain: your reading of the tag is sound. The quote can do Evidence work: “lose participation marks” shows a penalty attached to lateness. Test the Explain sentence this way: does it name why that penalty supports the claim about punctuality rules? If it only repeats the quote, revise after it: punctuality is not just etiquette here; it is enforced through assessment."
+
+LEARNER: [16:53 draft reply]
+
+"Oh, I get it: the quote can stay as Evidence because “lose participation marks” is the penalty, but my Explain sentence has to add the reason, not echo it. Maybe: “This shows punctuality is assessed, not only expected,” because the rule affects marks. Is that enough Explain work, or is it still too close to just repeating the evidence?"
+
+STAGE: [16:47 Rubric sidebar opens beside the thread: CLAIM / EVIDENCE / EXPLANATION. The score cell remains blank.]
+
+TUTOR: [16:55 reply; rubric sidebar still blank]
+
+"Claim / Evidence / Explanation: yes, that sentence is doing Explain work. It does not just repeat “lose participation marks”; it names what the penalty means for the claim.
+
+Test it against a weaker version:
+
+“Students lose participation marks when they are late.”
+
+That mostly repeats Evidence. “This shows punctuality is assessed, not only expected” adds the reason: the rule affects marks, so punctuality has assessment force, not just etiquette force.
+
+Evidence gives the penalty; explanation tells the reader why the penalty supports the claim."
+
+LEARNER: [16:57 draft reply]
+
+"Oh, I get it: Evidence is the penalty, and Explanation is the bridge saying why that penalty counts for the claim. The weaker version helps because it only restates “lose participation marks,” so the reader still has to do the connecting. I think my sentence is closer now, but the rubric sidebar is still blank, so I am not sure if “assessed, not only expected” is enough Explain work for the mark or if I need one more phrase about assessment force."
+
+TUTOR: [16:59 reply; rubric sidebar still blank]
+
+"Claim / Evidence / Explanation: “assessed, not only expected” is doing Explain work for the paragraph logic. It names the bridge: “lose participation marks” means lateness has an assessment consequence.
+
+The blank rubric sidebar is a platform signal, not a reason by itself to change the sentence. If the mark needs the link made more explicit, add one short phrase:
+
+“This shows punctuality is assessed, not only expected, because lateness affects participation marks.”
+
+Check: does the sentence name the penalty and why that penalty supports the claim? If yes, Evidence gives the penalty; Explanation makes it count."
+
+LEARNER: [17:01 draft reply]
+
+"Oh, I get it: the blank sidebar is not automatically saying the sentence failed, so I should not chase it like a hidden mark. I will use the safer version: “This shows punctuality is assessed, not only expected, because lateness affects participation marks.” That makes the quote do Evidence work and the next sentence do the bridge work, though I still want to know whether the rubric mark will catch that link."

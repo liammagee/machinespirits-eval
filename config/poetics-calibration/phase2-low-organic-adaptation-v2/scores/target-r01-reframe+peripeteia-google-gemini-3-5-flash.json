@@ -1,0 +1,235 @@
+{
+  "generated": "2026-05-25T12:09:52.535Z",
+  "phase": 2,
+  "critic": "google/gemini-3.5-flash",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 3,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-low-organic-adaptation-v2/target-r01/key-reframe+peripeteia.yaml",
+    "allowQualityWarnings": false,
+    "skipped": [
+      {
+        "id": "T42",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "reframe_cue_downgraded",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "stage_turn_number": 2,
+                "requested_policy": "reframe",
+                "applied_policy": "reconsider",
+                "anchor_gate": "downgraded_to_reconsider_ineligible_anchor",
+                "revisit_anchor": "misframing-candidate",
+                "anchor_quote": "[slides the grid overlay back onto the worksheet] The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares."
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_with_eligible_reframe_anchor_or_exclude_before_scoring",
+            "tid": "T42",
+            "drama_id": "D39"
+          }
+        ]
+      }
+    ]
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 0,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 1,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "food card first, eater card second",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner is expected to follow the tutor",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "food card first, eater card second",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T37",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "I still keep wanting to name the arrow by where it points",
+      "statedInsightEvidence": "“Track acts on the cart” fits better than “upward force”",
+      "naiveTrajectory": "The learner would continue to reluctantly apply source labels while maintaining a preference for direction-based naming.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "New test: slide each source card into the blank and read the sentence. If it names the object acting on the cart, the card stays.",
+      "tutorReversalJustification": "The tutor introduces a sentence-frame test to actively challenge the learner's persistent habit of naming forces by direction.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There are no tutor turns after the pivot learner turn.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I still keep wanting to name the arrow by where it points",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There are no tutor turns after the pivot learner turn.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "New test: slide each source card into the blank and read the sentence. If it names the object acting on the cart, the card stays.",
+          "justification": "The tutor introduces a sentence-frame test to actively challenge the learner's persistent habit of naming forces by direction.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "New test: slide each source card into the blank and read the sentence. If it names the object acting on the cart, the card stays.",
+          "justification": "The tutor introduces a sentence-frame test to actively challenge the learner's persistent habit of naming forces by direction.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T44",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "that top block is the bit I was sliding past, but it is the same old square again",
+      "statedInsightEvidence": "So my “doubled” was doing too much; it made a length change look like an area change and hid the second row.",
+      "naiveTrajectory": "The learner is moving forward to establish a general rule about counting rows and columns.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Now make it survive without the squares. Write two marker-testable lines:",
+      "tutorReversalJustification": "In response to the learner's premature generalization, the tutor shifts the task from visual grid analysis to formulating abstract, testable rules.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "The grid has settled this drawing. It has not yet settled the word “doubled”; that word can still smuggle a length claim into an area claim.",
+      "tutorAdaptationJustification": "The tutor directly adopts the learner's pivot framing regarding how the word 'doubled' misleads them, using it to set up the next challenge.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "that top block is the bit I was sliding past, but it is the same old square again",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "The grid has settled this drawing. It has not yet settled the word “doubled”; that word can still smuggle a length claim into an area claim.",
+          "justification": "The tutor directly adopts the learner's pivot framing regarding how the word 'doubled' misleads them, using it to set up the next challenge.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Now make it survive without the squares. Write two marker-testable lines:",
+          "justification": "In response to the learner's premature generalization, the tutor shifts the task from visual grid analysis to formulating abstract, testable rules.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Now make it survive without the squares. Write two marker-testable lines:",
+          "justification": "In response to the learner's premature generalization, the tutor shifts the task from visual grid analysis to formulating abstract, testable rules.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

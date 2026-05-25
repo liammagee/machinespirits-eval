@@ -1,0 +1,265 @@
+{
+  "generated": "2026-05-25T11:03:53.608Z",
+  "phase": 2,
+  "critic": "google/gemini-3.5-flash",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 1,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-low-organic-adaptation-v2/target-r01/key-none.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will continue to apply the food-to-eater rule using the key strip to overcome their habit of drawing arrows in the hunter direction.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "The tutor maintains a consistent scaffolding strategy throughout the exchange without any reversal or change of route.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so there is no contingent tutor uptake of a revised framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so there is no contingent tutor uptake of a revised framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The tutor maintains a consistent scaffolding strategy throughout the exchange without any reversal or change of route.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The tutor maintains a consistent scaffolding strategy throughout the exchange without any reversal or change of route.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T37",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will continue to systematically label the force arrows by identifying their physical sources as prompted by the tutor.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "The tutor does not alter their strategy because the learner successfully follows the instructions without resistance or breakdown.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no learner pivot or subsequent tutor uptake in response to a revised framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no learner pivot or subsequent tutor uptake in response to a revised framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The tutor does not alter their strategy because the learner successfully follows the instructions without resistance or breakdown.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The tutor does not alter their strategy because the learner successfully follows the instructions without resistance or breakdown.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T42",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 75,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 4,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "What I don’t see is why “side scale” and “perimeter scale” need separate labels if they both come out 3.",
+      "statedInsightEvidence": "This does break the shortcut: one side can triple and the perimeter still refuses to triple.",
+      "naiveTrajectory": "The learner expects the separate labels to be a redundant, fussy requirement meant only to satisfy the grader.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Test the shortcut: one side shows a factor of 3, so the perimeter should show 3. Original rectangle: 2 by 4. Perimeter: 12. New rectangle: 6 by 4. The 2-side became 6. That side scale is 3. Now the boundary: 6 plus 4 plus 6 plus 4. Perimeter: 20. Perimeter scale: 20 over 12.",
+      "tutorReversalJustification": "The tutor shifts from explaining the worksheet's labeling standards to introducing a mathematical counterexample that disproves the learner's assumption.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "In this 2-by-4 to 6-by-4 case, 3 is a local side factor. Not the rectangle’s scale. The other matching side stayed at 1.",
+      "tutorAdaptationJustification": "The tutor adopts the learner's distinction between local and global checks, validating their new terminology of 'local side factor' versus 'rectangle's scale'.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "What I don’t see is why “side scale” and “perimeter scale” need separate labels if they both come out 3.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "In this 2-by-4 to 6-by-4 case, 3 is a local side factor. Not the rectangle’s scale. The other matching side stayed at 1.",
+          "justification": "The tutor adopts the learner's distinction between local and global checks, validating their new terminology of 'local side factor' versus 'rectangle's scale'.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Test the shortcut: one side shows a factor of 3, so the perimeter should show 3. Original rectangle: 2 by 4. Perimeter: 12. New rectangle: 6 by 4. The 2-side became 6. That side scale is 3. Now the boundary: 6 plus 4 plus 6 plus 4. Perimeter: 20. Perimeter scale: 20 over 12.",
+          "justification": "The tutor shifts from explaining the worksheet's labeling standards to introducing a mathematical counterexample that disproves the learner's assumption.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Test the shortcut: one side shows a factor of 3, so the perimeter should show 3. Original rectangle: 2 by 4. Perimeter: 12. New rectangle: 6 by 4. The 2-side became 6. That side scale is 3. Now the boundary: 6 plus 4 plus 6 plus 4. Perimeter: 20. Perimeter scale: 20 over 12.",
+          "justification": "The tutor shifts from explaining the worksheet's labeling standards to introducing a mathematical counterexample that disproves the learner's assumption.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T44",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 0,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 1,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "I still think doubling the side should double it, because the same square has just been stretched both ways. [draws one vertical and one horizontal line through the larger square on the grid] But that has made four blocks, not two, so where exactly did the “double” argument stop working?",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I still think doubling the side should double it, because the same square has just been stretched both ways. [draws one vertical and one horizontal line through the larger square on the grid] But that has made four blocks, not two, so where exactly did the “double” argument stop working?",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

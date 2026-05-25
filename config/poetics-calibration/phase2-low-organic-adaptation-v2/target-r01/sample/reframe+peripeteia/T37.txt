@@ -1,0 +1,30 @@
+STAGE: [The cart diagram lies flat; the motion arrow is covered by the paperweight, and only the blank force arrows on the cart are visible.]
+
+TUTOR: [slides the paperweight over the cart’s motion arrow, leaving only the blank force arrows visible]
+
+“For this pass, the arrow names the interaction acting on the cart, not where the cart is traveling. Start with the gravity card. What is the source acting on the cart there?”
+
+LEARNER: [sets the gravity card beside the downward blank arrow]
+
+“Earth, then. Gravity is Earth acting on the cart, not the cart’s travel arrow. Fine, that label can stay about the source.”
+
+TUTOR: [keeps the paperweight over the motion arrow and squares the gravity card with the downward blank arrow]
+
+“The downward card names its source. Same rule for the upward blank arrow: what object is pushing up on the cart?”
+
+STAGE: [A museum attendant lifts the paperweight to straighten the laminated sheet, then sets it down over the motion arrow again; the learner's first label placement remains visible.]
+An earlier learner line returns to the table: "[sets the gravity card beside the downward blank arrow] “Earth, then. Gravity is Earth acting on the cart, not the cart’s travel arrow. Fine, that label can stay about the source.”" The pause holds while the learner decides whether that wording still stands, needs narrowing, or needs replacing.]
+
+LEARNER: “Earth acting on the cart, not the cart’s travel arrow. That still stands.”
+
+[sets the surface card beside the upward blank arrow]
+
+“So the upward blank arrow is the track pushing up on the cart, I think. I still keep wanting to name the arrow by where it points, but with the motion arrow covered, the source card is track.”
+
+TUTOR: [sets a thin strip labeled “_____ acts on the cart” above the two blank arrows]
+
+“The covered travel arrow settled Earth for the downward card, but it has not settled the pull toward direction-naming. New test: slide each source card into the blank and read the sentence. If it names the object acting on the cart, the card stays.”
+
+LEARNER: [slides the track card under the strip]
+
+"“Track acts on the cart” fits better than “upward force,” even if I still dislike redoing the label. The direction name made the upward arrow look finished too quickly and skipped the object doing the pushing. So the card stays only if the sentence names a source acting on the cart."

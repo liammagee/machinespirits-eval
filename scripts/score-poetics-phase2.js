@@ -47,7 +47,7 @@
  * Usage:
  *   node scripts/score-poetics-phase2.js [--model codex|claude-code|gpt|sonnet|haiku]
  *        [--concurrency 3] [--mock] [--sample-dir DIR] [--key FILE] [--out FILE]
- *        [--allow-quality-warnings]
+ *        [--allow-quality-warnings] [--preserve-existing]
  *   node scripts/score-poetics-phase2.js --gate [--artifact FILE]
  *        [--labels FILE]... [--key FILE] [--threshold 0.60]
  *
@@ -695,6 +695,7 @@ function parseArgs() {
     labels: [],
     key: null,
     allowQualityWarnings: false,
+    preserveExisting: false,
     threshold: TRANSFER_THRESHOLD,
   };
   for (let i = 0; i < args.length; i++) {
@@ -729,6 +730,9 @@ function parseArgs() {
       case '--allow-quality-warnings':
         o.allowQualityWarnings = true;
         break;
+      case '--preserve-existing':
+        o.preserveExisting = true;
+        break;
       case '--threshold':
         o.threshold = parseFloat(args[++i]);
         break;
@@ -737,6 +741,23 @@ function parseArgs() {
     }
   }
   return o;
+}
+
+function loadExistingSuccessfulScores(outPath, critic) {
+  if (!outPath || !fs.existsSync(outPath)) return new Map();
+  try {
+    const existing = JSON.parse(fs.readFileSync(outPath, 'utf8'));
+    if (critic && existing.critic && existing.critic !== critic) {
+      console.warn(
+        `WARN: ignoring existing scores from ${path.relative(ROOT, outPath)} because critic is ${existing.critic}, not ${critic}`,
+      );
+      return new Map();
+    }
+    return new Map((existing.scored || []).filter((row) => row?.id && !row.error).map((row) => [row.id, row]));
+  } catch (err) {
+    console.warn(`WARN: could not read existing score artifact ${outPath}: ${err.message}`);
+    return new Map();
+  }
 }
 
 function loadQualityKey(p) {
@@ -820,6 +841,10 @@ async function mainScore(o) {
     key: qualityKey,
     allowQualityWarnings: o.allowQualityWarnings,
   });
+  const critic = o.mock ? 'mock' : o.model;
+  const outPath = o.out || path.join(EXPORTS_DIR, `poetics-phase2-${critic.replace(/[^\w-]/g, '_')}.json`);
+  const existingSuccessful = o.preserveExisting ? loadExistingSuccessfulScores(outPath, critic) : new Map();
+  const sampleToScore = existingSuccessful.size ? sample.filter((item) => !existingSuccessful.has(item.id)) : sample;
   if (skipped.length) {
     console.warn(
       `Skipping ${skipped.length} transcript(s) with quality warnings from ${path.relative(ROOT, o.key)} ` +
@@ -833,16 +858,22 @@ async function mainScore(o) {
     }
   }
   if (!sample.length) throw new Error('no scoreable transcripts after quality filtering');
+  if (!sampleToScore.length && existingSuccessful.size) {
+    console.log(`All ${sample.length} scoreable transcripts already have successful rows in ${path.relative(ROOT, outPath)}`);
+  }
   console.log(
-    `Scoring ${sample.length} transcripts with ${o.mock ? 'MOCK' : o.model} (concurrency ${o.concurrency})...`,
+    `Scoring ${sampleToScore.length} transcript${sampleToScore.length === 1 ? '' : 's'} with ${o.mock ? 'MOCK' : o.model} ` +
+      `(concurrency ${o.concurrency})` +
+      (existingSuccessful.size ? `; preserving ${existingSuccessful.size} existing successful row(s)` : '') +
+      '...',
   );
   const progress = createProgressReporter({
     label: 'scoring',
-    total: sample.length,
+    total: sampleToScore.length,
   });
   progress.start(`${o.mock ? 'MOCK' : o.model} · concurrency ${o.concurrency}`);
-  const scored = await runWithConcurrency(
-    sample.map((item) => async () => {
+  const newlyScored = await runWithConcurrency(
+    sampleToScore.map((item) => async () => {
       const result = await scoreItem(item, o.model, o.mock);
       progress.step(`${item.id} ${result.error ? 'error' : result.formClass}`);
       return result;
@@ -850,12 +881,13 @@ async function mainScore(o) {
     o.concurrency,
   );
   progress.finish('scoring complete');
+  const scoredById = new Map(existingSuccessful);
+  for (const row of newlyScored) scoredById.set(row.id, row);
+  const scored = sample.map((item) => scoredById.get(item.id)).filter(Boolean);
   const h2 = computeH2(scored);
   const counts = formCounts(scored);
-  const critic = o.mock ? 'mock' : o.model;
   printScoreReport(scored, h2, counts, critic);
 
-  const outPath = o.out || path.join(EXPORTS_DIR, `poetics-phase2-${critic.replace(/[^\w-]/g, '_')}.json`);
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(
     outPath,

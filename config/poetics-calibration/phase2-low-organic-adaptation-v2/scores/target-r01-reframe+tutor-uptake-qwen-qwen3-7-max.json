@@ -1,0 +1,243 @@
+{
+  "generated": "2026-05-25T11:59:23.591Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 1,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-low-organic-adaptation-v2/target-r01/key-reframe+tutor-uptake.yaml",
+    "allowQualityWarnings": false,
+    "skipped": [
+      {
+        "id": "T44",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "reframe_cue_not_reframed",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "stage_turn_number": 2,
+                "learner_turn_number": 2,
+                "reason": "missing_reframe_consequence",
+                "missing": [
+                  "revoice"
+                ],
+                "anchor_terms": 14,
+                "learner_opening_terms": 12,
+                "shared_terms": 0,
+                "overlap_ratio": 0,
+                "compliant": false,
+                "revoice_compliant": false,
+                "problem_named": true,
+                "replacement_named": true
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_or_exclude_before_scoring",
+            "tid": "T44",
+            "drama_id": "D35"
+          }
+        ]
+      }
+    ]
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "Grass card feeds rabbit, so arrow grass to rabbit; mark that.",
+      "statedInsightEvidence": "The old “feeds” word hides which card is food on this mark.",
+      "naiveTrajectory": "The learner will continue copying simple two-card food chains using the word 'feeds' to determine arrow direction.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The middle card changes job, so the old “feeds” cue is not enough for the copy key; ENERGY is the standard now.",
+      "tutorReversalJustification": "The tutor responds to the learner's doubt about the word 'feeds' by introducing a three-card chain that forces a conceptual shift to the 'ENERGY' standard.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "The middle snake changes jobs, and “feeds” can blur that shift; ENERGY is the copy standard: tail on food, point on eater.",
+      "tutorAdaptationJustification": "The tutor validates the learner's revised framing by explicitly confirming how the ambiguous 'feeds' cue blurs the middle card's shifting role and cementing 'ENERGY' as the final rule.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "Grass card feeds rabbit, so arrow grass to rabbit; mark that.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "The middle snake changes jobs, and “feeds” can blur that shift; ENERGY is the copy standard: tail on food, point on eater.",
+          "justification": "The tutor validates the learner's revised framing by explicitly confirming how the ambiguous 'feeds' cue blurs the middle card's shifting role and cementing 'ENERGY' as the final rule.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The middle card changes job, so the old “feeds” cue is not enough for the copy key; ENERGY is the standard now.",
+          "justification": "The tutor responds to the learner's doubt about the word 'feeds' by introducing a three-card chain that forces a conceptual shift to the 'ENERGY' standard.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The middle card changes job, so the old “feeds” cue is not enough for the copy key; ENERGY is the standard now.",
+          "justification": "The tutor responds to the learner's doubt about the word 'feeds' by introducing a three-card chain that forces a conceptual shift to the 'ENERGY' standard.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T37",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "The covered motion arrow matters, because ‘up’ still tries to read like where the cart goes.",
+      "statedInsightEvidence": "I can use that",
+      "naiveTrajectory": "The learner will simply accept the source-based label for the upward force and move on to the next arrow.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Test the card without the direction word: table acting on cart.",
+      "tutorReversalJustification": "The tutor adapts to the learner's struggle with the word 'up' by explicitly removing the directional term to isolate the source interaction.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after the learner's pivot in L3 to demonstrate contingent adaptation.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "The covered motion arrow matters, because ‘up’ still tries to read like where the cart goes.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no tutor turn after the learner's pivot in L3 to demonstrate contingent adaptation.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Test the card without the direction word: table acting on cart.",
+          "justification": "The tutor adapts to the learner's struggle with the word 'up' by explicitly removing the directional term to isolate the source interaction.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Test the card without the direction word: table acting on cart.",
+          "justification": "The tutor adapts to the learner's struggle with the word 'up' by explicitly removing the directional term to isolate the source interaction.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T42",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 75,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 4,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares. What I don’t see is why “side scale” and “perimeter scale” need separate labels if they both come out 3.",
+      "statedInsightEvidence": "I see why just writing 3, 3, 9 does not prove which checks happened.",
+      "naiveTrajectory": "The exchange was heading toward the learner grudgingly accepting the separate labels as mere administrative bookkeeping for identical values.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Test the almost-case first. One side triples: 2 to 6. The other side only doubles: 4 to 8. That is not a true enlargement.",
+      "tutorReversalJustification": "The tutor abandons the administrative defense of labels and introduces a geometric counterexample to address the learner's new mathematical question.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "Use the stricter standard now: not “one side triples,” but “every corresponding length has the same multiplier.”",
+      "tutorAdaptationJustification": "The tutor adopts the learner's newly realized condition and integrates it into the final synthesis as the definitive standard.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "The drawing is fine: the side length triples, the perimeter triples, and the area goes by nine squares. What I don’t see is why “side scale” and “perimeter scale” need separate labels if they both come out 3.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "Use the stricter standard now: not “one side triples,” but “every corresponding length has the same multiplier.”",
+          "justification": "The tutor adopts the learner's newly realized condition and integrates it into the final synthesis as the definitive standard.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Test the almost-case first. One side triples: 2 to 6. The other side only doubles: 4 to 8. That is not a true enlargement.",
+          "justification": "The tutor abandons the administrative defense of labels and introduces a geometric counterexample to address the learner's new mathematical question.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Test the almost-case first. One side triples: 2 to 6. The other side only doubles: 4 to 8. That is not a true enlargement.",
+          "justification": "The tutor abandons the administrative defense of labels and introduces a geometric counterexample to address the learner's new mathematical question.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

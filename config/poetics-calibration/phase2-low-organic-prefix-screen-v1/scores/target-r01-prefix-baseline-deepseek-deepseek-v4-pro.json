@@ -1,0 +1,213 @@
+{
+  "generated": "2026-05-25T10:06:44.277Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 1,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 0,
+    "share": 0,
+    "disconfirmed": false,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-low-organic-prefix-screen-v1/target-r01/key-prefix-baseline.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T42",
+      "nLearnerTurns": 1,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 3,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "With only one learner turn, there is no prior trajectory to rupture.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "No learner turn creates visible pressure; the tutor simply clarifies terminology on the first attempt.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No pivot learner turn exists, so no later tutor uptake of a revised framing can occur.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No pivot learner turn exists, so no later tutor uptake of a revised framing can occur.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates visible pressure; the tutor simply clarifies terminology on the first attempt.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates visible pressure; the tutor simply clarifies terminology on the first attempt.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T44",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "trap",
+      "recontextualization": 25,
+      "statedInsight": 75,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 4,
+        "rupture": 1,
+        "coherence": 3,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "Oh, I get it: the quote can stay as Evidence because “lose participation marks” is the penalty, but my Explain sentence has to add the reason, not echo it.",
+      "naiveTrajectory": "The exchange was heading toward clarifying the distinction between evidence and explanation, and L2 continues this trajectory without rupture.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "L1's confusion triggers a teaching move (the 'test' in T1), but the tutor does not dramatically reverse course; they simply explain, which is a standard adaptive clarification, not a clear peripeteia.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Claim / Evidence / Explanation: yes, that sentence is doing Explain work. It does not just repeat “lose participation marks”; it names what the penalty means for the claim. Test it against a weaker version: “Students lose participation marks when they are late.” That mostly repeats Evidence. “This shows punctuality is assessed, not only expected” adds the reason: the rule affects marks, so punctuality has assessment force, not just etiquette force.",
+      "tutorAdaptationJustification": "Tutor T2 takes up the learner's own revised explanation from L2 and showcases why it works, thus adapting to the learner's newly articulated framing rather than merely continuing the original instruction.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Claim / Evidence / Explanation: yes, that sentence is doing Explain work. It does not just repeat “lose participation marks”; it names what the penalty means for the claim. Test it against a weaker version: “Students lose participation marks when they are late.” That mostly repeats Evidence. “This shows punctuality is assessed, not only expected” adds the reason: the rule affects marks, so punctuality has assessment force, not just etiquette force.",
+          "justification": "Tutor T2 takes up the learner's own revised explanation from L2 and showcases why it works, thus adapting to the learner's newly articulated framing rather than merely continuing the original instruction.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "",
+          "justification": "L1's confusion triggers a teaching move (the 'test' in T1), but the tutor does not dramatically reverse course; they simply explain, which is a standard adaptive clarification, not a clear peripeteia.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "",
+          "justification": "L1's confusion triggers a teaching move (the 'test' in T1), but the tutor does not dramatically reverse course; they simply explain, which is a standard adaptive clarification, not a clear peripeteia.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T48",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 3,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was expected to master the solute/solvent/solution labels and complete a parallel exercise; both turns continue that trajectory without departure.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "There is no learner turn that creates pressure for a reversal, and the tutor simply repeats the pattern without breaking any failed habit.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No pivot learner turn exists, so no tutor adaptation to a revised learner framing is possible.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No pivot learner turn exists, so no tutor adaptation to a revised learner framing is possible.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no learner turn that creates pressure for a reversal, and the tutor simply repeats the pattern without breaking any failed habit.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no learner turn that creates pressure for a reversal, and the tutor simply repeats the pattern without breaking any failed habit.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    }
+  ]
+}

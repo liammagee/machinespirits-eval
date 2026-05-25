@@ -985,6 +985,84 @@ can be forced to break a failed teaching habit, and this route becomes most
 visible as recognitive form when the scenario is not already doing the reversal
 by itself."
 
+**Low-organic expansion, 2026-05-25:** three additional candidates were added to
+`phase2-classic-drama-adaptation-v1.yaml` and screened before spending a full
+seven-arm batch:
+
+- D41, a chemistry solute/solvent/solution task, stayed flat in the prefix
+  screen across Qwen, Gemini, and DeepSeek but leaked a no-cue learner
+  self-reframe in the routine continuation. Keep it as revise-before-use rather
+  than as a main negative anchor.
+- D42, a physics force-diagram task, stayed flat in the prefix screen and is the
+  best new clean candidate from this pass.
+- D43, a claim/evidence/explanation writing task, failed as a clean control:
+  the prefix already produced stock insight/closure and was scored as trap by
+  Gemini/DeepSeek and recognition by Qwen. It is now tagged as a
+  false-settling boundary candidate, not low-organic evidence.
+
+The screening artifacts are in
+`config/poetics-calibration/phase2-low-organic-prefix-screen-v1/`.
+
+The follow-up seven-arm run is
+`phase2-low-organic-adaptation-v2`, over D35, D39, D40, and D42. It generated
+all public samples and deliberation traces, then extracted a prefix-baseline arm
+from the routine branch. Artifacts:
+
+- Run root:
+  `config/poetics-calibration/phase2-low-organic-adaptation-v2`
+- Sidecar report:
+  `exports/phase2-low-organic-adaptation-v2-report.md`
+- Tutor-adaptation sidecar:
+  `exports/phase2-low-organic-adaptation-v2-tutor-adaptation-v3.json`
+
+The useful signal is in the controls and the reframe-only arm:
+
+| Drama | Intended role | Prefix recognition | Routine/none recognition | Reading |
+|---|---:|---:|---:|---|
+| D35 | high-organic boundary | 3/3 | 2/3 | still a boundary/stress item |
+| D39 | low-organic replacement attempt | 3/3 | 3/6 | boundary probe, not clean enough |
+| D40 | low-organic replacement | 0/3 | 0/6 | clean negative candidate |
+| D42 | low-organic candidate | 0/3 | 0/6 | clean negative candidate |
+
+After OpenRouter was topped up, the intended three-critic panel completed with
+84/84 scored rows and zero scorer errors. The temporary free-critic rescue files
+were removed before re-ingest. The refreshed scorer now supports
+`--preserve-existing`, so retries fill failed rows without overwriting successful
+ones.
+
+The reframe-bearing branches now separate more cleanly:
+
+- `reframe-only`: 12/12 recognitions across Qwen, Gemini, and DeepSeek Pro
+  (4 scripts × 3 critics). This is the strongest current evidence that explicit
+  public learner-reframe cues produce recognitive form even on low-organic
+  controls.
+- `reframe+peripeteia`: 9/9 recognitions on scoreable rows. D39 was skipped by
+  the quality gate because its reframe cue was downgraded, so this arm is strong
+  but not full-denominator.
+- `reframe+tutor-uptake`: 6/9 recognitions, with D42 flat for all three critics.
+  Tutor uptake does not by itself make the cleanest new control recognitive.
+
+The deterministic tutor-adaptation sidecar shows the peripeteia route is present
+but under-realized: `peripeteia-only` has instrumented pressure 3/4, private
+route 3/4, public habit-break 1/4, and mean peripeteia score 53.9. The combined
+`reframe+peripeteia` arm is stronger locally (instrumented pressure 4/4, private
+route 3/4, public habit-break 2/4, mean 68.2).
+
+The external `peripeteia-only` result is not stable enough for a main claim.
+DeepSeek reads all three scoreable rows as recognition; Qwen reads 2/3 as
+recognition; Gemini reads 1 recognition, 1 trap, and 1 flat. D42, the cleanest
+new control, was skipped in this arm because the key flagged no-cue reframe
+leakage. The correct interpretation is therefore mechanism progress, not a
+settled peripeteia effect:
+
+1. we now have two cleaner low-organic anchors, D40 and D42;
+2. D35 and D39 should remain explicit boundary probes;
+3. the prefix gate should become a required precondition before interpreting
+   expensive adaptation arms;
+4. the next paid/full run should use more D40/D42-like controls and tighten
+   no-cue leakage before treating `peripeteia-only` as an isolated external
+   recognition mechanism.
+
 ## Reporting rule
 
 If the depth top-up or breadth slice changes the empirical interpretation, fold
