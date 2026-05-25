@@ -101,13 +101,24 @@ function loadBatchPlan(rootDir) {
 function unitKeyContexts(unit) {
   const keyPath = absFromRoot(unit.keyPath);
   if (unit.pairedPolicies) {
-    return unit.pairedPolicies.map((policy) => ({
+    const contexts = unit.pairedPolicies.map((policy) => ({
       unit,
       arm: policy,
       keyPath: path.join(path.dirname(keyPath), `key-${policy}.yaml`),
       sampleDir: path.join(absFromRoot(unit.outDir), policy),
       transcriptsDir: path.join(absFromRoot(unit.transcriptsDir), policy),
     }));
+    const prefixKeyPath = path.join(path.dirname(keyPath), 'key-prefix-baseline.yaml');
+    if (fs.existsSync(prefixKeyPath) && !unit.pairedPolicies.includes('prefix-baseline')) {
+      contexts.push({
+        unit,
+        arm: 'prefix-baseline',
+        keyPath: prefixKeyPath,
+        sampleDir: path.join(absFromRoot(unit.outDir), 'prefix-baseline'),
+        transcriptsDir: path.join(absFromRoot(unit.transcriptsDir), 'prefix-baseline'),
+      });
+    }
+    return contexts;
   }
   return [
     {

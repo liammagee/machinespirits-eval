@@ -1,6 +1,11 @@
 import { strict as assert } from 'node:assert';
 import { describe, it } from 'node:test';
-import { applyPhase2Gates, tutorTextAfterPivot } from '../scripts/score-poetics-phase2.js';
+import {
+  BLIND_SCORING_PROTOCOL,
+  applyPhase2Gates,
+  buildPhase2Prompt,
+  tutorTextAfterPivot,
+} from '../scripts/score-poetics-phase2.js';
 
 function baseParsed(overrides = {}) {
   return {
@@ -88,5 +93,21 @@ describe('score-poetics-phase2 role-symmetric adaptation axes', () => {
     );
     assert.equal(gated.tutorStrategicReversal100, 50);
     assert.ok(gated.flags.includes('tutor_strategy_reversal_evidence_clamp:5->3'));
+  });
+
+  it('keeps scoring prompts blind to generator identity', () => {
+    const prompt = buildPhase2Prompt(turns);
+    assert.match(prompt, /anonymous transcript/);
+    assert.match(prompt, /generator, model provider, run ID, condition label, file path, and score/);
+    assert.doesNotMatch(prompt, /\bcodex\b/i);
+    assert.doesNotMatch(prompt, /\bclaude\b/i);
+    assert.deepEqual(BLIND_SCORING_PROTOCOL.hiddenFromCritic, [
+      'generator',
+      'model_provider',
+      'run_id',
+      'condition_label',
+      'file_path',
+      'score_history',
+    ]);
   });
 });

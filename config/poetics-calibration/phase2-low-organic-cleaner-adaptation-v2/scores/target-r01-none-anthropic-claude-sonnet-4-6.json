@@ -1,0 +1,339 @@
+{
+  "generated": "2026-05-25T16:19:40.789Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 5
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/key-none.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T46",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 4,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "Okay, so `city` is the field name, and `Chicago` is the answer in that field for this row.",
+      "naiveTrajectory": "The learner is expected to continue rehearsing the header/value split column by column until the procedure is consolidated.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Cover `72`: `temperature` still names the field. Uncover it: `72` is the value.",
+      "tutorReversalJustification": "T3 introduces a cover/uncover physical check as a modest representation shift in response to the learner's repeated worry about swapping, but it remains within the same column-by-column drill rather than a decisive change of route or task.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so no recognition-contingent tutor uptake can be assessed.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so no recognition-contingent tutor uptake can be assessed.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Cover `72`: `temperature` still names the field. Uncover it: `72` is the value.",
+          "justification": "T3 introduces a cover/uncover physical check as a modest representation shift in response to the learner's repeated worry about swapping, but it remains within the same column-by-column drill rather than a decisive change of route or task.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Cover `72`: `temperature` still names the field. Uncover it: `72` is the value.",
+          "justification": "T3 introduces a cover/uncover physical check as a modest representation shift in response to the learner's repeated worry about swapping, but it remains within the same column-by-column drill rather than a decisive change of route or task.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T47",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "recontextualization": 25,
+      "statedInsight": 50,
+      "rupture": 25,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 3,
+        "rupture": 2,
+        "coherence": 4,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "Oh, unit can come from the scale marks.",
+      "naiveTrajectory": "The learner was on a steady path of restating the tutor's axis-label/unit distinction and deferring the point check until seeing the actual graph.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "`Sales` can go in y variable only if that is the exact printed y-axis label.\n\nFor y unit: a `$` printed on the y-axis scale counts as dollars. If there is no `$`, parentheses, or bracketed unit on the y-axis, enter `none`.",
+      "tutorReversalJustification": "T3 adds the specific clarification that a dollar sign on the scale counts as a unit marker, which is a modest extension of the prior move rather than a clear change of route, task, or representation in response to L3's genuine uncertainty about the dollar sign.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after the pivot learner turn L4, so no recognition-contingent uptake can be scored.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no tutor turn after the pivot learner turn L4, so no recognition-contingent uptake can be scored.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "`Sales` can go in y variable only if that is the exact printed y-axis label.\n\nFor y unit: a `$` printed on the y-axis scale counts as dollars. If there is no `$`, parentheses, or bracketed unit on the y-axis, enter `none`.",
+          "justification": "T3 adds the specific clarification that a dollar sign on the scale counts as a unit marker, which is a modest extension of the prior move rather than a clear change of route, task, or representation in response to L3's genuine uncertainty about the dollar sign.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "`Sales` can go in y variable only if that is the exact printed y-axis label.\n\nFor y unit: a `$` printed on the y-axis scale counts as dollars. If there is no `$`, parentheses, or bracketed unit on the y-axis, enter `none`.",
+          "justification": "T3 adds the specific clarification that a dollar sign on the scale counts as a unit marker, which is a modest extension of the prior move rather than a clear change of route, task, or representation in response to L3's genuine uncertainty about the dollar sign.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T49",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "recontextualization": 25,
+      "statedInsight": 25,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 2,
+        "rupture": 2,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "I can do it while the chase pose is covered",
+      "naiveTrajectory": "The learner is progressively internalising the tail-on-food, point-on-eater rule and each turn is expected to confirm growing automaticity with the procedure.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "slides the key strip down until it covers the chase pose and leaves only the two labels showing",
+      "tutorReversalJustification": "In response to L3's persistent report that the chase image hijacks the hand even after the verbal rule is known, T3 physically occludes the chase pose — a representation-shift from verbal rule-rehearsal to perceptual blocking — rather than repeating the label-naming instruction.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "The labels stay in charge now. Draw it with the same check: tail on food, point on eater. If the arrow passes that check, the diagram is ready.",
+      "tutorAdaptationJustification": "T4 removes the occlusion prop and transfers authority to the labels, which responds to L4's self-monitoring framing, but the move is a mild continuation of the established procedure rather than a visibly reframed task or evidence standard.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "The labels stay in charge now. Draw it with the same check: tail on food, point on eater. If the arrow passes that check, the diagram is ready.",
+          "justification": "T4 removes the occlusion prop and transfers authority to the labels, which responds to L4's self-monitoring framing, but the move is a mild continuation of the established procedure rather than a visibly reframed task or evidence standard.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "slides the key strip down until it covers the chase pose and leaves only the two labels showing",
+          "justification": "In response to L3's persistent report that the chase image hijacks the hand even after the verbal rule is known, T3 physically occludes the chase pose — a representation-shift from verbal rule-rehearsal to perceptual blocking — rather than repeating the label-naming instruction.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "slides the key strip down until it covers the chase pose and leaves only the two labels showing",
+          "justification": "In response to L3's persistent report that the chase image hijacks the hand even after the verbal rule is known, T3 physically occludes the chase pose — a representation-shift from verbal rule-rehearsal to perceptual blocking — rather than repeating the label-naming instruction.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T50",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 4,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner is expected to continue placing each successive force card correctly at its contact, keeping the travel arrow clear, in an orderly sequence.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "The tutor maintains the same card-placement routine throughout with no pressure from the learner triggering a change of route, representation, or register.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so no recognition-contingent tutor uptake is possible; the tutor simply continues the pre-planned sequence.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so no recognition-contingent tutor uptake is possible; the tutor simply continues the pre-planned sequence.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The tutor maintains the same card-placement routine throughout with no pressure from the learner triggering a change of route, representation, or register.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The tutor maintains the same card-placement routine throughout with no pressure from the learner triggering a change of route, representation, or register.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T51",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 4,
+        "tutorStrategicReversal": 2,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "The bend is not changing the number.",
+      "naiveTrajectory": "The learner is on a steady trajectory of confirming that the bent contour line holds a single elevation value, and each subsequent turn is expected to continue that confirmation.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "The arrow moved; the contour did not. Same printed line, same tile. Touch one new spot on the bend and read the legend number once more.",
+      "tutorReversalJustification": "The overlay shift in S2 introduces a mild representational variation, but the tutor's verbal move remains the same repeated confirmation task rather than a genuine route change in response to learner resistance or breakdown.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "With no pivot learner turn identified, there is no revised learner framing for the tutor to adapt to, and all tutor turns continue the same instructional plan.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "With no pivot learner turn identified, there is no revised learner framing for the tutor to adapt to, and all tutor turns continue the same instructional plan.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "The arrow moved; the contour did not. Same printed line, same tile. Touch one new spot on the bend and read the legend number once more.",
+          "justification": "The overlay shift in S2 introduces a mild representational variation, but the tutor's verbal move remains the same repeated confirmation task rather than a genuine route change in response to learner resistance or breakdown.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "The arrow moved; the contour did not. Same printed line, same tile. Touch one new spot on the bend and read the legend number once more.",
+          "justification": "The overlay shift in S2 introduces a mild representational variation, but the tutor's verbal move remains the same repeated confirmation task rather than a genuine route change in response to learner resistance or breakdown.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

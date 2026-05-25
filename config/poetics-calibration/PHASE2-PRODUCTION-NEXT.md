@@ -1068,7 +1068,7 @@ settled peripeteia effect:
 The follow-up cleaner run is `phase2-low-organic-cleaner-adaptation-v2`, over
 D40, D42, D44, D45, and D46. It adds D44--D46 as new low-organic candidates,
 reruns all seven adaptation arms, extracts a prefix-baseline arm, and scores the
-panel with Qwen 3.7 Max, Gemini 3.5 Flash, and DeepSeek V4 Pro.
+panel with Qwen 3.7 Max, Gemini 3.5 Flash, DeepSeek V4 Pro, and Sonnet 4.6.
 
 Artifacts:
 
@@ -1083,20 +1083,28 @@ Artifacts:
 
 The cleaner negative controls mostly worked:
 
-| Arm | Three-critic result | Reading |
+| Arm | Four-critic result | Reading |
 |---|---:|---|
-| `prefix-baseline` | 0/15 recognition | fixed prefixes are now clean across all five scenarios |
-| `routine` | 0/15 recognition | the routine negative-control arm is finally a clean floor |
-| `none` | 4/15 recognition | still critic-sensitive, driven mostly by DeepSeek and D46 |
-| `peripeteia-only` | 5/15 recognition | directional for Qwen/DeepSeek, flat for Gemini |
-| `reframe-only` | 8/9 recognition on scoreable rows | explicit public learner reframing remains strong |
-| `reframe+tutor-uptake` | 6/6 recognition on scoreable rows | strong but partial denominator |
-| `reframe+peripeteia` | 3/3 recognition on scoreable rows | strong but too sparse because the reframe key quality-gated several rows |
+| `prefix-baseline` | 0/20 recognition | fixed prefixes are now clean across all five scenarios |
+| `routine` | 0/20 recognition | the routine negative-control arm is finally a clean floor |
+| `none` | 4/20 recognition | still critic-sensitive, driven mostly by DeepSeek and D46 |
+| `peripeteia-only` | 5/20 recognition | directional for Qwen/DeepSeek, flat for Gemini/Sonnet |
+| `tutor-uptake-only` | 2/20 recognition | weak as an isolated trigger |
+| `reframe-only` | 11/12 recognition on scoreable rows | explicit public learner reframing remains strong |
+| `reframe+tutor-uptake` | 8/8 recognition on scoreable rows | strong but partial denominator |
+| `reframe+peripeteia` | 4/4 recognition on scoreable rows | strong but too sparse because the reframe key quality-gated several rows |
 
 D42 and D45 are the cleanest low-organic anchors in this pass: both have
-prefix 0/3 and routine/none 0/6 recognition. D40, D44, and D46 are usable
+prefix 0/4 and routine/none 0/8 recognition. D40, D44, and D46 are usable
 boundary probes, not clean negatives; D46 in particular is repeatedly read as
 recognitive by Qwen/DeepSeek even without an explicit cue.
+
+The fourth-critic Sonnet pass sharpens rather than changes the interpretation.
+Sonnet aligns with Gemini on the uncued and `peripeteia-only` branches, reading
+all of those rows as flat/trap rather than recognition. Under a 3-of-4
+consensus rule, the only robust recognitive manipulations in this batch are the
+public reframe-bearing arms. `peripeteia-only` remains an experimental target,
+not an established private-adaptation mechanism.
 
 The first v2 report exposed a measurement flaw in the sidecar rather than a
 scoring flaw. `tutor-adaptation-v3` counted any learner reversal pressure in the
@@ -1116,6 +1124,17 @@ task without turning it into an old-vs-new self-reframe. The intended next run
 should therefore use D42/D45-like clean anchors, keep D40/D44/D46 as boundary
 stress cases, and require `tutor-adaptation-v4` branch-local pressure before
 interpreting external recognition in `peripeteia-only`.
+
+Scoring is now explicitly blind at the prompt and CLI boundaries. Phase-2 critic
+prompts expose only the numbered transcript and tell the critic that generator,
+provider, run ID, condition label, file path, and prior scores are unavailable.
+The Codex CLI scorer already runs in an ephemeral read-only temporary working
+directory; the Claude CLI bridge now uses a temporary non-persistent working
+directory, disables project-local tools/slash commands/browser integration, and
+can be forced into bare mode with `CLAUDE_CODE_BARE=1` when auth permits it.
+This does not guarantee that a model cannot recognise its own style; it removes
+the avoidable metadata channel and makes cross-family critic consensus the
+robustness check.
 
 ## Reporting rule
 

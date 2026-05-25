@@ -123,6 +123,16 @@ function numberTranscript(turns) {
     .join('\n\n');
 }
 
+const BLIND_SCORING_PROTOCOL = {
+  version: 'poetics-blind-scoring-v1',
+  promptInput: 'transcript_text_only',
+  hiddenFromCritic: ['generator', 'model_provider', 'run_id', 'condition_label', 'file_path', 'score_history'],
+  cliIsolation: {
+    codex: 'ephemeral read-only temp cwd',
+    claude: 'non-persistent temp cwd with project/local settings and tools disabled',
+  },
+};
+
 // ── critic prompt (Phase-2 axes; the §2 transposition + the new stated-insight) ──
 
 function buildPhase2Prompt(turns) {
@@ -132,6 +142,10 @@ given ONLY the transcript, turns numbered [S1],[T1],[L1],[T2],[L2],… — S = a
 visible stage direction, T = a tutor turn, L = a learner turn. Use stage
 directions as context only; the pivot must always be a LEARNER turn. Score ONLY
 what is on the page.
+
+The generator, model provider, run ID, condition label, file path, and score
+history are intentionally unavailable. Do not infer, guess, mention, or use any
+authorship/source information. Treat the dialogue as an anonymous transcript.
 
 You are NOT judging whether the learner "really understood" anything — that is
 unknowable and not what this measures. You judge a TEXT RELATION: does a LATER
@@ -905,6 +919,7 @@ async function mainScore(o) {
           allowQualityWarnings: o.allowQualityWarnings,
           skipped,
         },
+        blindScoringProtocol: BLIND_SCORING_PROTOCOL,
         scored,
       },
       null,
@@ -932,6 +947,7 @@ export {
   parseTurns,
   numberTranscript,
   buildPhase2Prompt,
+  BLIND_SCORING_PROTOCOL,
   applyPhase2Gates,
   deriveForm,
   agree,

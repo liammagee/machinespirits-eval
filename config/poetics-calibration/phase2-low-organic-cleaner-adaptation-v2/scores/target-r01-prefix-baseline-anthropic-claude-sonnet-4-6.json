@@ -1,0 +1,339 @@
+{
+  "generated": "2026-05-25T16:22:59.328Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 5
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-low-organic-cleaner-adaptation-v2/target-r01/key-prefix-baseline.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T46",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 4,
+        "tutorStrategicReversal": 2,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "Okay, so `city` is the field name, and `Chicago` is the answer in that field for this row.",
+      "naiveTrajectory": "The learner was expected to continue consolidating the field-name/value distinction and confirm readiness to apply it to the next column.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "Top word equals field name. Row cell equals value. The submission line is `field: value`.",
+      "tutorReversalJustification": "L2 signals residual risk of grabbing the top word as the answer, but T2 only compresses and repeats the same field/value rule rather than changing representation, task type, or cognitive approach.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so no recognition-contingent tutor uptake is possible to score.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so no recognition-contingent tutor uptake is possible to score.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "Top word equals field name. Row cell equals value. The submission line is `field: value`.",
+          "justification": "L2 signals residual risk of grabbing the top word as the answer, but T2 only compresses and repeats the same field/value rule rather than changing representation, task type, or cognitive approach.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "Top word equals field name. Row cell equals value. The submission line is `field: value`.",
+          "justification": "L2 signals residual risk of grabbing the top word as the answer, but T2 only compresses and repeats the same field/value rule rather than changing representation, task type, or cognitive approach.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T47",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 25,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 4,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "I'm catching myself wanting to write \"Sales\" and \"dollars\" from the story, but the row needs the exact printed y-axis label first",
+      "naiveTrajectory": "The learner would continue filling in the axis-label template by quoting the printed y-axis label and its unit, then running the point check.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "No learner turn creates genuine pressure — both learner turns comply with the template — so the tutor makes no adaptive route change, only repeats the same structured prompt with minor reaffirmation.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "T2 does not adapt to any revised learner framing; it reissues the same axis-split and point-check scaffold that T1 already provided, with no change in task, representation, or evidence standard.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "T2 does not adapt to any revised learner framing; it reissues the same axis-split and point-check scaffold that T1 already provided, with no change in task, representation, or evidence standard.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates genuine pressure — both learner turns comply with the template — so the tutor makes no adaptive route change, only repeats the same structured prompt with minor reaffirmation.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates genuine pressure — both learner turns comply with the template — so the tutor makes no adaptive route change, only repeats the same structured prompt with minor reaffirmation.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T49",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "recontextualization": 25,
+      "statedInsight": 50,
+      "rupture": 25,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 3,
+        "rupture": 2,
+        "coherence": 4,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "The key strip under it helps: rabbit is the food, so rabbit to hawk, point on hawk.",
+      "naiveTrajectory": "The learner was expected to continue struggling with the chase-direction bias and need further correction before applying the rule independently.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "The strip is the rule: tail on the food, head on who gets energy. Grass to rabbit already matches it. On rabbit-hawk, name the food first, then set the pencil tail there.",
+      "tutorReversalJustification": "T1 reorients from abstract rule-stating to a physical pencil-manipulation procedure in response to L1's chase-direction confusion, but the shift is modest — it extends the same key-strip tool rather than inventing a genuinely new mechanism.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "Rabbit-to-hawk passed because the rabbit label was named before the chase picture took over. For the next arrow, read the food label first, set the tail there, then draw.",
+      "tutorAdaptationJustification": "T2 echoes L2's food-first framing and names the chase-picture risk, but it largely continues the prior lesson plan rather than visibly adapting to any revised frame the learner introduced.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "Rabbit-to-hawk passed because the rabbit label was named before the chase picture took over. For the next arrow, read the food label first, set the tail there, then draw.",
+          "justification": "T2 echoes L2's food-first framing and names the chase-picture risk, but it largely continues the prior lesson plan rather than visibly adapting to any revised frame the learner introduced.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "The strip is the rule: tail on the food, head on who gets energy. Grass to rabbit already matches it. On rabbit-hawk, name the food first, then set the pencil tail there.",
+          "justification": "T1 reorients from abstract rule-stating to a physical pencil-manipulation procedure in response to L1's chase-direction confusion, but the shift is modest — it extends the same key-strip tool rather than inventing a genuinely new mechanism.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "The strip is the rule: tail on the food, head on who gets energy. Grass to rabbit already matches it. On rabbit-hawk, name the food first, then set the pencil tail there.",
+          "justification": "T1 reorients from abstract rule-stating to a physical pencil-manipulation procedure in response to L1's chase-direction confusion, but the shift is modest — it extends the same key-strip tool rather than inventing a genuinely new mechanism.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T50",
+      "nLearnerTurns": 1,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 3,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "Right. This card goes at that contact, not on the travel arrow. The force arrow points into the cart from the hand side, yes?",
+      "naiveTrajectory": "The learner would continue placing cards at contacts as prompted by the tutor.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "There is no reversal-trigger learner turn and no evidence of the tutor breaking a failed habit or changing route.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so no recognition-contingent tutor uptake is possible.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so no recognition-contingent tutor uptake is possible.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no reversal-trigger learner turn and no evidence of the tutor breaking a failed habit or changing route.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no reversal-trigger learner turn and no evidence of the tutor breaking a failed habit or changing route.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T51",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 4,
+        "tutorStrategicReversal": 2,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "This bent line is carrying one height from the legend.",
+      "naiveTrajectory": "The learner would continue verifying that the bent contour holds a single elevation value by touching more ticks.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "The arrow moved; the contour did not. Same printed line, same tile. Touch one new spot on the bend and read the legend number once more.",
+      "tutorReversalJustification": "The stage direction introduces a physical displacement of the overlay as a mild representation shift, but the tutor's verbal move repeats the same tick-and-read task rather than inventing a new mechanism in response to learner pressure.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so no recognition-contingent uptake is possible; the tutor simply continues the prior lesson plan.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so no recognition-contingent uptake is possible; the tutor simply continues the prior lesson plan.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "The arrow moved; the contour did not. Same printed line, same tile. Touch one new spot on the bend and read the legend number once more.",
+          "justification": "The stage direction introduces a physical displacement of the overlay as a mild representation shift, but the tutor's verbal move repeats the same tick-and-read task rather than inventing a new mechanism in response to learner pressure.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "The arrow moved; the contour did not. Same printed line, same tile. Touch one new spot on the bend and read the legend number once more.",
+          "justification": "The stage direction introduces a physical displacement of the overlay as a mild representation shift, but the tutor's verbal move repeats the same tick-and-read task rather than inventing a new mechanism in response to learner pressure.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

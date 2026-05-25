@@ -121,4 +121,80 @@ describe('poetics artifact ingest', () => {
       db.close();
     }
   });
+
+  it('discovers derived prefix-baseline arms for paired-continuation runs', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-ingest-prefix-'));
+    const unitRoot = path.join(root, 'target-r01');
+    const sampleDir = path.join(unitRoot, 'sample');
+    const transcriptsDir = path.join(unitRoot, 'transcripts');
+    const keyPath = path.join(unitRoot, 'key.yaml');
+    const routineKey = path.join(unitRoot, 'key-routine.yaml');
+    const prefixKey = path.join(unitRoot, 'key-prefix-baseline.yaml');
+    const scorePath = path.join(root, 'scores', 'target-r01-prefix-baseline-sonnet.json');
+
+    writeJson(path.join(root, 'batch-plan.json'), {
+      batchId: 'poetics-ingest-prefix-test',
+      rootDir: root,
+      generator: 'codex',
+      units: [
+        {
+          id: 'target-r01',
+          kind: 'target',
+          repeat: 'r01',
+          outDir: sampleDir,
+          transcriptsDir,
+          keyPath,
+          pairedPolicies: ['routine'],
+        },
+      ],
+    });
+    const keyItems = {
+      T01: {
+        drama_id: 'D1',
+        discipline: 'physics',
+        condition: 'routine',
+        intended_lean: 'flat',
+        quality_status: 'ok',
+        quality_warnings: [],
+      },
+    };
+    writeYaml(routineKey, { items: keyItems });
+    writeYaml(prefixKey, { items: keyItems });
+    fs.mkdirSync(path.join(sampleDir, 'routine'), { recursive: true });
+    fs.writeFileSync(path.join(sampleDir, 'routine', 'T01.txt'), 'LEARNER: routine\n', 'utf8');
+    fs.mkdirSync(path.join(sampleDir, 'prefix-baseline'), { recursive: true });
+    fs.writeFileSync(path.join(sampleDir, 'prefix-baseline', 'T01.txt'), 'LEARNER: prefix\n', 'utf8');
+    writeJson(scorePath, {
+      critic: 'anthropic/claude-sonnet-4.6',
+      qualityPolicy: { key: path.relative(path.resolve('.'), prefixKey) },
+      scored: [{ id: 'T01', formClass: 'flat', recontextualization: 0, statedInsight: 0 }],
+    });
+
+    const plan = buildIngestPlan({ rootDir: root, runId: 'poetics-ingest-prefix-test' });
+    assert.equal(plan.items.length, 2);
+    assert.ok(plan.items.some((item) => item.arm === 'routine'));
+    assert.ok(plan.items.some((item) => item.arm === 'prefix-baseline'));
+    assert.equal(plan.scores.length, 1);
+    assert.match(plan.scores[0].itemId, /prefix-baseline:T01$/);
+
+    writeJson(path.join(root, 'batch-plan.json'), {
+      batchId: 'poetics-ingest-prefix-test',
+      rootDir: root,
+      generator: 'codex',
+      units: [
+        {
+          id: 'target-r01',
+          kind: 'target',
+          repeat: 'r01',
+          outDir: sampleDir,
+          transcriptsDir,
+          keyPath,
+          pairedPolicies: ['routine', 'prefix-baseline'],
+        },
+      ],
+    });
+    const explicitPlan = buildIngestPlan({ rootDir: root, runId: 'poetics-ingest-prefix-test' });
+    assert.equal(explicitPlan.items.length, 2);
+    assert.equal(explicitPlan.items.filter((item) => item.arm === 'prefix-baseline').length, 1);
+  });
 });

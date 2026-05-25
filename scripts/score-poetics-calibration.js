@@ -64,12 +64,29 @@ async function callModel(prompt, modelKey) {
 }
 
 async function callClaudeCode(prompt) {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-claude-'));
   const stdout = await new Promise((resolve, reject) => {
     const env = { ...process.env };
     delete env.ANTHROPIC_API_KEY;
-    const child = spawn('claude', ['-p', '-', '--output-format', 'text'], {
+    const args = [
+      '--no-session-persistence',
+      '--disable-slash-commands',
+      '--no-chrome',
+      '--setting-sources',
+      'user',
+      '--tools',
+      '',
+      '-p',
+      '-',
+      '--output-format',
+      'text',
+    ];
+    if (process.env.CLAUDE_CODE_BARE === '1') args.unshift('--bare');
+    if (process.env.CLAUDE_CODE_MODEL) args.splice(1, 0, '--model', process.env.CLAUDE_CODE_MODEL);
+    const child = spawn('claude', args, {
       stdio: ['pipe', 'pipe', 'pipe'],
       env,
+      cwd: tmpDir,
     });
     let out = '';
     let err = '';
@@ -82,6 +99,8 @@ async function callClaudeCode(prompt) {
     });
     child.stdin.write(prompt);
     child.stdin.end();
+  }).finally(() => {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
   });
   return stdout.trim();
 }
@@ -115,7 +134,7 @@ async function callCodex(prompt) {
       if (CODEX_MODEL) codexArgs.push('-m', CODEX_MODEL);
       if (CODEX_REASONING_EFFORT) codexArgs.push('-c', `model_reasoning_effort="${CODEX_REASONING_EFFORT}"`);
       codexArgs.push('-o', outFile, '-');
-      const child = spawn('codex', codexArgs, { stdio: ['pipe', 'pipe', 'pipe'] });
+      const child = spawn('codex', codexArgs, { stdio: ['pipe', 'pipe', 'pipe'], cwd: tmpDir });
       let err = '';
       child.stderr.on('data', (d) => (err += d));
       child.stdout.on('data', () => {});
