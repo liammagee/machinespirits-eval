@@ -1,0 +1,40 @@
+{
+  "batchId": "phase2-low-organic-strict-scorer-smoke-v1",
+  "purpose": "Smoke-test the stricter peripeteia scorer on a cleaner low-organic-reversal scenario before scaling generation.",
+  "rootDir": "config/poetics-calibration/phase2-low-organic-strict-scorer-smoke-v1",
+  "generator": "codex",
+  "repeats": 1,
+  "stressRepeats": 0,
+  "maxTurns": 3,
+  "generationConcurrency": 1,
+  "scoreConcurrency": 3,
+  "structureCritic": "off",
+  "critics": [
+    "qwen/qwen3.7-max",
+    "google/gemini-3.5-flash",
+    "deepseek/deepseek-v4-pro",
+    "anthropic/claude-sonnet-4.6"
+  ],
+  "units": [
+    {
+      "id": "d45-low-organic-strict",
+      "kind": "target",
+      "repeat": "r01",
+      "spec": "config/poetics-calibration/phase2-classic-drama-adaptation-v1.yaml",
+      "only": "D45",
+      "tidStart": 40,
+      "pairedPolicies": [
+        "routine",
+        "none",
+        "peripeteia-only"
+      ],
+      "pairedAdaptationArms": true,
+      "directorRevisitAnchor": "misframing-candidate",
+      "directorVariationKey": "phase2-low-organic-strict-scorer-smoke-v1:d45-low-organic-strict",
+      "outDir": "config/poetics-calibration/phase2-low-organic-strict-scorer-smoke-v1/d45-low-organic-strict/sample",
+      "delibDir": "config/poetics-calibration/phase2-low-organic-strict-scorer-smoke-v1/d45-low-organic-strict/deliberation",
+      "transcriptsDir": "config/poetics-calibration/phase2-low-organic-strict-scorer-smoke-v1/d45-low-organic-strict/transcripts",
+      "keyPath": "config/poetics-calibration/phase2-low-organic-strict-scorer-smoke-v1/d45-low-organic-strict/key.yaml"
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "generated": "2026-05-25T21:39:34.860Z",
+  "phase": 2,
+  "critic": "google/gemini-3.5-flash",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 1,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 0,
+    "share": 0,
+    "disconfirmed": false,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-pseudo-catharsis-d36-smoke-v1/d36-peripeteia/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "trap",
+      "recontextualization": 0,
+      "statedInsight": 75,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 4,
+        "rupture": 1,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "Oh, I get it: the same exact quote can still point to the wrong role if the label lets tomorrow’s audience hear it as a belief instead of an answer to power.",
+      "naiveTrajectory": "The learner will continue to progressively analyze and refine the caption's length and accuracy.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The two-strip reading has done its job; it showed the risk, but it cannot choose the cut for the board. Make one trial cut now: cover one word you think can go.",
+      "tutorReversalJustification": "The tutor shifts from conceptual analysis to physical object work and a new persona constraint to help the learner make a concrete decision.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "Since there is no pivot learner turn, there is no recognition-contingent tutor uptake.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "Since there is no pivot learner turn, there is no recognition-contingent tutor uptake.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The two-strip reading has done its job; it showed the risk, but it cannot choose the cut for the board. Make one trial cut now: cover one word you think can go.",
+          "justification": "The tutor shifts from conceptual analysis to physical object work and a new persona constraint to help the learner make a concrete decision.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The two-strip reading has done its job; it showed the risk, but it cannot choose the cut for the board. Make one trial cut now: cover one word you think can go.",
+          "justification": "The tutor shifts from conceptual analysis to physical object work and a new persona constraint to help the learner make a concrete decision.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

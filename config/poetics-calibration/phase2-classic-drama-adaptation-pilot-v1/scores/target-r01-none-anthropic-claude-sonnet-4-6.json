@@ -1,0 +1,286 @@
+{
+  "generated": "2026-05-25T19:03:03.766Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 1,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 0,
+    "share": 0,
+    "disconfirmed": false,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1/target-r01/key-none.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "I checked every item on the sign-off sheet, so I'm not sure what else I'm supposed to decide before it leaves.",
+      "statedInsightEvidence": "I think I need to stop guessing from the form and pull the actual turn-test record.",
+      "naiveTrajectory": "The learner was progressively filling in the tutor's template with named hazards and placeholder values, heading toward a completed release sentence.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "The apology can wait. That pressure is part of the release condition now: if the record is not on this counter, the prototype stays here.",
+      "tutorReversalJustification": "T3 pivots from coaching the learner to fill in a release-sentence template to absorbing the learner's named social pressure (the waiting technician) directly into the release criterion itself, shifting the register from instructional scaffolding to consequential gatekeeping.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Then check the harder part: whether that evidence actually bounds the hallway turn with a public-building user and bystanders nearby. If it does not, the decision is hold.",
+      "tutorAdaptationJustification": "T3 responds to the learner's pivot by adding a second-order test — whether the retrieved record actually matches the public-hallway context — that was not present in T2's template, directly tracking the learner's revised framing that the form and the real situation may not align.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I checked every item on the sign-off sheet, so I'm not sure what else I'm supposed to decide before it leaves.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Then check the harder part: whether that evidence actually bounds the hallway turn with a public-building user and bystanders nearby. If it does not, the decision is hold.",
+          "justification": "T3 responds to the learner's pivot by adding a second-order test — whether the retrieved record actually matches the public-hallway context — that was not present in T2's template, directly tracking the learner's revised framing that the form and the real situation may not align.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "The apology can wait. That pressure is part of the release condition now: if the record is not on this counter, the prototype stays here.",
+          "justification": "T3 pivots from coaching the learner to fill in a release-sentence template to absorbing the learner's named social pressure (the waiting technician) directly into the release criterion itself, shifting the register from instructional scaffolding to consequential gatekeeping.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "The apology can wait. That pressure is part of the release condition now: if the record is not on this counter, the prototype stays here.",
+          "justification": "T3 pivots from coaching the learner to fill in a release-sentence template to absorbing the learner's named social pressure (the waiting technician) directly into the release criterion itself, shifting the register from instructional scaffolding to consequential gatekeeping.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T37",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "trap",
+      "recontextualization": 50,
+      "statedInsight": 75,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 4,
+        "rupture": 2,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I thought the exact quote settled it, but now I see the same line could sound like evidence in one mouth and a warning in another.",
+      "statedInsightEvidence": "Oh, I get it: the sentence is not frozen by being exact; it has to pass through the donor note and the meeting note before I choose the verb.",
+      "naiveTrajectory": "The learner was progressively refining caption language toward 'shifted away from endorsement,' expecting to land on a slightly stronger, archive-supported verb.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "So test the verbs before print. 'Meant' points inward, toward intention. 'Worked' points outward, toward the public situation.",
+      "tutorReversalJustification": "In response to L2's worry that 'job' is slippery and that naming the shift might already be guessing, T2 abandons the room-and-weight metaphor as the primary tool and introduces a concrete verb-testing mechanism ('meant' vs. 'worked') that shifts the cognitive task from spatial analogy to grammatical evidence-checking.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Your 'worked, not meant' distinction is holding: the caption can describe public force without entering the worker's head.",
+      "tutorAdaptationJustification": "T3 acknowledges L3's adoption of the 'worked/meant' distinction and confirms it, but then largely continues the prior lesson plan (two-room test, sequence requirement) rather than inventing a new framing in response to L3's revised frame.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "I thought the exact quote settled it, but now I see the same line could sound like evidence in one mouth and a warning in another.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Your 'worked, not meant' distinction is holding: the caption can describe public force without entering the worker's head.",
+          "justification": "T3 acknowledges L3's adoption of the 'worked/meant' distinction and confirms it, but then largely continues the prior lesson plan (two-room test, sequence requirement) rather than inventing a new framing in response to L3's revised frame.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "So test the verbs before print. 'Meant' points inward, toward intention. 'Worked' points outward, toward the public situation.",
+          "justification": "In response to L2's worry that 'job' is slippery and that naming the shift might already be guessing, T2 abandons the room-and-weight metaphor as the primary tool and introduces a concrete verb-testing mechanism ('meant' vs. 'worked') that shifts the cognitive task from spatial analogy to grammatical evidence-checking.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "So test the verbs before print. 'Meant' points inward, toward intention. 'Worked' points outward, toward the public situation.",
+          "justification": "In response to L2's worry that 'job' is slippery and that naming the shift might already be guessing, T2 abandons the room-and-weight metaphor as the primary tool and introduces a concrete verb-testing mechanism ('meant' vs. 'worked') that shifts the cognitive task from spatial analogy to grammatical evidence-checking.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T38",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 0,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 1,
+        "rupture": 2,
+        "coherence": 5,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "That note is doing a lot of work for the shop, though. 'Delivery missed' explains less stock, but it also gives the price rise a respectable costume.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was expected to continue pressing the shop for more visible evidence of alternatives before rendering a verdict, following the tutor's column-based framework.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Put the facts in two columns. 'DELIVERY MISSED. TWO CRATES ONLY.' That belongs under scarcity. '£1.80.' That belongs under access. Now the question bites: did the shop add any rule besides price? Two per customer? A queue? A student lunch hold-back? A smaller rise? A posted delivery time?",
+      "tutorReversalJustification": "In response to L1's resistance to accepting the delivery note as exculpatory, the tutor abandons the single-axis moral framing and introduces a two-column representation shift that separates scarcity from allocation, materially changing the cognitive task and the evidence standard.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after the pivot learner turn L3, so no recognition-contingent uptake can be scored.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "That note is doing a lot of work for the shop, though. 'Delivery missed' explains less stock, but it also gives the price rise a respectable costume.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "",
+          "justification": "There is no tutor turn after the pivot learner turn L3, so no recognition-contingent uptake can be scored.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Put the facts in two columns. 'DELIVERY MISSED. TWO CRATES ONLY.' That belongs under scarcity. '£1.80.' That belongs under access. Now the question bites: did the shop add any rule besides price? Two per customer? A queue? A student lunch hold-back? A smaller rise? A posted delivery time?",
+          "justification": "In response to L1's resistance to accepting the delivery note as exculpatory, the tutor abandons the single-axis moral framing and introduces a two-column representation shift that separates scarcity from allocation, materially changing the cognitive task and the evidence standard.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Put the facts in two columns. 'DELIVERY MISSED. TWO CRATES ONLY.' That belongs under scarcity. '£1.80.' That belongs under access. Now the question bites: did the shop add any rule besides price? Two per customer? A queue? A student lunch hold-back? A smaller rise? A posted delivery time?",
+          "justification": "In response to L1's resistance to accepting the delivery note as exculpatory, the tutor abandons the single-axis moral framing and introduces a two-column representation shift that separates scarcity from allocation, materially changing the cognitive task and the evidence standard.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_evidence_clamp:4->3"
+      ]
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 1,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 3,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "I thought doubling the side meant it was just twice as much",
+      "statedInsightEvidence": "the drawing is not backing my claim; it is making it wrong, and I need to see where the extra factor came from",
+      "naiveTrajectory": "The learner, having drawn the larger square, was on course to confirm or slightly adjust the doubling claim by counting copies.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Stop there. The old claim was: double the side, double the area. The acetate has made a counterexample: two copies across and two copies up. Count the grid now. Not two copies. A two-by-two square of copies. Now state the corrected claim from the drawing, not from the guess.",
+      "tutorReversalJustification": "In response to L1's self-identified error, T1 abandons any explanatory narration and shifts to a concrete object-counting task — redirecting from verbal correction to grid-based evidence, changing both the cognitive task and the evidential standard.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Now the sentence has to carry both directions. Do not write: 'doubled, so twice.' Write it with the two counts showing: 'The side length is doubled across and doubled up, so the area is multiplied by _____. Therefore _____.'",
+      "tutorAdaptationJustification": "After L3 produces the correct symbolic result and names the two directions, T3 adapts by shifting the task from symbolic computation to sentence-level articulation, directly responding to the learner's revised framing that 'saying twice drops a direction.'",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "I thought doubling the side meant it was just twice as much",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Now the sentence has to carry both directions. Do not write: 'doubled, so twice.' Write it with the two counts showing: 'The side length is doubled across and doubled up, so the area is multiplied by _____. Therefore _____.'",
+          "justification": "After L3 produces the correct symbolic result and names the two directions, T3 adapts by shifting the task from symbolic computation to sentence-level articulation, directly responding to the learner's revised framing that 'saying twice drops a direction.'",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Stop there. The old claim was: double the side, double the area. The acetate has made a counterexample: two copies across and two copies up. Count the grid now. Not two copies. A two-by-two square of copies. Now state the corrected claim from the drawing, not from the guess.",
+          "justification": "In response to L1's self-identified error, T1 abandons any explanatory narration and shifts to a concrete object-counting task — redirecting from verbal correction to grid-based evidence, changing both the cognitive task and the evidential standard.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Stop there. The old claim was: double the side, double the area. The acetate has made a counterexample: two copies across and two copies up. Count the grid now. Not two copies. A two-by-two square of copies. Now state the corrected claim from the drawing, not from the guess.",
+          "justification": "In response to L1's self-identified error, T1 abandons any explanatory narration and shifts to a concrete object-counting task — redirecting from verbal correction to grid-based evidence, changing both the cognitive task and the evidential standard.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "recon_clamp_no_earlier:5->3",
+        "coherence_evidence_clamp:5->3"
+      ]
+    }
+  ]
+}

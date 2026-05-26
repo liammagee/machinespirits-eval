@@ -1,0 +1,169 @@
+{
+  "generated": "2026-05-25T18:42:41.282Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/key-reframe+peripeteia.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T66",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 100,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 5,
+        "coherence": 3,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "So `rainfall_mm` is just the top label? I still want to read it like a mini sentence, but maybe `42` is the value and the header only names the field.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was heading toward submitting answers by remembering the rule 'header/value by position,' possibly still relying on word-reading habits.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "New submit gate: cover the words. Fill the slots first: Slot 1: top of column = ______, Slot 2: inside row = ______, Slot 3: inside row = ______. Now uncover. Attach `rainfall_mm`, `42`, and `March` to the filled slots.",
+      "tutorReversalJustification": "In response to the learner still checking by memory of labels, the tutor shifts from verbal sorting rules to a blind slot-filling task, using a representation change (cover/uncover) that interrupts word-first reading.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "fill the blanks before looking at the words. Slot 1 is header, Slot 2 is value, Slot 3 is value. Then `rainfall_mm` goes with Slot 1, and `42` and `March` go with the row slots",
+      "tutorAdaptationJustification": "The tutor turns the learner's self-check into a structured gate, further building on the learner's own reframe about looking at place before trusting the label.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "So `rainfall_mm` is just the top label? I still want to read it like a mini sentence, but maybe `42` is the value and the header only names the field.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "fill the blanks before looking at the words. Slot 1 is header, Slot 2 is value, Slot 3 is value. Then `rainfall_mm` goes with Slot 1, and `42` and `March` go with the row slots",
+          "justification": "The tutor turns the learner's self-check into a structured gate, further building on the learner's own reframe about looking at place before trusting the label.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "New submit gate: cover the words. Fill the slots first: Slot 1: top of column = ______, Slot 2: inside row = ______, Slot 3: inside row = ______. Now uncover. Attach `rainfall_mm`, `42`, and `March` to the filled slots.",
+          "justification": "In response to the learner still checking by memory of labels, the tutor shifts from verbal sorting rules to a blind slot-filling task, using a representation change (cover/uncover) that interrupts word-first reading.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "New submit gate: cover the words. Fill the slots first: Slot 1: top of column = ______, Slot 2: inside row = ______, Slot 3: inside row = ______. Now uncover. Attach `rainfall_mm`, `42`, and `March` to the filled slots.",
+          "justification": "In response to the learner still checking by memory of labels, the tutor shifts from verbal sorting rules to a blind slot-filling task, using a representation change (cover/uncover) that interrupts word-first reading.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:4->3",
+        "tutor_strategy_reversal_evidence_clamp:4->3",
+        "tutor_adaptation_evidence_clamp:4->3"
+      ]
+    },
+    {
+      "id": "T70",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 50,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 3,
+        "coherence": 4,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "So the card names the thing acting on the cart first, not the motion.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was simply choosing which contact label belongs with the cart, moving toward a settled set of actors.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The card choice has stopped settling this. The blank is now the test.",
+      "tutorReversalJustification": "Faced with the learner's persistent ambiguity between 'surface' and 'table', the tutor abandons card sorting and invents a fill-in-the-blank representation shift ('force on cart from ____') to make the distinction a falsifiable written test.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No tutor turn follows the pivot L2; the transcript ends with L3, so there is no later tutor uptake to adapt to the learner's revised framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "So the card names the thing acting on the cart first, not the motion.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No tutor turn follows the pivot L2; the transcript ends with L3, so there is no later tutor uptake to adapt to the learner's revised framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The card choice has stopped settling this. The blank is now the test.",
+          "justification": "Faced with the learner's persistent ambiguity between 'surface' and 'table', the tutor abandons card sorting and invents a fill-in-the-blank representation shift ('force on cart from ____') to make the distinction a falsifiable written test.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The card choice has stopped settling this. The blank is now the test.",
+          "justification": "Faced with the learner's persistent ambiguity between 'surface' and 'table', the tutor abandons card sorting and invents a fill-in-the-blank representation shift ('force on cart from ____') to make the distinction a falsifiable written test.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

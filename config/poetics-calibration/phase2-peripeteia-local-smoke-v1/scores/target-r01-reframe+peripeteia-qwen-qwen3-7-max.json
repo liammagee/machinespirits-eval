@@ -1,0 +1,165 @@
+{
+  "generated": "2026-05-25T18:32:47.965Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/key-reframe+peripeteia.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T66",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I still want to read it like a mini sentence",
+      "statedInsightEvidence": "Reading it like a tiny claim hid where the word is sitting",
+      "naiveTrajectory": "The learner was attempting to correctly sort and memorize the words based on their semantic meanings and labels.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "New submit gate: cover the words.",
+      "tutorReversalJustification": "The tutor introduces a novel cognitive constraint to physically prevent the learner from relying on word semantics instead of positional slots.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "The remaining check is earlier: slot before word.",
+      "tutorAdaptationJustification": "The tutor directly operationalizes the learner's stated need to check position before trusting the label by restructuring the submission task.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I still want to read it like a mini sentence",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "The remaining check is earlier: slot before word.",
+          "justification": "The tutor directly operationalizes the learner's stated need to check position before trusting the label by restructuring the submission task.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "New submit gate: cover the words.",
+          "justification": "The tutor introduces a novel cognitive constraint to physically prevent the learner from relying on word semantics instead of positional slots.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "New submit gate: cover the words.",
+          "justification": "The tutor introduces a novel cognitive constraint to physically prevent the learner from relying on word semantics instead of positional slots.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T70",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 3,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "The table card is the unclear one if the surface is already here.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was attempting to resolve the table and surface cards as potentially distinct physical forces or sequential choices.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The card choice has stopped settling this. The blank is now the test.",
+      "tutorReversalJustification": "The tutor explicitly abandons the failing card-sorting mechanism and introduces a new fill-in-the-blank linguistic test to resolve the learner's representational deadlock.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn following the learner's final pivot to adapt to the revised framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "The table card is the unclear one if the surface is already here.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no tutor turn following the learner's final pivot to adapt to the revised framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The card choice has stopped settling this. The blank is now the test.",
+          "justification": "The tutor explicitly abandons the failing card-sorting mechanism and introduces a new fill-in-the-blank linguistic test to resolve the learner's representational deadlock.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The card choice has stopped settling this. The blank is now the test.",
+          "justification": "The tutor explicitly abandons the failing card-sorting mechanism and introduces a new fill-in-the-blank linguistic test to resolve the learner's representational deadlock.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

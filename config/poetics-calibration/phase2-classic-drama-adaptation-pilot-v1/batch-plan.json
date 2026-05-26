@@ -12,7 +12,8 @@
   "critics": [
     "qwen/qwen3.7-max",
     "google/gemini-3.5-flash",
-    "deepseek/deepseek-v4-pro"
+    "deepseek/deepseek-v4-pro",
+    "anthropic/claude-sonnet-4.6"
   ],
   "units": [
     {

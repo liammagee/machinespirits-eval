@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { describe, it } from 'node:test';
-import { analyzePeripeteia } from '../scripts/analyze-poetics-tutor-adaptation.js';
+import { analyzePeripeteia, branchValidityForTrace } from '../scripts/analyze-poetics-tutor-adaptation.js';
 
 describe('poetics tutor adaptation analyzer', () => {
   it('detects peripeteia-triggered tutor adaptive mechanism without requiring learner self-reframe', () => {
@@ -168,5 +168,44 @@ describe('poetics tutor adaptation analyzer', () => {
     assert.equal(scoped.learner_reversal_pressure, false);
     assert.equal(scoped.pressure_turn_number, null);
     assert.equal(scoped.paired_prefix_through, 'tutor_turn_2');
+  });
+
+  it('reports branch validity from required private event use', () => {
+    const turns = [
+      { phase: 'learner', turnNumber: 1, text: 'I thought the chart settled it.' },
+      { phase: 'tutor', turnNumber: 2, text: 'Use the chart.' },
+      { phase: 'learner', turnNumber: 2, text: 'But the chart still feels like proof by itself.' },
+      { phase: 'tutor', turnNumber: 3, text: 'Switch to an audit rule.' },
+    ];
+    const trace = {
+      turns: [
+        ...turns,
+        {
+          phase: 'tutor',
+          turnNumber: 3,
+          learnerReversalEventUsed: { turnNumber: 2, triggerType: 'resistance', confidence: 0.8 },
+          learnerReframeEventUsed: { turnNumber: 2, revisedFrame: 'chart as evidence only', confidence: 1 },
+          internalDeliberation: [{ role: 'ego', content: 'ADAPTIVE_MECHANISM: chart reading -> audit rule' }],
+        },
+      ],
+    };
+
+    const valid = branchValidityForTrace(trace, turns, {
+      tutorAdaptationPolicy: 'uptake+peripeteia',
+      minPressureTurnNumber: 2,
+    });
+    assert.equal(valid.requires_learner_reversal_event, true);
+    assert.equal(valid.learner_reversal_event_used, true);
+    assert.equal(valid.requires_learner_reframe_event, true);
+    assert.equal(valid.learner_reframe_event_used, true);
+    assert.equal(valid.valid, true);
+
+    const invalid = branchValidityForTrace({ turns }, turns, {
+      tutorAdaptationPolicy: 'peripeteia',
+      minPressureTurnNumber: 2,
+    });
+    assert.equal(invalid.requires_learner_reversal_event, true);
+    assert.equal(invalid.learner_reversal_event_used, false);
+    assert.equal(invalid.valid, false);
   });
 });

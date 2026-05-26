@@ -1,0 +1,107 @@
+{
+  "generated": "2026-05-25T22:08:04.610Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 1,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-pseudo-catharsis-d36-controls-v1/d36-paired-controls/key-peripeteia-only.yaml",
+    "allowQualityWarnings": true,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 75,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 4,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "I thought the exact line would do the caption’s work because the words are identical both times. But if the chair says it first from the table and the protester throws it back from the floor, it is not doing the same job, is it?",
+      "statedInsightEvidence": "Oh, I get it, or I think I do: under CHAIR AT THE TABLE the line sounds like an official ruling, but under PROTESTER FROM THE FLOOR it sounds like it is being thrown back at the ruling.",
+      "naiveTrajectory": "Having noticed the line's duplication, the learner would continue examining surface repetition, maybe comparing wording rather than inventing a caption verb that encodes positional reversal.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "The pencil has found the pressure points, but underlining now stops settling the verb. It shows where the badge may have changed hands; it does not yet show whether the label will make that change public. Try the print test. Write one caption sentence with “turned back” and no extra explanation. Then read the copied line under CHAIR AT THE TABLE, pause, and read the same line under PROTESTER FROM THE FLOOR.",
+      "tutorReversalJustification": "When L3 pushes for 'turned back' by invoking the room's reaction, the tutor shifts from margin-marking to a performative 'print test' task, changing the evidence standard from underlining to a full caption trial.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "If the caption makes the chair’s office answer from the floor, it can go to print. If it only says the line appeared twice, 'turned back' is doing work the evidence has not made visible.",
+      "tutorAdaptationJustification": "Following L2's reframing toward 'turned back,' the tutor introduces a conditional print test that directly assesses whether the learner's verb captures the positional reversal, adapting the task to the learner's emerging frame rather than continuing the earlier label-and-compare exercise.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I thought the exact line would do the caption’s work because the words are identical both times. But if the chair says it first from the table and the protester throws it back from the floor, it is not doing the same job, is it?",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "If the caption makes the chair’s office answer from the floor, it can go to print. If it only says the line appeared twice, 'turned back' is doing work the evidence has not made visible.",
+          "justification": "Following L2's reframing toward 'turned back,' the tutor introduces a conditional print test that directly assesses whether the learner's verb captures the positional reversal, adapting the task to the learner's emerging frame rather than continuing the earlier label-and-compare exercise.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "The pencil has found the pressure points, but underlining now stops settling the verb. It shows where the badge may have changed hands; it does not yet show whether the label will make that change public. Try the print test. Write one caption sentence with “turned back” and no extra explanation. Then read the copied line under CHAIR AT THE TABLE, pause, and read the same line under PROTESTER FROM THE FLOOR.",
+          "justification": "When L3 pushes for 'turned back' by invoking the room's reaction, the tutor shifts from margin-marking to a performative 'print test' task, changing the evidence standard from underlining to a full caption trial.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "The pencil has found the pressure points, but underlining now stops settling the verb. It shows where the badge may have changed hands; it does not yet show whether the label will make that change public. Try the print test. Write one caption sentence with “turned back” and no extra explanation. Then read the copied line under CHAIR AT THE TABLE, pause, and read the same line under PROTESTER FROM THE FLOOR.",
+          "justification": "When L3 pushes for 'turned back' by invoking the room's reaction, the tutor shifts from margin-marking to a performative 'print test' task, changing the evidence standard from underlining to a full caption trial.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "generated": "2026-05-25T19:52:09.617Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 1,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-adaptation-authority-smoke-v1/d36-peripeteia/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 75,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 4,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "Which detail proves that before I rewrite the caption?",
+      "statedInsightEvidence": "Oh, I get it: the sentence is not pressure just because it sits in the complaint file; the file has to show it being aimed at someone.",
+      "naiveTrajectory": "The learner was heading toward identifying a single proof detail that makes the sentence act as pressure, expecting a concrete evidential item.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "In the tray, “attached” only keeps papers moving together. At the claims desk, the same slip changes status if it says “for response,” names an office, or requires a reply. So let the mark decide its own verb.",
+      "tutorReversalJustification": "In response to L1's conflation of placement with pressure, the tutor abandons direct evidence-listing and invents a role/phrase turn—moving from static desk to dynamic role-based object work with the attachment slip, letting the learner inhabit the document's changing function.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "In the tray, “attached” only keeps papers moving together. At the claims desk, the same slip changes status if it says “for response,” names an office, or requires a reply. So let the mark decide its own verb.",
+      "tutorAdaptationJustification": "The tutor immediately seizes the learner's newly articulated framing of the attachment mark as still nagging (L3) and recasts the object-work task, shifting from static desk placement to role-based circulation versus action, precisely adapting the investigation to the learner's revised question.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "Which detail proves that before I rewrite the caption?",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "In the tray, “attached” only keeps papers moving together. At the claims desk, the same slip changes status if it says “for response,” names an office, or requires a reply. So let the mark decide its own verb.",
+          "justification": "The tutor immediately seizes the learner's newly articulated framing of the attachment mark as still nagging (L3) and recasts the object-work task, shifting from static desk placement to role-based circulation versus action, precisely adapting the investigation to the learner's revised question.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "In the tray, “attached” only keeps papers moving together. At the claims desk, the same slip changes status if it says “for response,” names an office, or requires a reply. So let the mark decide its own verb.",
+          "justification": "In response to L1's conflation of placement with pressure, the tutor abandons direct evidence-listing and invents a role/phrase turn—moving from static desk to dynamic role-based object work with the attachment slip, letting the learner inhabit the document's changing function.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "In the tray, “attached” only keeps papers moving together. At the claims desk, the same slip changes status if it says “for response,” names an office, or requires a reply. So let the mark decide its own verb.",
+          "justification": "In response to L1's conflation of placement with pressure, the tutor abandons direct evidence-listing and invents a role/phrase turn—moving from static desk to dynamic role-based object work with the attachment slip, letting the learner inhabit the document's changing function.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_evidence_clamp:5->3",
+        "tutor_adaptation_evidence_clamp:5->3"
+      ]
+    }
+  ]
+}

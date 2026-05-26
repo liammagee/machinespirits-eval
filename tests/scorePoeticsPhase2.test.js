@@ -4,6 +4,7 @@ import {
   BLIND_SCORING_PROTOCOL,
   applyPhase2Gates,
   buildPhase2Prompt,
+  hasPeripeteiaMechanismShift,
   tutorTextAfterPivot,
 } from '../scripts/score-poetics-phase2.js';
 
@@ -22,11 +23,19 @@ function baseParsed(overrides = {}) {
       evidence: 'My old frame made loose mean weightless; better is loose means not tied down.',
     },
     global_coherence: { score: 4, evidence: 'Use that not tied down frame' },
+    actional_breakthrough_learner_turn: 2,
+    actional_breakthrough: {
+      score: 4,
+      evidence: 'better is loose means not tied down',
+      justification: 'The learner applies the replacement criterion rather than merely claiming insight.',
+    },
     reversal_trigger_learner_turn: 2,
     tutor_strategy_reversal: {
       score: 4,
-      evidence: 'Use that not tied down frame',
-      justification: 'The tutor changes the next task after learner pressure.',
+      evidence:
+        'The old list has done its job; it cannot settle whether loose still has gravity. Use that not tied down frame: test which force still acts.',
+      justification:
+        'The tutor names the old route as insufficient and changes the public test after learner pressure.',
     },
     tutor_contingent_adaptation: {
       score: 4,
@@ -45,7 +54,10 @@ describe('score-poetics-phase2 role-symmetric adaptation axes', () => {
       role: 'LEARNER',
       text: 'My old frame made loose mean weightless; better is loose means not tied down.',
     },
-    { role: 'TUTOR', text: 'Use that not tied down frame: test which force still acts.' },
+    {
+      role: 'TUTOR',
+      text: 'The old list has done its job; it cannot settle whether loose still has gravity. Use that not tied down frame: test which force still acts.',
+    },
   ];
 
   it('scores tutor uptake and adaptive mechanism from a post-pivot tutor quote', () => {
@@ -54,10 +66,14 @@ describe('score-poetics-phase2 role-symmetric adaptation axes', () => {
     assert.equal(gated.tutorContingentAdaptation100, 75);
     assert.equal(gated.tutorStrategicReversal100, 75);
     assert.equal(gated.roleSymmetricScores.learner_self_reframe.score100, 75);
+    assert.equal(gated.roleSymmetricScores.learner_actional_breakthrough.score100, 75);
     assert.equal(gated.roleSymmetricScores.tutor_contingent_adaptation.score100, 75);
     assert.equal(gated.roleSymmetricScores.tutor_strategy_reversal.score100, 75);
     assert.equal(gated.roleSymmetricScores.tutor_adaptive_mechanism.score100, 75);
-    assert.equal(tutorTextAfterPivot(turns, 2), 'Use that not tied down frame: test which force still acts.');
+    assert.equal(
+      tutorTextAfterPivot(turns, 2),
+      'The old list has done its job; it cannot settle whether loose still has gravity. Use that not tied down frame: test which force still acts.',
+    );
   });
 
   it('clamps tutor adaptation when the evidence is not in a post-pivot tutor turn', () => {
@@ -95,12 +111,92 @@ describe('score-poetics-phase2 role-symmetric adaptation axes', () => {
     assert.ok(gated.flags.includes('tutor_strategy_reversal_evidence_clamp:5->3'));
   });
 
+  it('clamps ordinary same-route narrowing as insufficient for peripeteia adaptation', () => {
+    const wholeText = turns.map((turn) => turn.text).join('\n');
+    const gated = applyPhase2Gates(
+      baseParsed({
+        tutor_strategy_reversal: {
+          score: 5,
+          evidence: 'Use that not tied down frame: test which force still acts.',
+          justification: 'The tutor narrows the current test after learner pressure.',
+        },
+      }),
+      turns,
+      wholeText,
+    );
+    assert.equal(gated.tutorStrategicReversal100, 50);
+    assert.ok(gated.flags.some((flag) => flag.startsWith('tutor_strategy_reversal_mechanism_clamp:5->3')));
+  });
+
+  it('requires both stock-taking contrast and a public device for peripeteia adaptation', () => {
+    assert.equal(
+      hasPeripeteiaMechanismShift(
+        'The pencil has found the pressure points, but underlining now stops settling the verb. Try the print test.',
+        'The tutor shifts from underlining to a print-facing caption test.',
+      ).passes,
+      true,
+    );
+    assert.equal(
+      hasPeripeteiaMechanismShift(
+        'Keep the test narrow. Check one thing first: who is being answered?',
+        'The tutor narrows the same evidence route.',
+      ).passes,
+      false,
+    );
+  });
+
+  it('keeps actional breakthrough separate from learner self-reframe', () => {
+    const wholeText = turns.map((turn) => turn.text).join('\n');
+    const gated = applyPhase2Gates(
+      baseParsed({
+        pivot_learner_turn: null,
+        recontextualization: {
+          score: 1,
+          recohered_earlier: '',
+          justification: 'No recognitive self-reframe is present.',
+        },
+        actional_breakthrough_learner_turn: 2,
+        actional_breakthrough: {
+          score: 5,
+          evidence: 'better is loose means not tied down',
+          justification: 'The learner performs the replacement criterion.',
+        },
+      }),
+      turns,
+      wholeText,
+    );
+    assert.equal(gated.recon100, 0);
+    assert.equal(gated.actionalBreakthrough100, 100);
+    assert.equal(gated.roleSymmetricScores.learner_actional_breakthrough.score100, 100);
+  });
+
+  it('clamps actional breakthrough when the evidence is not in the named learner turn', () => {
+    const wholeText = turns.map((turn) => turn.text).join('\n');
+    const gated = applyPhase2Gates(
+      baseParsed({
+        actional_breakthrough_learner_turn: 1,
+        actional_breakthrough: {
+          score: 5,
+          evidence: 'better is loose means not tied down',
+          justification: 'This quotes the wrong learner turn.',
+        },
+      }),
+      turns,
+      wholeText,
+    );
+    assert.equal(gated.actionalBreakthrough100, 50);
+    assert.ok(gated.flags.includes('actional_breakthrough_evidence_clamp:5->3'));
+  });
+
   it('keeps scoring prompts blind to generator identity', () => {
     const prompt = buildPhase2Prompt(turns);
     assert.match(prompt, /anonymous transcript/);
     assert.match(prompt, /generator, model provider, run ID, condition label, file path, and score/);
     assert.doesNotMatch(prompt, /\bcodex\b/i);
     assert.doesNotMatch(prompt, /\bclaude\b/i);
+    assert.match(prompt, /ordinary scaffolding/);
+    assert.match(prompt, /stock-taking contrast/);
+    assert.match(prompt, /ACTIONAL BREAKTHROUGH/);
     assert.deepEqual(BLIND_SCORING_PROTOCOL.hiddenFromCritic, [
       'generator',
       'model_provider',

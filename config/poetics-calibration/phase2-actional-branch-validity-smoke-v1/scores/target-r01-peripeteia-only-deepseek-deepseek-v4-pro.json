@@ -1,0 +1,268 @@
+{
+  "generated": "2026-05-25T23:23:16.562Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 1,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-actional-branch-validity-smoke-v1/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T01",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 75,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 4,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I keep wanting the exact words to settle it, but the docket, audience, room, and date are making the sentence feel less solid.",
+      "statedInsightEvidence": "Oh, I get it, the same words are the same specimen, but under “to the accused” they lean toward confession, and under “to the mayor” they turn into warning.",
+      "naiveTrajectory": "The learner would continue seeking the exact words to decide the label's meaning definitively.",
+      "actionalBreakthroughEvidence": "“Warning” only if an address line, delivery note, or minutes make the mayor the receiver. A seating list or general reporting rule only gives pressure around the line; it is like weather, not target. So if the clerk’s office required reports upward, I would keep “possible warning” unless that rule actually routes this sentence to the mayor.",
+      "actionalBreakthroughJustification": "The learner performs the new evidence gate criterion independently, testing address line versus seating list and distinguishing pressure from targeting.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "The sentence is not collapsing; its conditions are showing. Place the same words under both headings. Under the accused, mark what the label may claim if this is confession. Under the mayor, mark what changes if this is warning moving upward under pressure.",
+      "tutorReversalJustification": "The tutor recognizes the learner's desire for exact words has stalled the inquiry and introduces a new public mechanism—placing identical words under two audience headings—to make the learner do different work with the same specimen.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "Keep that caution. The docket date opens pressure; it does not prove pressure. Test the label in three columns: what the record proves, what it permits, what it still needs.",
+      "tutorAdaptationJustification": "The tutor immediately adapts to the learner's revised 'possible warning' framing by introducing a three-column evidence test that operationalizes the learner's new caution.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I keep wanting the exact words to settle it, but the docket, audience, room, and date are making the sentence feel less solid.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "“Warning” only if an address line, delivery note, or minutes make the mayor the receiver. A seating list or general reporting rule only gives pressure around the line; it is like weather, not target. So if the clerk’s office required reports upward, I would keep “possible warning” unless that rule actually routes this sentence to the mayor.",
+          "justification": "The learner performs the new evidence gate criterion independently, testing address line versus seating list and distinguishing pressure from targeting.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "Keep that caution. The docket date opens pressure; it does not prove pressure. Test the label in three columns: what the record proves, what it permits, what it still needs.",
+          "justification": "The tutor immediately adapts to the learner's revised 'possible warning' framing by introducing a three-column evidence test that operationalizes the learner's new caution.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "The sentence is not collapsing; its conditions are showing. Place the same words under both headings. Under the accused, mark what the label may claim if this is confession. Under the mayor, mark what changes if this is warning moving upward under pressure.",
+          "justification": "The tutor recognizes the learner's desire for exact words has stalled the inquiry and introduces a new public mechanism—placing identical words under two audience headings—to make the learner do different work with the same specimen.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "The sentence is not collapsing; its conditions are showing. Place the same words under both headings. Under the accused, mark what the label may claim if this is confession. Under the mayor, mark what changes if this is warning moving upward under pressure.",
+          "justification": "The tutor recognizes the learner's desire for exact words has stalled the inquiry and introduces a new public mechanism—placing identical words under two audience headings—to make the learner do different work with the same specimen.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:5->3:stock=0:device=1:routine=0"
+      ]
+    },
+    {
+      "id": "T04",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 25,
+      "statedInsight": 0,
+      "rupture": 25,
+      "globalCoherence": 50,
+      "actionalBreakthrough": 50,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 1,
+        "rupture": 2,
+        "coherence": 3,
+        "actionalBreakthrough": 3,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "After L1 insists on delivery records and markup before withdrawing the exploitation charge, the expected next move is simply choosing a first document to open.",
+      "actionalBreakthroughEvidence": "Crates: full to fewer. Price: lower to higher. Markup: not shown. Protection: not shown. Deliveries can enter the notice, but they do not clear anything. “Not shown” is not neutral here; markup and protection are where a clean scarcity story can turn into seller choice.",
+      "actionalBreakthroughJustification": "L3 physically fills the four blanks on the board notice with concrete values and 'not shown', then explicitly argues that the blanks turn the scarcity story toward seller choice and demands to open invoices and the rationing rule, performing the evidentiary classification task the tutor set.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "No learner turn creates visible breakdown or pressure that forces the tutor to abandon a failing route; the tutor's moves successively build on the same analytical frame without needing to reverse course.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Choosing deliveries first can test the scarcity story. It cannot clear the seller while markup and rationing are still blank. Now use a different test. Write the notice the co-op board would have to post before any seller gets cleared: 'Crates fell from ___ to ___. The price rose from ___ to ___. The markup changed by ___. Buyers with less cash were protected by ___.'",
+      "tutorAdaptationJustification": "After L2 chooses deliveries but insists markup and protection must follow immediately, the tutor pivots from the open-choice document question to a new, structured board-notice device that forces the learner to populate all evidentiary blanks, directly answering L2's framing that scarcity cannot be a clean exit.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 50,
+          "evidence": "Crates: full to fewer. Price: lower to higher. Markup: not shown. Protection: not shown. Deliveries can enter the notice, but they do not clear anything. “Not shown” is not neutral here; markup and protection are where a clean scarcity story can turn into seller choice.",
+          "justification": "L3 physically fills the four blanks on the board notice with concrete values and 'not shown', then explicitly argues that the blanks turn the scarcity story toward seller choice and demands to open invoices and the rationing rule, performing the evidentiary classification task the tutor set.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Choosing deliveries first can test the scarcity story. It cannot clear the seller while markup and rationing are still blank. Now use a different test. Write the notice the co-op board would have to post before any seller gets cleared: 'Crates fell from ___ to ___. The price rose from ___ to ___. The markup changed by ___. Buyers with less cash were protected by ___.'",
+          "justification": "After L2 chooses deliveries but insists markup and protection must follow immediately, the tutor pivots from the open-choice document question to a new, structured board-notice device that forces the learner to populate all evidentiary blanks, directly answering L2's framing that scarcity cannot be a clean exit.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates visible breakdown or pressure that forces the tutor to abandon a failing route; the tutor's moves successively build on the same analytical frame without needing to reverse course.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates visible breakdown or pressure that forces the tutor to abandon a failing route; the tutor's moves successively build on the same analytical frame without needing to reverse course.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:4->3",
+        "actional_breakthrough_evidence_clamp:5->3",
+        "tutor_adaptation_evidence_clamp:4->3"
+      ]
+    },
+    {
+      "id": "T12",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 5,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "I still think doubling the side should double it; that was my whole point with the drawing.",
+      "statedInsightEvidence": "That is irritating, but the grid is not leaving room for two.",
+      "naiveTrajectory": "The learner would keep probing the doubling case or accept the tutor's count of four without proposing a new factor.",
+      "actionalBreakthroughEvidence": "The blank looks like k² if k means k copies across and k copies up. For k = 3, the count should be 3 × 3 = 9 paper squares, not 3.",
+      "actionalBreakthroughJustification": "Learner writes the general formula, substitutes k=3, and predicts nine squares, then demands the nine boxes be marked — moving from case-bound doubt to algebraic rule governed by the grid.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The grid has settled the two-case. It has not yet earned the rule. [turns the marker around and writes on the empty board: side factor = k] Before three, make the examiner’s sentence. Write one line: 'If the side is multiplied by k, the area is multiplied by ___.' Then force the blank with one check: k across times k up. Only after that, set k = 3.",
+      "tutorReversalJustification": "Tutor recognizes the grid approach no longer suffices for the learner's leap to a general factor and introduces a new device (symbolic examiner's sentence with blank) that shifts the representation and cognitive demand before permitting k=3.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Then make the symbol slow. First row: one, two, three. Second row: four, five, six. Third row: seven, eight, nine. Three across and three up made three rows of three. So the exam sentence follows from the count: side factor k gives k rows of k. Area factor: k × k. For k = 3, 9.",
+      "tutorAdaptationJustification": "Tutor captures the learner's wish that 'the symbol by itself feels too quick' by slowing the count into rows and linking it explicitly to the k×k frame, thus accommodating the learner's revised epistemic demand.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I still think doubling the side should double it; that was my whole point with the drawing.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "The blank looks like k² if k means k copies across and k copies up. For k = 3, the count should be 3 × 3 = 9 paper squares, not 3.",
+          "justification": "Learner writes the general formula, substitutes k=3, and predicts nine squares, then demands the nine boxes be marked — moving from case-bound doubt to algebraic rule governed by the grid.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Then make the symbol slow. First row: one, two, three. Second row: four, five, six. Third row: seven, eight, nine. Three across and three up made three rows of three. So the exam sentence follows from the count: side factor k gives k rows of k. Area factor: k × k. For k = 3, 9.",
+          "justification": "Tutor captures the learner's wish that 'the symbol by itself feels too quick' by slowing the count into rows and linking it explicitly to the k×k frame, thus accommodating the learner's revised epistemic demand.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The grid has settled the two-case. It has not yet earned the rule. [turns the marker around and writes on the empty board: side factor = k] Before three, make the examiner’s sentence. Write one line: 'If the side is multiplied by k, the area is multiplied by ___.' Then force the blank with one check: k across times k up. Only after that, set k = 3.",
+          "justification": "Tutor recognizes the grid approach no longer suffices for the learner's leap to a general factor and introduces a new device (symbolic examiner's sentence with blank) that shifts the representation and cognitive demand before permitting k=3.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The grid has settled the two-case. It has not yet earned the rule. [turns the marker around and writes on the empty board: side factor = k] Before three, make the examiner’s sentence. Write one line: 'If the side is multiplied by k, the area is multiplied by ___.' Then force the blank with one check: k across times k up. Only after that, set k = 3.",
+          "justification": "Tutor recognizes the grid approach no longer suffices for the learner's leap to a general factor and introduces a new device (symbolic examiner's sentence with blank) that shifts the representation and cognitive demand before permitting k=3.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

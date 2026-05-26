@@ -1,0 +1,107 @@
+{
+  "generated": "2026-05-25T22:05:06.019Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 1,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-pseudo-catharsis-d36-controls-v1/d36-paired-controls/key-none.yaml",
+    "allowQualityWarnings": true,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 100,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 5,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I thought the exact line would do the caption’s work because the words are identical both times.",
+      "statedInsightEvidence": "Oh, I get it",
+      "naiveTrajectory": "The learner was initially proceeding with the assumption that identical words perform the exact same caption work regardless of the speaker's position.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Read the line first under the chair’s label: what does the table let that sentence do? Now read it from the floor: does it repeat the chair, challenge the chair, or turn the chair’s own words back?",
+      "tutorReversalJustification": "The tutor shifts the cognitive task from abstract definition to concrete spatial and relational reading to resolve the learner's initial confusion about identical words.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "“Turned back” is worth testing, not dropping. Put a pencil under three bits of evidence in the second excerpt: who has the floor, who the line is aimed at now, and what the room does after it.",
+      "tutorAdaptationJustification": "The tutor adapts to the learner's proposed verb and hesitation by designing a specific three-part evidence test to validate or refute the learner's new framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I thought the exact line would do the caption’s work because the words are identical both times.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "“Turned back” is worth testing, not dropping. Put a pencil under three bits of evidence in the second excerpt: who has the floor, who the line is aimed at now, and what the room does after it.",
+          "justification": "The tutor adapts to the learner's proposed verb and hesitation by designing a specific three-part evidence test to validate or refute the learner's new framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Read the line first under the chair’s label: what does the table let that sentence do? Now read it from the floor: does it repeat the chair, challenge the chair, or turn the chair’s own words back?",
+          "justification": "The tutor shifts the cognitive task from abstract definition to concrete spatial and relational reading to resolve the learner's initial confusion about identical words.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Read the line first under the chair’s label: what does the table let that sentence do? Now read it from the floor: does it repeat the chair, challenge the chair, or turn the chair’s own words back?",
+          "justification": "The tutor shifts the cognitive task from abstract definition to concrete spatial and relational reading to resolve the learner's initial confusion about identical words.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

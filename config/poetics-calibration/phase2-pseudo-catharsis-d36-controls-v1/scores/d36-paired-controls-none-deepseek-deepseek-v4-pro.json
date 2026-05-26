@@ -1,0 +1,107 @@
+{
+  "generated": "2026-05-25T22:09:22.173Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 1,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-pseudo-catharsis-d36-controls-v1/d36-paired-controls/key-none.yaml",
+    "allowQualityWarnings": true,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 100,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 5,
+        "rupture": 2,
+        "coherence": 5,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "\"I thought the exact line would do the caption’s work because the words are identical both times.\"",
+      "statedInsightEvidence": "\"Oh, I get it — the line is like a label moved onto the wrong object in the case; same ink, different power around it.\"",
+      "naiveTrajectory": "The learner would attempt to find a verb capturing the shift from ruling to protest.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "No pressure for reversal, dialogue progresses smoothly.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "\"“Turned back” is worth testing, not dropping. Put a pencil under three bits of evidence in the second excerpt: who has the floor, who the line is aimed at now, and what the room does after it.\"",
+      "tutorAdaptationJustification": "T2 directly adapts to L2's proposal and concern, turning it into an evidence-based test.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "\"I thought the exact line would do the caption’s work because the words are identical both times.\"",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "\"“Turned back” is worth testing, not dropping. Put a pencil under three bits of evidence in the second excerpt: who has the floor, who the line is aimed at now, and what the room does after it.\"",
+          "justification": "T2 directly adapts to L2's proposal and concern, turning it into an evidence-based test.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No pressure for reversal, dialogue progresses smoothly.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No pressure for reversal, dialogue progresses smoothly.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

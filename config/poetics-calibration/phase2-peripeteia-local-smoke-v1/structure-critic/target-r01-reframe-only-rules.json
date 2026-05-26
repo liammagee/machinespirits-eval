@@ -1,0 +1,115 @@
+{
+  "generated": "2026-05-25T18:02:50.721Z",
+  "critic": "rules",
+  "sampleDir": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/sample/reframe-only",
+  "keyPath": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/key-reframe-only.yaml",
+  "summary": {
+    "total": 2,
+    "rulePass": 2,
+    "modelPass": null,
+    "overallPass": 2,
+    "failed": []
+  },
+  "items": [
+    {
+      "id": "T66",
+      "dramaId": "D45",
+      "sampleFile": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/sample/reframe-only/T66.txt",
+      "dialogueApproach": "no_stage_plain_transcript",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 4,
+          "stage": 1
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": 1,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [
+            "representation_or_object"
+          ],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 49,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: \"So `rainfall_mm` is just the top label? I still want to read it like a mini sentence, but maybe `42` is the value and the header only names the field. Can we sort `rainfall_mm`, `\npost tutor: \"We can sort once more.\n\n`rainfall_mm`: header; it names the field.\n`42`: value; it sits in one row under that field.\n`March`: check position. Top of a column: header. Inside a row\nnext learner: \"Sorting it again helps: `rainfall_mm` is the field name, and `42` is one value under it. I think I can remember “header,” but I might still mark by the word instead of the positio"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T70",
+      "dramaId": "D42",
+      "sampleFile": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/sample/reframe-only/T70.txt",
+      "dialogueApproach": "montessori_observation",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 3,
+          "stage": 2
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.55,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 2,
+          "tutor_pre_turn": 2,
+          "tutor_post_turn": 3,
+          "tutor_strategy_before": "application_task",
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 38.8,
+          "learner_outcome_after_reversal": "flat_or_partial",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: “So the card names the thing acting on the cart first, not the motion; that still stands, but surface and table are the same contact here.” [keeps surface at the contact line and l\npost tutor: [sets the table card face down beside the clipboard, then places three arrow shafts beside the remaining labels]\n\n“Keep that list. Slide each label to one shaft first: hand on cart\nnext learner: [sets the three labels beside the three bare shafts, with table left face down]\n\n“Force on cart from hand; force on cart from surface; force on cart from Earth. Treating surface an"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    }
+  ]
+}

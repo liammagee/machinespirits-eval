@@ -1,0 +1,13 @@
+STAGE: [A blank cart diagram, four arrow labels, and a clear overlay printed "force on cart from ___" sit in a neat row under a desk lamp.]
+
+TUTOR: [sets the four label cards beside the cart diagram and taps the cart body once]
+
+“This cart is the object. No new arrows yet. Place each card beside the thing acting on the cart: hand, surface, Earth, table. The arrow direction can wait; first the label must name the interaction on the cart.”
+
+LEARNER: [slides the hand card beside the drawn hand, then pauses over the surface card]
+
+"So the card names the thing acting on the cart first, not the motion. Hand on cart, Earth on cart, surface on cart. The table card is the unclear one if the surface is already here."
+
+TUTOR: [sets the table card partly under the surface card at the contact line, pauses, then moves it outside the diagram]
+
+“Both cards reach the same contact. If this surface is the table, leave one contact label on the cart. Choose the card that stays, then read the cart’s labels again.”

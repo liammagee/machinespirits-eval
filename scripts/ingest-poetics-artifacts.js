@@ -222,6 +222,11 @@ function buildIngestPlan({ rootDir, runId = null, labels = [], labelsKey = null 
           flags: row.flags || [],
           metadata: {
             scoreId: row.id,
+            learning_signal_class: row.learningSignalClass ?? null,
+            actional_breakthrough: row.actionalBreakthrough ?? null,
+            actional_breakthrough_learner_turn: row.actionalBreakthroughLearnerTurn ?? null,
+            actional_breakthrough_evidence: row.actionalBreakthroughEvidence ?? null,
+            actional_breakthrough_justification: row.actionalBreakthroughJustification ?? null,
             rawScores: row.rawScores || null,
             role_symmetric_scores: row.roleSymmetricScores || null,
             reversal_trigger_learner_turn: row.reversalTriggerLearnerTurn ?? null,

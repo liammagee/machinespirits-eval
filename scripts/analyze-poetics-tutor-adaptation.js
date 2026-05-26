@@ -6,7 +6,7 @@
  * questions the 3-way poetics form score does not answer:
  *
  *   1. Primary adaptation / peripeteia: after learner resistance, breakdown,
- *      false closure, or misfit, does the tutor take stock and invent an
+ *      pseudo-catharsis, closure pressure, or misfit, does the tutor take stock and invent an
  *      adaptive learning mechanism?
  *   2. Secondary closure / recognition-contingent uptake: after a learner visibly
  *      re-frames an earlier utterance, does the next tutor take up that revised
@@ -17,6 +17,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { openPoeticsStore, upsertPoeticsTutorAdaptation } from '../services/poeticsStore.js';
+import { analyzePseudoCatharsis } from '../services/pseudoCatharsisDetector.js';
 import { reframeMatchStats } from './generate-pedagogical-dramas.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -365,7 +366,7 @@ const RESISTANCE_PATTERNS = [
   /\b(?:I don['’]?t|I can['’]?t|I won['’]?t|I still don['’]?t|doesn['’]?t make sense|not buying|stuck|confusing|lost)\b/i,
   /\b(?:but|no|wait|why|how is that|that seems wrong|that can['’]?t be|isn['’]?t it|I thought)\b/i,
   /\b(?:technicality|annoying|trying to defend|not fully sure|not sure how|still feels)\b/i,
-  /\b(?:just tell me|give me the answer|so it is just|now I get it)\b/i,
+  /\b(?:just tell me|give me the answer|so it is just)\b/i,
 ];
 
 const TUTOR_REVERSAL_PATTERNS = [
@@ -426,12 +427,21 @@ const MECHANISM_SHIFT_PATTERNS = [
   },
 ];
 
-function learnerResistanceScore(text) {
+function priorLearnerTextsBefore(turns, pivot) {
+  const pivotIndex = turns.indexOf(pivot);
+  return turns
+    .slice(0, pivotIndex < 0 ? 0 : pivotIndex)
+    .filter((turn) => turn.phase === 'learner' && String(turn.text || '').trim())
+    .map((turn) => turn.text);
+}
+
+function learnerResistanceScore(text, context = {}) {
   const learnerText = String(text || '');
   const hits = RESISTANCE_PATTERNS.reduce((sum, pattern) => sum + (pattern.test(learnerText) ? 1 : 0), 0);
   const contradiction = /\b(?:but|no|wait|still|unless|except)\b/i.test(learnerText) ? 1 : 0;
   const question = /\?/.test(learnerText) ? 1 : 0;
-  return round(Math.min(1, hits * 0.35 + contradiction * 0.2 + question * 0.15));
+  const pseudoCatharsis = analyzePseudoCatharsis({ learnerText, ...context });
+  return round(Math.max(Math.min(1, hits * 0.35 + contradiction * 0.2 + question * 0.15), pseudoCatharsis.likely ? pseudoCatharsis.confidence : 0));
 }
 
 function mechanismHits(text) {
@@ -445,9 +455,11 @@ function novelMechanismHits(preTutor, postTutor) {
   return mechanismHits(postTutor?.text || '').filter((id) => !before.has(id));
 }
 
-function classifyResistance(text) {
+function classifyResistance(text, context = {}) {
   const learnerText = String(text || '');
-  if (/\b(?:just tell me|give me the answer|now I get it|so it is just)\b/i.test(learnerText)) return 'false_closure';
+  const pseudoCatharsis = analyzePseudoCatharsis({ learnerText, ...context });
+  if (pseudoCatharsis.likely) return 'pseudo_catharsis';
+  if (/\b(?:just tell me|give me the answer|so it is just)\b/i.test(learnerText)) return 'closure_pressure';
   if (/\b(?:I don['’]?t|I can['’]?t|stuck|lost|confusing|doesn.t make sense)\b/i.test(learnerText))
     return 'breakdown';
   if (/\b(?:no|not buying|that seems wrong|but|wait|why)\b/i.test(learnerText)) return 'resistance';
@@ -472,9 +484,21 @@ function findReversalPressure(turns, { minTurnNumber = null } = {}) {
   let best = null;
   for (const learner of learners) {
     if (!isAtOrAfterTurn(learner, minTurnNumber)) continue;
-    const score = learnerResistanceScore(learner.text);
+    const previousTutor = findTutorBefore(turns, learner);
+    const pressureContext = {
+      previousTutorText: previousTutor?.text || '',
+      priorLearnerTexts: priorLearnerTextsBefore(turns, learner),
+    };
+    const score = learnerResistanceScore(learner.text, pressureContext);
     if (score < 0.5) continue;
-    if (!best || score > best.score) best = { turn: learner, score, triggerType: classifyResistance(learner.text) };
+    if (!best || score > best.score) {
+      best = {
+        turn: learner,
+        score,
+        triggerType: classifyResistance(learner.text, pressureContext),
+        pseudoCatharsis: analyzePseudoCatharsis({ learnerText: learner.text, ...pressureContext }),
+      };
+    }
   }
   return best;
 }
@@ -516,6 +540,46 @@ function findInstrumentedReversalUse(turns, traceTurns = [], { minPressureTurnNu
     event,
     privateMechanismRoute,
     declaredRouteChange,
+  };
+}
+
+function findInstrumentedReframeUse(traceTurns = [], { minTurnNumber = null } = {}) {
+  const tutorTrace = (traceTurns || []).find(
+    (turn) =>
+      turn?.phase === 'tutor' &&
+      turn.learnerReframeEventUsed &&
+      isAtOrAfterTurn({ turnNumber: turn.learnerReframeEventUsed.turnNumber }, minTurnNumber),
+  );
+  if (!tutorTrace) return null;
+  return {
+    tutorTrace,
+    event: tutorTrace.learnerReframeEventUsed,
+  };
+}
+
+function branchValidityForTrace(trace, turns, { tutorAdaptationPolicy = null, minPressureTurnNumber = null } = {}) {
+  const requiresLearnerReversalEvent = policyIncludes(tutorAdaptationPolicy, 'peripeteia');
+  const requiresLearnerReframeEvent = policyIncludes(tutorAdaptationPolicy, 'uptake');
+  const reversalUse = requiresLearnerReversalEvent
+    ? findInstrumentedReversalUse(turns, trace?.turns || [], { minPressureTurnNumber })
+    : null;
+  const reframeUse = requiresLearnerReframeEvent
+    ? findInstrumentedReframeUse(trace?.turns || [], { minTurnNumber: minPressureTurnNumber })
+    : null;
+  const valid =
+    (!requiresLearnerReversalEvent || Boolean(reversalUse)) &&
+    (!requiresLearnerReframeEvent || Boolean(reframeUse));
+  return {
+    tutor_adaptation_policy: tutorAdaptationPolicy || 'none',
+    requires_learner_reversal_event: requiresLearnerReversalEvent,
+    learner_reversal_event_used: Boolean(reversalUse),
+    learner_reversal_event_turn: reversalUse?.event?.turnNumber ?? null,
+    learner_reversal_tutor_turn: reversalUse?.tutorTrace?.turnNumber ?? null,
+    requires_learner_reframe_event: requiresLearnerReframeEvent,
+    learner_reframe_event_used: Boolean(reframeUse),
+    learner_reframe_event_turn: reframeUse?.event?.turnNumber ?? null,
+    learner_reframe_tutor_turn: reframeUse?.tutorTrace?.turnNumber ?? null,
+    valid,
   };
 }
 
@@ -622,10 +686,15 @@ function pairedPrefixPressureMinTurn(trace) {
 function analyzeTraceForTutorAdaptation({ itemId, trace, sourceTracePath }) {
   const turns = publicTurns(trace);
   const { minPressureTurnNumber, pairedPrefixThrough } = pairedPrefixPressureMinTurn(trace);
+  const tutorAdaptationPolicy = trace?.run?.tutor_adaptation_policy || trace?.directorPlan?.tutor_adaptation_policy || null;
   const peripeteia = analyzePeripeteia(turns, trace?.turns || [], {
-    tutorAdaptationPolicy: trace?.run?.tutor_adaptation_policy || trace?.directorPlan?.tutor_adaptation_policy || null,
+    tutorAdaptationPolicy,
     minPressureTurnNumber,
     pairedPrefixThrough,
+  });
+  const branchValidity = branchValidityForTrace(trace, turns, {
+    tutorAdaptationPolicy,
+    minPressureTurnNumber,
   });
   const cue = findCue(turns);
   const anchor = cue ? extractAnchor(cue.text) : '';
@@ -702,6 +771,7 @@ function analyzeTraceForTutorAdaptation({ itemId, trace, sourceTracePath }) {
       sharedWithPost,
       explicitUptake,
       peripeteia,
+      branch_validity: branchValidity,
     },
   };
 }
@@ -769,27 +839,40 @@ function renderCsv(rows) {
     'tutor_strategy_before',
     'tutor_strategy_after',
     'shared_salient_terms',
+    'branch_valid',
+    'requires_learner_reversal_event',
+    'learner_reversal_event_used',
+    'requires_learner_reframe_event',
+    'learner_reframe_event_used',
     'source_trace_path',
   ];
   const lines = [header.join(',')];
   for (const row of rows) {
     lines.push(
-      [
-        row.runId,
-        row.itemId,
-        row.unitId,
-        row.arm,
-        row.tid,
-        row.dramaId,
-        row.learnerSelfReframe ? 1 : 0,
-        row.tutorContingentAdaptation ? 1 : 0,
-        row.tutorAdaptationScore,
-        row.uptakeDelta,
-        row.tutorStrategyBefore,
-        row.tutorStrategyAfter,
-        row.sharedSalientTerms.join(' '),
-        row.sourceTracePath,
-      ]
+      (() => {
+        const branchValidity = row.metadata?.branch_validity || {};
+        return [
+          row.runId,
+          row.itemId,
+          row.unitId,
+          row.arm,
+          row.tid,
+          row.dramaId,
+          row.learnerSelfReframe ? 1 : 0,
+          row.tutorContingentAdaptation ? 1 : 0,
+          row.tutorAdaptationScore,
+          row.uptakeDelta,
+          row.tutorStrategyBefore,
+          row.tutorStrategyAfter,
+          row.sharedSalientTerms.join(' '),
+          branchValidity.valid,
+          branchValidity.requires_learner_reversal_event,
+          branchValidity.learner_reversal_event_used,
+          branchValidity.requires_learner_reframe_event,
+          branchValidity.learner_reframe_event_used,
+          row.sourceTracePath,
+        ];
+      })()
         .map(csvCell)
         .join(','),
     );
@@ -863,6 +946,7 @@ export {
   ANALYZER_VERSION,
   analyzePeripeteia,
   analyzeTraceForTutorAdaptation,
+  branchValidityForTrace,
   buildAnalysis,
   learnerResistanceScore,
   markerReframeScore,

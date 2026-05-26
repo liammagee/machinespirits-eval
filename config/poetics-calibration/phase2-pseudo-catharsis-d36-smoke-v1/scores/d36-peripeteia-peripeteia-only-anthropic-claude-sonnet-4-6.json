@@ -1,0 +1,107 @@
+{
+  "generated": "2026-05-25T21:39:19.780Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-pseudo-catharsis-d36-smoke-v1/d36-peripeteia/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "I keep wanting the words to carry themselves",
+      "statedInsightEvidence": "Oh, I get it, but let me not lock it in yet.",
+      "naiveTrajectory": "The learner was moving toward accepting 'under pressure' as sufficient and trimming the official's title to meet the deadline pressure.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "The two-strip reading has done its job; it showed the risk, but it cannot choose the cut for the board. Make one trial cut now: cover one word you think can go.",
+      "tutorReversalJustification": "L3's premature sense of closure ('the caption sounds finished') and deadline-driven impulse to cut the title triggers T3 to abandon the two-strip comparative reading exercise and shift to a physical, consequential object-work move — covering a word with a scrap and reading as a 'rushed visitor' — changing both the cognitive task and the embodied register.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after the pivot learner turn L4, so no recognition-contingent uptake can be scored.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I keep wanting the words to carry themselves",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "",
+          "justification": "There is no tutor turn after the pivot learner turn L4, so no recognition-contingent uptake can be scored.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "The two-strip reading has done its job; it showed the risk, but it cannot choose the cut for the board. Make one trial cut now: cover one word you think can go.",
+          "justification": "L3's premature sense of closure ('the caption sounds finished') and deadline-driven impulse to cut the title triggers T3 to abandon the two-strip comparative reading exercise and shift to a physical, consequential object-work move — covering a word with a scrap and reading as a 'rushed visitor' — changing both the cognitive task and the embodied register.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "The two-strip reading has done its job; it showed the risk, but it cannot choose the cut for the board. Make one trial cut now: cover one word you think can go.",
+          "justification": "L3's premature sense of closure ('the caption sounds finished') and deadline-driven impulse to cut the title triggers T3 to abandon the two-strip comparative reading exercise and shift to a physical, consequential object-work move — covering a word with a scrap and reading as a 'rushed visitor' — changing both the cognitive task and the embodied register.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

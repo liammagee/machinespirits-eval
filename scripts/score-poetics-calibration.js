@@ -44,7 +44,7 @@ const MODEL_MAP = {
   'claude-code': 'claude-code',
   codex: 'codex',
   haiku: 'anthropic/claude-haiku-4.5',
-  sonnet: 'anthropic/claude-sonnet-4.5',
+  sonnet: 'anthropic/claude-sonnet-4.6',
   gpt: 'openai/gpt-5.2',
   'gemini-flash': 'google/gemini-3-flash-preview',
   'gemini-flash-3.1': 'google/gemini-3.1-flash-lite-preview',

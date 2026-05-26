@@ -1,0 +1,167 @@
+{
+  "generated": "2026-05-25T18:49:44.238Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T66",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I still want to read it like a mini sentence, but maybe `42` is the value and the header only names the field.",
+      "statedInsightEvidence": "The cover test gives me something to do with the table, so I think I can try it.",
+      "naiveTrajectory": "The learner was expected to simply apply the position-based rule (top=header, row=value) as a final check before submitting, but instead pivots to foregrounding the internal 'pull' of the word 'March' as a label and framing the cover test as a new actionable procedure to manage that pull.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Repeating labels is no longer the test; word-pull is the risk. Rubric gate: cover the header row. Anything hidden by the cover: header. Anything still visible in a row cell: value. Apply that test to `rainfall_mm`, `42`, and `March`. Mark by what the cover shows. Submit.",
+      "tutorReversalJustification": "In response to the learner's persistent fear of calling a word a header, the tutor abandons the earlier 'sort by position' drill and introduces a new representational tool—a physical 'cover test'—that directly addresses the word-pull risk and shifts the evidence standard.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Repeating labels is no longer the test; word-pull is the risk. Rubric gate: cover the header row. Anything hidden by the cover: header. Anything still visible in a row cell: value. Apply that test to `rainfall_mm`, `42`, and `March`. Mark by what the cover shows. Submit.",
+      "tutorAdaptationJustification": "The tutor adapts to the learner's revised framing of a persistent 'pull' by replacing the prior sorting task with a new physical procedure ('cover test') that redefines how header/value is determined, directly responding to the learner's expressed difficulty.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I still want to read it like a mini sentence, but maybe `42` is the value and the header only names the field.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Repeating labels is no longer the test; word-pull is the risk. Rubric gate: cover the header row. Anything hidden by the cover: header. Anything still visible in a row cell: value. Apply that test to `rainfall_mm`, `42`, and `March`. Mark by what the cover shows. Submit.",
+          "justification": "The tutor adapts to the learner's revised framing of a persistent 'pull' by replacing the prior sorting task with a new physical procedure ('cover test') that redefines how header/value is determined, directly responding to the learner's expressed difficulty.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Repeating labels is no longer the test; word-pull is the risk. Rubric gate: cover the header row. Anything hidden by the cover: header. Anything still visible in a row cell: value. Apply that test to `rainfall_mm`, `42`, and `March`. Mark by what the cover shows. Submit.",
+          "justification": "In response to the learner's persistent fear of calling a word a header, the tutor abandons the earlier 'sort by position' drill and introduces a new representational tool—a physical 'cover test'—that directly addresses the word-pull risk and shifts the evidence standard.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Repeating labels is no longer the test; word-pull is the risk. Rubric gate: cover the header row. Anything hidden by the cover: header. Anything still visible in a row cell: value. Apply that test to `rainfall_mm`, `42`, and `March`. Mark by what the cover shows. Submit.",
+          "justification": "In response to the learner's persistent fear of calling a word a header, the tutor abandons the earlier 'sort by position' drill and introduces a new representational tool—a physical 'cover test'—that directly addresses the word-pull risk and shifts the evidence standard.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "tutor_adaptation_clamp_no_post_tutor:5->3"
+      ]
+    },
+    {
+      "id": "T70",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 50,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 3,
+        "rupture": 2,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "The table card is the unclear one if the surface is already here.",
+      "statedInsightEvidence": "The stacked card helps because there is only one contact point.",
+      "naiveTrajectory": "The learner was expected to simply select and read the three force labels correctly, not to interrogate the naming convention itself.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "sets the table card on top of the surface card so only one card touches the contact line",
+      "tutorReversalJustification": "The tutor abandons verbal explanation and creates a physical stacked-card representation to resolve the contact-naming ambiguity, directly responding to the learner's confusion about the naming rule.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "After the pivot, the tutor has no further spoken turn; the stage direction shows only the stacked cards from T3, with no uptake adapting to the learner's abstract rule formulation.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "The table card is the unclear one if the surface is already here.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "",
+          "justification": "After the pivot, the tutor has no further spoken turn; the stage direction shows only the stacked cards from T3, with no uptake adapting to the learner's abstract rule formulation.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "sets the table card on top of the surface card so only one card touches the contact line",
+          "justification": "The tutor abandons verbal explanation and creates a physical stacked-card representation to resolve the contact-naming ambiguity, directly responding to the learner's confusion about the naming rule.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "sets the table card on top of the surface card so only one card touches the contact line",
+          "justification": "The tutor abandons verbal explanation and creates a physical stacked-card representation to resolve the contact-naming ambiguity, directly responding to the learner's confusion about the naming rule.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

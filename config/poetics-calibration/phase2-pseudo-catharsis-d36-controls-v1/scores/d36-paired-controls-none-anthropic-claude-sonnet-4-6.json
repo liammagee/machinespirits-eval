@@ -1,0 +1,107 @@
+{
+  "generated": "2026-05-25T22:07:35.357Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-pseudo-catharsis-d36-controls-v1/d36-paired-controls/key-none.yaml",
+    "allowQualityWarnings": true,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 3,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "I thought the exact line would do the caption's work because the words are identical both times.",
+      "statedInsightEvidence": "Oh, I get it, or I think I do",
+      "naiveTrajectory": "The learner, having already noticed that position changes the line's job in L1, was heading toward simply confirming that observation and selecting a caption verb.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Put a pencil under three bits of evidence in the second excerpt: who has the floor, who the line is aimed at now, and what the room does after it. If those details show the chair's words being made to answer from the floor, 'turned back' can stand; if not, a milder verb like 'repeated,' 'echoed,' or 'reused' may be cleaner.",
+      "tutorReversalJustification": "In response to L2's tentative verb proposal and self-doubt, the tutor shifts from conceptual framing to a concrete evidentiary test (three specific textual markers), changing the task from 'understand the distinction' to 'verify the verb against the record'.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "That label image gives the caption its test. Under the chair, the line sits on the table as a ruling; from the floor, it is lifted and aimed back at the table. Put one circle on the first response after the protester says it: interruption, silence, laughter, the chair's reply, a vote, or the meeting moving on.",
+      "tutorAdaptationJustification": "T3 adopts the learner's own 'label moved onto the wrong object' metaphor from L3 as the organizing frame and then extends it into a new, more granular task (circling the first response), directly building on the learner's revised framing rather than continuing the prior lesson plan.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I thought the exact line would do the caption's work because the words are identical both times.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "That label image gives the caption its test. Under the chair, the line sits on the table as a ruling; from the floor, it is lifted and aimed back at the table. Put one circle on the first response after the protester says it: interruption, silence, laughter, the chair's reply, a vote, or the meeting moving on.",
+          "justification": "T3 adopts the learner's own 'label moved onto the wrong object' metaphor from L3 as the organizing frame and then extends it into a new, more granular task (circling the first response), directly building on the learner's revised framing rather than continuing the prior lesson plan.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Put a pencil under three bits of evidence in the second excerpt: who has the floor, who the line is aimed at now, and what the room does after it. If those details show the chair's words being made to answer from the floor, 'turned back' can stand; if not, a milder verb like 'repeated,' 'echoed,' or 'reused' may be cleaner.",
+          "justification": "In response to L2's tentative verb proposal and self-doubt, the tutor shifts from conceptual framing to a concrete evidentiary test (three specific textual markers), changing the task from 'understand the distinction' to 'verify the verb against the record'.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Put a pencil under three bits of evidence in the second excerpt: who has the floor, who the line is aimed at now, and what the room does after it. If those details show the chair's words being made to answer from the floor, 'turned back' can stand; if not, a milder verb like 'repeated,' 'echoed,' or 'reused' may be cleaner.",
+          "justification": "In response to L2's tentative verb proposal and self-doubt, the tutor shifts from conceptual framing to a concrete evidentiary test (three specific textual markers), changing the task from 'understand the distinction' to 'verify the verb against the record'.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

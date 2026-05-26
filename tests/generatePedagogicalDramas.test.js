@@ -47,12 +47,13 @@ function warningsForReframeLine({ tid, dramaId, anchor, learnerText }) {
 }
 
 describe('generate-pedagogical-dramas', () => {
-  it('renders public speaker turns as direct speech with square-bracket action asides', () => {
+  it('renders public speaker turns as unquoted direct speech with square-bracket action asides', () => {
     assert.equal(
       formatPublicTurnText('TUTOR', '(points at the graph) Try line two.'),
-      '[points at the graph]\n\n"Try line two."',
+      '[points at the graph]\n\nTry line two.',
     );
-    assert.equal(formatPublicTurnText('LEARNER', 'I think (x + 1) still matters.'), '"I think (x + 1) still matters."');
+    assert.equal(formatPublicTurnText('LEARNER', 'I think (x + 1) still matters.'), 'I think (x + 1) still matters.');
+    assert.equal(formatPublicTurnText('LEARNER', '"Now I see the header is a field."'), 'Now I see the header is a field.');
     assert.equal(formatPublicTurnText('STAGE', 'A timer clicks.'), '[A timer clicks.]');
   });
 

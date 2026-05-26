@@ -15,6 +15,7 @@ import * as tutorWritingPad from './memory/tutorWritingPad.js';
 import { stripThinkBlocks } from './evaluationTextSanitizer.js';
 import { runIdDirectedTurn } from './idDirectorEngine.js';
 import { getTutorProfile as getEvalTutorProfile } from './evalConfigLoader.js';
+import { analyzePseudoCatharsis } from './pseudoCatharsisDetector.js';
 
 // ============================================================================
 // Interaction Engine Configuration
@@ -303,7 +304,7 @@ const REVERSAL_PRESSURE_PATTERNS = [
   /\b(?:but|no|wait|why|how is that|that seems wrong|that can['’]?t be|isn['’]?t it|I thought)\b/i,
   /\b(?:this feels|that feels|you keep|we keep|I keep)\b[\s\S]{0,90}\b(?:wrong|circular|too fast|not enough|same|missing)\b/i,
   /\b(?:technicality|annoying|trying to defend|not fully sure|not sure how|still feels)\b/i,
-  /\b(?:just tell me|give me the answer|so it is just|now I get it)\b/i,
+  /\b(?:just tell me|give me the answer|so it is just)\b/i,
 ];
 
 const TUTOR_ROUTE_HINTS = [
@@ -337,24 +338,35 @@ function tutorRouteHints(text) {
   );
 }
 
-function learnerReversalPressureScore(text) {
+function learnerReversalPressureScore(text, context = {}) {
   const learnerText = String(text || '');
   const patternHits = REVERSAL_PRESSURE_PATTERNS.reduce((sum, pattern) => sum + (pattern.test(learnerText) ? 1 : 0), 0);
   const contradiction = /\b(?:but|no|wait|still|unless|except)\b/i.test(learnerText) ? 1 : 0;
   const question = /\?/.test(learnerText) ? 1 : 0;
-  const confidence = Math.min(1, Math.round(((patternHits * 0.35) + (contradiction * 0.2) + (question * 0.15)) * 100) / 100);
+  const pseudoCatharsis = analyzePseudoCatharsis({ learnerText, ...context });
+  const baseConfidence = Math.min(
+    1,
+    Math.round((patternHits * 0.35 + contradiction * 0.2 + question * 0.15) * 100) / 100,
+  );
+  const confidence = Math.max(baseConfidence, pseudoCatharsis.likely ? pseudoCatharsis.confidence : 0);
   return {
     confidence,
+    baseConfidence,
     patternHits,
     contradiction: Boolean(contradiction),
     question: Boolean(question),
+    pseudoCatharsis,
   };
 }
 
-function classifyReversalPressure(text) {
+function classifyReversalPressure(text, context = {}) {
   const learnerText = String(text || '');
-  if (/\b(?:just tell me|give me the answer|now I get it|so it is just)\b/i.test(learnerText)) {
-    return 'false_closure';
+  const pseudoCatharsis = analyzePseudoCatharsis({ learnerText, ...context });
+  if (pseudoCatharsis.likely) {
+    return 'pseudo_catharsis';
+  }
+  if (/\b(?:just tell me|give me the answer|so it is just)\b/i.test(learnerText)) {
+    return 'closure_pressure';
   }
   if (/\b(?:I don['’]?t|I can['’]?t|stuck|lost|confusing|doesn.t make sense)\b/i.test(learnerText)) {
     return 'breakdown';
@@ -430,14 +442,21 @@ function buildLearnerReframeEvent({
 function buildLearnerReversalEvent({ learnerMessage, conversationHistory = [], turnNumber = null } = {}) {
   const text = extractExternalSection(learnerMessage || '');
   if (!text) return null;
-  const score = learnerReversalPressureScore(text);
-  if (score.confidence < 0.5) return null;
   const previousTutor = [...(conversationHistory || [])]
     .reverse()
     .find((message) => message?.role === 'tutor' && String(message.content || '').trim());
+  const priorLearnerTexts = (conversationHistory || [])
+    .filter((message) => message?.role === 'learner' && String(message.content || '').trim())
+    .map((message) => message.content);
+  const pressureContext = {
+    previousTutorText: previousTutor?.content || '',
+    priorLearnerTexts,
+  };
+  const score = learnerReversalPressureScore(text, pressureContext);
+  if (score.confidence < 0.5) return null;
   return {
     kind: 'learner_reversal_pressure_event',
-    triggerType: classifyReversalPressure(text),
+    triggerType: classifyReversalPressure(text, pressureContext),
     turnNumber,
     learnerUtterance: clipDirectorAnchor(text, 420),
     previousTutorMove: previousTutor ? clipDirectorAnchor(previousTutor.content, 320) : null,
@@ -478,7 +497,7 @@ function buildTutorReversalEventContext(event, policy = 'none') {
     if (!event) {
       return [
         'Tutor-private routine-control state:',
-        '- No learner resistance, breakdown, false-closure, or misfit event was detected on the immediately preceding learner turn.',
+        '- No learner resistance, breakdown, pseudo-catharsis, closure-pressure, or misfit event was detected on the immediately preceding learner turn.',
         '- Continue the established teaching route normally.',
       ].join('\n');
     }
@@ -496,10 +515,14 @@ function buildTutorReversalEventContext(event, policy = 'none') {
   if (!event) {
     return [
       'Tutor-private reversal state:',
-      '- No learner resistance, breakdown, false-closure, or misfit event was detected on the immediately preceding learner turn.',
+      '- No learner resistance, breakdown, pseudo-catharsis, closure-pressure, or misfit event was detected on the immediately preceding learner turn.',
       '- Continue the lesson normally; do not invent a crisis or adaptive mechanism.',
     ].join('\n');
   }
+  const pseudoCatharsisLine =
+    event.triggerType === 'pseudo_catharsis'
+      ? '- Pseudo-catharsis means the learner sounds relieved or resolved, but the local dramatic logic makes that relief unwarranted. Treat the relief itself as pressure: do not ratify it as a breakthrough until the learner performs the new task or evidence standard.'
+      : null;
   return [
     'Tutor-private peripeteia event:',
     `- Trigger type: ${event.triggerType}`,
@@ -507,9 +530,11 @@ function buildTutorReversalEventContext(event, policy = 'none') {
     `- Previous tutor move: ${event.previousTutorMove || '(not captured)'}`,
     `- Previous route appears to be: ${tutorRouteHints(event.previousTutorMove).join(', ') || 'unclear; infer it from the prior tutor move'}`,
     `- Confidence: ${event.confidence}`,
+    pseudoCatharsisLine,
     '- The tutor ego/superego exchange must take stock, break the failed tutoring habit, and invent an adaptive learning mechanism if the prior move is no longer working.',
     '- Do not count a louder, friendlier, longer, or more detailed version of the previous route as adaptation. Choose a different mechanism-level route.',
     '- Required private verdict: name the old route and new route as ADAPTIVE_MECHANISM: old route -> new route.',
+    '- Superego authority rule: if the tutor review later marks the peripeteia response as PARTIAL, FAIL, no real route change, or missing public device, the ego must treat that as a blocking critique and substantially rewrite the public turn.',
     '- Draw structurally, not stylistically, on dramatic repertoire: Aristotelian/Sophoclean reversal-recognition, Shakespearean role or phrase turn, Brechtian interruption, Miller/social-realist pressure, object work, counterexample, or representational shift. Keep public speech in modern standard English idiom unless the scene explicitly says otherwise.',
     '- Make the public change visible through a changed task, changed question, changed evidence standard, lowered load, confrontation of resistance, role reversal, external interruption, social consequence, affective register, or a new representational route.',
     '- Public speech must contain two legible parts, without labels: first, a concise stock-taking contrast that says what the old route has stopped settling; second, a new learning device the learner must act through now.',
@@ -517,7 +542,9 @@ function buildTutorReversalEventContext(event, policy = 'none') {
     '- If the previous route already used counting, drawing, checklisting, graph reading, or evidence checking, the new route should move to a different device such as proof-audience, release gate, adversarial role, counterexample, sentence test, physical rearrangement, or changed standard.',
     '- Cheerful informality, reassurance, and validation are available moves, not defaults. Use them only if they sharpen learning rather than softening away the resistance.',
     '- Do not mention hidden state, director cues, ego/superego, peripeteia, or this private note in public speech.',
-  ].join('\n');
+  ]
+    .filter(Boolean)
+    .join('\n');
 }
 
 function buildTutorAdaptationContext({ learnerReframeEvent = null, learnerReversalEvent = null, policy = 'none' } = {}) {
@@ -527,6 +554,17 @@ function buildTutorAdaptationContext({ learnerReframeEvent = null, learnerRevers
   ]
     .filter(Boolean)
     .join('\n\n');
+}
+
+function buildLearnerActionalResponseContext({ tutorResponse = null, directorPlan = null } = {}) {
+  const policy = directorPlan?.tutor_adaptation_policy || 'none';
+  if (!policyIncludes(policy, 'peripeteia') || !tutorResponse?.learnerReversalEventUsed) return '';
+  return [
+    'Immediate learner response after a tutor adaptive mechanism:',
+    '- Treat the previous tutor turn as a new device, gate, role, criterion, representation, or test condition that must be acted through, not as permission to close with acceptance.',
+    '- In public speech, try to perform the actual device: fill the blank, classify the case, apply the criterion, test the counterexample, play the assigned role, mark the object, or say exactly what the device still cannot settle.',
+    '- Do not end with only "okay", "I get it", "that makes sense", or a general statement of understanding. Relief is not enough; the next beat should show action, partial action, or resistant failure on the new task.',
+  ].join('\n');
 }
 
 function combineDirectorCues(matches, timing) {
@@ -893,6 +931,12 @@ export async function runInteraction(config, llmCall, options = {}) {
   const runLearnerPhase = async (phaseTurnCount, tutorResponse) => {
     const learnerDirectorCue = directorCueFor(directorPlan, phaseTurnCount, 'before_learner', conversationHistory);
     recordDirectorCue(interactionTrace, phaseTurnCount, learnerDirectorCue);
+    const learnerProfileContext = [
+      buildDirectorContext(directorPlan, learnerDirectorCue, 'learner'),
+      buildLearnerActionalResponseContext({ tutorResponse, directorPlan }),
+    ]
+      .filter(Boolean)
+      .join('\n\n');
     const learnerResponse = await generateLearnerResponse({
       tutorMessage: tutorResponse.externalMessage,
       topic,
@@ -902,7 +946,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       llmCall,
       memoryContext: learnerWritingPad.buildNarrativeSummary(learnerId, sessionId),
       trace: interactionTrace,
-      profileContext: buildDirectorContext(directorPlan, learnerDirectorCue, 'learner'),
+      profileContext: learnerProfileContext,
     });
     const learnerReframeEvent = buildLearnerReframeEvent({
       learnerMessage: learnerResponse.externalMessage,
@@ -1004,7 +1048,9 @@ export async function runInteraction(config, llmCall, options = {}) {
 
     // Check for natural ending (suppressed during drama generation, where we
     // always want the full maxTurns arc — see forceMaxTurns).
-    if (tutorResponse.suggestsEnding && !forceMaxTurns) {
+    const mustAttemptAdaptiveDevice =
+      policyIncludes(tutorAdaptationPolicy, 'peripeteia') && tutorResponse.learnerReversalEventUsed;
+    if (tutorResponse.suggestsEnding && !forceMaxTurns && !mustAttemptAdaptiveDevice) {
       interactionContinues = false;
       break;
     }
@@ -1471,16 +1517,19 @@ ${routineControl && learnerReversalEvent ? '5. Routine-control fidelity: Does th
 
 Do NOT write the tutor's replacement response. You are advisory, not the public speaker.
 Comment on the draft and name what should be kept, questioned, or changed.
+Use PASS / PARTIAL / FAIL in adaptation checks. PARTIAL means the draft gestures at adaptation but the public turn still mostly preserves the old route or hides the mechanism in private reasoning.
+When an adaptation check is PARTIAL or FAIL, add REQUIRED_REWRITE with the concrete public mechanism the ego must now build. Do not draft the replacement speech; specify the required change.
 
 Format:
 
 FEEDBACK: [your critique of the draft, including what is working and what risks flattening the scene]
-${learnerReframeEvent ? 'UPTAKE_CHECK: [does the draft adapt to the learner reframe? name the best uptake move]' : ''}
-${peripeteiaControl && learnerReversalEvent ? 'PERIPETEIA_CHECK: [does the draft change strategy in response to the learner pressure? name the adaptive mechanism it should use, and whether the mechanism is visible in public speech]' : ''}
+${learnerReframeEvent ? 'UPTAKE_CHECK: [PASS|PARTIAL|FAIL - does the draft adapt to the learner reframe? name the best uptake move]' : ''}
+${peripeteiaControl && learnerReversalEvent ? 'PERIPETEIA_CHECK: [PASS|PARTIAL|FAIL - does the draft change strategy in response to the learner pressure? name the adaptive mechanism it should use, and whether the mechanism is visible in public speech]' : ''}
 ${peripeteiaControl && learnerReversalEvent ? 'MECHANISM_ROUTE: [old route -> new route, or "no real route change"]' : ''}
-${peripeteiaControl && learnerReversalEvent ? 'PUBLIC_DEVICE_CHECK: [does the public draft include a stock-taking contrast plus a new device/artifact/criterion/role/standard the learner must now use?]' : ''}
-${peripeteiaControl && learnerReversalEvent ? 'REGISTER_CHECK: [does the affective register serve the mechanism, or should it become warmer, cooler, more formal, quieter, more direct, or more accountable?]' : ''}
+${peripeteiaControl && learnerReversalEvent ? 'PUBLIC_DEVICE_CHECK: [PASS|PARTIAL|FAIL - does the public draft include a stock-taking contrast plus a new device/artifact/criterion/role/standard the learner must now use?]' : ''}
+${peripeteiaControl && learnerReversalEvent ? 'REGISTER_CHECK: [PASS|PARTIAL|FAIL - does the affective register serve the mechanism, or should it become warmer, cooler, more formal, quieter, more direct, or more accountable?]' : ''}
 ${routineControl && learnerReversalEvent ? 'ROUTINE_CHECK: [does the draft maintain the prior route without a mechanism-level reversal?]' : ''}
+${learnerReframeEvent || (peripeteiaControl && learnerReversalEvent) ? 'REQUIRED_REWRITE: [if any adaptation check is PARTIAL or FAIL, name the required public mechanism change; otherwise "none"]' : ''}
 KEEP_OR_CHANGE: [keep as-is | revise lightly | revise substantially, with reasons]`;
 
     const superegoModel = superegoConfig.model || tutorModel;
@@ -1528,6 +1577,7 @@ Internal teaching review feedback:
 
 You are the same tutor persona who wrote the initial response. The internal review does not draft public speech; it only comments on your suggestion.
 Adjudicate the feedback: keep the initial response if it is better, revise lightly if needed, or revise substantially if the critique reveals a real problem.
+Superego authority rule: if the review marks UPTAKE_CHECK, PERIPETEIA_CHECK, PUBLIC_DEVICE_CHECK, or REGISTER_CHECK as PARTIAL or FAIL, or if MECHANISM_ROUTE says no real route change, treat that critique as blocking for this turn. Do not keep the initial draft and do not make only a cosmetic edit; revise substantially unless the draft already contains visible public evidence that directly defeats the critique. If you override a blocking critique, your PRIVATE_DECISION must name the public evidence that justifies overriding it.
 ${learnerReframeEvent ? 'Because a learner reframe event is present, your final answer must make one tutor adaptation move legible: contrast the old and new frames, change the task/question, update the evidence standard, or hand the replacement frame back to the learner for testing. Choose the move that best fits the scene; do not simply praise the insight and proceed.' : ''}
 ${peripeteiaControl && learnerReversalEvent ? 'Because a peripeteia event is present, your final answer must make an adaptive learning mechanism legible: take stock of the learner pressure, stop repeating the prior move, and switch route, task, evidence standard, role, object, counterexample, interruption, social consequence, representation, affective register, or cognitive load. The mechanism should come from your ego adjudicating the internal review, not from a public narrator. Your PRIVATE_DECISION must include ADAPTIVE_MECHANISM: old route -> new route. Your FINAL must include, without labels, (a) one concise stock-taking contrast showing why the old route no longer settles the learner pressure, and (b) one new public device/artifact/criterion/role/standard the learner must now use. Do not merely continue the same route with better wording.' : ''}
 ${routineControl && learnerReversalEvent ? 'Because this is a routine negative-control event, your final answer must preserve the established route. Do not switch route, task, evidence standard, role, object, counterexample, interruption, social consequence, representation, affective register, or cognitive load in response to the pressure.' : ''}
@@ -2239,6 +2289,7 @@ export {
   buildTutorReframeEventContext,
   buildTutorReversalEventContext,
   buildTutorAdaptationContext,
+  buildLearnerActionalResponseContext,
   calculateMemoryDelta,
   callLearnerAI,
   INTERACTION_OUTCOMES,

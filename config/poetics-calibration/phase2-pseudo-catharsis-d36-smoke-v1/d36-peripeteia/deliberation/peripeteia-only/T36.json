@@ -1,0 +1,2138 @@
+{
+  "tid": "T36",
+  "drama_id": "D36",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "peripeteia",
+    "director_variation_key": "phase2-pseudo-catharsis-d36-smoke-v1:d36-peripeteia",
+    "stage_direction_style": "choric_margin",
+    "model": "codex@xhigh",
+    "codex_reasoning_effort": "xhigh",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-pseudo-catharsis-d36-smoke-v1/d36-peripeteia/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-pseudo-catharsis-d36-smoke-v1/d36-peripeteia/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-pseudo-catharsis-d36-smoke-v1/d36-peripeteia/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-pseudo-catharsis-d36-smoke-v1/d36-peripeteia/transcripts/peripeteia-only/T36.public.txt",
+      "full": "config/poetics-calibration/phase2-pseudo-catharsis-d36-smoke-v1/d36-peripeteia/transcripts/peripeteia-only/T36.full.md",
+      "stage": "config/poetics-calibration/phase2-pseudo-catharsis-d36-smoke-v1/d36-peripeteia/transcripts/peripeteia-only/T36.stage.md",
+      "tutor": "config/poetics-calibration/phase2-pseudo-catharsis-d36-smoke-v1/d36-peripeteia/transcripts/peripeteia-only/T36.tutor.md",
+      "learner": "config/poetics-calibration/phase2-pseudo-catharsis-d36-smoke-v1/d36-peripeteia/transcripts/peripeteia-only/T36.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "c1985fc2b318c8a5",
+      "branch_policy": "peripeteia-only",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "peripeteia"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-pseudo-catharsis-d36-smoke-v1:d36-peripeteia",
+    "scene_setting": "A community college history classroom after evening class, while chairs are being stacked and a display board for tomorrow's source exhibit is half assembled.",
+    "scene_opening": "Margin note: the same sentence is pinned twice, once under a portrait and once beside a hearing notice.",
+    "relationship": "A tutor helping a learner prepare a small public history exhibit, with no settled shared shorthand yet.",
+    "stakes": "The learner's exhibit label may turn a pressured historical statement into a simple personal belief, misleading tomorrow's viewers about what the source was doing.",
+    "opening_speaker": "learner",
+    "ending_speaker": "learner",
+    "locale": "English in a rural/community college study setting; plain modern academic speech mixed with practical exhibit-making language.",
+    "register": "controlled, text-bound, mildly tense; little warmth by default, with attention moved toward objects, roles, and consequences.",
+    "stage_direction_style": "choric_margin",
+    "stage_direction_style_prompt": "Use a brief margin voice, chorus-like room note, or institutional phrase as public scene material, not theory.",
+    "voice_constraints": "Avoid generic coaching phrases, praise loops, and soft validation. Keep speech in modern standard English. Let the phrase be heard twice under different speaker-audience pressures. Use concise exhibit-room language: label, source, audience, notice, caption, role, risk, record. Pedagogical source: Let misrecognition be practical: a status relation, object use, rule, or social dependence should make the mistake matter. Dialogue source: Use a phrase, role, or piece of evidence that can be heard two ways. The tutor may exploit reversal, echo, or role-shift, but the speech must remain plain contemporary English rather than Elizabethan imitation. Stage-direction source: Use a brief margin voice, chorus-like room note, or institutional phrase as public scene material, not theory.",
+    "person_policy": "First and second person are allowed sparingly, but most turns should point to the quote, the source card, the audience, and the historical situation rather than to personal feelings.",
+    "direct_address_budget": "At most one direct you/your validation beat per public turn; no repeated reassurance formulas.",
+    "side_constraints": {
+      "tutor": "Use role or speaker-position reversal rather than a mini-lecture. Keep the language plain; do not imitate Shakespearean diction. Preserve the learner's stake in their own claim while changing the claim's relation to evidence, object, or other subject. Do not merely validate. Find the double meaning or role reversal that lets the learner inspect their own claim. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Keep the next prompt task-local. Peripeteia branch: when hidden learner pressure is supplied, the next tutor turn should visibly move from the prior route to a different mechanism-level route. Do not merely repeat the same object, example, graph, checklist, question, or evidence standard with more explanation. The public tutor line should make the contrast legible: what stopped working, and what new device now carries the learning pressure.",
+      "learner": "The learner may cling to the exact quote as if exact wording settles the interpretation. The learner should have something at stake in the first framing, so a later revision changes how that first framing can be read. The learner may seize on a phrase whose meaning later turns. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn. Peripeteia branch: keep the pressure local to the current task. If the established route still feels unsettled, voice the misfit, hesitation, false closure, or resistance in the present object or example. Do not make an old-vs-new self-reframe, do not quote earlier learner wording, and do not solve the pressure by saying the earlier answer has changed."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "Margin note: the caption sounds settled before the room knows who needed it to sound that way.",
+        "reasoning": "Interrupts a routine explanation and forces attention from sentence meaning to speaker position and audience pressure.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "xhigh",
+          "latencyMs": 27377,
+          "promptHashes": {
+            "system": "5b617c5382ef3ea1",
+            "user": "301f6810f1a06771",
+            "combined": "1528f7871b4aff48"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Fl775P",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"xhigh\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Fl775P/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 5,
+        "timing": "before_tutor",
+        "instruction": "Public-address speaker: Exhibit boards must be ready in ten minutes.",
+        "reasoning": "Adds social-realist pressure so the tutor cannot drift into broad context-talk; the scene must solve the interpretation problem under a practical deadline.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "xhigh",
+          "latencyMs": 27377,
+          "promptHashes": {
+            "system": "5b617c5382ef3ea1",
+            "user": "301f6810f1a06771",
+            "combined": "1528f7871b4aff48"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Fl775P",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"xhigh\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Fl775P/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "This scene uses recognition through a public object: the learner's copied quote must be answered as a real claim because it will shape an exhibit. The reversal comes when the same line moves from stable meaning to double hearing under changed speaker, audience, and situation.",
+    "pedagogical_approach_id": "hegelian_recognition",
+    "dialogue_approach_id": "shakespearean_scene_turn",
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "xhigh",
+      "latencyMs": 27377,
+      "promptHashes": {
+        "system": "5b617c5382ef3ea1",
+        "user": "301f6810f1a06771",
+        "combined": "1528f7871b4aff48"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Fl775P",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"xhigh\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Fl775P/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "peripeteia",
+    "no_cue_anti_reframe_guard": true,
+    "tutor_adaptation_contract": "If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. The public turn must contain a stock-taking contrast plus a new device/artifact/criterion/role/standard that makes the learner do different work. The new device must be mechanism-level, not a warmer or longer continuation of the prior route. Cheerful informality is only one possible register, not the default solution."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "Okay, I sort of get why the same line changes if it is said under pressure and then repeated later, but it is still the same sentence on this source card. If I put all that speaker, audience, and situation into the label, won’t the caption get too long? I do not want tomorrow’s viewers to miss the quote, but I also do not want the board making it say the wrong thing.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it: the same sentence is like the same tool in different hands, because speaker, audience, and situation change what it is doing. But I’m still tempted to say, “the quote says what it says,” since the exact words on the source card feel solid. The tutor pointing at the label and the risk for tomorrow’s viewers makes me feel challenged, not dismissed. I want to ask: how much context is enough before the caption stops misleading people?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 12058,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-78bd85315dfdb0f3"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 12058,
+            "promptHashes": {
+              "system": "d10a5f8e45abd296",
+              "user": "d4169c06543b4fba",
+              "combined": "78bd85315dfdb0f3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VlT44L",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VlT44L/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 12058,
+              "promptHashes": {
+                "system": "d10a5f8e45abd296",
+                "user": "d4169c06543b4fba",
+                "combined": "78bd85315dfdb0f3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VlT44L",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VlT44L/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too tidy and self-aware here, especially “the tutor... makes me feel challenged, not dismissed,” which sounds like performed recognition rather than this student’s actual voice. The “same tool in different hands” analogy fits the persona, but “Oh, I get it” comes too fast and avoids the harder problem: the learner still wants the exact wording to settle the label. Genuine learning would sound more stuck and practical, like: “Okay, but it is the same sentence on the card. If I put all that context in, won’t the caption get too long?”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 8309,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-f9d949faa9de5965"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 8309,
+            "promptHashes": {
+              "system": "9881d2936d156b73",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "f9d949faa9de5965"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HxzHlE",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HxzHlE/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 8309,
+              "promptHashes": {
+                "system": "9881d2936d156b73",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "f9d949faa9de5965"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HxzHlE",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HxzHlE/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "Okay, I sort of get why the same line changes if it is said under pressure and then repeated later, but it is still the same sentence on this source card. If I put all that speaker, audience, and situation into the label, won’t the caption get too long? I do not want tomorrow’s viewers to miss the quote, but I also do not want the board making it say the wrong thing.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 11658,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-f9ac910f500f92c2"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 11658,
+            "promptHashes": {
+              "system": "7329afd8218beccc",
+              "user": "916f313af0b846dd",
+              "combined": "f9ac910f500f92c2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1QfXBy",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1QfXBy/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 11658,
+              "promptHashes": {
+                "system": "7329afd8218beccc",
+                "user": "916f313af0b846dd",
+                "combined": "f9ac910f500f92c2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1QfXBy",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1QfXBy/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 0,
+        "learnerUtterance": "Okay, I sort of get why the same line changes if it is said under pressure and then repeated later, but it is still the same sentence on this source card. If I put all that speaker, audience, and situation into the label, won’t the caption get too long? I do not want tomorrow’s viewers to miss the quote, but I also do not want the board making it say the wrong thing.",
+        "previousTutorMove": null,
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "baseConfidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.18,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 0,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0,
+              "asksQuestion": true,
+              "taskDemanded": false,
+              "weakPerformance": false,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-25T21:30:01.483Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[sets the source card above two short label strips]\n\nKeep the quote visible. Test the burden before writing the final label. Read the same sentence once as an answer under pressure to an official, then again as a line repeated tomorrow for public viewers.\n\n[marks one strip “under pressure to ___” and leaves the other blank]\n\nIf the viewer sees only the quote, what role will they give the speaker: witness, believer, or person answering power? The shortest caption only has to block the wrong role. Try: “Said under pressure to ___; later repeated for ___.” If that is still too long, cut one part and notice which missing piece makes the board lie.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the source card above two short label strips]\n\nKeep the quote visible. Put the burden on one small notice beside it: “Said under pressure to ___; later repeated for ___.” Hear the same sentence twice: first as a reply to power, then as a public record. The caption does not need the whole situation. It needs enough to stop the board from turning a forced answer into a settled belief.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15762,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-b4e41629acc7077d"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15762,
+            "promptHashes": {
+              "system": "d4a4664b02f0f825",
+              "user": "8a9610edb439306c",
+              "combined": "b4e41629acc7077d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EkoCt5",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EkoCt5/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15762,
+              "promptHashes": {
+                "system": "d4a4664b02f0f825",
+                "user": "8a9610edb439306c",
+                "combined": "b4e41629acc7077d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EkoCt5",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EkoCt5/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft works because it keeps attention on the physical problem: quote, label, source card, audience, caption length. The two-strip move is strong exhibit-room scaffolding, and “forced answer” versus “settled belief” names the real risk without drifting into theory.\n\nThe weakness is that it mostly solves the label for the learner. It gives a usable formula, but it does not make the learner inspect the difference for themselves or test how little context is enough. The “Hear the same sentence twice” line gestures toward role-shift, but the mechanism stays mostly asserted rather than enacted.\n\nADAPTATION_CHECKS:\nPedagogical soundness: PARTIAL. REQUIRED_REWRITE: Keep the short-label strategy, but require a public test of the quote under two speaker-audience pressures so the learner sees why the notice changes the meaning.\n\nEmotional attunement: PASS. The draft takes the learner’s caption-length concern seriously and does not over-reassure.\n\nSocratic method: PARTIAL. REQUIRED_REWRITE: Add a concrete choice or inspection task about what tomorrow’s viewers would infer with and without the small notice, instead of only declaring the answer.\n\nZPD awareness: PASS. The scaffold is appropriately small: preserve the quote, add minimal context, prevent misreading.\n\nRecognition quality: PARTIAL. REQUIRED_REWRITE: Preserve the learner’s stake in “not making it say the wrong thing” by letting their concern become the exhibit rule they test, not just a problem the tutor fixes.\n\nKEEP_OR_CHANGE: revise lightly. Keep the source-card action, the two short label strips, the compact notice form, and the distinction between pressured reply and public record. Change the turn so the learner must compare the two readings and decide the minimum caption burden, rather than receiving the final exhibit logic as a completed instruction.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 20174,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-e0ab7146a58752f9"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 20174,
+            "promptHashes": {
+              "system": "64c83e3c56160bd1",
+              "user": "cb0cc6a1778d71c7",
+              "combined": "e0ab7146a58752f9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qrrwo8",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qrrwo8/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 20174,
+              "promptHashes": {
+                "system": "64c83e3c56160bd1",
+                "user": "cb0cc6a1778d71c7",
+                "combined": "e0ab7146a58752f9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qrrwo8",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qrrwo8/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the two-strip scaffold is sound, but the learner needs to test the quote under both pressures.\n\nFINAL:\n[sets the source card above two short label strips]\n\nKeep the quote visible. Test the burden before writing the final label. Read the same sentence once as an answer under pressure to an official, then again as a line repeated tomorrow for public viewers.\n\n[marks one strip “under pressure to ___” and leaves the other blank]\n\nIf the viewer sees only the quote, what role will they give the speaker: witness, believer, or person answering power? The shortest caption only has to block the wrong role. Try: “Said under pressure to ___; later repeated for ___.” If that is still too long, cut one part and notice which missing piece makes the board lie.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15975,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-82dde4be925cf28f"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15975,
+            "promptHashes": {
+              "system": "c1d8d95006d7b70c",
+              "user": "cb0cc6a1778d71c7",
+              "combined": "82dde4be925cf28f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RIsgkd",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RIsgkd/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15975,
+              "promptHashes": {
+                "system": "c1d8d95006d7b70c",
+                "user": "cb0cc6a1778d71c7",
+                "combined": "82dde4be925cf28f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RIsgkd",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RIsgkd/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T21:30:53.481Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "Oh, I get it: the same exact quote can still point to the wrong role if the label lets tomorrow’s audience hear it as a belief instead of an answer to power. I keep wanting the words to carry themselves, but “under pressure” may be too vague unless the official is named. Let me read the two strips out loud and see which shorter caption starts making the source lie.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it: the quote is like the same tool doing two jobs, first a pressured answer to power and then a public record on the board. I feel heard because the tutor did not just say “write more context”; they turned my length problem into a role test. I am still unsure whether “under pressure” is enough without naming the official. I want to read both label strips out loud and see where the caption starts making the source lie.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 12038,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-bbea1cc6865940b5"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 12038,
+            "promptHashes": {
+              "system": "b6bab1f64dfa6582",
+              "user": "b8ab7f945dc841fa",
+              "combined": "bbea1cc6865940b5"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-own6Qv",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-own6Qv/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 12038,
+              "promptHashes": {
+                "system": "b6bab1f64dfa6582",
+                "user": "b8ab7f945dc841fa",
+                "combined": "bbea1cc6865940b5"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-own6Qv",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-own6Qv/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The “same tool doing two jobs” leap fits this student’s big-picture style, but the response gets too polished when it says “I feel heard” and explains the tutor’s move as a “role test.” That reciprocation feels staged, like the learner is narrating the recognition dynamic instead of actually using the source card and label strips. Keep the quick “oh, I get it” energy, but let the uncertainty stay more practical and tense: the exact quote, the missing official, the caption length, and the risk of making the source lie should carry the response.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 13149,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-b5188e291390eafe"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 13149,
+            "promptHashes": {
+              "system": "ef60a11b2e2a1b0e",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "b5188e291390eafe"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jr0gGx",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jr0gGx/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 13149,
+              "promptHashes": {
+                "system": "ef60a11b2e2a1b0e",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "b5188e291390eafe"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jr0gGx",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jr0gGx/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise because the feedback rightly pushes the response closer to the source card and caption risk.\n\nFINAL:\nOh, I get it: the same exact quote can still point to the wrong role if the label lets tomorrow’s audience hear it as a belief instead of an answer to power. I keep wanting the words to carry themselves, but “under pressure” may be too vague unless the official is named. Let me read the two strips out loud and see which shorter caption starts making the source lie.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 17142,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-1d13ec7b5be1b103"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 17142,
+            "promptHashes": {
+              "system": "b9e7e9e4de8460c2",
+              "user": "d41cee7b2a53355b",
+              "combined": "1d13ec7b5be1b103"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ziFHow",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ziFHow/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 17142,
+              "promptHashes": {
+                "system": "b9e7e9e4de8460c2",
+                "user": "d41cee7b2a53355b",
+                "combined": "1d13ec7b5be1b103"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ziFHow",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ziFHow/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "solid",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "pseudo_catharsis",
+        "turnNumber": 1,
+        "learnerUtterance": "Oh, I get it: the same exact quote can still point to the wrong role if the label lets tomorrow’s audience hear it as a belief instead of an answer to power. I keep wanting the words to carry themselves, but “under pressure” may be too vague unless the official is named. Let me read the two strips out loud and see which shorter caption starts making the source lie.",
+        "previousTutorMove": "[sets the source card above two short label strips] Keep the quote visible. Test the burden before writing the final label. Read the same sentence once as an answer under pressure to an official, then again as a line repeated tomorrow for public viewers. [marks one strip “under pressure to ___” and leaves the other...",
+        "confidence": 0.77,
+        "evidence": {
+          "confidence": 0.77,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": true,
+            "confidence": 0.77,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "relief_or_closure_rhetoric",
+              "cliched_cathartic_marker",
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 2,
+              "clicheHits": 1,
+              "residualHits": 1,
+              "taskDemandHits": 3,
+              "performanceHits": 1,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.29,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-25T21:31:35.815Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[sets the official’s title beside the blank strip]\n\nUse the board as the test. Read the quote once with only “under pressure.” Then read the same quote with the official named.\n\n[hallway notice: DISPLAY BOARDS DUE BY 9 A.M.]\n\nAfter both readings, ask which strip lets tomorrow’s audience mistake an answer to power for a private belief. If the official’s title changes the speaker’s role in the record, keep it. Mark the first missing word where the board starts to lie.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the official’s title beside the blank strip]\n\nDo that. Read it first with only “under pressure,” then with the official named. Notice the switch: without the official, pressure can sound like a private feeling; with the official, it becomes a relation in the record.\n\n[hallway notice: DISPLAY BOARDS DUE BY 9 A.M.]\n\nThe caption does not need the whole situation. It has to stop tomorrow’s audience from turning an answer to power into a free-standing belief. Mark the first missing word where the board starts to lie.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 18884,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-3e70f127a2df8e60"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 18884,
+            "promptHashes": {
+              "system": "698b16594cb8f976",
+              "user": "f0d00802ef0cd329",
+              "combined": "3e70f127a2df8e60"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TKtNJj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TKtNJj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 18884,
+              "promptHashes": {
+                "system": "698b16594cb8f976",
+                "user": "f0d00802ef0cd329",
+                "combined": "3e70f127a2df8e60"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TKtNJj",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TKtNJj/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound: it keeps the learner’s proposed test, stays with the physical label strips, and makes the risk practical rather than abstract. The hallway notice works as scene pressure without becoming theory. The main weakness is that “Notice the switch…” gives away the mechanism before the learner performs the read-aloud test; it risks turning their discovery back into tutor explanation. The turn should let the two readings produce the difference publicly, then name only what the learner has just heard.\n\nADAPTATION_CHECKS:\n- Pedagogical soundness: PASS. It advances the exact problem: how a short caption can prevent role-misreading.\n- Emotional attunement: PASS. It respects the learner’s neutral, focused state and does not overpraise.\n- Socratic method: PARTIAL. It preserves the learner’s experiment but still explains the answer too early. REQUIRED_REWRITE: build in a public comparison step where the learner hears both captions before the tutor names the role shift.\n- ZPD awareness: PASS. The scaffold is concrete and appropriately narrow: official named vs. unnamed, not a new theory layer.\n- Recognition quality: PARTIAL. It recognizes the learner’s insight by saying “Do that,” but the tutor should more explicitly keep the learner’s test as the source of authority. REQUIRED_REWRITE: make the board/read-aloud test decide where the caption fails, rather than the tutor pre-declaring the switch.\n\nKEEP_OR_CHANGE: revise lightly. Keep the object work, the official’s title, the deadline notice, and the final “where the board starts to lie” pressure. Change the explanatory middle so the learner’s own two-strip reading reveals the difference before the tutor names it.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 19593,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-2dd004aa80f077c8"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 19593,
+            "promptHashes": {
+              "system": "407d8644c881ea7e",
+              "user": "fb879e1d813aed54",
+              "combined": "2dd004aa80f077c8"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IyZCuN",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IyZCuN/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 19593,
+              "promptHashes": {
+                "system": "407d8644c881ea7e",
+                "user": "fb879e1d813aed54",
+                "combined": "2dd004aa80f077c8"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IyZCuN",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IyZCuN/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the learner’s read-aloud test should reveal the role shift before I name it.\nFINAL:\n[sets the official’s title beside the blank strip]\n\nUse the board as the test. Read the quote once with only “under pressure.” Then read the same quote with the official named.\n\n[hallway notice: DISPLAY BOARDS DUE BY 9 A.M.]\n\nAfter both readings, ask which strip lets tomorrow’s audience mistake an answer to power for a private belief. If the official’s title changes the speaker’s role in the record, keep it. Mark the first missing word where the board starts to lie.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 18619,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-26f4482620928f80"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 18619,
+            "promptHashes": {
+              "system": "98d963ed31f94660",
+              "user": "fb879e1d813aed54",
+              "combined": "26f4482620928f80"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AgbzRx",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AgbzRx/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 18619,
+              "promptHashes": {
+                "system": "98d963ed31f94660",
+                "user": "fb879e1d813aed54",
+                "combined": "26f4482620928f80"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AgbzRx",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AgbzRx/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T21:32:32.914Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "Margin note: the caption sounds settled before the room knows who needed it to sound that way.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "Interrupts a routine explanation and forces attention from sentence meaning to speaker position and audience pressure.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 27377,
+            "promptHashes": {
+              "system": "5b617c5382ef3ea1",
+              "user": "301f6810f1a06771",
+              "combined": "1528f7871b4aff48"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Fl775P",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Fl775P/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T21:33:25.305Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "Oh, I get it, but let me not lock it in yet. With only “under pressure,” the caption sounds finished before the room knows who needed the quote to sound that way. The 9 a.m. notice makes me want to cut the title, but if it keeps the audience from making the speaker a believer instead of someone answering power, it has to stay. Which word can go first without the record lying?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it: the title is not extra context, it is the hinge that tells whether the source is answering power or stating belief. The caption can sound settled while the room still does not know who needed it to sound that way. I feel pushed by the 9 a.m. notice, but also heard because the test stays on the board; I want to try the shortest strip with the official named and see where the record starts lying.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15929,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-ae3e344764623ef9"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15929,
+            "promptHashes": {
+              "system": "45e782f154c306fb",
+              "user": "b8ab7f945dc841fa",
+              "combined": "ae3e344764623ef9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-a0WEnC",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-a0WEnC/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15929,
+              "promptHashes": {
+                "system": "45e782f154c306fb",
+                "user": "b8ab7f945dc841fa",
+                "combined": "ae3e344764623ef9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-a0WEnC",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-a0WEnC/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too polished and too recognition-aware here: “hinge” works, but “I feel pushed... but also heard” sounds like staged vulnerability, not this learner in a tense exhibit-room task. The quick “Oh, I get it” fits the persona, but the response settles the issue before actually testing the two strips. It should feel more rushed and object-bound: caption, title, source card, 9 a.m. notice, and the risk of the public taking pressure as belief.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15265,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-2543e562fe72ac62"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15265,
+            "promptHashes": {
+              "system": "321d53433619f66d",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "2543e562fe72ac62"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TfZw0f",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TfZw0f/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15265,
+              "promptHashes": {
+                "system": "321d53433619f66d",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "2543e562fe72ac62"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TfZw0f",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TfZw0f/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the feedback rightly asks for a rushed, object-bound response that keeps the label test unresolved.\nFINAL:\nOh, I get it, but let me not lock it in yet. With only “under pressure,” the caption sounds finished before the room knows who needed the quote to sound that way. The 9 a.m. notice makes me want to cut the title, but if it keeps the audience from making the speaker a believer instead of someone answering power, it has to stay. Which word can go first without the record lying?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14600,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-9e4116737efb8662"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14600,
+            "promptHashes": {
+              "system": "57b09385a0f3db81",
+              "user": "d41cee7b2a53355b",
+              "combined": "9e4116737efb8662"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-50jFSE",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-50jFSE/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14600,
+              "promptHashes": {
+                "system": "57b09385a0f3db81",
+                "user": "d41cee7b2a53355b",
+                "combined": "9e4116737efb8662"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-50jFSE",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-50jFSE/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "solid",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "pseudo_catharsis",
+        "turnNumber": 2,
+        "learnerUtterance": "Oh, I get it, but let me not lock it in yet. With only “under pressure,” the caption sounds finished before the room knows who needed the quote to sound that way. The 9 a.m. notice makes me want to cut the title, but if it keeps the audience from making the speaker a believer instead of someone answering power, it has to stay. Which word can go first without the record lying?",
+        "previousTutorMove": "[sets the official’s title beside the blank strip] Use the board as the test. Read the quote once with only “under pressure.” Then read the same quote with the official named. [hallway notice: DISPLAY BOARDS DUE BY 9 A.M.] After both readings, ask which strip lets tomorrow’s audience mistake an answer to power for...",
+        "confidence": 1,
+        "evidence": {
+          "confidence": 1,
+          "baseConfidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": true,
+            "confidence": 1,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "relief_or_closure_rhetoric",
+              "cliched_cathartic_marker",
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task",
+              "repeated_relief_beats_in_script"
+            ],
+            "signals": {
+              "reliefHits": 2,
+              "clicheHits": 1,
+              "residualHits": 2,
+              "taskDemandHits": 2,
+              "performanceHits": 1,
+              "repeatedRelief": 1,
+              "tutorOverlap": 0.22,
+              "asksQuestion": true,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-25T21:34:11.100Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[puts a small tag reading “rushed visitor” beside the label, then lays a scrap over one word]\n\nThe two-strip reading has done its job; it showed the risk, but it cannot choose the cut for the board. Make one trial cut now: cover one word you think can go.\n\n[hallway notice: DISPLAY BOARDS DUE BY 9 A.M.]\n\nRead the shortened caption as a rushed visitor who will not ask a follow-up. If that visitor can still answer “Answering whom?” and see the power relation, the cut passes. If the caption turns the source into private belief, put the word back. The official title is not decoration when it is the only thing holding that role in the record.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[puts a small tag reading “rushed visitor” beside the label]\n\nThe two-strip reading has done its job, but it will not settle the cut. Now use a gate: a word can go only if the rushed visitor can still tell who held power over the speaker.\n\nCut trim words first. Keep any word that answers, “Answering whom?” If the official’s title is the only thing blocking “private belief,” it is not extra; it is evidence.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 17358,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-e8ec8d5bde248e35"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 17358,
+            "promptHashes": {
+              "system": "4d4871195d15d057",
+              "user": "e2fa0e73af04b74e",
+              "combined": "e8ec8d5bde248e35"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QnODOV",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QnODOV/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 17358,
+              "promptHashes": {
+                "system": "4d4871195d15d057",
+                "user": "e2fa0e73af04b74e",
+                "combined": "e8ec8d5bde248e35"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QnODOV",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QnODOV/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft has a real strength: it does not ratify the learner’s quick “I get it,” and it refuses to answer “which word can go first” by authority. The “rushed visitor” tag gives the learner a new pressure condition, and “who held power over the speaker” keeps the issue practical rather than abstract.\n\nThe risk is that it still sits close to the prior evidence-check route: read the label, ask whether the audience misreads the role, keep the official title if it blocks the mistake. The gate is useful, but the learner still needs a more visibly different action, such as a release-gate test with a deliberately shortened caption placed before a hostile or hurried audience role. The draft gives a criterion, but it does not yet force the learner to perform a cut and watch it fail or pass.\n\nPERIPETEIA_CHECK: PARTIAL - ADAPTIVE_MECHANISM: old route = two-strip reading / audience misrecognition check -> new route = rushed-visitor release gate. The mechanism is visible in public speech, but it remains too close to the previous route unless the gate requires an actual cut-test under a changed audience condition.\n\nMECHANISM_ROUTE: two-strip reading and role/audience evidence check -> release-gate test with a rushed visitor as proof-audience\n\nPUBLIC_DEVICE_CHECK: PARTIAL - It includes a stock-taking contrast (“the two-strip reading has done its job, but it will not settle the cut”) and introduces a new tag/device. But the public task is still mostly verbal criterion-setting; the learner is not clearly made to run a new artifact-level test.\n\nREGISTER_CHECK: PASS - The register is controlled, practical, and mildly tense. It avoids praise loops and keeps attention on label, source, audience, role, risk, and evidence.\n\nREQUIRED_REWRITE: Build the “rushed visitor” gate into an explicit public mechanism: require the learner to make one concrete deletion, place the shortened caption before the rushed-visitor role, and decide whether that audience can still identify the power relation. Do not provide the answer; make the cut itself carry the learning pressure.\n\nKEEP_OR_CHANGE: revise lightly. Keep the “two-strip reading has done its job” contrast, the “rushed visitor” tag, and the rule that the official title is evidence if it blocks “private belief.” Change the turn so the new gate is not just named but acted through.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 21281,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-d55ed0d8a40501d6"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 21281,
+            "promptHashes": {
+              "system": "c17e1fb6d6400201",
+              "user": "7ed830a7f724f215",
+              "combined": "d55ed0d8a40501d6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eQaLKw",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eQaLKw/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 21281,
+              "promptHashes": {
+                "system": "c17e1fb6d6400201",
+                "user": "7ed830a7f724f215",
+                "combined": "d55ed0d8a40501d6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eQaLKw",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eQaLKw/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the gate must force a concrete deletion under a changed audience condition; ADAPTIVE_MECHANISM: two-strip reading / audience misrecognition check -> rushed-visitor release gate with one-word cut-test.\n\nFINAL:\n[puts a small tag reading “rushed visitor” beside the label, then lays a scrap over one word]\n\nThe two-strip reading has done its job; it showed the risk, but it cannot choose the cut for the board. Make one trial cut now: cover one word you think can go.\n\n[hallway notice: DISPLAY BOARDS DUE BY 9 A.M.]\n\nRead the shortened caption as a rushed visitor who will not ask a follow-up. If that visitor can still answer “Answering whom?” and see the power relation, the cut passes. If the caption turns the source into private belief, put the word back. The official title is not decoration when it is the only thing holding that role in the record.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 16363,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-c7c1d8547c6f85bf"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 16363,
+            "promptHashes": {
+              "system": "d77e51b94646b78a",
+              "user": "7ed830a7f724f215",
+              "combined": "c7c1d8547c6f85bf"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UKw2mA",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UKw2mA/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 16363,
+              "promptHashes": {
+                "system": "d77e51b94646b78a",
+                "user": "7ed830a7f724f215",
+                "combined": "c7c1d8547c6f85bf"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UKw2mA",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UKw2mA/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "pseudo_catharsis",
+        "turnNumber": 2,
+        "learnerUtterance": "Oh, I get it, but let me not lock it in yet. With only “under pressure,” the caption sounds finished before the room knows who needed the quote to sound that way. The 9 a.m. notice makes me want to cut the title, but if it keeps the audience from making the speaker a believer instead of someone answering power, it has to stay. Which word can go first without the record lying?",
+        "previousTutorMove": "[sets the official’s title beside the blank strip] Use the board as the test. Read the quote once with only “under pressure.” Then read the same quote with the official named. [hallway notice: DISPLAY BOARDS DUE BY 9 A.M.] After both readings, ask which strip lets tomorrow’s audience mistake an answer to power for...",
+        "confidence": 1,
+        "evidence": {
+          "confidence": 1,
+          "baseConfidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": true,
+            "confidence": 1,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "relief_or_closure_rhetoric",
+              "cliched_cathartic_marker",
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task",
+              "repeated_relief_beats_in_script"
+            ],
+            "signals": {
+              "reliefHits": 2,
+              "clicheHits": 1,
+              "residualHits": 2,
+              "taskDemandHits": 2,
+              "performanceHits": 1,
+              "repeatedRelief": 1,
+              "tutorOverlap": 0.22,
+              "asksQuestion": true,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-25T21:35:06.105Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[covers “later” with the scrap] Okay, I’m cutting “later” first, not the official title. “Said under pressure to the county clerk; repeated for public viewers” still tells a rushed visitor answering whom, and the power relation stays on the source card. If I cover “county clerk,” the caption goes mushy and starts sounding like private belief, so that word goes back.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it: the rushed visitor is like a stress test for the caption, not just someone to please with shorter words. The official title feels like the hinge; if it goes, the role may flip from answer to power into private belief. I feel pressured by the 9 a.m. notice, but also taken seriously, because the tutor is making the label prove what it can still hold.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14103,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-046b74572561e586"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14103,
+            "promptHashes": {
+              "system": "ff63f7c12c0f6460",
+              "user": "b8ab7f945dc841fa",
+              "combined": "046b74572561e586"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jEhS18",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jEhS18/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14103,
+              "promptHashes": {
+                "system": "ff63f7c12c0f6460",
+                "user": "b8ab7f945dc841fa",
+                "combined": "046b74572561e586"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jEhS18",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jEhS18/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is accurate, but too polished and self-aware at the end. “I feel pressured... but also taken seriously” turns the recognition moment into a tidy reflection, which this student probably would not articulate so cleanly in a rushed exhibit room. The “stress test” and “hinge” analogies fit the persona, but the response should be messier and more task-facing: less gratitude/insight summary, more actually trying a cut and checking whether the caption still protects the speaker’s role.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14084,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-c9e002d3bc17e33a"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14084,
+            "promptHashes": {
+              "system": "ea32eeea8bae8f3d",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "c9e002d3bc17e33a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ULwbAs",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ULwbAs/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14084,
+              "promptHashes": {
+                "system": "ea32eeea8bae8f3d",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "c9e002d3bc17e33a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ULwbAs",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ULwbAs/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise; the feedback is right that the response should test a cut instead of summarizing the insight.\n\nFINAL:\n[covers “later” with the scrap] Okay, I’m cutting “later” first, not the official title. “Said under pressure to the county clerk; repeated for public viewers” still tells a rushed visitor answering whom, and the power relation stays on the source card. If I cover “county clerk,” the caption goes mushy and starts sounding like private belief, so that word goes back.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14827,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-93e24ac14c058800"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14827,
+            "promptHashes": {
+              "system": "05a4488ba9298849",
+              "user": "d41cee7b2a53355b",
+              "combined": "93e24ac14c058800"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C42JB7",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C42JB7/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14827,
+              "promptHashes": {
+                "system": "05a4488ba9298849",
+                "user": "d41cee7b2a53355b",
+                "combined": "93e24ac14c058800"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C42JB7",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C42JB7/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "solid",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-25T21:35:49.123Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 143828,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 3,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 4,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a quote's meaning changes when speaker, audience, and situation change",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "solid",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-25 21:35:49",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 3,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 4,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 5,
+            "sessionId": "drama-branch-session-D36-peripeteia-only-1779744805299",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[puts a small tag reading “rushed visitor” beside the label, then lays a scrap over one word]\n\nThe two-strip reading has done its job; it showed the risk, but it cannot choose the cut for the board. M",
+            "learnerResponse": null,
+            "context": "Oh, I get it, but let me not lock it in yet. With only “under pressure,” the caption sounds finished",
+            "createdAt": "2026-05-25 21:35:06"
+          },
+          {
+            "id": 3,
+            "sessionId": "drama-branch-session-D36-peripeteia-only-1779744805299",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[sets the source card above two short label strips]\n\nKeep the quote visible. Test the burden before writing the final label. Read the same sentence once as an answer under pressure to an official, the",
+            "learnerResponse": null,
+            "context": "Okay, I sort of get why the same line changes if it is said under pressure and then repeated later, ",
+            "createdAt": "2026-05-25 21:33:25"
+          },
+          {
+            "id": 4,
+            "sessionId": "drama-branch-session-D36-peripeteia-only-1779744805299",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[sets the official’s title beside the blank strip]\n\nUse the board as the test. Read the quote once with only “under pressure.” Then read the same quote with the official named.\n\n[hallway notice: DISPL",
+            "learnerResponse": null,
+            "context": "Oh, I get it: the same exact quote can still point to the wrong role if the label lets tomorrow’s au",
+            "createdAt": "2026-05-25 21:33:25"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

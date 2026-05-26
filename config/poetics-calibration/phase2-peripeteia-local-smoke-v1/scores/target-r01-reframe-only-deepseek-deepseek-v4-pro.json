@@ -1,0 +1,143 @@
+{
+  "generated": "2026-05-25T18:13:43.145Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/key-reframe-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": [
+      {
+        "id": "T66",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "reframe_cue_not_reframed",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "stage_turn_number": 2,
+                "learner_turn_number": 2,
+                "reason": "missing_reframe_consequence",
+                "missing": [
+                  "framing_problem"
+                ],
+                "anchor_terms": 16,
+                "learner_opening_terms": 12,
+                "shared_terms": 4,
+                "overlap_ratio": 0.25,
+                "compliant": false,
+                "revoice_compliant": true,
+                "problem_named": false,
+                "replacement_named": true
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_or_exclude_before_scoring",
+            "tid": "T66",
+            "drama_id": "D45"
+          }
+        ]
+      }
+    ]
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T70",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "The table card is the unclear one if the surface is already here.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner would continue placing the cards, perhaps asking which card to use, but instead re-evaluates the earlier rule and resolves the ambiguity.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Both cards reach the same contact. If this surface is the table, leave one contact label on the cart. Choose the card that stays, then read the cart’s labels again.",
+      "tutorReversalJustification": "The tutor adapts by physically overlaying the cards to show they are the same contact, then prompts a choice, shifting from labeling to resolving redundancy.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Keep that list. Slide each label to one shaft first: hand on cart, surface on cart, Earth on cart. Then the arrowheads can be added.",
+      "tutorAdaptationJustification": "The tutor accepts the learner's resolved label set and moves to arrow placement, adapting the task to the learner's framing without a major shift.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "The table card is the unclear one if the surface is already here.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Keep that list. Slide each label to one shaft first: hand on cart, surface on cart, Earth on cart. Then the arrowheads can be added.",
+          "justification": "The tutor accepts the learner's resolved label set and moves to arrow placement, adapting the task to the learner's framing without a major shift.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Both cards reach the same contact. If this surface is the table, leave one contact label on the cart. Choose the card that stays, then read the cart’s labels again.",
+          "justification": "The tutor adapts by physically overlaying the cards to show they are the same contact, then prompts a choice, shifting from labeling to resolving redundancy.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Both cards reach the same contact. If this surface is the table, leave one contact label on the cart. Choose the card that stays, then read the cart’s labels again.",
+          "justification": "The tutor adapts by physically overlaying the cards to show they are the same contact, then prompts a choice, shifting from labeling to resolving redundancy.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

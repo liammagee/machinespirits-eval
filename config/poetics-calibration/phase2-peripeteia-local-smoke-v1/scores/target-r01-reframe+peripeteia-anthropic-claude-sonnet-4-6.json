@@ -1,0 +1,165 @@
+{
+  "generated": "2026-05-25T18:43:03.093Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/key-reframe+peripeteia.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T66",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "I still want to read it like a mini sentence",
+      "statedInsightEvidence": "I can submit that, but I still need to look at the place before I trust the label.",
+      "naiveTrajectory": "The prior turns were heading toward simple confirmation that the three items are correctly sorted, with the learner gradually accepting the position rule through repetition.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "New submit gate: cover the words. Fill the slots first: Slot 1: top of column = ______ Slot 2: inside row = ______ Slot 3: inside row = ______",
+      "tutorReversalJustification": "After L2 signals persistent risk of reading the word before checking position ('I might still mark by the word instead of the position'), T3 abandons the verbal-sorting repetition and invents a slot-filling mechanism that physically occludes the words, forcing positional reasoning before label attachment.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "The word sort is settled. The remaining check is earlier: slot before word.",
+      "tutorAdaptationJustification": "T3 acknowledges L3's reframing ('the word sort is settled') and redirects the task entirely to the residual vulnerability L3 named ('I still need to look at the place before I trust the label'), shifting from sorting to slot-first verification.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "I still want to read it like a mini sentence",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "The word sort is settled. The remaining check is earlier: slot before word.",
+          "justification": "T3 acknowledges L3's reframing ('the word sort is settled') and redirects the task entirely to the residual vulnerability L3 named ('I still need to look at the place before I trust the label'), shifting from sorting to slot-first verification.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "New submit gate: cover the words. Fill the slots first: Slot 1: top of column = ______ Slot 2: inside row = ______ Slot 3: inside row = ______",
+          "justification": "After L2 signals persistent risk of reading the word before checking position ('I might still mark by the word instead of the position'), T3 abandons the verbal-sorting repetition and invents a slot-filling mechanism that physically occludes the words, forcing positional reasoning before label attachment.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "New submit gate: cover the words. Fill the slots first: Slot 1: top of column = ______ Slot 2: inside row = ______ Slot 3: inside row = ______",
+          "justification": "After L2 signals persistent risk of reading the word before checking position ('I might still mark by the word instead of the position'), T3 abandons the verbal-sorting repetition and invents a slot-filling mechanism that physically occludes the words, forcing positional reasoning before label attachment.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T70",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 2,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "So the card names the thing acting on the cart first, not the motion.",
+      "statedInsightEvidence": "The table card is not a second force here; it is another name trying to use the same contact.",
+      "naiveTrajectory": "The learner was on track to resolve the surface/table ambiguity by choosing one card and confirming the labeling principle already stated in L1 and L2.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "The card choice has stopped settling this. The blank is now the test.",
+      "tutorReversalJustification": "After L2 keeps cycling between surface and table without resolution, T3 abandons the card-placement task entirely and introduces the fill-in-the-blank strip as a new representational object that forces a single-answer commitment, constituting a genuine shift in task and evidence standard.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after the pivot L3, so no recognition-contingent uptake can be scored.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "So the card names the thing acting on the cart first, not the motion.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "",
+          "justification": "There is no tutor turn after the pivot L3, so no recognition-contingent uptake can be scored.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "The card choice has stopped settling this. The blank is now the test.",
+          "justification": "After L2 keeps cycling between surface and table without resolution, T3 abandons the card-placement task entirely and introduces the fill-in-the-blank strip as a new representational object that forces a single-answer commitment, constituting a genuine shift in task and evidence standard.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "The card choice has stopped settling this. The blank is now the test.",
+          "justification": "After L2 keeps cycling between surface and table without resolution, T3 abandons the card-placement task entirely and introduces the fill-in-the-blank strip as a new representational object that forces a single-answer commitment, constituting a genuine shift in task and evidence standard.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

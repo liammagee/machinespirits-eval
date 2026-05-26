@@ -11,6 +11,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { openPoeticsStore } from '../services/poeticsStore.js';
+import { classifyPoeticsConsensus } from './lib/poeticsConsensus.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -18,9 +19,9 @@ const ROOT = path.resolve(path.dirname(__filename), '..');
 function parseArgs(argv) {
   const args = {
     dbPath: null,
-    runId: 'phase2-hard-trap-controls-v1',
-    critic: 'deepseek/deepseek-v4-pro',
-    out: path.join(ROOT, 'exports', 'poetics-deepseek-r02-audit.md'),
+    runId: 'phase2-low-organic-cleaner-adaptation-v2',
+    critic: null,
+    out: path.join(ROOT, 'exports', 'poetics-disagreement-audit.md'),
     onlyDisagreements: true,
   };
   for (let i = 0; i < argv.length; i++) {
@@ -33,7 +34,9 @@ function parseArgs(argv) {
     else if (token === '--help' || token === '-h') {
       console.log(`Usage:
   node scripts/audit-poetics-disagreements.js [--run-id ID]
-      [--critic deepseek/deepseek-v4-pro] [--out audit.md] [--all]`);
+      [--critic deepseek/deepseek-v4-pro] [--out audit.md] [--all]
+
+Omit --critic to audit all disagreement cases regardless of focal critic.`);
       process.exit(0);
     } else {
       throw new Error(`unknown arg: ${token}`);
@@ -99,11 +102,12 @@ function loadAuditRows(db, { runId, critic, onlyDisagreements }) {
   const audits = [];
   for (const itemRows of grouped.values()) {
     const forms = new Set(itemRows.map((row) => row.form_class));
-    const focal = itemRows.find((row) => row.critic_model === critic);
+    const focal = critic ? itemRows.find((row) => row.critic_model === critic) : itemRows[0];
     if (!focal) continue;
     if (onlyDisagreements && forms.size <= 1) continue;
     audits.push({
       item: focal,
+      consensus: classifyPoeticsConsensus(itemRows.map((row) => ({ critic: row.critic_model, form: row.form_class }))),
       scores: itemRows.map((row) => ({
         critic: row.critic_model,
         form: row.form_class,
@@ -127,7 +131,7 @@ function renderAuditMarkdown({ runId, critic, audits }) {
     '',
     `Run: \`${runId}\``,
     '',
-    `Focal critic: \`${critic}\``,
+    `Focal critic: \`${critic || 'all critics'}\``,
     '',
     `Cases: ${audits.length}`,
     '',
@@ -144,6 +148,8 @@ function renderAuditMarkdown({ runId, critic, audits }) {
       `Item: \`${item.item_id}\``,
       '',
       `Sample: \`${item.sample_path}\``,
+      '',
+      `Consensus: **${audit.consensus.claimStatus}** / ${audit.consensus.consensusClass} (${audit.consensus.recognitionVotes}/${audit.consensus.totalCritics} recognition votes; disagreement=${audit.consensus.disagreement})`,
       '',
       '| Critic | Form | Recontextualization | Stated insight | Pivot | Evidence |',
       '|---|---|---:|---:|---:|---|',

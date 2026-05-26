@@ -31,10 +31,14 @@ import {
   sanitizeLearnerReusableText,
   buildAnchoredRevisitCue,
   buildLearnerReframeEvent,
+  buildLearnerReversalEvent,
   buildTutorReframeEventContext,
+  buildTutorReversalEventContext,
+  buildLearnerActionalResponseContext,
   calculateMemoryDelta,
   INTERACTION_OUTCOMES,
 } from '../learnerTutorInteractionEngine.js';
+import { analyzePseudoCatharsis } from '../pseudoCatharsisDetector.js';
 
 // ============================================================================
 // INTERACTION_OUTCOMES
@@ -309,6 +313,108 @@ describe('learner reframe event detection', () => {
     assert.match(context, /contrast old and new frames/);
     assert.match(context, /Do not mention hidden state/);
     assert.match(buildTutorReframeEventContext(null, 'uptake'), /No learner reframe event was detected/);
+  });
+
+  it('treats unwarranted relief after an unmet tutor task as pseudo-catharsis', () => {
+    const analysis = analyzePseudoCatharsis({
+      previousTutorText:
+        'So what does this record contain: a custody mark, or a use mark? The caption’s verb waits on that answer.',
+      priorLearnerTexts: [
+        'Oh, I get it: the sentence is not pressure just because it sits in the complaint file.',
+      ],
+      learnerText:
+        'Oh, I get it: “attached” is not the verdict; the slip has to say whether the quote is just traveling with the file or being sent for action.',
+    });
+
+    assert.equal(analysis.likely, true);
+    assert.equal(analysis.triggerType, 'pseudo_catharsis');
+    assert.match(analysis.reasons.join(','), /repeated_relief_beats_in_script/);
+    assert.match(analysis.reasons.join(','), /relief_without_performing_requested_task/);
+  });
+
+  it('does not treat every "I get it" as pseudo-catharsis when the learner performs the task', () => {
+    const analysis = analyzePseudoCatharsis({
+      previousTutorText:
+        'Use two tiles first. Cover the doubled square, no gaps, no overhang, while the outside edges stay two old lengths across and two old lengths down.',
+      learnerText:
+        'I get it: two tiles fit across, but they stop at a strip. If the edge is two down, two tiles cannot cover the square; it has to take four.',
+    });
+
+    assert.equal(analysis.likely, false);
+    assert.ok(analysis.signals.performanceHits >= 3);
+  });
+
+  it('marks pseudo-catharsis as a tutor-private reversal pressure event', () => {
+    const event = buildLearnerReversalEvent({
+      turnNumber: 3,
+      conversationHistory: [
+        {
+          role: 'learner',
+          content: 'Oh, I get it: the stamp only proves timing, not who had to answer.',
+        },
+        {
+          role: 'tutor',
+          content:
+            'So what does this record contain: a custody mark, or a use mark? The caption’s verb waits on that answer.',
+        },
+      ],
+      learnerMessage:
+        'Oh, I get it: “attached” is not the verdict; the slip has to say whether the quote is just traveling with the file or being sent for action.',
+    });
+
+    assert.equal(event?.triggerType, 'pseudo_catharsis');
+    assert.equal(event?.evidence?.pseudoCatharsis?.likely, true);
+    assert.match(event?.evidence?.pseudoCatharsis?.reasons.join(','), /relief_without_performing_requested_task/);
+  });
+
+  it('makes peripeteia review failures blocking for tutor ego adjudication', () => {
+    const context = buildTutorReversalEventContext(
+      {
+        triggerType: 'resistance',
+        learnerUtterance: 'I still do not see why the same grid proves it.',
+        previousTutorMove: 'Count the grid squares again and write the equation.',
+        confidence: 0.8,
+      },
+      'peripeteia',
+    );
+
+    assert.match(context, /Superego authority rule/i);
+    assert.match(context, /PARTIAL, FAIL, no real route change, or missing public device/);
+    assert.match(context, /substantially rewrite the public turn/);
+    assert.match(context, /ADAPTIVE_MECHANISM: old route -> new route/);
+  });
+
+  it('explains pseudo-catharsis to the tutor as unwarranted relief rather than proven breakthrough', () => {
+    const context = buildTutorReversalEventContext(
+      {
+        triggerType: 'pseudo_catharsis',
+        learnerUtterance: 'Oh, I get it: attached means maybe use.',
+        previousTutorMove: 'Sort the record mark before choosing the caption verb.',
+        confidence: 0.7,
+      },
+      'peripeteia',
+    );
+
+    assert.match(context, /Pseudo-catharsis means the learner sounds relieved or resolved/);
+    assert.match(context, /do not ratify it as a breakthrough/i);
+  });
+
+  it('requires the learner to act through a tutor peripeteia device instead of closing immediately', () => {
+    const context = buildLearnerActionalResponseContext({
+      directorPlan: { tutor_adaptation_policy: 'peripeteia' },
+      tutorResponse: {
+        learnerReversalEventUsed: {
+          kind: 'learner_reversal_pressure_event',
+          triggerType: 'pseudo_catharsis',
+          turnNumber: 2,
+        },
+      },
+    });
+
+    assert.match(context, /new device, gate, role, criterion/);
+    assert.match(context, /try to perform the actual device/);
+    assert.match(context, /Relief is not enough/);
+    assert.equal(buildLearnerActionalResponseContext({ directorPlan: { tutor_adaptation_policy: 'none' } }), '');
   });
 });
 
@@ -905,5 +1011,12 @@ describe('tutor adjudication prompt leakage prevention', () => {
 
   it('asks for private decisions rather than public rumination markers', () => {
     assert.ok(source.includes('PRIVATE_DECISION:'), 'expected explicit private decision marker');
+  });
+
+  it('uses blocking adaptation checks in tutor superego and ego prompts', () => {
+    assert.ok(source.includes('Use PASS / PARTIAL / FAIL in adaptation checks.'));
+    assert.ok(source.includes('REQUIRED_REWRITE: [if any adaptation check is PARTIAL or FAIL'));
+    assert.ok(source.includes('Superego authority rule: if the review marks UPTAKE_CHECK'));
+    assert.ok(source.includes('MECHANISM_ROUTE says no real route change'));
   });
 });

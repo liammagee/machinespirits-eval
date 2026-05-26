@@ -10,6 +10,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { openPoeticsStore, upsertPoeticsReviewFlag } from '../services/poeticsStore.js';
+import { classifyPoeticsConsensus, parseCriticFormString } from './lib/poeticsConsensus.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -74,13 +75,7 @@ function normalizeId(value) {
 }
 
 function parseForms(value) {
-  return String(value || '')
-    .split(',')
-    .filter(Boolean)
-    .map((entry) => {
-      const eq = entry.indexOf('=');
-      return { critic: entry.slice(0, eq), form: entry.slice(eq + 1) };
-    });
+  return parseCriticFormString(value);
 }
 
 function disagreementRows(db, runIds) {
@@ -126,7 +121,8 @@ function reasonFor(row, override = null) {
   const forms = parseForms(row.criticForms)
     .map((entry) => `${entry.critic}: ${entry.form}`)
     .join('; ');
-  return `Critic form disagreement; queue for human perspective. ${forms}`;
+  const consensus = classifyPoeticsConsensus(parseForms(row.criticForms));
+  return `Critic form disagreement (${consensus.claimStatus}/${consensus.consensusClass}, ${consensus.recognitionVotes}/${consensus.totalCritics} recognition votes); queue for human perspective. ${forms}`;
 }
 
 function flagRows(db, rows, args) {
@@ -146,6 +142,7 @@ function flagRows(db, rows, args) {
           tid: row.tid,
           dramaId: row.dramaId,
           criticForms: parseForms(row.criticForms),
+          consensus: classifyPoeticsConsensus(parseForms(row.criticForms)),
         },
       });
     }

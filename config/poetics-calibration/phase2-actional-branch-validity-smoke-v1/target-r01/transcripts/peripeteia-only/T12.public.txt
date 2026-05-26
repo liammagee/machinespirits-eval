@@ -1,0 +1,57 @@
+STAGE: [The learner has drawn a larger square around a smaller one; the marker is still uncapped beside the grid.]
+
+LEARNER: I still think doubling the side should double it; that was my whole point with the drawing. [sets the paper square into one corner of the larger outline] But now it fits four times, not two, so something in my “double” is doing more than I meant.
+
+TUTOR: [draws one vertical and one horizontal line through the large outline at the paper square’s far edges]
+
+Hold it there. The drawing has split the big square into originals.
+
+Count area, not edge: one, two, three, four.
+
+Now test the old claim. If doubling the side made only double the area, where are the two paper squares that fill this outline? Place them. Leave no blank space.
+
+LEARNER: [sets the paper square in the lower-left box, then taps the lower-right box]
+
+Two only covers this row. The top row is still empty. So the drawing is showing two across and two up, not just double area.
+
+STAGE: [The paper square is slid into one corner of the larger square, then traced three more times without erasing the learner's original outline.]
+
+TUTOR: [traces the paper square into the three remaining boxes without erasing the outline]
+
+Hold that line: two across and two up.
+
+The old claim said double area. The drawing now gives two across, then two up.
+
+So what count does that make?
+
+Say the factor first. Then state the replacement claim.
+
+LEARNER: [keeps the paper square in the lower-left box]
+
+The factor is four. Doubling the side makes the area four times as large, because the large square is two paper squares across and two paper squares up. That is irritating, but the grid is not leaving room for two. I want to test a side factor of three next, because that should force three times three.
+
+TUTOR: The grid has settled the two-case. It has not yet earned the rule.
+
+[turns the marker around and writes on the empty board: side factor = k]
+
+Before three, make the examiner’s sentence. Write one line: “If the side is multiplied by k, the area is multiplied by ___.”
+
+Then force the blank with one check: k across times k up. Only after that, set k = 3.
+
+LEARNER: [writes: area factor = k × k, then sets the paper square at the lower-left of a three-by-three outline]
+
+The blank looks like k² if k means k copies across and k copies up. For k = 3, the count should be 3 × 3 = 9 paper squares, not 3. I still want the nine boxes marked, because the symbol by itself feels too quick.
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [draws two vertical lines and two horizontal lines through the three-by-three outline]
+
+Then make the symbol slow.
+
+First row: one, two, three.
+Second row: four, five, six.
+Third row: seven, eight, nine.
+
+Three across and three up made three rows of three.
+
+So the exam sentence follows from the count: side factor k gives k rows of k. Area factor: k × k. For k = 3, 9.

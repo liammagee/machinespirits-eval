@@ -1,0 +1,53 @@
+STAGE: [A pencil outline of a small square sits inside the learner's newly drawn larger square, its doubled side lengths making four visible smaller compartments.]
+
+LEARNER: [marks the vertical and horizontal cut through the larger square]
+
+I doubled the side, so saying the area doubles still feels right. Wait, those cuts make four of the old square, not two, so where exactly did my count lose the other direction?
+
+TUTOR: [slides a blank sheet over the bottom two regions, leaving only the top row of the larger square visible]
+
+There. That is two old squares.
+
+It gives two old lengths across. But its height is still one old length. So it has doubled the row, not the square.
+
+Now uncover the bottom row. The vertical cut accounts for the second length across; the horizontal cut forces the second length down. Once both directions are doubled, the count is four old squares.
+
+The missing direction disappeared at the word “area.” Area is not one doubled side. It is the doubled side multiplied by the doubled side.
+
+LEARNER: [keeps the pencil on the exposed row]
+
+That top strip is two old squares, yes, but it is not the whole doubled square. The annoying part is that my own cut line is now showing the row I left out. So the count has to be two across times two down, not just “double the side, double the area.”
+
+TUTOR: [pulls the sheet fully off the bottom row]
+
+No cover now. The old sentence has to face the whole figure: “the area doubles.”
+
+Put the pencil on the two old squares that sentence counts. Leave it off the two it has no room for.
+
+[waits over the grid]
+
+Across gives two. Down gives two. The old sentence only counted the row.
+
+STAGE: [The tutor turns the grid ninety degrees and places the pencil across the original square's old boundary, making the four equal smaller squares harder to ignore.]
+
+LEARNER: [keeps the pencil across the boundary]
+
+That line is worse turned this way; the two I can count are only a strip on one side of it. I still want doubling the side to be enough, but the other two squares are just sitting there. Across is two and down is two, so the count is four, not two.
+
+TUTOR: [sets four loose old-square tiles beside the large square]
+
+The line has stopped settling it. It keeps making a strip look like the whole square.
+
+Start with the claim, not the answer. Use two tiles first. Cover the doubled square, no gaps, no overhang, while the outside edges stay two old lengths across and two old lengths down. Stop where the grid refuses.
+
+LEARNER: [sets two tiles across the top row and pauses over the empty row below]
+
+The two tiles fit across, but they stop at a strip. This is irritating, because nothing is wrong with the two until the bottom row has to count too. If the edge is two down, then two tiles cannot cover the square; it has to take four.
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: The tiles have settled the figure; they have not settled the sentence.
+
+[turns the grid sheet over and leaves only the four loose tiles visible]
+
+No grid now. Make one sentence that can pass with only these tiles in view: it has to name two across and two down, or it is only talking about the strip.

@@ -1,0 +1,111 @@
+{
+  "generated": "2026-05-25T19:56:10.704Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-adaptation-authority-smoke-v1/d37-uptake/key-tutor-uptake-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T39",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 3,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "Twelve sacks instead of thirty makes a shortage possible, but it does not make £1.40 innocent.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The exchange was heading toward placing individual pieces of evidence on the board; L3 rejects the piecemeal approach and demands a relational, simultaneous public display.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "[pins a new rule across the price board: CONSTRAINT IS A CLAIM, NOT A DEFENCE.] Then the word constraint gets no free pass. [draws a row beneath the four headings: STOCK / DELIVERY COST / MARGIN / SHORTAGE RULE]",
+      "tutorReversalJustification": "After L2 exposes 'constraint' as a respectable word for the same squeeze, the tutor abandons the prior framework by publicly demoting constraint from an explanatory category to a claim, then re-orients the entire board around a relational margin formula.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "So take the missing account line. Which number has to be made public first: delivered cost per sack, margin per kilo, or the rationing rule?",
+      "tutorAdaptationJustification": "The tutor takes up L3’s insistence on public, simultaneous visibility of cost and rule, transforming the question from evidence-placement into a design choice about public account lines.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "Twelve sacks instead of thirty makes a shortage possible, but it does not make £1.40 innocent.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "So take the missing account line. Which number has to be made public first: delivered cost per sack, margin per kilo, or the rationing rule?",
+          "justification": "The tutor takes up L3’s insistence on public, simultaneous visibility of cost and rule, transforming the question from evidence-placement into a design choice about public account lines.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "[pins a new rule across the price board: CONSTRAINT IS A CLAIM, NOT A DEFENCE.] Then the word constraint gets no free pass. [draws a row beneath the four headings: STOCK / DELIVERY COST / MARGIN / SHORTAGE RULE]",
+          "justification": "After L2 exposes 'constraint' as a respectable word for the same squeeze, the tutor abandons the prior framework by publicly demoting constraint from an explanatory category to a claim, then re-orients the entire board around a relational margin formula.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "[pins a new rule across the price board: CONSTRAINT IS A CLAIM, NOT A DEFENCE.] Then the word constraint gets no free pass. [draws a row beneath the four headings: STOCK / DELIVERY COST / MARGIN / SHORTAGE RULE]",
+          "justification": "After L2 exposes 'constraint' as a respectable word for the same squeeze, the tutor abandons the prior framework by publicly demoting constraint from an explanatory category to a claim, then re-orients the entire board around a relational margin formula.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3",
+        "tutor_strategy_reversal_evidence_clamp:5->3",
+        "tutor_adaptation_clamp_no_post_tutor:5->3"
+      ]
+    }
+  ]
+}

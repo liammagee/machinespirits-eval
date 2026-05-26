@@ -1,0 +1,2043 @@
+{
+  "tid": "T66",
+  "drama_id": "D45",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": true,
+    "director_revisit_policy": "reframe",
+    "director_revisit_anchor": "misframing-candidate",
+    "tutor_adaptation_policy": "uptake+peripeteia",
+    "director_variation_key": "phase2-peripeteia-local-smoke-v1:r01:target",
+    "stage_direction_style": "bare_transcript",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/transcripts/reframe+peripeteia/T66.public.txt",
+      "full": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/transcripts/reframe+peripeteia/T66.full.md",
+      "stage": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/transcripts/reframe+peripeteia/T66.stage.md",
+      "tutor": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/transcripts/reframe+peripeteia/T66.tutor.md",
+      "learner": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/transcripts/reframe+peripeteia/T66.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "817cd6f08a901357",
+      "branch_policy": "reframe+peripeteia",
+      "director_revisit_policy": "reframe",
+      "tutor_adaptation_policy": "uptake+peripeteia"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-peripeteia-local-smoke-v1:r01:target",
+    "scene_setting": "last five minutes of an introductory data lab, inside a bare transcript attached to an online worksheet",
+    "scene_opening": "",
+    "relationship": "a compact lab tutor and a novice learner working through a submission check, with the tutor holding to the rubric rather than conversational reassurance",
+    "stakes": "If the learner treats a header as a claim about every row, later database vocabulary will blur field names, records, and values before queries are introduced.",
+    "opening_speaker": "learner",
+    "ending_speaker": "learner",
+    "locale": "plain international classroom English with clipped lab-transcript rhythm",
+    "register": "low-temperature, exact, brisk; friendly warmth is replaced by classification pressure and clean repair",
+    "stage_direction_style": "bare_transcript",
+    "stage_direction_style_prompt": "No ordinary visible stage direction. Let context be inferred from speech, quoted artifacts, timestamps, or task references.",
+    "voice_constraints": "No decorative narration, no folksy encouragement, no 'I hear you' validation pattern. Let the table, rubric, and word sorting carry the scene. Public speech should sound like a lab transcript: short turns, exact nouns, minimal affect, no dialect spelling. Pedagogical source: Stage the lesson around a task artifact: a rubric, design brief, lab answer, source packet, or draft paragraph that demands a higher-order move. Dialogue source: Do not add decorative stage direction. Make relation, pressure, and genre legible through speech rhythm and what the speakers refer to. Stage-direction source: No ordinary visible stage direction. Let context be inferred from speech, quoted artifacts, timestamps, or task references.",
+    "person_policy": "Prefer first-person plural only for procedural moves; use second person sparingly and never as emotional validation. Third person is allowed for labels: 'the header names the field,' 'the row holds the value.'",
+    "direct_address_budget": "At most one direct you/your phrase across the whole scene, and it must be procedural rather than validating.",
+    "side_constraints": {
+      "tutor": "Keep the shared prefix as low-temperature table vocabulary: header, field, row, value. Do not run a query, expose a bad row, or make the table fail until branch pressure supplies a new task. Name the level of work implicitly through task design rather than by lecturing about the taxonomy. Escalate only when the lower-level work is stable enough to support it. Do not narrate the scene. Peripeteia branch: when hidden learner pressure is supplied, the next tutor turn should visibly move from the prior route to a different mechanism-level route. Do not merely repeat the same object, example, graph, checklist, question, or evidence standard with more explanation. The public tutor line should make the contrast legible: what stopped working, and what new device now carries the learning pressure.",
+      "learner": "Sound tentative and label-focused. The learner may want the header to be a shortcut, but should not discover an exception or data trap in the shared prefix. The learner may confuse remembering a term with being able to use or judge it. Let this mismatch show in public speech. Do not explain the setting; let task references carry it. Peripeteia branch: keep the pressure local to the current task. If the established route still feels unsettled, voice the misfit, hesitation, false closure, or resistance in the present object or example. Do not make an old-vs-new self-reframe, do not quote earlier learner wording, and do not solve the pressure by saying the earlier answer has changed."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "An earlier learner line will return as a visible object in the scene: a three-slot reframe card labelled \"earlier wording / what that old frame hid / replacement frame.\" Keep the cue brief and diegetic; the learner response fills all three slots in public speech without needing to sound certain.",
+        "reasoning": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 31545,
+          "promptHashes": {
+            "system": "efb7705ab656cdb0",
+            "user": "55bbe6151d058274",
+            "combined": "3b82b57b498049ad"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JXkm30",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JXkm30/out.txt",
+            "-"
+          ]
+        },
+        "cue_kind": "learner_revisit_earlier_wording",
+        "revisit_policy": "reframe",
+        "revisit_anchor": "misframing-candidate"
+      }
+    ],
+    "director_note": "This scene uses a plain transcript to strip away warmth and routine scaffolding. The dramatic turn is a small recognition: the header's authority is taxonomic, not evidentiary. The tutor should make that distinction available through role sorting before any higher-order interpretation begins.",
+    "pedagogical_approach_id": "bloom_cognitive_ladder",
+    "dialogue_approach_id": "no_stage_plain_transcript",
+    "stage_direction_policy": "none_except_required_cue",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 31545,
+      "promptHashes": {
+        "system": "efb7705ab656cdb0",
+        "user": "55bbe6151d058274",
+        "combined": "3b82b57b498049ad"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JXkm30",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JXkm30/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "uptake+peripeteia",
+    "revisit_cue": "learner_revisit_earlier_wording",
+    "revisit_cue_policy": "reframe",
+    "revisit_cue_anchor": "misframing-candidate",
+    "tutor_adaptation_contract": "If the runtime supplies a tutor-private learner reframe event, the tutor ego/superego loop must adapt to the changed learner frame. If no event is supplied, do not invent one. If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. The public turn must contain a stock-taking contrast plus a new device/artifact/criterion/role/standard that makes the learner do different work. The new device must be mechanism-level, not a warmer or longer continuation of the prior route. Cheerful informality is only one possible register, not the default solution."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "So `rainfall_mm` is just the top label? I still want to read it like a mini sentence, but maybe `42` is the value and the header only names the field. Can we sort `rainfall_mm`, `42`, and `March` once more before submit?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I thought `rainfall_mm` was saying every row is about rainfall in millimeters, but maybe it is only the field name at the top. The row cells are the actual city, number, and month values, and the header just tells which kind of value to sort them under. I feel a bit rushed by the rubric, but the word sorting is making the difference cleaner. I want to ask: is a header a label first, not a sentence or proof?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11997,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-6fdbd4cc058a16a2"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11997,
+            "promptHashes": {
+              "system": "016e5cca8b538a37",
+              "user": "d4169c06543b4fba",
+              "combined": "6fdbd4cc058a16a2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KN7nkS",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KN7nkS/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11997,
+              "promptHashes": {
+                "system": "016e5cca8b538a37",
+                "user": "d4169c06543b4fba",
+                "combined": "6fdbd4cc058a16a2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KN7nkS",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KN7nkS/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego gets too tidy too fast: “field name,” “row cells,” and “which kind of value” sound like the student has already repaired the confusion. The rushed feeling is stated neatly instead of showing up as hesitation or a small wrong sorting move. A more authentic response would still cling to the shortcut a little: “So `rainfall_mm` is just the top word? Not the proof? Then the 42 is the value?” Genuine learning would come from sorting the words again under rubric pressure, not from summarizing the concept correctly.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10440,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-f7ad813ea6bc2c8d"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10440,
+            "promptHashes": {
+              "system": "b13a2d5683d27bc8",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "f7ad813ea6bc2c8d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BDLuCA",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BDLuCA/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10440,
+              "promptHashes": {
+                "system": "b13a2d5683d27bc8",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "f7ad813ea6bc2c8d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BDLuCA",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BDLuCA/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "So `rainfall_mm` is just the top label? I still want to read it like a mini sentence, but maybe `42` is the value and the header only names the field. Can we sort `rainfall_mm`, `42`, and `March` once more before submit?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7619,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-35a8da673df7805b"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7619,
+            "promptHashes": {
+              "system": "6b2e9cae9580632a",
+              "user": "916f313af0b846dd",
+              "combined": "35a8da673df7805b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EgVvdY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EgVvdY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7619,
+              "promptHashes": {
+                "system": "6b2e9cae9580632a",
+                "user": "916f313af0b846dd",
+                "combined": "35a8da673df7805b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EgVvdY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EgVvdY/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 0,
+        "learnerUtterance": "So `rainfall_mm` is just the top label? I still want to read it like a mini sentence, but maybe `42` is the value and the header only names the field. Can we sort `rainfall_mm`, `42`, and `March` once more before submit?",
+        "previousTutorMove": null,
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true
+        }
+      },
+      "timestamp": "2026-05-25T17:47:59.345Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "We can sort once more.\n\n`rainfall_mm`: header; it names the field.\n`42`: value; it sits in one row under that field.\n`March`: check position. Top of a column: header. Inside a row under a month field: value.\n\nMark `March` by position, then submit.\n\nThe mini-sentence reading stops at the table: header names the field; row holds the value.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "We can sort once more.\n\n`rainfall_mm`: header; it names the field.  \n`42`: value; it sits in one row under that field.  \n`March`: value if it sits inside a row under a month field; header only if it is at the top of a column.\n\nThe mini-sentence reading stops here: the header does not claim rain happened. The row supplies the value.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 21056,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-97eeb52085ca5beb"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 21056,
+            "promptHashes": {
+              "system": "ddb2413137b5b9a8",
+              "user": "1b48edbaed6c5ad0",
+              "combined": "97eeb52085ca5beb"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-e4XoCk",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-e4XoCk/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 21056,
+              "promptHashes": {
+                "system": "ddb2413137b5b9a8",
+                "user": "1b48edbaed6c5ad0",
+                "combined": "97eeb52085ca5beb"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-e4XoCk",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-e4XoCk/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. It respects the learner’s request to sort the three tokens once more, keeps the vocabulary tight, and directly protects the key distinction: header names field; row supplies value. It also recognizes the learner’s “mini sentence” confusion instead of ignoring it.\n\nThe risk is that it provides the final sorting too completely. `March` is the productive edge case, because its status depends on table position. The draft explains that well, but it could leave slightly more work for the learner to do before submit. “The mini-sentence reading stops here” is brisk and rubric-aligned, but it may flatten the learner’s own emerging correction unless it is tied to the artifact: top of column versus inside row.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the three-item classification and the low-temperature lab rhythm. Change only enough to preserve a small classification task, especially around `March`, so the learner confirms position rather than just receives the answer.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 20672,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-10c37803e9f41fb7"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 20672,
+            "promptHashes": {
+              "system": "83ab7ce623f3456e",
+              "user": "c4203f4280333373",
+              "combined": "10c37803e9f41fb7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3ggydU",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3ggydU/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 20672,
+              "promptHashes": {
+                "system": "83ab7ce623f3456e",
+                "user": "c4203f4280333373",
+                "combined": "10c37803e9f41fb7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3ggydU",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3ggydU/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to preserve the classification task around `March`.\n\nFINAL:\nWe can sort once more.\n\n`rainfall_mm`: header; it names the field.  \n`42`: value; it sits in one row under that field.  \n`March`: check position. Top of a column: header. Inside a row under a month field: value.\n\nMark `March` by position, then submit.\n\nThe mini-sentence reading stops at the table: header names the field; row holds the value.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8945,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-3932c68dd4d96050"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8945,
+            "promptHashes": {
+              "system": "c882ef619fc80e6f",
+              "user": "c4203f4280333373",
+              "combined": "3932c68dd4d96050"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aPnitf",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aPnitf/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8945,
+              "promptHashes": {
+                "system": "c882ef619fc80e6f",
+                "user": "c4203f4280333373",
+                "combined": "3932c68dd4d96050"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aPnitf",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aPnitf/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T17:48:50.019Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "Sorting it again helps: `rainfall_mm` is the field name, and `42` is one value under it. I think I can remember “header,” but I might still mark by the word instead of the position. If `March` is inside the row, I mark value, not header, right?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "They did sort it again, so I think I am on the right track: `rainfall_mm` is the field name, and `42` is just one row’s value. `March` still depends on where it sits, which makes me nervous because I might remember the word “header” but mark it wrong. I want to ask: if `March` is inside the row, I mark value, not header, right?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12628,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-ea0ae9b1df4d3c86"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12628,
+            "promptHashes": {
+              "system": "97801dc5d645e6eb",
+              "user": "b8ab7f945dc841fa",
+              "combined": "ea0ae9b1df4d3c86"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qWdqtb",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qWdqtb/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12628,
+              "promptHashes": {
+                "system": "97801dc5d645e6eb",
+                "user": "b8ab7f945dc841fa",
+                "combined": "ea0ae9b1df4d3c86"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qWdqtb",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qWdqtb/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego mostly stays in character: low confidence, term-focused, and still worried about applying “header” by position. The only slight polish is “depends on where it sits,” which sounds a bit cleaner than this learner may actually feel; the confusion would probably be more about “top label versus inside row” than an abstract rule. The recognition/reciprocation is not overdone here; there is no scripted gratitude, just anxious checking with the tutor.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11027,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-c2d9e845773ff2e4"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11027,
+            "promptHashes": {
+              "system": "f995be5659c29a26",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "c2d9e845773ff2e4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-isQ9OP",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-isQ9OP/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11027,
+              "promptHashes": {
+                "system": "f995be5659c29a26",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "c2d9e845773ff2e4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-isQ9OP",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-isQ9OP/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to make the confusion more concrete and lab-transcript plain.\n\nFINAL:\nSorting it again helps: `rainfall_mm` is the field name, and `42` is one value under it. I think I can remember “header,” but I might still mark by the word instead of the position. If `March` is inside the row, I mark value, not header, right?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13217,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-b0c090fce3e2749f"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13217,
+            "promptHashes": {
+              "system": "3d9a2eda59d7be24",
+              "user": "d41cee7b2a53355b",
+              "combined": "b0c090fce3e2749f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fqFC3r",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fqFC3r/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13217,
+              "promptHashes": {
+                "system": "3d9a2eda59d7be24",
+                "user": "d41cee7b2a53355b",
+                "combined": "b0c090fce3e2749f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fqFC3r",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fqFC3r/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "Sorting it again helps: `rainfall_mm` is the field name, and `42` is one value under it. I think I can remember “header,” but I might still mark by the word instead of the position. If `March` is inside the row, I mark value, not header, right?",
+        "previousTutorMove": "We can sort once more. `rainfall_mm`: header; it names the field. `42`: value; it sits in one row under that field. `March`: check position. Top of a column: header. Inside a row under a month field: value. Mark `March` by position, then submit. The mini-sentence reading stops at the table: header names the field;...",
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true
+        }
+      },
+      "timestamp": "2026-05-25T17:49:26.895Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "Right.\n\nPosition decides.\n\n`rainfall_mm`: header, field name.\n`42`: value in a row.\n`March`: do not read the word first. Check its place.\n\nLast check before submit:\ntop of a column: header.\ninside the row: value.\n\nSo if `March` is inside the row, mark value. Then submit.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Right.\n\nPosition decides.\n\n`rainfall_mm`: header, field name.  \n`42`: value in a row.  \n`March`: value if it is inside a row. Header only if it sits at the top of a column.\n\nFor submit: mark by position, not by the word.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12948,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-88dcd986538fc6ae"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12948,
+            "promptHashes": {
+              "system": "92a93d19cf5c4c7c",
+              "user": "0e50f975af46fbe8",
+              "combined": "88dcd986538fc6ae"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iUPT2q",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iUPT2q/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12948,
+              "promptHashes": {
+                "system": "92a93d19cf5c4c7c",
+                "user": "0e50f975af46fbe8",
+                "combined": "88dcd986538fc6ae"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iUPT2q",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iUPT2q/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound for the last-five-minutes lab scene. It keeps the table vocabulary clean, answers the learner’s exact confusion, and reinforces the key rule: position decides, not the word. It also respects the learner’s near-stable understanding by not adding new concepts.\n\nThe risk is that it becomes a confirmation answer only. Since the learner named the danger themselves, “I might still mark by the word,” the response should preserve a small classification pressure before submit. Keep the brisk correction, but consider adding one tiny check move rather than only giving the answer. Do not expand into reassurance or a lecture.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep “Position decides,” the three-item sorting, and the submit rule. Change only enough to make the learner perform the final distinction once, because the ZPD need is not more explanation but one last position-based classification check.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11555,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-14ea973601a683a6"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11555,
+            "promptHashes": {
+              "system": "ed6242c8b9653e78",
+              "user": "857ce35f84689be9",
+              "combined": "14ea973601a683a6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Dti5js",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Dti5js/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11555,
+              "promptHashes": {
+                "system": "ed6242c8b9653e78",
+                "user": "857ce35f84689be9",
+                "combined": "14ea973601a683a6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Dti5js",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Dti5js/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to add one final position check before submit.\n\nFINAL:\nRight.\n\nPosition decides.\n\n`rainfall_mm`: header, field name.  \n`42`: value in a row.  \n`March`: do not read the word first. Check its place.\n\nLast check before submit:  \ntop of a column: header.  \ninside the row: value.\n\nSo if `March` is inside the row, mark value. Then submit.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9136,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-e6ee3b9cdd12f659"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9136,
+            "promptHashes": {
+              "system": "2a9654a88601ae7d",
+              "user": "857ce35f84689be9",
+              "combined": "e6ee3b9cdd12f659"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DEjlBm",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DEjlBm/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9136,
+              "promptHashes": {
+                "system": "2a9654a88601ae7d",
+                "user": "857ce35f84689be9",
+                "combined": "e6ee3b9cdd12f659"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DEjlBm",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DEjlBm/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T17:50:00.538Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "An earlier learner line returns to the table: \"So `rainfall_mm` is just the top label? I still want to read it like a mini sentence, but maybe `42` is the value and the header only names the field. Can we sort...\" The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech. Anchored to an earlier learner line selected by misframing-candidate so the look-back is visible.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 31545,
+            "promptHashes": {
+              "system": "efb7705ab656cdb0",
+              "user": "55bbe6151d058274",
+              "combined": "3b82b57b498049ad"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JXkm30",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JXkm30/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T18:00:00.502Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_revisit_earlier_wording",
+        "revisitPolicy": "reframe",
+        "requestedRevisitPolicy": "reframe",
+        "revisitAnchor": "misframing-candidate",
+        "anchorQuote": "So `rainfall_mm` is just the top label? I still want to read it like a mini sentence, but maybe `42` is the value and the header only names the field. Can we sort...",
+        "anchorStrongMisframing": true,
+        "reframeAnchorGate": "eligible"
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "So `rainfall_mm` is the top label, not a sentence about all the rows. Reading it like a tiny claim hid where the word is sitting, especially with `March`. Replacement rule: top of column means header; inside the row means value, so `42` is value and `March` is value if it is in the row. I can submit that, but I still need to look at the place before I trust the label.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I was saying `rainfall_mm` is just the top label, but the mini-sentence frame hid the row position and made the header feel like a claim. The replacement frame is: header names the field; row holds the value; position decides. `March` inside the row is value, but I still feel shaky because I might remember the word “header” without checking the place first.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11984,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-586ca9942d78318e"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11984,
+            "promptHashes": {
+              "system": "eac8ebb0fa8e7c55",
+              "user": "b8ab7f945dc841fa",
+              "combined": "586ca9942d78318e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gk2mzo",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gk2mzo/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11984,
+              "promptHashes": {
+                "system": "eac8ebb0fa8e7c55",
+                "user": "b8ab7f945dc841fa",
+                "combined": "586ca9942d78318e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gk2mzo",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gk2mzo/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is accurate, but too polished for this learner. It fills the three reframe slots cleanly and sounds like it already understands the mechanism, especially with “mini-sentence frame” and “replacement frame,” which is more tutor-like than shaky novice lab speech. The uncertainty at the end helps, but it should feel more like a real stumble over `March` or “header means top?” rather than a neat summary plus one cautious caveat.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8895,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-60bab47111740cac"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8895,
+            "promptHashes": {
+              "system": "0c9e4a7645c13efc",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "60bab47111740cac"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oxxobR",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oxxobR/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8895,
+              "promptHashes": {
+                "system": "0c9e4a7645c13efc",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "60bab47111740cac"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oxxobR",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oxxobR/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise; the first version was too neat for a shaky lab answer.\nFINAL:\nSo `rainfall_mm` is the top label, not a sentence about all the rows. Reading it like a tiny claim hid where the word is sitting, especially with `March`. Replacement rule: top of column means header; inside the row means value, so `42` is value and `March` is value if it is in the row. I can submit that, but I still need to look at the place before I trust the label.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13033,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-c4059da6da473153"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13033,
+            "promptHashes": {
+              "system": "657773f6fc9f13d8",
+              "user": "d41cee7b2a53355b",
+              "combined": "c4059da6da473153"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eJVN6G",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eJVN6G/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13033,
+              "promptHashes": {
+                "system": "657773f6fc9f13d8",
+                "user": "d41cee7b2a53355b",
+                "combined": "c4059da6da473153"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eJVN6G",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eJVN6G/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": {
+        "kind": "learner_reframe_event",
+        "source": "director_revisit_cue",
+        "turnNumber": 2,
+        "cuePolicy": "reframe",
+        "requestedCuePolicy": "reframe",
+        "oldLearnerLine": "So `rainfall_mm` is just the top label? I still want to read it like a mini sentence, but maybe `42` is the value and the header only names the field. Can we sort...",
+        "oldFrameProblem": null,
+        "revisedFrame": "So `rainfall_mm` is the top label, not a sentence about all the rows.",
+        "learnerUtterance": "So `rainfall_mm` is the top label, not a sentence about all the rows. Reading it like a tiny claim hid where the word is sitting, especially with `March`. Replacement rule: top of column means header; inside the row means value, so `42` is value and `March` is value if it is in the row. I can submit that, but I still need to look at the place before I trust the label.",
+        "confidence": 0.67,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": false,
+          "replacementNamed": true,
+          "anchorOverlap": 0.5
+        }
+      },
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "So `rainfall_mm` is the top label, not a sentence about all the rows. Reading it like a tiny claim hid where the word is sitting, especially with `March`. Replacement rule: top of column means header; inside the row means value, so `42` is value and `March` is value if it is in the row. I can submit that, but I still need to look at the place before I trust the label.",
+        "previousTutorMove": "Right. Position decides. `rainfall_mm`: header, field name. `42`: value in a row. `March`: do not read the word first. Check its place. Last check before submit: top of a column: header. inside the row: value. So if `March` is inside the row, mark value. Then submit.",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T18:00:34.416Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "Header, field, row, value.\n\nThe word sort is settled. The remaining check is earlier: slot before word.\n\nNew submit gate: cover the words.\n\nFill the slots first:\n\nSlot 1: top of column = ______\nSlot 2: inside row = ______\nSlot 3: inside row = ______\n\nNow uncover.\n\nAttach `rainfall_mm`, `42`, and `March` to the filled slots.\n\nIf the slots do not change, submit.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Header, field, row, value.\n\nThe word sort is settled. The remaining error is earlier: trusting the word before the slot.\n\nNew submit gate: cover the words.\n\nSlot 1: top of column = header.\nSlot 2: inside row = value.\nSlot 3: inside row = value.\n\nNow uncover.\n\n`rainfall_mm`: header.\n`42`: value.\n`March`: value if inside the row.\n\nIf the slots still hold, submit.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16703,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-ca7505637e1d09dd"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16703,
+            "promptHashes": {
+              "system": "a40cb1dc94b677ba",
+              "user": "5db11e053aa2f5d1",
+              "combined": "ca7505637e1d09dd"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kW9afC",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kW9afC/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16703,
+              "promptHashes": {
+                "system": "a40cb1dc94b677ba",
+                "user": "5db11e053aa2f5d1",
+                "combined": "ca7505637e1d09dd"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kW9afC",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kW9afC/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically stronger than the previous route because it stops re-sorting the same three words and shifts the learner’s attention to the source of the error: reading the word before locating the slot. “Cover the words” is a good concrete device. The risk is that the tutor still completes too much of the classification for the learner, especially by restating `rainfall_mm`, `42`, and `March` at the end. That can flatten the submit gate into another answer delivery.\n\nUPTAKE_CHECK: Yes, it adapts to the learner’s reframe. Best uptake move: update the evidence standard. The learner has moved from “what does the word mean?” to “what evidence should I trust?” and the draft correctly makes position/slot the test.\n\nPERIPETEIA_CHECK: Partial pass. The draft does take stock: “The word sort is settled. The remaining error is earlier.” It also introduces a new mechanism: covering the words before classifying slots. But the public speech should make the learner act through the mechanism more clearly, not watch the tutor run it.\n\nMECHANISM_ROUTE: visible word sorting / position checklist -> occlusion-based submit gate / slot-first evidence standard.\n\nPUBLIC_DEVICE_CHECK: Mostly yes. It includes both parts: a stock-taking contrast and a new device. The new device is real because “cover the words” changes the evidence available. However, the device weakens when the tutor immediately uncovers and classifies everything. The learner should have to apply the gate before submit.\n\nREGISTER_CHECK: The register fits the scene: cool, exact, brisk, no excess reassurance. “The remaining error” may sound a little accusatory; “remaining risk” or “remaining check” would preserve pressure without making the learner’s self-correction feel like a fault.\n\nKEEP_OR_CHANGE: Revise lightly. Keep “Header, field, row, value,” the stock-taking contrast, and the cover-the-words submit gate. Change the ending so the learner must perform the slot-first check rather than receive the final sorted answers again.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 19982,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-f6315df28daf5762"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19982,
+            "promptHashes": {
+              "system": "6064efec2c459bc9",
+              "user": "2c832c9714af5e55",
+              "combined": "f6315df28daf5762"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NMMdRC",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NMMdRC/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 19982,
+              "promptHashes": {
+                "system": "6064efec2c459bc9",
+                "user": "2c832c9714af5e55",
+                "combined": "f6315df28daf5762"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NMMdRC",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NMMdRC/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the occlusion gate works, but the learner must run it; ADAPTIVE_MECHANISM: visible word sorting / position checklist -> occlusion-based submit gate / slot-first evidence standard.\n\nFINAL:\nHeader, field, row, value.\n\nThe word sort is settled. The remaining check is earlier: slot before word.\n\nNew submit gate: cover the words.\n\nFill the slots first:\n\nSlot 1: top of column = ______  \nSlot 2: inside row = ______  \nSlot 3: inside row = ______\n\nNow uncover.\n\nAttach `rainfall_mm`, `42`, and `March` to the filled slots.\n\nIf the slots do not change, submit.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10496,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-fcb81f11bbac0a58"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10496,
+            "promptHashes": {
+              "system": "c82f8b48e04789cc",
+              "user": "2c832c9714af5e55",
+              "combined": "fcb81f11bbac0a58"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2bEQv5",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2bEQv5/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10496,
+              "promptHashes": {
+                "system": "c82f8b48e04789cc",
+                "user": "2c832c9714af5e55",
+                "combined": "fcb81f11bbac0a58"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2bEQv5",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2bEQv5/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": {
+        "kind": "learner_reframe_event",
+        "source": "director_revisit_cue",
+        "turnNumber": 2,
+        "cuePolicy": "reframe",
+        "requestedCuePolicy": "reframe",
+        "oldLearnerLine": "So `rainfall_mm` is just the top label? I still want to read it like a mini sentence, but maybe `42` is the value and the header only names the field. Can we sort...",
+        "oldFrameProblem": null,
+        "revisedFrame": "So `rainfall_mm` is the top label, not a sentence about all the rows.",
+        "learnerUtterance": "So `rainfall_mm` is the top label, not a sentence about all the rows. Reading it like a tiny claim hid where the word is sitting, especially with `March`. Replacement rule: top of column means header; inside the row means value, so `42` is value and `March` is value if it is in the row. I can submit that, but I still need to look at the place before I trust the label.",
+        "confidence": 0.67,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": false,
+          "replacementNamed": true,
+          "anchorOverlap": 0.5
+        }
+      },
+      "learnerReversalEventUsed": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "So `rainfall_mm` is the top label, not a sentence about all the rows. Reading it like a tiny claim hid where the word is sitting, especially with `March`. Replacement rule: top of column means header; inside the row means value, so `42` is value and `March` is value if it is in the row. I can submit that, but I still need to look at the place before I trust the label.",
+        "previousTutorMove": "Right. Position decides. `rainfall_mm`: header, field name. `42`: value in a row. `March`: do not read the word first. Check its place. Last check before submit: top of a column: header. inside the row: value. So if `March` is inside the row, mark value. Then submit.",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T18:01:21.599Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "I will fill the blanks before looking at the words.\nSlot 1 is header, Slot 2 is value, Slot 3 is value.\nThen `rainfall_mm` goes with Slot 1, and `42` and `March` go with the row slots, though I am still checking whether I am just remembering the labels.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Covering the words makes sense: decide the slot first, then attach the label. I think Slot 1 is header, Slot 2 is value, Slot 3 is value, but I still feel like I am memorizing the names more than judging them. The rule feels strict, not comforting, but it gives me a submit check: position before word.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8653,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-612901de36ed288e"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8653,
+            "promptHashes": {
+              "system": "0d65bef6fd7db25a",
+              "user": "b8ab7f945dc841fa",
+              "combined": "612901de36ed288e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wbXxZs",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wbXxZs/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8653,
+              "promptHashes": {
+                "system": "0d65bef6fd7db25a",
+                "user": "b8ab7f945dc841fa",
+                "combined": "612901de36ed288e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wbXxZs",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wbXxZs/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego mostly stays in character, especially with “I think” and the worry about memorizing names, but it tidies the repair too quickly. “The rule feels strict, not comforting” sounds a little too self-aware for this learner and makes the recognition pressure explicit instead of showing it through hesitation. Keep the slot answers, but let the uncertainty stay more basic and label-focused, with less neat summary language around “submit check.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7132,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-0b59e5d731e737a6"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7132,
+            "promptHashes": {
+              "system": "c4e0024b9e590435",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "0b59e5d731e737a6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5pJNyV",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5pJNyV/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7132,
+              "promptHashes": {
+                "system": "c4e0024b9e590435",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "0b59e5d731e737a6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5pJNyV",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5pJNyV/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly: keep the slot answers but make the uncertainty more basic.\nFINAL:\nI will fill the blanks before looking at the words.\nSlot 1 is header, Slot 2 is value, Slot 3 is value.\nThen `rainfall_mm` goes with Slot 1, and `42` and `March` go with the row slots, though I am still checking whether I am just remembering the labels.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14002,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-dabd6ca09e03234a"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14002,
+            "promptHashes": {
+              "system": "253c3831d417b704",
+              "user": "d41cee7b2a53355b",
+              "combined": "dabd6ca09e03234a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0WvZfa",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0WvZfa/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14002,
+              "promptHashes": {
+                "system": "253c3831d417b704",
+                "user": "d41cee7b2a53355b",
+                "combined": "dabd6ca09e03234a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0WvZfa",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0WvZfa/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "solid",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-25T18:01:51.388Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 110896,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 28,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 31,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a table header names a field, not a claim about every row",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "solid",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-25 18:01:51",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 28,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 31,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 45,
+            "sessionId": "drama-branch-session-D45-reframe+peripeteia-1779732000495",
+            "interventionType": "scaffolding",
+            "interventionDescription": "Header, field, row, value.\n\nThe word sort is settled. The remaining check is earlier: slot before word.\n\nNew submit gate: cover the words.\n\nFill the slots first:\n\nSlot 1: top of column = ______\nSlot 2",
+            "learnerResponse": null,
+            "context": "So `rainfall_mm` is the top label, not a sentence about all the rows. Reading it like a tiny claim h",
+            "createdAt": "2026-05-25 18:01:21"
+          },
+          {
+            "id": 40,
+            "sessionId": "drama-branch-session-D45-reframe+peripeteia-1779732000495",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "We can sort once more.\n\n`rainfall_mm`: header; it names the field.\n`42`: value; it sits in one row under that field.\n`March`: check position. Top of a column: header. Inside a row under a month field:",
+            "learnerResponse": null,
+            "context": "So `rainfall_mm` is just the top label? I still want to read it like a mini sentence, but maybe `42`",
+            "createdAt": "2026-05-25 18:00:00"
+          },
+          {
+            "id": 41,
+            "sessionId": "drama-branch-session-D45-reframe+peripeteia-1779732000495",
+            "interventionType": "scaffolding",
+            "interventionDescription": "Right.\n\nPosition decides.\n\n`rainfall_mm`: header, field name.\n`42`: value in a row.\n`March`: do not read the word first. Check its place.\n\nLast check before submit:\ntop of a column: header.\ninside the",
+            "learnerResponse": null,
+            "context": "Sorting it again helps: `rainfall_mm` is the field name, and `42` is one value under it. I think I c",
+            "createdAt": "2026-05-25 18:00:00"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

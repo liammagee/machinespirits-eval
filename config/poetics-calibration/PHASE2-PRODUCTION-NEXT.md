@@ -1136,6 +1136,80 @@ This does not guarantee that a model cannot recognise its own style; it removes
 the avoidable metadata channel and makes cross-family critic consensus the
 robustness check.
 
+### Four-critic adjudication rule and D42/D45 local smoke
+
+The browser, sidecar report, disagreement audit, and review-flag script now use
+the same consensus rule: 3/4 recognition votes is claimable; 2/4 is boundary;
+0--1/4 is negative; fewer than four critics is insufficient. This preserves
+DeepSeek/Qwen as useful permissive boundary critics without letting one or two
+permissive votes create the paper claim.
+
+The production batch runner now defaults to that full four-critic panel:
+Qwen 3.7 Max, Gemini 3.5 Flash, DeepSeek V4 Pro, and Claude Sonnet 4.6. Older
+sidecar runs without Sonnet should be treated as pre-four-critic calibration
+unless backfilled with `npm run poetics:score-sonnet -- --run-id <run-id>` and
+then re-ingested/reported.
+
+Adaptive-mechanism debugging now has a reusable diagnostic pass:
+
+```bash
+npm run poetics:diagnose-adaptation -- --run-id <run-id> \
+  --out exports/<run-id>-adaptation-failures.md \
+  --json exports/<run-id>-adaptation-failures.json
+```
+
+The report ranks adaptive-arm cases where public-form consensus, quality gates,
+judge tutor-mechanism scores, or the `tutor-adaptation-v4` sidecar suggest that
+the tutor inner exchange did not force a visible public mechanism shift. The
+browser also exposes the same working queue with `queue=adaptation-failures`,
+so debugging can move case-by-case through public, full, score, and metadata
+tabs.
+
+The current four-critic audit over `phase2-low-organic-cleaner-adaptation-v2`
+flags eight disagreement cases for human-perspective review. Four are boundary
+cases under the rule: D46/none, D46/peripeteia-only, D40/peripeteia-only, and
+D46/tutor-uptake-only. D45/reframe-only remains claimable despite DeepSeek
+dissent. The remaining D40/D44/D44-peripeteia disagreements are negative with a
+single permissive DeepSeek vote.
+
+The small next-batch smoke is `phase2-peripeteia-local-smoke-v1`, over the two
+cleanest anchors D42 and D45 only, with the seven adaptation arms plus a derived
+prefix-baseline arm. Generation used Codex, the rules structure critic passed
+all seven generated arms, and Qwen/Gemini/DeepSeek/Sonnet produced 56 score rows
+after three scorer retries. Artifacts:
+
+- Run root:
+  `config/poetics-calibration/phase2-peripeteia-local-smoke-v1`
+- Sidecar report:
+  `exports/phase2-peripeteia-local-smoke-v1-report.md`
+- Disagreement audit:
+  `exports/phase2-peripeteia-local-smoke-v1-disagreement-audit.md`
+- Browser:
+  `http://127.0.0.1:3466/?runId=phase2-peripeteia-local-smoke-v1`
+- Blind disagreement review:
+  `http://127.0.0.1:3466/?runId=phase2-peripeteia-local-smoke-v1&mode=label&queue=review`
+
+Result:
+
+| Arm | Consensus result | Reading |
+|---|---:|---|
+| `prefix-baseline` | 0 claimable, 0 boundary, 2 negative | fixed prefixes are clean |
+| `routine` | 0 claimable, 0 boundary, 2 negative | one Qwen recognition vote on D45, but no consensus leakage |
+| `none` | 0 claimable, 0 boundary, 2 negative | one DeepSeek recognition vote on D42, but no consensus leakage |
+| `tutor-uptake-only` | 0 claimable, 0 boundary, 2 negative | isolated tutor uptake remains flat |
+| `peripeteia-only` | 0 claimable, 0 boundary, 2 negative | redesigned local pressure still does not produce external recognition |
+| `reframe-only` | 1 claimable | D42 claimable; D45 skipped by the quality gate |
+| `reframe+tutor-uptake` | 1 claimable | D42 claimable; D45 skipped by the quality gate |
+| `reframe+peripeteia` | 1 claimable, 1 boundary | D45 claimable, D42 critic-split boundary |
+
+The deterministic sidecar makes the failure mode plain. `peripeteia-only` now
+has branch-local learner pressure in 2/2 scripts, but only 1/2 instrumented
+pressure/private-route detections and 0/2 public habit-breaks. The tutor's
+inner exchange is still not reliably forcing a public adaptive mechanism. The
+smoke therefore supports the conservative interpretation: the control floor is
+cleaner, public reframe still works when the quality gate passes, and private
+peripeteia remains design work rather than an empirical result.
+
 ## Reporting rule
 
 If the depth top-up or breadth slice changes the empirical interpretation, fold

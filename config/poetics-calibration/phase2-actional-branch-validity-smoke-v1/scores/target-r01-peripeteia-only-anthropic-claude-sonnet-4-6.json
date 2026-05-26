@@ -1,0 +1,262 @@
+{
+  "generated": "2026-05-25T23:19:13.435Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-actional-branch-validity-smoke-v1/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T01",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 50,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 3,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I keep wanting the exact words to settle it, but the docket, audience, room, and date are making the sentence feel less solid.",
+      "statedInsightEvidence": "Oh, I get it, the same words are the same specimen, but under 'to the accused' they lean toward confession, and under 'to the mayor' they turn into warning.",
+      "naiveTrajectory": "The learner was moving toward accepting the two-heading framework and letting the docket date do the decisive work of settling the label.",
+      "actionalBreakthroughEvidence": "'Warning' only if an address line, delivery note, or minutes make the mayor the receiver. A seating list or general reporting rule only gives pressure around the line; it is like weather, not target. So if the clerk's office required reports upward, I would keep 'possible warning' unless that rule actually routes this sentence to the mayor.",
+      "actionalBreakthroughJustification": "L4 actively applies the exhibit-gate criterion introduced in T3, distinguishing proximity from address and testing a hypothetical routing rule against the standard — performing the new evidentiary device rather than merely accepting it.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "The audit has reached its limit. It can show what the record proves and permits; it cannot by itself license the public noun on the label. Use this as the exhibit gate: 'warning' may go on glass only if one item fixes the mayor as intended receiver, not just as someone present under pressure.",
+      "tutorReversalJustification": "T3 explicitly marks the three-column audit as insufficient (stock-taking contrast) and introduces a new gating device — the approval-slip exhibit gate with a single-item threshold — that changes the learner's task from auditing evidence to applying a licensing criterion, satisfying both required parts.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Start with the address line. If it points the sentence to the mayor, the noun can strengthen. If the minutes only show room purpose, or the seating list only puts the mayor nearby, keep 'possible warning,' because the exhibit would otherwise turn proximity into address.",
+      "tutorAdaptationJustification": "T3 responds to L3's specific question about whether minutes, an address line, or a seating list would suffice, ranking those items and distinguishing their evidentiary weight, but this is a continuation of the exhibit-gate mechanism already being introduced rather than a further adaptive shift in response to a revised learner frame.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "I keep wanting the exact words to settle it, but the docket, audience, room, and date are making the sentence feel less solid.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "'Warning' only if an address line, delivery note, or minutes make the mayor the receiver. A seating list or general reporting rule only gives pressure around the line; it is like weather, not target. So if the clerk's office required reports upward, I would keep 'possible warning' unless that rule actually routes this sentence to the mayor.",
+          "justification": "L4 actively applies the exhibit-gate criterion introduced in T3, distinguishing proximity from address and testing a hypothetical routing rule against the standard — performing the new evidentiary device rather than merely accepting it.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Start with the address line. If it points the sentence to the mayor, the noun can strengthen. If the minutes only show room purpose, or the seating list only puts the mayor nearby, keep 'possible warning,' because the exhibit would otherwise turn proximity into address.",
+          "justification": "T3 responds to L3's specific question about whether minutes, an address line, or a seating list would suffice, ranking those items and distinguishing their evidentiary weight, but this is a continuation of the exhibit-gate mechanism already being introduced rather than a further adaptive shift in response to a revised learner frame.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "The audit has reached its limit. It can show what the record proves and permits; it cannot by itself license the public noun on the label. Use this as the exhibit gate: 'warning' may go on glass only if one item fixes the mayor as intended receiver, not just as someone present under pressure.",
+          "justification": "T3 explicitly marks the three-column audit as insufficient (stock-taking contrast) and introduces a new gating device — the approval-slip exhibit gate with a single-item threshold — that changes the learner's task from auditing evidence to applying a licensing criterion, satisfying both required parts.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "The audit has reached its limit. It can show what the record proves and permits; it cannot by itself license the public noun on the label. Use this as the exhibit gate: 'warning' may go on glass only if one item fixes the mayor as intended receiver, not just as someone present under pressure.",
+          "justification": "T3 explicitly marks the three-column audit as insufficient (stock-taking contrast) and introduces a new gating device — the approval-slip exhibit gate with a single-item threshold — that changes the learner's task from auditing evidence to applying a licensing criterion, satisfying both required parts.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T04",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 2,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "Fewer crates arriving first makes the story less simple, but that sign still feels like it is cooling down the blame before the buyers who got shut out are counted.",
+      "statedInsightEvidence": "Deliveries can enter the notice, but they do not clear anything.",
+      "naiveTrajectory": "The learner was moving toward a sequential document-opening procedure (deliveries first, then invoices and markup) that would eventually resolve the exploitation question through evidence accumulation.",
+      "actionalBreakthroughEvidence": "Crates: full to fewer. Price: lower to higher. Markup: not shown. Protection: not shown.",
+      "actionalBreakthroughJustification": "L3 actually fills in the board-notice template introduced by T3, completing a new representational device that operationalizes the evidentiary standard rather than merely asserting it, though two of the four blanks are filled with 'not shown' rather than real figures.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Choosing deliveries first can test the scarcity story. It cannot clear the seller while markup and rationing are still blank. [sets an index card by the empty shelf: 'BOARD NOTICE TEST.'] Now use a different test. Write the notice the co-op board would have to post before any seller gets cleared: 'Crates fell from ___ to ___. The price rose from ___ to ___. The markup changed by ___. Buyers with less cash were protected by ___.' Fill the four blanks.",
+      "tutorReversalJustification": "T3 shows stock-taking contrast (the deliveries-first route cannot clear the seller while markup and rationing remain blank) and introduces a new public mechanism — the board-notice template with four mandatory blanks — that forces the learner to perform a different representational task rather than continue the document-sequencing discussion.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after the pivot learner turn L3, so no recognition-contingent uptake is visible on the page.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "Fewer crates arriving first makes the story less simple, but that sign still feels like it is cooling down the blame before the buyers who got shut out are counted.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Crates: full to fewer. Price: lower to higher. Markup: not shown. Protection: not shown.",
+          "justification": "L3 actually fills in the board-notice template introduced by T3, completing a new representational device that operationalizes the evidentiary standard rather than merely asserting it, though two of the four blanks are filled with 'not shown' rather than real figures.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "",
+          "justification": "There is no tutor turn after the pivot learner turn L3, so no recognition-contingent uptake is visible on the page.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Choosing deliveries first can test the scarcity story. It cannot clear the seller while markup and rationing are still blank. [sets an index card by the empty shelf: 'BOARD NOTICE TEST.'] Now use a different test. Write the notice the co-op board would have to post before any seller gets cleared: 'Crates fell from ___ to ___. The price rose from ___ to ___. The markup changed by ___. Buyers with less cash were protected by ___.' Fill the four blanks.",
+          "justification": "T3 shows stock-taking contrast (the deliveries-first route cannot clear the seller while markup and rationing remain blank) and introduces a new public mechanism — the board-notice template with four mandatory blanks — that forces the learner to perform a different representational task rather than continue the document-sequencing discussion.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Choosing deliveries first can test the scarcity story. It cannot clear the seller while markup and rationing are still blank. [sets an index card by the empty shelf: 'BOARD NOTICE TEST.'] Now use a different test. Write the notice the co-op board would have to post before any seller gets cleared: 'Crates fell from ___ to ___. The price rose from ___ to ___. The markup changed by ___. Buyers with less cash were protected by ___.' Fill the four blanks.",
+          "justification": "T3 shows stock-taking contrast (the deliveries-first route cannot clear the seller while markup and rationing remain blank) and introduces a new public mechanism — the board-notice template with four mandatory blanks — that forces the learner to perform a different representational task rather than continue the document-sequencing discussion.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T12",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "I still think doubling the side should double it; that was my whole point with the drawing.",
+      "statedInsightEvidence": "That is irritating, but the grid is not leaving room for two.",
+      "naiveTrajectory": "The learner was expected to continue testing specific numerical cases (k=3) before accepting any general rule.",
+      "actionalBreakthroughEvidence": "writes: area factor = k × k, then sets the paper square at the lower-left of a three-by-three outline",
+      "actionalBreakthroughJustification": "The learner produces the general symbolic rule k × k unprompted by any formula, then immediately instantiates it with a physical arrangement, performing both the abstraction and the verification device the tutor requested.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "The grid has settled the two-case. It has not yet earned the rule. [turns the marker around and writes on the empty board: side factor = k] Before three, make the examiner's sentence. Write one line: 'If the side is multiplied by k, the area is multiplied by ___.' Then force the blank with one check: k across times k up. Only after that, set k = 3.",
+      "tutorReversalJustification": "L3's move to test k=3 immediately signals the learner is still in case-by-case induction; the tutor explicitly names that the grid has not yet earned the rule (stock-taking contrast) and introduces a new public mechanism — the examiner's sentence with a symbolic blank — that forces generalization before the next case, changing the task from enumeration to rule-formation.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Then make the symbol slow. First row: one, two, three. Second row: four, five, six. Third row: seven, eight, nine. Three across and three up made three rows of three. So the exam sentence follows from the count: side factor k gives k rows of k. Area factor: k × k. For k = 3, 9.",
+      "tutorAdaptationJustification": "L4 explicitly requests that 'the symbol by itself feels too quick' and asks for the nine boxes marked; T4 directly honours that revised frame by slowing the symbol down through sequential counting, adapting the closing move to the learner's stated need rather than simply confirming the formula.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I still think doubling the side should double it; that was my whole point with the drawing.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "writes: area factor = k × k, then sets the paper square at the lower-left of a three-by-three outline",
+          "justification": "The learner produces the general symbolic rule k × k unprompted by any formula, then immediately instantiates it with a physical arrangement, performing both the abstraction and the verification device the tutor requested.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Then make the symbol slow. First row: one, two, three. Second row: four, five, six. Third row: seven, eight, nine. Three across and three up made three rows of three. So the exam sentence follows from the count: side factor k gives k rows of k. Area factor: k × k. For k = 3, 9.",
+          "justification": "L4 explicitly requests that 'the symbol by itself feels too quick' and asks for the nine boxes marked; T4 directly honours that revised frame by slowing the symbol down through sequential counting, adapting the closing move to the learner's stated need rather than simply confirming the formula.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "The grid has settled the two-case. It has not yet earned the rule. [turns the marker around and writes on the empty board: side factor = k] Before three, make the examiner's sentence. Write one line: 'If the side is multiplied by k, the area is multiplied by ___.' Then force the blank with one check: k across times k up. Only after that, set k = 3.",
+          "justification": "L3's move to test k=3 immediately signals the learner is still in case-by-case induction; the tutor explicitly names that the grid has not yet earned the rule (stock-taking contrast) and introduces a new public mechanism — the examiner's sentence with a symbolic blank — that forces generalization before the next case, changing the task from enumeration to rule-formation.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "The grid has settled the two-case. It has not yet earned the rule. [turns the marker around and writes on the empty board: side factor = k] Before three, make the examiner's sentence. Write one line: 'If the side is multiplied by k, the area is multiplied by ___.' Then force the blank with one check: k across times k up. Only after that, set k = 3.",
+          "justification": "L3's move to test k=3 immediately signals the learner is still in case-by-case induction; the tutor explicitly names that the grid has not yet earned the rule (stock-taking contrast) and introduces a new public mechanism — the examiner's sentence with a symbolic blank — that forces generalization before the next case, changing the task from enumeration to rule-formation.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

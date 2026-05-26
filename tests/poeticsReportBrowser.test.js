@@ -48,6 +48,13 @@ function seed(db) {
     generator: 'codex',
     metadata: {},
   });
+  upsertPoeticsRun(db, {
+    id: 'poetics-failure-run',
+    sourceRoot: 'config/poetics-calibration/poetics-failure-run',
+    batchId: 'poetics-failure-run',
+    generator: 'codex',
+    metadata: {},
+  });
   upsertPoeticsItem(db, {
     id: 'poetics-test-run:target-r01:none:T01',
     runId: 'poetics-test-run',
@@ -84,6 +91,21 @@ function seed(db) {
     metadata: {},
   });
   upsertPoeticsItem(db, {
+    id: 'poetics-test-run:control-r01-d26-hard-trap:default:T04',
+    runId: 'poetics-test-run',
+    unitId: 'control-r01-d26-hard-trap',
+    repeat: 'r01',
+    arm: 'default',
+    tid: 'T04',
+    dramaId: 'D26',
+    discipline: 'chemistry',
+    condition: 'base',
+    intendedLean: 'hard_trap',
+    controlFamily: 'd26-hard-trap',
+    controlRole: 'hard_trap_control',
+    metadata: {},
+  });
+  upsertPoeticsItem(db, {
     id: 'poetics-second-run:target-r01:reframe:T03',
     runId: 'poetics-second-run',
     unitId: 'target-r01',
@@ -102,6 +124,19 @@ function seed(db) {
         baseline_control_note: 'natural role turn',
       },
     },
+  });
+  upsertPoeticsItem(db, {
+    id: 'poetics-failure-run:target-r01:peripeteia-only:T04',
+    runId: 'poetics-failure-run',
+    unitId: 'target-r01',
+    repeat: 'r01',
+    arm: 'peripeteia-only',
+    tid: 'T04',
+    dramaId: 'D4',
+    discipline: 'biology',
+    condition: 'recognition',
+    intendedLean: 'recognition',
+    metadata: {},
   });
   upsertPoeticsScore(db, {
     itemId: 'poetics-test-run:target-r01:none:T01',
@@ -130,6 +165,22 @@ function seed(db) {
     statedInsightEvidence: 'Oh, I get it',
   });
   upsertPoeticsScore(db, {
+    itemId: 'poetics-test-run:control-r01-d25-hard-trap:default:T02',
+    criticModel: 'google/gemini-3.5-flash',
+    scoreFile: 'scores/control-r01-d25-gemini.json',
+    formClass: 'trap',
+    recontextualization: 0,
+    statedInsight: 75,
+  });
+  upsertPoeticsScore(db, {
+    itemId: 'poetics-test-run:control-r01-d25-hard-trap:default:T02',
+    criticModel: 'anthropic/claude-sonnet-4.6',
+    scoreFile: 'scores/control-r01-d25-sonnet.json',
+    formClass: 'trap',
+    recontextualization: 0,
+    statedInsight: 75,
+  });
+  upsertPoeticsScore(db, {
     itemId: 'poetics-second-run:target-r01:reframe:T03',
     criticModel: 'qwen/qwen3.7-max',
     scoreFile: 'scores/target-r01-reframe-qwen37.json',
@@ -143,6 +194,11 @@ function seed(db) {
           score100: 75,
           evidence: 'I was using the area as if it were the whole map',
           source: 'recontextualization_axis',
+        },
+        learner_actional_breakthrough: {
+          score100: 90,
+          evidence: 'I can test it against the smaller example.',
+          source: 'actional_breakthrough_axis',
         },
         tutor_contingent_adaptation: {
           score100: 80,
@@ -168,9 +224,25 @@ function seed(db) {
     recontextualization: 50,
     statedInsight: 25,
   });
+  upsertPoeticsScore(db, {
+    itemId: 'poetics-second-run:target-r01:reframe:T03',
+    criticModel: 'google/gemini-3.5-flash',
+    scoreFile: 'scores/target-r01-reframe-gemini.json',
+    formClass: 'recognition',
+    recontextualization: 75,
+    statedInsight: 25,
+  });
+  upsertPoeticsScore(db, {
+    itemId: 'poetics-second-run:target-r01:reframe:T03',
+    criticModel: 'anthropic/claude-sonnet-4.6',
+    scoreFile: 'scores/target-r01-reframe-sonnet.json',
+    formClass: 'recognition',
+    recontextualization: 75,
+    statedInsight: 25,
+  });
   upsertPoeticsTutorAdaptation(db, {
     itemId: 'poetics-second-run:target-r01:reframe:T03',
-    analyzerVersion: 'tutor-adaptation-v3',
+    analyzerVersion: 'tutor-adaptation-v4',
     sourceTracePath: 'config/poetics-calibration/poetics-second-run/target-r01/deliberation/reframe/T03.json',
     learnerSelfReframe: true,
     learnerReframeScore: 1,
@@ -195,6 +267,58 @@ function seed(db) {
         learner_outcome_after_reversal: 'recognition',
         evidence: 'pressure learner: But the map still feels wrong.\npost tutor: Let us switch route.',
       },
+      branch_validity: {
+        tutor_adaptation_policy: 'uptake+peripeteia',
+        requires_learner_reversal_event: true,
+        learner_reversal_event_used: true,
+        requires_learner_reframe_event: true,
+        learner_reframe_event_used: true,
+        valid: true,
+      },
+    },
+  });
+  for (const critic of [
+    'qwen/qwen3.7-max',
+    'google/gemini-3.5-flash',
+    'deepseek/deepseek-v4-pro',
+    'anthropic/claude-sonnet-4.6',
+  ]) {
+    upsertPoeticsScore(db, {
+      itemId: 'poetics-failure-run:target-r01:peripeteia-only:T04',
+      criticModel: critic,
+      scoreFile: `scores/failure-${critic.replaceAll('/', '-')}.json`,
+      formClass: 'flat',
+      recontextualization: 50,
+      statedInsight: 25,
+      metadata: {
+        tutor_adaptive_mechanism: 25,
+        tutor_contingent_adaptation: 0,
+      },
+    });
+  }
+  upsertPoeticsTutorAdaptation(db, {
+    itemId: 'poetics-failure-run:target-r01:peripeteia-only:T04',
+    analyzerVersion: 'tutor-adaptation-v4',
+    learnerSelfReframe: false,
+    tutorContingentAdaptation: false,
+    tutorAdaptationScore: 0,
+    metadata: {
+      peripeteia: {
+        learner_reversal_pressure: true,
+        instrumented_pressure: true,
+        private_mechanism_declared: false,
+        tutor_strategy_reversal: false,
+        tutor_adaptive_mechanism: false,
+        tutor_peripeteia_score: 20,
+      },
+      branch_validity: {
+        tutor_adaptation_policy: 'peripeteia-only',
+        requires_learner_reversal_event: true,
+        learner_reversal_event_used: true,
+        requires_learner_reframe_event: false,
+        learner_reframe_event_used: false,
+        valid: true,
+      },
     },
   });
   upsertPoeticsReviewFlag(db, {
@@ -212,10 +336,14 @@ describe('poetics sidecar report and browser', () => {
     withDb((db) => {
       const report = buildPoeticsReport(db, { runId: 'poetics-test-run' });
       assert.equal(report.runs.length, 1);
-      assert.equal(report.runs[0].itemCount, 2);
-      assert.equal(report.runs[0].scoreCount, 3);
+      assert.equal(report.runs[0].itemCount, 3);
+      assert.equal(report.runs[0].scoreCount, 5);
       assert.equal(report.runs[0].disagreements.length, 1);
+      assert.equal(report.runs[0].consensusByItem.find((row) => row.tid === 'T02').claimStatus, 'negative');
+      assert.equal(report.runs[0].consensusByItem.find((row) => row.tid === 'T04').claimStatus, 'insufficient');
       assert.match(renderMarkdown(report), /Critic Disagreements/);
+      assert.match(renderMarkdown(report), /Consensus Adjudication/);
+      assert.match(renderMarkdown(report), /insufficient=2/);
       assert.match(renderMarkdown(report), /hard_trap_control/);
       assert.match(renderMarkdown(report), /Tutor Adaptation/);
       assert.match(renderMarkdown(report), /Baseline Risk/);
@@ -225,12 +353,17 @@ describe('poetics sidecar report and browser', () => {
       assert.ok(renderCsv(report).includes('organic_reversal_risk'));
 
       const adaptiveReport = buildPoeticsReport(db, { runId: 'poetics-second-run' });
+      assert.equal(adaptiveReport.runs[0].consensusByItem[0].claimStatus, 'claimable');
       assert.match(renderMarkdown(adaptiveReport), /organic_reversal_boundary/);
       assert.match(renderMarkdown(adaptiveReport), /Instrumented pressure/);
-      assert.match(renderMarkdown(adaptiveReport), /Public habit-break/);
+      assert.match(renderMarkdown(adaptiveReport), /Peripeteia tutor adaptation/);
       assert.match(renderMarkdown(adaptiveReport), /Mean peripeteia score/);
+      assert.match(renderMarkdown(adaptiveReport), /Branch valid/);
+      assert.match(renderMarkdown(adaptiveReport), /Actional breakthrough/);
       assert.ok(renderCsv(adaptiveReport).includes('instrumented_pressure'));
       assert.ok(renderCsv(adaptiveReport).includes('private_mechanism_declared'));
+      assert.ok(renderCsv(adaptiveReport).includes('actional_breakthrough'));
+      assert.ok(renderCsv(adaptiveReport).includes('branch_valid'));
       assert.ok(renderCsv(adaptiveReport).includes('tutor_peripeteia_score'));
       assert.ok(renderCsv(adaptiveReport).includes('68'));
     }));
@@ -239,40 +372,52 @@ describe('poetics sidecar report and browser', () => {
     withDb((db) => {
       const runs = listRuns(db);
       const run = runs.find((entry) => entry.id === 'poetics-test-run');
-      assert.equal(run.itemCount, 2);
+      assert.equal(run.itemCount, 3);
       assert.equal(run.reviewFlagCount, 1);
 
       const hardTraps = listItems(db, { runId: 'poetics-test-run', role: 'hard_trap_control' });
-      assert.equal(hardTraps.length, 1);
-      assert.equal(hardTraps[0].dramaId, 'D25');
-      assert.equal(hardTraps[0].criticForms.length, 2);
-      assert.equal(hardTraps[0].reviewFlagCount, 1);
+      assert.equal(hardTraps.length, 2);
+      const d25 = hardTraps.find((item) => item.dramaId === 'D25');
+      const d26 = hardTraps.find((item) => item.dramaId === 'D26');
+      assert.equal(d25.criticForms.length, 4);
+      assert.equal(d25.consensus.claimStatus, 'negative');
+      assert.equal(d25.reviewFlagCount, 1);
+      assert.equal(d26.consensus.claimStatus, 'insufficient');
+
+      const failures = listItems(db, { runId: 'poetics-failure-run', queue: 'adaptation-failures' });
+      assert.equal(failures.length, 1);
+      assert.equal(failures[0].arm, 'peripeteia-only');
+      assert.equal(failures[0].consensus.claimStatus, 'negative');
 
       const detail = getItem(db, 'poetics-test-run:control-r01-d25-hard-trap:default:T02');
       assert.equal(detail.item.controlRole, 'hard_trap_control');
-      assert.equal(detail.scores.length, 2);
+      assert.equal(detail.scores.length, 4);
       assert.equal(detail.reviewFlags.length, 1);
 
       const adaptiveItems = listItems(db, { runId: 'poetics-second-run' });
       assert.equal(adaptiveItems[0].tutorAdaptationScore, 72);
       assert.equal(adaptiveItems[0].learnerSelfReframe, true);
       assert.equal(adaptiveItems[0].tutorContingentAdaptation, true);
+      assert.equal(adaptiveItems[0].consensus.claimStatus, 'claimable');
 
       const adaptiveDetail = getItem(db, 'poetics-second-run:target-r01:reframe:T03');
+      assert.equal(adaptiveDetail.consensus.consensusClass, 'recognition');
       assert.equal(adaptiveDetail.tutorAdaptation.tutor_adaptation_score, 72);
       assert.deepEqual(adaptiveDetail.tutorAdaptation.shared_salient_terms, ['projection', 'area', 'scale']);
       const qwenScore = adaptiveDetail.scores.find((score) => score.critic_model === 'qwen/qwen3.7-max');
       assert.equal(qwenScore.roleScores.learnerSelfReframeScore, 75);
+      assert.equal(qwenScore.roleScores.learnerActionalBreakthroughScore, 90);
       assert.equal(qwenScore.roleScores.tutorContingentAdaptationScore, 80);
       assert.equal(qwenScore.roleScores.tutorStrategyReversalScore, 70);
       assert.match(qwenScore.roleScores.tutorContingentAdaptationEvidence, /revised map frame/);
       assert.equal(adaptiveDetail.tutorAdaptation.metadata.peripeteia.tutor_strategy_reversal, true);
+      assert.equal(adaptiveDetail.tutorAdaptation.metadata.branch_validity.valid, true);
     }));
 
   it('supports blind browser labels without exposing critic scores', () =>
     withDb((db) => {
       const blindItems = listItems(db, { runId: 'poetics-test-run', blind: true });
-      assert.equal(blindItems.length, 2);
+      assert.equal(blindItems.length, 3);
       assert.ok(blindItems[0].blindId);
       assert.equal(blindItems[0].criticForms, undefined);
       assert.equal(blindItems[0].tutorAdaptationScore, undefined);

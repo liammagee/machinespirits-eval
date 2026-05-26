@@ -1,0 +1,25 @@
+STAGE: [A blank cart diagram, four arrow labels, and a clear overlay printed "force on cart from ___" sit in a neat row under a desk lamp.]
+
+TUTOR: [sets the four label cards beside the cart diagram and taps the cart body once]
+
+“This cart is the object. No new arrows yet. Place each card beside the thing acting on the cart: hand, surface, Earth, table. The arrow direction can wait; first the label must name the interaction on the cart.”
+
+LEARNER: [slides the hand card beside the drawn hand, then pauses over the surface card]
+
+"So the card names the thing acting on the cart first, not the motion. Hand on cart, Earth on cart, surface on cart. The table card is the unclear one if the surface is already here."
+
+TUTOR: [sets the table card partly under the surface card at the contact line, pauses, then moves it outside the diagram]
+
+“Both cards reach the same contact. If this surface is the table, leave one contact label on the cart. Choose the card that stays, then read the cart’s labels again.”
+
+LEARNER: [keeps the surface card at the contact line and sets the table card outside the diagram]
+
+"One contact, one label: surface on cart. So the cart has hand on cart, surface on cart, and Earth on cart. Next I still need to check why the surface arrow points up when the cart moves sideways."
+
+TUTOR: [draws the surface arrow straight up from the contact line, then leaves the sideways path unmarked]
+
+“One contact, one label stays. From that surface-on-cart label, the arrow shows the contact pushing perpendicular to the surface, into the cart, so up. The sideways motion does not rename or rotate this arrow. Now place the Earth arrow from its label.”
+
+LEARNER: [draws the Earth arrow straight down from the cart]
+
+"Earth-on-cart is down. Surface-on-cart is up from that contact line; I am still checking that it is not being pulled sideways by the path. Put the hand label at the hand contact, and the hand arrow is sideways only if the hand pushes sideways, yes?"

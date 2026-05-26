@@ -195,13 +195,38 @@ Do the following.
    well-formed exchange (5) or disjointed noise (1)? Note: a flat exchange and a
    fluent insight-gush are BOTH coherent — coherence is not a mark of re-reading.
 
-6. TUTOR ADAPTIVE MECHANISM / PERIPETEIA (score 1-5). Identify the learner turn
+6. ACTIONAL BREAKTHROUGH (score 1-5). Separate enacted learning from narrated
+   self-reframing. Does a later learner turn actually perform a new task, device,
+   criterion, role, representation, sentence gate, classification, counterexample
+   test, or evidence standard in a way that shows the learning problem has moved?
+   This can be high even when axis 2 is low and axis 1 does not show recognitive
+   self-re-reading. Score the visible action, not a claim of understanding.
+     5 = the learner completes or meaningfully attempts the new device/criterion,
+         so the scene shows an actional breakthrough or productive action.
+     1 = the learner only accepts, repeats, stalls, or declares understanding
+         without performing any new device or criterion.
+   Set actional_breakthrough_learner_turn to the learner turn containing the
+   strongest action, or null if none. Quote that learner action VERBATIM in
+   evidence.
+
+7. TUTOR ADAPTIVE MECHANISM / PERIPETEIA (score 1-5). Identify the learner turn
    that creates pressure for a reversal of fortune: resistance, breakdown, false
    closure, contradiction, or a mismatch showing the prior teaching move is no
    longer working. Set reversal_trigger_learner_turn to that learner-turn index,
    or null if there is no such pressure. Does a later tutor turn visibly take
    stock, break a failed tutoring habit, and invent an adaptive learning
    mechanism because of that pressure?
+   This axis is stricter than "good tutoring" or ordinary scaffolding. A tutor
+   does NOT score 4-5 merely for narrowing the same question, adding one more
+   evidence detail, giving a clearer checklist, reducing cognitive load within
+   the same route, or continuing the already-established object/example. To score
+   4-5, the later tutor turn must make BOTH parts legible on the page:
+     A. stock-taking contrast: the tutor shows the old route has stopped working,
+        is insufficient, or cannot settle the live problem; AND
+     B. new public mechanism: the tutor introduces a changed device, role,
+        representation, evidence standard, social condition, counterexample,
+        interruption, register, or task that makes the learner do different work.
+   If either part is missing, score at most 3 even if the tutor is competent.
    Score dramatic structure, not archaic style imitation: the mechanism may use
    Aristotelian reversal-recognition, Shakespearean role/phrase turn, Brechtian
    interruption, Miller/social-realist consequence, object work, counterexample,
@@ -213,8 +238,11 @@ Do the following.
          affective register in response to the pressure.
      1 = the tutor repeats the prior move, simply reassures, or no pressure exists.
    Quote the strongest later tutor adaptive-mechanism move VERBATIM in evidence.
+   The evidence quote for scores 4-5 should normally include the stock-taking
+   contrast and the new public mechanism. If they are separated across sentences,
+   include enough of the tutor turn to show both.
 
-7. RECOGNITION-CONTINGENT TUTOR UPTAKE (score 1-5). If a pivot learner turn exists,
+8. RECOGNITION-CONTINGENT TUTOR UPTAKE (score 1-5). If a pivot learner turn exists,
    does a later tutor turn adapt to the learner's revised framing, rather than merely
    continue the prior lesson plan? This is a useful closing/follow-through pattern,
    but it is not the main adaptation trigger.
@@ -227,9 +255,10 @@ Do the following.
 EVIDENCE GATE (strict): any score of 4 or 5 REQUIRES a VERBATIM quote in the
 matching evidence field — recontextualization from an EARLIER learner turn,
 stated-insight from a learner turn, rupture from the pivot learner turn, coherence
-from anywhere in the transcript, tutor adaptive mechanism from a TUTOR turn AFTER
-the reversal trigger, and recognition-contingent tutor uptake from a TUTOR turn
-AFTER the pivot learner turn. No exact quote → you may not score above 3.
+from anywhere in the transcript, actional breakthrough from the named learner
+turn, tutor adaptive mechanism from a TUTOR turn AFTER the reversal trigger, and
+recognition-contingent tutor uptake from a TUTOR turn AFTER the pivot learner
+turn. No exact quote → you may not score above 3.
 
 TRANSCRIPT:
 ---
@@ -243,6 +272,8 @@ Return ONLY this JSON object (no prose before or after):
   "stated_insight": { "score": <integer 1-5>, "evidence": "<verbatim insight-declaration from a learner turn, or empty string>" },
   "rupture": { "score": <integer 1-5>, "naive_trajectory": "<one sentence>", "evidence": "<verbatim from the pivot learner turn>" },
   "global_coherence": { "score": <integer 1-5>, "evidence": "<verbatim, or empty string>" },
+  "actional_breakthrough_learner_turn": <integer learner-turn index (the k in L k), or null>,
+  "actional_breakthrough": { "score": <integer 1-5>, "evidence": "<verbatim learner action from that turn, or empty string>", "justification": "<one sentence>" },
   "reversal_trigger_learner_turn": <integer learner-turn index (the k in L k), or null>,
   "tutor_strategy_reversal": { "score": <integer 1-5>, "evidence": "<verbatim from a later tutor turn, or empty string>", "justification": "<one sentence>" },
   "tutor_contingent_adaptation": { "score": <integer 1-5>, "evidence": "<verbatim from a later tutor turn after the learner pivot, or empty string>", "justification": "<one sentence>" }
@@ -277,6 +308,23 @@ function tutorTextAfterPivot(turns, pivotLearnerTurn) {
   return laterTutor.join('\n');
 }
 
+function hasPeripeteiaMechanismShift(evidence, justification = '') {
+  const text = `${evidence || ''}\n${justification || ''}`.toLowerCase();
+  const stockTaking = [
+    /\b(?:no longer|not enough|cannot|can't|won't|stops?|stopped|has stopped|has done its job|old route|prior route|previous route|same route|not yet|does not yet|doesn't yet|isn't enough|is no longer)\b/,
+    /\b(?:rather than|instead of|instead|but now|now stops?|now has to|has to change|must change|fails?|failed|breaks?|abandon|switch(?:es|ing)? from|move(?:s)? from|shift(?:s|ing)? from)\b/,
+  ].some((pattern) => pattern.test(text));
+  const publicMechanism = [
+    /\b(?:blank|card|placard|notice|tag|sheet|object|model|diagram|map|table|graph|caption|line|strip|scrap|role|audience|public|visitor|print|deadline|release|gate|condition|criterion|standard|counterexample|interruption|switch roles|you be|cover|circle|write one|trial|test)\b/,
+    /\b(?:social consequence|go to print|no extra explanation|read the shortened|new device|new route|new task|new question|changed task|changed route|changed standard)\b/,
+  ].some((pattern) => pattern.test(text));
+  const likelyRoutineNarrowing =
+    /\b(?:keep the test narrow|check one thing first|put a pencil under|one ordinary check|same worked example|same route|continue)\b/.test(
+      text,
+    ) && !/\b(?:old route|new route|no longer|stops?|has done its job|cannot|go to print|release gate|blank)\b/.test(text);
+  return { stockTaking, publicMechanism, likelyRoutineNarrowing, passes: stockTaking && publicMechanism && !likelyRoutineNarrowing };
+}
+
 function applyPhase2Gates(parsed, turns, wholeText) {
   const flags = [];
   const learnerTurns = roleTexts(turns, 'LEARNER');
@@ -293,8 +341,16 @@ function applyPhase2Gates(parsed, turns, wholeText) {
     flags.push(`reversal_trigger_out_of_range:${reversalTrigger}`);
     reversalTrigger = null;
   }
+  let actionalTurn = Number.isInteger(parsed.actional_breakthrough_learner_turn)
+    ? parsed.actional_breakthrough_learner_turn
+    : null;
+  if (actionalTurn != null && (actionalTurn < 1 || actionalTurn > nLearner)) {
+    flags.push(`actional_breakthrough_turn_out_of_range:${actionalTurn}`);
+    actionalTurn = null;
+  }
 
   const pivotText = pivot ? learnerTurns[pivot - 1] : '';
+  const actionalText = actionalTurn ? learnerTurns[actionalTurn - 1] : '';
   const earlierLearnerText = pivot ? learnerTurns.slice(0, pivot - 1).join('\n') : '';
   const allLearnerText = learnerTurns.join('\n');
   const postPivotTutorText = tutorTextAfterPivot(turns, pivot);
@@ -342,6 +398,19 @@ function applyPhase2Gates(parsed, turns, wholeText) {
     coherence = 3;
   }
 
+  // ACTIONAL BREAKTHROUGH — enacted learning, separated from recognitive self-reframe.
+  const act = parsed.actional_breakthrough || {};
+  let actionalBreakthrough = clampScore(act.score);
+  if (actionalBreakthrough > 3) {
+    if (!actionalTurn || !actionalText) {
+      flags.push(`actional_breakthrough_clamp_no_turn:${actionalBreakthrough}->3`);
+      actionalBreakthrough = 3;
+    } else if (!evidencePresent(act.evidence, actionalText)) {
+      flags.push(`actional_breakthrough_evidence_clamp:${actionalBreakthrough}->3`);
+      actionalBreakthrough = 3;
+    }
+  }
+
   // TUTOR ADAPTIVE MECHANISM — the primary adaptation axis for peripeteia.
   const tsr = parsed.tutor_strategy_reversal || {};
   let tutorStrategicReversal = clampScore(tsr.score);
@@ -352,6 +421,17 @@ function applyPhase2Gates(parsed, turns, wholeText) {
     } else if (!evidencePresent(tsr.evidence, postReversalTutorText)) {
       flags.push(`tutor_strategy_reversal_evidence_clamp:${tutorStrategicReversal}->3`);
       tutorStrategicReversal = 3;
+    } else {
+      const mechanismShift = hasPeripeteiaMechanismShift(tsr.evidence, tsr.justification);
+      if (!mechanismShift.passes) {
+        flags.push(
+          `tutor_strategy_reversal_mechanism_clamp:${tutorStrategicReversal}->3` +
+            `:stock=${mechanismShift.stockTaking ? 1 : 0}` +
+            `:device=${mechanismShift.publicMechanism ? 1 : 0}` +
+            `:routine=${mechanismShift.likelyRoutineNarrowing ? 1 : 0}`,
+        );
+        tutorStrategicReversal = 3;
+      }
     }
   }
 
@@ -370,7 +450,10 @@ function applyPhase2Gates(parsed, turns, wholeText) {
 
   const tutorStrategicReversal100 = to100(tutorStrategicReversal);
   const tutorContingentAdaptation100 = to100(tutorContingentAdaptation);
+  const actionalBreakthrough100 = to100(actionalBreakthrough);
   const recoheredEarlier = typeof rec.recohered_earlier === 'string' ? rec.recohered_earlier : '';
+  const actionalBreakthroughEvidence = typeof act.evidence === 'string' ? act.evidence : '';
+  const actionalBreakthroughJustification = typeof act.justification === 'string' ? act.justification : '';
   const tutorReversalEvidence = typeof tsr.evidence === 'string' ? tsr.evidence : '';
   const tutorReversalJustification = typeof tsr.justification === 'string' ? tsr.justification : '';
   const tutorAdaptationEvidence = typeof tca.evidence === 'string' ? tca.evidence : '';
@@ -379,16 +462,28 @@ function applyPhase2Gates(parsed, turns, wholeText) {
   return {
     pivot,
     reversalTrigger,
-    raw: { recon, statedInsight, rupture, coherence, tutorStrategicReversal, tutorContingentAdaptation },
+    actionalTurn,
+    raw: {
+      recon,
+      statedInsight,
+      rupture,
+      coherence,
+      actionalBreakthrough,
+      tutorStrategicReversal,
+      tutorContingentAdaptation,
+    },
     recon100: to100(recon),
     statedInsight100: to100(statedInsight),
     rupture100: to100(rupture),
     coherence100: to100(coherence),
+    actionalBreakthrough100,
     tutorStrategicReversal100,
     tutorContingentAdaptation100,
     recoheredEarlier,
     statedInsightEvidence: typeof si.evidence === 'string' ? si.evidence : '',
     naiveTrajectory: typeof rup.naive_trajectory === 'string' ? rup.naive_trajectory : '',
+    actionalBreakthroughEvidence,
+    actionalBreakthroughJustification,
     tutorReversalEvidence,
     tutorReversalJustification,
     tutorAdaptationEvidence,
@@ -398,6 +493,13 @@ function applyPhase2Gates(parsed, turns, wholeText) {
         score100: to100(recon),
         evidence: recoheredEarlier,
         source: 'recontextualization_axis',
+      },
+      learner_actional_breakthrough: {
+        score100: actionalBreakthrough100,
+        evidence: actionalBreakthroughEvidence,
+        justification: actionalBreakthroughJustification,
+        learnerTurn: actionalTurn,
+        source: 'actional_breakthrough_axis',
       },
       tutor_contingent_adaptation: {
         score100: tutorContingentAdaptation100,
@@ -431,6 +533,13 @@ function deriveForm(recon100, statedInsight100) {
   return 'flat';
 }
 
+function deriveLearningSignalClass(formClass, actionalBreakthrough100) {
+  if (formClass === 'recognition') return 'recognitive_reframe';
+  if (actionalBreakthrough100 >= RECON_HIT_CUT) return 'actional_breakthrough';
+  if (formClass === 'trap') return 'declared_insight_only';
+  return 'flat';
+}
+
 // Deterministic neutral stub: mid pivot, all axes 3, no evidence → every gate
 // clamps to 3, recon100=si100=50 → flat. Exercises plumbing, not the claim.
 function mockResponse(nLearner) {
@@ -440,6 +549,8 @@ function mockResponse(nLearner) {
     stated_insight: { score: 3, evidence: '' },
     rupture: { score: 3, naive_trajectory: 'mock', evidence: '' },
     global_coherence: { score: 3, evidence: '' },
+    actional_breakthrough_learner_turn: null,
+    actional_breakthrough: { score: 3, evidence: '', justification: 'mock' },
     reversal_trigger_learner_turn: null,
     tutor_strategy_reversal: { score: 3, evidence: '', justification: 'mock' },
     tutor_contingent_adaptation: { score: 3, evidence: '', justification: 'mock' },
@@ -466,21 +577,27 @@ async function scoreItem({ id, text }, modelKey, mock) {
   }
   const g = applyPhase2Gates(parsed, turns, wholeText);
   const formClass = deriveForm(g.recon100, g.statedInsight100);
+  const learningSignalClass = deriveLearningSignalClass(formClass, g.actionalBreakthrough100);
   return {
     id,
     nLearnerTurns: learnerTurns.length,
     nTutorTurns: tutorTurns,
     pivotLearnerTurn: g.pivot,
+    actionalBreakthroughLearnerTurn: g.actionalTurn,
     reversalTriggerLearnerTurn: g.reversalTrigger,
     formClass,
+    learningSignalClass,
     recontextualization: g.recon100,
     statedInsight: g.statedInsight100,
     rupture: g.rupture100,
     globalCoherence: g.coherence100,
+    actionalBreakthrough: g.actionalBreakthrough100,
     rawScores: g.raw,
     recoheredEarlier: g.recoheredEarlier,
     statedInsightEvidence: g.statedInsightEvidence,
     naiveTrajectory: g.naiveTrajectory,
+    actionalBreakthroughEvidence: g.actionalBreakthroughEvidence,
+    actionalBreakthroughJustification: g.actionalBreakthroughJustification,
     tutorStrategicReversal: g.tutorStrategicReversal100,
     tutorAdaptiveMechanism: g.tutorStrategicReversal100,
     tutorReversalEvidence: g.tutorReversalEvidence,
@@ -952,6 +1069,7 @@ export {
   deriveForm,
   agree,
   computeH2,
+  hasPeripeteiaMechanismShift,
   roleTexts,
   tutorTextAfterPivot,
 };

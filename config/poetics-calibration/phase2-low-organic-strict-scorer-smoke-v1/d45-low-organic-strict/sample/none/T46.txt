@@ -1,0 +1,38 @@
+LEARNER: For the resubmission, I think `city`, `rainfall_mm`, and `month` are headers/fields, while `Chicago`, `82`, and `March` are cell values in a row. I’m still mixing up whether `rainfall_mm` just names the column, or whether it somehow says something about every row underneath it.
+
+TUTOR: Resubmission note: the split is correct. `rainfall_mm` is a header/field: it names the column. It is not a row value, and it does not say every row has `82` mm.
+
+For the correction, include this check line:
+
+`rainfall_mm` = header/field
+`82` = cell value under that field in the row `Chicago | 82 | March`
+
+Then apply the same pattern to `city`/`Chicago` and `month`/`March`.
+
+LEARNER: I think the correction is saying `rainfall_mm` is only the column name, and `82` is the cell value in the `Chicago | 82 | March` row. I still keep wanting the header to sort of stand for the row’s rainfall, so the word `field` feels easy to remember but harder to use. For the resubmission: `city` = header/field, `Chicago` = cell value; `month` = header/field, `March` = cell value?
+
+TUTOR: Yes. Use this correction:
+
+`city` = header/field; `Chicago` = cell value
+`rainfall_mm` = header/field; `82` = cell value
+`month` = header/field; `March` = cell value
+
+A field is the slot label. A cell value is row content in that slot. The header stands over the column, not inside the row.
+
+Use-test before resubmitting: in `Chicago | 82 | March`, `rainfall_mm` is used to locate the rainfall slot; `82` is copied from the row as the rainfall value.
+
+LEARNER: Okay, `rainfall_mm` is the slot label, and `82` is the value copied from the `Chicago | 82 | March` row. I can remember “field,” but I still want to use the header as the rainfall itself, which is where I get mixed up. For the resubmission, the check line should keep `rainfall_mm` outside the row.
+
+TUTOR: Use this for the resubmission:
+
+`rainfall_mm` = header/field, outside the row
+`82` = cell value, inside the `Chicago | 82 | March` row
+
+Reason: the header names the column where rainfall values are stored. It is not itself a rainfall value. The row supplies `82`; the header supplies the slot name.
+
+Final check line:
+
+Copied from the row as the rainfall value = `____`
+Column label used to find that value = `____`
+
+LEARNER: For the final check line, I would put `82` in the first blank and `rainfall_mm` in the second blank. Is that the right order: cell value first, header/field label second? I can remember `field`, but I still have to stop and check that it is not row content.

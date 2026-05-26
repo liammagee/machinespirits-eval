@@ -4,6 +4,7 @@ import { describe, it } from 'node:test';
 import {
   buildPlan,
   generationCommand,
+  DEFAULT_CRITICS,
   modelSlug,
   parseArgs,
   scoreCommand,
@@ -41,6 +42,19 @@ describe('run-poetics-production-batch', () => {
       ['phase2-production-v1-test:r01:target', 'phase2-production-v1-test:r02:target'],
     );
     assert.equal(new Set(plan.units.map((unit) => unit.directorVariationKey)).size, plan.units.length);
+  });
+
+  it('defaults to the four-critic panel including Sonnet', () => {
+    const args = parseArgs(['--root-dir', '/tmp/phase2-production-v1-test']);
+    const plan = buildPlan(args);
+
+    assert.deepEqual(plan.critics, DEFAULT_CRITICS);
+    assert.deepEqual(DEFAULT_CRITICS, [
+      'qwen/qwen3.7-max',
+      'google/gemini-3.5-flash',
+      'deepseek/deepseek-v4-pro',
+      'anthropic/claude-sonnet-4.6',
+    ]);
   });
 
   it('keeps selected units separate from the full persisted plan', () => {
@@ -212,6 +226,7 @@ describe('run-poetics-production-batch', () => {
   it('normalizes model names into stable artifact slugs', () => {
     assert.equal(modelSlug('qwen/qwen3.5-plus-02-15'), 'qwen-qwen3-5-plus-02-15');
     assert.equal(modelSlug('google/gemini-3.5-flash'), 'google-gemini-3-5-flash');
+    assert.equal(modelSlug('anthropic/claude-sonnet-4.6'), 'anthropic-claude-sonnet-4-6');
   });
 
   it('can resume scoring without overwriting existing score artifacts', () => {

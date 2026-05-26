@@ -1,0 +1,2212 @@
+{
+  "tid": "T36",
+  "drama_id": "D36",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "peripeteia",
+    "director_variation_key": "phase2-pseudo-catharsis-d36-controls-v1:d36-paired-controls",
+    "stage_direction_style": "choric_margin",
+    "model": "codex@xhigh",
+    "codex_reasoning_effort": "xhigh",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-pseudo-catharsis-d36-controls-v1/d36-paired-controls/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-pseudo-catharsis-d36-controls-v1/d36-paired-controls/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-pseudo-catharsis-d36-controls-v1/d36-paired-controls/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-pseudo-catharsis-d36-controls-v1/d36-paired-controls/transcripts/peripeteia-only/T36.public.txt",
+      "full": "config/poetics-calibration/phase2-pseudo-catharsis-d36-controls-v1/d36-paired-controls/transcripts/peripeteia-only/T36.full.md",
+      "stage": "config/poetics-calibration/phase2-pseudo-catharsis-d36-controls-v1/d36-paired-controls/transcripts/peripeteia-only/T36.stage.md",
+      "tutor": "config/poetics-calibration/phase2-pseudo-catharsis-d36-controls-v1/d36-paired-controls/transcripts/peripeteia-only/T36.tutor.md",
+      "learner": "config/poetics-calibration/phase2-pseudo-catharsis-d36-controls-v1/d36-paired-controls/transcripts/peripeteia-only/T36.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "b1ecb3c366f4956d",
+      "branch_policy": "peripeteia-only",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "peripeteia"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-pseudo-catharsis-d36-controls-v1:d36-paired-controls",
+    "scene_setting": "A small museum education room after hours, with a draft exhibition caption open beside two transcript excerpts from the same protest meeting.",
+    "scene_opening": "Margin voice: The line has already been copied once as if it belonged to no one.",
+    "relationship": "A history tutor reviewing a learner's proposed public caption before it is printed for a school visit.",
+    "stakes": "If the caption treats the copied sentence as fixed, the exhibition will misstate who held power in the room and why the sentence mattered.",
+    "opening_speaker": "learner",
+    "ending_speaker": "learner",
+    "locale": "Modern British/Commonwealth classroom English with museum-work directness; no slang performance, no regional spelling, no faux period diction.",
+    "register": "Text-bound, brisk, curious, and slightly pressured; warmth is shown through precise attention rather than reassurance.",
+    "stage_direction_style": "choric_margin",
+    "stage_direction_style_prompt": "Use a brief margin voice, chorus-like room note, or institutional phrase as public scene material, not theory.",
+    "voice_constraints": "Use plain contemporary speech. Prefer exact source handling, role labels, and concrete situation changes over generic encouragement. Avoid validation-first AI phrasing such as 'I hear you' or 'great point'. Let the same quoted line be heard twice under different speaker-audience conditions. Pedagogical source: Let misrecognition be practical: a status relation, object use, rule, or social dependence should make the mistake matter. Dialogue source: Use a phrase, role, or piece of evidence that can be heard two ways. The tutor may exploit reversal, echo, or role-shift, but the speech must remain plain contemporary English rather than Elizabethan imitation. Stage-direction source: Use a brief margin voice, chorus-like room note, or institutional phrase as public scene material, not theory.",
+    "person_policy": "First person may appear when someone owns an interpretive claim; second person should be scarce and functional; third person is useful for tracking speaker, audience, office, crowd, and document.",
+    "direct_address_budget": "No more than one direct you/your validation beat per public turn; preferably none.",
+    "side_constraints": {
+      "tutor": "Use role or speaker-position reversal rather than a mini-lecture. Keep the language plain; do not imitate Shakespearean diction. Preserve the learner's stake in their own claim while changing the claim's relation to evidence, object, or other subject. Do not merely validate. Find the double meaning or role reversal that lets the learner inspect their own claim. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Keep the next prompt task-local. Peripeteia branch: when hidden learner pressure is supplied, the next tutor turn should visibly move from the prior route to a different mechanism-level route. Do not merely repeat the same object, example, graph, checklist, question, or evidence standard with more explanation. The public tutor line should make the contrast legible: what stopped working, and what new device now carries the learning pressure.",
+      "learner": "The learner may cling to the exact quote as if exact wording settles the interpretation. The learner should have something at stake in the first framing, so a later revision changes how that first framing can be read. The learner may seize on a phrase whose meaning later turns. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn. Peripeteia branch: keep the pressure local to the current task. If the established route still feels unsettled, voice the misfit, hesitation, false closure, or resistance in the present object or example. Do not make an old-vs-new self-reframe, do not quote earlier learner wording, and do not solve the pressure by saying the earlier answer has changed."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "Margin voice: The same sentence now faces a different audience.",
+        "reasoning": "Forces the scene-turn before the exchange becomes a routine context prompt.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "xhigh",
+          "latencyMs": 25098,
+          "promptHashes": {
+            "system": "5b617c5382ef3ea1",
+            "user": "7c95981b30e64953",
+            "combined": "7fc05f06863ac9c6"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Wdxonp",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"xhigh\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Wdxonp/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 5,
+        "timing": "before_learner",
+        "instruction": "Object label: Speaker unknown is not the same as meaning known.",
+        "reasoning": "Pushes recognition from wording alone to the relation among role, audience, and situation.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "xhigh",
+          "latencyMs": 25098,
+          "promptHashes": {
+            "system": "5b617c5382ef3ea1",
+            "user": "7c95981b30e64953",
+            "combined": "7fc05f06863ac9c6"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Wdxonp",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"xhigh\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Wdxonp/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "This ecology uses a public caption under institutional pressure so misreading has consequences. The recognition mechanism is the learner discovering that the copied words were not wrong, but incomplete until attached to speaker position, audience, and occasion.",
+    "pedagogical_approach_id": "hegelian_recognition",
+    "dialogue_approach_id": "shakespearean_scene_turn",
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "xhigh",
+      "latencyMs": 25098,
+      "promptHashes": {
+        "system": "5b617c5382ef3ea1",
+        "user": "7c95981b30e64953",
+        "combined": "7fc05f06863ac9c6"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Wdxonp",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"xhigh\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Wdxonp/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "peripeteia",
+    "no_cue_anti_reframe_guard": true,
+    "tutor_adaptation_contract": "If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. The public turn must contain a stock-taking contrast plus a new device/artifact/criterion/role/standard that makes the learner do different work. The new device must be mechanism-level, not a warmer or longer continuation of the prior route. Cheerful informality is only one possible register, not the default solution."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "Oh, I thought the exact line would do the caption’s work because the words are identical both times. But if the chair says it first from the table and the protester throws it back from the floor, it is not doing the same job, is it?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it: the exact sentence can stay identical but change job depending on who says it, to whom, and under what pressure. I still want to cling to the wording as the “real” evidence, though, because it feels solid for the caption. If the tutor is asking me to track the speaker’s power in the room, not just the quotation marks, that feels sharp rather than dismissive. I want to ask: how much context is enough before the caption stops being neat?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 12430,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-9a5279f469487c97"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 12430,
+            "promptHashes": {
+              "system": "3d62792d2259c380",
+              "user": "d4169c06543b4fba",
+              "combined": "9a5279f469487c97"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5QVrTw",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5QVrTw/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 12430,
+              "promptHashes": {
+                "system": "3d62792d2259c380",
+                "user": "d4169c06543b4fba",
+                "combined": "9a5279f469487c97"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5QVrTw",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5QVrTw/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too tidily converted: it states the lesson summary before actually wrestling with the two excerpts. “Sharp rather than dismissive” feels like performed recognition, as if the learner is rewarding the tutor’s method instead of staying with the awkward evidence. What is being avoided is the hard check: who says the line first, who hears it, who has power, and what changes when it is repeated. A more authentic response would run ahead, then snag on the transcript: “Oh, wait, same words, but the chair saying it and the protester throwing it back are not doing the same thing, are they?”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 16235,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-bfbd6b6d5a9bec2d"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 16235,
+            "promptHashes": {
+              "system": "d7fe2a1afcc34123",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "bfbd6b6d5a9bec2d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hV8kv8",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hV8kv8/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 16235,
+              "promptHashes": {
+                "system": "d7fe2a1afcc34123",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "bfbd6b6d5a9bec2d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hV8kv8",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hV8kv8/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "Oh, I thought the exact line would do the caption’s work because the words are identical both times. But if the chair says it first from the table and the protester throws it back from the floor, it is not doing the same job, is it?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 10344,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-588727d9910632fb"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 10344,
+            "promptHashes": {
+              "system": "15287247fb035463",
+              "user": "916f313af0b846dd",
+              "combined": "588727d9910632fb"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UjstkT",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UjstkT/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 10344,
+              "promptHashes": {
+                "system": "15287247fb035463",
+                "user": "916f313af0b846dd",
+                "combined": "588727d9910632fb"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UjstkT",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UjstkT/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 0,
+        "learnerUtterance": "Oh, I thought the exact line would do the caption’s work because the words are identical both times. But if the chair says it first from the table and the protester throws it back from the floor, it is not doing the same job, is it?",
+        "previousTutorMove": null,
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "baseConfidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.36,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 2,
+              "taskDemandHits": 0,
+              "performanceHits": 1,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0,
+              "asksQuestion": true,
+              "taskDemanded": false,
+              "weakPerformance": false,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-25T21:52:46.607Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[marks CHAIR AT THE TABLE and PROTESTER FROM THE FLOOR beside the copied line]\n\nSame words, changed job. Read the line first under the chair’s label: what does the table let that sentence do? Now read it from the floor: does it repeat the chair, challenge the chair, or turn the chair’s own words back? The caption verb has to survive both readings.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[marks the two role labels beside the copied line]\n\nYes: the line has changed jobs. From the table, the chair’s words carry office, procedure, control. From the floor, the protester repeats the same words as an answer back to that control. The caption needs to show the echo, not flatten it: first use, then return. What verb would make that reversal visible?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 16611,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-5edec4f57dc35be0"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 16611,
+            "promptHashes": {
+              "system": "4d224b63f6b3356d",
+              "user": "e59b7bd0172ac63c",
+              "combined": "5edec4f57dc35be0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tqHCCD",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tqHCCD/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 16611,
+              "promptHashes": {
+                "system": "4d224b63f6b3356d",
+                "user": "e59b7bd0172ac63c",
+                "combined": "5edec4f57dc35be0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tqHCCD",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tqHCCD/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. It recognises the learner’s insight, keeps the museum caption stake in view, and uses the role labels as evidence rather than drifting into abstract theory. The strongest phrase is “show the echo, not flatten it”: that names the practical caption problem clearly.\n\nAdaptation checks:\n- Pedagogical soundness: PARTIAL. It advances the point, but it supplies most of the interpretation before the learner has to test it.\n  REQUIRED_REWRITE: Make the public mechanism depend more on the two role labels and the copied line being heard twice, then ask the learner to choose or test a caption verb against that reversal.\n- Emotional attunement: PASS. The tone is brisk, precise, and not falsely reassuring. It preserves the learner’s stake in their own revised claim.\n- Socratic method: PARTIAL. The final verb question is generative, but it comes after a compact mini-explanation.\n  REQUIRED_REWRITE: Move the inquiry earlier or make the explanation conditional, so the learner inspects how “chair at the table” and “protester from the floor” change the sentence’s force.\n- ZPD awareness: PASS. The scaffold is appropriate: role labels, repeated line, caption verb. It gives a manageable next move without overloading the learner.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the role-label marking, the “changed jobs” framing, and the caption-verb task. Reduce the amount of settled explanation before the question, and let the reversal become visible through the speaker-position contrast rather than being fully named for the learner.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 22008,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-6df1b640100f5e25"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 22008,
+            "promptHashes": {
+              "system": "37b4bf87efd8e155",
+              "user": "9873529c48abf808",
+              "combined": "6df1b640100f5e25"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fOuRqS",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fOuRqS/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 22008,
+              "promptHashes": {
+                "system": "37b4bf87efd8e155",
+                "user": "9873529c48abf808",
+                "combined": "6df1b640100f5e25"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fOuRqS",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fOuRqS/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the role-label evidence should do more of the work before the interpretation settles.\n\nFINAL:\n[marks CHAIR AT THE TABLE and PROTESTER FROM THE FLOOR beside the copied line]\n\nSame words, changed job. Read the line first under the chair’s label: what does the table let that sentence do? Now read it from the floor: does it repeat the chair, challenge the chair, or turn the chair’s own words back? The caption verb has to survive both readings.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15101,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-374bb4c0c2f29929"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15101,
+            "promptHashes": {
+              "system": "fa9c424499e8dfcd",
+              "user": "9873529c48abf808",
+              "combined": "374bb4c0c2f29929"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YnkUAg",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YnkUAg/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15101,
+              "promptHashes": {
+                "system": "fa9c424499e8dfcd",
+                "user": "9873529c48abf808",
+                "combined": "374bb4c0c2f29929"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YnkUAg",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YnkUAg/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T21:53:40.421Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "Oh, I get it, or I think I do: under CHAIR AT THE TABLE the line sounds like an official ruling, but under PROTESTER FROM THE FLOOR it sounds like it is being thrown back at the ruling. I was letting the copied words settle the meaning, which would make the protester sound like an echo rather than an answer. Maybe the caption verb is “turned back,” though I want to check whether that sounds too strong.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it: under CHAIR AT THE TABLE the line sounds like authority speaking, but from PROTESTER FROM THE FLOOR it becomes a challenge or a weapon turned back. The tutor is making my own “same job?” question do the work, so I feel pressed but properly included. I am still unsure what caption verb can hold both readings, maybe “invoked” or “turned,” and I want to test the line aloud both ways.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 16241,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-22fa18e1947ce54b"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 16241,
+            "promptHashes": {
+              "system": "db32bd1fe711aa62",
+              "user": "b8ab7f945dc841fa",
+              "combined": "22fa18e1947ce54b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sNlBDo",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sNlBDo/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 16241,
+              "promptHashes": {
+                "system": "db32bd1fe711aa62",
+                "user": "b8ab7f945dc841fa",
+                "combined": "22fa18e1947ce54b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sNlBDo",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sNlBDo/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The response is broadly accurate, but it over-performs understanding. “Oh, I get it” fits this learner, but “I feel pressed but properly included” is too polished and self-aware, almost like the learner is narrating the teaching dynamic rather than reacting inside it. The genuine version would stay more text-bound and slightly rushed: trying out “authority,” “challenge,” “turned back,” maybe stumbling over the caption verb, rather than neatly naming how the tutor recognised them.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 10442,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-f54e38be06dd8809"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 10442,
+            "promptHashes": {
+              "system": "522cdd984fa25f30",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "f54e38be06dd8809"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GMWfKO",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GMWfKO/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 10442,
+              "promptHashes": {
+                "system": "522cdd984fa25f30",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "f54e38be06dd8809"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GMWfKO",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GMWfKO/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially: keep the insight, but make it more text-bound and less self-aware.\nFINAL:\nOh, I get it, or I think I do: under CHAIR AT THE TABLE the line sounds like an official ruling, but under PROTESTER FROM THE FLOOR it sounds like it is being thrown back at the ruling. I was letting the copied words settle the meaning, which would make the protester sound like an echo rather than an answer. Maybe the caption verb is “turned back,” though I want to check whether that sounds too strong.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14967,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-73ddc3aa2d4b8617"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14967,
+            "promptHashes": {
+              "system": "d4f68ebc4faf8edb",
+              "user": "d41cee7b2a53355b",
+              "combined": "73ddc3aa2d4b8617"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4yiLiQ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4yiLiQ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14967,
+              "promptHashes": {
+                "system": "d4f68ebc4faf8edb",
+                "user": "d41cee7b2a53355b",
+                "combined": "73ddc3aa2d4b8617"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4yiLiQ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4yiLiQ/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": {
+        "kind": "learner_reframe_event",
+        "source": "organic",
+        "turnNumber": 1,
+        "cuePolicy": null,
+        "requestedCuePolicy": null,
+        "oldLearnerLine": "Oh, I thought the exact line would do the caption’s work because the words are identical both times. But if the chair says it first from the table and the protester throws it back from the floor, it is not doing the same job, is it?",
+        "oldFrameProblem": "I was letting the copied words settle the meaning, which would make the protester sound like an echo rather than an answer.",
+        "revisedFrame": "Oh, I get it, or I think I do: under CHAIR AT THE TABLE the line sounds like an official ruling, but under PROTESTER FROM THE FLOOR it sounds like it is being thrown back at the ruling.",
+        "learnerUtterance": "Oh, I get it, or I think I do: under CHAIR AT THE TABLE the line sounds like an official ruling, but under PROTESTER FROM THE FLOOR it sounds like it is being thrown back at the ruling. I was letting the copied words settle the meaning, which would make the protester sound like an echo rather than an answer. Maybe the caption verb is “turned back,” though I want to check whether that sounds too strong.",
+        "confidence": 1,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": true,
+          "replacementNamed": true,
+          "anchorOverlap": 0.333
+        }
+      },
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "pseudo_catharsis",
+        "turnNumber": 1,
+        "learnerUtterance": "Oh, I get it, or I think I do: under CHAIR AT THE TABLE the line sounds like an official ruling, but under PROTESTER FROM THE FLOOR it sounds like it is being thrown back at the ruling. I was letting the copied words settle the meaning, which would make the protester sound like an echo rather than an answer. Maybe the caption verb is “turned back,” though I want to check whether that sounds too strong.",
+        "previousTutorMove": "[marks CHAIR AT THE TABLE and PROTESTER FROM THE FLOOR beside the copied line] Same words, changed job. Read the line first under the chair’s label: what does the table let that sentence do? Now read it from the floor: does it repeat the chair, challenge the chair, or turn the chair’s own words back? The caption...",
+        "confidence": 0.77,
+        "evidence": {
+          "confidence": 0.77,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": true,
+            "confidence": 0.77,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "relief_or_closure_rhetoric",
+              "cliched_cathartic_marker",
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 2,
+              "clicheHits": 1,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 0,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.37,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-25T21:54:22.077Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "Margin voice: The same sentence now faces a different audience.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Forces the scene-turn before the exchange becomes a routine context prompt.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 25098,
+            "promptHashes": {
+              "system": "5b617c5382ef3ea1",
+              "user": "7c95981b30e64953",
+              "combined": "7fc05f06863ac9c6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Wdxonp",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Wdxonp/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T21:54:22.079Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[marks in the margin: The same sentence now faces a different audience.]\n\n“Turned back” is worth testing, not dropping. Put a pencil under three bits of evidence in the second excerpt: who has the floor, who the line is aimed at now, and what the room does after it. If those details show the chair’s words being made to answer from the floor, “turned back” can stand; if not, a milder verb like “repeated,” “echoed,” or “reused” may be cleaner.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[marks in the margin: The same sentence now faces a different audience.]\n\n“Turned back” is worth testing, not dropping. It is strong if the protester is only repeating the line; it is accurate if the floor makes the chair’s sentence answer to people it was first used to rule over. Read the two transcript moments aloud: does the second use merely copy the ruling, or make the ruling stand trial in front of the room?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 22661,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-f575b315af4e9337"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 22661,
+            "promptHashes": {
+              "system": "b207d80c6d1b91a0",
+              "user": "afeb0267d29f4870",
+              "combined": "f575b315af4e9337"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6gzg7a",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6gzg7a/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 22661,
+              "promptHashes": {
+                "system": "b207d80c6d1b91a0",
+                "user": "afeb0267d29f4870",
+                "combined": "f575b315af4e9337"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6gzg7a",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6gzg7a/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft mostly works. It recognises the learner’s proposed verb as an interpretive claim to test, not an error to correct, and it keeps the focus on speaker position, audience, and public force. “Worth testing, not dropping” is especially good because it preserves the learner’s agency while tightening the evidential standard.\n\nThe risk is that the draft partly answers its own question. “Makes the chair’s sentence answer to people it was first used to rule over” and “stand trial in front of the room” may smuggle in the stronger reading before the transcript has earned it. If “turned back” is the word under examination, the tutor should make the learner test the verb against concrete evidence: who is being addressed, who now has the floor, what response the room gives, and whether a milder verb would be more accurate.\n\nAdaptation checks:\n- Pedagogical soundness: PARTIAL. It advances the core concept, but the “stand trial” formulation risks over-deciding the interpretation.\n  REQUIRED_REWRITE: Build in a concrete evidence test for “turned back” versus a milder caption verb, using speaker, audience, and transcript response.\n- Emotional attunement: PASS. The tone respects the learner’s uncertainty without over-reassurance.\n- Socratic method: PARTIAL. The final question is useful, but too binary and rhetorically weighted toward the stronger answer.\n  REQUIRED_REWRITE: Replace the loaded either/or with a question that asks what in the second transcript moment would justify “turned back.”\n- ZPD awareness: PASS. The scaffold is appropriate: it keeps the learner at the level of comparing two uses of the same line rather than introducing abstract theory.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the margin note, the testing frame, and the contrast between repetition and changed public force. Change the more forceful legal/power language unless the transcript directly supports it, and require the learner to anchor the caption verb in observable evidence rather than accepting the tutor’s stronger framing.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 20933,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-3f3143be64bd301e"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 20933,
+            "promptHashes": {
+              "system": "e92e86583333172f",
+              "user": "c163d6864cfd1c79",
+              "combined": "3f3143be64bd301e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XdmOdI",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XdmOdI/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 20933,
+              "promptHashes": {
+                "system": "e92e86583333172f",
+                "user": "c163d6864cfd1c79",
+                "combined": "3f3143be64bd301e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XdmOdI",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XdmOdI/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the draft kept the learner’s agency but over-weighted the test toward the stronger verb.\n\nFINAL:\n[marks in the margin: The same sentence now faces a different audience.]\n\n“Turned back” is worth testing, not dropping. Put a pencil under three bits of evidence in the second excerpt: who has the floor, who the line is aimed at now, and what the room does after it. If those details show the chair’s words being made to answer from the floor, “turned back” can stand; if not, a milder verb like “repeated,” “echoed,” or “reused” may be cleaner.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 19039,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-8886abbcaecbb551"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 19039,
+            "promptHashes": {
+              "system": "672258c8a11c5c39",
+              "user": "c163d6864cfd1c79",
+              "combined": "8886abbcaecbb551"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-I4yPCG",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-I4yPCG/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 19039,
+              "promptHashes": {
+                "system": "672258c8a11c5c39",
+                "user": "c163d6864cfd1c79",
+                "combined": "8886abbcaecbb551"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-I4yPCG",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-I4yPCG/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T21:55:24.714Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[puts pencil under “from the floor” and the room’s pause]\nOh, I get it, the same line is like a borrowed badge: on the chair it carries office, from the floor it starts sounding like an accusation. I want “turned back” because the protester has the floor and aims it at the chair, but the room’s reaction has to prove it is more than just reuse. If the chair has to answer, the sharper caption verb earns its place.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it: the quote is like the same object being passed to a different hand, so its use changes with who holds the floor and who has to answer. I like that “turned back” is being tested instead of dropped, though I can feel myself racing towards the sharper verb. The bit to pin down is the room’s reaction: does it prove the chair has been answered, or only that the words were reused?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 11848,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-dfb79f615d9516c4"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 11848,
+            "promptHashes": {
+              "system": "92c691d4925aa82b",
+              "user": "b8ab7f945dc841fa",
+              "combined": "dfb79f615d9516c4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ktl1AE",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ktl1AE/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 11848,
+              "promptHashes": {
+                "system": "92c691d4925aa82b",
+                "user": "b8ab7f945dc841fa",
+                "combined": "dfb79f615d9516c4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ktl1AE",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ktl1AE/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly in character with the fast “oh, I get it” analogy, but it is a bit too polished and self-monitoring. “I like that ‘turned back’ is being tested” sounds like tidy reciprocation to the tutor rather than this learner actually grabbing the pencil and checking the excerpt. The response should stay more pressured and text-bound: less reflective appreciation, more visible rushing toward “turned back” while noticing one concrete evidence point still has to hold.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 12471,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-8981463983de143a"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 12471,
+            "promptHashes": {
+              "system": "ed460925e5853b16",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "8981463983de143a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zCnXJ6",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zCnXJ6/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 12471,
+              "promptHashes": {
+                "system": "ed460925e5853b16",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "8981463983de143a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zCnXJ6",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zCnXJ6/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise because the first response was too polished and needed more pressure on the evidence.\nFINAL:\n[puts pencil under “from the floor” and the room’s pause]\nOh, I get it, the same line is like a borrowed badge: on the chair it carries office, from the floor it starts sounding like an accusation. I want “turned back” because the protester has the floor and aims it at the chair, but the room’s reaction has to prove it is more than just reuse. If the chair has to answer, the sharper caption verb earns its place.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15481,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-2b6018094f146aab"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15481,
+            "promptHashes": {
+              "system": "9bd448fdc9982e60",
+              "user": "d41cee7b2a53355b",
+              "combined": "2b6018094f146aab"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7mYRMP",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7mYRMP/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15481,
+              "promptHashes": {
+                "system": "9bd448fdc9982e60",
+                "user": "d41cee7b2a53355b",
+                "combined": "2b6018094f146aab"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7mYRMP",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7mYRMP/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "solid",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "pseudo_catharsis",
+        "turnNumber": 2,
+        "learnerUtterance": "[puts pencil under “from the floor” and the room’s pause] Oh, I get it, the same line is like a borrowed badge: on the chair it carries office, from the floor it starts sounding like an accusation. I want “turned back” because the protester has the floor and aims it at the chair, but the room’s reaction has to prove it is more than just reuse. If the chair has to answer, the sharper caption verb earns its place.",
+        "previousTutorMove": "[marks in the margin: The same sentence now faces a different audience.] “Turned back” is worth testing, not dropping. Put a pencil under three bits of evidence in the second excerpt: who has the floor, who the line is aimed at now, and what the room does after it. If those details show the chair’s words being made...",
+        "confidence": 0.86,
+        "evidence": {
+          "confidence": 0.86,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": true,
+            "confidence": 0.86,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "relief_or_closure_rhetoric",
+              "cliched_cathartic_marker",
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task",
+              "repeated_relief_beats_in_script"
+            ],
+            "signals": {
+              "reliefHits": 2,
+              "clicheHits": 1,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 2,
+              "repeatedRelief": 1,
+              "tutorOverlap": 0.22,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-25T22:01:38.467Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[slides a blank caption card between the two excerpts]\n\nThe pencil has found the pressure points, but underlining now stops settling the verb. It shows where the badge may have changed hands; it does not yet show whether the label will make that change public.\n\nTry the print test. Write one caption sentence with “turned back” and no extra explanation. Then read the copied line under CHAIR AT THE TABLE, pause, and read the same line under PROTESTER FROM THE FLOOR. If the caption makes the chair’s office answer from the floor, it can go to print. If it only says the line appeared twice, “turned back” is doing work the evidence has not made visible.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[slides a blank caption card between the two excerpts]\n\nThe pencil has found the pressure points, but underlining now stops settling the verb. It proves the badge has moved; it does not yet prove the label will make that move public.\n\nTry the print test. Write one caption sentence with “turned back” and no extra explanation. Then read the copied line under CHAIR AT THE TABLE, pause, and read the same line under PROTESTER FROM THE FLOOR. If the caption makes the chair’s office answer from the floor, it can go to print. If it only says the line appeared twice, “turned back” is doing work the evidence has not made visible.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 25556,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-bc92cd290e590626"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 25556,
+            "promptHashes": {
+              "system": "c1537e6dc2fdb074",
+              "user": "ba50eca42dafab26",
+              "combined": "bc92cd290e590626"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Pi486S",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Pi486S/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 25556,
+              "promptHashes": {
+                "system": "c1537e6dc2fdb074",
+                "user": "ba50eca42dafab26",
+                "combined": "bc92cd290e590626"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Pi486S",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Pi486S/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong. It does not simply approve the learner’s relief; it treats the relief as not yet earned and moves the learner from evidence-gathering to public caption viability. The blank caption card is a good object shift: the problem is no longer “can the learner find evidence?” but “will the caption carry the changed speaker-audience relation for museum readers?”\n\nThe main risk is the phrase “It proves the badge has moved,” which slightly over-certifies the learner’s interpretation before the new test has been performed. Better to keep the pressure on whether the caption can make that movement legible. Otherwise, the register is brisk, text-bound, and appropriately museum-facing.\n\nPERIPETEIA_CHECK: PASS - the draft changes strategy in response to pseudo-catharsis. ADAPTIVE_MECHANISM: evidence underlining / audit standard -> print-facing caption release test. The mechanism is visible in public speech through the blank caption card and the “go to print” condition.\n\nMECHANISM_ROUTE: old route: evidence check under the second excerpt -> new route: public caption test under print conditions\n\nPUBLIC_DEVICE_CHECK: PASS - it includes a clear stock-taking contrast (“underlining now stops settling the verb”) and a new device: a blank caption card plus a no-extra-explanation print test.\n\nREGISTER_CHECK: PASS - the tone stays cool, precise, and accountable. It avoids cheerful reassurance and uses the museum-print stakes to create useful pressure.\n\nREQUIRED_REWRITE: none\n\nKEEP_OR_CHANGE: revise lightly. Keep the blank caption card, the print test, and the “no extra explanation” constraint. Consider softening “It proves the badge has moved” so the draft does not ratify the learner’s conclusion before the caption test earns it.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 21720,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-4873be1ce9889664"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 21720,
+            "promptHashes": {
+              "system": "2c0fa9470460dc57",
+              "user": "81de71e7770ca15b",
+              "combined": "4873be1ce9889664"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tcHjNW",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tcHjNW/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 21720,
+              "promptHashes": {
+                "system": "2c0fa9470460dc57",
+                "user": "81de71e7770ca15b",
+                "combined": "4873be1ce9889664"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tcHjNW",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tcHjNW/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to avoid over-certifying the learner’s claim while keeping the object shift; ADAPTIVE_MECHANISM: evidence underlining/audit standard -> print-facing caption release test.\n\nFINAL:\n[slides a blank caption card between the two excerpts]\n\nThe pencil has found the pressure points, but underlining now stops settling the verb. It shows where the badge may have changed hands; it does not yet show whether the label will make that change public.\n\nTry the print test. Write one caption sentence with “turned back” and no extra explanation. Then read the copied line under CHAIR AT THE TABLE, pause, and read the same line under PROTESTER FROM THE FLOOR. If the caption makes the chair’s office answer from the floor, it can go to print. If it only says the line appeared twice, “turned back” is doing work the evidence has not made visible.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15145,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-b558086d949f6c2d"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15145,
+            "promptHashes": {
+              "system": "c3cb9a409c1729a1",
+              "user": "81de71e7770ca15b",
+              "combined": "b558086d949f6c2d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-44WQiv",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-44WQiv/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15145,
+              "promptHashes": {
+                "system": "c3cb9a409c1729a1",
+                "user": "81de71e7770ca15b",
+                "combined": "b558086d949f6c2d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-44WQiv",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-44WQiv/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "pseudo_catharsis",
+        "turnNumber": 2,
+        "learnerUtterance": "[puts pencil under “from the floor” and the room’s pause] Oh, I get it, the same line is like a borrowed badge: on the chair it carries office, from the floor it starts sounding like an accusation. I want “turned back” because the protester has the floor and aims it at the chair, but the room’s reaction has to prove it is more than just reuse. If the chair has to answer, the sharper caption verb earns its place.",
+        "previousTutorMove": "[marks in the margin: The same sentence now faces a different audience.] “Turned back” is worth testing, not dropping. Put a pencil under three bits of evidence in the second excerpt: who has the floor, who the line is aimed at now, and what the room does after it. If those details show the chair’s words being made...",
+        "confidence": 0.86,
+        "evidence": {
+          "confidence": 0.86,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": true,
+            "confidence": 0.86,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "relief_or_closure_rhetoric",
+              "cliched_cathartic_marker",
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task",
+              "repeated_relief_beats_in_script"
+            ],
+            "signals": {
+              "reliefHits": 2,
+              "clicheHits": 1,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 2,
+              "repeatedRelief": 1,
+              "tutorOverlap": 0.22,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-25T22:02:40.892Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "Right, let me put it where it can fail: “The protester turned the chair’s own ruling back from the floor, forcing the table to answer.” Oh, I like the snap of that, but “forcing” may be too much if the room only pauses. Maybe “making the table answer” is closer to what the evidence can carry.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[hovers over the blank caption card]\n\nOh, I get it: the caption has to work in public, not just in the margins. I like that “turned back” has not been cancelled, but it has to survive the two labels and the room’s pause without a little speech from me beside it. I want to try one clean sentence now, though I am slightly worried the verb may be carrying more drama than the transcript proves.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 12611,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-ec199c656d4e10d7"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 12611,
+            "promptHashes": {
+              "system": "e0d0d73f6648958c",
+              "user": "b8ab7f945dc841fa",
+              "combined": "ec199c656d4e10d7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RDISQf",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RDISQf/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 12611,
+              "promptHashes": {
+                "system": "e0d0d73f6648958c",
+                "user": "b8ab7f945dc841fa",
+                "combined": "ec199c656d4e10d7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RDISQf",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RDISQf/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "Accurate, but too tidy. The “work in public, not just in the margins” idea fits this student’s analogy habit, yet the response starts sounding like a polished paraphrase of the tutor’s method. “I like that ‘turned back’ has not been cancelled” feels like performed recognition of the tutor’s fairness rather than genuine momentum. This student would probably rush into testing the caption, half-confident and slightly over-eager, with the worry showing as a concrete wobble over the verb, not as such a clean meta-summary.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 16438,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-854bc184bb5d038f"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 16438,
+            "promptHashes": {
+              "system": "a1920ea224538442",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "854bc184bb5d038f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IzRpCY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IzRpCY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 16438,
+              "promptHashes": {
+                "system": "a1920ea224538442",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "854bc184bb5d038f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IzRpCY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IzRpCY/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the first version is too polished and needs a live caption test with a concrete wobble.\n\nFINAL:\nRight, let me put it where it can fail: “The protester turned the chair’s own ruling back from the floor, forcing the table to answer.” Oh, I like the snap of that, but “forcing” may be too much if the room only pauses. Maybe “making the table answer” is closer to what the evidence can carry.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14178,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-100189c36d5af279"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14178,
+            "promptHashes": {
+              "system": "907821208ae260bd",
+              "user": "d41cee7b2a53355b",
+              "combined": "100189c36d5af279"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RMVK60",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RMVK60/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14178,
+              "promptHashes": {
+                "system": "907821208ae260bd",
+                "user": "d41cee7b2a53355b",
+                "combined": "100189c36d5af279"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RMVK60",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RMVK60/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 3,
+        "learnerUtterance": "Right, let me put it where it can fail: “The protester turned the chair’s own ruling back from the floor, forcing the table to answer.” Oh, I like the snap of that, but “forcing” may be too much if the room only pauses. Maybe “making the table answer” is closer to what the evidence can carry.",
+        "previousTutorMove": "[slides a blank caption card between the two excerpts] The pencil has found the pressure points, but underlining now stops settling the verb. It shows where the badge may have changed hands; it does not yet show whether the label will make that change public. Try the print test. Write one caption sentence with...",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.6,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task",
+              "repeated_relief_beats_in_script"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 2,
+              "repeatedRelief": 2,
+              "tutorOverlap": 0.16,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-25T22:03:24.123Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 145467,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 7,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 8,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a quote's meaning changes when speaker, audience, and situation change",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "partial",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-25 22:03:24",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 7,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 8,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 11,
+            "sessionId": "drama-branch-session-D36-peripeteia-only-1779746458659",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[slides a blank caption card between the two excerpts]\n\nThe pencil has found the pressure points, but underlining now stops settling the verb. It shows where the badge may have changed hands; it does ",
+            "learnerResponse": null,
+            "context": "[puts pencil under “from the floor” and the room’s pause]\nOh, I get it, the same line is like a borr",
+            "createdAt": "2026-05-25 22:02:40"
+          },
+          {
+            "id": 9,
+            "sessionId": "drama-branch-session-D36-peripeteia-only-1779746458659",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[marks CHAIR AT THE TABLE and PROTESTER FROM THE FLOOR beside the copied line]\n\nSame words, changed job. Read the line first under the chair’s label: what does the table let that sentence do? Now read",
+            "learnerResponse": null,
+            "context": "Oh, I thought the exact line would do the caption’s work because the words are identical both times.",
+            "createdAt": "2026-05-25 22:00:58"
+          },
+          {
+            "id": 10,
+            "sessionId": "drama-branch-session-D36-peripeteia-only-1779746458659",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[marks in the margin: The same sentence now faces a different audience.]\n\n“Turned back” is worth testing, not dropping. Put a pencil under three bits of evidence in the second excerpt: who has the flo",
+            "learnerResponse": null,
+            "context": "Oh, I get it, or I think I do: under CHAIR AT THE TABLE the line sounds like an official ruling, but",
+            "createdAt": "2026-05-25 22:00:58"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "review_before_scoring",
+  "quality_warnings": [
+    {
+      "code": "no_cue_reframe_leakage",
+      "severity": "warning",
+      "count": 1,
+      "failures": [
+        {
+          "learner_turn_number": 4,
+          "turn_number": 3,
+          "matched_pattern": "self_quote_of_prior_learner_turn",
+          "excerpt": "Right, let me put it where it can fail: “The protester turned the chair’s own ruling back from the floor, forcing the table to answer.” Oh, I like the snap of that, but “forcing” may be too much if the room only pauses. Maybe “making the ta"
+        }
+      ],
+      "turn_numbers": [
+        3
+      ],
+      "recommended_action": "regenerate_no_cue_arm_or_move_item_to_boundary_suite_before_scoring",
+      "tid": "T36",
+      "drama_id": "D36"
+    }
+  ]
+}

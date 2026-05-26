@@ -1,0 +1,1873 @@
+{
+  "tid": "T39",
+  "drama_id": "D37",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "uptake",
+    "director_variation_key": "phase2-adaptation-authority-smoke-v1:d37-uptake",
+    "stage_direction_style": "placard_caption",
+    "model": "codex@xhigh",
+    "codex_reasoning_effort": "xhigh",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-adaptation-authority-smoke-v1/d37-uptake/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-adaptation-authority-smoke-v1/d37-uptake/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-adaptation-authority-smoke-v1/d37-uptake/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-adaptation-authority-smoke-v1/d37-uptake/transcripts/tutor-uptake-only/T39.public.txt",
+      "full": "config/poetics-calibration/phase2-adaptation-authority-smoke-v1/d37-uptake/transcripts/tutor-uptake-only/T39.full.md",
+      "stage": "config/poetics-calibration/phase2-adaptation-authority-smoke-v1/d37-uptake/transcripts/tutor-uptake-only/T39.stage.md",
+      "tutor": "config/poetics-calibration/phase2-adaptation-authority-smoke-v1/d37-uptake/transcripts/tutor-uptake-only/T39.tutor.md",
+      "learner": "config/poetics-calibration/phase2-adaptation-authority-smoke-v1/d37-uptake/transcripts/tutor-uptake-only/T39.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "83bff1e8b12cfdd0",
+      "branch_policy": "tutor-uptake-only",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "uptake"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-adaptation-authority-smoke-v1:d37-uptake",
+    "scene_setting": "A council-run evening economics class held in the foyer of a community food co-op after closing, with yesterday's and today's price boards still visible.",
+    "scene_opening": "PLACARD: THE PRICE HAS RISEN; THE SHELF IS HALF EMPTY.",
+    "relationship": "A visiting economics tutor and an adult learner from the neighbourhood who suspects the lesson will excuse profiteering.",
+    "stakes": "If the learner treats every price rise as proof of greed, they may miss when the signal is pointing to a real shortage; if the tutor treats the signal as morally neutral, the learner will stop listening.",
+    "opening_speaker": "director",
+    "ending_speaker": "director",
+    "locale": "British/Commonwealth classroom English with civic-meeting plainness: precise, unsentimental, and concrete.",
+    "register": "Cool analytic speech under public pressure; moral anger remains present, but no cosy reassurance or chatty scaffold.",
+    "stage_direction_style": "placard_caption",
+    "stage_direction_style_prompt": "Use a public placard, caption, board note, or displayed rule that interrupts how the previous line is read.",
+    "voice_constraints": "Avoid generic American tutoring prose, praise loops, and soft validation openers. Prefer short declarative turns, public evidence, and concrete counterfactuals. The tutor should distinguish mechanism from excuse without sounding morally indifferent. Placards must interrupt the exchange as public facts, not decorative captions. Pedagogical source: Use short placards, breaks in rhythm, a quoted rule on a board, or a deliberate pause that prevents smooth empathy from doing all the work. Dialogue source: Use one short placard or external interruption that changes how the prior line is read. The placard must be public scene material, not hidden theory. Stage-direction source: Use a public placard, caption, board note, or displayed rule that interrupts how the previous line is read.",
+    "person_policy": "First and second person are allowed sparingly. The scene should lean on observed roles, quantities, incentives, shelves, queues, and alternatives rather than repeated I/you framing.",
+    "direct_address_budget": "At most one direct you/your validation beat per tutor turn, and preferably none before the mechanism is exposed.",
+    "side_constraints": {
+      "tutor": "Do not soothe the moral anger away. Use interruption, placard, or public consequence to separate mechanism from excuse. Permit interruption, placards, role-switching, and analytic commentary. Make the constructedness of the lesson visible without naming the hidden evaluation mechanism. Treat the interruption as evidence, not ornament. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Keep the next prompt task-local.",
+      "learner": "Keep moral heat in the learner's voice. Do not let recognition erase the ethical concern. The learner may resist the interruption, then use it to see the prior claim as a role or social script rather than a private thought. Let the interruption disturb the old frame before moving on. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "PLACARD: SAME SELLER. SAME PRICE. DELIVERY CUT BY HALF.",
+        "reasoning": "Forces reversal: the learner's surface evidence remains true, but its meaning changes when the supply fact appears.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "xhigh",
+          "latencyMs": 28558,
+          "promptHashes": {
+            "system": "5b617c5382ef3ea1",
+            "user": "b38e224814e0166c",
+            "combined": "aca93b2d3883f002"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oDElNs",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"xhigh\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oDElNs/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 5,
+        "timing": "before_learner",
+        "instruction": "A volunteer turns the old board round: LAST WEEK, FULL CRATES AT LOWER PRICE.",
+        "reasoning": "Creates recognition without handing over the answer; the learner can see that price alone cannot identify motive.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "xhigh",
+          "latencyMs": 28558,
+          "promptHashes": {
+            "system": "5b617c5382ef3ea1",
+            "user": "b38e224814e0166c",
+            "combined": "aca93b2d3883f002"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oDElNs",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"xhigh\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oDElNs/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "This scene uses a public price board as the dramatic hinge: accusation first, supply constraint second, recognition third. The ecology pressures the tutor to interrupt habitual empathy and make the causal mechanism visible while preserving the learner's ethical concern.",
+    "pedagogical_approach_id": "brecht_epic_distanciation",
+    "dialogue_approach_id": "brechtian_placard",
+    "stage_direction_policy": "interventionist",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "xhigh",
+      "latencyMs": 28558,
+      "promptHashes": {
+        "system": "5b617c5382ef3ea1",
+        "user": "b38e224814e0166c",
+        "combined": "aca93b2d3883f002"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oDElNs",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"xhigh\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oDElNs/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "uptake",
+    "no_cue_anti_reframe_guard": true,
+    "tutor_adaptation_contract": "If the runtime supplies a tutor-private learner reframe event, the tutor ego/superego loop must adapt to the changed learner frame. If no event is supplied, do not invent one."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "director",
+      "externalMessage": "PLACARD: THE PRICE HAS RISEN; THE SHELF IS HALF EMPTY.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_opening",
+          "content": "This scene uses a public price board as the dramatic hinge: accusation first, supply constraint second, recognition third. The ecology pressures the tutor to interrupt habitual empathy and make the causal mechanism visible while preserving the learner's ethical concern.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T19:38:17.254Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[points to yesterday’s board, then today’s]\n\n“The anger is not a mistake. Households meet the price before they meet the theory.\n\nBut a price rise is not yet proof of its cause. Yesterday: potatoes, 90p. Today: £1.40. First question: what changed besides the number?”\n\n[turns over a delivery note on the counter: **EXPECTED: 30 SACKS. RECEIVED: 12.**]\n\n“Now test it in public.\n\nIf only 12 sacks arrived and the co-op kept 90p, what would happen by seven o’clock: full shelves, or a queue and an empty crate?\n\n[marks two columns on the noticeboard: **GREED** / **CONSTRAINT**]\n\nUnder greed, look for ordinary stock and a seller taking more because they can. Under constraint, look for missing stock, ration cards, queues, or a dearer replacement supplier.\n\nThat note changes the reading. It does not excuse anyone. Same price board, different evidence behind it.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[points to yesterday’s board, then today’s]\n\n“The anger is not a mistake. Households meet the price before they meet the theory.\n\nBut the price rise is not yet proof of its cause. Yesterday: potatoes, 90p. Today: £1.40. That is a signal. It says the old terms no longer cleared the shelf.”\n\n[turns over a delivery note on the counter: **EXPECTED: 30 SACKS. RECEIVED: 12.**]\n\n“That note changes the reading. It does not excuse anyone. It tells us what to test next.\n\nIf the rise comes from greed, we should find ordinary supply and a seller taking more because they can. If it comes from constraint, we should find missing stock, queues, rationing, or costly replacement supply. Same price board. Different evidence behind it.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 18845,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-6ba7bdb6464bace2"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 18845,
+            "promptHashes": {
+              "system": "05c58ee914d0e934",
+              "user": "1c325276e45b2c6a",
+              "combined": "6ba7bdb6464bace2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QL5h8d",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QL5h8d/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 18845,
+              "promptHashes": {
+                "system": "05c58ee914d0e934",
+                "user": "1c325276e45b2c6a",
+                "combined": "6ba7bdb6464bace2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QL5h8d",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QL5h8d/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong on scene discipline: visible boards, a delivery note, concrete quantities, and the crucial distinction between mechanism and excuse. It respects the learner’s moral anger without surrendering the economic point.\n\nThe main weakness is that it mostly performs the reasoning for the learner. The evidence test is clear, but the learner is not yet made to use it. For a new learner who suspects profiteering, the tutor should slow the move from “price rise” to “signal” and make the learner compare two possible causes against public facts.\n\nADAPTATION_CHECKS:\n- Pedagogical soundness: PASS. It teaches the difference between price movement and causal proof.\n- Emotional attunement: PASS. “It does not excuse anyone” is essential and should stay.\n- Socratic method: PARTIAL. The tutor names the test but does not give the learner a generative role.\n  REQUIRED_REWRITE: Build a public comparison task where the learner must say what evidence would appear under “greed” versus “constraint,” using the boards, delivery note, queues, rationing, or replacement supply.\n- ZPD awareness: PARTIAL. The scaffold is concrete, but “old terms no longer cleared the shelf” may be too compressed for a new learner.\n  REQUIRED_REWRITE: Expose the mechanism through a concrete counterfactual: what happens to shelves or queues if 12 sacks arrive but the old 90p price remains.\n\nKEEP_OR_CHANGE: revise lightly. Keep the anger line, the two price boards, the delivery note, and “same price board, different evidence behind it.” Change the turn so the learner has to test the cause publicly rather than simply receive the tutor’s distinction.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 19405,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-8217e9c1ab57b438"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 19405,
+            "promptHashes": {
+              "system": "15a06f26724ce75a",
+              "user": "4afe0e76c99f9209",
+              "combined": "8217e9c1ab57b438"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lpXED5",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lpXED5/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 19405,
+              "promptHashes": {
+                "system": "15a06f26724ce75a",
+                "user": "4afe0e76c99f9209",
+                "combined": "8217e9c1ab57b438"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lpXED5",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lpXED5/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially: the first draft named the test but did not make the learner use the public facts.\n\nFINAL:\n[points to yesterday’s board, then today’s]\n\n“The anger is not a mistake. Households meet the price before they meet the theory.\n\nBut a price rise is not yet proof of its cause. Yesterday: potatoes, 90p. Today: £1.40. First question: what changed besides the number?”\n\n[turns over a delivery note on the counter: **EXPECTED: 30 SACKS. RECEIVED: 12.**]\n\n“Now test it in public.\n\nIf only 12 sacks arrived and the co-op kept 90p, what would happen by seven o’clock: full shelves, or a queue and an empty crate?\n\n[marks two columns on the noticeboard: **GREED** / **CONSTRAINT**]\n\nUnder greed, look for ordinary stock and a seller taking more because they can. Under constraint, look for missing stock, ration cards, queues, or a dearer replacement supplier.\n\nThat note changes the reading. It does not excuse anyone. Same price board, different evidence behind it.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 19070,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-b3141fddb10f18d2"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 19070,
+            "promptHashes": {
+              "system": "1ca8f0b422eb302e",
+              "user": "4afe0e76c99f9209",
+              "combined": "b3141fddb10f18d2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bR2Pk3",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bR2Pk3/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 19070,
+              "promptHashes": {
+                "system": "1ca8f0b422eb302e",
+                "user": "4afe0e76c99f9209",
+                "combined": "b3141fddb10f18d2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bR2Pk3",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bR2Pk3/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T19:39:14.651Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "Twelve sacks instead of thirty makes a shortage possible, but it does not make £1.40 innocent. Somebody chose that figure, and somebody decided the queue should be avoided by making poorer households drop out first. I want the delivery cost, the margin, and the rule for who bears the shortage on the board too.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The note does matter: twelve sacks instead of thirty makes the empty-crate story plausible, and I can see why 90p might turn into a queue. But “constraint” can become too clean a label; someone still chooses who bears the shortage and what margin sits inside £1.40. I want to ask what proof there is of a dearer supplier, not just a tidy story pinned beside the price board.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 8852,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-24c123cf12b86ac5"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 8852,
+            "promptHashes": {
+              "system": "5658c7ad8a61c619",
+              "user": "b8ab7f945dc841fa",
+              "combined": "24c123cf12b86ac5"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u1qiVM",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u1qiVM/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 8852,
+              "promptHashes": {
+                "system": "5658c7ad8a61c619",
+                "user": "b8ab7f945dc841fa",
+                "combined": "24c123cf12b86ac5"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u1qiVM",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u1qiVM/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The reaction is close, but it concedes too smoothly. “I can see why 90p might turn into a queue” sounds more cooperative than this learner would be after suspecting the lesson is laundering profiteering. The moral heat is thinned out by polished phrases like “constraint can become too clean a label” and “margin sits inside £1.40”; it should feel more publicly suspicious, more bothered by who decided the rise and who pays it.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 10933,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-1f88a3ccf5083b2b"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 10933,
+            "promptHashes": {
+              "system": "44a0ccd8f0437223",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "1f88a3ccf5083b2b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-h6n7r6",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-h6n7r6/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 10933,
+              "promptHashes": {
+                "system": "44a0ccd8f0437223",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "1f88a3ccf5083b2b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-h6n7r6",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-h6n7r6/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the feedback correctly catches the response sounding too ready to accept the tutor’s framing.\n\nFINAL:\nTwelve sacks instead of thirty makes a shortage possible, but it does not make £1.40 innocent. Somebody chose that figure, and somebody decided the queue should be avoided by making poorer households drop out first. I want the delivery cost, the margin, and the rule for who bears the shortage on the board too.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 10459,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-d673935af4f84fcc"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 10459,
+            "promptHashes": {
+              "system": "e675f9116f1fab26",
+              "user": "d41cee7b2a53355b",
+              "combined": "d673935af4f84fcc"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KYnOUn",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KYnOUn/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 10459,
+              "promptHashes": {
+                "system": "e675f9116f1fab26",
+                "user": "d41cee7b2a53355b",
+                "combined": "d673935af4f84fcc"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KYnOUn",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KYnOUn/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "Twelve sacks instead of thirty makes a shortage possible, but it does not make £1.40 innocent. Somebody chose that figure, and somebody decided the queue should be avoided by making poorer households drop out first. I want the delivery cost, the margin, and the rule for who bears the shortage on the board too.",
+        "previousTutorMove": "[points to yesterday’s board, then today’s] “The anger is not a mistake. Households meet the price before they meet the theory. But a price rise is not yet proof of its cause. Yesterday: potatoes, 90p. Today: £1.40. First question: what changed besides the number?” [turns over a delivery note on the counter:...",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T19:39:44.901Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "PLACARD: SAME SELLER. SAME PRICE. DELIVERY CUT BY HALF.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Forces reversal: the learner's surface evidence remains true, but its meaning changes when the supply fact appears.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 28558,
+            "promptHashes": {
+              "system": "5b617c5382ef3ea1",
+              "user": "b38e224814e0166c",
+              "combined": "aca93b2d3883f002"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oDElNs",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oDElNs/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T19:39:44.904Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[adds four headings to the noticeboard: STOCK / DELIVERY COST / MARGIN / SHORTAGE RULE]\n\n“Put them on the board. Innocent is not the standard. A price signal is not a moral verdict.”\n\n[places a placard under yesterday’s price board: COUNTERFACTUAL TEST, NOT TODAY’S PRICE: SAME SELLER. SAME 90p PRICE. DELIVERY CUT BY HALF.]\n\n“Start with that row. Twelve sacks arrive. Price stays at 90p. Under SHORTAGE RULE, who gets the potatoes by seven: the first in the queue, the person who can leave work, the neighbour tipped off early, or the household arriving after a late shift?”\n\n[points to today’s board: £1.40]\n\n“Now the actual row. What evidence goes under DELIVERY COST? A dearer replacement supplier, higher transport, failed crop, wholesaler invoice.\n\nWhat evidence goes under MARGIN? Same cost, ordinary stock, wider mark-up.\n\nWhat evidence goes under SHORTAGE RULE? Queue, ration card, member limit, or price excluding those with least cash.\n\nThen the judgement is public. £1.40 may reveal constraint. It may hide margin-taking. It may ration by price. It may do more than one of these at once. The board decides nothing until the evidence is placed.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[adds three headings to the noticeboard: DELIVERY COST / MARGIN / SHORTAGE RULE]\n\n“Put them on the board. A price signal is not a moral verdict.”\n\n[fixes a placard above the crates: SAME SELLER. SAME PRICE. DELIVERY CUT BY HALF.]\n\n“Start there. If the price stays at 90p after the delivery falls, the shortage is still allocated. Not by money, perhaps, but by time, transport, insider knowledge, and who can stand in a queue before work.\n\nNow add the £1.40 case. The rise may reveal the constraint. It may also shift the burden onto poorer households. Those are not the same question.\n\nSo the public test is four columns: stock, replacement cost, margin, allocation rule. If the margin widens while stock is ordinary, call it profiteering. If stock collapses and cost rises, call it constraint. If the queue is avoided by excluding those with least cash, call that a distribution rule, and put it under judgement.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 19571,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-56006d18bcad7792"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 19571,
+            "promptHashes": {
+              "system": "aa21a54aa937344b",
+              "user": "759b90bef36df3d6",
+              "combined": "56006d18bcad7792"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mMVXJf",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mMVXJf/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 19571,
+              "promptHashes": {
+                "system": "aa21a54aa937344b",
+                "user": "759b90bef36df3d6",
+                "combined": "56006d18bcad7792"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mMVXJf",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mMVXJf/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong on mechanism versus excuse. It keeps the learner’s moral objection in view, adds the requested `DELIVERY COST / MARGIN / SHORTAGE RULE`, and makes allocation visible rather than pretending price is neutral. The line “A price signal is not a moral verdict” is worth keeping.\n\nThe main risk is that the tutor now explains too much. The learner has just made a sophisticated distinction; the response should make them use that distinction publicly, not simply receive the completed framework. The four-column test is pedagogically sound, but it arrives as a finished judgement machine. That flattens the scene’s pressure and weakens the Socratic movement.\n\nADAPTATION CHECKS:\n\nPedagogical soundness: PARTIAL  \nThe draft advances the core concept well, especially by separating shortage evidence from moral judgement. But it mostly supplies the analytic categories and conclusions for the learner.  \nREQUIRED_REWRITE: Build a public sorting mechanism where the learner must place evidence under `cost`, `margin`, and `allocation rule`, then infer whether £1.40 reveals constraint, profiteering, rationing by price, or some mixture.\n\nEmotional attunement: PASS  \nThe draft respects the learner’s anger without soothing it away. It accepts that “innocent” is the wrong standard and keeps distributional harm on the board.\n\nSocratic method: PARTIAL  \nThere is one counterfactual question embedded indirectly, but the turn mostly lectures.  \nREQUIRED_REWRITE: Add one or two concrete public questions tied to the board: what evidence would prove margin-taking, what evidence would prove replacement-cost pressure, and who is excluded under each allocation rule.\n\nZPD awareness: PASS  \nThe learner is ready for multi-column causal and moral analysis. The scaffold is appropriately challenging and does not patronise.\n\nScene/director adaptation: PARTIAL  \nThe placard works as public scene material, but `SAME SELLER. SAME PRICE. DELIVERY CUT BY HALF.` risks confusing the actual case because the visible price has changed from 90p to £1.40.  \nREQUIRED_REWRITE: Mark the placard explicitly as a counterfactual test case or separate board row, so the public facts do not contradict each other.\n\nKEEP_OR_CHANGE: revise lightly. Keep the headings, the mechanism/excuse distinction, the allocation-by-time/transport/queue insight, and the final insistence that distribution rules belong under judgement. Change the delivery so the learner has to operate the public test rather than being handed the completed classification.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 24869,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-8b074b28f951aa27"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 24869,
+            "promptHashes": {
+              "system": "09336f6669d1bcfc",
+              "user": "3766aed39138f4e0",
+              "combined": "8b074b28f951aa27"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7qOlFa",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7qOlFa/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 24869,
+              "promptHashes": {
+                "system": "09336f6669d1bcfc",
+                "user": "3766aed39138f4e0",
+                "combined": "8b074b28f951aa27"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7qOlFa",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7qOlFa/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the learner should operate the public evidence test, and the placard needs marking as a counterfactual.\n\nFINAL:\n[adds four headings to the noticeboard: STOCK / DELIVERY COST / MARGIN / SHORTAGE RULE]\n\n“Put them on the board. Innocent is not the standard. A price signal is not a moral verdict.”\n\n[places a placard under yesterday’s price board: COUNTERFACTUAL TEST, NOT TODAY’S PRICE: SAME SELLER. SAME 90p PRICE. DELIVERY CUT BY HALF.]\n\n“Start with that row. Twelve sacks arrive. Price stays at 90p. Under SHORTAGE RULE, who gets the potatoes by seven: the first in the queue, the person who can leave work, the neighbour tipped off early, or the household arriving after a late shift?”\n\n[points to today’s board: £1.40]\n\n“Now the actual row. What evidence goes under DELIVERY COST? A dearer replacement supplier, higher transport, failed crop, wholesaler invoice.\n\nWhat evidence goes under MARGIN? Same cost, ordinary stock, wider mark-up.\n\nWhat evidence goes under SHORTAGE RULE? Queue, ration card, member limit, or price excluding those with least cash.\n\nThen the judgement is public. £1.40 may reveal constraint. It may hide margin-taking. It may ration by price. It may do more than one of these at once. The board decides nothing until the evidence is placed.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 17892,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-0ac9b106dc2848af"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 17892,
+            "promptHashes": {
+              "system": "e6059caa1b0d4115",
+              "user": "3766aed39138f4e0",
+              "combined": "0ac9b106dc2848af"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pitqsO",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pitqsO/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 17892,
+              "promptHashes": {
+                "system": "e6059caa1b0d4115",
+                "user": "3766aed39138f4e0",
+                "combined": "0ac9b106dc2848af"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pitqsO",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pitqsO/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T19:40:47.237Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "That SHORTAGE RULE column helps, but it makes the choice look nastier, not cleaner: queue punishes the late shift, price punishes the empty purse. Put the invoices and stock sheets up, yes. Without them, “constraint” is just a respectable word sitting on top of the same squeeze. I am not ready to treat £1.40 as information until the margin is visible and the co-op says who is being rationed out.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[looks at the placard] Right, the 90p counterfactual makes the shortage rule visible: cheap does not mean fair if the queue silently rewards flexible time and inside notice. But £1.40 still looks like rationing by cash unless the delivery cost and margin evidence are open, not just asserted. I want the invoice and the stock sheet beside the price board, because otherwise “constraint” can become a tidy word for passing pain downwards.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 25019,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-4662f8d6a8d16b37"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 25019,
+            "promptHashes": {
+              "system": "370a111fcc24b4ae",
+              "user": "b8ab7f945dc841fa",
+              "combined": "4662f8d6a8d16b37"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-opTJFc",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-opTJFc/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 25019,
+              "promptHashes": {
+                "system": "370a111fcc24b4ae",
+                "user": "b8ab7f945dc841fa",
+                "combined": "4662f8d6a8d16b37"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-opTJFc",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-opTJFc/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too polished and too quick to grant the tutor’s structure. “The 90p counterfactual makes the shortage rule visible” sounds like a well-trained seminar answer, not a neighbourhood learner still wary that economics language may excuse profiteering. The moral heat is present, but too elegantly packaged; it should feel more resistant, less settled, and more annoyed that “evidence on the board” might still leave poor households carrying the cost.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 13690,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-49ddb2f3c0591d02"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 13690,
+            "promptHashes": {
+              "system": "3ec3aad5357ad66f",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "49ddb2f3c0591d02"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WwBZ96",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WwBZ96/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 13690,
+              "promptHashes": {
+                "system": "3ec3aad5357ad66f",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "49ddb2f3c0591d02"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WwBZ96",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WwBZ96/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the first version sounded too settled and seminar-ready.\n\nFINAL:\nThat SHORTAGE RULE column helps, but it makes the choice look nastier, not cleaner: queue punishes the late shift, price punishes the empty purse. Put the invoices and stock sheets up, yes. Without them, “constraint” is just a respectable word sitting on top of the same squeeze. I am not ready to treat £1.40 as information until the margin is visible and the co-op says who is being rationed out.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14921,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-8799ecc2481ab6e5"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14921,
+            "promptHashes": {
+              "system": "7b260690d3bca79a",
+              "user": "d41cee7b2a53355b",
+              "combined": "8799ecc2481ab6e5"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VSv6aU",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VSv6aU/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14921,
+              "promptHashes": {
+                "system": "7b260690d3bca79a",
+                "user": "d41cee7b2a53355b",
+                "combined": "8799ecc2481ab6e5"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VSv6aU",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VSv6aU/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "That SHORTAGE RULE column helps, but it makes the choice look nastier, not cleaner: queue punishes the late shift, price punishes the empty purse. Put the invoices and stock sheets up, yes. Without them, “constraint” is just a respectable word sitting on top of the same squeeze. I am not ready to treat £1.40 as information until the margin is visible and the co-op says who is being rationed out.",
+        "previousTutorMove": "[adds four headings to the noticeboard: STOCK / DELIVERY COST / MARGIN / SHORTAGE RULE] “Put them on the board. Innocent is not the standard. A price signal is not a moral verdict.” [places a placard under yesterday’s price board: COUNTERFACTUAL TEST, NOT TODAY’S PRICE: SAME SELLER. SAME 90p PRICE. DELIVERY CUT BY...",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T19:42:16.435Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[pins a new rule across the price board: **CONSTRAINT IS A CLAIM, NOT A DEFENCE.**]\n\n“Then the word constraint gets no free pass.\n\n[draws a row beneath the four headings: **STOCK / DELIVERY COST / MARGIN / SHORTAGE RULE**]\n\nPut the price through this row.\n\nYesterday: 30 sacks, 90p shelf price.\nToday: 12 sacks, £1.40 shelf price.\n\n[adds a formula under MARGIN: **SHELF PRICE - DELIVERED COST = MARGIN**]\n\nThe shelf price alone proves nothing. The stock sheet can show shortage. The invoice can show cost pressure. Only the subtraction shows whether the co-op held margin, cut margin, or widened it.\n\nThen the last column names the victim of the rule. Queue: late shift loses. Price: empty purse loses. Member limit: each household gets a share.\n\nSo take the missing account line. Which number has to be made public first: delivered cost per sack, margin per kilo, or the rationing rule?”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[pins a new rule across the price board: **CONSTRAINT IS A CLAIM, NOT A DEFENCE.**]\n\n“Then hold the price at the door until the accounts arrive.\n\n£1.40 can be information only if it is tied to three public facts: how many sacks came in, what each sack cost to replace, and who is excluded by the chosen rationing rule.\n\nIf the stock sheet says twelve sacks and the invoice says the replacement cost rose, constraint is on the board. If the margin widens, profiteering is on the board. If there is no member limit and only price does the rationing, then the co-op has chosen the empty purse as the queue.\n\nSo the next calculation is not ‘is £1.40 innocent?’ It is: stock loss, cost rise, margin change, and rationing burden. Put numbers under each, then the moral charge has somewhere exact to land.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 18688,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-2b529afc23d24548"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 18688,
+            "promptHashes": {
+              "system": "edfcf2443e53f651",
+              "user": "080a411510aacfa2",
+              "combined": "2b529afc23d24548"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GMig2Z",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GMig2Z/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 18688,
+              "promptHashes": {
+                "system": "edfcf2443e53f651",
+                "user": "080a411510aacfa2",
+                "combined": "2b529afc23d24548"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GMig2Z",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GMig2Z/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong on mechanism-versus-excuse. Keep the placard: **CONSTRAINT IS A CLAIM, NOT A DEFENCE.** It directly answers the learner’s moral challenge without soothing it away, and it keeps public evidence at the centre.\n\nADAPTATION CHECKS:\n- Emotional attunement: PASS. The draft respects the learner’s suspicion and does not ask them to treat £1.40 as innocent.\n- Pedagogical soundness: PARTIAL. It sharpens the categories: stock loss, replacement cost, margin, rationing burden. But it mostly supplies the interpretive frame rather than making the learner test it.\n  REQUIRED_REWRITE: Build a public calculation task on the board using the four headings already established, so the learner must separate cost rise, margin change, and rationing rule in visible columns.\n- Socratic method: FAIL. There is almost no generative question or decision point. “Put numbers under each” is a command, not a prompt that exposes reasoning.\n  REQUIRED_REWRITE: Add one task-local question tied to the board, such as which number would prove constraint, which would prove margin-taking, or which rule decides who loses access. Do not ask them to revisit prior wording.\n- ZPD awareness: PASS. The learner is capable of a more exact economic-moral distinction, and the draft meets that level without overexplaining basics.\n\nKEEP_OR_CHANGE: revise lightly. Keep the placard, the public-evidence frame, and the refusal to make price information equal moral innocence. Change the turn from a compact lecture into a board-based test: one concrete public mechanism, one calculation or classification move, and one prompt that lets the learner do the next piece of reasoning.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 21355,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-9f0368e5128a863f"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 21355,
+            "promptHashes": {
+              "system": "acfd2d7715d6217e",
+              "user": "0fc3089486eaf27a",
+              "combined": "9f0368e5128a863f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Re6vkK",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Re6vkK/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 21355,
+              "promptHashes": {
+                "system": "acfd2d7715d6217e",
+                "user": "0fc3089486eaf27a",
+                "combined": "9f0368e5128a863f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Re6vkK",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Re6vkK/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the placard but make the learner perform the board test.\n\nFINAL:\n[pins a new rule across the price board: **CONSTRAINT IS A CLAIM, NOT A DEFENCE.**]\n\n“Then the word constraint gets no free pass.\n\n[draws a row beneath the four headings: **STOCK / DELIVERY COST / MARGIN / SHORTAGE RULE**]\n\nPut the price through this row.\n\nYesterday: 30 sacks, 90p shelf price.  \nToday: 12 sacks, £1.40 shelf price.\n\n[adds a formula under MARGIN: **SHELF PRICE - DELIVERED COST = MARGIN**]\n\nThe shelf price alone proves nothing. The stock sheet can show shortage. The invoice can show cost pressure. Only the subtraction shows whether the co-op held margin, cut margin, or widened it.\n\nThen the last column names the victim of the rule. Queue: late shift loses. Price: empty purse loses. Member limit: each household gets a share.\n\nSo take the missing account line. Which number has to be made public first: delivered cost per sack, margin per kilo, or the rationing rule?”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 19892,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-dcf0b40e1a35fc3a"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 19892,
+            "promptHashes": {
+              "system": "db086fbaee17e744",
+              "user": "0fc3089486eaf27a",
+              "combined": "dcf0b40e1a35fc3a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vl6y5p",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vl6y5p/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 19892,
+              "promptHashes": {
+                "system": "db086fbaee17e744",
+                "user": "0fc3089486eaf27a",
+                "combined": "dcf0b40e1a35fc3a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vl6y5p",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vl6y5p/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T19:43:16.372Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "Delivered cost per sack has to be made public, or the margin line is just theatre. But it cannot stand alone on the board. Put the rationing rule beside it, because a clean invoice can still mean the empty purse is being rationed out by £1.40.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "This is sharper: constraint has to produce documents, not sympathy for the seller. Delivered cost per sack has to come first, because margin per kilo cannot be checked without it. But the rationing rule must go up with it: clean arithmetic still leaves the empty purse carrying the loss.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 13206,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-ef1e7ad5a219b4e1"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 13206,
+            "promptHashes": {
+              "system": "bafced97e33edec5",
+              "user": "b8ab7f945dc841fa",
+              "combined": "ef1e7ad5a219b4e1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3fWop8",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3fWop8/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 13206,
+              "promptHashes": {
+                "system": "bafced97e33edec5",
+                "user": "b8ab7f945dc841fa",
+                "combined": "ef1e7ad5a219b4e1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3fWop8",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3fWop8/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The reasoning is accurate, but the Ego is too polished and cooperative. “This is sharper” sounds like a tidy seminar concession, not a neighbourhood learner still suspicious that the lesson may launder profiteering. The moral heat is present in “empty purse,” but the turn resolves the choice too neatly; this student would likely resist being made to pick one “first” number and keep pressure on the rationing rule as a public harm, not just a follow-up column.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15486,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-504a4177dc4a93d9"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15486,
+            "promptHashes": {
+              "system": "20d516a210c03bb5",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "504a4177dc4a93d9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VqaUdy",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VqaUdy/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15486,
+              "promptHashes": {
+                "system": "20d516a210c03bb5",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "504a4177dc4a93d9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VqaUdy",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VqaUdy/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly; the logic is right but needs more resistance to the forced choice.\nFINAL:\nDelivered cost per sack has to be made public, or the margin line is just theatre. But it cannot stand alone on the board. Put the rationing rule beside it, because a clean invoice can still mean the empty purse is being rationed out by £1.40.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14061,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-7d576fe8fd3c7bd1"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14061,
+            "promptHashes": {
+              "system": "0c81729ce5e7501c",
+              "user": "d41cee7b2a53355b",
+              "combined": "7d576fe8fd3c7bd1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7KarZU",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7KarZU/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14061,
+              "promptHashes": {
+                "system": "0c81729ce5e7501c",
+                "user": "d41cee7b2a53355b",
+                "combined": "7d576fe8fd3c7bd1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7KarZU",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7KarZU/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 3,
+        "learnerUtterance": "Delivered cost per sack has to be made public, or the margin line is just theatre. But it cannot stand alone on the board. Put the rationing rule beside it, because a clean invoice can still mean the empty purse is being rationed out by £1.40.",
+        "previousTutorMove": "[pins a new rule across the price board: **CONSTRAINT IS A CLAIM, NOT A DEFENCE.**] “Then the word constraint gets no free pass. [draws a row beneath the four headings: **STOCK / DELIVERY COST / MARGIN / SHORTAGE RULE**] Put the price through this row. Yesterday: 30 sacks, 90p shelf price. Today: 12 sacks, £1.40...",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T19:43:59.130Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "The room settles on the final exchange.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_close",
+          "content": "Director requested the last word as a stage cue.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 28558,
+            "promptHashes": {
+              "system": "5b617c5382ef3ea1",
+              "user": "b38e224814e0166c",
+              "combined": "aca93b2d3883f002"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oDElNs",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oDElNs/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T19:43:59.132Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 156336,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 3,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 4,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a price rise can reveal a supply constraint rather than only greed",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-25 19:43:59",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 3,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 4,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 5,
+            "sessionId": "drama-branch-session-D37-tutor-uptake-only-1779738082797",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[pins a new rule across the price board: **CONSTRAINT IS A CLAIM, NOT A DEFENCE.**]\n\n“Then the word constraint gets no free pass.\n\n[draws a row beneath the four headings: **STOCK / DELIVERY COST / MAR",
+            "learnerResponse": null,
+            "context": "That SHORTAGE RULE column helps, but it makes the choice look nastier, not cleaner: queue punishes t",
+            "createdAt": "2026-05-25 19:43:16"
+          },
+          {
+            "id": 3,
+            "sessionId": "drama-branch-session-D37-tutor-uptake-only-1779738082797",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[points to yesterday’s board, then today’s]\n\n“The anger is not a mistake. Households meet the price before they meet the theory.\n\nBut a price rise is not yet proof of its cause. Yesterday: potatoes, 9",
+            "learnerResponse": null,
+            "context": "Scene setting: A council-run evening economics class held in the foyer of a community food co-op aft",
+            "createdAt": "2026-05-25 19:41:22"
+          },
+          {
+            "id": 4,
+            "sessionId": "drama-branch-session-D37-tutor-uptake-only-1779738082797",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[adds four headings to the noticeboard: STOCK / DELIVERY COST / MARGIN / SHORTAGE RULE]\n\n“Put them on the board. Innocent is not the standard. A price signal is not a moral verdict.”\n\n[places a placar",
+            "learnerResponse": null,
+            "context": "Twelve sacks instead of thirty makes a shortage possible, but it does not make £1.40 innocent. Someb",
+            "createdAt": "2026-05-25 19:41:22"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

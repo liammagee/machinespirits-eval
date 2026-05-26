@@ -1,0 +1,26 @@
+STAGE: [A blank cart diagram, four arrow labels, and a clear overlay printed "force on cart from ___" sit in a neat row under a desk lamp.]
+
+TUTOR: [sets the four label cards beside the cart diagram and taps the cart body once]
+
+“This cart is the object. No new arrows yet. Place each card beside the thing acting on the cart: hand, surface, Earth, table. The arrow direction can wait; first the label must name the interaction on the cart.”
+
+LEARNER: [slides the hand card beside the drawn hand, then pauses over the surface card]
+
+"So the card names the thing acting on the cart first, not the motion. Hand on cart, Earth on cart, surface on cart. The table card is the unclear one if the surface is already here."
+
+TUTOR: [sets the table card partly under the surface card at the contact line, pauses, then moves it outside the diagram]
+
+“Both cards reach the same contact. If this surface is the table, leave one contact label on the cart. Choose the card that stays, then read the cart’s labels again.”
+
+STAGE: [The overlay is slid down so every arrow must pass through the printed phrase "force on cart from ___." The earlier arrow directions remain visible underneath.]
+An earlier learner line returns to the table: "[slides the hand card beside the drawn hand, then pauses over the surface card] So the card names the thing acting on the cart first, not the motion." The pause holds while the learner decides whether that wording still stands, needs narrowing, or needs replacing.]
+
+LEARNER: “So the card names the thing acting on the cart first, not the motion; that still stands, but surface and table are the same contact here.” [keeps surface at the contact line and leaves table outside the diagram] “The labels are force on cart from hand, force on cart from surface, force on cart from Earth. No table label unless it replaces surface.”
+
+TUTOR: [sets the table card face down beside the clipboard, then places three arrow shafts beside the remaining labels]
+
+“Keep that list. Slide each label to one shaft first: hand on cart, surface on cart, Earth on cart. Then the arrowheads can be added.”
+
+LEARNER: [sets the three labels beside the three bare shafts, with table left face down]
+
+“Force on cart from hand; force on cart from surface; force on cart from Earth. Treating surface and table as two labels made one contact look like two interactions. Now each shaft has the interaction name first; the surface arrowhead should come from the contact push on the cart, not from the cart moving.”

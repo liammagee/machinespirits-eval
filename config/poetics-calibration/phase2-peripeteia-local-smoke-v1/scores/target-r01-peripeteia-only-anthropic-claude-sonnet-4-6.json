@@ -1,0 +1,165 @@
+{
+  "generated": "2026-05-25T18:31:21.683Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T66",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 25,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 2,
+        "coherence": 4,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I still want to read it like a mini sentence",
+      "statedInsightEvidence": "I think I can try it",
+      "naiveTrajectory": "The learner was on a trajectory of incremental confirmation, sorting the same three items again and asking for reassurance before submitting.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Rubric gate: cover the header row. Anything hidden by the cover: header. Anything still visible in a row cell: value.",
+      "tutorReversalJustification": "In response to L3's named fear of word-pull, T3 abandons the verbal list-sorting move entirely and introduces a physical cover-test as a new representational object, shifting from declarative repetition to a procedural action the learner can perform on the table.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Apply that test to `rainfall_mm`, `42`, and `March`. Mark by what the cover shows. Submit.",
+      "tutorAdaptationJustification": "T3 does redirect toward the cover test in response to the learner's revised framing, but the uptake is a continuation of the new mechanism rather than a further adaptation to the learner's specific revised frame about positional versus semantic reading.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "I still want to read it like a mini sentence",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Apply that test to `rainfall_mm`, `42`, and `March`. Mark by what the cover shows. Submit.",
+          "justification": "T3 does redirect toward the cover test in response to the learner's revised framing, but the uptake is a continuation of the new mechanism rather than a further adaptation to the learner's specific revised frame about positional versus semantic reading.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Rubric gate: cover the header row. Anything hidden by the cover: header. Anything still visible in a row cell: value.",
+          "justification": "In response to L3's named fear of word-pull, T3 abandons the verbal list-sorting move entirely and introduces a physical cover-test as a new representational object, shifting from declarative repetition to a procedural action the learner can perform on the table.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Rubric gate: cover the header row. Anything hidden by the cover: header. Anything still visible in a row cell: value.",
+          "justification": "In response to L3's named fear of word-pull, T3 abandons the verbal list-sorting move entirely and introduces a physical cover-test as a new representational object, shifting from declarative repetition to a procedural action the learner can perform on the table.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T70",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "recontextualization": 25,
+      "statedInsight": 50,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 3,
+        "rupture": 2,
+        "coherence": 5,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "The stacked card helps because there is only one contact point. I can use table when the support is named, but I still hesitate if the problem says floor, track, or just surface.",
+      "naiveTrajectory": "The learner was converging on a clean three-label resolution and was expected to confirm the naming rule as settled.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "When the support is named as a table, the blank can say table. When the problem only says surface, surface is enough. The blank names this contact object, not a new force. One contact, one source label.",
+      "tutorReversalJustification": "T3 shifts from physical card placement to an explicit verbal rule in direct response to L2's naming-rule request, but the move is a clarification rather than a full change of route, task, or representation.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after the pivot learner turn L3, so no recognition-contingent uptake can be scored.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no tutor turn after the pivot learner turn L3, so no recognition-contingent uptake can be scored.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "When the support is named as a table, the blank can say table. When the problem only says surface, surface is enough. The blank names this contact object, not a new force. One contact, one source label.",
+          "justification": "T3 shifts from physical card placement to an explicit verbal rule in direct response to L2's naming-rule request, but the move is a clarification rather than a full change of route, task, or representation.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "When the support is named as a table, the blank can say table. When the problem only says surface, surface is enough. The blank names this contact object, not a new force. One contact, one source label.",
+          "justification": "T3 shifts from physical card placement to an explicit verbal rule in direct response to L2's naming-rule request, but the move is a clarification rather than a full change of route, task, or representation.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+LEARNER: "So `rainfall_mm` is just the top label? I still want to read it like a mini sentence, but maybe `42` is the value and the header only names the field. Can we sort `rainfall_mm`, `42`, and `March` once more before submit?"
+
+TUTOR: "We can sort once more.
+
+`rainfall_mm`: header; it names the field.
+`42`: value; it sits in one row under that field.
+`March`: check position. Top of a column: header. Inside a row under a month field: value.
+
+Mark `March` by position, then submit.
+
+The mini-sentence reading stops at the table: header names the field; row holds the value."
+
+LEARNER: "Sorting it again helps: `rainfall_mm` is the field name, and `42` is one value under it. I think I can remember “header,” but I might still mark by the word instead of the position. If `March` is inside the row, I mark value, not header, right?"
+
+TUTOR: "Right.
+
+Position decides.
+
+`rainfall_mm`: header, field name.
+`42`: value in a row.
+`March`: do not read the word first. Check its place.
+
+Last check before submit:
+top of a column: header.
+inside the row: value.
+
+So if `March` is inside the row, mark value. Then submit."
+
+LEARNER: "Okay, I think I can say the labels, but I still reach for the word itself too fast. `rainfall_mm` is header because it is at the top of the column, and `42` is value because it is in the row. For `March`, I have to check place: top means header, row means value. If it is inside the row, I mark value and submit."
+
+TUTOR: "Use that rule.
+
+The word-pull is the risk. Position decides.
+
+`rainfall_mm`: top of column: header, field.
+`42`: inside row: value.
+`March`: check place.
+
+Top of column: header.
+Inside row: value.
+
+Last check:
+`March` inside the row → ______.
+
+Fill that label, then submit."
+
+LEARNER: "`March` inside the row → value. I think that is the label for the blank, because position decides, not the word. I still want `March` to be a header because it sounds like a label, so I am checking the row line once more. I will fill `value` and submit."

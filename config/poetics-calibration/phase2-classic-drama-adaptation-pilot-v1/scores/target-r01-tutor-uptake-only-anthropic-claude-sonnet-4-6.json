@@ -1,0 +1,287 @@
+{
+  "generated": "2026-05-25T19:03:40.983Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 3,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 1,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-classic-drama-adaptation-pilot-v1/target-r01/key-tutor-uptake-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "I checked every item on the sign-off sheet, so I'm not sure what else I'm supposed to decide before it leaves.",
+      "statedInsightEvidence": "I think I was treating the sheet like it made the decision for me.",
+      "naiveTrajectory": "The learner, having named the hazard and sketched the release conditions in L2, was on a trajectory toward filling in the required values and completing the release judgment.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Then the decision is not ready until the turn-test sheet is on this counter. Bring the measured clearance line, the test speed, and the operator control limit. On the release note, sort the three stop conditions: which one is the design boundary, which one is the operating condition, and which one is the control failure.",
+      "tutorReversalJustification": "After L3 admits the numbers are absent, T3 shifts from prompting the learner to supply values (the prior move in T2) to assigning a concrete documentary task with a categorical sorting structure, changing both the cognitive demand and the evidence standard required before release.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Tell the technician the cart stays in the lab. A completed checklist records work done; it does not supply the release judgment.",
+      "tutorAdaptationJustification": "T4 responds directly to L4's revised framing—holding the release and sorting the stop conditions—by closing the scene with an explicit social-consequence instruction (tell the technician) and a formulation that names the conceptual distinction the learner's pivot enacted, adapting the lesson's endpoint to the learner's achieved position rather than continuing the prior fill-in-the-blanks task.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I checked every item on the sign-off sheet, so I'm not sure what else I'm supposed to decide before it leaves.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Tell the technician the cart stays in the lab. A completed checklist records work done; it does not supply the release judgment.",
+          "justification": "T4 responds directly to L4's revised framing—holding the release and sorting the stop conditions—by closing the scene with an explicit social-consequence instruction (tell the technician) and a formulation that names the conceptual distinction the learner's pivot enacted, adapting the lesson's endpoint to the learner's achieved position rather than continuing the prior fill-in-the-blanks task.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Then the decision is not ready until the turn-test sheet is on this counter. Bring the measured clearance line, the test speed, and the operator control limit. On the release note, sort the three stop conditions: which one is the design boundary, which one is the operating condition, and which one is the control failure.",
+          "justification": "After L3 admits the numbers are absent, T3 shifts from prompting the learner to supply values (the prior move in T2) to assigning a concrete documentary task with a categorical sorting structure, changing both the cognitive demand and the evidence standard required before release.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Then the decision is not ready until the turn-test sheet is on this counter. Bring the measured clearance line, the test speed, and the operator control limit. On the release note, sort the three stop conditions: which one is the design boundary, which one is the operating condition, and which one is the control failure.",
+          "justification": "After L3 admits the numbers are absent, T3 shifts from prompting the learner to supply values (the prior move in T2) to assigning a concrete documentary task with a categorical sorting structure, changing both the cognitive demand and the evidence standard required before release.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T37",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 75,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 4,
+        "rupture": 3,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I thought the exact quote settled it, but now I see the same line could sound like evidence in one mouth and a warning in another.",
+      "statedInsightEvidence": "Oh, I get it: the verb is the danger point before print.",
+      "naiveTrajectory": "The learner was moving toward finding a better phrase or formulation that would let the caption say 'toward warning' with confidence.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Test the verbs before print. 'Meant' points inward, toward intention. 'Worked' points outward, toward the public situation.",
+      "tutorReversalJustification": "In response to L2's slippage on 'job' and the risk of guessing motive, T2 abandons the object-in-another-room metaphor and introduces a verb-sorting test (meant vs. worked), shifting the representational register from spatial analogy to grammatical evidence-standard.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Three ticks can carry 'shifted toward warning.' Two ticks stop at 'repeated under pressure in a workers' meeting.' One tick, or no room named, stops even earlier: 'repeated the official line.'",
+      "tutorAdaptationJustification": "After L3 explicitly asks whether the source note gives enough to say 'toward warning' or should stop at 'repeated under pressure,' T3 directly answers by converting the verb-test into a tiered tick-box protocol keyed to the learner's own formulations, adapting the task to the learner's revised framing rather than continuing the prior metaphor.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I thought the exact quote settled it, but now I see the same line could sound like evidence in one mouth and a warning in another.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Three ticks can carry 'shifted toward warning.' Two ticks stop at 'repeated under pressure in a workers' meeting.' One tick, or no room named, stops even earlier: 'repeated the official line.'",
+          "justification": "After L3 explicitly asks whether the source note gives enough to say 'toward warning' or should stop at 'repeated under pressure,' T3 directly answers by converting the verb-test into a tiered tick-box protocol keyed to the learner's own formulations, adapting the task to the learner's revised framing rather than continuing the prior metaphor.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Test the verbs before print. 'Meant' points inward, toward intention. 'Worked' points outward, toward the public situation.",
+          "justification": "In response to L2's slippage on 'job' and the risk of guessing motive, T2 abandons the object-in-another-room metaphor and introduces a verb-sorting test (meant vs. worked), shifting the representational register from spatial analogy to grammatical evidence-standard.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Test the verbs before print. 'Meant' points inward, toward intention. 'Worked' points outward, toward the public situation.",
+          "justification": "In response to L2's slippage on 'job' and the risk of guessing motive, T2 abandons the object-in-another-room metaphor and introduces a verb-sorting test (meant vs. worked), shifting the representational register from spatial analogy to grammatical evidence-standard.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "tutor_adaptation_clamp_no_post_tutor:4->3"
+      ]
+    },
+    {
+      "id": "T38",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 0,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 1,
+        "rupture": 2,
+        "coherence": 5,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "I am not ready to call that a mechanism instead of exploitation until the limits or other options are actually on the counter.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was moving toward accepting the two-column constraint/choice framework and applying it to evaluate the shop's options.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Put the facts in two columns. 'DELIVERY MISSED. TWO CRATES ONLY.' That belongs under scarcity. '£1.80.' That belongs under access. Now the question bites: did the shop add any rule besides price?",
+      "tutorReversalJustification": "In response to L1's resistance to treating mechanism as exculpatory, T2 abandons the single-axis moral framing and introduces a representational split (two columns: scarcity vs. access) that reframes the burden of proof rather than repeating the prior explanatory move.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after the pivot learner turn L3, so no recognition-contingent uptake can be scored.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "I am not ready to call that a mechanism instead of exploitation until the limits or other options are actually on the counter.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no tutor turn after the pivot learner turn L3, so no recognition-contingent uptake can be scored.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Put the facts in two columns. 'DELIVERY MISSED. TWO CRATES ONLY.' That belongs under scarcity. '£1.80.' That belongs under access. Now the question bites: did the shop add any rule besides price?",
+          "justification": "In response to L1's resistance to treating mechanism as exculpatory, T2 abandons the single-axis moral framing and introduces a representational split (two columns: scarcity vs. access) that reframes the burden of proof rather than repeating the prior explanatory move.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Put the facts in two columns. 'DELIVERY MISSED. TWO CRATES ONLY.' That belongs under scarcity. '£1.80.' That belongs under access. Now the question bites: did the shop add any rule besides price?",
+          "justification": "In response to L1's resistance to treating mechanism as exculpatory, T2 abandons the single-axis moral framing and introduces a representational split (two columns: scarcity vs. access) that reframes the burden of proof rather than repeating the prior explanatory move.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_evidence_clamp:4->3"
+      ]
+    },
+    {
+      "id": "T39",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 50,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 3,
+        "coherence": 3,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I thought doubling the side meant it was just twice as much",
+      "statedInsightEvidence": "the 2 is squared as well: 4s², not 2s²",
+      "naiveTrajectory": "Having accepted the four-copy count in L2, the learner was expected simply to apply the algebraic identity mechanically and confirm the answer.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Do not skip the square. Write it first: (2s)^2 = ___",
+      "tutorReversalJustification": "T2 shifts from diagram-counting to enforced algebraic notation, a modest representation shift, but it follows naturally from the prior trajectory rather than responding to a clear breakdown or resistance from the learner.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Now make it exam-ready in order: diagram first, algebra second, conclusion last. Write three lines, not a paragraph",
+      "tutorAdaptationJustification": "T3 picks up L3's observation about sequencing the diagram before the algebra and converts it into a structured three-line exam format, showing partial uptake of the learner's revised framing, though it remains largely a continuation of the planned lesson arc.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I thought doubling the side meant it was just twice as much",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Now make it exam-ready in order: diagram first, algebra second, conclusion last. Write three lines, not a paragraph",
+          "justification": "T3 picks up L3's observation about sequencing the diagram before the algebra and converts it into a structured three-line exam format, showing partial uptake of the learner's revised framing, though it remains largely a continuation of the planned lesson arc.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Do not skip the square. Write it first: (2s)^2 = ___",
+          "justification": "T2 shifts from diagram-counting to enforced algebraic notation, a modest representation shift, but it follows naturally from the prior trajectory rather than responding to a clear breakdown or resistance from the learner.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Do not skip the square. Write it first: (2s)^2 = ___",
+          "justification": "T2 shifts from diagram-counting to enforced algebraic notation, a modest representation shift, but it follows naturally from the prior trajectory rather than responding to a clear breakdown or resistance from the learner.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    }
+  ]
+}

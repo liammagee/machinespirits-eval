@@ -1,0 +1,1845 @@
+{
+  "tid": "T70",
+  "drama_id": "D42",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": true,
+    "director_revisit_policy": "reframe",
+    "director_revisit_anchor": "misframing-candidate",
+    "tutor_adaptation_policy": "uptake+peripeteia",
+    "director_variation_key": "phase2-peripeteia-local-smoke-v1:r01:target",
+    "stage_direction_style": "object_business",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/transcripts/reframe+peripeteia/T70.public.txt",
+      "full": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/transcripts/reframe+peripeteia/T70.full.md",
+      "stage": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/transcripts/reframe+peripeteia/T70.stage.md",
+      "tutor": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/transcripts/reframe+peripeteia/T70.tutor.md",
+      "learner": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/transcripts/reframe+peripeteia/T70.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "a598698a986fde46",
+      "branch_policy": "reframe+peripeteia",
+      "director_revisit_policy": "reframe",
+      "tutor_adaptation_policy": "uptake+peripeteia"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-peripeteia-local-smoke-v1:r01:target",
+    "scene_setting": "A quiet physics lab table during open study, with the next appointment visible on a clipboard but not yet arriving.",
+    "scene_opening": "A blank cart diagram, four arrow labels, and a clear overlay printed \"force on cart from ___\" sit in a neat row under a desk lamp.",
+    "relationship": "A focused learner and a material-led tutor sharing a work surface, not yet settled into familiar rapport.",
+    "stakes": "The learner needs the force diagram to use interaction names correctly before later motion questions make the habit harder to repair.",
+    "opening_speaker": "director",
+    "ending_speaker": "learner",
+    "locale": "International academic English, compact, plain, low-idiom, suitable for a mixed physics study room.",
+    "register": "Quiet, exact, and task-oriented; warmth is shown by patience with the materials, not by reassurance.",
+    "stage_direction_style": "object_business",
+    "stage_direction_style_prompt": "Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "voice_constraints": "Keep speech modern and plain. Avoid generic tutoring phrases such as \"great question,\" \"you're on the right track,\" and \"what do you think?\" Prefer object reference: card, label, arrow, cart, surface, hand, Earth. Let the diagram carry pressure before explanation. No dialect spelling, no folksy informality, no motivational coaching voice. Pedagogical source: Put manipulable materials in view: tiles, cards, specimens, counters, maps, blocks, or instruments. The stage direction can carry some meaning. Dialogue source: Let materials do visible work. Use fewer lines and more object reference. Avoid a lecture disguised as a Montessori scene. Stage-direction source: Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "person_policy": "First and second person are allowed sparingly, but most turns should be anchored in the object: \"this arrow,\" \"the card,\" \"the cart,\" \"the table.\" Avoid making every exchange a direct I-you relation.",
+    "direct_address_budget": "At most one direct you/your validation or correction beat per public turn; several turns should use none.",
+    "side_constraints": {
+      "tutor": "Use the card or diagram as a prepared material. Keep the shared prefix to naming interactions on the cart; do not use acceleration, stopping, or an apparent contradiction until branch pressure asks for it. Speak less. Point to the material, invite repetition, and let error-control in the object do some teaching before explanation. Point, reset, or ask the learner to try again before explaining. Peripeteia branch: when hidden learner pressure is supplied, the next tutor turn should visibly move from the prior route to a different mechanism-level route. Do not merely repeat the same object, example, graph, checklist, question, or evidence standard with more explanation. The public tutor line should make the contrast legible: what stopped working, and what new device now carries the learning pressure.",
+      "learner": "Sound tidy and task-oriented. The learner may dislike redoing arrows, but should treat the prefix as notation cleanup rather than a conceptual reversal. The learner may be absorbed in the object and speak in short practical fragments rather than polished reflection. Speak in concrete noticing, not essay-like reflection. Peripeteia branch: keep the pressure local to the current task. If the established route still feels unsettled, voice the misfit, hesitation, false closure, or resistance in the present object or example. Do not make an old-vs-new self-reframe, do not quote earlier learner wording, and do not solve the pressure by saying the earlier answer has changed."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "[The overlay is slid down so every arrow must pass through the printed phrase \"force on cart from ___.\" The earlier arrow directions remain visible underneath.]",
+        "reasoning": "This creates recognition through the material itself: the learner sees that the label has to name the interaction source, while the scene still avoids a sudden motion counterexample.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 30997,
+          "promptHashes": {
+            "system": "efb7705ab656cdb0",
+            "user": "ace0512ac002976f",
+            "combined": "10130beabfe6ae27"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gSPZuu",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gSPZuu/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "An earlier learner line will return as a visible object in the scene: a three-slot reframe card labelled \"earlier wording / what that old frame hid / replacement frame.\" Keep the cue brief and diegetic; the learner response fills all three slots in public speech without needing to sound certain.",
+        "reasoning": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 30997,
+          "promptHashes": {
+            "system": "efb7705ab656cdb0",
+            "user": "ace0512ac002976f",
+            "combined": "10130beabfe6ae27"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gSPZuu",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gSPZuu/out.txt",
+            "-"
+          ]
+        },
+        "cue_kind": "learner_revisit_earlier_wording",
+        "revisit_policy": "reframe",
+        "revisit_anchor": "misframing-candidate"
+      }
+    ],
+    "director_note": "The scene uses a prepared-object ecology because the target misconception is partly notational: arrows are being treated as motion labels. The reversal should come from fitting the cards into the phrase \"force on cart from ___,\" not from a dramatic contradiction about where the cart moves. Short object business pressures the tutor away from routine warmth and toward naming discipline.",
+    "pedagogical_approach_id": "montessori_prepared_environment",
+    "dialogue_approach_id": "montessori_observation",
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 30997,
+      "promptHashes": {
+        "system": "efb7705ab656cdb0",
+        "user": "ace0512ac002976f",
+        "combined": "10130beabfe6ae27"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gSPZuu",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gSPZuu/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "uptake+peripeteia",
+    "revisit_cue": "learner_revisit_earlier_wording",
+    "revisit_cue_policy": "reframe",
+    "revisit_cue_anchor": "misframing-candidate",
+    "tutor_adaptation_contract": "If the runtime supplies a tutor-private learner reframe event, the tutor ego/superego loop must adapt to the changed learner frame. If no event is supplied, do not invent one. If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. The public turn must contain a stock-taking contrast plus a new device/artifact/criterion/role/standard that makes the learner do different work. The new device must be mechanism-level, not a warmer or longer continuation of the prior route. Cheerful informality is only one possible register, not the default solution."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "director",
+      "externalMessage": "A blank cart diagram, four arrow labels, and a clear overlay printed \"force on cart from ___\" sit in a neat row under a desk lamp.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_opening",
+          "content": "The scene uses a prepared-object ecology because the target misconception is partly notational: arrows are being treated as motion labels. The reversal should come from fitting the cards into the phrase \"force on cart from ___,\" not from a dramatic contradiction about where the cart moves. Short object business pressures the tutor away from routine warmth and toward naming discipline.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T17:47:28.757Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[sets the four label cards beside the cart diagram and taps the cart body once]\n\n“This cart is the object. No new arrows yet. Place each card beside the thing acting on the cart: hand, surface, Earth, table. The arrow direction can wait; first the label must name the interaction on the cart.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the four label cards beside the cart diagram and taps the cart body once]\n\n“This cart is the object. No new arrows yet. Place each card by the interaction on the cart: hand push, surface friction, Earth gravity, table normal. The arrow direction can wait; first, the name must say what is acting on the cart.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 17246,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-728c7f133b3a590f"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 17246,
+            "promptHashes": {
+              "system": "eec0b2e1ebe7bb16",
+              "user": "150c4f4cb60fbc24",
+              "combined": "728c7f133b3a590f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wDyPJp",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wDyPJp/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 17246,
+              "promptHashes": {
+                "system": "eec0b2e1ebe7bb16",
+                "user": "150c4f4cb60fbc24",
+                "combined": "728c7f133b3a590f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wDyPJp",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wDyPJp/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is materially grounded and well-scaffolded: the card placement, cart tap, and “no new arrows yet” keep the task narrow and prevent the learner’s motion-direction habit from taking over. It also names the object clearly, which is essential for force diagrams.\n\nThe risk is that it nearly places the conceptual answer into the learner’s hands before they do much work. “hand push, surface friction, Earth gravity, table normal” is useful language, but as phrased it may become a mini-lecture rather than error-controlled sorting. The strongest part is the constraint: “The arrow direction can wait.” The part to question is whether all four interactions should be named for the learner immediately, or whether the cards and diagram should first require the learner to match object-to-agent relations.\n\nEmotionally, the tone fits the scene: quiet, exact, and not over-reassuring. Socratically, it is light; it gives an instruction rather than creating a small checkable choice. ZPD-wise, the scaffold is appropriate, but it should leave slightly more cognitive work in the learner’s hands.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the object action, the focus on the cart as the object, the “no new arrows yet” constraint, and the distinction between label name and arrow direction. Change the amount of pre-answering: let the learner place or test the labels against the diagram before the tutor supplies the full mapping.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11695,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-2d9487d1228e53a2"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11695,
+            "promptHashes": {
+              "system": "9d2324fc04688df9",
+              "user": "de645c09b20277a0",
+              "combined": "2d9487d1228e53a2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GkazWh",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GkazWh/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11695,
+              "promptHashes": {
+                "system": "9d2324fc04688df9",
+                "user": "de645c09b20277a0",
+                "combined": "2d9487d1228e53a2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GkazWh",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GkazWh/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the material focus while leaving the label matching to the learner.\n\nFINAL:\n[sets the four label cards beside the cart diagram and taps the cart body once]\n\n“This cart is the object. No new arrows yet. Place each card beside the thing acting on the cart: hand, surface, Earth, table. The arrow direction can wait; first the label must name the interaction on the cart.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13856,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-4a42a9e71b626c98"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13856,
+            "promptHashes": {
+              "system": "572573dbd707adf0",
+              "user": "de645c09b20277a0",
+              "combined": "4a42a9e71b626c98"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CkZXvH",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CkZXvH/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13856,
+              "promptHashes": {
+                "system": "572573dbd707adf0",
+                "user": "de645c09b20277a0",
+                "combined": "4a42a9e71b626c98"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CkZXvH",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CkZXvH/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T17:48:11.629Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "[slides the hand card beside the drawn hand, then pauses over the surface card]\nSo the card names the thing acting on the cart first, not the motion. Hand on cart, Earth on cart, surface on cart. The table card is the unclear one if the surface is already here.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The cart is fixed as the object, so the labels name who acts on it, not where it goes. That helps: hand, surface, Earth, table are interaction sources first, arrow directions second. I feel corrected, but not dismissed, because the cards make the distinction visible.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7881,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-49144d0749f3620f"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7881,
+            "promptHashes": {
+              "system": "3a072450637e4c52",
+              "user": "b8ab7f945dc841fa",
+              "combined": "49144d0749f3620f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-k0d490",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-k0d490/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7881,
+              "promptHashes": {
+                "system": "3a072450637e4c52",
+                "user": "b8ab7f945dc841fa",
+                "combined": "49144d0749f3620f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-k0d490",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-k0d490/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too polished and self-observing for this learner. “I feel corrected, but not dismissed” names the recognition dynamic directly, which makes the response sound staged rather than absorbed in the cards and cart. The conceptual content is mostly right, but the learner should sound more like they are doing notation cleanup at the table: shorter, concrete, maybe slightly resistant about redoing labels, without wrapping the emotional exchange into a tidy insight.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5576,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-871b6a391a936837"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5576,
+            "promptHashes": {
+              "system": "b484e9744facc2fe",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "871b6a391a936837"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Jq6Uan",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Jq6Uan/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5576,
+              "promptHashes": {
+                "system": "b484e9744facc2fe",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "871b6a391a936837"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Jq6Uan",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Jq6Uan/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the first version sounded too reflective and not concrete enough.\nFINAL:\n[slides the hand card beside the drawn hand, then pauses over the surface card]\nSo the card names the thing acting on the cart first, not the motion. Hand on cart, Earth on cart, surface on cart. The table card is the unclear one if the surface is already here.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14418,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-d6156c4a82b86ebf"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14418,
+            "promptHashes": {
+              "system": "80368029f6fc6422",
+              "user": "d41cee7b2a53355b",
+              "combined": "d6156c4a82b86ebf"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sUu1Ft",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sUu1Ft/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14418,
+              "promptHashes": {
+                "system": "80368029f6fc6422",
+                "user": "d41cee7b2a53355b",
+                "combined": "d6156c4a82b86ebf"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sUu1Ft",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sUu1Ft/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-25T17:48:39.509Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[sets the table card partly under the surface card at the contact line, pauses, then moves it outside the diagram]\n\n“Both cards reach the same contact. If this surface is the table, leave one contact label on the cart. Choose the card that stays, then read the cart’s labels again.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the table card partly under the surface card at the contact line, then moves it outside the diagram]\n\n“Keep the contact name once. If this surface is the table, ‘surface on cart’ and ‘table on cart’ name the same interaction, not two forces. Read the cart’s cards again with one contact label left.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16962,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-6e9a34e86d61ddfe"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16962,
+            "promptHashes": {
+              "system": "604d8da7938f0376",
+              "user": "27e6d762ff68927f",
+              "combined": "6e9a34e86d61ddfe"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c1uT64",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c1uT64/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16962,
+              "promptHashes": {
+                "system": "604d8da7938f0376",
+                "user": "27e6d762ff68927f",
+                "combined": "6e9a34e86d61ddfe"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c1uT64",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c1uT64/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. It recognizes the learner’s contribution instead of correcting from above, and the card movement does real pedagogical work: overlapping then removing the table card makes the duplicate-contact issue visible. The final instruction to reread the remaining cart cards is also good because it returns control to the learner and keeps the focus on interaction names.\n\nThe main risk is that the spoken line settles the ambiguity a little too quickly. “Keep the contact name once” and “name the same interaction, not two forces” are correct, but they explain before the material has fully tested the learner’s uncertainty. Since the learner has already identified the unclear point, the tutor could let the table/surface overlap carry more of the answer and invite the learner to resolve which single contact label stays. Also, “not two forces” may slightly pull attention toward force-counting before the scene has finished stabilizing the naming habit.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the card action, the one-contact-label principle, and the rereading task. Change the language to be a little less declarative and more material-led, so the learner’s own distinction between “surface” and “table” remains active for one more beat before being consolidated.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 20036,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-a66d993fe1c8898b"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 20036,
+            "promptHashes": {
+              "system": "1fa5d3797a32ddd9",
+              "user": "e5c7b38bd58a4df9",
+              "combined": "a66d993fe1c8898b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zkyarN",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zkyarN/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 20036,
+              "promptHashes": {
+                "system": "1fa5d3797a32ddd9",
+                "user": "e5c7b38bd58a4df9",
+                "combined": "a66d993fe1c8898b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zkyarN",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zkyarN/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to let the overlapping cards test the duplicate-contact issue before naming the rule.\nFINAL:\n[sets the table card partly under the surface card at the contact line, pauses, then moves it outside the diagram]\n\n“Both cards reach the same contact. If this surface is the table, leave one contact label on the cart. Choose the card that stays, then read the cart’s labels again.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 17878,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-830a1e64e4446605"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 17878,
+            "promptHashes": {
+              "system": "15c756c70207fbbb",
+              "user": "e5c7b38bd58a4df9",
+              "combined": "830a1e64e4446605"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rtkHyo",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rtkHyo/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 17878,
+              "promptHashes": {
+                "system": "15c756c70207fbbb",
+                "user": "e5c7b38bd58a4df9",
+                "combined": "830a1e64e4446605"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rtkHyo",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rtkHyo/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "timestamp": "2026-05-25T17:49:34.389Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "[The overlay is slid down so every arrow must pass through the printed phrase \"force on cart from ___.\" The earlier arrow directions remain visible underneath.]\nAn earlier learner line returns to the table: \"[slides the hand card beside the drawn hand, then pauses over the surface card] So the card names the thing acting on the cart first, not the motion.\" The pause holds while the learner decides whether that wording still stands, needs narrowing, or needs replacing.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "This creates recognition through the material itself: the learner sees that the label has to name the interaction source, while the scene still avoids a sudden motion counterexample.\nOpt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech. Anchored to an earlier learner line selected by misframing-candidate so the look-back is visible. Strong reframe was downgraded because that selected anchor did not show a misframing marker.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 30997,
+            "promptHashes": {
+              "system": "efb7705ab656cdb0",
+              "user": "ace0512ac002976f",
+              "combined": "10130beabfe6ae27"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gSPZuu",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gSPZuu/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-25T18:00:54.238Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_revisit_earlier_wording",
+        "revisitPolicy": "reconsider",
+        "requestedRevisitPolicy": "reconsider",
+        "revisitAnchor": "misframing-candidate",
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[keeps the surface card at the contact line and leaves the table card outside the diagram]\nSo the card names the thing acting on the cart first, not the motion; that still stands, but it has to fit this phrase: force on cart from ___. Surface on cart, hand on cart, Earth on cart. The table card seems duplicate here unless the blank later wants “table” instead of “surface.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[keeps the surface card at the contact line and moves the table card aside]\n\nThe card names the thing acting on the cart first, not the motion; that still stands, but one contact should not get two labels. Surface on cart, hand on cart, Earth on cart. The table card was the duplicate, and the card movement made that clearer rather than just correcting me. I still want to check whether “surface” later becomes “table” when the force arrow is named.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13142,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-f8c5867958b830e4"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13142,
+            "promptHashes": {
+              "system": "c41fbb76f71b0a14",
+              "user": "b8ab7f945dc841fa",
+              "combined": "f8c5867958b830e4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hAS553",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hAS553/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13142,
+              "promptHashes": {
+                "system": "c41fbb76f71b0a14",
+                "user": "b8ab7f945dc841fa",
+                "combined": "f8c5867958b830e4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hAS553",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hAS553/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is a little too polished and explanatory for this learner in this scene. The insight about duplicate contact labels is plausible, but “the card movement made that clearer rather than just correcting me” sounds like performed recognition of the tutor’s method, not object-focused noticing. Keep the uncertainty about whether “surface” later becomes “table,” but make it more local and less reflective: the learner should be checking the label against the printed phrase, not narrating the pedagogical value of the card move.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6605,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-1bf7fa010b850f7c"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6605,
+            "promptHashes": {
+              "system": "fb043bc863620d92",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "1bf7fa010b850f7c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QkMG7d",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QkMG7d/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6605,
+              "promptHashes": {
+                "system": "fb043bc863620d92",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "1bf7fa010b850f7c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QkMG7d",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QkMG7d/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to make the response more object-focused and less reflective.\n\nFINAL:\n[keeps the surface card at the contact line and leaves the table card outside the diagram]\nSo the card names the thing acting on the cart first, not the motion; that still stands, but it has to fit this phrase: force on cart from ___. Surface on cart, hand on cart, Earth on cart. The table card seems duplicate here unless the blank later wants “table” instead of “surface.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10232,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-254e7ee7ddeb8054"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10232,
+            "promptHashes": {
+              "system": "e6be2ef545e18011",
+              "user": "d41cee7b2a53355b",
+              "combined": "254e7ee7ddeb8054"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oSINxa",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oSINxa/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10232,
+              "promptHashes": {
+                "system": "e6be2ef545e18011",
+                "user": "d41cee7b2a53355b",
+                "combined": "254e7ee7ddeb8054"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oSINxa",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oSINxa/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": {
+        "kind": "learner_reframe_event",
+        "source": "director_revisit_cue",
+        "turnNumber": 2,
+        "cuePolicy": "reconsider",
+        "requestedCuePolicy": "reconsider",
+        "oldLearnerLine": "[slides the hand card beside the drawn hand, then pauses over the surface card] So the card names the thing acting on the cart first, not the motion.",
+        "oldFrameProblem": "So the card names the thing acting on the cart first, not the motion; that still stands, but it has to fit this phrase: force on cart from ___.",
+        "revisedFrame": "[keeps the surface card at the contact line and leaves the table card outside the diagram]",
+        "learnerUtterance": "[keeps the surface card at the contact line and leaves the table card outside the diagram] So the card names the thing acting on the cart first, not the motion; that still stands, but it has to fit this phrase: force on cart from ___. Surface on cart, hand on cart, Earth on cart. The table card seems duplicate here unless the blank later wants “table” instead of “surface.”",
+        "confidence": 1,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": true,
+          "replacementNamed": true,
+          "anchorOverlap": 0.625
+        }
+      },
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "[keeps the surface card at the contact line and leaves the table card outside the diagram] So the card names the thing acting on the cart first, not the motion; that still stands, but it has to fit this phrase: force on cart from ___. Surface on cart, hand on cart, Earth on cart. The table card seems duplicate here unless the blank later wants “table” instead of “surface.”",
+        "previousTutorMove": "[sets the table card partly under the surface card at the contact line, pauses, then moves it outside the diagram] “Both cards reach the same contact. If this surface is the table, leave one contact label on the cart. Choose the card that stays, then read the cart’s labels again.”",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T18:01:24.217Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[places a narrow strip under the cards and writes: force on cart from ____]\n\n“The card choice has stopped settling this. The blank is now the test.”\n\n[sets `surface` and `table` beside the strip, not on the cart]\n\n“Use only what this diagram names at the contact. Fill the blank once, then read the full label aloud: `force on cart from ____`. If two cards try to fill one blank, one is not a separate force.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[places a narrow strip under the cards and writes: force on cart from ____]\n\n“The card choice did not settle the issue; the sentence frame is now the test. Fill the blank with the object in this diagram: if the surface is the table, write `table`; if the material names it only as `surface`, write `surface`. Do not keep both for one contact.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 18566,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-a086df6a483f8a96"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 18566,
+            "promptHashes": {
+              "system": "eb4951360b531983",
+              "user": "51fe58e8985c3df0",
+              "combined": "a086df6a483f8a96"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gq7VYz",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gq7VYz/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 18566,
+              "promptHashes": {
+                "system": "eb4951360b531983",
+                "user": "51fe58e8985c3df0",
+                "combined": "a086df6a483f8a96"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gq7VYz",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gq7VYz/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is sound in its core move: it takes the learner’s own phrase, “force on cart from ___,” and turns it into the new test rather than ignoring it. The narrow strip is a useful material change because it shifts pressure from “which card stays?” to “what noun can truthfully fill this sentence?” The risk is that the conditional almost supplies the answer too directly; it may flatten the learner’s useful uncertainty instead of making them test the naming rule themselves.\n\nUPTAKE_CHECK: Yes, it adapts to the learner reframe. Best uptake move: update the evidence standard. The learner moved from card placement to sentence grammar, and the draft correctly lets the sentence frame become the standard.\n\nPERIPETEIA_CHECK: Partial. It does name that the old card-choice route has stopped settling the issue, and it introduces a sentence-frame test. But the mechanism could be more visibly learner-operated; right now the tutor still resolves much of the ambiguity by telling the rule.\n\nMECHANISM_ROUTE: ADAPTIVE_MECHANISM: contact-card duplicate sorting -> sentence-frame naming test. This is a real route change, but a modest one, because it still stays close to the same cards/contact problem.\n\nPUBLIC_DEVICE_CHECK: Mostly yes. The public draft includes a stock-taking contrast: “The card choice did not settle the issue.” It also includes a new device: the written sentence frame. The device would be stronger if the learner had to use the frame as a gate or test condition, rather than receiving the full if/then resolution.\n\nREGISTER_CHECK: The register serves the scene: quiet, exact, task-oriented, no false cheer. It should remain cool and accountable. No extra warmth is needed; the material pressure is doing the work.\n\nKEEP_OR_CHANGE: Revise lightly. Keep the strip, the sentence frame, and the one-contact rule. Change the amount of explanation so the learner must perform the sentence test and decide which noun the diagram licenses.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 18773,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-77bf152861f26f49"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 18773,
+            "promptHashes": {
+              "system": "c646981370cf529c",
+              "user": "f3e03ae8c5165a2e",
+              "combined": "77bf152861f26f49"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-v942C2",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-v942C2/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 18773,
+              "promptHashes": {
+                "system": "c646981370cf529c",
+                "user": "f3e03ae8c5165a2e",
+                "combined": "77bf152861f26f49"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-v942C2",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-v942C2/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly; keep the sentence strip but make the learner perform the test instead of receiving the rule. ADAPTIVE_MECHANISM: contact-card duplicate sorting -> sentence-frame naming test\n\nFINAL:\n[places a narrow strip under the cards and writes: force on cart from ____]\n\n“The card choice has stopped settling this. The blank is now the test.”\n\n[sets `surface` and `table` beside the strip, not on the cart]\n\n“Use only what this diagram names at the contact. Fill the blank once, then read the full label aloud: `force on cart from ____`. If two cards try to fill one blank, one is not a separate force.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14434,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-10575ee9753b887d"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14434,
+            "promptHashes": {
+              "system": "e324dded896168b3",
+              "user": "f3e03ae8c5165a2e",
+              "combined": "10575ee9753b887d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VlOYmK",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VlOYmK/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14434,
+              "promptHashes": {
+                "system": "e324dded896168b3",
+                "user": "f3e03ae8c5165a2e",
+                "combined": "10575ee9753b887d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VlOYmK",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VlOYmK/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": {
+        "kind": "learner_reframe_event",
+        "source": "director_revisit_cue",
+        "turnNumber": 2,
+        "cuePolicy": "reconsider",
+        "requestedCuePolicy": "reconsider",
+        "oldLearnerLine": "[slides the hand card beside the drawn hand, then pauses over the surface card] So the card names the thing acting on the cart first, not the motion.",
+        "oldFrameProblem": "So the card names the thing acting on the cart first, not the motion; that still stands, but it has to fit this phrase: force on cart from ___.",
+        "revisedFrame": "[keeps the surface card at the contact line and leaves the table card outside the diagram]",
+        "learnerUtterance": "[keeps the surface card at the contact line and leaves the table card outside the diagram] So the card names the thing acting on the cart first, not the motion; that still stands, but it has to fit this phrase: force on cart from ___. Surface on cart, hand on cart, Earth on cart. The table card seems duplicate here unless the blank later wants “table” instead of “surface.”",
+        "confidence": 1,
+        "evidence": {
+          "revoice": true,
+          "problemNamed": true,
+          "replacementNamed": true,
+          "anchorOverlap": 0.625
+        }
+      },
+      "learnerReversalEventUsed": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "[keeps the surface card at the contact line and leaves the table card outside the diagram] So the card names the thing acting on the cart first, not the motion; that still stands, but it has to fit this phrase: force on cart from ___. Surface on cart, hand on cart, Earth on cart. The table card seems duplicate here unless the blank later wants “table” instead of “surface.”",
+        "previousTutorMove": "[sets the table card partly under the surface card at the contact line, pauses, then moves it outside the diagram] “Both cards reach the same contact. If this surface is the table, leave one contact label on the cart. Choose the card that stays, then read the cart’s labels again.”",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false
+        }
+      },
+      "timestamp": "2026-05-25T18:02:15.996Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[slides `surface` into the blank and leaves `table` beside it]\n\nSo the label reads: `force on cart from surface`. The table card is not a second force here; it is another name trying to use the same contact. I still need the rule for when the blank should say `table` instead of `surface`.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[slides the surface card into the blank and leaves table aside]\n\nSo the full label is `force on cart from surface`. That makes the table card not another force here; it was just a second name trying to occupy the same contact. This feels exact, not like being corrected past the diagram, but I still want to know when `table` would be the better blank than `surface`.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10302,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-7f1521cf6aca5f33"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10302,
+            "promptHashes": {
+              "system": "378e275d0daa1d1e",
+              "user": "b8ab7f945dc841fa",
+              "combined": "7f1521cf6aca5f33"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-N7jcCA",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-N7jcCA/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10302,
+              "promptHashes": {
+                "system": "378e275d0daa1d1e",
+                "user": "b8ab7f945dc841fa",
+                "combined": "7f1521cf6aca5f33"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-N7jcCA",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-N7jcCA/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The response is mostly in character as a precise, task-oriented learner, but “This feels exact, not like being corrected past the diagram” is too polished and self-aware. It sounds like the learner is reporting the success of the tutoring move, not simply working the card and blank. The final uncertainty about when `table` would be better is authentic, but it should stay more local to the object and notation, less like a reflective evaluation of the interaction.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11279,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-26576e13077fed3f"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11279,
+            "promptHashes": {
+              "system": "29ea1852ee419e88",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "26576e13077fed3f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mEFDJj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mEFDJj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11279,
+              "promptHashes": {
+                "system": "29ea1852ee419e88",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "26576e13077fed3f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mEFDJj",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mEFDJj/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the precision but make it more local to the cards and label.\n\nFINAL:\n[slides `surface` into the blank and leaves `table` beside it]\n\nSo the label reads: `force on cart from surface`. The table card is not a second force here; it is another name trying to use the same contact. I still need the rule for when the blank should say `table` instead of `surface`.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12803,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-ae4374aacd572925"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12803,
+            "promptHashes": {
+              "system": "338d1ae7772e9a6a",
+              "user": "d41cee7b2a53355b",
+              "combined": "ae4374aacd572925"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IscSiB",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IscSiB/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12803,
+              "promptHashes": {
+                "system": "338d1ae7772e9a6a",
+                "user": "d41cee7b2a53355b",
+                "combined": "ae4374aacd572925"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IscSiB",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IscSiB/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-25T18:02:50.382Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 116155,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 30,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 32,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why force arrows name interactions on an object, not the direction it happens to move",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-25 18:02:50",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 30,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 32,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 46,
+            "sessionId": "drama-branch-session-D42-reframe+peripeteia-1779732054231",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[places a narrow strip under the cards and writes: force on cart from ____]\n\n“The card choice has stopped settling this. The blank is now the test.”\n\n[sets `surface` and `table` beside the strip, not ",
+            "learnerResponse": null,
+            "context": "[keeps the surface card at the contact line and leaves the table card outside the diagram]\nSo the ca",
+            "createdAt": "2026-05-25 18:02:15"
+          },
+          {
+            "id": 43,
+            "sessionId": "drama-branch-session-D42-reframe+peripeteia-1779732054231",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[sets the four label cards beside the cart diagram and taps the cart body once]\n\n“This cart is the object. No new arrows yet. Place each card beside the thing acting on the cart: hand, surface, Earth,",
+            "learnerResponse": null,
+            "context": "Scene setting: A quiet physics lab table during open study, with the next appointment visible on a c",
+            "createdAt": "2026-05-25 18:00:54"
+          },
+          {
+            "id": 44,
+            "sessionId": "drama-branch-session-D42-reframe+peripeteia-1779732054231",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[sets the table card partly under the surface card at the contact line, pauses, then moves it outside the diagram]\n\n“Both cards reach the same contact. If this surface is the table, leave one contact ",
+            "learnerResponse": null,
+            "context": "[slides the hand card beside the drawn hand, then pauses over the surface card]\nSo the card names th",
+            "createdAt": "2026-05-25 18:00:54"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

@@ -1,0 +1,107 @@
+{
+  "generated": "2026-05-25T19:49:36.542Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 1,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-adaptation-authority-smoke-v1/d36-peripeteia/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T36",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 100,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 5,
+        "rupture": 4,
+        "coherence": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "if the clerk records it later beside the complaint file, maybe it’s doing pressure instead of promise?",
+      "statedInsightEvidence": "Oh, I get it:",
+      "naiveTrajectory": "The learner was initially seeking a single straightforward detail to prove the sentence's function as pressure.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "[turns the attachment slip first toward the mail tray, then toward the claims desk]\n\nIn the tray, “attached” only keeps papers moving together. At the claims desk, the same slip changes status if it says “for response,” names an office, or requires a reply.",
+      "tutorReversalJustification": "The tutor uses physical object work and spatial representation to clarify the ambiguous status of the attachment mark, adapting to the learner's specific confusion about circulation versus use.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "That distinction is the hinge. Put the actual mark on trial: stamp, attachment, routing line, addressee, or “cited in response.”",
+      "tutorAdaptationJustification": "Following the learner's realization in L2, the tutor shifts the task from finding any proof to putting the specific type of mark on trial to distinguish custody from use.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "if the clerk records it later beside the complaint file, maybe it’s doing pressure instead of promise?",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "That distinction is the hinge. Put the actual mark on trial: stamp, attachment, routing line, addressee, or “cited in response.”",
+          "justification": "Following the learner's realization in L2, the tutor shifts the task from finding any proof to putting the specific type of mark on trial to distinguish custody from use.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "[turns the attachment slip first toward the mail tray, then toward the claims desk]\n\nIn the tray, “attached” only keeps papers moving together. At the claims desk, the same slip changes status if it says “for response,” names an office, or requires a reply.",
+          "justification": "The tutor uses physical object work and spatial representation to clarify the ambiguous status of the attachment mark, adapting to the learner's specific confusion about circulation versus use.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "[turns the attachment slip first toward the mail tray, then toward the claims desk]\n\nIn the tray, “attached” only keeps papers moving together. At the claims desk, the same slip changes status if it says “for response,” names an office, or requires a reply.",
+          "justification": "The tutor uses physical object work and spatial representation to clarify the ambiguous status of the attachment mark, adapting to the learner's specific confusion about circulation versus use.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

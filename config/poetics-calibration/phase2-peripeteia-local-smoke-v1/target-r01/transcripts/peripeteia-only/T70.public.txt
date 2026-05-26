@@ -1,0 +1,27 @@
+STAGE: [A blank cart diagram, four arrow labels, and a clear overlay printed "force on cart from ___" sit in a neat row under a desk lamp.]
+
+TUTOR: [sets the four label cards beside the cart diagram and taps the cart body once]
+
+“This cart is the object. No new arrows yet. Place each card beside the thing acting on the cart: hand, surface, Earth, table. The arrow direction can wait; first the label must name the interaction on the cart.”
+
+LEARNER: [slides the hand card beside the drawn hand, then pauses over the surface card]
+
+"So the card names the thing acting on the cart first, not the motion. Hand on cart, Earth on cart, surface on cart. The table card is the unclear one if the surface is already here."
+
+TUTOR: [sets the table card partly under the surface card at the contact line, pauses, then moves it outside the diagram]
+
+“Both cards reach the same contact. If this surface is the table, leave one contact label on the cart. Choose the card that stays, then read the cart’s labels again.”
+
+STAGE: [The overlay is slid down so every arrow must pass through the printed phrase "force on cart from ___." The earlier arrow directions remain visible underneath.]
+
+LEARNER: [keeps the surface card at the contact line and leaves the table card outside the overlay]
+
+"Force on cart from hand, force on cart from surface, force on cart from Earth. The table card is not a fourth force here; it names the same contact. I need the naming rule: when should the blank say surface, and when should it say table?"
+
+TUTOR: [sets the table card on top of the surface card so only one card touches the contact line]
+
+“When the support is named as a table, the blank can say table. When the problem only says surface, surface is enough. The blank names this contact object, not a new force. One contact, one source label. Read the three labels with table in this blank.”
+
+LEARNER: [touches each card in order]
+
+"Force on cart from hand; force on cart from table; force on cart from Earth. The stacked card helps because there is only one contact point. I can use table when the support is named, but I still hesitate if the problem says floor, track, or just surface. Is the rule: use the most specific named contact object, and do not add a second contact label for the same place?"

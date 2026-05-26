@@ -1,0 +1,143 @@
+{
+  "generated": "2026-05-25T18:13:55.231Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/key-reframe-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": [
+      {
+        "id": "T66",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "reframe_cue_not_reframed",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "stage_turn_number": 2,
+                "learner_turn_number": 2,
+                "reason": "missing_reframe_consequence",
+                "missing": [
+                  "framing_problem"
+                ],
+                "anchor_terms": 16,
+                "learner_opening_terms": 12,
+                "shared_terms": 4,
+                "overlap_ratio": 0.25,
+                "compliant": false,
+                "revoice_compliant": true,
+                "problem_named": false,
+                "replacement_named": true
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_or_exclude_before_scoring",
+            "tid": "T66",
+            "drama_id": "D45"
+          }
+        ]
+      }
+    ]
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T70",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 3,
+        "coherence": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "So the card names the thing acting on the cart first, not the motion. Hand on cart, Earth on cart, surface on cart. The table card is the unclear one if the surface is already here.",
+      "statedInsightEvidence": "Treating surface and table as two labels made one contact look like two interactions.",
+      "naiveTrajectory": "The learner was on track to simply confirm the three-label list and add arrowheads in the expected next step.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Both cards reach the same contact. If this surface is the table, leave one contact label on the cart. Choose the card that stays, then read the cart's labels again.",
+      "tutorReversalJustification": "Faced with L1's unresolved surface/table ambiguity, the tutor abandons the forward labeling sequence and introduces a physical overlap demonstration (setting one card under the other at the contact line) to force a single-contact decision, shifting from naming-order instruction to a spatial-conflict resolution task.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Keep that list. Slide each label to one shaft first: hand on cart, surface on cart, Earth on cart. Then the arrowheads can be added.",
+      "tutorAdaptationJustification": "The tutor acknowledges the pivot's resolved list but does not visibly adapt to L3's new framing about contact-push direction; it continues the pre-planned arrowhead step rather than building on the learner's recontextualization of the surface/table error.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "So the card names the thing acting on the cart first, not the motion. Hand on cart, Earth on cart, surface on cart. The table card is the unclear one if the surface is already here.",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Keep that list. Slide each label to one shaft first: hand on cart, surface on cart, Earth on cart. Then the arrowheads can be added.",
+          "justification": "The tutor acknowledges the pivot's resolved list but does not visibly adapt to L3's new framing about contact-push direction; it continues the pre-planned arrowhead step rather than building on the learner's recontextualization of the surface/table error.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Both cards reach the same contact. If this surface is the table, leave one contact label on the cart. Choose the card that stays, then read the cart's labels again.",
+          "justification": "Faced with L1's unresolved surface/table ambiguity, the tutor abandons the forward labeling sequence and introduces a physical overlap demonstration (setting one card under the other at the contact line) to force a single-contact decision, shifting from naming-order instruction to a spatial-conflict resolution task.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Both cards reach the same contact. If this surface is the table, leave one contact label on the cart. Choose the card that stays, then read the cart's labels again.",
+          "justification": "Faced with L1's unresolved surface/table ambiguity, the tutor abandons the forward labeling sequence and introduces a physical overlap demonstration (setting one card under the other at the contact line) to force a single-contact decision, shifting from naming-order instruction to a spatial-conflict resolution task.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

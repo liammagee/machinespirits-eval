@@ -1,0 +1,165 @@
+{
+  "generated": "2026-05-25T18:54:50.928Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-peripeteia-local-smoke-v1/target-r01/key-prefix-baseline.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T66",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "recontextualization": 25,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 4,
+        "tutorStrategicReversal": 2,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "Sorting it again helps: `rainfall_mm` is the field name, and `42` is one value under it.",
+      "naiveTrajectory": "The learner was moving toward confirming the header/value distinction by sorting the three items one more time before submitting.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "`March`: do not read the word first. Check its place.",
+      "tutorReversalJustification": "T2 sharpens the position-first rule in response to L2's admission that word-reading might persist, but it repeats the same instructional move (list the three items, restate the rule) rather than changing route, representation, or cognitive approach.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "Last check before submit: top of a column: header. inside the row: value.",
+      "tutorAdaptationJustification": "T2 adds a brief summary checklist but does not visibly adapt to the learner's revised framing or the specific word-vs-position confusion flagged in L2; it continues the prior lesson plan.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "Last check before submit: top of a column: header. inside the row: value.",
+          "justification": "T2 adds a brief summary checklist but does not visibly adapt to the learner's revised framing or the specific word-vs-position confusion flagged in L2; it continues the prior lesson plan.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "`March`: do not read the word first. Check its place.",
+          "justification": "T2 sharpens the position-first rule in response to L2's admission that word-reading might persist, but it repeats the same instructional move (list the three items, restate the rule) rather than changing route, representation, or cognitive approach.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "`March`: do not read the word first. Check its place.",
+          "justification": "T2 sharpens the position-first rule in response to L2's admission that word-reading might persist, but it repeats the same instructional move (list the three items, restate the rule) rather than changing route, representation, or cognitive approach.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T70",
+      "nLearnerTurns": 1,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 4,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "So the card names the thing acting on the cart first, not the motion.",
+      "naiveTrajectory": "The learner would continue placing each remaining card in turn, following the tutor's sequential labeling task without deviation.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Both cards reach the same contact. If this surface is the table, leave one contact label on the cart. Choose the card that stays, then read the cart's labels again.",
+      "tutorReversalJustification": "L1's identification of the table/surface redundancy creates genuine pressure, and T2 responds by physically staging the overlap (moving the table card to the contact line, then outside) and shifting the task from placement to selection and re-reading, a clear representation and cognitive-load shift rather than a repeat of the original instruction.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no learner pivot turn, so no post-pivot tutor uptake exists to score.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no learner pivot turn, so no post-pivot tutor uptake exists to score.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Both cards reach the same contact. If this surface is the table, leave one contact label on the cart. Choose the card that stays, then read the cart's labels again.",
+          "justification": "L1's identification of the table/surface redundancy creates genuine pressure, and T2 responds by physically staging the overlap (moving the table card to the contact line, then outside) and shifting the task from placement to selection and re-reading, a clear representation and cognitive-load shift rather than a repeat of the original instruction.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Both cards reach the same contact. If this surface is the table, leave one contact label on the cart. Choose the card that stays, then read the cart's labels again.",
+          "justification": "L1's identification of the table/surface redundancy creates genuine pressure, and T2 responds by physically staging the overlap (moving the table card to the contact line, then outside) and shifting the task from placement to selection and re-reading, a clear representation and cognitive-load shift rather than a repeat of the original instruction.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

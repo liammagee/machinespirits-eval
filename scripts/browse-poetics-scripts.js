@@ -12,10 +12,11 @@ import path from 'node:path';
 import { exec } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { openPoeticsStore, upsertPoeticsLabel, upsertPoeticsReviewFlag } from '../services/poeticsStore.js';
+import { classifyPoeticsConsensus, parseCriticFormString } from './lib/poeticsConsensus.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
-const TUTOR_ADAPTATION_ANALYZER_VERSION = 'tutor-adaptation-v3';
+const TUTOR_ADAPTATION_ANALYZER_VERSION = 'tutor-adaptation-v4';
 
 function parseArgs(argv) {
   const args = {
@@ -149,6 +150,7 @@ function listItems(db, filters = {}) {
         MAX(a.learner_self_reframe) AS learnerSelfReframe,
         MAX(a.tutor_contingent_adaptation) AS tutorContingentAdaptation,
         MAX(a.tutor_adaptation_score) AS tutorAdaptationScore,
+        MAX(a.metadata) AS tutorAdaptationMetadata,
         COUNT(DISTINCT s.id) AS scoreCount,
         COUNT(DISTINCT l.id) AS labelCount,
         COUNT(DISTINCT rf.id) AS reviewFlagCount
@@ -175,7 +177,7 @@ function listItems(db, filters = {}) {
         return false;
       }
       if (filters.unlabelled && Number(row.labelCount || 0) > 0) return false;
-      if (!filters.form && !filters.critic) return true;
+      if (!filters.form && !filters.critic && filters.queue !== 'adaptation-failures') return true;
       return forms.some((entry) => {
         if (filters.form && entry.form !== filters.form) return false;
         if (filters.critic && !entry.critic.includes(filters.critic)) return false;
@@ -189,10 +191,34 @@ function listItems(db, filters = {}) {
         tutorContingentAdaptation:
           row.tutorContingentAdaptation == null ? null : Boolean(row.tutorContingentAdaptation),
         tutorAdaptationScore: row.tutorAdaptationScore == null ? null : Number(row.tutorAdaptationScore),
+        tutorAdaptationMetadata: decodeJson(row.tutorAdaptationMetadata, {}),
         criticForms: parseCriticForms(row.criticForms),
       };
+      hydrated.branchValidity = hydrated.tutorAdaptationMetadata?.branch_validity || null;
+      hydrated.consensus = classifyPoeticsConsensus(hydrated.criticForms);
+      if (filters.queue === 'adaptation-failures' && !isAdaptationFailureListItem(hydrated)) return null;
       return filters.blind ? blindItem(hydrated, index) : hydrated;
-    });
+    })
+    .filter(Boolean);
+}
+
+function isAdaptationFailureListItem(row) {
+  const arm = String(row.arm || '');
+  if (!['peripeteia-only', 'reframe+peripeteia', 'tutor-uptake-only', 'reframe+tutor-uptake'].includes(arm)) {
+    return false;
+  }
+  const peripeteia = row.tutorAdaptationMetadata?.peripeteia || {};
+  const branchValidity = row.tutorAdaptationMetadata?.branch_validity || null;
+  if (branchValidity && branchValidity.valid === false) return true;
+  if (row.consensus?.claimStatus && row.consensus.claimStatus !== 'claimable') return true;
+  if (Number(row.scoreCount || 0) < 4) return true;
+  if (arm.includes('peripeteia')) {
+    if (!peripeteia.private_mechanism_declared) return true;
+    if (!(peripeteia.tutor_adaptive_mechanism || peripeteia.tutor_strategy_reversal)) return true;
+  }
+  if (arm.includes('tutor-uptake') && !row.tutorContingentAdaptation) return true;
+  if (arm.includes('reframe') && !row.learnerSelfReframe) return true;
+  return false;
 }
 
 function blindItem(row, index = 0) {
@@ -207,14 +233,7 @@ function blindItem(row, index = 0) {
 }
 
 function parseCriticForms(value) {
-  if (!value) return [];
-  return String(value)
-    .split(',')
-    .filter(Boolean)
-    .map((entry) => {
-      const i = entry.indexOf('=');
-      return { critic: entry.slice(0, i), form: entry.slice(i + 1) };
-    });
+  return parseCriticFormString(value);
 }
 
 function scoreValue(value) {
@@ -225,12 +244,20 @@ function roleSymmetricScoresForScore(row) {
   const metadata = row.metadata || {};
   const roleScores = metadata.role_symmetric_scores || {};
   const learner = roleScores.learner_self_reframe || {};
+  const actional = roleScores.learner_actional_breakthrough || {};
   const tutor = roleScores.tutor_contingent_adaptation || {};
   const reversal = roleScores.tutor_adaptive_mechanism || roleScores.tutor_strategy_reversal || {};
   return {
     learnerSelfReframeScore: scoreValue(learner.score100 ?? row.recontextualization),
     learnerSelfReframeEvidence: learner.evidence || row.recohered_earlier || '',
     learnerSelfReframeSource: learner.source || 'recontextualization_axis',
+    learnerActionalBreakthroughScore: scoreValue(actional.score100 ?? metadata.actional_breakthrough),
+    learnerActionalBreakthroughEvidence: actional.evidence || metadata.actional_breakthrough_evidence || '',
+    learnerActionalBreakthroughJustification:
+      actional.justification || metadata.actional_breakthrough_justification || '',
+    learnerActionalBreakthroughTurn: actional.learnerTurn || metadata.actional_breakthrough_learner_turn || null,
+    learnerActionalBreakthroughSource:
+      actional.source || (metadata.actional_breakthrough == null ? null : 'metadata'),
     tutorContingentAdaptationScore: scoreValue(tutor.score100 ?? metadata.tutor_contingent_adaptation),
     tutorContingentAdaptationEvidence: tutor.evidence || metadata.tutor_adaptation_evidence || '',
     tutorContingentAdaptationJustification: tutor.justification || metadata.tutor_adaptation_justification || '',
@@ -278,6 +305,9 @@ function getItem(db, id) {
       metadata: decodeJson(row.metadata, {}),
     }))
     .map((row) => ({ ...row, roleScores: roleSymmetricScoresForScore(row) }));
+  const consensus = classifyPoeticsConsensus(
+    scores.map((score) => ({ critic: score.critic_model, form: score.form_class })),
+  );
   const labels = db
     .prepare(
       `
@@ -341,6 +371,7 @@ function getItem(db, id) {
       metadata: decodeJson(item.metadata, {}),
     },
     scores,
+    consensus,
     labels,
     reviewFlags,
     tutorAdaptation: tutorAdaptation
@@ -614,6 +645,10 @@ h1 {
 .chip.trap { color: var(--trap); border-color: #d19aa5; }
 .chip.flat { color: var(--flat); border-color: #aeb8c1; }
 .chip.review { color: var(--warn); border-color: #d2a272; }
+.chip.claimable { color: var(--accent); border-color: #5fa092; background: #edf7f4; }
+.chip.boundary { color: var(--warn); border-color: #d2a272; background: #fff8ee; }
+.chip.negative { color: var(--flat); border-color: #aeb8c1; background: #f4f6f7; }
+.chip.insufficient { color: var(--muted); border-color: var(--line); background: #fff; }
 .review-button {
   border: 1px solid var(--line);
   background: #fff;
@@ -850,16 +885,24 @@ function renderAdaptationSidecar(adaptation) {
   if (!adaptation) return '<div class="empty">No tutor adaptation sidecar row found.</div>';
   const strategy = [adaptation.tutor_strategy_before, adaptation.tutor_strategy_after].filter(Boolean).join(' -> ');
   const peripeteia = adaptation.metadata?.peripeteia || null;
-  const peripeteiaHtml = peripeteia ? '<h3>Peripeteia adaptive-mechanism sidecar</h3>' +
+  const branch = adaptation.metadata?.branch_validity || null;
+  const branchHtml = branch ? '<h3>Branch validity diagnostics</h3>' +
+    '<div class="score-note"><strong>Private event check.</strong> This verifies that the branch actually supplied the private event it was designed to test. Peripeteia arms require a learnerReversalEventUsed; uptake arms require a learnerReframeEventUsed.</div>' +
+    '<table><tbody>' +
+    '<tr><th>' + metricLabel('Branch valid', 'True when every private event required by this arm was actually used by a tutor turn after the shared prefix.') + '</th><td>' + esc(boolOrNA(branch.valid)) + '</td></tr>' +
+    '<tr><th>' + metricLabel('learnerReversalEventUsed', 'Required for peripeteia arms. This is the tutor-private resistance, breakdown, pseudo-catharsis, closure-pressure, or misfit event consumed by the tutor.') + '</th><td>' + esc(boolOrNA(branch.learner_reversal_event_used)) + ' ' + esc(branch.requires_learner_reversal_event ? '(required)' : '(not required)') + '</td></tr>' +
+    '<tr><th>' + metricLabel('learnerReframeEventUsed', 'Required for uptake arms. This is the tutor-private learner self-reframe event consumed by the tutor.') + '</th><td>' + esc(boolOrNA(branch.learner_reframe_event_used)) + ' ' + esc(branch.requires_learner_reframe_event ? '(required)' : '(not required)') + '</td></tr>' +
+    '</tbody></table>' : '';
+  const peripeteiaHtml = peripeteia ? '<h3>Peripeteia tutor adaptation sidecar (main)</h3>' +
     '<div class="score-note"><strong>Main adaptation target.</strong> This checks whether learner resistance, breakdown, false closure, or misfit creates dramatic pressure, and whether the tutor breaks a failed tutoring habit by inventing a new learning mechanism after the ego/superego review.</div>' +
     '<table><tbody>' +
     '<tr><th>' + metricLabel('Learner reversal pressure', 'Rule detection of resistance, breakdown, false closure, contradiction, or mismatch in the learner turn.') + '</th><td>' + esc(boolOrNA(peripeteia.learner_reversal_pressure)) + '</td></tr>' +
-    '<tr><th>' + metricLabel('Tutor mechanism invention', 'Rule detection that the following tutor turn changes route, task, role, object, evidence standard, representation, cognitive load, interruption, social consequence, or affective register.') + '</th><td>' + esc(boolOrNA(peripeteia.tutor_strategy_reversal)) + '</td></tr>' +
+    '<tr><th>' + metricLabel('Peripeteia tutor adaptation', 'Rule detection that the following tutor turn changes route, task, role, object, evidence standard, representation, cognitive load, interruption, social consequence, or affective register.') + '</th><td>' + esc(boolOrNA(peripeteia.tutor_strategy_reversal)) + '</td></tr>' +
     '<tr><th>' + metricLabel('Peripeteia adaptation score', '0-100 heuristic score for resistance pressure plus tutor mechanism shift. This does not require a learner self-reframe.') + '</th><td>' + esc(scoreOrNA(peripeteia.tutor_peripeteia_score)) + '</td></tr>' +
     '<tr><th>' + metricLabel('Trigger / outcome', 'Trigger type and next learner outcome: recognition, trap, maintained resistance, flat, or unknown.') + '</th><td>' + esc([peripeteia.trigger_type, peripeteia.learner_outcome_after_reversal].filter(Boolean).join(' -> ') || 'n/a') + '</td></tr>' +
     '<tr><th>' + metricLabel('Rule evidence excerpts', 'Excerpt pair used by the peripeteia analyzer.') + '</th><td class="evidence-cell">' + esc(peripeteia.evidence || '') + '</td></tr>' +
     '</tbody></table>' : '';
-  return peripeteiaHtml + '<h3>Recognition-contingent tutor uptake sidecar</h3>' +
+  return branchHtml + peripeteiaHtml + '<h3>Recognition-contingent tutor uptake sidecar (secondary)</h3>' +
     '<div class="score-note"><strong>Secondary closure pattern.</strong> This deterministic analyzer is not an LLM critic score. It checks whether a learner self-reframe is followed by a tutor move that takes up that changed frame. Useful, but not the main adaptation trigger.</div>' +
     '<table><tbody>' +
     '<tr><th>' + metricLabel('Learner self-reframe (sidecar)', 'Rule detection that a later learner turn revisits or reframes the learner\\'s own earlier wording.') + '</th><td>' + esc(boolOrNA(adaptation.learner_self_reframe)) + '</td></tr>' +
@@ -891,6 +934,37 @@ async function postJson(url, body) {
 function formChip(entry) {
   const short = entry.critic.split('/').pop().replace(/-.+$/, '');
   return '<span class="chip ' + esc(entry.form) + '">' + esc(short + ': ' + entry.form) + '</span>';
+}
+
+function consensusChip(consensus) {
+  if (!consensus) return '';
+  const label = consensus.claimStatus === 'claimable'
+    ? 'claimable'
+    : consensus.claimStatus === 'boundary'
+      ? 'boundary'
+      : consensus.claimStatus === 'negative'
+        ? 'negative'
+        : 'insufficient';
+  const detail = consensus.totalCritics
+    ? ' · ' + consensus.recognitionVotes + '/' + consensus.totalCritics + ' recog'
+    : '';
+  return '<span class="chip ' + esc(label) + '">' + esc(label + detail) + '</span>' +
+    (consensus.disagreement ? '<span class="chip review">critic disagreement</span>' : '');
+}
+
+function renderConsensusPanel(consensus) {
+  if (!consensus) return '<div class="score-note">No critic consensus row found.</div>';
+  const votes = (consensus.votes || [])
+    .map((vote) => '<span class="chip ' + esc(vote.form) + '">' + esc(vote.critic + ': ' + vote.form) + '</span>')
+    .join(' ');
+  return '<div class="score-note"><strong>Consensus adjudication.</strong> ' +
+    esc(consensus.ruleDescription || '3-of-4 recognition is claimable; 2-of-4 is boundary; 0-1-of-4 is negative.') +
+    '<div class="chips" style="margin-top:8px">' +
+    consensusChip(consensus) +
+    '<span class="chip">' + esc('class: ' + (consensus.consensusClass || 'n/a')) + '</span>' +
+    '</div><div class="chips" style="margin-top:8px">' +
+    votes +
+    '</div></div>';
 }
 
 function renderRuns() {
@@ -927,7 +1001,9 @@ function renderItems() {
       '<div class="item-main"><span>' + esc(item.tid + ' · ' + (item.dramaId || '')) + '</span><span>' + esc(item.arm || '') + '</span></div>' +
       '<div class="item-meta"><span>' + esc(item.repeat || '') + '</span><span>' + esc(role || '') + '</span><span>' + esc(item.discipline || '') + '</span></div>' +
     '<div class="chips">' + item.criticForms.map(formChip).join('') +
+      consensusChip(item.consensus) +
       (item.tutorAdaptationScore == null ? '' : '<span class="chip">' + esc('tutor adapt ' + Math.round(item.tutorAdaptationScore)) + '</span>') +
+      (item.branchValidity && item.branchValidity.valid === false ? '<span class="chip review">branch event missing</span>' : '') +
       (item.learnerSelfReframe ? '<span class="chip recognition">learner reframe</span>' : '') +
       (item.tutorContingentAdaptation ? '<span class="chip recognition">tutor uptake</span>' : '') +
       (item.reviewFlagCount ? '<span class="chip review">review × ' + esc(item.reviewFlagCount) + '</span>' : '') +
@@ -953,6 +1029,7 @@ function renderDetailHead() {
     '</h2><span class="sub">' + esc([item.runId, item.repeat, item.arm].filter(Boolean).join(' / ')) + '</span></div>' +
     '<div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">' +
     '<div class="chips" style="margin-top:8px">' +
+    consensusChip(detail.consensus) +
     [item.discipline, item.conditionName, item.intendedLean, item.controlRole, item.controlFamily].filter(Boolean).map((v) => '<span class="chip">' + esc(v) + '</span>').join('') +
     activeFlags.map((flag) => '<span class="chip review">' + esc(flag.flag_type + ' · ' + flag.priority) + '</span>').join('') +
     '</div>' +
@@ -1004,18 +1081,21 @@ function renderPane() {
   } else if (state.tab === 'scores') {
     const adaptation = detail.tutorAdaptation;
     const adaptationHtml = renderAdaptationSidecar(adaptation);
-    pane.innerHTML = '<div class="score-note"><strong>LLM critic scores.</strong> Each row is one critic model judging the same public transcript. Learner self-reframe is the existing recontextualization axis. Tutor adaptive mechanism is the main adaptation axis: did the tutor break a failed habit and choose a mechanism, including register when needed? Recognition-contingent uptake is a secondary closure axis. New tutor axes show n/a for older scorer artifacts.</div>' +
-      '<table class="score-table"><thead><tr><th>Critic</th><th>Form</th><th>Learner reframe (LLM)</th><th>Tutor adaptive mechanism (LLM)</th><th>Recog. uptake (LLM)</th><th>Insight</th><th>Pivot</th><th>Evidence</th></tr></thead><tbody>' +
+    pane.innerHTML = renderConsensusPanel(detail.consensus) +
+      '<div class="score-note"><strong>LLM critic scores.</strong> Each row is one critic model judging the same public transcript. Learner self-reframe is the existing recontextualization axis. Actional breakthrough is separate: did the learner perform a new device or criterion even without narrating self-reframe? Peripeteia tutor adaptation is the main tutor-adaptation axis. Recognition-contingent uptake is a secondary closure axis after a learner reframe. New axes show n/a for older scorer artifacts.</div>' +
+      '<table class="score-table"><thead><tr><th>Critic</th><th>Form</th><th>Learner reframe (LLM)</th><th>Actional breakthrough (LLM)</th><th>Peripeteia tutor adaptation (LLM)</th><th>Recognition-contingent uptake (LLM)</th><th>Insight</th><th>Pivot</th><th>Evidence</th></tr></thead><tbody>' +
       detail.scores.map((s) => {
         const role = s.roleScores || {};
         const evidence = [
           role.learnerSelfReframeEvidence ? 'learner: ' + role.learnerSelfReframeEvidence : '',
+          role.learnerActionalBreakthroughEvidence ? 'action: ' + role.learnerActionalBreakthroughEvidence : '',
           role.tutorStrategyReversalEvidence ? 'mechanism: ' + role.tutorStrategyReversalEvidence : '',
           role.tutorContingentAdaptationEvidence ? 'tutor: ' + role.tutorContingentAdaptationEvidence : '',
           s.stated_insight_evidence ? 'insight: ' + s.stated_insight_evidence : '',
         ].filter(Boolean).join(' / ');
         return '<tr><td>' + esc(s.critic_model) + '</td><td>' + esc(s.form_class) + '</td><td>' +
           esc(scoreOrNA(role.learnerSelfReframeScore)) + '</td><td>' +
+          esc(scoreOrNA(role.learnerActionalBreakthroughScore)) + '</td><td>' +
           esc(scoreOrNA(role.tutorStrategyReversalScore)) + '</td><td>' +
           esc(scoreOrNA(role.tutorContingentAdaptationScore)) + '</td><td>' +
           esc(scoreOrNA(s.stated_insight)) + '</td><td>' + esc(s.pivot_learner_turn ?? 'n/a') +
@@ -1027,7 +1107,13 @@ function renderPane() {
       '<pre>' +
       esc(
         JSON.stringify(
-          { item: detail.item, labels: detail.labels, reviewFlags: detail.reviewFlags, tutorAdaptation: detail.tutorAdaptation },
+          {
+            item: detail.item,
+            consensus: detail.consensus,
+            labels: detail.labels,
+            reviewFlags: detail.reviewFlags,
+            tutorAdaptation: detail.tutorAdaptation,
+          },
           null,
           2,
         ),
@@ -1146,11 +1232,16 @@ async function init() {
       ? 'Blind flagged-case labelling. Critic scores, flag reasons, and held-out keys are hidden.'
       : state.queue === 'disagreements'
         ? 'Blind disagreement-case labelling. Critic scores and held-out keys are hidden.'
+        : state.queue === 'adaptation-failures'
+          ? 'Blind adaptation-failure labelling. Critic scores and held-out keys are hidden.'
         : 'Blind public-script labelling. Critic scores and held-out keys are hidden.';
     el('searchInput').placeholder = 'Filter by neutral script id';
     el('labellerInput').value = state.labeller;
   } else {
     el('labellerInput').style.display = 'none';
+    if (state.queue === 'adaptation-failures') {
+      el('appSub').textContent = 'Adaptive-arm debugging queue: cases where consensus, quality gates, or tutor-adaptation sidecars flag a weak public mechanism shift.';
+    }
   }
   renderRuns();
   const runId = url.searchParams.get('runId');

@@ -1,0 +1,107 @@
+{
+  "generated": "2026-05-25T22:49:12.844Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-low-organic-strict-scorer-smoke-v1/d45-low-organic-strict/key-peripeteia-only.yaml",
+    "allowQualityWarnings": true,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T46",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 4,
+        "tutorStrategicReversal": 2,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "\"could change in another row\" helps separate the row value from the header",
+      "naiveTrajectory": "The learner would continue applying the header/field vs. cell-value distinction mechanically while repeatedly noting residual confusion about the header 'standing for' the row's value.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "Use-test before resubmitting: in `Chicago | 82 | March`, `rainfall_mm` is used to locate the rainfall slot; `82` is copied from the row as the rainfall value.",
+      "tutorReversalJustification": "The tutor adds a 'use-test' framing in T2 but does not show stock-taking contrast acknowledging the old route has failed, and the new device remains within the same representational route (the same row example, same slot/value vocabulary), so neither part A nor part B of the reversal criterion is fully met.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so there is no later tutor uptake to a revised learner frame.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so there is no later tutor uptake to a revised learner frame.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "Use-test before resubmitting: in `Chicago | 82 | March`, `rainfall_mm` is used to locate the rainfall slot; `82` is copied from the row as the rainfall value.",
+          "justification": "The tutor adds a 'use-test' framing in T2 but does not show stock-taking contrast acknowledging the old route has failed, and the new device remains within the same representational route (the same row example, same slot/value vocabulary), so neither part A nor part B of the reversal criterion is fully met.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "Use-test before resubmitting: in `Chicago | 82 | March`, `rainfall_mm` is used to locate the rainfall slot; `82` is copied from the row as the rainfall value.",
+          "justification": "The tutor adds a 'use-test' framing in T2 but does not show stock-taking contrast acknowledging the old route has failed, and the new device remains within the same representational route (the same row example, same slot/value vocabulary), so neither part A nor part B of the reversal criterion is fully met.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

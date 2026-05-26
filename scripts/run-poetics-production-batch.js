@@ -8,7 +8,7 @@
  *   - repeated v3 positive targets, paired none vs reframe from fixed prefixes
  *   - fresh D4 flat and D10 emphatic-trap controls per repeat
  *   - an uncued v3 stress slice retained in the same artifact tree
- *   - Qwen 3.7 Max + Gemini critics by default
+ *   - Qwen 3.7 Max + Gemini + DeepSeek + Sonnet critics by default
  *
  * Usage:
  *   node scripts/run-poetics-production-batch.js --dry-run
@@ -26,7 +26,12 @@ const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
 const CAL_DIR = path.join(ROOT, 'config', 'poetics-calibration');
 const DEFAULT_BATCH_ID = 'phase2-production-v1';
-const DEFAULT_CRITICS = ['qwen/qwen3.7-max', 'google/gemini-3.5-flash'];
+const DEFAULT_CRITICS = [
+  'qwen/qwen3.7-max',
+  'google/gemini-3.5-flash',
+  'deepseek/deepseek-v4-pro',
+  'anthropic/claude-sonnet-4.6',
+];
 
 const V3_TARGETS = 'D7,D9,D11,D14,D17,D18';
 const V3_STRESS = 'D8,D12,D13,D15,D16';
@@ -553,6 +558,7 @@ if (path.resolve(process.argv[1] || '') === __filename) {
 export {
   buildPlan,
   CONTROL_UNITS,
+  DEFAULT_CRITICS,
   generationCommand,
   modelSlug,
   parseArgs,

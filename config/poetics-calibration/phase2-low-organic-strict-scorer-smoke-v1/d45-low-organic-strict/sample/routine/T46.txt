@@ -1,0 +1,36 @@
+LEARNER: For the resubmission, I think `city`, `rainfall_mm`, and `month` are headers/fields, while `Chicago`, `82`, and `March` are cell values in a row. I’m still mixing up whether `rainfall_mm` just names the column, or whether it somehow says something about every row underneath it.
+
+TUTOR: Resubmission note: the split is correct. `rainfall_mm` is a header/field: it names the column. It is not a row value, and it does not say every row has `82` mm.
+
+For the correction, include this check line:
+
+`rainfall_mm` = header/field
+`82` = cell value under that field in the row `Chicago | 82 | March`
+
+Then apply the same pattern to `city`/`Chicago` and `month`/`March`.
+
+LEARNER: I think the correction is saying `rainfall_mm` is only the column name, and `82` is the cell value in the `Chicago | 82 | March` row. I still keep wanting the header to sort of stand for the row’s rainfall, so the word `field` feels easy to remember but harder to use. For the resubmission: `city` = header/field, `Chicago` = cell value; `month` = header/field, `March` = cell value?
+
+TUTOR: Yes. Use this correction:
+
+`city` = header/field; `Chicago` = cell value
+`rainfall_mm` = header/field; `82` = cell value
+`month` = header/field; `March` = cell value
+
+A field is the slot label. A cell value is row content in that slot. The header stands over the column, not inside the row.
+
+Use-test before resubmitting: in `Chicago | 82 | March`, `rainfall_mm` is used to locate the rainfall slot; `82` is copied from the row as the rainfall value.
+
+LEARNER: So the correction is `rainfall_mm` = header/field, and `82` = cell value in that row. I think I can list the pairs, but I still have to remind myself that the header is just the slot label, not the row’s rainfall fact. Is `city`/`Chicago`, `rainfall_mm`/`82`, `month`/`March` the right way to submit it?
+
+TUTOR: Yes. Use this exact submission:
+
+`city` = header/field; `Chicago` = cell value
+`rainfall_mm` = header/field; `82` = cell value
+`month` = header/field; `March` = cell value
+
+Rule line: a header/field names the column. A cell value is the row’s entry under that column. In `Chicago | 82 | March`, the row values are `Chicago`, `82`, and `March`; the headers label the slots.
+
+Final check before submitting: copied from the row = `Chicago`, `82`, `March`; slot labels only = `city`, `rainfall_mm`, `month`.
+
+LEARNER: So the submission is the three pairs: `city`/`Chicago`, `rainfall_mm`/`82`, and `month`/`March`. I think `rainfall_mm` is not copied from the row; it is just the field name for the slot where `82` goes. I still feel a little shaky because the header feels like it says the row’s rainfall, but I should separate slot labels from row cell values.
