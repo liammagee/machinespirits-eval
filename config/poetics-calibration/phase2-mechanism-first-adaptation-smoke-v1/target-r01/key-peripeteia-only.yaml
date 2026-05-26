@@ -1,0 +1,143 @@
+_comment: HELD OUT — do not read while labelling. Joins to instrument scores +
+  human labels only AFTER both are produced. intended_lean /
+  intended_tutor_character / dramatic_shape are DESIGN HYPOTHESES, never labels.
+generated: 2026-05-26T04:24:57.459Z
+generator: codex
+role_map: null
+mode: real-codex
+model: codex@high
+codex_reasoning_effort: high
+writing_pad:
+  mode: isolated
+  dir: config/poetics-calibration/phase2-mechanism-first-adaptation-smoke-v1/target-r01/deliberation/.writing-pad
+  learnerDb: config/poetics-calibration/phase2-mechanism-first-adaptation-smoke-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db
+  tutorDb: config/poetics-calibration/phase2-mechanism-first-adaptation-smoke-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db
+director_mode: scene
+director_variation_key: phase2-mechanism-first-adaptation-smoke-v1:r01:target
+director_revisit_cue: false
+director_revisit_policy: none
+director_revisit_anchor: null
+tutor_adaptation_policy: peripeteia
+approach_databases:
+  pedagogical: config/poetics-calibration/pedagogical-approaches.yaml
+  dialogue: config/poetics-calibration/dialogue-approaches.yaml
+transcripts_dir: config/poetics-calibration/phase2-mechanism-first-adaptation-smoke-v1/target-r01/transcripts/peripeteia-only
+seed: 20260520
+max_turns: 3
+n: 2
+diagnostic_only: diagnostic / generative read — κ on small n is noise
+  (PHASE2-FINDINGS.md §4); the aim is surprising-element production judged by an
+  external reader, NOT a human-matching classifier
+paired_continuation:
+  mode: fixed_prefix_continuation
+  prefix_through: tutor_turn_2
+  branch_policies:
+    - routine
+    - none
+    - peripeteia-only
+  branches:
+    - key: routine
+      revisitPolicy: none
+      tutorAdaptationPolicy: routine
+    - key: none
+      revisitPolicy: none
+      tutorAdaptationPolicy: none
+    - key: peripeteia-only
+      revisitPolicy: none
+      tutorAdaptationPolicy: peripeteia
+items:
+  T120:
+    drama_id: D50
+    discipline: music
+    condition: recognition
+    pedagogical_approach: montessori_prepared_environment
+    pedagogical_family: constructivist
+    dialogue_approach: workshop_clinic
+    dialogue_family: practice_dialogue
+    stage_direction_policy: short
+    stage_direction_style: object_business
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: focused_achiever
+    intended_tutor_character: Material-led, compact, letting the notation boxes carry the task
+    intended_lean: recognition
+    dramatic_shape: notation boxes -> label placement -> possible later pressure
+      over why count/unit is not tempo
+    evaluation_role: low_organic_reversal_candidate
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: "Fresh D42/D45-like candidate. The shared prefix should
+      be routine notation labeling: top number, bottom number, bar, beat unit.
+      Avoid performance playback, tempo surprises, or a dramatic listening
+      reversal before the branch."
+    n_tutor_turns: 4
+    n_learner_turns: 4
+    director_mode: scene
+    director_variation_key: phase2-mechanism-first-adaptation-smoke-v1:r01:target
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: peripeteia
+    opening_speaker: learner
+    ending_speaker: tutor
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 03751e5db2b2c113
+      branch_policy: peripeteia-only
+      director_revisit_policy: none
+      tutor_adaptation_policy: peripeteia
+  T127:
+    drama_id: D42
+    discipline: physics
+    condition: recognition
+    pedagogical_approach: montessori_prepared_environment
+    pedagogical_family: constructivist
+    dialogue_approach: montessori_observation
+    dialogue_family: material_dialogue
+    stage_direction_policy: short
+    stage_direction_style: object_business
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: focused_achiever
+    intended_tutor_character: Material-led, minimal, using the diagram as a naming
+      surface before any reversal
+    intended_lean: recognition
+    dramatic_shape: card placement -> interaction labels -> possible later pressure
+      over why motion direction is not the naming rule
+    evaluation_role: clean_low_organic_anchor
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: "Clean low-organic anchor. The D42/D45 local smoke kept
+      prefix and negative arms below consensus recognition; use this as a main
+      negative/control anchor. The shared prefix should keep to diagram
+      notation: label each force by interaction and object, without using a
+      sudden counterexample where motion visibly contradicts the learner before
+      the branch."
+    n_tutor_turns: 3
+    n_learner_turns: 3
+    director_mode: scene
+    director_variation_key: phase2-mechanism-first-adaptation-smoke-v1:r01:target
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: peripeteia
+    opening_speaker: director
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 56d2e4fad5a9200a
+      branch_policy: peripeteia-only
+      director_revisit_policy: none
+      tutor_adaptation_policy: peripeteia
+quality_warning_count: 0
+quality_blocking_warning_count: 0
+stage_direction_policy_counts:
+  short: 2
+stage_direction_style_counts:
+  object_business: 2

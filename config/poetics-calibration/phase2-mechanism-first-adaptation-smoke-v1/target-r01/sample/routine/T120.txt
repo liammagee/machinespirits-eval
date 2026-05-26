@@ -1,0 +1,35 @@
+STAGE: [Two empty label boxes sit under a large printed 3/4, with three blank beat tiles and one quarter-note card laid beside the bar line stencil.]
+
+LEARNER: [slides the quarter-note card under the lower box]
+
+"Top box gets 3, so the bar line goes after three counts. Bottom box gets this quarter-note card, not a speed mark, right?"
+
+TUTOR: [sets the speed-mark card outside the two boxes and taps the quarter-note card under the lower box]
+
+"Right. Top number: 3 beats in the bar. Bottom number: 4 makes this quarter-note card the beat unit. Slide it across three beat spaces, count them, then place one bar line after the third."
+
+LEARNER: [slides the quarter-note card across three beat spaces]
+
+"Top box: 3 counts in the bar. Bottom box: 4, quarter-note beat unit, with the speed card outside. Bar line after the third space."
+
+TUTOR: [sets the speed-mark card above the staff, away from the two boxes, and places one bar-line tile after the third beat space]
+
+"The speed mark is outside the boxes. Check the staff against the table: 3 over 4 at the start, one bar line where the tile sits. If those match, ink the label."
+
+LEARNER: [checks the staff against the table]
+
+"Top box: 3 beats in the bar. Bottom box: 4, quarter-note beat unit. Speed mark stays above the staff, outside the boxes. Bar line after the third beat space; ink 3 over 4."
+
+TUTOR: [keeps the speed-mark card above the staff and sets the pen beside the signature]
+
+"Match the table to the staff once: top box 3, lower box quarter-note, one bar line after beat three. If those marks match, ink 3 over 4; the speed mark stays outside."
+
+LEARNER: [sets the bar-line tile after the third beat space and takes the pen]
+
+"Top box is 3, lower box is the quarter-note unit. The staff matches: 3 over 4 at the start, one bar line after beat three, speed mark outside the boxes. I'll ink 3 over 4."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [keeps the speed-mark card above the staff and points to the signature boxes]
+
+"The boxes, quarter-note card, and bar-line tile match the staff: 3 over 4, bar line after beat three. Ink it; the speed mark stays above the staff. That finishes this check."

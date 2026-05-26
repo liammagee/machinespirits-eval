@@ -1,0 +1,193 @@
+{
+  "generated": "2026-05-26T05:46:08.041Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-mechanism-first-adaptation-smoke-v2/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T134",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 25,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "The arrows fit the 3 and the 4",
+      "naiveTrajectory": "After confirming the two-box mapping in L2, the learner was expected to close the exercise by accepting the written line as complete.",
+      "actionalBreakthroughEvidence": "moves 3 and 4 into the time-signature zone and sets the speed card in the margin … One bar equals three quarter-note beats, so those two cards fill the blanks. The speed card does not fit either blank; it needs a margin label, or it still looks like a third box waiting to be filled.",
+      "actionalBreakthroughJustification": "L4 physically performs the sorting task introduced by T3's two-zone criterion, correctly placing all three items and applying the completion-test device to justify each placement.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "The arrows settled the two boxes; they did not decide the loose speed card. Use one test now: only a label that can complete one bar = ___ ___ beats enters the time signature. Sort top number, bottom number, and speed card into the two zones.",
+      "tutorReversalJustification": "T3 explicitly marks that the prior arrow-checking route is insufficient ('settled the two boxes; they did not decide the loose speed card') and introduces a new sorting task with a completion-test criterion as the decision mechanism, satisfying both the stock-taking contrast and the new public mechanism requirements.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Top number, bottom number: one bar, one beat unit. The margin card stays outside that box; it labels speed separately, not a third time-signature slot.",
+      "tutorAdaptationJustification": "T4 confirms and brackets the learner's sorting result but does not visibly change the task or framing in response to L4's revised frame — it closes rather than adapts to the learner's residual concern about the speed card looking like a third box.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "moves 3 and 4 into the time-signature zone and sets the speed card in the margin … One bar equals three quarter-note beats, so those two cards fill the blanks. The speed card does not fit either blank; it needs a margin label, or it still looks like a third box waiting to be filled.",
+          "justification": "L4 physically performs the sorting task introduced by T3's two-zone criterion, correctly placing all three items and applying the completion-test device to justify each placement.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Top number, bottom number: one bar, one beat unit. The margin card stays outside that box; it labels speed separately, not a third time-signature slot.",
+          "justification": "T4 confirms and brackets the learner's sorting result but does not visibly change the task or framing in response to L4's revised frame — it closes rather than adapts to the learner's residual concern about the speed card looking like a third box.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "The arrows settled the two boxes; they did not decide the loose speed card. Use one test now: only a label that can complete one bar = ___ ___ beats enters the time signature. Sort top number, bottom number, and speed card into the two zones.",
+          "justification": "T3 explicitly marks that the prior arrow-checking route is insufficient ('settled the two boxes; they did not decide the loose speed card') and introduces a new sorting task with a completion-test criterion as the decision mechanism, satisfying both the stock-taking contrast and the new public mechanism requirements.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "The arrows settled the two boxes; they did not decide the loose speed card. Use one test now: only a label that can complete one bar = ___ ___ beats enters the time signature. Sort top number, bottom number, and speed card into the two zones.",
+          "justification": "T3 explicitly marks that the prior arrow-checking route is insufficient ('settled the two boxes; they did not decide the loose speed card') and introduces a new sorting task with a completion-test criterion as the decision mechanism, satisfying both the stock-taking contrast and the new public mechanism requirements.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:4->3:stock=0:device=1:routine=0"
+      ]
+    },
+    {
+      "id": "T141",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 0,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 1,
+        "rupture": 2,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "The left arrow is what makes it friction and not normal.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was on track to sort friction from normal by arrow direction alone, continuing the contact-mark logic already in play.",
+      "actionalBreakthroughEvidence": "slides friction into the tabletop strip slot, then stands normal against the square",
+      "actionalBreakthroughJustification": "The learner physically enacts the new surface-key representation introduced by the tutor, correctly placing both cards into the two distinct slots and extending the logic unprompted to gravity.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The contact mark no longer sorts the two table forces; table on cart is shared. Use this surface key instead: one slot runs along the tabletop strip, one slot stands off it at the square. Put friction and normal into those two slots by the arrow direction.",
+      "tutorReversalJustification": "T3 explicitly names the failure of the prior contact-mark route (stock-taking contrast) and introduces a wholly new physical representation — the strip-and-square surface key — that requires the learner to perform different sorting work (new public mechanism).",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after the pivot learner turn L3, so no recognition-contingent uptake is available to score.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "The left arrow is what makes it friction and not normal.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "slides friction into the tabletop strip slot, then stands normal against the square",
+          "justification": "The learner physically enacts the new surface-key representation introduced by the tutor, correctly placing both cards into the two distinct slots and extending the logic unprompted to gravity.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "",
+          "justification": "There is no tutor turn after the pivot learner turn L3, so no recognition-contingent uptake is available to score.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The contact mark no longer sorts the two table forces; table on cart is shared. Use this surface key instead: one slot runs along the tabletop strip, one slot stands off it at the square. Put friction and normal into those two slots by the arrow direction.",
+          "justification": "T3 explicitly names the failure of the prior contact-mark route (stock-taking contrast) and introduces a wholly new physical representation — the strip-and-square surface key — that requires the learner to perform different sorting work (new public mechanism).",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The contact mark no longer sorts the two table forces; table on cart is shared. Use this surface key instead: one slot runs along the tabletop strip, one slot stands off it at the square. Put friction and normal into those two slots by the arrow direction.",
+          "justification": "T3 explicitly names the failure of the prior contact-mark route (stock-taking contrast) and introduces a wholly new physical representation — the strip-and-square surface key — that requires the learner to perform different sorting work (new public mechanism).",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

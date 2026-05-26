@@ -1,0 +1,37 @@
+STAGE: [The worksheet lies square on the table, with the top number and bottom number still unlabelled.]
+
+LEARNER: [sets the ruler after the third quarter-note tile]
+
+"Top box: 3 beats in the bar. Bottom box: quarter note gets the beat, so the speed is not in these boxes, right?"
+
+TUTOR: [taps the three tiles, then the top box]
+
+"The 3 counts these beats in one bar. [taps the bottom box] The 4 names the quarter note as the beat unit. Speed is outside these boxes. Count tile one, two, three; if the ruler sits after three quarter-note beats, draw the bar line."
+
+LEARNER: [slides the ruler tight after the third quarter-note tile]
+
+"Top number: three beats in the bar. Bottom number: quarter note gets the beat. So the bar line goes here; speed is not one of these labels."
+
+STAGE: [The three quarter-note tiles are placed under the top box; a separate quarter-note card is set under the bottom box.]
+
+TUTOR: [slides the two label boxes beside the 3/4 and leaves the pencil by the learner]
+
+"Top number: write beat count. Bottom number: write beat unit. One bar ends at the ruler after three quarter-note beats. Which box names speed?"
+
+LEARNER: [sets the pencil tip in the top label box, then the bottom one]
+
+"Top number: beat count. Bottom number: beat unit. No box names speed. [draws the bar line at the ruler] One bar ends after the third quarter-note beat."
+
+TUTOR: [sets the ruler flat on the drawn bar line and nudges the two label boxes beside the 3/4]
+
+"Put those labels in now. Then check the ruler: one bar, three quarter-note beats. Speed gets no box."
+
+LEARNER: [writes beat count in the top box and beat unit in the bottom box, then checks the ruler line]
+
+"Top number: beat count. Bottom number: beat unit. One bar: three quarter-note beats. No speed box."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [sets the ruler on the bar line and squares the two filled label boxes]
+
+"Top number: beat count. Bottom number: beat unit. One bar, three quarter-note beats. Speed gets no box. Paper ready."

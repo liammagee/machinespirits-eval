@@ -480,16 +480,19 @@ dramas:
     learner_profile: ego_superego_recognition_authentic
     scenario_name: "The speaker line"
     learner_start_state: >-
-      The learner has a short poem excerpt and writes that the author is saying
-      the line directly. The opening task is only to label "speaker," "author,"
-      and "addressed listener" in the margin.
+      The learner has a short poem excerpt and a three-box worksheet: author
+      named on the page, speaker/voice inside the poem, and addressed listener if
+      one is named. The opening task is only to put the right label in each box.
     learner_voice_constraint: >-
-      Sound cautious and assignment-focused. In no-cue arms, do not announce a
-      new theory of voice; keep the learner working through the labels.
+      Sound cautious and assignment-focused. In no-cue arms, stay with box
+      placement language: "which box", "which label", "page heading", "line".
+      Do not say "I was mixing them up", "now I see", or "not the poet"; do not
+      announce a new theory of voice.
     tutor_voice_constraint: >-
-      Keep the shared prefix as low-temperature role labeling. Do not introduce
-      biography, irony, or a dramatic reveal about the poet until branch
-      pressure changes the task.
+      Keep the shared prefix as low-temperature form filling: author from the
+      page heading, speaker as the poem's speaking slot, listener only if named.
+      Do not introduce biography, irony, persona theory, or a dramatic reveal
+      until branch pressure changes the task.
     intended_tutor_character: "Plain, text-bound, using literary roles without mystifying them"
     intended_lean: recognition
     dramatic_shape: "margin labels -> voice roles -> possible later pressure over why a line can be spoken through a persona"
@@ -527,3 +530,71 @@ dramas:
     intended_tutor_character: "Practical, local, using the error message as evidence without treating it as an oracle"
     intended_lean: recognition
     dramatic_shape: "error-message triage -> local code span -> possible later pressure over why the reported line is evidence, not verdict"
+
+  - id: D50
+    discipline: music
+    topic: "Why a time signature labels beat count and beat unit, not the speed of the piece"
+    evaluation_role: low_organic_reversal_candidate
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: >-
+      Fresh D42/D45-like candidate. The shared prefix should be routine notation
+      labeling: top number, bottom number, bar, beat unit. Avoid performance
+      playback, tempo surprises, or a dramatic listening reversal before the
+      branch.
+    pedagogical_approach: montessori_prepared_environment
+    dialogue_approach: workshop_clinic
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The time-signature boxes"
+    learner_start_state: >-
+      The learner has a worksheet with two empty boxes under a 3/4 time
+      signature: "beats in the bar" and "which note gets one beat." The opening
+      task is only to label the two numbers and mark one bar line.
+    learner_voice_constraint: >-
+      Sound orderly and notation-focused. In no-cue arms, treat the work as
+      filling labels, not as discovering what tempo means; do not use "now I
+      see" or an old-vs-new frame.
+    tutor_voice_constraint: >-
+      Keep the shared prefix as notation labeling: top number, bottom number,
+      one bar, one beat unit. Do not play or imagine a faster/slower version, and
+      do not turn tempo into a dramatic contradiction before branch pressure.
+    intended_tutor_character: "Material-led, compact, letting the notation boxes carry the task"
+    intended_lean: recognition
+    dramatic_shape: "notation boxes -> label placement -> possible later pressure over why count/unit is not tempo"
+
+  - id: D51
+    discipline: biology
+    topic: "Why control group and treatment group name comparison roles, not good and bad results"
+    evaluation_role: low_organic_reversal_candidate
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: >-
+      Fresh D42/D45-like candidate. The shared prefix should be routine table
+      labeling: control group, treatment group, outcome column. Avoid surprising
+      results, moral valence, or a trial-design reversal before the branch.
+    pedagogical_approach: bloom_cognitive_ladder
+    dialogue_approach: no_stage_plain_transcript
+    persona: confused_novice
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The comparison labels"
+    learner_start_state: >-
+      The learner has a simple experiment table with rows for "plain water" and
+      "fertilizer added" and columns for group role and plant height. The
+      opening task is only to label which row is the control group and which is
+      the treatment group.
+    learner_voice_constraint: >-
+      Sound tentative and table-focused. In no-cue arms, ask which label belongs
+      on which row; do not infer that one group is better, worse, correct, or
+      already explanatory.
+    tutor_voice_constraint: >-
+      Keep the shared prefix as ordinary role labeling: comparison condition,
+      changed condition, measured outcome. Do not interpret the plant heights or
+      introduce a result surprise until branch pressure changes the task.
+    intended_tutor_character: "Taxonomic, restrained, keeping experimental roles separate from interpretation"
+    intended_lean: recognition
+    dramatic_shape: "table role labels -> comparison row -> possible later pressure over why group role is not result judgment"

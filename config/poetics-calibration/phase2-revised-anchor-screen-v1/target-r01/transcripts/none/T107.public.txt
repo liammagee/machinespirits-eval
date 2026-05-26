@@ -1,0 +1,45 @@
+STAGE: [The cart card is squared to the table edge, and the labels push, friction, gravity, and normal sit in a neat column beside the blank arrows.]
+
+TUTOR: [sets the four cards in a column beside the sleeve, then taps the empty arrow nearest the cart]
+
+"One card first. For push: what object acts on the cart?
+
+Place that card by the acting object, not by the cart’s travel. If no object is acting, the card stays off the arrow.
+
+Motion is not one of these cards."
+
+LEARNER: [slides the push card toward the hand side of the diagram]
+
+"So this is hand on cart, not just forward.
+If the hand is gone, the push card stays off.
+The arrow is for the interaction on the cart, not the cart rolling."
+
+STAGE: [A blank card is placed above the labels: FORCE ON THE CART BY _____. The earlier label placement remains visible under the sleeve.]
+
+TUTOR: [sets the blank card above the push card: FORCE ON THE CART BY _____.]
+
+"That names it: force on the cart by the hand.
+
+If the hand is gone, no hand-on-cart card.
+
+Pick one other force card. Put it under the blank. Read the sentence before the arrow moves."
+
+LEARNER: [sets the floor card under the blank]
+
+"Force on the cart by the floor.
+That arrow is the floor contact on the cart, not the rolling.
+Earth on cart would be a separate card, down."
+
+TUTOR: [sets the Earth card on the lower arrow, leaving the floor card on the contact arrow.]
+
+"Two arrows. Two acting objects.
+
+Read each full label: force on the cart by ____.
+
+Point to the floor for one. Point to Earth for the other.
+
+Neither label means rolling."
+
+LEARNER: [keeps the floor card on the contact arrow and taps the lower Earth card]
+
+"Floor on cart for the contact arrow. Earth on cart for the lower arrow. Neither card is about rolling. Does the floor card here mean normal force only, or does friction need a separate floor-on-cart arrow?"

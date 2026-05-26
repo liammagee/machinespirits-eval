@@ -441,6 +441,8 @@ describe('learner reframe event detection', () => {
     assert.match(context, /PARTIAL, FAIL, no real route change, or missing public device/);
     assert.match(context, /substantially rewrite the public turn/);
     assert.match(context, /ADAPTIVE_MECHANISM: old route -> new route/);
+    assert.match(context, /Mechanism-first rule/);
+    assert.match(context, /concrete action gate/);
   });
 
   it('explains pseudo-catharsis to the tutor as unwarranted relief rather than proven breakthrough', () => {

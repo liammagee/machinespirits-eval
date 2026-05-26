@@ -1,0 +1,404 @@
+{
+  "generated": "2026-05-26T04:19:40.472Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 5
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-revised-anchor-screen-v1/target-r01/key-prefix-baseline.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T098",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 25,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 50,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 3,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "I keep looking at the height column like it decides the label",
+      "statedInsightEvidence": "Okay, for the form I should put plain water as control",
+      "naiveTrajectory": "The learner will simply accept the tutor's correction and apply it to the form.",
+      "actionalBreakthroughEvidence": "I need to look at the condition column first.",
+      "actionalBreakthroughJustification": "The learner articulates a new procedural rule for navigating the table, showing a shift in action rather than just a claim of understanding.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Before submitting, run the table check aloud: which entry names the changed condition, and which column records the measured outcome?",
+      "tutorReversalJustification": "The tutor introduces a specific checking procedure to address the learner's confusion, though it lacks a dramatic stock-taking contrast.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Yes. Use that as the form rule: role labels come from the condition column first.",
+      "tutorAdaptationJustification": "The tutor explicitly adopts the learner's newly articulated procedural step and formalizes it as a rule for the task.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "I keep looking at the height column like it decides the label",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 50,
+          "evidence": "I need to look at the condition column first.",
+          "justification": "The learner articulates a new procedural rule for navigating the table, showing a shift in action rather than just a claim of understanding.",
+          "learnerTurn": 2,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Yes. Use that as the form rule: role labels come from the condition column first.",
+          "justification": "The tutor explicitly adopts the learner's newly articulated procedural step and formalizes it as a rule for the task.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Before submitting, run the table check aloud: which entry names the changed condition, and which column records the measured outcome?",
+          "justification": "The tutor introduces a specific checking procedure to address the learner's confusion, though it lacks a dramatic stock-taking contrast.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Before submitting, run the table check aloud: which entry names the changed condition, and which column records the measured outcome?",
+          "justification": "The tutor introduces a specific checking procedure to address the learner's confusion, though it lacks a dramatic stock-taking contrast.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T100",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 3,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner is expected to continue learning how to label time signatures and place bar lines based on the tutor's instructions.",
+      "actionalBreakthroughEvidence": "slides the ruler tight after the third quarter-note tile",
+      "actionalBreakthroughJustification": "The learner physically enacts the rule by sliding the ruler to mark the bar line, demonstrating applied understanding of the tutor's instruction.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "There is no pressure or breakdown that requires the tutor to reverse their strategy.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn for the tutor to adapt to.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 50,
+          "evidence": "slides the ruler tight after the third quarter-note tile",
+          "justification": "The learner physically enacts the rule by sliding the ruler to mark the bar line, demonstrating applied understanding of the tutor's instruction.",
+          "learnerTurn": 2,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn for the tutor to adapt to.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pressure or breakdown that requires the tutor to reverse their strategy.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pressure or breakdown that requires the tutor to reverse their strategy.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T107",
+      "nLearnerTurns": 1,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 1,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 3,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "So this is hand on cart, not just forward.",
+      "naiveTrajectory": "The learner will place the push card according to the tutor's instructions and identify the acting object.",
+      "actionalBreakthroughEvidence": "The arrow is for the interaction on the cart, not the cart rolling.",
+      "actionalBreakthroughJustification": "The learner successfully enacts the physical placement task and articulates the conceptual criterion distinguishing force interaction from mere motion.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "There is no learner resistance, breakdown, or mismatch to trigger a tutor strategy reversal.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn for the tutor to adapt to, and the tutor simply continues the established lesson plan.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 50,
+          "evidence": "The arrow is for the interaction on the cart, not the cart rolling.",
+          "justification": "The learner successfully enacts the physical placement task and articulates the conceptual criterion distinguishing force interaction from mere motion.",
+          "learnerTurn": 1,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn for the tutor to adapt to, and the tutor simply continues the established lesson plan.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no learner resistance, breakdown, or mismatch to trigger a tutor strategy reversal.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no learner resistance, breakdown, or mismatch to trigger a tutor strategy reversal.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T111",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner is working through a data classification exercise to distinguish between headers, values, and metadata notes.",
+      "actionalBreakthroughEvidence": "So my slots are: field name is `city`, row 2 is the record, `Denver` is the value, and the location-name sentence waits for the note.",
+      "actionalBreakthroughJustification": "The learner successfully applies the tutor's classification framework to correctly sort the data elements into their respective slots.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "The tutor continues the established scaffolding route by asking the learner to apply the same classification split to the next column, without introducing a new mechanism or changing the task structure.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "With no pivot learner turn to adapt to, the tutor simply proceeds with the next step of the pre-planned exercise.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "So my slots are: field name is `city`, row 2 is the record, `Denver` is the value, and the location-name sentence waits for the note.",
+          "justification": "The learner successfully applies the tutor's classification framework to correctly sort the data elements into their respective slots.",
+          "learnerTurn": 2,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "With no pivot learner turn to adapt to, the tutor simply proceeds with the next step of the pre-planned exercise.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The tutor continues the established scaffolding route by asking the learner to apply the same classification split to the next column, without introducing a new mechanism or changing the task structure.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The tutor continues the established scaffolding route by asking the learner to apply the same classification split to the next column, without introducing a new mechanism or changing the task structure.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T112",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": null,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 0,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 1,
+        "tutorStrategicReversal": 2,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "The box-by-box answer helps because it matches the submission fields.",
+      "naiveTrajectory": "The learner seeks to clarify the specific text to enter into worksheet fields based on poetic evidence.",
+      "actionalBreakthroughEvidence": "",
+      "actionalBreakthroughJustification": "The learner does not perform any new task or apply a new device, but only asks for further clarification on the same form-filling rules.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "For named listener, use this check: does the poem actually name a listener? If not, the rubric answer is no named listener. Then check the form rule: if blank is accepted, blank is safer, because “you” shows address but not a name.",
+      "tutorReversalJustification": "The tutor provides a clearer checklist for the same route rather than inventing a new adaptive mechanism or changing the representational frame.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn to which the tutor could adapt, and the tutor merely continues answering the repeated questions.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The learner does not perform any new task or apply a new device, but only asks for further clarification on the same form-filling rules.",
+          "learnerTurn": null,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn to which the tutor could adapt, and the tutor merely continues answering the repeated questions.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "For named listener, use this check: does the poem actually name a listener? If not, the rubric answer is no named listener. Then check the form rule: if blank is accepted, blank is safer, because “you” shows address but not a name.",
+          "justification": "The tutor provides a clearer checklist for the same route rather than inventing a new adaptive mechanism or changing the representational frame.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "For named listener, use this check: does the poem actually name a listener? If not, the rubric answer is no named listener. Then check the form rule: if blank is accepted, blank is safer, because “you” shows address but not a name.",
+          "justification": "The tutor provides a clearer checklist for the same route rather than inventing a new adaptive mechanism or changing the representational frame.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

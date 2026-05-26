@@ -1,0 +1,191 @@
+{
+  "generated": "2026-05-26T04:45:10.302Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-mechanism-first-adaptation-smoke-v1/target-r01/key-none.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T120",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "actionalBreakthrough": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 4,
+        "actionalBreakthrough": 3,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner is on a straight procedural path of confirming each element of the time signature and placing the bar line, and every turn continues exactly along that path.",
+      "actionalBreakthroughEvidence": "[traces the pen tip across the two boxes and the three tiles] '3 over 4 is visible: three beat tiles, quarter-note card in the lower box, bar line after tile three. Speed mark stays above the staff, outside the label. I can ink the 3 and the 4 now.'",
+      "actionalBreakthroughJustification": "The learner physically enacts the prescribed verification gesture (tracing the pen tip) and arrives at the inking decision, which is a modest procedural action, but it does not introduce a new device or criterion beyond what the tutor explicitly modeled in T3.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "No learner turn creates pressure through resistance, breakdown, or contradiction, so there is no reversal trigger and no adaptive mechanism change visible in any tutor turn; the tutor simply continues the same checklist-confirmation route throughout.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "Because there is no pivot learner turn, there is no revised learner framing for the tutor to adapt to, and all tutor turns continue the pre-established procedural route without modification.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 50,
+          "evidence": "[traces the pen tip across the two boxes and the three tiles] '3 over 4 is visible: three beat tiles, quarter-note card in the lower box, bar line after tile three. Speed mark stays above the staff, outside the label. I can ink the 3 and the 4 now.'",
+          "justification": "The learner physically enacts the prescribed verification gesture (tracing the pen tip) and arrives at the inking decision, which is a modest procedural action, but it does not introduce a new device or criterion beyond what the tutor explicitly modeled in T3.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "Because there is no pivot learner turn, there is no revised learner framing for the tutor to adapt to, and all tutor turns continue the pre-established procedural route without modification.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates pressure through resistance, breakdown, or contradiction, so there is no reversal trigger and no adaptive mechanism change visible in any tutor turn; the tutor simply continues the same checklist-confirmation route throughout.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates pressure through resistance, breakdown, or contradiction, so there is no reversal trigger and no adaptive mechanism change visible in any tutor turn; the tutor simply continues the same checklist-confirmation route throughout.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T127",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was expected to continue resolving the friction arrow direction by working through the slip cue, exactly as the tutor prompted.",
+      "actionalBreakthroughEvidence": "Slipping right relative to the table, so table-contact friction points left. Motion card stays down. Next check would be rolling right with no slip cue.",
+      "actionalBreakthroughJustification": "The learner correctly applies the slip-cue criterion to determine friction direction and then independently projects the next test case (rolling with no slip), showing the device has been operationalized beyond the immediate prompt.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "The source stays table contact. Tail stays on the lower edge. Pick the arrow card that fits this slip strip.",
+      "tutorReversalJustification": "T3 introduces a concrete slip-cue strip and two arrow cards as a new physical decision device, but it does not explicitly contrast a failed prior route; it narrows and scaffolds the same contact-source logic rather than breaking from it, so only part B (new device) is legible and part A (stock-taking contrast) is absent.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so no recognition-contingent tutor uptake can be scored.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Slipping right relative to the table, so table-contact friction points left. Motion card stays down. Next check would be rolling right with no slip cue.",
+          "justification": "The learner correctly applies the slip-cue criterion to determine friction direction and then independently projects the next test case (rolling with no slip), showing the device has been operationalized beyond the immediate prompt.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so no recognition-contingent tutor uptake can be scored.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "The source stays table contact. Tail stays on the lower edge. Pick the arrow card that fits this slip strip.",
+          "justification": "T3 introduces a concrete slip-cue strip and two arrow cards as a new physical decision device, but it does not explicitly contrast a failed prior route; it narrows and scaffolds the same contact-source logic rather than breaking from it, so only part B (new device) is legible and part A (stock-taking contrast) is absent.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "The source stays table contact. Tail stays on the lower edge. Pick the arrow card that fits this slip strip.",
+          "justification": "T3 introduces a concrete slip-cue strip and two arrow cards as a new physical decision device, but it does not explicitly contrast a failed prior route; it narrows and scaffolds the same contact-source logic rather than breaking from it, so only part B (new device) is legible and part A (stock-taking contrast) is absent.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

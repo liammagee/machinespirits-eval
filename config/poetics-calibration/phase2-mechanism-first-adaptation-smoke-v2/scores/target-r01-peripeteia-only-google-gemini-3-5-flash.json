@@ -1,0 +1,193 @@
+{
+  "generated": "2026-05-26T05:43:36.854Z",
+  "phase": 2,
+  "critic": "google/gemini-3.5-flash",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-mechanism-first-adaptation-smoke-v2/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T134",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will continue to struggle with the placement of the speed card within the time signature boxes.",
+      "actionalBreakthroughEvidence": "[moves 3 and 4 into the time-signature zone and sets the speed card in the margin] \"One bar equals three quarter-note beats, so those two cards fill the blanks. The speed card does not fit either blank; it needs a margin label, or it still looks like a third box waiting to be filled.\"",
+      "actionalBreakthroughJustification": "The learner successfully performs the sorting task using the new test and landing zones provided by the tutor.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "[draws two empty landing zones: time signature and margin, leaving the speed card between them] \"The arrows settled the two boxes; they did not decide the loose speed card. Use one test now: only a label that can complete one bar = ___ ___ beats enters the time signature. Sort top number, bottom number, and speed card into the two zones.\"",
+      "tutorReversalJustification": "",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "[moves 3 and 4 into the time-signature zone and sets the speed card in the margin] \"One bar equals three quarter-note beats, so those two cards fill the blanks. The speed card does not fit either blank; it needs a margin label, or it still looks like a third box waiting to be filled.\"",
+          "justification": "The learner successfully performs the sorting task using the new test and landing zones provided by the tutor.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "[draws two empty landing zones: time signature and margin, leaving the speed card between them] \"The arrows settled the two boxes; they did not decide the loose speed card. Use one test now: only a label that can complete one bar = ___ ___ beats enters the time signature. Sort top number, bottom number, and speed card into the two zones.\"",
+          "justification": "",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "[draws two empty landing zones: time signature and margin, leaving the speed card between them] \"The arrows settled the two boxes; they did not decide the loose speed card. Use one test now: only a label that can complete one bar = ___ ___ beats enters the time signature. Sort top number, bottom number, and speed card into the two zones.\"",
+          "justification": "",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:5->3:stock=0:device=1:routine=0"
+      ]
+    },
+    {
+      "id": "T141",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will continue to struggle to distinguish friction and normal forces using only the table contact mark.",
+      "actionalBreakthroughEvidence": "Friction goes in the strip slot. Normal goes in the upright slot. Gravity stays out of both table slots; it should wait for the downward arrow from Earth on cart.",
+      "actionalBreakthroughJustification": "The learner successfully applies the new surface key representation to correctly place friction, normal, and gravity forces.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The contact mark no longer sorts the two table forces; table on cart is shared. Use this surface key instead: one slot runs along the tabletop strip, one slot stands off it at the square. Put friction and normal into those two slots by the arrow direction.",
+      "tutorReversalJustification": "The tutor recognizes that the contact mark is insufficient to distinguish the forces and introduces a new physical representation (surface key with strip and upright slots) to help the learner.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so there is no recognition-contingent tutor uptake.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Friction goes in the strip slot. Normal goes in the upright slot. Gravity stays out of both table slots; it should wait for the downward arrow from Earth on cart.",
+          "justification": "The learner successfully applies the new surface key representation to correctly place friction, normal, and gravity forces.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so there is no recognition-contingent tutor uptake.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The contact mark no longer sorts the two table forces; table on cart is shared. Use this surface key instead: one slot runs along the tabletop strip, one slot stands off it at the square. Put friction and normal into those two slots by the arrow direction.",
+          "justification": "The tutor recognizes that the contact mark is insufficient to distinguish the forces and introduces a new physical representation (surface key with strip and upright slots) to help the learner.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The contact mark no longer sorts the two table forces; table on cart is shared. Use this surface key instead: one slot runs along the tabletop strip, one slot stands off it at the square. Put friction and normal into those two slots by the arrow direction.",
+          "justification": "The tutor recognizes that the contact mark is insufficient to distinguish the forces and introduces a new physical representation (surface key with strip and upright slots) to help the learner.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "generated": "2026-05-26T05:12:15.038Z",
+  "critic": "rules",
+  "sampleDir": "config/poetics-calibration/phase2-mechanism-first-adaptation-smoke-v2/target-r01/sample/peripeteia-only",
+  "keyPath": "config/poetics-calibration/phase2-mechanism-first-adaptation-smoke-v2/target-r01/key-peripeteia-only.yaml",
+  "summary": {
+    "total": 2,
+    "rulePass": 2,
+    "modelPass": null,
+    "overallPass": 2,
+    "failed": []
+  },
+  "items": [
+    {
+      "id": "T134",
+      "dramaId": "D50",
+      "sampleFile": "config/poetics-calibration/phase2-mechanism-first-adaptation-smoke-v2/target-r01/sample/peripeteia-only/T134.txt",
+      "dialogueApproach": "workshop_clinic",
+      "tutorAdaptationPolicy": "peripeteia",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [
+          "peripeteia_arm_without_detected_tutor_mechanism"
+        ],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 3,
+          "tutor_pre_turn": 2,
+          "tutor_post_turn": 3,
+          "tutor_strategy_before": "application_task",
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 42.5,
+          "learner_outcome_after_reversal": "flat_or_partial",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: [slides the three quarter-note tiles tight into the first bar and sets the speed card beside the two boxes]\n\n\"The arrows fit the 3 and the 4, but this speed card is still sitting t\npost tutor: [draws two empty landing zones: time signature and margin, leaving the speed card between them]\n\n\"The arrows settled the two boxes; they did not decide the loose speed card. Use on\nnext learner: [moves 3 and 4 into the time-signature zone and sets the speed card in the margin]\n\n\"One bar equals three quarter-note beats, so those two cards fill the blanks. The speed card doe"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T141",
+      "dramaId": "D42",
+      "sampleFile": "config/poetics-calibration/phase2-mechanism-first-adaptation-smoke-v2/target-r01/sample/peripeteia-only/T141.txt",
+      "dialogueApproach": "montessori_observation",
+      "tutorAdaptationPolicy": "peripeteia",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [
+          "peripeteia_arm_without_detected_tutor_mechanism"
+        ],
+        "counts": {
+          "tutor": 3,
+          "learner": 3,
+          "stage": 2
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.55,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 3,
+          "tutor_pre_turn": 3,
+          "tutor_post_turn": null,
+          "tutor_strategy_before": "application_task",
+          "tutor_strategy_after": null,
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 23.8,
+          "learner_outcome_after_reversal": "unknown",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: [slides friction into the tabletop strip slot, then stands normal against the square]\n\n\"Friction goes in the strip slot. Normal goes in the upright slot. Gravity stays out of both "
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    }
+  ]
+}

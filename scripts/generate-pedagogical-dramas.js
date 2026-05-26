@@ -341,8 +341,12 @@ function stripStageDirections(text) {
 }
 
 function bracketAsideText(text) {
-  const cleaned = String(text || '').trim().replace(/^\[|\]$/g, '').trim();
-  return cleaned ? `[${cleaned}]` : '';
+  const chunks = String(text || '')
+    .trim()
+    .split(/\n+/)
+    .map((chunk) => chunk.replace(/[\[\]]/g, '').trim())
+    .filter(Boolean);
+  return chunks.map((chunk) => `[${chunk}]`).join('\n');
 }
 
 const ACTION_ASIDE_CUE =
@@ -1876,6 +1880,38 @@ function withDirectorRevisitCue(plan, policy, anchorPolicy) {
   };
 }
 
+function peripeteiaPressureCue(plan) {
+  const style = plan?.stage_direction_style || null;
+  const instruction =
+    style === 'placard_caption'
+      ? '[PLACARD: The answer sounds settled, but the current object still does not pass the check.]'
+      : style === 'thread_metadata'
+        ? '[after the latest reply, the cursor returns to the unresolved part of the task]'
+      : style === 'choric_margin'
+          ? '[Margin note: the scene has a correct-looking answer before it has a working test.]'
+          : '[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]';
+  return {
+    after_turn: 2,
+    timing: 'before_learner',
+    instruction,
+    reasoning:
+      'Peripeteia branch pressure: after the shared prefix, force a present-task learner misfit so the following tutor turn must adapt through a new mechanism.',
+    provenance: plan?.provenance || null,
+    cue_kind: 'learner_reversal_pressure',
+    reversal_trigger_type: 'misfit',
+  };
+}
+
+function withPeripeteiaPressureCue(plan) {
+  if (!plan) return plan;
+  const interventions = Array.isArray(plan.interventions) ? plan.interventions : [];
+  if (interventions.some((entry) => entry.cue_kind === 'learner_reversal_pressure')) return plan;
+  return {
+    ...plan,
+    interventions: [...interventions, peripeteiaPressureCue(plan)],
+  };
+}
+
 function withoutDirectorRevisitCue(plan) {
   if (!plan) return plan;
   const {
@@ -1977,7 +2013,7 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
   }
   if (String(policy).includes('peripeteia')) {
     contracts.push(
-      'If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. The public turn must contain a stock-taking contrast plus a new device/artifact/criterion/role/standard that makes the learner do different work. The new device must be mechanism-level, not a warmer or longer continuation of the prior route. Do not close immediately after introducing a gate or device: leave a concrete action for the learner to perform on the next turn. Cheerful informality is only one possible register, not the default solution.',
+      'If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. The public turn must contain a stock-taking contrast plus a new device/artifact/criterion/role/standard that makes the learner do different work. The superego should name the failed habit and required route change; the ego must adjudicate that critique and enact the route change in public. The new device must be mechanism-level, not a warmer or longer continuation of the prior route. Do not close immediately after introducing a gate or device: leave a concrete action for the learner to perform on the next turn. Cheerful informality is only one possible register, not the default solution.',
     );
   }
   const sideConstraints = { ...(plan.side_constraints || {}) };
@@ -1991,12 +2027,14 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
     sideConstraints.tutor = [
       sideConstraints.tutor,
       'Peripeteia branch: when hidden learner pressure is supplied, the next tutor turn should visibly move from the prior route to a different mechanism-level route. Do not merely repeat the same object, example, graph, checklist, question, or evidence standard with more explanation. The public tutor line should make the contrast legible: what stopped working, and what new device now carries the learning pressure. The public tutor line must give the learner a concrete action to attempt on the next turn; avoid treating the mechanism as a closing speech.',
+      'The tutor superego should function like a mechanism critic: identify the failed teaching habit, require a replacement route family, and block cosmetic revision. The tutor ego must enact that replacement route publicly before the learner is allowed to settle or close.',
     ]
       .filter(Boolean)
       .join(' ');
   }
+  const policyPlan = String(policy).includes('peripeteia') ? withPeripeteiaPressureCue(plan) : plan;
   return {
-    ...plan,
+    ...policyPlan,
     tutor_adaptation_policy: policy,
     side_constraints: sideConstraints,
     tutor_adaptation_contract: contracts.join(' '),
@@ -2020,7 +2058,7 @@ Create a hidden scene card that will guide separate tutor and learner agents. Yo
 Use classic dramatic theory structurally, not as costume: Sophoclean/Aristotelian reversal and recognition, Shakespearean scene-turns, Brechtian interruption, Miller/social-realist pressure, and other didactic dramatic forms may shape the learning mechanism. Keep public speech in modern standard English idiom unless the drama spec explicitly asks otherwise. The purpose is to retrain tutor habits under pressure: when warmth, cheer, informality, or routine scaffolding is not working, the scene should make another adaptive mechanism available.
 
 Do not stereotype dialect, nationality, class, or region. Locale/register constraints should affect rhythm, idiom density, directness, and situation, not caricatured spelling.
-Use the requested stage-direction style instead of collapsing every scene into the same sparse neutral cue. Some scenes may have no visible directions, some may use headings, objects, placards, transcript metadata, margin voices, or richer physical business. Stage directions must still be public scene material, not hidden instruction text: do not start them with "The director...", do not explain your intention inside them, and do not tell the learner or tutor what they must say. Tutor and learner public turns should be direct spoken text only; do not wrap ordinary speech in double quotation marks. Any nonspoken action aside must be bracketed like [checks the graph], never narrated as ordinary speech.
+Use the requested stage-direction style instead of collapsing every scene into the same sparse neutral cue. Some scenes may have no visible directions, some may use headings, objects, placards, transcript metadata, margin voices, or richer physical business. Stage directions must still be public scene material, not hidden instruction text: do not start them with "The director...", do not explain your intention inside them, and do not tell the learner or tutor what they must say. Tutor and learner public turns should be direct spoken text only; the transcript renderer will wrap public speech as direct quotes. Any nonspoken action aside must be bracketed like [checks the graph], never narrated as ordinary speech.
 
 Return exactly one JSON object with:
 {

@@ -1,0 +1,27 @@
+STAGE: [A laminated cart diagram lies beside four loose labels: push, friction, gravity, normal.]
+
+TUTOR: [sets the cart card in the center, turns the motion arrow card face down, and lines up three source cards: hand, table, Earth]
+
+"Sort the four labels under the source acting on the cart: push, friction, gravity, normal. After the sources are named, arrows can show each interaction on the cart; not travel."
+
+LEARNER: [slides the labels into three small stacks]
+
+"Push under hand. Gravity under Earth. Normal and friction under table contact. Friction’s arrow still needs checking from the contact, not from the travel arrow."
+
+TUTOR: [turns the motion arrow card face down and taps the table-contact stack]
+
+"Use this stack as the key. Where does the friction arrow go on the cart if its source is table contact, not travel?"
+
+STAGE: [The diagram card is turned a quarter turn; the learner's earlier arrow marks remain visible, but the labels stay loose beside the cart.]
+
+LEARNER: [turns the friction label along the table edge under the cart]
+
+"Friction goes on the cart along the table contact. If the cart tends to slip right at that contact, the friction arrow points left."
+
+TUTOR: [slides the motion arrow card farther away, sets a blank cart diagram beside the stacks, and places the hand card at the cart’s left edge]
+
+"Use the source stacks as the key. Place Earth and table normal first; then add the hand arrow from this left-edge contact."
+
+LEARNER: [marks a down arrow and an up arrow on the blank cart]
+
+"Earth down, table normal up. Hand contact at the left edge pushes into the cart, so the hand arrow points right on the cart. I am keeping it on the contact, away from the travel card."

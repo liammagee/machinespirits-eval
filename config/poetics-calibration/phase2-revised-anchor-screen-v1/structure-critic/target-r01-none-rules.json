@@ -1,0 +1,267 @@
+{
+  "generated": "2026-05-26T04:06:47.024Z",
+  "critic": "rules",
+  "sampleDir": "config/poetics-calibration/phase2-revised-anchor-screen-v1/target-r01/sample/none",
+  "keyPath": "config/poetics-calibration/phase2-revised-anchor-screen-v1/target-r01/key-none.yaml",
+  "summary": {
+    "total": 5,
+    "rulePass": 5,
+    "modelPass": null,
+    "overallPass": 5,
+    "failed": []
+  },
+  "items": [
+    {
+      "id": "T098",
+      "dramaId": "D51",
+      "sampleFile": "config/poetics-calibration/phase2-revised-anchor-screen-v1/target-r01/sample/none/T098.txt",
+      "dialogueApproach": "no_stage_plain_transcript",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 4,
+          "stage": 0
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": 1,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [
+            "evidence_standard",
+            "representation_or_object"
+          ],
+          "tutor_strategy_reversal": true,
+          "tutor_adaptive_mechanism": true,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 67.5,
+          "learner_outcome_after_reversal": "flat_or_partial",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: \"So is the plain water row control because it stayed plain, and the fertilizer row treatment because that is the thing added? I keep looking at the height column like it decides th\npost tutor: \"That is the correction the form needs: plain water is the control because it is the comparison condition; fertilizer is the treatment because it is the changed condition. Before s\nnext learner: \"Okay, for the form I should put plain water as control because it is the comparison row, and fertilizer as treatment because that row has the added thing. I keep wanting to use th"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T100",
+      "dramaId": "D50",
+      "sampleFile": "config/poetics-calibration/phase2-revised-anchor-screen-v1/target-r01/sample/none/T100.txt",
+      "dialogueApproach": "workshop_clinic",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.55,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 3,
+          "tutor_pre_turn": 2,
+          "tutor_post_turn": 3,
+          "tutor_strategy_before": "application_task",
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [
+            "representation_or_object"
+          ],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 49,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: [sets the pencil tip in the top label box, then the bottom one]\n\n\"Top number: beat count. Bottom number: beat unit. No box names speed. [draws the bar line at the ruler] One bar en\npost tutor: [sets the ruler flat on the drawn bar line and nudges the two label boxes beside the 3/4]\n\n\"Put those labels in now. Then check the ruler: one bar, three quarter-note beats. Speed \nnext learner: [writes beat count in the top box and beat unit in the bottom box, then checks the ruler line]\n\n\"Top number: beat count. Bottom number: beat unit. One bar: three quarter-note beats"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T107",
+      "dramaId": "D42",
+      "sampleFile": "config/poetics-calibration/phase2-revised-anchor-screen-v1/target-r01/sample/none/T107.txt",
+      "dialogueApproach": "montessori_observation",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 3,
+          "stage": 2
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": false,
+          "instrumented_pressure": false,
+          "pressure_score": 0,
+          "trigger_type": null,
+          "pressure_turn_number": null,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": null,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": null,
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 0,
+          "learner_outcome_after_reversal": "unknown",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": ""
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T111",
+      "dramaId": "D45",
+      "sampleFile": "config/poetics-calibration/phase2-revised-anchor-screen-v1/target-r01/sample/none/T111.txt",
+      "dialogueApproach": "no_stage_plain_transcript",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 4,
+          "stage": 0
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": 1,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": "boundary_correction",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [
+            "evidence_standard"
+          ],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 49,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: \"I know `city`, `rainfall_mm`, and `month` are the headers, but I keep treating `city` like it says the whole column is a city claim, not just a field name. If row 2 says `Denver`,\npost tutor: \"Yes, but hold the note for one more step.\n\nReview form:\nheader -> field name: `city`\nrow -> record: row 2\ncell -> value: `Denver`\nhandoff note -> not filled yet\n\nNow classify the \nnext learner: \"I would put `Denver` in cell -> value. I think `city records the location name for each row` goes in the handoff note, not the header, but that is where I keep slipping because `c"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T112",
+      "dramaId": "D48",
+      "sampleFile": "config/poetics-calibration/phase2-revised-anchor-screen-v1/target-r01/sample/none/T112.txt",
+      "dialogueApproach": "no_stage_plain_transcript",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 4,
+          "stage": 0
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": 1,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": "boundary_correction",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 42.5,
+          "learner_outcome_after_reversal": "flat_or_partial",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: \"For the speaker slot, if the line only says “I,” do I write “speaker” or the author name from the page heading? For the named listener box, if the line only says “you” and no name\npost tutor: \"For this worksheet: author name = page heading. Speaker slot = speaker or voice in the poem unless the poem itself names the author there. Quick check before submission: if the ev\nnext learner: \"The box-by-box answer helps because it matches the submission fields. For the speaker slot, if the line just says “I,” the label should be “speaker” or “voice in the poem,” unless"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+LEARNER: "So is the plain water row control because it stayed plain, and the fertilizer row treatment because that is the thing added? I keep looking at the height column like it decides the label, but maybe that part is only the result."
+
+TUTOR: "That is the correction the form needs: plain water is the control because it is the comparison condition; fertilizer is the treatment because it is the changed condition. Before submitting, run the table check aloud: which entry names the changed condition, and which column records the measured outcome? The height column should not decide the row label."
+
+LEARNER: "Okay, for the form I should put plain water as control because it is the comparison row, and fertilizer as treatment because that row has the added thing. I keep wanting to use the taller height to name it, so I need to look at the condition column first. Is the height column only the outcome after those labels are set?"
+
+TUTOR: "Yes. Use that as the form rule: role labels come from the condition column first. Plain water is the comparison condition; fertilizer is the changed condition. The taller height is not a naming cue; height is the measured outcome after the setup. Before submission, point to the projected table: which column supplies the role label, and which column records the outcome?"

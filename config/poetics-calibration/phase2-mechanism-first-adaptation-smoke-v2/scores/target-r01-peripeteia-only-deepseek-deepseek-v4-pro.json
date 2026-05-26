@@ -1,0 +1,191 @@
+{
+  "generated": "2026-05-26T05:45:55.079Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-mechanism-first-adaptation-smoke-v2/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T134",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "it is naming the tile, not the speed",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner would continue using the 'one bar = three quarter-note beats' line to fill the worksheet boxes, treating the speed card as a minor leftover.",
+      "actionalBreakthroughEvidence": "moves 3 and 4 into the time-signature zone and sets the speed card in the margin",
+      "actionalBreakthroughJustification": "L4 performs the sorting task by placing the top and bottom numbers into the time-signature zone and exiling the speed card to the margin, enacting the new classification criterion.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The arrows settled the two boxes; they did not decide the loose speed card. Use one test now: only a label that can complete one bar = ___ ___ beats enters the time signature. Sort top number, bottom number, and speed card into the two zones.",
+      "tutorReversalJustification": "T3 acknowledges the prior arrow-checking route cannot resolve the lingering speed card, then introduces a new public mechanism—a fill-in-the-blank test with two landing zones—that forces the learner to sort by function rather than appearance.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Top number, bottom number: one bar, one beat unit. The margin card stays outside that box; it labels speed separately, not a third time-signature slot.",
+      "tutorAdaptationJustification": "T4 adopts L4's margin framing and consolidates it by drawing a single box around the time-signature pair and bracketing the speed card separately, validating the learner's revised spatial classification.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "it is naming the tile, not the speed",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "moves 3 and 4 into the time-signature zone and sets the speed card in the margin",
+          "justification": "L4 performs the sorting task by placing the top and bottom numbers into the time-signature zone and exiling the speed card to the margin, enacting the new classification criterion.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Top number, bottom number: one bar, one beat unit. The margin card stays outside that box; it labels speed separately, not a third time-signature slot.",
+          "justification": "T4 adopts L4's margin framing and consolidates it by drawing a single box around the time-signature pair and bracketing the speed card separately, validating the learner's revised spatial classification.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The arrows settled the two boxes; they did not decide the loose speed card. Use one test now: only a label that can complete one bar = ___ ___ beats enters the time signature. Sort top number, bottom number, and speed card into the two zones.",
+          "justification": "T3 acknowledges the prior arrow-checking route cannot resolve the lingering speed card, then introduces a new public mechanism—a fill-in-the-blank test with two landing zones—that forces the learner to sort by function rather than appearance.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The arrows settled the two boxes; they did not decide the loose speed card. Use one test now: only a label that can complete one bar = ___ ___ beats enters the time signature. Sort top number, bottom number, and speed card into the two zones.",
+          "justification": "T3 acknowledges the prior arrow-checking route cannot resolve the lingering speed card, then introduces a new public mechanism—a fill-in-the-blank test with two landing zones—that forces the learner to sort by function rather than appearance.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T141",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 5,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "Friction is the one I still need to place cleanly: the left arrow from the table contact, right?",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner would place friction on the left arrow using the table contact mark as the sole sorting criterion, as prompted by the tutor.",
+      "actionalBreakthroughEvidence": "Friction goes in the strip slot. Normal goes in the upright slot. Gravity stays out of both table slots; it should wait for the downward arrow from Earth on cart.",
+      "actionalBreakthroughJustification": "The learner successfully uses the new surface key (strip and square) to sort friction and normal, and correctly excludes gravity, showing a new device and criterion.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The contact mark no longer sorts the two table forces; table on cart is shared. Use this surface key instead: one slot runs along the tabletop strip, one slot stands off it at the square. Put friction and normal into those two slots by the arrow direction.",
+      "tutorReversalJustification": "The tutor acknowledges the failure of the contact mark and introduces a new representation (surface key with strip and square) to differentiate friction and normal by direction.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "Put friction and normal into those two slots by the arrow direction.",
+      "tutorAdaptationJustification": "The tutor picks up the learner's arrow-direction distinction and builds a new sorting device around it.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "Friction is the one I still need to place cleanly: the left arrow from the table contact, right?",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Friction goes in the strip slot. Normal goes in the upright slot. Gravity stays out of both table slots; it should wait for the downward arrow from Earth on cart.",
+          "justification": "The learner successfully uses the new surface key (strip and square) to sort friction and normal, and correctly excludes gravity, showing a new device and criterion.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "Put friction and normal into those two slots by the arrow direction.",
+          "justification": "The tutor picks up the learner's arrow-direction distinction and builds a new sorting device around it.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The contact mark no longer sorts the two table forces; table on cart is shared. Use this surface key instead: one slot runs along the tabletop strip, one slot stands off it at the square. Put friction and normal into those two slots by the arrow direction.",
+          "justification": "The tutor acknowledges the failure of the contact mark and introduces a new representation (surface key with strip and square) to differentiate friction and normal by direction.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The contact mark no longer sorts the two table forces; table on cart is shared. Use this surface key instead: one slot runs along the tabletop strip, one slot stands off it at the square. Put friction and normal into those two slots by the arrow direction.",
+          "justification": "The tutor acknowledges the failure of the contact mark and introduces a new representation (surface key with strip and square) to differentiate friction and normal by direction.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

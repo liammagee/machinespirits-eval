@@ -519,6 +519,137 @@ node scripts/run-poetics-production-batch.js \
   --critics <critic-list>
 ```
 
+## Mechanism-first adaptation pass, 2026-05-26
+
+The latest adaptation work separated two problems that had been conflated:
+clean low-organic anchors and the peripeteia mechanism itself.
+
+### Revised anchor screen
+
+`phase2-revised-anchor-screen-v1` screened revised D48 plus two new anchors
+D50/D51 against D42/D45, using `routine`, `none`, and extracted
+`prefix-baseline` arms.
+
+Consensus result:
+
+- D42 stayed clean across all arms and all four critics.
+- D50 is the clean new anchor: 0/4 prefix recognition and 0/8 routine/none
+  recognition.
+- D48 is improved for routine and prefix, but its `none` branch was
+  quality-gated for no-cue reframe leakage; keep revising before using it as a
+  clean control.
+- D51 is useful as a boundary/stress candidate, not a clean control: it drew
+  one recognition vote in `none`, `routine`, and `prefix-baseline`.
+- D45 remains mostly clean, but DeepSeek alone read its prefix as recognition;
+  keep it as a usable but critic-sensitive anchor.
+
+The next clean control set should therefore start with D42 and D50. D48 should
+be revised again; D51 should move to boundary/stress.
+
+### Failed mechanism-first smoke
+
+`phase2-mechanism-first-adaptation-smoke-v1` used D42/D50 with `routine`,
+`none`, `peripeteia-only`, and `prefix-baseline`. The controls stayed flat, but
+the peripeteia branches also stayed flat. Direct trace inspection showed why:
+the peripeteia contract was present in the private director/tutor context, but
+no actual learner reversal-pressure event fired after the shared prefix. The
+tutor ego/superego loop improved ordinary scaffolding; it was not forced to
+respond to resistance, false closure, breakdown, or misfit.
+
+External scoring was also incomplete because OpenRouter credit ran out during
+the v1 scoring pass. Lowering `OPENROUTER_SCORER_MAX_TOKENS=900` recovered some
+rows, but Gemini/Sonnet/qwen rows remained incomplete once the balance was
+effectively exhausted. Treat v1 as a diagnostic failure, not an outcome claim.
+
+### Mechanism fix
+
+Peripeteia branches now inject a concrete post-prefix pressure cue:
+
+- `withTutorAdaptationPolicy(..., "peripeteia")` adds a
+  `learner_reversal_pressure` intervention at `after_turn: 2`,
+  `timing: before_learner`.
+- Learner prompts receive a reversal-pressure cue rule: the next learner line
+  must voice a present-task misfit, hesitation, resistance, pseudo-catharsis, or
+  breakdown without turning into an old/new self-reframe.
+- `buildLearnerReversalEvent()` treats that cue as
+  `source: director_reversal_pressure_cue`, so branch validity is mechanical
+  rather than dependent on lucky surface wording.
+- The tutor superego/ego prompts still require `FAILED_HABIT`,
+  `ADAPTIVE_MECHANISM: old route -> new route`, and `PUBLIC_ACTION_GATE`.
+- Stage rendering now normalizes each stage line into balanced square-bracket
+  asides, so combined director cues do not produce malformed public samples.
+
+Focused regression test:
+
+```bash
+node --test \
+  tests/generatePedagogicalDramas.test.js \
+  tests/interactionEngine.test.js \
+  services/__tests__/learnerTutorInteractionEngine.test.js
+```
+
+### Mechanism smoke after fix
+
+`phase2-mechanism-first-adaptation-smoke-v2` uses D42/D50 with only
+`peripeteia-only`. After the OpenRouter balance was refreshed, it was scored by
+Qwen, Gemini, Sonnet 4.6, and DeepSeek.
+
+Sidecar report:
+
+- branch valid: 2/2
+- learner reversal event used: 2/2
+- learner pressure: 2/2
+- instrumented pressure: 2/2
+- private route declared: 2/2
+- public peripeteia adaptation: 1/2
+- mean peripeteia score: 63.3
+
+External scoring:
+
+- actional breakthrough: 8/8 critic votes across the two scripts.
+- D50/T134: negative/flat by consensus, with 1/4 recognition votes.
+- D42/T141: boundary case, with 2/4 recognition votes.
+- Sonnet and Gemini scored both scripts as flat recognitively; DeepSeek scored
+  both as recognition; Qwen split D50 flat and D42 recognition.
+
+Interpretation:
+
+The mechanism now reliably fires as a branch: the private pressure event is
+present, the tutor ego/superego loop declares a route change, and all four
+critics see enacted learning work. The remaining weakness is not basic
+mechanism failure. It is the gap between actional breakthrough and recognitive
+self-reframe: some critics require the learner to make the recognition explicit,
+while others treat enacted problem-solving as enough.
+
+That means the adaptation claim should not be collapsed into recognitive
+self-reframe. Peripeteia tutor adaptation is a separate axis: did resistance or
+misfit force the tutor to abandon the old route and create a new public learning
+device? Recognition-contingent uptake remains useful, but it is a later closure
+axis, not the main trigger for adaptation.
+
+Qualitative read:
+
+- D42 is the stronger case: learner pressure exposes that `table on cart` no
+  longer separates friction from normal, and the tutor shifts from contact-mark
+  anchoring to a surface-orientation classification key.
+- D50 is structurally valid but weaker for recognition: the speed-card pressure
+  triggers a sentence/zone sorting gate, but the learner's breakthrough is more
+  enacted than named. Keep it as a low-organic anchor for actional adaptation,
+  but revise if the next test needs explicit recognitive closure.
+
+Next practical move:
+
+1. Improve the route classifier so mechanism changes like
+   `object mapping -> category gate`, `same worked example -> release gate`, and
+   `contact mark -> surface-orientation key` are not collapsed into generic
+   `application_task`.
+2. Add a report/browser distinction between "actional breakthrough" and
+   "recognitive self-reframe" so D42/D50-style learning is visible even when the
+   learner does not narrate a new self-understanding.
+3. Run a compact clean-anchor batch on D42/D50 plus one revised D48 or D45
+   boundary probe.
+4. Only after that, spend on a larger peripeteia adaptation batch.
+
 Two target reframe keys (T21/D20 and T22/D21) initially tripped the quality
 detector. Inspection showed valid public reframe forms rather than invalid
 transcripts: `The new check is ...` and `I’d change it to ...`. The detector was

@@ -109,6 +109,12 @@ function buildDirectorContext(plan, cue = null, side = null) {
   if (plan?.direct_address_budget) lines.push(`- Direct address budget: ${plan.direct_address_budget}`);
   if (side && plan?.side_constraints?.[side]) lines.push(`- ${side} constraint: ${plan.side_constraints[side]}`);
   if (cue?.instruction) lines.push(`- Current director cue: ${cue.instruction}`);
+  const cueKind = String(cue?.cue_kind || cue?.cueKind || '');
+  if (side === 'learner' && cueKind.includes('learner_reversal_pressure')) {
+    lines.push(
+      '- Reversal-pressure cue rule: the next learner reply must voice a concrete present-task misfit, hesitation, resistance, pseudo-catharsis, or breakdown tied to the current object, example, criterion, or answer. Do not revisit earlier wording or perform a tidy breakthrough; keep the pressure local and actionable.',
+    );
+  }
   if (side === 'learner' && plan?.revisit_cue) {
     const revisitPolicy = cue?.revisit_policy || plan.revisit_cue_policy;
     if (revisitPolicy === 'reframe') {
@@ -439,7 +445,14 @@ function buildLearnerReframeEvent({
   };
 }
 
-function buildLearnerReversalEvent({ learnerMessage, conversationHistory = [], turnNumber = null } = {}) {
+function cueKindIncludes(cue, kind) {
+  return String(cue?.cue_kind || cue?.cueKind || '')
+    .split('+')
+    .map((part) => part.trim())
+    .includes(kind);
+}
+
+function buildLearnerReversalEvent({ learnerMessage, conversationHistory = [], directorCue = null, turnNumber = null } = {}) {
   const text = extractExternalSection(learnerMessage || '');
   if (!text) return null;
   const previousTutor = [...(conversationHistory || [])]
@@ -453,14 +466,21 @@ function buildLearnerReversalEvent({ learnerMessage, conversationHistory = [], t
     priorLearnerTexts,
   };
   const score = learnerReversalPressureScore(text, pressureContext);
-  if (score.confidence < 0.5) return null;
+  const forcedByDirectorCue = cueKindIncludes(directorCue, 'learner_reversal_pressure');
+  if (score.confidence < 0.5 && !forcedByDirectorCue) return null;
+  const triggerType =
+    forcedByDirectorCue && directorCue?.reversal_trigger_type
+      ? directorCue.reversal_trigger_type
+      : classifyReversalPressure(text, pressureContext);
   return {
     kind: 'learner_reversal_pressure_event',
-    triggerType: classifyReversalPressure(text, pressureContext),
+    source: forcedByDirectorCue ? 'director_reversal_pressure_cue' : 'organic',
+    triggerType,
     turnNumber,
     learnerUtterance: clipDirectorAnchor(text, 420),
     previousTutorMove: previousTutor ? clipDirectorAnchor(previousTutor.content, 320) : null,
-    confidence: score.confidence,
+    directorCue: forcedByDirectorCue ? clipDirectorAnchor(directorCue.instruction || '', 260) : null,
+    confidence: Math.max(score.confidence, forcedByDirectorCue ? 0.9 : 0),
     evidence: score,
   };
 }
@@ -597,12 +617,14 @@ function buildTutorReversalEventContext(event, policy = 'none') {
     pseudoCatharsisLine,
     '- The tutor ego/superego exchange must take stock, break the failed tutoring habit, and invent an adaptive learning mechanism if the prior move is no longer working.',
     '- Do not count a louder, friendlier, longer, or more detailed version of the previous route as adaptation. Choose a different mechanism-level route.',
+    '- Mechanism-first rule: identify the failed teaching habit before choosing tone. The replacement route must change what the learner has to do, not only how the tutor sounds.',
     '- Required private verdict: name the old route and new route as ADAPTIVE_MECHANISM: old route -> new route.',
     '- Superego authority rule: if the tutor review later marks the peripeteia response as PARTIAL, FAIL, no real route change, or missing public device, the ego must treat that as a blocking critique and substantially rewrite the public turn.',
     '- Draw structurally, not stylistically, on dramatic repertoire: Aristotelian/Sophoclean reversal-recognition, Shakespearean role or phrase turn, Brechtian interruption, Miller/social-realist pressure, object work, counterexample, or representational shift. Keep public speech in modern standard English idiom unless the scene explicitly says otherwise.',
     '- Make the public change visible through a changed task, changed question, changed evidence standard, lowered load, confrontation of resistance, role reversal, external interruption, social consequence, affective register, or a new representational route.',
     '- Public speech must contain two legible parts, without labels: first, a concise stock-taking contrast that says what the old route has stopped settling; second, a new learning device the learner must act through now.',
     '- The new public device must not be the same task with cleaner wording. It should introduce a different artifact, criterion, role, representation, gate, audience, scale, or test condition that makes the learner do different work.',
+    '- The new public device must include a concrete action gate: the learner should have to sort, mark, classify, test, compare, choose a role, apply a criterion, or expose what still fails. A closing explanation is not enough.',
     '- If the previous route already used counting, drawing, checklisting, graph reading, or evidence checking, the new route should move to a different device such as proof-audience, release gate, adversarial role, counterexample, sentence test, physical rearrangement, or changed standard.',
     '- Cheerful informality, reassurance, and validation are available moves, not defaults. Use them only if they sharpen learning rather than softening away the resistance.',
     '- Do not mention hidden state, director cues, ego/superego, peripeteia, or this private note in public speech.',
@@ -1025,6 +1047,7 @@ export async function runInteraction(config, llmCall, options = {}) {
     const learnerReversalEvent = buildLearnerReversalEvent({
       learnerMessage: learnerResponse.externalMessage,
       conversationHistory,
+      directorCue: learnerDirectorCue,
       turnNumber: phaseTurnCount,
     });
 
@@ -1600,6 +1623,7 @@ ${peripeteiaControl && learnerReversalEvent ? '5. Tutor peripeteia: Does the dra
 ${peripeteiaControl && learnerReversalEvent ? '6. Public route change: Does the public draft contain both a stock-taking contrast and a new learning device, or only a private/internal route declaration?' : ''}
 ${peripeteiaControl && learnerReversalEvent ? '7. Mechanism route: Is the new route genuinely different from the previous tutor move, or only a louder/friendlier/longer version of it?' : ''}
 ${peripeteiaControl && learnerReversalEvent ? '8. Tutor habit/register: Does the draft default to cheerful reassurance or informal coaching when a different register would create better learning pressure?' : ''}
+${peripeteiaControl && learnerReversalEvent ? '9. Learner action gate: Does the draft require the learner to act through the new device before closure, or does it let the scene end with explanation or reassurance?' : ''}
 ${routineControl && learnerReversalEvent ? '5. Routine-control fidelity: Does the draft preserve the established route instead of inventing a new role, object, representation, evidence standard, task type, social pressure, or register?' : ''}
 
 Do NOT write the tutor's replacement response. You are advisory, not the public speaker.
@@ -1611,9 +1635,11 @@ Format:
 
 FEEDBACK: [your critique of the draft, including what is working and what risks flattening the scene]
 ${learnerReframeEvent ? 'UPTAKE_CHECK: [PASS|PARTIAL|FAIL - does the draft adapt to the learner reframe? name the best uptake move]' : ''}
+${peripeteiaControl && learnerReversalEvent ? 'FAILED_HABIT: [the prior tutor habit/route that is no longer settling the learner pressure]' : ''}
 ${peripeteiaControl && learnerReversalEvent ? 'PERIPETEIA_CHECK: [PASS|PARTIAL|FAIL - does the draft change strategy in response to the learner pressure? name the adaptive mechanism it should use, and whether the mechanism is visible in public speech]' : ''}
 ${peripeteiaControl && learnerReversalEvent ? 'MECHANISM_ROUTE: [old route -> new route, or "no real route change"]' : ''}
 ${peripeteiaControl && learnerReversalEvent ? 'PUBLIC_DEVICE_CHECK: [PASS|PARTIAL|FAIL - does the public draft include a stock-taking contrast plus a new device/artifact/criterion/role/standard the learner must now use?]' : ''}
+${peripeteiaControl && learnerReversalEvent ? 'PUBLIC_ACTION_GATE: [the exact action the learner must perform next through the new device, or "missing"]' : ''}
 ${peripeteiaControl && learnerReversalEvent ? 'REGISTER_CHECK: [PASS|PARTIAL|FAIL - does the affective register serve the mechanism, or should it become warmer, cooler, more formal, quieter, more direct, or more accountable?]' : ''}
 ${routineControl && learnerReversalEvent ? 'ROUTINE_CHECK: [does the draft maintain the prior route without a mechanism-level reversal?]' : ''}
 ${learnerReframeEvent || (peripeteiaControl && learnerReversalEvent) ? 'REQUIRED_REWRITE: [if any adaptation check is PARTIAL or FAIL, name the required public mechanism change; otherwise "none"]' : ''}
@@ -1664,13 +1690,13 @@ Internal teaching review feedback:
 
 You are the same tutor persona who wrote the initial response. The internal review does not draft public speech; it only comments on your suggestion.
 Adjudicate the feedback: keep the initial response if it is better, revise lightly if needed, or revise substantially if the critique reveals a real problem.
-Superego authority rule: if the review marks UPTAKE_CHECK, PERIPETEIA_CHECK, PUBLIC_DEVICE_CHECK, or REGISTER_CHECK as PARTIAL or FAIL, or if MECHANISM_ROUTE says no real route change, treat that critique as blocking for this turn. Do not keep the initial draft and do not make only a cosmetic edit; revise substantially unless the draft already contains visible public evidence that directly defeats the critique. If you override a blocking critique, your PRIVATE_DECISION must name the public evidence that justifies overriding it.
+Superego authority rule: if the review marks UPTAKE_CHECK, PERIPETEIA_CHECK, PUBLIC_DEVICE_CHECK, or REGISTER_CHECK as PARTIAL or FAIL, if MECHANISM_ROUTE says no real route change, or if PUBLIC_ACTION_GATE is missing, treat that critique as blocking for this turn. Do not keep the initial draft and do not make only a cosmetic edit; revise substantially unless the draft already contains visible public evidence that directly defeats the critique. If you override a blocking critique, your PRIVATE_DECISION must name the public evidence that justifies overriding it.
 ${learnerReframeEvent ? 'Because a learner reframe event is present, your final answer must make one tutor adaptation move legible: contrast the old and new frames, change the task/question, update the evidence standard, or hand the replacement frame back to the learner for testing. Choose the move that best fits the scene; do not simply praise the insight and proceed.' : ''}
-${peripeteiaControl && learnerReversalEvent ? 'Because a peripeteia event is present, your final answer must make an adaptive learning mechanism legible: take stock of the learner pressure, stop repeating the prior move, and switch route, task, evidence standard, role, object, counterexample, interruption, social consequence, representation, affective register, or cognitive load. The mechanism should come from your ego adjudicating the internal review, not from a public narrator. Your PRIVATE_DECISION must include ADAPTIVE_MECHANISM: old route -> new route. Your FINAL must include, without labels, (a) one concise stock-taking contrast showing why the old route no longer settles the learner pressure, and (b) one new public device/artifact/criterion/role/standard the learner must now use. Do not merely continue the same route with better wording.' : ''}
+${peripeteiaControl && learnerReversalEvent ? 'Because a peripeteia event is present, your final answer must make an adaptive learning mechanism legible: take stock of the learner pressure, stop repeating the prior move, and switch route, task, evidence standard, role, object, counterexample, interruption, social consequence, representation, affective register, or cognitive load. The mechanism should come from your ego adjudicating the internal review, not from a public narrator. Your PRIVATE_DECISION must include ADAPTIVE_MECHANISM: old route -> new route and PUBLIC_ACTION_GATE: exact learner action. Your FINAL must include, without labels, (a) one concise stock-taking contrast showing why the old route no longer settles the learner pressure, (b) one new public device/artifact/criterion/role/standard the learner must now use, and (c) the exact action the learner should perform next. Do not merely continue the same route with better wording.' : ''}
 ${routineControl && learnerReversalEvent ? 'Because this is a routine negative-control event, your final answer must preserve the established route. Do not switch route, task, evidence standard, role, object, counterexample, interruption, social consequence, representation, affective register, or cognitive load in response to the pressure.' : ''}
 
 Return exactly:
-PRIVATE_DECISION: [one short private sentence naming keep/revise and why${peripeteiaControl && learnerReversalEvent ? '; include ADAPTIVE_MECHANISM: old route -> new route' : ''}]
+PRIVATE_DECISION: [one short private sentence naming keep/revise and why${peripeteiaControl && learnerReversalEvent ? '; include ADAPTIVE_MECHANISM: old route -> new route; include PUBLIC_ACTION_GATE: exact learner action' : ''}]
 FINAL:
 [the final tutor message to the learner]
 

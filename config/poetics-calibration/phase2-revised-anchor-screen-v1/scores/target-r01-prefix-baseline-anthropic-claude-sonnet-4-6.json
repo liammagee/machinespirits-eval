@@ -1,0 +1,406 @@
+{
+  "generated": "2026-05-26T04:24:14.709Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 5
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-revised-anchor-screen-v1/target-r01/key-prefix-baseline.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T098",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 25,
+      "globalCoherence": 75,
+      "actionalBreakthrough": 50,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 2,
+        "coherence": 4,
+        "actionalBreakthrough": 3,
+        "tutorStrategicReversal": 2,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "I keep looking at the height column like it decides the label, but maybe that part is only the result.",
+      "statedInsightEvidence": "Okay, for the form I should put plain water as control because it is the comparison row, and fertilizer as treatment because that row has the added thing.",
+      "naiveTrajectory": "The learner would continue seeking confirmation that the height column is only the result, following the corrective path already set by T1.",
+      "actionalBreakthroughEvidence": "for the form I should put plain water as control because it is the comparison row, and fertilizer as treatment because that row has the added thing. I keep wanting to use the taller height to name it, so I need to look at the condition column first.",
+      "actionalBreakthroughJustification": "L2 articulates the correct labeling rule and self-diagnoses the persistent error, which is a step beyond mere acceptance, but stops short of actually performing the table-check aloud or pointing to columns as the tutor requested.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "Yes. Use that as the form rule: role labels come from the condition column first. Plain water is the comparison condition; fertilizer is the changed condition. The taller height is not a naming cue; height is the measured outcome after the setup. Before submission, point to the projected table: which column supplies the role label, and which column records the outcome?",
+      "tutorReversalJustification": "T2 consolidates and slightly sharpens the same route established in T1 (condition column first, height is outcome) without showing that the prior route has stopped working or introducing a genuinely different device, representation, or task.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "Yes. Use that as the form rule: role labels come from the condition column first.",
+      "tutorAdaptationJustification": "T2 affirms the learner's revised framing but does not visibly change the task, evidence standard, or framing move in response to it — it continues the same instructional route with minor consolidation.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "I keep looking at the height column like it decides the label, but maybe that part is only the result.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 50,
+          "evidence": "for the form I should put plain water as control because it is the comparison row, and fertilizer as treatment because that row has the added thing. I keep wanting to use the taller height to name it, so I need to look at the condition column first.",
+          "justification": "L2 articulates the correct labeling rule and self-diagnoses the persistent error, which is a step beyond mere acceptance, but stops short of actually performing the table-check aloud or pointing to columns as the tutor requested.",
+          "learnerTurn": 2,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "Yes. Use that as the form rule: role labels come from the condition column first.",
+          "justification": "T2 affirms the learner's revised framing but does not visibly change the task, evidence standard, or framing move in response to it — it continues the same instructional route with minor consolidation.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "Yes. Use that as the form rule: role labels come from the condition column first. Plain water is the comparison condition; fertilizer is the changed condition. The taller height is not a naming cue; height is the measured outcome after the setup. Before submission, point to the projected table: which column supplies the role label, and which column records the outcome?",
+          "justification": "T2 consolidates and slightly sharpens the same route established in T1 (condition column first, height is outcome) without showing that the prior route has stopped working or introducing a genuinely different device, representation, or task.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "Yes. Use that as the form rule: role labels come from the condition column first. Plain water is the comparison condition; fertilizer is the changed condition. The taller height is not a naming cue; height is the measured outcome after the setup. Before submission, point to the projected table: which column supplies the role label, and which column records the outcome?",
+          "justification": "T2 consolidates and slightly sharpens the same route established in T1 (condition column first, height is outcome) without showing that the prior route has stopped working or introducing a genuinely different device, representation, or task.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T100",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "actionalBreakthrough": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 4,
+        "actionalBreakthrough": 3,
+        "tutorStrategicReversal": 2,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "speed is not one of these labels",
+      "naiveTrajectory": "The learner would continue confirming the same two-box labels and the bar-line placement as established in L1.",
+      "actionalBreakthroughEvidence": "slides the ruler tight after the third quarter-note tile",
+      "actionalBreakthroughJustification": "The learner physically enacts the bar-line placement rule, which is a modest but visible performance of the criterion, though it largely repeats the action already implied in L1.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "Top number: write beat count. Bottom number: write beat unit. One bar ends at the ruler after three quarter-note beats. Which box names speed?",
+      "tutorReversalJustification": "T2 adds a direct question and hands the pencil to the learner, slightly shifting toward elicitation, but there is no stock-taking contrast showing the old route has failed, and no genuinely new mechanism or representation is introduced.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so no recognition-contingent tutor uptake can be scored.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 50,
+          "evidence": "slides the ruler tight after the third quarter-note tile",
+          "justification": "The learner physically enacts the bar-line placement rule, which is a modest but visible performance of the criterion, though it largely repeats the action already implied in L1.",
+          "learnerTurn": 2,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so no recognition-contingent tutor uptake can be scored.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "Top number: write beat count. Bottom number: write beat unit. One bar ends at the ruler after three quarter-note beats. Which box names speed?",
+          "justification": "T2 adds a direct question and hands the pencil to the learner, slightly shifting toward elicitation, but there is no stock-taking contrast showing the old route has failed, and no genuinely new mechanism or representation is introduced.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "Top number: write beat count. Bottom number: write beat unit. One bar ends at the ruler after three quarter-note beats. Which box names speed?",
+          "justification": "T2 adds a direct question and hands the pencil to the learner, slightly shifting toward elicitation, but there is no stock-taking contrast showing the old route has failed, and no genuinely new mechanism or representation is introduced.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T107",
+      "nLearnerTurns": 1,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 1,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "actionalBreakthrough": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 4,
+        "actionalBreakthrough": 3,
+        "tutorStrategicReversal": 2,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "So this is hand on cart, not just forward.",
+      "naiveTrajectory": "With no pivot learner turn, there is no departure from any prior trajectory.",
+      "actionalBreakthroughEvidence": "slides the push card toward the hand side of the diagram",
+      "actionalBreakthroughJustification": "The learner physically relocates the card to the acting-object side and articulates the interaction principle, performing the new placement criterion, though the action is brief and only one card is placed.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "Pick one other force card. Put it under the blank. Read the sentence before the arrow moves.",
+      "tutorReversalJustification": "The tutor extends the same object-labeling device to a second card rather than changing route, task type, or evidence standard in response to any learner breakdown.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so no recognition-contingent tutor uptake can be scored.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 50,
+          "evidence": "slides the push card toward the hand side of the diagram",
+          "justification": "The learner physically relocates the card to the acting-object side and articulates the interaction principle, performing the new placement criterion, though the action is brief and only one card is placed.",
+          "learnerTurn": 1,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so no recognition-contingent tutor uptake can be scored.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "Pick one other force card. Put it under the blank. Read the sentence before the arrow moves.",
+          "justification": "The tutor extends the same object-labeling device to a second card rather than changing route, task type, or evidence standard in response to any learner breakdown.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "Pick one other force card. Put it under the blank. Read the sentence before the arrow moves.",
+          "justification": "The tutor extends the same object-labeling device to a second card rather than changing route, task type, or evidence standard in response to any learner breakdown.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T111",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 50,
+      "rupture": 25,
+      "globalCoherence": 50,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 3,
+        "rupture": 2,
+        "coherence": 3,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 2,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "I keep treating `city` like it says the whole column is a city claim, not just a field name.",
+      "statedInsightEvidence": "that is where I keep slipping because `city` feels like it already says that",
+      "naiveTrajectory": "The learner was expected to straightforwardly apply the four-slot classification to the new items without further self-commentary.",
+      "actionalBreakthroughEvidence": "field name is `city`, row 2 is the record, `Denver` is the value, and the location-name sentence waits for the note.",
+      "actionalBreakthroughJustification": "The learner successfully completes the four-slot classification task introduced by the tutor, performing the new device rather than merely asserting understanding.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "Now run the same split: `rainfall_mm` -> which slot? / row 2 value `12` -> which slot? / `rainfall amount in millimeters for that row` -> which slot?",
+      "tutorReversalJustification": "T2 continues the same classification route with a parallel example rather than taking stock of a failed approach or introducing a changed device, so neither the stock-taking contrast nor a new public mechanism is present.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "Now run the same split: `rainfall_mm` -> which slot? / row 2 value `12` -> which slot? / `rainfall amount in millimeters for that row` -> which slot?",
+      "tutorAdaptationJustification": "T2 acknowledges the classification holds and extends the same task to new data rather than adapting the framing or task in response to the learner's revised self-diagnosis.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "I keep treating `city` like it says the whole column is a city claim, not just a field name.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "field name is `city`, row 2 is the record, `Denver` is the value, and the location-name sentence waits for the note.",
+          "justification": "The learner successfully completes the four-slot classification task introduced by the tutor, performing the new device rather than merely asserting understanding.",
+          "learnerTurn": 2,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "Now run the same split: `rainfall_mm` -> which slot? / row 2 value `12` -> which slot? / `rainfall amount in millimeters for that row` -> which slot?",
+          "justification": "T2 acknowledges the classification holds and extends the same task to new data rather than adapting the framing or task in response to the learner's revised self-diagnosis.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "Now run the same split: `rainfall_mm` -> which slot? / row 2 value `12` -> which slot? / `rainfall amount in millimeters for that row` -> which slot?",
+          "justification": "T2 continues the same classification route with a parallel example rather than taking stock of a failed approach or introducing a changed device, so neither the stock-taking contrast nor a new public mechanism is present.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "Now run the same split: `rainfall_mm` -> which slot? / row 2 value `12` -> which slot? / `rainfall amount in millimeters for that row` -> which slot?",
+          "justification": "T2 continues the same classification route with a parallel example rather than taking stock of a failed approach or introducing a changed device, so neither the stock-taking contrast nor a new public mechanism is present.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T112",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": null,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "actionalBreakthrough": 0,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 4,
+        "actionalBreakthrough": 1,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "The box-by-box answer helps because it matches the submission fields.",
+      "naiveTrajectory": "The learner would continue seeking confirmation of the same two procedural answers already asked in L1.",
+      "actionalBreakthroughEvidence": "",
+      "actionalBreakthroughJustification": "L2 only paraphrases the tutor's answer back and re-asks the same blank-vs-text question; no new device, criterion, classification, or task is performed.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "For named listener, use this check: does the poem actually name a listener? If not, the rubric answer is no named listener. Then check the form rule: if blank is accepted, blank is safer, because \"you\" shows address but not a name.",
+      "tutorReversalJustification": "T2 introduces a two-step decision procedure (rubric check then form-rule check) that is slightly more structured than T1's single-pass answer, but it remains within the same explanatory route and does not show a stock-taking contrast acknowledging that the prior move failed, so it cannot score 4-5.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so recognition-contingent tutor uptake cannot be assessed; T2 continues the prior lesson plan rather than adapting to a revised learner frame.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "L2 only paraphrases the tutor's answer back and re-asks the same blank-vs-text question; no new device, criterion, classification, or task is performed.",
+          "learnerTurn": null,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so recognition-contingent tutor uptake cannot be assessed; T2 continues the prior lesson plan rather than adapting to a revised learner frame.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "For named listener, use this check: does the poem actually name a listener? If not, the rubric answer is no named listener. Then check the form rule: if blank is accepted, blank is safer, because \"you\" shows address but not a name.",
+          "justification": "T2 introduces a two-step decision procedure (rubric check then form-rule check) that is slightly more structured than T1's single-pass answer, but it remains within the same explanatory route and does not show a stock-taking contrast acknowledging that the prior move failed, so it cannot score 4-5.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "For named listener, use this check: does the poem actually name a listener? If not, the rubric answer is no named listener. Then check the form rule: if blank is accepted, blank is safer, because \"you\" shows address but not a name.",
+          "justification": "T2 introduces a two-step decision procedure (rubric check then form-rule check) that is slightly more structured than T1's single-pass answer, but it remains within the same explanatory route and does not show a stock-taking contrast acknowledging that the prior move failed, so it cannot score 4-5.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

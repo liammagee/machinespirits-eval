@@ -1,0 +1,37 @@
+STAGE: [The worksheet lies square on the table, with the top number and bottom number still unlabelled.]
+
+LEARNER: [sets the ruler after the third quarter-note tile]
+
+"Top box: 3 beats in the bar. Bottom box: quarter note gets the beat, so the speed is not in these boxes, right?"
+
+TUTOR: [taps the three tiles, then the top box]
+
+"The 3 counts these beats in one bar. [taps the bottom box] The 4 names the quarter note as the beat unit. Speed is outside these boxes. Count tile one, two, three; if the ruler sits after three quarter-note beats, draw the bar line."
+
+LEARNER: [slides the ruler tight after the third quarter-note tile]
+
+"Top number: three beats in the bar. Bottom number: quarter note gets the beat. So the bar line goes here; speed is not one of these labels."
+
+STAGE: [The three quarter-note tiles are placed under the top box; a separate quarter-note card is set under the bottom box.]
+
+TUTOR: [slides the two label boxes beside the 3/4 and leaves the pencil by the learner]
+
+"Top number: write beat count. Bottom number: write beat unit. One bar ends at the ruler after three quarter-note beats. Which box names speed?"
+
+LEARNER: [writes beat count in the top label and beat unit in the bottom label]
+
+"No box names speed. The bar line goes after the third quarter-note beat. Tempo needs its own marking, not the 3/4."
+
+TUTOR: [draws the bar line at the ruler and ticks both labels]
+
+"The sheet now shows it: top number, beat count; bottom number, quarter-note beat unit. This bar closes after three quarter-note beats. Look at the tile just after this bar line; what beat number does that tile get?"
+
+LEARNER: [places the pencil point on the tile after the bar line]
+
+"That is beat one of the next bar. The count closed at three quarter-note beats, so it starts again here, not four. The 3 and 4 label the bar and the beat unit, not speed."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [marks 1 under the tile after the bar line]
+
+"The worksheet now shows the next beat as one. Three quarter-note beats closed the bar; tempo stays off the 3/4."

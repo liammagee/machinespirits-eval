@@ -14,7 +14,7 @@
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import interactionEngine from '../services/learnerTutorInteractionEngine.js';
-import { runInteraction } from '../services/learnerTutorInteractionEngine.js';
+import { buildLearnerReversalEvent, runInteraction } from '../services/learnerTutorInteractionEngine.js';
 const { INTERACTION_OUTCOMES } = interactionEngine;
 
 // ---------------------------------------------------------------------------
@@ -68,6 +68,25 @@ const MINIMAL_SCENARIO = {
 // ---------------------------------------------------------------------------
 
 describe('runInteraction (multi-turn)', () => {
+  it('treats director learner-pressure cues as reversal events even when wording is understated', () => {
+    const event = buildLearnerReversalEvent({
+      learnerMessage: 'I can put the label there.',
+      conversationHistory: [{ role: 'tutor', content: 'Use the same label check and write it in the box.' }],
+      directorCue: {
+        cue_kind: 'learner_reversal_pressure',
+        instruction: 'The marked answer and the remaining task now sit under visible pressure.',
+        reversal_trigger_type: 'misfit',
+      },
+      turnNumber: 2,
+    });
+
+    assert.ok(event);
+    assert.equal(event.source, 'director_reversal_pressure_cue');
+    assert.equal(event.triggerType, 'misfit');
+    assert.equal(event.confidence, 0.9);
+    assert.match(event.directorCue, /visible pressure/);
+  });
+
   let stubLlm;
 
   beforeEach(() => {
@@ -402,8 +421,16 @@ describe('runInteraction (multi-turn)', () => {
       'tutor superego should name old and new routes for peripeteia',
     );
     assert.ok(
+      tutorSuperegoPrompts.some((prompt) => /FAILED_HABIT/.test(prompt)),
+      'tutor superego should name the failed teaching habit',
+    );
+    assert.ok(
       tutorSuperegoPrompts.some((prompt) => /PUBLIC_DEVICE_CHECK/.test(prompt)),
       'tutor superego should check that the private route becomes a public device',
+    );
+    assert.ok(
+      tutorSuperegoPrompts.some((prompt) => /PUBLIC_ACTION_GATE/.test(prompt)),
+      'tutor superego should require a concrete learner action gate',
     );
     assert.ok(
       tutorSuperegoPrompts.some((prompt) => /REGISTER_CHECK/.test(prompt)),
@@ -426,6 +453,10 @@ describe('runInteraction (multi-turn)', () => {
     assert.ok(
       tutorAdjudicationPrompts.some((prompt) => /ADAPTIVE_MECHANISM: old route -> new route/.test(prompt)),
       'tutor ego adjudication should require a private route-change verdict',
+    );
+    assert.ok(
+      tutorAdjudicationPrompts.some((prompt) => /PUBLIC_ACTION_GATE: exact learner action/.test(prompt)),
+      'tutor ego adjudication should require a concrete public action gate',
     );
     assert.ok(
       tutorAdjudicationPrompts.some((prompt) => /stock-taking contrast/.test(prompt) && /new public device/.test(prompt)),

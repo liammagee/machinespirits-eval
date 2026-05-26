@@ -1,0 +1,45 @@
+STAGE: [The cart card is squared to the table edge, and the labels push, friction, gravity, and normal sit in a neat column beside the blank arrows.]
+
+TUTOR: [sets the four cards in a column beside the sleeve, then taps the empty arrow nearest the cart]
+
+"One card first. For push: what object acts on the cart?
+
+Place that card by the acting object, not by the cart’s travel. If no object is acting, the card stays off the arrow.
+
+Motion is not one of these cards."
+
+LEARNER: [slides the push card toward the hand side of the diagram]
+
+"So this is hand on cart, not just forward.
+If the hand is gone, the push card stays off.
+The arrow is for the interaction on the cart, not the cart rolling."
+
+STAGE: [A blank card is placed above the labels: FORCE ON THE CART BY _____. The earlier label placement remains visible under the sleeve.]
+
+TUTOR: [sets the blank card above the push card: FORCE ON THE CART BY _____.]
+
+"That names it: force on the cart by the hand.
+
+If the hand is gone, no hand-on-cart card.
+
+Pick one other force card. Put it under the blank. Read the sentence before the arrow moves."
+
+LEARNER: [places the Earth card under the blank]
+
+"Force on the cart by Earth.
+That puts the arrow down, not along the track.
+The acting object gets named first."
+
+TUTOR: [slides the Earth card beside the downward arrow]
+
+"Earth on cart. Down.
+
+That arrow is not the cart’s trip along the track. It is the interaction named by the card.
+
+Next card: floor. Put it under the blank. Read the sentence before the arrow moves."
+
+LEARNER: [sets the floor card under the blank]
+
+"Force on the cart by floor.
+Up from the track contact, not along the track.
+Is that the support force?"

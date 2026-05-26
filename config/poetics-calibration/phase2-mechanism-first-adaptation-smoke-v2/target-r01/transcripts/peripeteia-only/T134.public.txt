@@ -1,0 +1,38 @@
+STAGE: [A 3/4 card sits above two empty boxes labeled beats in the bar and which note gets one beat, with three quarter-note tiles and one movable bar-line strip beside it.]
+
+LEARNER: [sets three quarter-note tiles under 3/4 and slides the bar-line strip after the third]
+
+"Top 3 is three beats in the bar, and bottom 4 means the quarter-note tile is the beat unit, right? It still looks a little like a fraction, so I want to check that it is naming the tile, not the speed."
+
+TUTOR: [places a small “1 beat unit” card above one quarter-note tile, leaving the bar-line strip after the third tile]
+
+"Keep this arrangement. Top 3 points to the three beat slots inside this one bar; bottom 4 points to which visible tile? Put the card on that tile, then write: one bar = three quarter-note beats."
+
+LEARNER: [moves the card onto one quarter-note tile and writes under the three tiles]
+
+"One bar equals three quarter-note beats. The 3 counts these three slots; the 4 names this tile. So there is no speed label in either box."
+
+TUTOR: [sets a small blank card beside the two boxes, outside the bar and taps the written line]
+
+"Use that line as the check. Top number: arrow to the three slots in one bar. Bottom number: arrow to one quarter-note beat unit. The blank card stays outside; neither box points there."
+
+STAGE: [Slide the three quarter-note tiles into the first bar and place a small blank card labeled speed beside, but not inside, either worksheet box.]
+[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]
+
+LEARNER: [slides the three quarter-note tiles tight into the first bar and sets the speed card beside the two boxes]
+
+"The arrows fit the 3 and the 4, but this speed card is still sitting there like an unfinished label. The written line fills the boxes: one bar = three quarter-note beats. Where does the speed label go on the worksheet if it stays outside the time signature?"
+
+TUTOR: [draws two empty landing zones: time signature and margin, leaving the speed card between them]
+
+"The arrows settled the two boxes; they did not decide the loose speed card. Use one test now: only a label that can complete one bar = ___ ___ beats enters the time signature. Sort top number, bottom number, and speed card into the two zones."
+
+LEARNER: [moves 3 and 4 into the time-signature zone and sets the speed card in the margin]
+
+"One bar equals three quarter-note beats, so those two cards fill the blanks. The speed card does not fit either blank; it needs a margin label, or it still looks like a third box waiting to be filled."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [draws one box around the stacked 3 and 4, then brackets the speed card separately in the margin]
+
+"Top number, bottom number: one bar, one beat unit. The margin card stays outside that box; it labels speed separately, not a third time-signature slot."

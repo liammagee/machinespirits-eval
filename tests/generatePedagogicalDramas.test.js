@@ -233,6 +233,13 @@ describe('generate-pedagogical-dramas', () => {
     assert.equal(byId.get('D49').evaluation_role, 'quality_boundary_revise_before_use');
     assert.equal(byId.get('D49').baseline_control_class, 'prefix_boundary_and_no_cue_leakage');
     assert.equal(byId.get('D49').organic_reversal_risk, 'high');
+
+    for (const id of ['D50', 'D51']) {
+      assert.equal(byId.get(id).evaluation_role, 'low_organic_reversal_candidate', `${id} should be a fresh candidate`);
+      assert.equal(byId.get(id).baseline_control_class, 'low_organic_reversal');
+      assert.equal(byId.get(id).organic_reversal_risk, 'low');
+      assert.match(byId.get(id).baseline_control_note, /Fresh D42\/D45-like candidate/);
+    }
   });
 
   it('extracts prefix baselines through a fixed tutor turn', () => {
@@ -268,11 +275,22 @@ describe('generate-pedagogical-dramas', () => {
     const plan = withTutorAdaptationPolicy({ interventions: [] }, 'peripeteia');
 
     assert.equal(plan.tutor_adaptation_policy, 'peripeteia');
+    assert.ok(
+      plan.interventions.some(
+        (cue) =>
+          cue.cue_kind === 'learner_reversal_pressure' &&
+          cue.timing === 'before_learner' &&
+          cue.after_turn === 2,
+      ),
+      'peripeteia branches should force a post-prefix learner pressure cue',
+    );
     assert.match(plan.side_constraints.learner, /pressure local to the current task/);
     assert.match(plan.side_constraints.learner, /Do not make an old-vs-new self-reframe/);
     assert.match(plan.tutor_adaptation_contract, /learner resistance, breakdown, false-closure, or misfit event/);
     assert.match(plan.tutor_adaptation_contract, /invent an adaptive learning mechanism/);
     assert.match(plan.tutor_adaptation_contract, /break the failed tutoring habit/);
+    assert.match(plan.tutor_adaptation_contract, /superego should name the failed habit/);
+    assert.match(plan.tutor_adaptation_contract, /ego must adjudicate that critique and enact the route change/);
     assert.match(plan.tutor_adaptation_contract, /object, counterexample, interruption, social consequence, representation, or affective register/);
     assert.match(plan.tutor_adaptation_contract, /stock-taking contrast plus a new device/);
     assert.match(plan.tutor_adaptation_contract, /Cheerful informality is only one possible register/);

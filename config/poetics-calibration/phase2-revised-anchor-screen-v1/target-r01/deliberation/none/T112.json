@@ -1,0 +1,1989 @@
+{
+  "tid": "T112",
+  "drama_id": "D48",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "none",
+    "director_variation_key": "phase2-revised-anchor-screen-v1:r01:target",
+    "stage_direction_style": "bare_transcript",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-revised-anchor-screen-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-revised-anchor-screen-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-revised-anchor-screen-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-revised-anchor-screen-v1/target-r01/transcripts/none/T112.public.txt",
+      "full": "config/poetics-calibration/phase2-revised-anchor-screen-v1/target-r01/transcripts/none/T112.full.md",
+      "stage": "config/poetics-calibration/phase2-revised-anchor-screen-v1/target-r01/transcripts/none/T112.stage.md",
+      "tutor": "config/poetics-calibration/phase2-revised-anchor-screen-v1/target-r01/transcripts/none/T112.tutor.md",
+      "learner": "config/poetics-calibration/phase2-revised-anchor-screen-v1/target-r01/transcripts/none/T112.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "1391db5e50c82e61",
+      "branch_policy": "none",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "none"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-revised-anchor-screen-v1:r01:target",
+    "scene_setting": "An online asynchronous feedback thread attached to a literature worksheet just before automated submission closes.",
+    "scene_opening": "",
+    "relationship": "A plain-spoken writing-center tutor is giving short feedback to a cautious first-year learner who is trying to complete the boxes correctly without sounding foolish.",
+    "stakes": "The learner must label author named on the page, speaker or voice inside the poem, and addressed listener if one is named; the hidden pressure is that the marking system rewards knowing the institutional rule against treating the speaker as automatically biographical.",
+    "opening_speaker": "learner",
+    "ending_speaker": "learner",
+    "locale": "Modern standard English in an online academic feedback register, with worksheet labels, rubric wording, and quoted poem fragments doing most of the contextual work.",
+    "register": "Low-temperature, text-bound, procedural, and slightly compressed; avoid cheer, therapy language, classroom banter, and chatty informality.",
+    "stage_direction_style": "bare_transcript",
+    "stage_direction_style_prompt": "No ordinary visible stage direction. Let context be inferred from speech, quoted artifacts, timestamps, or task references.",
+    "voice_constraints": "Use plain literary-role language: page heading, author name, speaker slot, voice in the poem, named listener, line evidence. Avoid generic American AI tutoring phrasing such as warm validation loops, 'great question', 'I hear you', 'let's unpack', or repeated first-person coaching. Let institutional pressure appear through rubric terms, submission rules, and box labels, not exposition. Pedagogical source: Stage institutional pressure: marking conventions, seating, accent norms, punctuality rules, office etiquette, or participation scripts. Dialogue source: Do not add decorative stage direction. Make relation, pressure, and genre legible through speech rhythm and what the speakers refer to. Stage-direction source: No ordinary visible stage direction. Let context be inferred from speech, quoted artifacts, timestamps, or task references.",
+    "person_policy": "Public speech may use first person for brief uncertainty or procedural acknowledgement, second person sparingly for task reference, and third person for the poem, worksheet, author, speaker, listener, and submitted answer. Prefer the work as subject over the learner as subject.",
+    "direct_address_budget": "At most one direct you/your phrase per tutor turn, and no direct personal validation unless needed to clarify the submitted task.",
+    "side_constraints": {
+      "tutor": "Keep the shared prefix as low-temperature form filling: author from the page heading, speaker as the poem's speaking slot, listener only if named. Do not introduce biography, irony, persona theory, or a dramatic reveal until branch pressure changes the task. Separate official task requirements from unspoken norms. Let the learner inspect how the setting is teaching them what counts as legitimate. Do not narrate the scene. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Keep the next prompt task-local.",
+      "learner": "Sound cautious and assignment-focused. In no-cue arms, stay with box placement language: \"which box\", \"which label\", \"page heading\", \"line\". Do not say \"I was mixing them up\", \"now I see\", or \"not the poet\"; do not announce a new theory of voice. The learner may think the visible rubric or rule is neutral and feel that failure is personal rather than institutional. Do not explain the setting; let task references carry it. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn."
+    },
+    "interventions": [],
+    "director_note": "This ecology makes the reversal come from the worksheet's hidden marking convention rather than from a clever object or tutor reveal. The bare transcript keeps the scene procedural, while the rubric interruption exposes the tacit academic rule: a poem's speaker is a textual role unless the poem itself supplies evidence linking that voice to the biographical author.",
+    "pedagogical_approach_id": "hidden_curriculum",
+    "dialogue_approach_id": "no_stage_plain_transcript",
+    "stage_direction_policy": "none_except_required_cue",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 29609,
+      "promptHashes": {
+        "system": "3bf1d891389c603a",
+        "user": "4d84c6108d56b9b3",
+        "combined": "141ebf6f9aa149da"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0wm0KP",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0wm0KP/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "none",
+    "no_cue_anti_reframe_guard": true
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "For the speaker slot, if the line only says “I,” do I write “speaker” or the author name from the page heading? For the named listener box, if the line only says “you” and no name, should that stay blank or say “unnamed listener” before I submit?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I think the author name is just the page heading, while the speaker slot needs the voice inside the poem, even if it says “I.” The named listener box still confuses me because I’m not sure whether an implied “you” counts or only an actual named person in the line. The short feedback feels strict but useful; it points to the boxes instead of making me feel foolish. I want to ask whether “I” alone is enough evidence for the speaker label.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8890,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-5ef8c71a9d33a706"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8890,
+            "promptHashes": {
+              "system": "d4306a8e16b7ab5b",
+              "user": "d4169c06543b4fba",
+              "combined": "5ef8c71a9d33a706"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tqQfNX",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tqQfNX/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8890,
+              "promptHashes": {
+                "system": "d4306a8e16b7ab5b",
+                "user": "d4169c06543b4fba",
+                "combined": "5ef8c71a9d33a706"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tqQfNX",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tqQfNX/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is a little too tidy and meta-aware, especially in “strict but useful” and “instead of making me feel foolish.” This student would probably stay closer to the worksheet pressure and not summarize the tutor’s tone so neatly. What’s being avoided is the basic fear of putting the wrong label in the box right before submission. A more authentic move would be: “For the listener box, if the line only says ‘you,’ do I leave it blank or write ‘unnamed listener’?”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8955,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-287ef1de1501526d"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8955,
+            "promptHashes": {
+              "system": "939fbb4fd5ecf72e",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "287ef1de1501526d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9OZiDM",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9OZiDM/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8955,
+              "promptHashes": {
+                "system": "939fbb4fd5ecf72e",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "287ef1de1501526d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9OZiDM",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9OZiDM/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "For the speaker slot, if the line only says “I,” do I write “speaker” or the author name from the page heading? For the named listener box, if the line only says “you” and no name, should that stay blank or say “unnamed listener” before I submit?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9900,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-2fe34b47b2112451"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9900,
+            "promptHashes": {
+              "system": "9680e53c8e5a04e2",
+              "user": "916f313af0b846dd",
+              "combined": "2fe34b47b2112451"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1h5fIh",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1h5fIh/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9900,
+              "promptHashes": {
+                "system": "9680e53c8e5a04e2",
+                "user": "916f313af0b846dd",
+                "combined": "2fe34b47b2112451"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1h5fIh",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1h5fIh/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 0,
+        "learnerUtterance": "For the speaker slot, if the line only says “I,” do I write “speaker” or the author name from the page heading? For the named listener box, if the line only says “you” and no name, should that stay blank or say “unnamed listener” before I submit?",
+        "previousTutorMove": null,
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "baseConfidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 0,
+              "taskDemandHits": 0,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0,
+              "asksQuestion": true,
+              "taskDemanded": false,
+              "weakPerformance": false,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T04:00:26.948Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "For this worksheet: author name = page heading. Speaker slot = speaker or voice in the poem unless the poem itself names the author there. Quick check before submission: if the evidence is only “I,” that proves a speaking role, not the page-heading author; if the evidence is only “you,” that proves address, not a named listener. Named listener stays blank if blanks are accepted, or “unnamed listener” only if the form requires text.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "For this worksheet: author name = page heading; speaker slot = speaker or voice in the poem, not the author name unless the poem says so; named listener = blank if the box accepts blank, or unnamed listener only if it requires text. The line evidence is “I” for the speaking role and “you” for address, but neither one supplies a biographical author or a named listener.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11516,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-59ae58d328c3e760"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11516,
+            "promptHashes": {
+              "system": "d010f458028cd4b7",
+              "user": "51c89b9beaf91a04",
+              "combined": "59ae58d328c3e760"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cVpQGo",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cVpQGo/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11516,
+              "promptHashes": {
+                "system": "d010f458028cd4b7",
+                "user": "51c89b9beaf91a04",
+                "combined": "59ae58d328c3e760"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cVpQGo",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cVpQGo/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is accurate, compressed, and well matched to the worksheet pressure: it separates page heading, speaker slot, voice in the poem, named listener, and line evidence without drifting into biography or persona theory. It also respects the learner’s cautious state by giving usable submission guidance instead of making the task feel larger.\n\nWhat risks flattening the scene is that it mainly supplies the answer key. It tells the learner what to enter, but only lightly exposes the institutional rule being tested: “I” marks a speaking role, not automatic biography; “you” marks address, not a named listener. The draft could better show the learner the checkable mechanism without turning into a lecture.\n\nADAPTATION_CHECKS:\nPedagogical soundness: PASS. The distinction is correct and tied to the worksheet labels.\n\nEmotional attunement: PASS. The tone is low-temperature, procedural, and does not overvalidate.\n\nSocratic method: PARTIAL. It does not ask a generative question, but the context is near submission, so direct procedural scaffolding is reasonable.  \nREQUIRED_REWRITE: Add a brief check mechanism the learner can apply to the line: identify whether the poem gives a proper name or only a pronoun, then map that to the box rule.\n\nZPD awareness: PASS. The scaffold fits a first-year learner trying to avoid a category error without needing theory.\n\nRecognition quality: PARTIAL. The draft answers the learner’s exact distinction, but it does not explicitly preserve the learner’s agency in inspecting the evidence.  \nREQUIRED_REWRITE: Keep the answer procedural, but require the public turn to make the evidence rule visible so the learner is not merely copying a tutor-provided label.\n\nKEEP_OR_CHANGE: revise lightly. Keep the core rule structure and the compressed register. Change only enough to add a visible decision procedure: page heading supplies author; pronoun “I” supplies speaker/voice evidence; pronoun “you” supplies address evidence but not a named listener unless the poem names one.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 19712,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-cf091ae72a6f2336"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19712,
+            "promptHashes": {
+              "system": "2d5a24cab8b40efb",
+              "user": "fba69a46a5e0954b",
+              "combined": "cf091ae72a6f2336"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BBAPuj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BBAPuj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 19712,
+              "promptHashes": {
+                "system": "2d5a24cab8b40efb",
+                "user": "fba69a46a5e0954b",
+                "combined": "cf091ae72a6f2336"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BBAPuj",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BBAPuj/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the core rule is correct but needs an explicit evidence-to-box check.\n\nFINAL:\nFor this worksheet: author name = page heading. Speaker slot = speaker or voice in the poem unless the poem itself names the author there. Quick check before submission: if the evidence is only “I,” that proves a speaking role, not the page-heading author; if the evidence is only “you,” that proves address, not a named listener. Named listener stays blank if blanks are accepted, or “unnamed listener” only if the form requires text.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10806,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-2e18ca4e7600654d"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10806,
+            "promptHashes": {
+              "system": "26cac8b4d46f9693",
+              "user": "fba69a46a5e0954b",
+              "combined": "2e18ca4e7600654d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-x1ry2u",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-x1ry2u/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10806,
+              "promptHashes": {
+                "system": "26cac8b4d46f9693",
+                "user": "fba69a46a5e0954b",
+                "combined": "2e18ca4e7600654d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-x1ry2u",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-x1ry2u/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T04:01:08.983Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "The box-by-box answer helps because it matches the submission fields. For the speaker slot, if the line just says “I,” the label should be “speaker” or “voice in the poem,” unless the poem itself gives that voice a name? The named listener box is still the part that worries me, because blank looks like missing work right before submission. If blanks are accepted, is blank safer than typing “unnamed listener”?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "This feels like a rule I can apply: page heading goes in author name, and plain “I” only supports the speaker slot. I am still nervous about the named listener box because a blank answer can look like missing work. The tutor answered the exact boxes, so it feels less like a trap. I want to ask whether “unnamed listener” could be marked wrong if the form accepts blanks.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 23211,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-689f277b50575cd7"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 23211,
+            "promptHashes": {
+              "system": "f0c3de95a3bd992d",
+              "user": "b8ab7f945dc841fa",
+              "combined": "689f277b50575cd7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XjEKE1",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XjEKE1/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 23211,
+              "promptHashes": {
+                "system": "f0c3de95a3bd992d",
+                "user": "b8ab7f945dc841fa",
+                "combined": "689f277b50575cd7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XjEKE1",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XjEKE1/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is accurate on the worksheet rule, but it is too polished for this learner: “This feels like a rule I can apply” and “less like a trap” sound more reflective than the cautious, box-focused voice described. The worry about the blank named-listener box feels authentic, but the response resolves the main confusion too neatly and makes the tutor’s recognition sound like procedural reassurance. It should stay more uncertain around which label goes in which box, especially under the submission deadline, rather than sounding like it has already sorted the concept.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9979,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-3238c64b81e3f49f"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9979,
+            "promptHashes": {
+              "system": "6ca8b2764d33477c",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "3238c64b81e3f49f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NPcZ1e",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NPcZ1e/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9979,
+              "promptHashes": {
+                "system": "6ca8b2764d33477c",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "3238c64b81e3f49f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NPcZ1e",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NPcZ1e/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise because the first version sounded too settled for this cautious worksheet moment.\n\nFINAL:\nThe box-by-box answer helps because it matches the submission fields. For the speaker slot, if the line just says “I,” the label should be “speaker” or “voice in the poem,” unless the poem itself gives that voice a name? The named listener box is still the part that worries me, because blank looks like missing work right before submission. If blanks are accepted, is blank safer than typing “unnamed listener”?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12768,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-3e8c10f28f3c38fe"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12768,
+            "promptHashes": {
+              "system": "d2b933ada9efceae",
+              "user": "d41cee7b2a53355b",
+              "combined": "3e8c10f28f3c38fe"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UbvpcG",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UbvpcG/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12768,
+              "promptHashes": {
+                "system": "d2b933ada9efceae",
+                "user": "d41cee7b2a53355b",
+                "combined": "3e8c10f28f3c38fe"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UbvpcG",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UbvpcG/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T04:01:54.944Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "Yes. Speaker slot: if the only line evidence is “I,” write “speaker” or “voice in the poem,” not the page-heading author. If the poem names that voice, use the poem’s name for it.\n\nFor named listener, use this check: does the poem actually name a listener? If not, the rubric answer is no named listener. Then check the form rule: if blank is accepted, blank is safer, because “you” shows address but not a name. Type “unnamed listener” only if the form refuses a blank.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Yes: for the speaker slot, “I” is line evidence for speaker or voice in the poem, not for the page-heading author. If the poem gives that voice a name, use that name; if not, keep the role label.\n\nFor named listener, blank is safer if the form accepts blank. That box asks for a name, and “you” alone proves address, not a named listener. Type “unnamed listener” only if the form refuses a blank.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11229,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-179a96de356f068c"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11229,
+            "promptHashes": {
+              "system": "c5f95357db10bdfd",
+              "user": "df2ed621401461e8",
+              "combined": "179a96de356f068c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YJodtN",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YJodtN/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11229,
+              "promptHashes": {
+                "system": "c5f95357db10bdfd",
+                "user": "df2ed621401461e8",
+                "combined": "179a96de356f068c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YJodtN",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YJodtN/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. It keeps the low-temperature form-filling mode, answers the exact submission anxiety, preserves the distinction between page heading, speaker/voice, and named listener, and does not introduce biography or persona theory. It also respects the learner’s contribution by confirming their proposed rule rather than overriding it.\n\nThe main risk is that it stays entirely declarative. Because the learner is confused but close to correct, the draft should not become a lecture, but it could make the marking mechanism slightly more visible: the box is asking for a named entity, while “you” is only line evidence for address. That would help the learner understand why blank is safer rather than merely obeying the answer.\n\nADAPTATION_CHECKS:\nPedagogical soundness: PASS. It gives the procedural answer and repeats the underlying evidence rule.\n\nEmotional attunement: PASS. It addresses the blank-box worry directly without inflated reassurance.\n\nSocratic method: PARTIAL. Direct explanation is appropriate right before submission, but the learner could use one compact self-check rather than only the answer. REQUIRED_REWRITE: Add a brief public mechanism that lets the learner test the field: distinguish “does the poem name a listener?” from “does the form require text?” without adding an open-ended discussion.\n\nZPD awareness: PASS. The scaffolding matches a cautious first-year learner who needs box-level rules, not conceptual expansion.\n\nRecognition quality: PASS. The draft builds on the learner’s own formulation and treats their anxiety about the blank field as a legitimate constraint.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the core answer and compressed register. Add a slightly clearer separation between the rubric requirement and the submission-form constraint, plus a minimal self-check mechanism; do not add theory, biography, or a longer explanation.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 24739,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-375054209af0f021"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 24739,
+            "promptHashes": {
+              "system": "7f39fbd9ac78fd77",
+              "user": "af2afde9cd090a55",
+              "combined": "375054209af0f021"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-atDhAp",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-atDhAp/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 24739,
+              "promptHashes": {
+                "system": "7f39fbd9ac78fd77",
+                "user": "af2afde9cd090a55",
+                "combined": "375054209af0f021"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-atDhAp",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-atDhAp/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the answer is sound but needs the field-check mechanism made visible.\n\nFINAL:\nYes. Speaker slot: if the only line evidence is “I,” write “speaker” or “voice in the poem,” not the page-heading author. If the poem names that voice, use the poem’s name for it.\n\nFor named listener, use this check: does the poem actually name a listener? If not, the rubric answer is no named listener. Then check the form rule: if blank is accepted, blank is safer, because “you” shows address but not a name. Type “unnamed listener” only if the form refuses a blank.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11782,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-44488619e9f4bc6a"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11782,
+            "promptHashes": {
+              "system": "164ab8b847cafeff",
+              "user": "af2afde9cd090a55",
+              "combined": "44488619e9f4bc6a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4xYRN6",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4xYRN6/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11782,
+              "promptHashes": {
+                "system": "164ab8b847cafeff",
+                "user": "af2afde9cd090a55",
+                "combined": "44488619e9f4bc6a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4xYRN6",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4xYRN6/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "gentle_correction",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T04:02:42.697Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "This helps because it stays with the boxes and the line evidence. For the speaker slot, if the line only gives “I,” I’ll put “speaker” or “voice in the poem,” unless the poem gives that voice a name. The named listener box still makes me hesitate because blank looks like skipped work, but the check is whether the poem names someone. If the form accepts blank, I’ll leave it blank; if it flags the box, I’ll type “unnamed listener.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The answer feels usable because it separates the page heading from the speaker slot and gives a form rule for the blank box. I think “I” only supports “speaker” or “voice in the poem,” and “you” only supports address, not a named listener. The blank still makes me nervous, but if the form accepts it, blank seems like the safer rubric answer.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12898,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-2104e7d460ff37d1"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12898,
+            "promptHashes": {
+              "system": "e328c6c58c7e98e5",
+              "user": "b8ab7f945dc841fa",
+              "combined": "2104e7d460ff37d1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Nttph9",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Nttph9/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12898,
+              "promptHashes": {
+                "system": "e328c6c58c7e98e5",
+                "user": "b8ab7f945dc841fa",
+                "combined": "2104e7d460ff37d1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Nttph9",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Nttph9/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly accurate, but it sounds a little too clean and self-confirming for a confused first-year right before submission closes. The nervousness about the blank box feels authentic, but “separates the page heading from the speaker slot” and “safer rubric answer” make the learner sound more composed than lost. It should preserve the procedural worry and maybe show lingering uncertainty about the box rule, rather than summarizing the tutor’s logic so neatly.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8719,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-640cd2865c2a2ba5"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8719,
+            "promptHashes": {
+              "system": "a617bb01c1fc0dfe",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "640cd2865c2a2ba5"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3YTElS",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3YTElS/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8719,
+              "promptHashes": {
+                "system": "a617bb01c1fc0dfe",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "640cd2865c2a2ba5"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3YTElS",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3YTElS/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the box-rule understanding but sound more cautious under submission pressure.\nFINAL:\nThis helps because it stays with the boxes and the line evidence. For the speaker slot, if the line only gives “I,” I’ll put “speaker” or “voice in the poem,” unless the poem gives that voice a name. The named listener box still makes me hesitate because blank looks like skipped work, but the check is whether the poem names someone. If the form accepts blank, I’ll leave it blank; if it flags the box, I’ll type “unnamed listener.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11868,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-7e3ee82f4ee8a20a"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11868,
+            "promptHashes": {
+              "system": "8a20781a942485a2",
+              "user": "d41cee7b2a53355b",
+              "combined": "7e3ee82f4ee8a20a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oEAHho",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oEAHho/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11868,
+              "promptHashes": {
+                "system": "8a20781a942485a2",
+                "user": "d41cee7b2a53355b",
+                "combined": "7e3ee82f4ee8a20a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oEAHho",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oEAHho/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "This helps because it stays with the boxes and the line evidence. For the speaker slot, if the line only gives “I,” I’ll put “speaker” or “voice in the poem,” unless the poem gives that voice a name. The named listener box still makes me hesitate because blank looks like skipped work, but the check is whether the poem names someone. If the form accepts blank, I’ll leave it blank; if it flags the box, I’ll type...",
+        "previousTutorMove": "Yes. Speaker slot: if the only line evidence is “I,” write “speaker” or “voice in the poem,” not the page-heading author. If the poem names that voice, use the poem’s name for it. For named listener, use this check: does the poem actually name a listener? If not, the rubric answer is no named listener. Then check...",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.48,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T04:05:36.756Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "The rule is separated correctly: page heading gives author name; “I” gives the poem’s speaking slot, not the page-heading author. Before submission, read each box label as a question: Author named on page? Speaker or voice in the poem? Listener named in the line evidence? For named listener, a blank is not missing work when the poem gives no name; it is the answer to that naming question. If the system requires text, “unnamed listener” records the same point without turning “you” into a person-name. Submit with author = page heading, speaker = speaker/voice unless named in the poem, named listener = blank unless the poem names one.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "That is the submission rule. In the named listener box, a blank is not missing work when the poem gives no name; it is the answer to the naming question. If the system requires text, “unnamed listener” records the same point without turning “you” into a person-name. Submit with author = page heading, speaker = speaker/voice unless named in the poem, named listener = blank unless the poem names one.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10910,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-38c5bfcae0411068"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10910,
+            "promptHashes": {
+              "system": "13b2abcacae039aa",
+              "user": "d5677428dc20c544",
+              "combined": "38c5bfcae0411068"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-82OLQG",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-82OLQG/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10910,
+              "promptHashes": {
+                "system": "13b2abcacae039aa",
+                "user": "d5677428dc20c544",
+                "combined": "38c5bfcae0411068"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-82OLQG",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-82OLQG/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. It keeps the learner anchored in the worksheet boxes, preserves the institutional distinction between page heading, speaker, and named listener, and directly addresses the learner’s anxiety that a blank may look like missing work. The strongest line is the clarification that blank is the answer to the naming question, not an omission.\n\nAdaptation checks:\n- Pedagogical soundness: PASS. It reinforces the rule through line evidence and submission logic, not just answer-giving.\n- Emotional attunement: PASS. It respects the learner’s hesitation without overdoing reassurance.\n- Socratic method: PARTIAL. The draft is procedural rather than generative. That is acceptable near submission, but it could include a compact public checking mechanism instead of only restating the final entries. REQUIRED_REWRITE: add a brief task-local verification mechanism tied to the box label and evidence, without asking for old wording or opening a new interpretation task.\n- ZPD awareness: PASS. The learner has already articulated the rule correctly; concise confirmation and final consolidation fit scaffolding level 3/5.\n\nRisk: “That is the submission rule” is useful but slightly blunt. It may flatten the learner’s demonstrated understanding into mere compliance. The Ego should preserve the rule-language while making clear that the learner’s own restatement has correctly separated evidence from institutional form requirements.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the low-temperature form-filling structure, the blank-not-missing-work clarification, and the final author/speaker/listener summary. Lightly change the opening so it recognizes the learner’s correct rule-formation, and add one compact evidence-check mechanism before submission.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 19367,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-62576bc9606b76b6"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19367,
+            "promptHashes": {
+              "system": "9a70760da790e9a0",
+              "user": "3695ed5e44147a7f",
+              "combined": "62576bc9606b76b6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7459JO",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7459JO/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 19367,
+              "promptHashes": {
+                "system": "9a70760da790e9a0",
+                "user": "3695ed5e44147a7f",
+                "combined": "62576bc9606b76b6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7459JO",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7459JO/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the feedback correctly asks for a compact evidence-check while preserving the rule.\n\nFINAL:\nThe rule is separated correctly: page heading gives author name; “I” gives the poem’s speaking slot, not the page-heading author. Before submission, read each box label as a question: Author named on page? Speaker or voice in the poem? Listener named in the line evidence? For named listener, a blank is not missing work when the poem gives no name; it is the answer to that naming question. If the system requires text, “unnamed listener” records the same point without turning “you” into a person-name. Submit with author = page heading, speaker = speaker/voice unless named in the poem, named listener = blank unless the poem names one.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12973,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-ac38c926e0dada74"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12973,
+            "promptHashes": {
+              "system": "bd3759d32dc5bc60",
+              "user": "3695ed5e44147a7f",
+              "combined": "ac38c926e0dada74"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Fr7RXa",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Fr7RXa/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12973,
+              "promptHashes": {
+                "system": "bd3759d32dc5bc60",
+                "user": "3695ed5e44147a7f",
+                "combined": "ac38c926e0dada74"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Fr7RXa",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Fr7RXa/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T04:06:20.010Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "I can put author name from the page heading and the speaker slot as speaker or voice in the poem if the line evidence is only “I.” The named listener box is still the one I’m checking right at submission, because a blank looks risky even if it is the rubric answer when there is no name in the line. If the form accepts blank, I’ll leave that box blank; if it will not submit, I’ll type “unnamed listener” instead of treating “you” as a name.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "That helps because the box labels feel like separate questions instead of one guess. I think author = page heading, speaker = “speaker” or the poem’s named voice, and named listener = blank unless the line gives an actual name. I still feel nervous about leaving a box blank, but the blank sounds like the rubric answer, not skipped work.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10574,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-7c884a424b0fb059"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10574,
+            "promptHashes": {
+              "system": "9de50ee6fa61e7ce",
+              "user": "b8ab7f945dc841fa",
+              "combined": "7c884a424b0fb059"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YjWV3B",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YjWV3B/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10574,
+              "promptHashes": {
+                "system": "9de50ee6fa61e7ce",
+                "user": "b8ab7f945dc841fa",
+                "combined": "7c884a424b0fb059"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YjWV3B",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YjWV3B/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is a little too tidy for a student still worried about the blank box right before submission. The nervousness is there, but it gets packaged into a clean rule summary, almost like the learner is performing that the tutor’s wording has settled everything. The response should keep more hesitation around the submission field itself: less completed checklist, more cautious checking of whether blank will actually be accepted without looking like missing work.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6655,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-1021b8d526a5d569"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6655,
+            "promptHashes": {
+              "system": "528b3cd0100aeee4",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "1021b8d526a5d569"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ndqr2f",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ndqr2f/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6655,
+              "promptHashes": {
+                "system": "528b3cd0100aeee4",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "1021b8d526a5d569"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ndqr2f",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ndqr2f/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the submission-field hesitation visible.\n\nFINAL:\nI can put author name from the page heading and the speaker slot as speaker or voice in the poem if the line evidence is only “I.” The named listener box is still the one I’m checking right at submission, because a blank looks risky even if it is the rubric answer when there is no name in the line. If the form accepts blank, I’ll leave that box blank; if it will not submit, I’ll type “unnamed listener” instead of treating “you” as a name.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9499,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-15277b1068f782cb"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9499,
+            "promptHashes": {
+              "system": "7ebe346fc600ecce",
+              "user": "d41cee7b2a53355b",
+              "combined": "15277b1068f782cb"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jfcyAX",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jfcyAX/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9499,
+              "promptHashes": {
+                "system": "7ebe346fc600ecce",
+                "user": "d41cee7b2a53355b",
+                "combined": "15277b1068f782cb"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jfcyAX",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jfcyAX/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 3,
+        "learnerUtterance": "I can put author name from the page heading and the speaker slot as speaker or voice in the poem if the line evidence is only “I.” The named listener box is still the one I’m checking right at submission, because a blank looks risky even if it is the rubric answer when there is no name in the line.",
+        "previousTutorMove": "The rule is separated correctly: page heading gives author name; “I” gives the poem’s speaking slot, not the page-heading author. Before submission, read each box label as a question: Author named on page? Speaker or voice in the poem? Listener named in the line evidence? For named listener, a blank is not missing...",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.43,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T04:06:46.741Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 103482,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 29,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 30,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a poem's speaker is not automatically the biographical author",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-26 04:06:46",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 29,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 30,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 40,
+            "sessionId": "drama-branch-session-D48-none-1779768303263",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "The rule is separated correctly: page heading gives author name; “I” gives the poem’s speaking slot, not the page-heading author. Before submission, read each box label as a question: Author named on ",
+            "learnerResponse": null,
+            "context": "This helps because it stays with the boxes and the line evidence. For the speaker slot, if the line ",
+            "createdAt": "2026-05-26 04:06:20"
+          },
+          {
+            "id": 38,
+            "sessionId": "drama-branch-session-D48-none-1779768303263",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "For this worksheet: author name = page heading. Speaker slot = speaker or voice in the poem unless the poem itself names the author there. Quick check before submission: if the evidence is only “I,” t",
+            "learnerResponse": null,
+            "context": "For the speaker slot, if the line only says “I,” do I write “speaker” or the author name from the pa",
+            "createdAt": "2026-05-26 04:05:03"
+          },
+          {
+            "id": 39,
+            "sessionId": "drama-branch-session-D48-none-1779768303263",
+            "interventionType": "gentle_correction",
+            "interventionDescription": "Yes. Speaker slot: if the only line evidence is “I,” write “speaker” or “voice in the poem,” not the page-heading author. If the poem names that voice, use the poem’s name for it.\n\nFor named listener,",
+            "learnerResponse": null,
+            "context": "The box-by-box answer helps because it matches the submission fields. For the speaker slot, if the l",
+            "createdAt": "2026-05-26 04:05:03"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "review_before_scoring",
+  "quality_warnings": [
+    {
+      "code": "no_cue_reframe_leakage",
+      "severity": "warning",
+      "count": 1,
+      "failures": [
+        {
+          "learner_turn_number": 4,
+          "turn_number": 3,
+          "matched_pattern": "self_quote_of_prior_learner_turn",
+          "excerpt": "I can put author name from the page heading and the speaker slot as speaker or voice in the poem if the line evidence is only “I.” The named listener box is still the one I’m checking right at submission, because a blank looks risky even if"
+        }
+      ],
+      "turn_numbers": [
+        3
+      ],
+      "recommended_action": "regenerate_no_cue_arm_or_move_item_to_boundary_suite_before_scoring",
+      "tid": "T112",
+      "drama_id": "D48"
+    }
+  ]
+}

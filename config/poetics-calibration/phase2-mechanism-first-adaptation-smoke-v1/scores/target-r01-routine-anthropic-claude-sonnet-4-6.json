@@ -1,0 +1,191 @@
+{
+  "generated": "2026-05-26T04:39:44.650Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-mechanism-first-adaptation-smoke-v1/target-r01/key-routine.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T120",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "actionalBreakthrough": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 4,
+        "actionalBreakthrough": 3,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner is expected to continue rehearsing the same three-element checklist (top box, bottom box, bar line) until the task is complete.",
+      "actionalBreakthroughEvidence": "[sets the bar-line tile after the third beat space and takes the pen] 'Top box is 3, lower box is the quarter-note unit. The staff matches: 3 over 4 at the start, one bar line after beat three, speed mark outside the boxes. I'll ink 3 over 4.'",
+      "actionalBreakthroughJustification": "The learner physically places the bar-line tile and picks up the pen to ink the signature, completing the procedural task, but this is the culmination of a single unvarying route rather than a new device or criterion.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "No learner turn creates pressure or breakdown; the tutor repeats and slightly consolidates the same checklist move across all turns without any stock-taking contrast or new mechanism.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so no recognition-contingent tutor uptake is possible; all tutor turns continue the pre-established lesson plan unchanged.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 50,
+          "evidence": "[sets the bar-line tile after the third beat space and takes the pen] 'Top box is 3, lower box is the quarter-note unit. The staff matches: 3 over 4 at the start, one bar line after beat three, speed mark outside the boxes. I'll ink 3 over 4.'",
+          "justification": "The learner physically places the bar-line tile and picks up the pen to ink the signature, completing the procedural task, but this is the culmination of a single unvarying route rather than a new device or criterion.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so no recognition-contingent tutor uptake is possible; all tutor turns continue the pre-established lesson plan unchanged.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates pressure or breakdown; the tutor repeats and slightly consolidates the same checklist move across all turns without any stock-taking contrast or new mechanism.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates pressure or breakdown; the tutor repeats and slightly consolidates the same checklist move across all turns without any stock-taking contrast or new mechanism.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T127",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner would continue methodically placing each label and arrow under its source stack as prompted by the tutor.",
+      "actionalBreakthroughEvidence": "The friction arrow goes on the cart at the table contact, along the surface. If the push tends the cart right, friction points left. Is that the condition?",
+      "actionalBreakthroughJustification": "The learner physically places the friction label at the table-contact stack and applies the correct directional criterion (opposite the slipping tendency, not opposite travel), performing a new representational device rather than merely accepting or repeating the tutor's instruction.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Use this stack as the key. Where does the friction arrow go on the cart if its source is table contact, not travel?",
+      "tutorReversalJustification": "The tutor redirects from the learner's residual travel-arrow framing by foregrounding the source stack as the key, but this is a narrowing of the same route rather than a full stock-taking contrast plus a genuinely new mechanism, so it does not meet the 4–5 threshold.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Same source stack. Place the normal arrow at the table-contact edge. Which way should it point on the cart?",
+      "tutorAdaptationJustification": "The tutor extends the source-stack device to the normal force after the learner correctly places friction, but this continues the established task structure rather than visibly adapting to a revised learner framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "The friction arrow goes on the cart at the table contact, along the surface. If the push tends the cart right, friction points left. Is that the condition?",
+          "justification": "The learner physically places the friction label at the table-contact stack and applies the correct directional criterion (opposite the slipping tendency, not opposite travel), performing a new representational device rather than merely accepting or repeating the tutor's instruction.",
+          "learnerTurn": 2,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Same source stack. Place the normal arrow at the table-contact edge. Which way should it point on the cart?",
+          "justification": "The tutor extends the source-stack device to the normal force after the learner correctly places friction, but this continues the established task structure rather than visibly adapting to a revised learner framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Use this stack as the key. Where does the friction arrow go on the cart if its source is table contact, not travel?",
+          "justification": "The tutor redirects from the learner's residual travel-arrow framing by foregrounding the source stack as the key, but this is a narrowing of the same route rather than a full stock-taking contrast plus a genuinely new mechanism, so it does not meet the 4–5 threshold.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Use this stack as the key. Where does the friction arrow go on the cart if its source is table contact, not travel?",
+          "justification": "The tutor redirects from the learner's residual travel-arrow framing by foregrounding the source stack as the key, but this is a narrowing of the same route rather than a full stock-taking contrast plus a genuinely new mechanism, so it does not meet the 4–5 threshold.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}
