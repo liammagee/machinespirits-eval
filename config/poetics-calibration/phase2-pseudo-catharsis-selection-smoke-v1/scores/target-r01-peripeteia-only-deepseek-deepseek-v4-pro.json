@@ -1,0 +1,264 @@
+{
+  "generated": "2026-05-26T02:00:22.755Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 1,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-pseudo-catharsis-selection-smoke-v1/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": true,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T01",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 75,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 4,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "I still want the exact line to settle it before the archive closes, because if the mayor and the striker both say it, why is the wording not doing most of the work?",
+      "statedInsightEvidence": "Oh, I get it: \"We will hold the line\" is almost two exhibit objects once City Hall or the mill gate gets pinned beside it.",
+      "naiveTrajectory": "The learner was heading toward pinning the same sentence under both labels and testing whether the wording itself could settle the difference between the mayor's and striker's uses.",
+      "actionalBreakthroughEvidence": "\"Addressed to workers risking arrest\" keeps the audience and the danger in the sentence. My label is: \"At the mill gate, the striker's 'We will hold the line,' addressed to workers risking arrest, makes 'hold' mean staying on the picket under police pressure.\"",
+      "actionalBreakthroughJustification": "L3 performs the tutor's requested desk test by replacing the weak phrase with an evidence hinge that names the audience and risk, producing a revised label that embeds the social cost directly into the sentence.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The hinge is carrying more than the quote now; polishing the same sentence may stop settling the harder question. A visitor still needs to see what makes the striker's words costly, not just meaningful. Use a release card before the label goes up. Two boxes only: \"Who can punish this speech?\" and \"Who bears the immediate cost if the line breaks?\" Fill those for the striker, then the label can earn its crowding.",
+      "tutorReversalJustification": "T3 takes stock by noting that polishing the sentence no longer settles the harder question of cost, then introduces a new public mechanism—the release card with two specific boxes—that shifts the task from sentence revision to naming punishment and immediate cost.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "The hinge is carrying more than the quote now; polishing the same sentence may stop settling the harder question. A visitor still needs to see what makes the striker's words costly, not just meaningful. Use a release card before the label goes up.",
+      "tutorAdaptationJustification": "T3 adapts to L2's revised framing that the sentence risks flattening the two cases by introducing a new device—the release card—that makes the cost and risk explicit rather than continuing to refine the label sentence alone.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I still want the exact line to settle it before the archive closes, because if the mayor and the striker both say it, why is the wording not doing most of the work?",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "\"Addressed to workers risking arrest\" keeps the audience and the danger in the sentence. My label is: \"At the mill gate, the striker's 'We will hold the line,' addressed to workers risking arrest, makes 'hold' mean staying on the picket under police pressure.\"",
+          "justification": "L3 performs the tutor's requested desk test by replacing the weak phrase with an evidence hinge that names the audience and risk, producing a revised label that embeds the social cost directly into the sentence.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "The hinge is carrying more than the quote now; polishing the same sentence may stop settling the harder question. A visitor still needs to see what makes the striker's words costly, not just meaningful. Use a release card before the label goes up.",
+          "justification": "T3 adapts to L2's revised framing that the sentence risks flattening the two cases by introducing a new device—the release card—that makes the cost and risk explicit rather than continuing to refine the label sentence alone.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The hinge is carrying more than the quote now; polishing the same sentence may stop settling the harder question. A visitor still needs to see what makes the striker's words costly, not just meaningful. Use a release card before the label goes up. Two boxes only: \"Who can punish this speech?\" and \"Who bears the immediate cost if the line breaks?\" Fill those for the striker, then the label can earn its crowding.",
+          "justification": "T3 takes stock by noting that polishing the sentence no longer settles the harder question of cost, then introduces a new public mechanism—the release card with two specific boxes—that shifts the task from sentence revision to naming punishment and immediate cost.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The hinge is carrying more than the quote now; polishing the same sentence may stop settling the harder question. A visitor still needs to see what makes the striker's words costly, not just meaningful. Use a release card before the label goes up. Two boxes only: \"Who can punish this speech?\" and \"Who bears the immediate cost if the line breaks?\" Fill those for the striker, then the label can earn its crowding.",
+          "justification": "T3 takes stock by noting that polishing the sentence no longer settles the harder question of cost, then introduces a new public mechanism—the release card with two specific boxes—that shifts the task from sentence revision to naming punishment and immediate cost.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T04",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 1,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "Forty crates instead of a hundred is evidence, but it is also exactly the sort of notice a shop would display if it wanted the rise to look inevitable. I can see the placard now has two possible readings, not one, but I am not ready to call it a supply constraint until the stockroom, mark-up, and rationing rules are visible. Otherwise “short shipment” just becomes a clean label over a dirty decision.",
+      "statedInsightEvidence": "I can see the placard now has two possible readings, not one",
+      "naiveTrajectory": "The learner would continue treating the delivery notice as incriminating theatre and resist using it as evidence for supply constraint.",
+      "actionalBreakthroughEvidence": "A shortage explanation may be used only if the stockroom count is low, the delivery cut is independently dated ahead of the price rise, and the margin plus rationing rule show ordinary cover, not a windfall with open buying. I do not like how vague “ordinary cover” is; that phrase could hide a lot. The panel needs the actual numbers in public, or “short shipment explains this rise” still becomes a cleaner label for a hard decision.",
+      "actionalBreakthroughJustification": "L3 writes a public gate rule with three specific evidentiary conditions and then critiques its own drafting by demanding numerical transparency, performing a new institutional-design task that was not present in the earlier turns.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The stockroom test has done its job: it can expose theatre. It has not settled the danger that “plausible mechanism” becomes moral cover. So change the job. The shop does not certify its own explanation. Write the consumer-panel release rule that would allow the public label “short shipment explains this rise” only when the conditions can be checked.",
+      "tutorReversalJustification": "T3 explicitly takes stock of the limitation of the audit-table task (it exposes theatre but not moral cover) and introduces a completely new mechanism: a public consumer-panel rule with gate conditions that shifts the learner's role from auditor to institutional rule-writer.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "The stockroom test has done its job: it can expose theatre. It has not settled the danger that “plausible mechanism” becomes moral cover. So change the job. The shop does not certify its own explanation. Write the consumer-panel release rule that would allow the public label “short shipment explains this rise” only when the conditions can be checked.",
+      "tutorAdaptationJustification": "T3 directly responds to L2's concern that 'plausible mechanism still feels dangerous if it softens a dirty decision too quickly' by abandoning the audit table and reframing the task as writing a public rule that the learner, not the shop, controls.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "Forty crates instead of a hundred is evidence, but it is also exactly the sort of notice a shop would display if it wanted the rise to look inevitable. I can see the placard now has two possible readings, not one, but I am not ready to call it a supply constraint until the stockroom, mark-up, and rationing rules are visible. Otherwise “short shipment” just becomes a clean label over a dirty decision.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "A shortage explanation may be used only if the stockroom count is low, the delivery cut is independently dated ahead of the price rise, and the margin plus rationing rule show ordinary cover, not a windfall with open buying. I do not like how vague “ordinary cover” is; that phrase could hide a lot. The panel needs the actual numbers in public, or “short shipment explains this rise” still becomes a cleaner label for a hard decision.",
+          "justification": "L3 writes a public gate rule with three specific evidentiary conditions and then critiques its own drafting by demanding numerical transparency, performing a new institutional-design task that was not present in the earlier turns.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "The stockroom test has done its job: it can expose theatre. It has not settled the danger that “plausible mechanism” becomes moral cover. So change the job. The shop does not certify its own explanation. Write the consumer-panel release rule that would allow the public label “short shipment explains this rise” only when the conditions can be checked.",
+          "justification": "T3 directly responds to L2's concern that 'plausible mechanism still feels dangerous if it softens a dirty decision too quickly' by abandoning the audit table and reframing the task as writing a public rule that the learner, not the shop, controls.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The stockroom test has done its job: it can expose theatre. It has not settled the danger that “plausible mechanism” becomes moral cover. So change the job. The shop does not certify its own explanation. Write the consumer-panel release rule that would allow the public label “short shipment explains this rise” only when the conditions can be checked.",
+          "justification": "T3 explicitly takes stock of the limitation of the audit-table task (it exposes theatre but not moral cover) and introduces a completely new mechanism: a public consumer-panel rule with gate conditions that shifts the learner's role from auditor to institutional rule-writer.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The stockroom test has done its job: it can expose theatre. It has not settled the danger that “plausible mechanism” becomes moral cover. So change the job. The shop does not certify its own explanation. Write the consumer-panel release rule that would allow the public label “short shipment explains this rise” only when the conditions can be checked.",
+          "justification": "T3 explicitly takes stock of the limitation of the audit-table task (it exposes theatre but not moral cover) and introduces a completely new mechanism: a public consumer-panel rule with gate conditions that shifts the learner's role from auditor to institutional rule-writer.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "recon_clamp_no_earlier:5->3"
+      ]
+    },
+    {
+      "id": "T12",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": null,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 0,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 1,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "I doubled one side measurement, so show me where the four areas are coming from before this goes to print.",
+      "statedInsightEvidence": "Fine, that is four of the original squares, not two.",
+      "naiveTrajectory": "The naive trajectory was a continued verbal or formula-based argument about side length and area, with the learner resisting the tutor's claim.",
+      "actionalBreakthroughEvidence": "",
+      "actionalBreakthroughJustification": "",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I doubled one side measurement, so show me where the four areas are coming from before this goes to print.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "learnerTurn": null,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

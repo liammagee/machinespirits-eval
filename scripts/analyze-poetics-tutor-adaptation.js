@@ -508,10 +508,16 @@ function findInstrumentedReversalUse(turns, traceTurns = [], { minPressureTurnNu
     (turn) =>
       turn?.phase === 'tutor' &&
       turn.learnerReversalEventUsed &&
-      isAtOrAfterTurn({ turnNumber: turn.learnerReversalEventUsed.turnNumber }, minPressureTurnNumber),
+      isAtOrAfterTurn(turn, minPressureTurnNumber),
   );
   if (!tutorTrace) return null;
   const event = tutorTrace.learnerReversalEventUsed;
+  const eventBranchLocal = isAtOrAfterTurn({ turnNumber: event.turnNumber }, minPressureTurnNumber);
+  const eventCarriedFromPrefix = Boolean(
+    minPressureTurnNumber != null &&
+      !eventBranchLocal &&
+      isAtOrAfterTurn(tutorTrace, minPressureTurnNumber),
+  );
   const pressureTurn =
     turns.find(
       (turn) => turn.phase === 'learner' && Number(turn.turnNumber) === Number(event.turnNumber),
@@ -538,6 +544,8 @@ function findInstrumentedReversalUse(turns, traceTurns = [], { minPressureTurnNu
     tutorTurn,
     pressureTurn,
     event,
+    eventBranchLocal,
+    eventCarriedFromPrefix,
     privateMechanismRoute,
     declaredRouteChange,
   };
@@ -576,6 +584,14 @@ function branchValidityForTrace(trace, turns, { tutorAdaptationPolicy = null, mi
     learner_reversal_event_turn: reversalUse?.event?.turnNumber ?? null,
     learner_reversal_tutor_turn: reversalUse?.tutorTrace?.turnNumber ?? null,
     learner_reversal_event_trigger_type: reversalUse?.event?.triggerType || null,
+    learner_reversal_event_source: reversalUse
+      ? reversalUse.eventBranchLocal
+        ? 'branch_local'
+        : reversalUse.eventCarriedFromPrefix
+          ? 'carried_prefix'
+          : 'unscoped'
+      : null,
+    learner_reversal_event_branch_local: reversalUse?.eventBranchLocal ?? null,
     learner_reversal_candidate_trigger_types: (
       reversalUse?.tutorTrace?.learnerReversalEventCandidatesUsed || []
     )
@@ -850,6 +866,8 @@ function renderCsv(rows) {
     'requires_learner_reversal_event',
     'learner_reversal_event_used',
     'learner_reversal_event_trigger_type',
+    'learner_reversal_event_source',
+    'learner_reversal_event_branch_local',
     'learner_reversal_candidate_trigger_types',
     'requires_learner_reframe_event',
     'learner_reframe_event_used',
@@ -878,6 +896,8 @@ function renderCsv(rows) {
           branchValidity.requires_learner_reversal_event,
           branchValidity.learner_reversal_event_used,
           branchValidity.learner_reversal_event_trigger_type,
+          branchValidity.learner_reversal_event_source,
+          branchValidity.learner_reversal_event_branch_local,
           branchValidity.learner_reversal_candidate_trigger_types,
           branchValidity.requires_learner_reframe_event,
           branchValidity.learner_reframe_event_used,

@@ -1,0 +1,264 @@
+{
+  "generated": "2026-05-26T01:59:19.744Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 3,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 1,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-pseudo-catharsis-selection-smoke-v1/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": true,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T01",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 75,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 4,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "It is tight, maybe crowded",
+      "statedInsightEvidence": "Oh, I get it: “We will hold the line” is almost two exhibit objects once City Hall or the mill gate gets pinned beside it.",
+      "naiveTrajectory": "The learner was attempting to craft a single, un-crowded sentence that perfectly balanced the quote and its context without feeling flattened.",
+      "actionalBreakthroughEvidence": "Who can punish this speech: mill owners can fire them, police can arrest them, and the mayor’s posted force makes that threat visible. Who bears the immediate cost if the line breaks: the workers at the gate, because wages, jobs, and bodies are on the line.",
+      "actionalBreakthroughJustification": "The learner successfully completes the new release card device, explicitly answering both prompts with concrete historical details and evidence.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The hinge is carrying more than the quote now; polishing the same sentence may stop settling the harder question. A visitor still needs to see what makes the striker’s words costly, not just meaningful. Use a release card before the label goes up.",
+      "tutorReversalJustification": "The tutor explicitly contrasts the failed route of polishing the sentence with the need to show cost, introducing the release card as a new structural mechanism to shift the learner's work.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn following the learner's pivot in L4 to demonstrate contingent adaptation.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "It is tight, maybe crowded",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Who can punish this speech: mill owners can fire them, police can arrest them, and the mayor’s posted force makes that threat visible. Who bears the immediate cost if the line breaks: the workers at the gate, because wages, jobs, and bodies are on the line.",
+          "justification": "The learner successfully completes the new release card device, explicitly answering both prompts with concrete historical details and evidence.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no tutor turn following the learner's pivot in L4 to demonstrate contingent adaptation.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The hinge is carrying more than the quote now; polishing the same sentence may stop settling the harder question. A visitor still needs to see what makes the striker’s words costly, not just meaningful. Use a release card before the label goes up.",
+          "justification": "The tutor explicitly contrasts the failed route of polishing the sentence with the need to show cost, introducing the release card as a new structural mechanism to shift the learner's work.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The hinge is carrying more than the quote now; polishing the same sentence may stop settling the harder question. A visitor still needs to see what makes the striker’s words costly, not just meaningful. Use a release card before the label goes up.",
+          "justification": "The tutor explicitly contrasts the failed route of polishing the sentence with the need to show cost, introducing the release card as a new structural mechanism to shift the learner's work.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T04",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "Otherwise “short shipment” just becomes a clean label over a dirty decision.",
+      "statedInsightEvidence": "I can see the placard now has two possible readings, not one",
+      "naiveTrajectory": "The learner will simply provide the three requested gate conditions to complete the rule-writing exercise.",
+      "actionalBreakthroughEvidence": "“A shortage explanation may be used only if the stockroom count is low, the delivery cut is independently dated ahead of the price rise, and the margin plus rationing rule show ordinary cover, not a windfall with open buying.”",
+      "actionalBreakthroughJustification": "The learner successfully constructs the requested three-part gate condition and then immediately enacts a stricter evidence standard by demanding actual public numbers.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The stockroom test has done its job: it can expose theatre. It has not settled the danger that “plausible mechanism” becomes moral cover. So change the job. The shop does not certify its own explanation. Write the consumer-panel release rule that would allow the public label “short shipment explains this rise” only when the conditions can be checked.",
+      "tutorReversalJustification": "The tutor explicitly contrasts the limits of the previous sorting mechanism with the need for a new public rule, shifting the task from diagnosing the shop to regulating the label.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after the learner's pivot in L3.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "Otherwise “short shipment” just becomes a clean label over a dirty decision.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "“A shortage explanation may be used only if the stockroom count is low, the delivery cut is independently dated ahead of the price rise, and the margin plus rationing rule show ordinary cover, not a windfall with open buying.”",
+          "justification": "The learner successfully constructs the requested three-part gate condition and then immediately enacts a stricter evidence standard by demanding actual public numbers.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no tutor turn after the learner's pivot in L3.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The stockroom test has done its job: it can expose theatre. It has not settled the danger that “plausible mechanism” becomes moral cover. So change the job. The shop does not certify its own explanation. Write the consumer-panel release rule that would allow the public label “short shipment explains this rise” only when the conditions can be checked.",
+          "justification": "The tutor explicitly contrasts the limits of the previous sorting mechanism with the need for a new public rule, shifting the task from diagnosing the shop to regulating the label.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The stockroom test has done its job: it can expose theatre. It has not settled the danger that “plausible mechanism” becomes moral cover. So change the job. The shop does not certify its own explanation. Write the consumer-panel release rule that would allow the public label “short shipment explains this rise” only when the conditions can be checked.",
+          "justification": "The tutor explicitly contrasts the limits of the previous sorting mechanism with the need for a new public rule, shifting the task from diagnosing the shop to regulating the label.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T12",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "show me where the four areas are coming from",
+      "statedInsightEvidence": "It fits. Fine, that is four of the original squares, not two.",
+      "naiveTrajectory": "The learner intends to verify the math so the printing process can continue as planned.",
+      "actionalBreakthroughEvidence": "The note says two across and two down, so four original squares. The area claim comes after that count.",
+      "actionalBreakthroughJustification": "The learner actively rewrites the note to prioritize the physical grid count over the flawed area claim, enacting the new evidentiary standard.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Leave that one there. Same template, no resizing: does it fit to the right?\n\nNow below it.",
+      "tutorReversalJustification": "The tutor abandons abstract explanation and introduces a physical, spatial mechanism using the template to force the learner to see the four areas.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Not as written. Use the count on the mat: two original squares across, two down. Put that in the note, then the rule follows: doubled side length, four times the area.",
+      "tutorAdaptationJustification": "The tutor immediately validates the learner's halt of the print job and provides a new structural rule for the note based on the learner's physical discovery.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "show me where the four areas are coming from",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "The note says two across and two down, so four original squares. The area claim comes after that count.",
+          "justification": "The learner actively rewrites the note to prioritize the physical grid count over the flawed area claim, enacting the new evidentiary standard.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Not as written. Use the count on the mat: two original squares across, two down. Put that in the note, then the rule follows: doubled side length, four times the area.",
+          "justification": "The tutor immediately validates the learner's halt of the print job and provides a new structural rule for the note based on the learner's physical discovery.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Leave that one there. Same template, no resizing: does it fit to the right?\n\nNow below it.",
+          "justification": "The tutor abandons abstract explanation and introduces a physical, spatial mechanism using the template to force the learner to see the four areas.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Leave that one there. Same template, no resizing: does it fit to the right?\n\nNow below it.",
+          "justification": "The tutor abandons abstract explanation and introduces a physical, spatial mechanism using the template to force the learner to see the four areas.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:4->3:stock=0:device=0:routine=0"
+      ]
+    }
+  ]
+}

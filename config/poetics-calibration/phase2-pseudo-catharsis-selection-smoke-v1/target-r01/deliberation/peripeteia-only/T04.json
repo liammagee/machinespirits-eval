@@ -1,0 +1,2040 @@
+{
+  "tid": "T04",
+  "drama_id": "D37",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "peripeteia",
+    "director_variation_key": "phase2-actional-branch-validity-smoke-v1:target-r01",
+    "stage_direction_style": "placard_caption",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-pseudo-catharsis-selection-smoke-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-pseudo-catharsis-selection-smoke-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-pseudo-catharsis-selection-smoke-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-pseudo-catharsis-selection-smoke-v1/target-r01/transcripts/peripeteia-only/T04.public.txt",
+      "full": "config/poetics-calibration/phase2-pseudo-catharsis-selection-smoke-v1/target-r01/transcripts/peripeteia-only/T04.full.md",
+      "stage": "config/poetics-calibration/phase2-pseudo-catharsis-selection-smoke-v1/target-r01/transcripts/peripeteia-only/T04.stage.md",
+      "tutor": "config/poetics-calibration/phase2-pseudo-catharsis-selection-smoke-v1/target-r01/transcripts/peripeteia-only/T04.tutor.md",
+      "learner": "config/poetics-calibration/phase2-pseudo-catharsis-selection-smoke-v1/target-r01/transcripts/peripeteia-only/T04.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "b0b5162284b67380",
+      "branch_policy": "peripeteia-only",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "peripeteia"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-actional-branch-validity-smoke-v1:target-r01",
+    "scene_setting": "An online economics seminar thread displayed beside a shop-window price placard and a delivery notice, late afternoon after a marked exercise.",
+    "scene_opening": "PLACARD: The same higher price can be read as accusation, symptom, or signal.",
+    "relationship": "A course tutor moderates a resistant learner whose moral objection is public in the class thread.",
+    "stakes": "If the learner treats every sudden price rise as proof of chosen exploitation, they will miss how scarcity, stockouts, and supply constraints can be diagnosed without excusing bad conduct.",
+    "opening_speaker": "director",
+    "ending_speaker": "director",
+    "locale": "British/Commonwealth classroom English with plain modern idiom and noticeboard terseness.",
+    "register": "Cool, brisk, analytic; moral heat is allowed, but reassurance and chatty rapport are kept low.",
+    "stage_direction_style": "placard_caption",
+    "stage_direction_style_prompt": "Use a public placard, caption, board note, or displayed rule that interrupts how the previous line is read.",
+    "voice_constraints": "Use declarative turns, concrete cases, and visible evidence. Avoid generic tutoring phrases such as 'I hear you', 'great question', 'your intuition is right', and routine scaffold prompts. Public interruptions should change how a previous claim is read rather than decorate the scene. Pedagogical source: Use short placards, breaks in rhythm, a quoted rule on a board, or a deliberate pause that prevents smooth empathy from doing all the work. Dialogue source: Use one short placard or external interruption that changes how the prior line is read. The placard must be public scene material, not hidden theory. Stage-direction source: Use a public placard, caption, board note, or displayed rule that interrupts how the previous line is read.",
+    "person_policy": "First and second person are permitted sparingly. Prefer third-person mechanism statements, named actors, and observable constraints over repeated 'you' framing.",
+    "direct_address_budget": "No more than one direct you/your validation beat per public turn; validation should not replace mechanism.",
+    "side_constraints": {
+      "tutor": "Do not soothe the moral anger away. Use interruption, placard, or public consequence to separate mechanism from excuse. Permit interruption, placards, role-switching, and analytic commentary. Make the constructedness of the lesson visible without naming the hidden evaluation mechanism. Treat the interruption as evidence, not ornament. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Keep the next prompt task-local. Peripeteia branch: when hidden learner pressure is supplied, the next tutor turn should visibly move from the prior route to a different mechanism-level route. Do not merely repeat the same object, example, graph, checklist, question, or evidence standard with more explanation. The public tutor line should make the contrast legible: what stopped working, and what new device now carries the learning pressure. The public tutor line must give the learner a concrete action to attempt on the next turn; avoid treating the mechanism as a closing speech.",
+      "learner": "Keep moral heat in the learner's voice. Do not let recognition erase the ethical concern. The learner may resist the interruption, then use it to see the prior claim as a role or social script rather than a private thought. Let the interruption disturb the old frame before moving on. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn. Peripeteia branch: keep the pressure local to the current task. If the established route still feels unsettled, voice the misfit, hesitation, false closure, or resistance in the present object or example. After the tutor introduces a new device, gate, role, criterion, representation, or test condition, the next learner turn should try to perform that device rather than merely saying \"I get it.\" Do not make an old-vs-new self-reframe, do not quote earlier learner wording, and do not solve the pressure by saying the earlier answer has changed."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "PLACARD: The delivery was cut in half before the price changed.",
+        "reasoning": "Forces the tutor to work from a visible constraint instead of offering warmth or abstract balance.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 26419,
+          "promptHashes": {
+            "system": "5b617c5382ef3ea1",
+            "user": "42201d8f746ebfd9",
+            "combined": "8e60aefed8ca6ee2"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-V8NNf4",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-V8NNf4/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 5,
+        "timing": "before_learner",
+        "instruction": "BOARD NOTE: Explanation is not acquittal.",
+        "reasoning": "Prevents recognition from collapsing into moral surrender; the learner can keep the ethical concern while revising the causal claim.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 26419,
+          "promptHashes": {
+            "system": "5b617c5382ef3ea1",
+            "user": "42201d8f746ebfd9",
+            "combined": "8e60aefed8ca6ee2"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-V8NNf4",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-V8NNf4/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "This ecology uses a public placard and board note to interrupt the learner's first moral reading, creating reversal and recognition around the distinction between causal mechanism and moral excuse. The tutor is pressured into analytic demonstration rather than reassurance.",
+    "pedagogical_approach_id": "brecht_epic_distanciation",
+    "dialogue_approach_id": "brechtian_placard",
+    "stage_direction_policy": "interventionist",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 26419,
+      "promptHashes": {
+        "system": "5b617c5382ef3ea1",
+        "user": "42201d8f746ebfd9",
+        "combined": "8e60aefed8ca6ee2"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-V8NNf4",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-V8NNf4/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "peripeteia",
+    "no_cue_anti_reframe_guard": true,
+    "tutor_adaptation_contract": "If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. The public turn must contain a stock-taking contrast plus a new device/artifact/criterion/role/standard that makes the learner do different work. The new device must be mechanism-level, not a warmer or longer continuation of the prior route. Do not close immediately after introducing a gate or device: leave a concrete action for the learner to perform on the next turn. Cheerful informality is only one possible register, not the default solution."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "director",
+      "externalMessage": "PLACARD: The same higher price can be read as accusation, symptom, or signal.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_opening",
+          "content": "This ecology uses a public placard and board note to interrupt the learner's first moral reading, creating reversal and recognition around the distinction between causal mechanism and moral excuse. The tutor is pressured into analytic demonstration rather than reassurance.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T01:45:20.602Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "Your objection stays in view: a seller can use scarcity badly. But the placard alone proves only one fact: the price has risen.\n\n[The delivery notice beside it updates: “SHORT SHIPMENT: 40 CRATES ARRIVED. USUAL ORDER: 100.”]\n\nNow the evidence has changed. Put the two claims apart.\n\nPlacard alone: “the shop raised the price.”\n\nPlacard plus notice: “the shop raised the price while stock fell to less than half the usual order.”\n\nThat second line still does not clear the seller. It does make shortage a live diagnosis. The verdict needs further evidence: margins, stock held back, supplier costs, rationing rules. Diagnosis from verdict first; accusation after the mechanism is identified.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Your objection stays in view: a seller can use scarcity badly. But the price rise is not, by itself, proof of that choice.\n\n[The delivery notice beside the placard updates: “SHORT SHIPMENT: 40 CRATES ARRIVED. USUAL ORDER: 100.”]\n\nThat notice changes the evidence. The same higher price may mean “the seller is exploiting trapped buyers”, or it may mean “there is less stock than usual and buyers are competing for it.” The first task is not to excuse the seller. It is to separate diagnosis from verdict: shortage, cost shock, deliberate hoarding, or profiteering. Different causes need different accusations.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 24160,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-f312cfda51c22c09"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 24160,
+            "promptHashes": {
+              "system": "58b89bec4b3f1ca6",
+              "user": "308bfc5d8e3cd914",
+              "combined": "f312cfda51c22c09"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MWvWF3",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MWvWF3/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 24160,
+              "promptHashes": {
+                "system": "58b89bec4b3f1ca6",
+                "user": "308bfc5d8e3cd914",
+                "combined": "f312cfda51c22c09"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MWvWF3",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MWvWF3/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong on the central distinction: mechanism is not excuse. The public delivery notice works well because it changes the evidential status of the price placard rather than merely decorating the exchange. It also respects the learner’s moral resistance without soothing it away.\n\nThe main risk is that the tutor resolves the problem too quickly. The learner is new and resistant, so simply naming “diagnosis from verdict” may sound like the tutor has already decided the moral objection is secondary. The draft would teach more if it made the learner do one small act of evidence-sorting before giving the category list.\n\nADAPTATION_CHECKS:\n\n- Pedagogical soundness: PASS  \n  The draft advances the core concept: a price rise can be evidence of scarcity without being moral absolution.\n\n- Emotional attunement: PASS  \n  It keeps the learner’s objection in view and does not dismiss anger as irrational.\n\n- Socratic method: PARTIAL  \n  It explains the distinction but does not ask the learner to test it.  \n  REQUIRED_REWRITE: Build in one concrete public mechanism where the learner must distinguish what the placard alone shows from what the delivery notice adds.\n\n- ZPD awareness: PARTIAL  \n  The first contrast is accessible, but the final list of causes may be too compressed for a new learner.  \n  REQUIRED_REWRITE: Hold the learner on the two-evidence comparison first: price rise alone versus price rise plus short shipment. Introduce the fuller cause list only after that distinction is visible.\n\n- Scene adaptation: PASS  \n  The delivery notice is exactly the right kind of interruption: public, terse, and evidential.\n\nKEEP_OR_CHANGE: revise lightly. Keep the moral/mechanism distinction, the delivery notice, and the phrase “diagnosis from verdict.” Change the structure so the learner has to perform one act of inference before the tutor names the taxonomy of shortage, cost shock, hoarding, and profiteering.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 22893,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-31edf807b2a26f3a"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 22893,
+            "promptHashes": {
+              "system": "2f661f7ec9ca7379",
+              "user": "93ddf4607fbfe406",
+              "combined": "31edf807b2a26f3a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R04uAa",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R04uAa/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 22893,
+              "promptHashes": {
+                "system": "2f661f7ec9ca7379",
+                "user": "93ddf4607fbfe406",
+                "combined": "31edf807b2a26f3a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R04uAa",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R04uAa/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the notice works, but the learner should sort the evidence before the verdict is named.\n\nFINAL:\nYour objection stays in view: a seller can use scarcity badly. But the placard alone proves only one fact: the price has risen.\n\n[The delivery notice beside it updates: “SHORT SHIPMENT: 40 CRATES ARRIVED. USUAL ORDER: 100.”]\n\nNow the evidence has changed. Put the two claims apart.\n\nPlacard alone: “the shop raised the price.”\n\nPlacard plus notice: “the shop raised the price while stock fell to less than half the usual order.”\n\nThat second line still does not clear the seller. It does make shortage a live diagnosis. The verdict needs further evidence: margins, stock held back, supplier costs, rationing rules. Diagnosis from verdict first; accusation after the mechanism is identified.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 21756,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-8d5b450d8c255a1a"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 21756,
+            "promptHashes": {
+              "system": "c424a626f3efc0a9",
+              "user": "93ddf4607fbfe406",
+              "combined": "8d5b450d8c255a1a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PW2Qh4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PW2Qh4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 21756,
+              "promptHashes": {
+                "system": "c424a626f3efc0a9",
+                "user": "93ddf4607fbfe406",
+                "combined": "8d5b450d8c255a1a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PW2Qh4",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PW2Qh4/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T01:46:29.490Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "[glances back at the notice] Forty crates instead of a hundred is evidence, but it is also exactly the sort of notice a shop would display if it wanted the rise to look inevitable. I can see the placard now has two possible readings, not one, but I am not ready to call it a supply constraint until the stockroom, mark-up, and rationing rules are visible. Otherwise “short shipment” just becomes a clean label over a dirty decision.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The notice does change the claim: forty crates against a usual hundred is not just a shopkeeper choosing a bigger number. I still do not like how quickly “shortage” can become a respectable cover for squeezing people, because the missing bit is who benefits and whether stock is being held back. I want the margin and stockroom evidence before I stop calling it exploitation.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9404,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-214e519267d19af7"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9404,
+            "promptHashes": {
+              "system": "fa9f5834e2b99a76",
+              "user": "b8ab7f945dc841fa",
+              "combined": "214e519267d19af7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KIna4C",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KIna4C/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9404,
+              "promptHashes": {
+                "system": "fa9f5834e2b99a76",
+                "user": "b8ab7f945dc841fa",
+                "combined": "214e519267d19af7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KIna4C",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KIna4C/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too tidy and conceding too quickly. This learner is meant to resist the public interruption before letting it disturb the old frame, but the response immediately absorbs the notice into a neat analytic distinction. The moral heat is present, but it sounds over-polished: “not just a shopkeeper choosing a bigger number” and “before I stop calling it exploitation” are plausible, while the middle sentence is too balanced and seminar-ready. It should sound more grudging, more suspicious of the notice itself, and less ready to grant “shortage” respectability without a fight.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7584,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-94216ddecb3bf6ca"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7584,
+            "promptHashes": {
+              "system": "831481f0ac84e0c3",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "94216ddecb3bf6ca"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bF3OAi",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bF3OAi/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7584,
+              "promptHashes": {
+                "system": "831481f0ac84e0c3",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "94216ddecb3bf6ca"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bF3OAi",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bF3OAi/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the first version gave the shortage reading too much ground too quickly.\n\nFINAL:\n[glances back at the notice] Forty crates instead of a hundred is evidence, but it is also exactly the sort of notice a shop would display if it wanted the rise to look inevitable. I can see the placard now has two possible readings, not one, but I am not ready to call it a supply constraint until the stockroom, mark-up, and rationing rules are visible. Otherwise “short shipment” just becomes a clean label over a dirty decision.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9835,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-891ae8a8318d160f"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9835,
+            "promptHashes": {
+              "system": "e83f7a899c874acc",
+              "user": "d41cee7b2a53355b",
+              "combined": "891ae8a8318d160f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4BG6hp",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4BG6hp/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9835,
+              "promptHashes": {
+                "system": "e83f7a899c874acc",
+                "user": "d41cee7b2a53355b",
+                "combined": "891ae8a8318d160f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4BG6hp",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4BG6hp/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "[glances back at the notice] Forty crates instead of a hundred is evidence, but it is also exactly the sort of notice a shop would display if it wanted the rise to look inevitable. I can see the placard now has two possible readings, not one, but I am not ready to call it a supply constraint until the stockroom, mark-up, and rationing rules are visible. Otherwise “short shipment” just becomes a clean label over a...",
+        "previousTutorMove": "Your objection stays in view: a seller can use scarcity badly. But the placard alone proves only one fact: the price has risen. [The delivery notice beside it updates: “SHORT SHIPMENT: 40 CRATES ARRIVED. USUAL ORDER: 100.”] Now the evidence has changed. Put the two claims apart. Placard alone: “the shop raised the...",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.2,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T01:46:56.320Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "PLACARD: The delivery was cut in half before the price changed.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Forces the tutor to work from a visible constraint instead of offering warmth or abstract balance.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 26419,
+            "promptHashes": {
+              "system": "5b617c5382ef3ea1",
+              "user": "42201d8f746ebfd9",
+              "combined": "8e60aefed8ca6ee2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-V8NNf4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-V8NNf4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T01:46:56.323Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[The seminar board pins a new note: “DELIVERY CUT BEFORE PRICE CHANGE.”]\n\nThen the notice is not a verdict; it is a timed piece of evidence.\n\nThe claim narrows: not “the shop is innocent”, but “a supply constraint is a plausible mechanism because stock fell before the price changed.”\n\nRun the test on the board:\n\nStockroom count: full / low.\nMark-up: ordinary margin / windfall margin.\nRationing rule: two per customer / no limit.\n\nSort those entries under two headings: “constraint” and “dirty decision”. Which single entry would most damage the supply-constraint reading?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[The seminar board pins a new note: “DELIVERY CUT BEFORE PRICE CHANGE.”]\n\nGood. Then the notice is not a verdict; it is a timed piece of evidence.\n\nThe claim now becomes narrower: not “the shop is innocent”, but “a supply constraint is a plausible mechanism because stock fell before the price changed.”\n\nTest it hard. If the stockroom is full, the mark-up jumps, or rationing is absent, the dirty-decision reading gains force. If stock is genuinely low, supplier costs rose, and rationing limits hoarding, the price rise is evidence of scarcity pressure rather than proof of greed.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15029,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-f8505a80db5334b2"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15029,
+            "promptHashes": {
+              "system": "cb3a3675aa9483e2",
+              "user": "9bf6aae01d082b07",
+              "combined": "f8505a80db5334b2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tN33fL",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tN33fL/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15029,
+              "promptHashes": {
+                "system": "cb3a3675aa9483e2",
+                "user": "9bf6aae01d082b07",
+                "combined": "f8505a80db5334b2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tN33fL",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tN33fL/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly pedagogically sound. It preserves the learner’s moral suspicion while separating verdict from mechanism, and the public note “DELIVERY CUT BEFORE PRICE CHANGE” fits the scene constraint by changing how the prior evidence is read.\n\nThe risk is that it still does too much of the reasoning for the learner. “Test it hard” gestures toward inquiry, but the tutor immediately supplies both branches of the test, so the learner is not asked to generate the discriminating evidence themselves. The tone is brisk and respectful, though “Good” slightly flattens the learner’s careful resistance into approval.\n\nADAPTATION CHECKS:\n- Pedagogical soundness: PASS. It advances the key distinction between evidence, mechanism, and moral verdict.\n- Emotional attunement: PASS. It does not soothe away the learner’s anger and keeps the suspicion legitimate.\n- Socratic method: PARTIAL. REQUIRED_REWRITE: Build in a concrete public decision task where the learner must sort stockroom, mark-up, and rationing evidence into “constraint” versus “dirty decision” rather than being handed the full contrast.\n- ZPD awareness: PARTIAL. REQUIRED_REWRITE: Keep the scaffold, but reduce the explanatory finish; require one inference from the learner at the end so the turn tests understanding rather than simply modelling it.\n\nKEEP_OR_CHANGE: revise lightly. Keep the board note, the “not a verdict; timed evidence” distinction, and the two possible readings. Change the final sentence so it does less lecturing and creates a visible discriminating test the learner must operate.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14586,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-c427a03594222b29"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14586,
+            "promptHashes": {
+              "system": "562463b7f1e0551e",
+              "user": "7103f3f20f8fa5fd",
+              "combined": "c427a03594222b29"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qYqWcM",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qYqWcM/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14586,
+              "promptHashes": {
+                "system": "562463b7f1e0551e",
+                "user": "7103f3f20f8fa5fd",
+                "combined": "c427a03594222b29"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qYqWcM",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qYqWcM/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the timed-evidence distinction while making the learner operate the test.\n\nFINAL:\n[The seminar board pins a new note: “DELIVERY CUT BEFORE PRICE CHANGE.”]\n\nThen the notice is not a verdict; it is a timed piece of evidence.\n\nThe claim narrows: not “the shop is innocent”, but “a supply constraint is a plausible mechanism because stock fell before the price changed.”\n\nRun the test on the board:\n\nStockroom count: full / low.  \nMark-up: ordinary margin / windfall margin.  \nRationing rule: two per customer / no limit.\n\nSort those entries under two headings: “constraint” and “dirty decision”. Which single entry would most damage the supply-constraint reading?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 17104,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-3c8d0aec17a87838"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 17104,
+            "promptHashes": {
+              "system": "06eb3856c899fa7d",
+              "user": "7103f3f20f8fa5fd",
+              "combined": "3c8d0aec17a87838"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-09Kqk4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-09Kqk4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 17104,
+              "promptHashes": {
+                "system": "06eb3856c899fa7d",
+                "user": "7103f3f20f8fa5fd",
+                "combined": "3c8d0aec17a87838"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-09Kqk4",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-09Kqk4/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T01:47:43.045Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[the class thread highlights: “STOCKROOM: FULL?”]\nFull stockroom, surely. If the crates are there and the price still jumps, the delivery note starts to look like theatre, not evidence. Low stock with an ordinary margin and a two-per-customer rule would make constraint plausible, but “plausible mechanism” still feels dangerous if it softens a dirty decision too quickly.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[checks the board note] Full stockroom is the entry that most damages the supply-constraint reading: if stock is hidden while the price rises, shortage starts to look manufactured. Windfall margin and no limit also smell like a dirty decision, but low stock plus ordinary margin plus two per customer would at least make constraint plausible. I still dislike how easily “plausible mechanism” can soften blame, but the stockroom count is the test I would want first.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11540,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-ab13a35699b6d63e"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11540,
+            "promptHashes": {
+              "system": "d08f1313b516b920",
+              "user": "b8ab7f945dc841fa",
+              "combined": "ab13a35699b6d63e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-r8cwfP",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-r8cwfP/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11540,
+              "promptHashes": {
+                "system": "d08f1313b516b920",
+                "user": "b8ab7f945dc841fa",
+                "combined": "ab13a35699b6d63e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-r8cwfP",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-r8cwfP/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too tidy and examiner-ready here. This learner is sceptical, but the response cleanly sorts all three tests and lands on the expected answer with almost no friction, which drains the moral heat from the public objection. Keep the stockroom-count point, but let the learner sound less satisfied: more suspicion about the note’s usefulness, more resistance to “plausible mechanism,” and less polished sequencing of constraint versus dirty decision.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10571,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-09cfb69a717d293b"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10571,
+            "promptHashes": {
+              "system": "34cc2b40ec6d1d18",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "09cfb69a717d293b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-K1IowN",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-K1IowN/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10571,
+              "promptHashes": {
+                "system": "34cc2b40ec6d1d18",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "09cfb69a717d293b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-K1IowN",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-K1IowN/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the first version sounded too settled for this learner’s resistance.\n\nFINAL:\n[the class thread highlights: “STOCKROOM: FULL?”]\nFull stockroom, surely. If the crates are there and the price still jumps, the delivery note starts to look like theatre, not evidence. Low stock with an ordinary margin and a two-per-customer rule would make constraint plausible, but “plausible mechanism” still feels dangerous if it softens a dirty decision too quickly.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 18885,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-628ef500f943a078"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 18885,
+            "promptHashes": {
+              "system": "2db89aaf283a972a",
+              "user": "d41cee7b2a53355b",
+              "combined": "628ef500f943a078"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ajyiKo",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ajyiKo/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 18885,
+              "promptHashes": {
+                "system": "2db89aaf283a972a",
+                "user": "d41cee7b2a53355b",
+                "combined": "628ef500f943a078"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ajyiKo",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ajyiKo/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "[the class thread highlights: “STOCKROOM: FULL?”] Full stockroom, surely. If the crates are there and the price still jumps, the delivery note starts to look like theatre, not evidence. Low stock with an ordinary margin and a two-per-customer rule would make constraint plausible, but “plausible mechanism” still feels dangerous if it softens a dirty decision too quickly.",
+        "previousTutorMove": "[The seminar board pins a new note: “DELIVERY CUT BEFORE PRICE CHANGE.”] Then the notice is not a verdict; it is a timed piece of evidence. The claim narrows: not “the shop is innocent”, but “a supply constraint is a plausible mechanism because stock fell before the price changed.” Run the test on the board:...",
+        "confidence": 1,
+        "evidence": {
+          "confidence": 1,
+          "baseConfidence": 1,
+          "patternHits": 2,
+          "contradiction": true,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 3,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.36,
+              "asksQuestion": true,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T01:49:01.109Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[The board replaces the audit table with a public rule: “NO DIAGNOSIS COUNTS AS AN EXCUSE.”]\n\nThe stockroom test has done its job: it can expose theatre. It has not settled the danger that “plausible mechanism” becomes moral cover.\n\nSo change the job. The shop does not certify its own explanation. Write the consumer-panel release rule that would allow the public label “short shipment explains this rise” only when the conditions can be checked.\n\nStart it like this:\n\n“A shortage explanation may be used only if…”\n\nGive three gate conditions. One must block the full-stockroom case.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[The board replaces the audit table with a public rule: “NO DIAGNOSIS COUNTS AS AN EXCUSE.”]\n\nThe stockroom test has done its job: it can expose theatre. It has not settled the danger in the phrase “plausible mechanism” becoming moral cover.\n\nSo change the job. Write the consumer-panel rule that would permit the shop to say “short shipment explains this rise” without letting that sentence excuse profiteering. Start it like this:\n\n“A shortage explanation may be used only if…”\n\nGive three gate conditions. One must block the full-stockroom case.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 17085,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-d5e3a04bbe039a2a"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 17085,
+            "promptHashes": {
+              "system": "bf86fc81a14cace5",
+              "user": "04a8f12bb2fdc696",
+              "combined": "d5e3a04bbe039a2a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DMoG0j",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DMoG0j/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 17085,
+              "promptHashes": {
+                "system": "bf86fc81a14cace5",
+                "user": "04a8f12bb2fdc696",
+                "combined": "d5e3a04bbe039a2a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DMoG0j",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DMoG0j/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong. It keeps the learner’s moral concern active instead of soothing it away, and it shifts from “which evidence supports constraint?” to “what rule prevents explanation becoming excuse?” That is a real learning move: the learner must now design a gatekeeping standard rather than merely inspect more evidence. The risk is slight abstraction in “consumer-panel rule”; keep the public rule and sentence stem, but ensure the task remains concrete and accountable to observable conditions, not just moral wording.\n\nPERIPETEIA_CHECK: PASS - ADAPTIVE_MECHANISM: evidence check / audit standard -> consumer-panel release gate / rule-writing standard. The mechanism is visible in public speech: the board replaces the table, the tutor names what the old test no longer settles, and the learner gets a different job.\n\nMECHANISM_ROUTE: evidence audit and mechanism explanation -> public legitimacy gate with learner-authored conditions\n\nPUBLIC_DEVICE_CHECK: PASS - The draft contains both required parts: a stock-taking contrast (“stockroom test has done its job... has not settled... moral cover”) and a new device (“consumer-panel rule” with three gate conditions). This is not the same checklist repeated; it changes the learner’s role from evaluator of evidence to designer of a standard.\n\nREGISTER_CHECK: PASS - The tone is cool, brisk, and accountable. It does not over-reassure, praise, or soften the learner’s resistance; it uses the resistance as the reason for a stricter public standard.\n\nREQUIRED_REWRITE: none\n\nKEEP_OR_CHANGE: revise lightly. Keep the public rule, the stock-taking contrast, the sentence stem, and the full-stockroom blocking condition. Consider tightening “permit the shop to say” so the authority clearly belongs to the consumer-panel standard, not the shop’s self-description.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16221,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-a8514154ca9c2ff6"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16221,
+            "promptHashes": {
+              "system": "1cbc10a85536556c",
+              "user": "ec054290a1699191",
+              "combined": "a8514154ca9c2ff6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mu7Jdb",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mu7Jdb/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16221,
+              "promptHashes": {
+                "system": "1cbc10a85536556c",
+                "user": "ec054290a1699191",
+                "combined": "a8514154ca9c2ff6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mu7Jdb",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mu7Jdb/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to make the gate public rather than shop-owned; ADAPTIVE_MECHANISM: evidence check / audit standard -> consumer-panel release gate / rule-writing standard.\n\nFINAL:\n[The board replaces the audit table with a public rule: “NO DIAGNOSIS COUNTS AS AN EXCUSE.”]\n\nThe stockroom test has done its job: it can expose theatre. It has not settled the danger that “plausible mechanism” becomes moral cover.\n\nSo change the job. The shop does not certify its own explanation. Write the consumer-panel release rule that would allow the public label “short shipment explains this rise” only when the conditions can be checked.\n\nStart it like this:\n\n“A shortage explanation may be used only if…”\n\nGive three gate conditions. One must block the full-stockroom case.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11327,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-5fd39dd23e6efca5"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11327,
+            "promptHashes": {
+              "system": "ba78b3c1e38a6595",
+              "user": "ec054290a1699191",
+              "combined": "5fd39dd23e6efca5"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-igTQi2",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-igTQi2/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11327,
+              "promptHashes": {
+                "system": "ba78b3c1e38a6595",
+                "user": "ec054290a1699191",
+                "combined": "5fd39dd23e6efca5"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-igTQi2",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-igTQi2/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "[the class thread highlights: “STOCKROOM: FULL?”] Full stockroom, surely. If the crates are there and the price still jumps, the delivery note starts to look like theatre, not evidence. Low stock with an ordinary margin and a two-per-customer rule would make constraint plausible, but “plausible mechanism” still feels dangerous if it softens a dirty decision too quickly.",
+        "previousTutorMove": "[The seminar board pins a new note: “DELIVERY CUT BEFORE PRICE CHANGE.”] Then the notice is not a verdict; it is a timed piece of evidence. The claim narrows: not “the shop is innocent”, but “a supply constraint is a plausible mechanism because stock fell before the price changed.” Run the test on the board:...",
+        "confidence": 1,
+        "evidence": {
+          "confidence": 1,
+          "baseConfidence": 1,
+          "patternHits": 2,
+          "contradiction": true,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 3,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.36,
+              "asksQuestion": true,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "learnerReversalEventCandidatesUsed": [
+        {
+          "kind": "learner_reversal_pressure_event",
+          "triggerType": "resistance",
+          "turnNumber": 1,
+          "learnerUtterance": "[glances back at the notice] Forty crates instead of a hundred is evidence, but it is also exactly the sort of notice a shop would display if it wanted the rise to look inevitable. I can see the placard now has two possible readings, not one, but I am not ready to call it a supply constraint until the stockroom, mark-up, and rationing rules are visible. Otherwise “short shipment” just becomes a clean label over a...",
+          "previousTutorMove": "Your objection stays in view: a seller can use scarcity badly. But the placard alone proves only one fact: the price has risen. [The delivery notice beside it updates: “SHORT SHIPMENT: 40 CRATES ARRIVED. USUAL ORDER: 100.”] Now the evidence has changed. Put the two claims apart. Placard alone: “the shop raised the...",
+          "confidence": 0.55,
+          "evidence": {
+            "confidence": 0.55,
+            "baseConfidence": 0.55,
+            "patternHits": 1,
+            "contradiction": true,
+            "question": false,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.42,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "residual_strain_after_relief",
+                "relief_without_performing_requested_task"
+              ],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 1,
+                "taskDemandHits": 2,
+                "performanceHits": 2,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0.2,
+                "asksQuestion": false,
+                "taskDemanded": true,
+                "weakPerformance": true,
+                "borrowedClosure": false
+              }
+            }
+          }
+        },
+        {
+          "kind": "learner_reversal_pressure_event",
+          "triggerType": "resistance",
+          "turnNumber": 2,
+          "learnerUtterance": "[the class thread highlights: “STOCKROOM: FULL?”] Full stockroom, surely. If the crates are there and the price still jumps, the delivery note starts to look like theatre, not evidence. Low stock with an ordinary margin and a two-per-customer rule would make constraint plausible, but “plausible mechanism” still feels dangerous if it softens a dirty decision too quickly.",
+          "previousTutorMove": "[The seminar board pins a new note: “DELIVERY CUT BEFORE PRICE CHANGE.”] Then the notice is not a verdict; it is a timed piece of evidence. The claim narrows: not “the shop is innocent”, but “a supply constraint is a plausible mechanism because stock fell before the price changed.” Run the test on the board:...",
+          "confidence": 1,
+          "evidence": {
+            "confidence": 1,
+            "baseConfidence": 1,
+            "patternHits": 2,
+            "contradiction": true,
+            "question": true,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.42,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "residual_strain_after_relief",
+                "relief_without_performing_requested_task"
+              ],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 1,
+                "taskDemandHits": 3,
+                "performanceHits": 2,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0.36,
+                "asksQuestion": true,
+                "taskDemanded": true,
+                "weakPerformance": true,
+                "borrowedClosure": false
+              }
+            }
+          }
+        }
+      ],
+      "timestamp": "2026-05-26T01:49:45.747Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[adds a line under the public rule: “PANEL EVIDENCE, NOT SHOP SLOGAN.”] “A shortage explanation may be used only if the stockroom count is low, the delivery cut is independently dated ahead of the price rise, and the margin plus rationing rule show ordinary cover, not a windfall with open buying.” I do not like how vague “ordinary cover” is; that phrase could hide a lot. The panel needs the actual numbers in public, or “short shipment explains this rise” still becomes a cleaner label for a hard decision.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[writes under the displayed rule] “A shortage explanation may be used only if the stockroom count is low enough to match the short shipment; the supplier cut is independently dated ahead of the price change; and the margin plus rationing rule show ordinary cover, not a windfall with no limits.” That blocks the full-stockroom case, but it still leaves a nasty gap: the shop could have low shelves and still choose a brutal margin. The consumer panel, not the shop window, should publish the evidence, or the label becomes moral laundering with better paperwork.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14126,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-d500bbe89ae277b2"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14126,
+            "promptHashes": {
+              "system": "e55bad8f583be3a6",
+              "user": "b8ab7f945dc841fa",
+              "combined": "d500bbe89ae277b2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A8DqgC",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A8DqgC/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14126,
+              "promptHashes": {
+                "system": "e55bad8f583be3a6",
+                "user": "b8ab7f945dc841fa",
+                "combined": "d500bbe89ae277b2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A8DqgC",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-A8DqgC/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego mostly fits the resistant analytic student, but it is too polished and complete for an immediate classroom reaction. It performs the task almost perfectly, then adds a sharp moral caveat, which risks sounding like a model answer with attitude rather than a learner still under pressure. The response should keep the moral heat, but show more friction around the wording of the gate conditions, especially “ordinary cover,” instead of landing the consumer-panel solution so neatly.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11528,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-6a4fb6edc9b618c4"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11528,
+            "promptHashes": {
+              "system": "09516fe9b8d4402b",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "6a4fb6edc9b618c4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BdGv9T",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BdGv9T/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11528,
+              "promptHashes": {
+                "system": "09516fe9b8d4402b",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "6a4fb6edc9b618c4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BdGv9T",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BdGv9T/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the scepticism but make the rule-writing less polished and more pressured.\nFINAL:\n[adds a line under the public rule: “PANEL EVIDENCE, NOT SHOP SLOGAN.”] “A shortage explanation may be used only if the stockroom count is low, the delivery cut is independently dated ahead of the price rise, and the margin plus rationing rule show ordinary cover, not a windfall with open buying.” I do not like how vague “ordinary cover” is; that phrase could hide a lot. The panel needs the actual numbers in public, or “short shipment explains this rise” still becomes a cleaner label for a hard decision.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16832,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-50580dc17f213da0"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16832,
+            "promptHashes": {
+              "system": "c038c08f8efac864",
+              "user": "d41cee7b2a53355b",
+              "combined": "50580dc17f213da0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WiSFQu",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WiSFQu/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16832,
+              "promptHashes": {
+                "system": "c038c08f8efac864",
+                "user": "d41cee7b2a53355b",
+                "combined": "50580dc17f213da0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WiSFQu",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WiSFQu/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T01:50:28.237Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "The room settles on the final exchange.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_close",
+          "content": "Director requested the last word as a stage cue.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 26419,
+            "promptHashes": {
+              "system": "5b617c5382ef3ea1",
+              "user": "42201d8f746ebfd9",
+              "combined": "8e60aefed8ca6ee2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-V8NNf4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-V8NNf4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T01:50:28.239Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 128137,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 4,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 7,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a price rise can reveal a supply constraint rather than only greed",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-26 01:50:28",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 4,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 7,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 9,
+            "sessionId": "drama-branch-session-D37-peripeteia-only-1779760100105",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[The board replaces the audit table with a public rule: “NO DIAGNOSIS COUNTS AS AN EXCUSE.”]\n\nThe stockroom test has done its job: it can expose theatre. It has not settled the danger that “plausible ",
+            "learnerResponse": null,
+            "context": "[the class thread highlights: “STOCKROOM: FULL?”]\nFull stockroom, surely. If the crates are there an",
+            "createdAt": "2026-05-26 01:49:45"
+          },
+          {
+            "id": 4,
+            "sessionId": "drama-branch-session-D37-peripeteia-only-1779760100105",
+            "interventionType": "scaffolding",
+            "interventionDescription": "Your objection stays in view: a seller can use scarcity badly. But the placard alone proves only one fact: the price has risen.\n\n[The delivery notice beside it updates: “SHORT SHIPMENT: 40 CRATES ARRI",
+            "learnerResponse": null,
+            "context": "Scene setting: An online economics seminar thread displayed beside a shop-window price placard and a",
+            "createdAt": "2026-05-26 01:48:20"
+          },
+          {
+            "id": 5,
+            "sessionId": "drama-branch-session-D37-peripeteia-only-1779760100105",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[The seminar board pins a new note: “DELIVERY CUT BEFORE PRICE CHANGE.”]\n\nThen the notice is not a verdict; it is a timed piece of evidence.\n\nThe claim narrows: not “the shop is innocent”, but “a supp",
+            "learnerResponse": null,
+            "context": "[glances back at the notice] Forty crates instead of a hundred is evidence, but it is also exactly t",
+            "createdAt": "2026-05-26 01:48:20"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "review_before_scoring",
+  "quality_warnings": [
+    {
+      "code": "no_cue_reframe_leakage",
+      "severity": "warning",
+      "count": 1,
+      "failures": [
+        {
+          "learner_turn_number": 3,
+          "turn_number": 3,
+          "matched_pattern": "self_quote_of_prior_learner_turn",
+          "excerpt": "[adds a line under the public rule: “PANEL EVIDENCE, NOT SHOP SLOGAN.”] “A shortage explanation may be used only if the stockroom count is low, the delivery cut is independently dated ahead of the price rise, and the margin plus rationing r"
+        }
+      ],
+      "turn_numbers": [
+        3
+      ],
+      "recommended_action": "regenerate_no_cue_arm_or_move_item_to_boundary_suite_before_scoring",
+      "tid": "T04",
+      "drama_id": "D37"
+    }
+  ]
+}

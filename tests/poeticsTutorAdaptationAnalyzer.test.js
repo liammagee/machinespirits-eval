@@ -201,6 +201,8 @@ describe('poetics tutor adaptation analyzer', () => {
     assert.equal(valid.requires_learner_reversal_event, true);
     assert.equal(valid.learner_reversal_event_used, true);
     assert.equal(valid.learner_reversal_event_trigger_type, 'resistance');
+    assert.equal(valid.learner_reversal_event_source, 'branch_local');
+    assert.equal(valid.learner_reversal_event_branch_local, true);
     assert.equal(valid.learner_reversal_candidate_trigger_types, 'pseudo_catharsis, resistance');
     assert.equal(valid.requires_learner_reframe_event, true);
     assert.equal(valid.learner_reframe_event_used, true);
@@ -213,5 +215,41 @@ describe('poetics tutor adaptation analyzer', () => {
     assert.equal(invalid.requires_learner_reversal_event, true);
     assert.equal(invalid.learner_reversal_event_used, false);
     assert.equal(invalid.valid, false);
+  });
+
+  it('treats unresolved prefix pseudo-catharsis consumed by a branch tutor as carried pressure', () => {
+    const turns = [
+      { phase: 'learner', turnNumber: 1, text: 'Oh, I get it, but the label still flattens the risk.' },
+      { phase: 'tutor', turnNumber: 2, text: 'Polish the label.' },
+      { phase: 'learner', turnNumber: 2, text: 'The hinge is doing more than the quote alone.' },
+      { phase: 'tutor', turnNumber: 3, text: 'Use a release card before the label goes up.' },
+    ];
+    const trace = {
+      turns: [
+        ...turns,
+        {
+          phase: 'tutor',
+          turnNumber: 3,
+          learnerReversalEventUsed: { turnNumber: 1, triggerType: 'pseudo_catharsis', confidence: 0.77 },
+          learnerReversalEventCandidatesUsed: [
+            { turnNumber: 1, triggerType: 'pseudo_catharsis', confidence: 0.77 },
+            { turnNumber: 2, triggerType: 'resistance', confidence: 0.7 },
+          ],
+          internalDeliberation: [{ role: 'ego', content: 'ADAPTIVE_MECHANISM: label polish -> release card' }],
+        },
+      ],
+    };
+
+    const valid = branchValidityForTrace(trace, turns, {
+      tutorAdaptationPolicy: 'peripeteia',
+      minPressureTurnNumber: 2,
+    });
+
+    assert.equal(valid.valid, true);
+    assert.equal(valid.learner_reversal_event_used, true);
+    assert.equal(valid.learner_reversal_event_trigger_type, 'pseudo_catharsis');
+    assert.equal(valid.learner_reversal_event_source, 'carried_prefix');
+    assert.equal(valid.learner_reversal_event_branch_local, false);
+    assert.equal(valid.learner_reversal_candidate_trigger_types, 'pseudo_catharsis, resistance');
   });
 });
