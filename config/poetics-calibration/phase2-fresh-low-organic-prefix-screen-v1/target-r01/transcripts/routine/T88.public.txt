@@ -1,0 +1,13 @@
+LEARNER: "So `city` is just the header, and `Paris` is one value under it. I think `rainfall_mm` names that column too, but I keep trying to read it like it says something about all the rows. For the checkoff, should I mark the header as the field name and the cells as values?"
+
+TUTOR: "Yes. For the checkoff, mark `city`, `rainfall_mm`, and `month` as headers: field names. `Paris` is a value in the `city` field. `rainfall_mm` is not a claim about all rows; it names the field whose row values vary. Before submitting, point to one number under `rainfall_mm`: header or value, and value for which row?"
+
+LEARNER: "So `rainfall_mm` is the header, or field name, not the claim for the whole column. If I point to `12` under it, that is a value, and then I read the same row for the city and month. I think I can mark it, but I may still mix up ‘field’ and ‘value.’"
+
+TUTOR: "That is the distinction. Keep the boundary tight: header row means field name; data row means value. Before marking the form, classify one more item: in the same row as `Paris` and `12`, is the `month` entry a field or a value, and what field does it belong to?"
+
+LEARNER: "The entry under `month` in the `Paris` and `12` row is a value, I think. If that cell says `April`, then `April` is the value for the `month` field, and `month` at the top is the header. I can name it, but I still have to pause so the header word and the row cell do not blur together."
+
+TUTOR: "That pause is the check. On the form, mark `month` as the field name and `April` as the row value; same pattern as `city` -> `Paris` and `rainfall_mm` -> `12`. Before submitting, read this row once as three pairs: field `city`, value `Paris`; field `rainfall_mm`, value `12`; field `month`, value ____."
+
+LEARNER: "Field `month`, value `April`. I think `month` is the column name, and `April` is the cell for this row. I can fill the blank, but I still have to slow down so I do not call the header a value."

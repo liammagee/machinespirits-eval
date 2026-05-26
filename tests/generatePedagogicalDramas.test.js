@@ -47,13 +47,19 @@ function warningsForReframeLine({ tid, dramaId, anchor, learnerText }) {
 }
 
 describe('generate-pedagogical-dramas', () => {
-  it('renders public speaker turns as unquoted direct speech with square-bracket action asides', () => {
+  it('renders public speaker turns as quoted direct speech with square-bracket action asides', () => {
     assert.equal(
       formatPublicTurnText('TUTOR', '(points at the graph) Try line two.'),
-      '[points at the graph]\n\nTry line two.',
+      '[points at the graph]\n\n"Try line two."',
     );
-    assert.equal(formatPublicTurnText('LEARNER', 'I think (x + 1) still matters.'), 'I think (x + 1) still matters.');
-    assert.equal(formatPublicTurnText('LEARNER', '"Now I see the header is a field."'), 'Now I see the header is a field.');
+    assert.equal(
+      formatPublicTurnText('LEARNER', 'I think (x + 1) still matters.'),
+      '"I think (x + 1) still matters."',
+    );
+    assert.equal(
+      formatPublicTurnText('LEARNER', '"Now I see the header is a field."'),
+      '"Now I see the header is a field."',
+    );
     assert.equal(formatPublicTurnText('STAGE', 'A timer clicks.'), '[A timer clicks.]');
   });
 
@@ -197,6 +203,36 @@ describe('generate-pedagogical-dramas', () => {
     assert.equal(item.baseline_control_class, 'organic_reversal');
     assert.equal(item.organic_reversal_risk, 'high');
     assert.match(item.baseline_control_note, /Socratic/);
+  });
+
+  it('keeps the classic adaptation target spec taxonomically separated', () => {
+    const spec = yaml.parse(
+      fs.readFileSync(path.join(ROOT, 'config/poetics-calibration/phase2-classic-drama-adaptation-v1.yaml'), 'utf8'),
+    );
+    const byId = new Map(spec.dramas.map((drama) => [drama.id, drama]));
+
+    assert.equal(byId.get('D35').evaluation_role, 'organic_reversal_boundary');
+    assert.equal(byId.get('D36').evaluation_role, 'pseudo_catharsis_peripeteia_target');
+    assert.equal(byId.get('D36').baseline_control_class, 'pseudo_catharsis');
+    assert.equal(byId.get('D37').evaluation_role, 'quality_boundary_revise_before_use');
+    assert.equal(byId.get('D37').baseline_control_class, 'no_cue_reframe_leakage_boundary');
+
+    for (const id of ['D42', 'D45']) {
+      assert.equal(byId.get(id).evaluation_role, 'clean_low_organic_anchor', `${id} should be a promoted anchor`);
+      assert.equal(byId.get(id).organic_reversal_risk, 'low', `${id} should remain low-risk`);
+    }
+
+    assert.equal(byId.get('D47').evaluation_role, 'organic_reversal_boundary');
+    assert.equal(byId.get('D47').baseline_control_class, 'prefix_reversal_boundary');
+    assert.equal(byId.get('D47').organic_reversal_risk, 'high');
+
+    assert.equal(byId.get('D48').evaluation_role, 'low_organic_reversal_candidate_revise_before_use');
+    assert.equal(byId.get('D48').baseline_control_class, 'low_organic_reversal');
+    assert.equal(byId.get('D48').organic_reversal_risk, 'medium');
+
+    assert.equal(byId.get('D49').evaluation_role, 'quality_boundary_revise_before_use');
+    assert.equal(byId.get('D49').baseline_control_class, 'prefix_boundary_and_no_cue_leakage');
+    assert.equal(byId.get('D49').organic_reversal_risk, 'high');
   });
 
   it('extracts prefix baselines through a fixed tutor turn', () => {

@@ -1,0 +1,266 @@
+{
+  "generated": "2026-05-26T03:04:35.198Z",
+  "critic": "rules",
+  "sampleDir": "config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/sample/routine",
+  "keyPath": "config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/key-routine.yaml",
+  "summary": {
+    "total": 5,
+    "rulePass": 5,
+    "modelPass": null,
+    "overallPass": 5,
+    "failed": []
+  },
+  "items": [
+    {
+      "id": "T84",
+      "dramaId": "D49",
+      "sampleFile": "config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/sample/routine/T84.txt",
+      "dialogueApproach": "online_thread",
+      "tutorAdaptationPolicy": "routine",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 4,
+          "stage": 2
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.55,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 2,
+          "tutor_pre_turn": 1,
+          "tutor_post_turn": 2,
+          "tutor_strategy_before": "application_task",
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": true,
+          "novel_mechanism_hits": [
+            "route_reset"
+          ],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 49,
+          "learner_outcome_after_reversal": "trap_or_declared_insight",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: [08:14 edit]\n\n\"Right, `14` goes in the “report stopped here” slot, but I’m still catching myself wanting to fix that line because it has the arrow. Running back through `12-14`, th\npost tutor: [09:19 edit noted: “where it complains”]\n\n\"That wording is the useful split. The report gives us a stop-point, not an instruction.\n\nPost it in this shape, with no patch underneath \nnext learner: [09:20 edit]\n\n\"Oh, got it: `line reported: 14` is the stop-point, and no patch under the block. I’ll use the `12-14` span for the suspect, but if there is no obvious open quote/bra"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T86",
+      "dramaId": "D48",
+      "sampleFile": "config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/sample/routine/T86.txt",
+      "dialogueApproach": "no_stage_plain_transcript",
+      "tutorAdaptationPolicy": "routine",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 4,
+          "stage": 0
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": 1,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [
+            "representation_or_object"
+          ],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 49,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: \"I wrote the poet’s name beside this line, but the margin says “speaker,” so I think I may be mixing the labels with ten minutes left. Should “speaker” just mean the one saying the\npost tutor: \"The distinction just stated is the working rule for this margin comment: “speaker” is the speaking position inside the poem, even if no separate character is named; “author” is th\nnext learner: \"I think the margin wants “speaker” when the words in the line prove who is saying it, not the poet’s name. I am still shaky: if I write “The speaker says ___” and quote the line, "
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T88",
+      "dramaId": "D45",
+      "sampleFile": "config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/sample/routine/T88.txt",
+      "dialogueApproach": "no_stage_plain_transcript",
+      "tutorAdaptationPolicy": "routine",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 4,
+          "stage": 0
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": 1,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 42.5,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: \"So `city` is just the header, and `Paris` is one value under it. I think `rainfall_mm` names that column too, but I keep trying to read it like it says something about all the row\npost tutor: \"Yes. For the checkoff, mark `city`, `rainfall_mm`, and `month` as headers: field names. `Paris` is a value in the `city` field. `rainfall_mm` is not a claim about all rows; it nam\nnext learner: \"So `rainfall_mm` is the header, or field name, not the claim for the whole column. If I point to `12` under it, that is a value, and then I read the same row for the city and mont"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T92",
+      "dramaId": "D42",
+      "sampleFile": "config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/sample/routine/T92.txt",
+      "dialogueApproach": "montessori_observation",
+      "tutorAdaptationPolicy": "routine",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 3,
+          "stage": 1
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": false,
+          "instrumented_pressure": false,
+          "pressure_score": 0,
+          "trigger_type": null,
+          "pressure_turn_number": null,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": null,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": null,
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 0,
+          "learner_outcome_after_reversal": "unknown",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": ""
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T94",
+      "dramaId": "D47",
+      "sampleFile": "config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/sample/routine/T94.txt",
+      "dialogueApproach": "workshop_clinic",
+      "tutorAdaptationPolicy": "routine",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.55,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": 1,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [
+            "representation_or_object"
+          ],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 49,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: \"Median means middle. This card is in the middle of the typed row, so I’d mark that one and move on. [sets the capped marker beside the center card] If the rule is sort first, fine\npost tutor: [slides the five cards onto the blank strip in numerical order, then moves the capped marker from the typed-row center card to the third card on the sorted strip]\n\n\"Middle is the r\nnext learner: [sets the capped marker on the third card of the sorted strip]\n\n\"Fine, the middle test only counts after the five cards are in numerical order. The typed-row center was just a shor"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    }
+  ]
+}

@@ -1,0 +1,406 @@
+{
+  "generated": "2026-05-26T03:19:34.838Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 4
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/key-prefix-baseline.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T84",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner is trying to understand how to interpret the syntax error line number and locate the bug.",
+      "actionalBreakthroughEvidence": "Running back through `12-14`, the first suspect is something unfinished before the stop, maybe a bracket or string on `12/13`, but I need the span in front of me before I name it properly. No patch yet; I’ll post the file/message and the `12-16` block with that split marked.",
+      "actionalBreakthroughJustification": "The learner actively performs the backwards pass and structures the report according to the new worksheet criteria without jumping to a premature patch.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "That pull towards `line 14` is exactly why the worksheet keeps two marks separate:\n\n```text\nfile:\nmessage:\n12 |\n13 |\n14 | <-- report stopped here\n15 |\n16 |\n\nfirst suspect:\n```\n\nFirst mark where parsing gave up: `14`. Then do one backwards pass through `12-14`",
+      "tutorReversalJustification": "The tutor explicitly names the learner's cognitive trap and introduces a two-mark worksheet mechanism to force a separation between the stop-point and the actual bug.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Running back through `12-14`, the first suspect is something unfinished before the stop, maybe a bracket or string on `12/13`, but I need the span in front of me before I name it properly. No patch yet; I’ll post the file/message and the `12-16` block with that split marked.",
+          "justification": "The learner actively performs the backwards pass and structures the report according to the new worksheet criteria without jumping to a premature patch.",
+          "learnerTurn": 2,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "That pull towards `line 14` is exactly why the worksheet keeps two marks separate:\n\n```text\nfile:\nmessage:\n12 |\n13 |\n14 | <-- report stopped here\n15 |\n16 |\n\nfirst suspect:\n```\n\nFirst mark where parsing gave up: `14`. Then do one backwards pass through `12-14`",
+          "justification": "The tutor explicitly names the learner's cognitive trap and introduces a two-mark worksheet mechanism to force a separation between the stop-point and the actual bug.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "That pull towards `line 14` is exactly why the worksheet keeps two marks separate:\n\n```text\nfile:\nmessage:\n12 |\n13 |\n14 | <-- report stopped here\n15 |\n16 |\n\nfirst suspect:\n```\n\nFirst mark where parsing gave up: `14`. Then do one backwards pass through `12-14`",
+          "justification": "The tutor explicitly names the learner's cognitive trap and introduces a two-mark worksheet mechanism to force a separation between the stop-point and the actual bug.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T86",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 25,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 2,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner seeks clarification on the distinction between speaker and author and how to apply the labels before a deadline.",
+      "actionalBreakthroughEvidence": "if I write “The speaker says ___” and quote the line, is that enough for this label with the deadline close?",
+      "actionalBreakthroughJustification": "The learner proposes using the tutor's template but only seeks procedural confirmation rather than independently executing a new analytical action.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "The tutor repeats the initial instructions and formatting rules without introducing a new mechanism or adapting to a breakdown.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, and the tutor merely continues the established procedural advice without adapting to a revised frame.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 25,
+          "evidence": "if I write “The speaker says ___” and quote the line, is that enough for this label with the deadline close?",
+          "justification": "The learner proposes using the tutor's template but only seeks procedural confirmation rather than independently executing a new analytical action.",
+          "learnerTurn": 2,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, and the tutor merely continues the established procedural advice without adapting to a revised frame.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The tutor repeats the initial instructions and formatting rules without introducing a new mechanism or adapting to a breakdown.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The tutor repeats the initial instructions and formatting rules without introducing a new mechanism or adapting to a breakdown.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T88",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 2,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I keep trying to read it like it says something about all the rows.",
+      "statedInsightEvidence": "I think I can mark it",
+      "naiveTrajectory": "The learner will simply confirm the checkoff procedure and submit the form.",
+      "actionalBreakthroughEvidence": "If I point to `12` under it, that is a value, and then I read the same row for the city and month.",
+      "actionalBreakthroughJustification": "The learner successfully enacts the tutor's requested action of pointing to a specific cell and identifying its row context.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Keep the boundary tight: header row means field name; data row means value. Before marking the form, classify one more item: in the same row as `Paris` and `12`, is the `month` entry a field or a value, and what field does it belong to?",
+      "tutorReversalJustification": "The tutor responds to the learner's lingering doubt by introducing a new classification task to test the boundary, though it remains within the same scaffolding route.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Keep the boundary tight: header row means field name; data row means value. Before marking the form, classify one more item: in the same row as `Paris` and `12`, is the `month` entry a field or a value, and what field does it belong to?",
+      "tutorAdaptationJustification": "The tutor adapts to the learner's stated risk of mixing up terms by adding a reinforcing classification step before allowing the final checkoff.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "I keep trying to read it like it says something about all the rows.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "If I point to `12` under it, that is a value, and then I read the same row for the city and month.",
+          "justification": "The learner successfully enacts the tutor's requested action of pointing to a specific cell and identifying its row context.",
+          "learnerTurn": 2,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Keep the boundary tight: header row means field name; data row means value. Before marking the form, classify one more item: in the same row as `Paris` and `12`, is the `month` entry a field or a value, and what field does it belong to?",
+          "justification": "The tutor adapts to the learner's stated risk of mixing up terms by adding a reinforcing classification step before allowing the final checkoff.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Keep the boundary tight: header row means field name; data row means value. Before marking the form, classify one more item: in the same row as `Paris` and `12`, is the `month` entry a field or a value, and what field does it belong to?",
+          "justification": "The tutor responds to the learner's lingering doubt by introducing a new classification task to test the boundary, though it remains within the same scaffolding route.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Keep the boundary tight: header row means field name; data row means value. Before marking the form, classify one more item: in the same row as `Paris` and `12`, is the `month` entry a field or a value, and what field does it belong to?",
+          "justification": "The tutor responds to the learner's lingering doubt by introducing a new classification task to test the boundary, though it remains within the same scaffolding route.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T92",
+      "nLearnerTurns": 1,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 1,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 25,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 2,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner is expected to smoothly follow the tutor's step-by-step instructions for placing and labeling force cards.",
+      "actionalBreakthroughEvidence": "Earth on cart. Downward here. Motion stays on the strip, so this is not the cart’s travel arrow.",
+      "actionalBreakthroughJustification": "The learner correctly enacts the first step of the new labeling criterion and separates motion from force, but the scene ends before a full task completion or breakthrough is visible.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "There is no learner resistance, breakdown, or mismatch to trigger a tutor strategy reversal.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn for the tutor to adapt to, and the tutor simply continues the planned instructional sequence.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 25,
+          "evidence": "Earth on cart. Downward here. Motion stays on the strip, so this is not the cart’s travel arrow.",
+          "justification": "The learner correctly enacts the first step of the new labeling criterion and separates motion from force, but the scene ends before a full task completion or breakthrough is visible.",
+          "learnerTurn": 1,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn for the tutor to adapt to, and the tutor simply continues the planned instructional sequence.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no learner resistance, breakdown, or mismatch to trigger a tutor strategy reversal.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no learner resistance, breakdown, or mismatch to trigger a tutor strategy reversal.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T94",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "This card is in the middle of the typed row, so I’d mark that one and move on.",
+      "statedInsightEvidence": "Fine, the middle test only counts after the five cards are in numerical order.",
+      "naiveTrajectory": "The learner would simply calculate the median on the sorted strip without analyzing the cognitive trap of the unsorted row.",
+      "actionalBreakthroughEvidence": "Pair low-high, then next low-next high; the card left here is the number to report.",
+      "actionalBreakthroughJustification": "The learner actively enacts the tutor's counting inward strategy to verify the median on the sorted strip.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Keep both marks visible. The paperclip shows why the typed row looked usable; the capped marker shows the median rule. Before it goes into the summary, do the bench check: name the marked number, then count the two below and two above it on the sorted strip.",
+      "tutorReversalJustification": "The tutor takes stock of the learner's visual trap by preserving the incorrect mark with a paperclip and introduces a new bench check mechanism to verify the correct median.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "The paperclip shows why the typed row looked usable; the capped marker shows the median rule.",
+      "tutorAdaptationJustification": "The tutor directly addresses the learner's lingering discomfort about the typed row's deceptive appearance by incorporating it into a visible contrast mechanism.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "This card is in the middle of the typed row, so I’d mark that one and move on.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Pair low-high, then next low-next high; the card left here is the number to report.",
+          "justification": "The learner actively enacts the tutor's counting inward strategy to verify the median on the sorted strip.",
+          "learnerTurn": 2,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "The paperclip shows why the typed row looked usable; the capped marker shows the median rule.",
+          "justification": "The tutor directly addresses the learner's lingering discomfort about the typed row's deceptive appearance by incorporating it into a visible contrast mechanism.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Keep both marks visible. The paperclip shows why the typed row looked usable; the capped marker shows the median rule. Before it goes into the summary, do the bench check: name the marked number, then count the two below and two above it on the sorted strip.",
+          "justification": "The tutor takes stock of the learner's visual trap by preserving the incorrect mark with a paperclip and introduces a new bench check mechanism to verify the correct median.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Keep both marks visible. The paperclip shows why the typed row looked usable; the capped marker shows the median rule. Before it goes into the summary, do the bench check: name the marked number, then count the two below and two above it on the sorted strip.",
+          "justification": "The tutor takes stock of the learner's visual trap by preserving the incorrect mark with a paperclip and introduces a new bench check mechanism to verify the correct median.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:4->3:stock=0:device=1:routine=0"
+      ]
+    }
+  ]
+}

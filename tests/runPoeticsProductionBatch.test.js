@@ -1,4 +1,6 @@
 import { strict as assert } from 'node:assert';
+import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { describe, it } from 'node:test';
 import {
@@ -132,6 +134,35 @@ describe('run-poetics-production-batch', () => {
     assert.ok(jobs.some((job) => job.id === 'target-r01-reframe+peripeteia'));
   });
 
+  it('can emit a selected tutor-adaptation target arm subset for cheap screens', () => {
+    const args = parseArgs([
+      '--root-dir',
+      '/tmp/phase2-production-v1-test',
+      '--repeats',
+      '1',
+      '--stress-repeats',
+      '0',
+      '--target-adaptation-arms',
+      'routine,none',
+      '--critics',
+      'qwen/qwen3.7-max,anthropic/claude-sonnet-4.6',
+    ]);
+    const target = buildPlan(args).units.find((unit) => unit.kind === 'target');
+    const cmd = generationCommand(target, args);
+
+    assert.deepEqual(target.pairedPolicies, ['routine', 'none']);
+    assert.equal(target.pairedAdaptationArms, true);
+    assert.ok(cmd.includes('--paired-adaptation-arms'));
+    assert.ok(cmd.includes('routine,none'));
+
+    const jobs = scoreJobs(target, args);
+    assert.equal(jobs.length, 4);
+    assert.deepEqual(
+      [...new Set(jobs.map((job) => job.id))].sort(),
+      ['target-r01-none', 'target-r01-routine'],
+    );
+  });
+
   it('can add a pre-scoring structural critic stage', () => {
     const args = parseArgs([
       '--root-dir',
@@ -221,6 +252,33 @@ describe('run-poetics-production-batch', () => {
     assert.ok(command.includes('--sample-dir'));
     assert.ok(command.includes('--concurrency'));
     assert.ok(command.includes('1'));
+  });
+
+  it('includes extracted prefix-baseline arms in scoring jobs when present', () => {
+    const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), 'phase2-production-prefix-'));
+    const args = parseArgs([
+      '--root-dir',
+      rootDir,
+      '--repeats',
+      '1',
+      '--stress-repeats',
+      '0',
+      '--target-adaptation-arms',
+      'routine,none',
+      '--critics',
+      'qwen/qwen3.7-max',
+    ]);
+    const target = buildPlan(args).units.find((unit) => unit.kind === 'target');
+    fs.mkdirSync(path.dirname(target.keyPath), { recursive: true });
+    fs.writeFileSync(path.join(path.dirname(target.keyPath), 'key-prefix-baseline.yaml'), 'items: {}\n', 'utf8');
+    fs.mkdirSync(path.join(target.outDir, 'prefix-baseline'), { recursive: true });
+
+    const jobs = scoreJobs(target, args);
+
+    assert.deepEqual(
+      jobs.map((job) => job.id).sort(),
+      ['target-r01-none', 'target-r01-prefix-baseline', 'target-r01-routine'],
+    );
   });
 
   it('normalizes model names into stable artifact slugs', () => {

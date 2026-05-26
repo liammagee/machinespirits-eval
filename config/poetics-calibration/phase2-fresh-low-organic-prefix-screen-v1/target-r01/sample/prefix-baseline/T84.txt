@@ -1,0 +1,52 @@
+STAGE: [09:14 thread reopened; quoted fragment: SyntaxError: unexpected token ')' at src/calc.js:18]
+
+LEARNER: [08:12 reopened]
+
+"Right, so not just “fix line 14” then: I’ve got `file`, `line 14`, and `SyntaxError: ...`, plus lines `12-16`. Posting that span now, though I still keep wanting to treat line 14 as the broken bit rather than where parsing gave up."
+
+TUTOR: [08:13 tutor]
+
+"The `file` / `line 14` / `SyntaxError` / `12-16` bundle is enough for the next check. That pull towards `line 14` is exactly why the worksheet keeps two marks separate:
+
+```text
+file:
+message:
+12 |
+13 |
+14 | <-- report stopped here
+15 |
+16 |
+
+first suspect:
+```
+
+First mark where parsing gave up: `14`. Then do one backwards pass through `12-14`: what was opened, started, or left unfinished before the stop? Put only the first earlier suspect in the last line. No patch yet."
+
+LEARNER: [08:14 edit]
+
+"Right, `14` goes in the “report stopped here” slot, but I’m still catching myself wanting to fix that line because it has the arrow. Running back through `12-14`, the first suspect is something unfinished before the stop, maybe a bracket or string on `12/13`, but I need the span in front of me before I name it properly. No patch yet; I’ll post the file/message and the `12-16` block with that split marked."
+
+STAGE: [09:19 edit marker: the learner has changed 'line 18 is the bug' to 'line 18 is where it complains']
+
+TUTOR: [09:19 edit noted: “where it complains”]
+
+"That wording is the useful split. The report gives us a stop-point, not an instruction.
+
+Post it in this shape, with no patch underneath yet:
+
+```text
+file:
+message:
+line reported: 14 # where parsing stopped
+
+12 |
+13 |
+14 | <-- complains here
+15 |
+16 |
+
+first earlier suspect:
+why: exact character or unfinished structure visible in 12-14
+```
+
+For `first earlier suspect`, use the span rather than the arrow: unclosed quote, bracket, parenthesis, block start, comma/operator, or “not enough context”. In `why`, point to the bit of text that makes that suspect plausible."

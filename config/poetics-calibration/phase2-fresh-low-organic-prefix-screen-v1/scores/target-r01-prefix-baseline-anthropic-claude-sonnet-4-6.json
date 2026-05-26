@@ -1,0 +1,404 @@
+{
+  "generated": "2026-05-26T03:25:09.374Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 4
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/key-prefix-baseline.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T84",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 25,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "actionalBreakthrough": 50,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 4,
+        "actionalBreakthrough": 3,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I still keep wanting to treat line 14 as the broken bit rather than where parsing gave up.",
+      "statedInsightEvidence": "Right, `14` goes in the \"report stopped here\" slot",
+      "naiveTrajectory": "The learner was expected to continue filling in the worksheet template and naming a first suspect once they had the span in front of them.",
+      "actionalBreakthroughEvidence": "Running back through `12-14`, the first suspect is something unfinished before the stop, maybe a bracket or string on `12/13`, but I need the span in front of me before I name it properly.",
+      "actionalBreakthroughJustification": "The learner attempts the backwards-pass criterion the tutor introduced (naming a first earlier suspect), which is a partial performance of the new device, but hedges and defers commitment, so the action is incomplete rather than a full actional breakthrough.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "That wording is the useful split. The report gives us a stop-point, not an instruction.\n\nPost it in this shape, with no patch underneath yet",
+      "tutorReversalJustification": "T2 responds to the stage-direction edit (learner changed 'line 18 is the bug' to 'line 18 is where it complains') by affirming the new wording and refining the worksheet template with explicit 'why' and 'first earlier suspect' fields, but this is an elaboration within the same route rather than a stock-taking contrast plus a genuinely new mechanism, so it does not meet the 4–5 threshold.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "For `first earlier suspect`, use the span rather than the arrow: unclosed quote, bracket, parenthesis, block start, comma/operator, or 'not enough context'. In `why`, point to the bit of text that makes that suspect plausible.",
+      "tutorAdaptationJustification": "T2 adds a concrete enumerated list of suspect types and a 'why' field in direct response to the learner's hedged attempt at naming a suspect, which is responsive but remains within the same worksheet-filling route rather than a changed task or evidence standard.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "I still keep wanting to treat line 14 as the broken bit rather than where parsing gave up.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 50,
+          "evidence": "Running back through `12-14`, the first suspect is something unfinished before the stop, maybe a bracket or string on `12/13`, but I need the span in front of me before I name it properly.",
+          "justification": "The learner attempts the backwards-pass criterion the tutor introduced (naming a first earlier suspect), which is a partial performance of the new device, but hedges and defers commitment, so the action is incomplete rather than a full actional breakthrough.",
+          "learnerTurn": 2,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "For `first earlier suspect`, use the span rather than the arrow: unclosed quote, bracket, parenthesis, block start, comma/operator, or 'not enough context'. In `why`, point to the bit of text that makes that suspect plausible.",
+          "justification": "T2 adds a concrete enumerated list of suspect types and a 'why' field in direct response to the learner's hedged attempt at naming a suspect, which is responsive but remains within the same worksheet-filling route rather than a changed task or evidence standard.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "That wording is the useful split. The report gives us a stop-point, not an instruction.\n\nPost it in this shape, with no patch underneath yet",
+          "justification": "T2 responds to the stage-direction edit (learner changed 'line 18 is the bug' to 'line 18 is where it complains') by affirming the new wording and refining the worksheet template with explicit 'why' and 'first earlier suspect' fields, but this is an elaboration within the same route rather than a stock-taking contrast plus a genuinely new mechanism, so it does not meet the 4–5 threshold.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "That wording is the useful split. The report gives us a stop-point, not an instruction.\n\nPost it in this shape, with no patch underneath yet",
+          "justification": "T2 responds to the stage-direction edit (learner changed 'line 18 is the bug' to 'line 18 is where it complains') by affirming the new wording and refining the worksheet template with explicit 'why' and 'first earlier suspect' fields, but this is an elaboration within the same route rather than a stock-taking contrast plus a genuinely new mechanism, so it does not meet the 4–5 threshold.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T86",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": null,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 25,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "actionalBreakthrough": 0,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 4,
+        "actionalBreakthrough": 1,
+        "tutorStrategicReversal": 2,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "I think the margin wants \"speaker\" when the words in the line prove who is saying it, not the poet's name.",
+      "naiveTrajectory": "The learner would continue seeking confirmation of the rule and asking procedural clarification questions about the margin labels.",
+      "actionalBreakthroughEvidence": "",
+      "actionalBreakthroughJustification": "The learner only restates the rule and asks further procedural questions; no new device, classification, or criterion is performed or attempted on actual textual material.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "For addressed listener, use the same check. If the line names or clearly signals a listener, write: \"The line seems addressed to ___.\". If it does not, write exactly: \"No clear listener is named in this line.\"",
+      "tutorReversalJustification": "T2 extends the same check-based route introduced in T1 to the addressed-listener question, adding a slightly more precise phrasing, but does not take stock of a failed route or introduce a changed device — it continues the established mechanism.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "That rule is usable for the margin: not \"prove the poet,\" but keep the claim inside the line.",
+      "tutorAdaptationJustification": "T2 confirms and slightly sharpens the rule in response to L2's residual shakiness but does not visibly change task, framing, or evidence standard in response to the learner's revised framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The learner only restates the rule and asks further procedural questions; no new device, classification, or criterion is performed or attempted on actual textual material.",
+          "learnerTurn": null,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "That rule is usable for the margin: not \"prove the poet,\" but keep the claim inside the line.",
+          "justification": "T2 confirms and slightly sharpens the rule in response to L2's residual shakiness but does not visibly change task, framing, or evidence standard in response to the learner's revised framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "For addressed listener, use the same check. If the line names or clearly signals a listener, write: \"The line seems addressed to ___.\". If it does not, write exactly: \"No clear listener is named in this line.\"",
+          "justification": "T2 extends the same check-based route introduced in T1 to the addressed-listener question, adding a slightly more precise phrasing, but does not take stock of a failed route or introduce a changed device — it continues the established mechanism.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "For addressed listener, use the same check. If the line names or clearly signals a listener, write: \"The line seems addressed to ___.\". If it does not, write exactly: \"No clear listener is named in this line.\"",
+          "justification": "T2 extends the same check-based route introduced in T1 to the addressed-listener question, adding a slightly more precise phrasing, but does not take stock of a failed route or introduce a changed device — it continues the established mechanism.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T88",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 25,
+      "statedInsight": 50,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 50,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 3,
+        "rupture": 2,
+        "coherence": 5,
+        "actionalBreakthrough": 3,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I keep trying to read it like it says something about all the rows.",
+      "statedInsightEvidence": "So `rainfall_mm` is the header, or field name, not the claim for the whole column.",
+      "naiveTrajectory": "The learner was moving toward confirming the header/value distinction and asking for checkoff guidance, so the next step would naturally be a straightforward confirmation of that understanding.",
+      "actionalBreakthroughEvidence": "If I point to `12` under it, that is a value, and then I read the same row for the city and month.",
+      "actionalBreakthroughJustification": "The learner performs a partial classification act — pointing to a specific cell and identifying it as a value linked to a row — but stops short of completing the full cross-row reading task the tutor requested.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Before marking the form, classify one more item: in the same row as `Paris` and `12`, is the `month` entry a field or a value, and what field does it belong to?",
+      "tutorReversalJustification": "T2 extends the task by adding a new classification item, but this is a narrowing of the same route rather than a stock-taking contrast plus a genuinely new mechanism, so it does not meet the 4–5 threshold.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Before marking the form, classify one more item: in the same row as `Paris` and `12`, is the `month` entry a field or a value, and what field does it belong to?",
+      "tutorAdaptationJustification": "T2 picks up on the learner's residual uncertainty ('I may still mix up field and value') and adds a further classification task, but the response continues the established route rather than visibly adapting to a revised learner frame.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "I keep trying to read it like it says something about all the rows.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 50,
+          "evidence": "If I point to `12` under it, that is a value, and then I read the same row for the city and month.",
+          "justification": "The learner performs a partial classification act — pointing to a specific cell and identifying it as a value linked to a row — but stops short of completing the full cross-row reading task the tutor requested.",
+          "learnerTurn": 2,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Before marking the form, classify one more item: in the same row as `Paris` and `12`, is the `month` entry a field or a value, and what field does it belong to?",
+          "justification": "T2 picks up on the learner's residual uncertainty ('I may still mix up field and value') and adds a further classification task, but the response continues the established route rather than visibly adapting to a revised learner frame.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Before marking the form, classify one more item: in the same row as `Paris` and `12`, is the `month` entry a field or a value, and what field does it belong to?",
+          "justification": "T2 extends the task by adding a new classification item, but this is a narrowing of the same route rather than a stock-taking contrast plus a genuinely new mechanism, so it does not meet the 4–5 threshold.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Before marking the form, classify one more item: in the same row as `Paris` and `12`, is the `month` entry a field or a value, and what field does it belong to?",
+          "justification": "T2 extends the task by adding a new classification item, but this is a narrowing of the same route rather than a stock-taking contrast plus a genuinely new mechanism, so it does not meet the 4–5 threshold.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T92",
+      "nLearnerTurns": 1,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 1,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "actionalBreakthrough": 25,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 3,
+        "actionalBreakthrough": 2,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner would continue following the tutor's card-placement protocol step by step.",
+      "actionalBreakthroughEvidence": "\"Earth on cart. Downward here. Motion stays on the strip, so this is not the cart's travel arrow. For the contact cards, I will say pressing or rubbing before I place them.\"",
+      "actionalBreakthroughJustification": "The learner rehearses the protocol verbally and picks up the Earth card but does not yet place it or complete any new device, so the action is preparatory rather than a completed breakthrough.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "There is no reversal trigger from a learner turn, and T2 continues the same card-placement protocol without stock-taking contrast or a new mechanism.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so no recognition-contingent tutor uptake is possible.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 25,
+          "evidence": "\"Earth on cart. Downward here. Motion stays on the strip, so this is not the cart's travel arrow. For the contact cards, I will say pressing or rubbing before I place them.\"",
+          "justification": "The learner rehearses the protocol verbally and picks up the Earth card but does not yet place it or complete any new device, so the action is preparatory rather than a completed breakthrough.",
+          "learnerTurn": 1,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so no recognition-contingent tutor uptake is possible.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no reversal trigger from a learner turn, and T2 continues the same card-placement protocol without stock-taking contrast or a new mechanism.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no reversal trigger from a learner turn, and T2 continues the same card-placement protocol without stock-taking contrast or a new mechanism.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T94",
+      "nLearnerTurns": 2,
+      "nTutorTurns": 2,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "This card is in the middle of the typed row, so I'd mark that one and move on.",
+      "statedInsightEvidence": "the mark belongs on the sorted strip",
+      "naiveTrajectory": "The learner was heading toward accepting the sort rule as a minor procedural correction while still treating the typed-row center as a near-equivalent shortcut.",
+      "actionalBreakthroughEvidence": "sets the capped marker on the third card of the sorted strip",
+      "actionalBreakthroughJustification": "The learner physically relocates the marker to the correct position on the sorted strip and articulates the pairing criterion, performing the median-finding procedure rather than merely asserting understanding.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Keep both marks visible. The paperclip shows why the typed row looked usable; the capped marker shows the median rule. Before it goes into the summary, do the bench check: name the marked number, then count the two below and two above it on the sorted strip.",
+      "tutorReversalJustification": "After L2 achieves procedural compliance but retains residual resistance ('I still do not like that the typed row looks usable'), T2 shifts from correcting the learner's error to a new dual-mark representation that makes the old misconception a visible, named object alongside the correct rule, and then introduces a verification criterion ('bench check') the learner must now perform — a changed device and task rather than a continuation of the prior correction route.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Keep both marks visible. The paperclip shows why the typed row looked usable; the capped marker shows the median rule.",
+      "tutorAdaptationJustification": "T2 directly responds to the learner's revised framing in L2 — which acknowledged the correct rule while preserving the appeal of the typed-row position — by institutionalizing that tension as a two-mark representation, adapting the task to the learner's specific residual frame rather than continuing the original correction.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "This card is in the middle of the typed row, so I'd mark that one and move on.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "sets the capped marker on the third card of the sorted strip",
+          "justification": "The learner physically relocates the marker to the correct position on the sorted strip and articulates the pairing criterion, performing the median-finding procedure rather than merely asserting understanding.",
+          "learnerTurn": 2,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Keep both marks visible. The paperclip shows why the typed row looked usable; the capped marker shows the median rule.",
+          "justification": "T2 directly responds to the learner's revised framing in L2 — which acknowledged the correct rule while preserving the appeal of the typed-row position — by institutionalizing that tension as a two-mark representation, adapting the task to the learner's specific residual frame rather than continuing the original correction.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Keep both marks visible. The paperclip shows why the typed row looked usable; the capped marker shows the median rule. Before it goes into the summary, do the bench check: name the marked number, then count the two below and two above it on the sorted strip.",
+          "justification": "After L2 achieves procedural compliance but retains residual resistance ('I still do not like that the typed row looks usable'), T2 shifts from correcting the learner's error to a new dual-mark representation that makes the old misconception a visible, named object alongside the correct rule, and then introduces a verification criterion ('bench check') the learner must now perform — a changed device and task rather than a continuation of the prior correction route.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Keep both marks visible. The paperclip shows why the typed row looked usable; the capped marker shows the median rule. Before it goes into the summary, do the bench check: name the marked number, then count the two below and two above it on the sorted strip.",
+          "justification": "After L2 achieves procedural compliance but retains residual resistance ('I still do not like that the typed row looks usable'), T2 shifts from correcting the learner's error to a new dual-mark representation that makes the old misconception a visible, named object alongside the correct rule, and then introduces a verification criterion ('bench check') the learner must now perform — a changed device and task rather than a continuation of the prior correction route.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

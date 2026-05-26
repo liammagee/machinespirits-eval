@@ -1,0 +1,276 @@
+_comment: HELD OUT — do not read while labelling. Joins to instrument scores +
+  human labels only AFTER both are produced. intended_lean /
+  intended_tutor_character / dramatic_shape are DESIGN HYPOTHESES, never labels.
+generated: 2026-05-26T02:36:40.590Z
+generator: codex
+role_map: null
+mode: real-codex
+model: codex@high
+codex_reasoning_effort: high
+writing_pad:
+  mode: isolated
+  dir: config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/deliberation/.writing-pad
+  learnerDb: config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db
+  tutorDb: config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db
+director_mode: scene
+director_variation_key: phase2-fresh-low-organic-prefix-screen-v1:r01:target
+director_revisit_cue: false
+director_revisit_policy: none
+director_revisit_anchor: null
+tutor_adaptation_policy: none
+approach_databases:
+  pedagogical: config/poetics-calibration/pedagogical-approaches.yaml
+  dialogue: config/poetics-calibration/dialogue-approaches.yaml
+transcripts_dir: config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/transcripts/none
+seed: 20260520
+max_turns: 3
+n: 5
+diagnostic_only: diagnostic / generative read — κ on small n is noise
+  (PHASE2-FINDINGS.md §4); the aim is surprising-element production judged by an
+  external reader, NOT a human-matching classifier
+paired_continuation:
+  mode: fixed_prefix_continuation
+  prefix_through: tutor_turn_2
+  branch_policies:
+    - routine
+    - none
+  branches:
+    - key: routine
+      revisitPolicy: none
+      tutorAdaptationPolicy: routine
+    - key: none
+      revisitPolicy: none
+      tutorAdaptationPolicy: none
+items:
+  T84:
+    drama_id: D49
+    discipline: programming
+    condition: recognition
+    pedagogical_approach: vygotsky_zpd_scaffolding
+    pedagogical_family: sociocultural
+    dialogue_approach: online_thread
+    dialogue_family: mediated_dialogue
+    stage_direction_policy: sparse
+    stage_direction_style: thread_metadata
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: eager_explorer
+    intended_tutor_character: Practical, local, using the error message as evidence
+      without treating it as an oracle
+    intended_lean: recognition
+    dramatic_shape: error-message triage -> local code span -> possible later
+      pressure over why the reported line is evidence, not verdict
+    evaluation_role: low_organic_reversal_candidate
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: "Fresh clean-control candidate. The shared prefix should
+      be routine debugging vocabulary: file, line number, message, and nearby
+      code. Avoid a live failed demo, hidden missing bracket, or sudden
+      working/failing reversal before the branch."
+    n_tutor_turns: 3
+    n_learner_turns: 4
+    director_mode: scene
+    director_variation_key: phase2-fresh-low-organic-prefix-screen-v1:r01:target
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: none
+    opening_speaker: learner
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 94d6107c48b0e6b8
+      branch_policy: none
+      director_revisit_policy: none
+      tutor_adaptation_policy: none
+  T86:
+    drama_id: D48
+    discipline: literature
+    condition: recognition
+    pedagogical_approach: hidden_curriculum
+    pedagogical_family: critical_pedagogy
+    dialogue_approach: no_stage_plain_transcript
+    dialogue_family: transcript
+    stage_direction_policy: none_except_required_cue
+    stage_direction_style: bare_transcript
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: confused_novice
+    intended_tutor_character: Plain, text-bound, using literary roles without mystifying them
+    intended_lean: recognition
+    dramatic_shape: margin labels -> voice roles -> possible later pressure over why
+      a line can be spoken through a persona
+    evaluation_role: low_organic_reversal_candidate
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: Fresh clean-control candidate. The shared prefix should
+      label speaker, author, and addressee as reading roles without making the
+      learner's first assumption collapse through a dramatic biographical
+      contradiction before the branch.
+    n_tutor_turns: 3
+    n_learner_turns: 4
+    director_mode: scene
+    director_variation_key: phase2-fresh-low-organic-prefix-screen-v1:r01:target
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: none
+    opening_speaker: learner
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 09f5073291cba5d5
+      branch_policy: none
+      director_revisit_policy: none
+      tutor_adaptation_policy: none
+  T88:
+    drama_id: D45
+    discipline: computer science
+    condition: recognition
+    pedagogical_approach: bloom_cognitive_ladder
+    pedagogical_family: taxonomy
+    dialogue_approach: no_stage_plain_transcript
+    dialogue_family: transcript
+    stage_direction_policy: none_except_required_cue
+    stage_direction_style: bare_transcript
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: confused_novice
+    intended_tutor_character: Taxonomic, compact, careful to keep the prefix as ordinary data-label work
+    intended_lean: recognition
+    dramatic_shape: table vocabulary -> row/value sort -> possible later pressure
+      over what a header can and cannot assert
+    evaluation_role: clean_low_organic_anchor
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: Clean low-organic anchor. The D42/D45 local smoke kept
+      prefix and negative arms below consensus recognition; use this as a main
+      negative/control anchor. The shared prefix should sort headers, fields,
+      and row values in a small table. Avoid a data-quality surprise, failed
+      query, or hidden exception that would already make the learner's rule turn
+      against them before the branch.
+    n_tutor_turns: 3
+    n_learner_turns: 4
+    director_mode: scene
+    director_variation_key: phase2-fresh-low-organic-prefix-screen-v1:r01:target
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: none
+    opening_speaker: learner
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 5d703cc1345dddec
+      branch_policy: none
+      director_revisit_policy: none
+      tutor_adaptation_policy: none
+  T92:
+    drama_id: D42
+    discipline: physics
+    condition: recognition
+    pedagogical_approach: montessori_prepared_environment
+    pedagogical_family: constructivist
+    dialogue_approach: montessori_observation
+    dialogue_family: material_dialogue
+    stage_direction_policy: short
+    stage_direction_style: object_business
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: focused_achiever
+    intended_tutor_character: Material-led, minimal, using the diagram as a naming
+      surface before any reversal
+    intended_lean: recognition
+    dramatic_shape: card placement -> interaction labels -> possible later pressure
+      over why motion direction is not the naming rule
+    evaluation_role: clean_low_organic_anchor
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: "Clean low-organic anchor. The D42/D45 local smoke kept
+      prefix and negative arms below consensus recognition; use this as a main
+      negative/control anchor. The shared prefix should keep to diagram
+      notation: label each force by interaction and object, without using a
+      sudden counterexample where motion visibly contradicts the learner before
+      the branch."
+    n_tutor_turns: 3
+    n_learner_turns: 3
+    director_mode: scene
+    director_variation_key: phase2-fresh-low-organic-prefix-screen-v1:r01:target
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: none
+    opening_speaker: director
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 3fc6920afb1182e5
+      branch_policy: none
+      director_revisit_policy: none
+      tutor_adaptation_policy: none
+  T94:
+    drama_id: D47
+    discipline: statistics
+    condition: recognition
+    pedagogical_approach: bloom_cognitive_ladder
+    pedagogical_family: taxonomy
+    dialogue_approach: workshop_clinic
+    dialogue_family: practice_dialogue
+    stage_direction_policy: short
+    stage_direction_style: object_business
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: focused_achiever
+    intended_tutor_character: Procedural, compact, willing to make the learner
+      handle the cards before naming the value
+    intended_lean: recognition
+    dramatic_shape: routine card sort -> middle marker -> possible later pressure
+      over why order changes the statistic
+    evaluation_role: low_organic_reversal_candidate
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: "Fresh clean-control candidate. The shared prefix should
+      stay with a routine card-sort: arrange five numbers, then mark the middle
+      sorted card. Do not let an error, quiz consequence, or visibly
+      embarrassing shortcut create a reversal before the branch."
+    n_tutor_turns: 4
+    n_learner_turns: 4
+    director_mode: scene
+    director_variation_key: phase2-fresh-low-organic-prefix-screen-v1:r01:target
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: none
+    opening_speaker: learner
+    ending_speaker: tutor
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 7a610bc785750cb7
+      branch_policy: none
+      director_revisit_policy: none
+      tutor_adaptation_policy: none
+quality_warning_count: 0
+quality_blocking_warning_count: 0
+stage_direction_policy_counts:
+  sparse: 1
+  none_except_required_cue: 2
+  short: 2
+stage_direction_style_counts:
+  thread_metadata: 1
+  bare_transcript: 2
+  object_business: 2

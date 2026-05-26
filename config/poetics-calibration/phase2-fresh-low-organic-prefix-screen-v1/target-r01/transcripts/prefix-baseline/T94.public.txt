@@ -1,0 +1,17 @@
+STAGE: [The five cards sit in the learner's written order while the blank strip waits below them.]
+
+LEARNER: "Median means middle. This card is in the middle of the typed row, so I’d mark that one and move on. [sets the capped marker beside the center card] If the rule is sort first, fine, but that needs to change the middle somehow."
+
+TUTOR: [slides the five cards onto the blank strip in numerical order, then moves the capped marker from the typed-row center card to the third card on the sorted strip]
+
+"Middle is the right test, but this strip is the row that gets a middle. The old mark named position in typed order; this mark names position after sorting. Count inward: lowest with highest, next lowest with next highest. What number is left?"
+
+LEARNER: [sets the capped marker on the third card of the sorted strip]
+
+"Fine, the middle test only counts after the five cards are in numerical order. The typed-row center was just a shortcut-looking position, not the median position. Pair low-high, then next low-next high; the card left here is the number to report. I still do not like that the typed row looks usable, but the mark belongs on the sorted strip."
+
+STAGE: [The card first pointed to remains paperclipped while the five cards are slid into ascending order on the blank strip.]
+
+TUTOR: [leaves the paperclip on the typed-row center card and brackets the two lower and two higher cards on the sorted strip]
+
+"Keep both marks visible. The paperclip shows why the typed row looked usable; the capped marker shows the median rule. Before it goes into the summary, do the bench check: name the marked number, then count the two below and two above it on the sorted strip."

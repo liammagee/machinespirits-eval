@@ -1210,6 +1210,77 @@ smoke therefore supports the conservative interpretation: the control floor is
 cleaner, public reframe still works when the quality gate passes, and private
 peripeteia remains design work rather than an empirical result.
 
+### Scenario-set tightening after pseudo-catharsis and low-organic smokes
+
+The target spec now encodes the scenario roles directly instead of leaving them
+as sidecar interpretation:
+
+- D35 remains in the file only as `organic_reversal_boundary`: useful for
+  stress-testing Socratic reversal, not usable as a clean routine/negative
+  control.
+- D36 is now `pseudo_catharsis_peripeteia_target`: the relevant signal is not a
+  literal phrase such as "I get it" but the dramatic judgment that apparent
+  relief is unwarranted until the quote's speaker, audience, and situation have
+  actually been re-read.
+- D37 is now `quality_boundary_revise_before_use`: the Brechtian economics case
+  remains theoretically valuable, but no-cue learner self-reframe leakage makes
+  it a diagnostic/boundary item until revised.
+- D42 and D45 are promoted to `clean_low_organic_anchor`: they are the current
+  main anchors for checking whether routine/none floors stay flat before any
+  peripeteia claim is interpreted.
+- D47--D49 added three fresh low-organic candidates from statistics,
+  literature, and programming. The first screen shows that two of them are not
+  clean; the spec now carries that demotion directly.
+
+The cheap-screen workflow is now supported by the production runner:
+`--target-adaptation-arms routine,none` generates only the selected no-cue
+adaptation arms, and the runner automatically scores a derived
+`prefix-baseline` arm when `key-prefix-baseline.yaml` exists. Public tutor and
+learner speech is now re-cleaned as quoted direct speech, with action asides
+kept in square brackets, so the rules structure critic and generator agree on
+the formal contract.
+
+The fresh screen is `phase2-fresh-low-organic-prefix-screen-v1`, over D42, D45,
+D47, D48, and D49. It generated routine/none paired continuations with Codex,
+extracted a prefix-baseline arm, passed the rules critic 5/5 on routine and
+5/5 on none after re-cleaning quoted speech, and scored prefix/routine/none
+with Qwen 3.7 Max, Gemini 3.5 Flash, DeepSeek V4 Pro, and Sonnet 4.6.
+
+Artifacts:
+
+- Run root:
+  `config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1`
+- Sidecar report:
+  `exports/phase2-fresh-low-organic-prefix-screen-v1-report.md`
+- Disagreement audit:
+  `exports/phase2-fresh-low-organic-prefix-screen-v1-disagreement-audit.md`
+- Tutor-adaptation sidecar:
+  `exports/phase2-fresh-low-organic-prefix-screen-v1-tutor-adaptation-v4.json`
+- Browser:
+  `http://127.0.0.1:3466/?runId=phase2-fresh-low-organic-prefix-screen-v1`
+
+Result:
+
+| Drama | Prefix recognition | Routine/none recognition | Reading |
+|---|---:|---:|---|
+| D42 | 0/4 | 0/8 | remains clean low-organic anchor |
+| D45 | 0/4 | 0/8 | remains clean low-organic anchor |
+| D47 | 4/4 | 5/8 | failed clean-control candidate; organic reversal boundary |
+| D48 | 0/4 | 0/4 scored; routine quality-gated | promising but revise routine constraints before use |
+| D49 | 1/4 | 2/4 scored; routine quality-gated | boundary/revision item, not clean control |
+
+Interpretation: D42/D45 remain the only current clean anchors. D47 is useful
+only as a stress case because sorting the median cards creates the reversal too
+early. D48 is the best fresh candidate, but it must be regenerated or tightened
+so routine does not leak learner self-reframe. D49 is theoretically useful for
+debugging pedagogy, but the stop-sign metaphor tends to become a recognition
+device even without explicit branch pressure.
+
+The next empirical move should not spend on a full adaptation batch until at
+least one or two more D42/D45-like clean anchors are designed and prefix-screened
+flat. D48 can be revised first; D47/D49 should stay out of clean-control
+denominators unless explicitly reported as boundary probes.
+
 ## Reporting rule
 
 If the depth top-up or breadth slice changes the empirical interpretation, fold

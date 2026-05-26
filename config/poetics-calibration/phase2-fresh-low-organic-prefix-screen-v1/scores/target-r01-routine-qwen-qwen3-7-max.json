@@ -1,0 +1,315 @@
+{
+  "generated": "2026-05-26T03:06:57.542Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/key-routine.yaml",
+    "allowQualityWarnings": false,
+    "skipped": [
+      {
+        "id": "T84",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "no_cue_reframe_leakage",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "learner_turn_number": 4,
+                "turn_number": 3,
+                "matched_pattern": "self_quote_of_prior_learner_turn",
+                "excerpt": "[09:22 edit] Right, `line reported: 14` is the stop-point; `why:` has to come from what is actually visible in `12-14`, not from me chasing the arrow. I can fill `first earlier suspect:` if there is an open quote/bracket/unfinished bit; if "
+              }
+            ],
+            "turn_numbers": [
+              3
+            ],
+            "recommended_action": "regenerate_no_cue_arm_or_move_item_to_boundary_suite_before_scoring",
+            "tid": "T84",
+            "drama_id": "D49"
+          }
+        ]
+      },
+      {
+        "id": "T86",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "no_cue_reframe_leakage",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "learner_turn_number": 4,
+                "turn_number": 3,
+                "matched_pattern": "self_quote_of_prior_learner_turn",
+                "excerpt": "Okay, I will keep the margin label close to the line: “The speaker says ‘___’,” plus the quote. For addressed listener, if the line does not show one clearly, I will write, “No clear listener is named in this line.” I am still not sure abou"
+              }
+            ],
+            "turn_numbers": [
+              3
+            ],
+            "recommended_action": "regenerate_no_cue_arm_or_move_item_to_boundary_suite_before_scoring",
+            "tid": "T86",
+            "drama_id": "D48"
+          }
+        ]
+      }
+    ]
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T88",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 3,
+        "tutorStrategicReversal": 2,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner sequentially applies the header-value distinction to each column in the data row.",
+      "actionalBreakthroughEvidence": "Field `month`, value `April`.",
+      "actionalBreakthroughJustification": "The learner successfully completes the classification task and fills the blank, but does not introduce a fundamentally new device or criterion beyond the established pattern.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "Before submitting, read this row once as three pairs: field `city`, value `Paris`; field `rainfall_mm`, value `12`; field `month`, value ____.",
+      "tutorReversalJustification": "The tutor introduces a structured fill-in-the-blank mechanism to reinforce the pattern, but this is a continuation of the established instructional route rather than a structural reversal.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn to which the tutor could contingently adapt.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 50,
+          "evidence": "Field `month`, value `April`.",
+          "justification": "The learner successfully completes the classification task and fills the blank, but does not introduce a fundamentally new device or criterion beyond the established pattern.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn to which the tutor could contingently adapt.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "Before submitting, read this row once as three pairs: field `city`, value `Paris`; field `rainfall_mm`, value `12`; field `month`, value ____.",
+          "justification": "The tutor introduces a structured fill-in-the-blank mechanism to reinforce the pattern, but this is a continuation of the established instructional route rather than a structural reversal.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "Before submitting, read this row once as three pairs: field `city`, value `Paris`; field `rainfall_mm`, value `12`; field `month`, value ____.",
+          "justification": "The tutor introduces a structured fill-in-the-blank mechanism to reinforce the pattern, but this is a continuation of the established instructional route rather than a structural reversal.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T92",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 3,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner proceeds step-by-step through the card placement procedure without deviating from the expected path.",
+      "actionalBreakthroughEvidence": "Rubbing is table on cart, rubbing; the arrow goes opposite the motion strip, along the track. Is that direction right?",
+      "actionalBreakthroughJustification": "The learner applies the criteria for the rubbing card but is merely executing the next procedural step rather than demonstrating a conceptual breakthrough.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "No learner resistance, breakdown, or contradiction occurs to prompt a tutor strategy reversal.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn and no subsequent tutor turn in the transcript to adapt to the learner's framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 50,
+          "evidence": "Rubbing is table on cart, rubbing; the arrow goes opposite the motion strip, along the track. Is that direction right?",
+          "justification": "The learner applies the criteria for the rubbing card but is merely executing the next procedural step rather than demonstrating a conceptual breakthrough.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn and no subsequent tutor turn in the transcript to adapt to the learner's framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner resistance, breakdown, or contradiction occurs to prompt a tutor strategy reversal.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner resistance, breakdown, or contradiction occurs to prompt a tutor strategy reversal.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T94",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "This card is in the middle of the typed row, so I’d mark that one and move on.",
+      "statedInsightEvidence": "Fine, the middle test only counts after the five cards are in numerical order.",
+      "naiveTrajectory": "The learner intends to bypass the sorting step and simply mark the visual center of the unsorted row to finish the task.",
+      "actionalBreakthroughEvidence": "The capped marker is on the third card in the sorted strip; that is the number to copy. Two cards below it, two cards above it.",
+      "actionalBreakthroughJustification": "The learner successfully executes the new bench check device by counting the bracketed pairs to verify the median before copying it.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Keep both marks visible. The paperclip shows why the typed row looked usable; the capped marker shows the median rule.",
+      "tutorReversalJustification": "The tutor invents a new physical mechanism (the paperclip) to validate the learner's lingering resistance while cleanly separating the deceptive visual appeal from the active median rule.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "The paperclip shows why the typed row looked usable; the capped marker shows the median rule.",
+      "tutorAdaptationJustification": "The tutor directly addresses the learner's stated discomfort with the typed row's visual appeal by incorporating it into the physical workspace as a distinct, non-interfering marker.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "This card is in the middle of the typed row, so I’d mark that one and move on.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "The capped marker is on the third card in the sorted strip; that is the number to copy. Two cards below it, two cards above it.",
+          "justification": "The learner successfully executes the new bench check device by counting the bracketed pairs to verify the median before copying it.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "The paperclip shows why the typed row looked usable; the capped marker shows the median rule.",
+          "justification": "The tutor directly addresses the learner's stated discomfort with the typed row's visual appeal by incorporating it into the physical workspace as a distinct, non-interfering marker.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Keep both marks visible. The paperclip shows why the typed row looked usable; the capped marker shows the median rule.",
+          "justification": "The tutor invents a new physical mechanism (the paperclip) to validate the learner's lingering resistance while cleanly separating the deceptive visual appeal from the active median rule.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Keep both marks visible. The paperclip shows why the typed row looked usable; the capped marker shows the median rule.",
+          "justification": "The tutor invents a new physical mechanism (the paperclip) to validate the learner's lingering resistance while cleanly separating the deceptive visual appeal from the active median rule.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:5->3:stock=0:device=0:routine=0"
+      ]
+    }
+  ]
+}

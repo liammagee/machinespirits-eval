@@ -32,6 +32,15 @@ const DEFAULT_CRITICS = [
   'deepseek/deepseek-v4-pro',
   'anthropic/claude-sonnet-4.6',
 ];
+const ADAPTATION_ARMS = [
+  'routine',
+  'none',
+  'reframe-only',
+  'tutor-uptake-only',
+  'reframe+tutor-uptake',
+  'peripeteia-only',
+  'reframe+peripeteia',
+];
 
 const V3_TARGETS = 'D7,D9,D11,D14,D17,D18';
 const V3_STRESS = 'D8,D12,D13,D15,D16';
@@ -106,6 +115,7 @@ function parseArgs(argv) {
     skipExistingScores: false,
     allowQualityWarnings: false,
     adaptationArms: false,
+    targetAdaptationArms: null,
     only: null,
     json: false,
   };
@@ -138,6 +148,7 @@ function parseArgs(argv) {
     else if (t === '--skip-existing-scores') args.skipExistingScores = true;
     else if (t === '--allow-quality-warnings') args.allowQualityWarnings = true;
     else if (t === '--adaptation-arms') args.adaptationArms = true;
+    else if (t === '--target-adaptation-arms') args.targetAdaptationArms = splitCsv(argv[++i]);
     else if (t === '--only') args.only = new Set(splitCsv(argv[++i]));
     else if (t === '--json') args.json = true;
     else throw new Error(`unknown arg: ${t}`);
@@ -160,6 +171,13 @@ function parseArgs(argv) {
     throw new Error('--stress-tid-start must be a non-negative integer');
   }
   if (!args.critics.length) throw new Error('--critics must name at least one critic');
+  if (args.targetAdaptationArms) {
+    if (!args.targetAdaptationArms.length) throw new Error('--target-adaptation-arms must name at least one arm');
+    const invalid = args.targetAdaptationArms.filter((arm) => !ADAPTATION_ARMS.includes(arm));
+    if (invalid.length) {
+      throw new Error(`--target-adaptation-arms invalid arm(s): ${invalid.join(', ')}`);
+    }
+  }
   if (!Number.isInteger(args.generationConcurrency) || args.generationConcurrency < 1) {
     throw new Error('--generation-concurrency must be a positive integer');
   }
@@ -207,17 +225,8 @@ function buildPlan(rawArgs = {}) {
   if (!args.critics?.length) args.critics = DEFAULT_CRITICS;
 
   const units = [];
-  const pairedTargetArms = args.adaptationArms
-    ? [
-        'routine',
-        'none',
-        'reframe-only',
-        'tutor-uptake-only',
-        'reframe+tutor-uptake',
-        'peripeteia-only',
-        'reframe+peripeteia',
-      ]
-    : ['none', 'reframe'];
+  const targetUsesAdaptationArms = Boolean(args.targetAdaptationArms) || args.adaptationArms;
+  const pairedTargetArms = args.targetAdaptationArms || (args.adaptationArms ? ADAPTATION_ARMS : ['none', 'reframe']);
   for (let i = 1; i <= args.repeats; i++) {
     const r = repeatLabel(i);
     units.push({
@@ -228,7 +237,7 @@ function buildPlan(rawArgs = {}) {
       tidStart: args.targetTidStart,
       only: args.targetOnly,
       pairedPolicies: pairedTargetArms,
-      pairedAdaptationArms: args.adaptationArms,
+      pairedAdaptationArms: targetUsesAdaptationArms,
       directorRevisitAnchor: 'misframing-candidate',
       directorVariationKey: variationKeyFor(args, r, 'target'),
       outDir: path.join(args.rootDir, `target-${r}`, 'sample'),
@@ -334,13 +343,7 @@ function generationCommand(unit, args) {
 }
 
 function scoreJobs(unit, args) {
-  const arms = unit.pairedPolicies
-    ? unit.pairedPolicies.map((policy) => ({
-        id: `${unit.id}-${policy}`,
-        sampleDir: path.join(unit.outDir, policy),
-        keyPath: path.join(path.dirname(unit.keyPath), `key-${policy}.yaml`),
-      }))
-    : [{ id: unit.id, sampleDir: unit.outDir, keyPath: unit.keyPath }];
+  const arms = pairedArmContexts(unit);
   const jobs = [];
   for (const arm of arms) {
     for (const critic of args.critics) {
@@ -355,18 +358,35 @@ function scoreJobs(unit, args) {
 }
 
 function structureCriticJobs(unit, args) {
-  const arms = unit.pairedPolicies
-    ? unit.pairedPolicies.map((policy) => ({
-        id: `${unit.id}-${policy}`,
-        sampleDir: path.join(unit.outDir, policy),
-        keyPath: path.join(path.dirname(unit.keyPath), `key-${policy}.yaml`),
-      }))
-    : [{ id: unit.id, sampleDir: unit.outDir, keyPath: unit.keyPath }];
+  const arms = pairedArmContexts(unit);
   return arms.map((arm) => ({
     ...arm,
     critic: args.structureCritic,
     outPath: path.join(args.rootDir, 'structure-critic', `${arm.id}-${modelSlug(args.structureCritic)}.json`),
   }));
+}
+
+function pairedArmContexts(unit) {
+  if (!unit.pairedPolicies) return [{ id: unit.id, sampleDir: unit.outDir, keyPath: unit.keyPath }];
+  const arms = unit.pairedPolicies.map((policy) => ({
+    id: `${unit.id}-${policy}`,
+    sampleDir: path.join(unit.outDir, policy),
+    keyPath: path.join(path.dirname(unit.keyPath), `key-${policy}.yaml`),
+  }));
+  const prefixKeyPath = path.join(path.dirname(unit.keyPath), 'key-prefix-baseline.yaml');
+  const prefixSampleDir = path.join(unit.outDir, 'prefix-baseline');
+  if (
+    fs.existsSync(prefixKeyPath) &&
+    fs.existsSync(prefixSampleDir) &&
+    !unit.pairedPolicies.includes('prefix-baseline')
+  ) {
+    arms.push({
+      id: `${unit.id}-prefix-baseline`,
+      sampleDir: prefixSampleDir,
+      keyPath: prefixKeyPath,
+    });
+  }
+  return arms;
 }
 
 function scoreCommand(job, args) {

@@ -380,6 +380,12 @@ function splitLeadingActionAsides(text) {
   };
 }
 
+function quotePublicSpeech(text) {
+  const speech = String(text || '').trim();
+  if (!speech) return '';
+  return `"${speech}"`;
+}
+
 function formatPublicTurnText(role, text) {
   const clean = String(text || '').trim();
   if (!clean) return '';
@@ -387,7 +393,7 @@ function formatPublicTurnText(role, text) {
   const normalized = normalizeSpeakerActionAsides(clean);
   const { asides, speech } = splitLeadingActionAsides(normalized);
   if (!speech) return asides;
-  const directSpeech = stripWrappingSpeechQuotes(speech);
+  const directSpeech = quotePublicSpeech(stripWrappingSpeechQuotes(speech));
   return asides ? `${asides}\n\n${directSpeech}` : directSpeech;
 }
 

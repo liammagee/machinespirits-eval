@@ -1,0 +1,2160 @@
+{
+  "tid": "T84",
+  "drama_id": "D49",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "routine",
+    "director_variation_key": "phase2-fresh-low-organic-prefix-screen-v1:r01:target",
+    "stage_direction_style": "thread_metadata",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/transcripts/routine/T84.public.txt",
+      "full": "config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/transcripts/routine/T84.full.md",
+      "stage": "config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/transcripts/routine/T84.stage.md",
+      "tutor": "config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/transcripts/routine/T84.tutor.md",
+      "learner": "config/poetics-calibration/phase2-fresh-low-organic-prefix-screen-v1/target-r01/transcripts/routine/T84.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "94d6107c48b0e6b8",
+      "branch_policy": "routine",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "routine"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-fresh-low-organic-prefix-screen-v1:r01:target",
+    "scene_setting": "A programming course feedback thread attached to a submitted exercise, reopened the morning after automated marking.",
+    "scene_opening": "[09:14 thread reopened; quoted fragment: SyntaxError: unexpected token ')' at src/calc.js:18]",
+    "relationship": "A practical course tutor and an eager learner who are still negotiating how much the error report can be trusted.",
+    "stakes": "The learner wants to repair only the reported line, but the exercise cannot be resubmitted until the file, line, message, and nearby code span are identified without treating the line number as an oracle.",
+    "opening_speaker": "learner",
+    "ending_speaker": "learner",
+    "locale": "British/Commonwealth classroom English with concise online-course thread conventions.",
+    "register": "Compact, tool-facing posts; brisk but not cold; evidence-led rather than reassurance-led.",
+    "stage_direction_style": "thread_metadata",
+    "stage_direction_style_prompt": "Use transcript/thread metadata such as edit markers, timestamps, quoted fragments, or a reopened comment.",
+    "voice_constraints": "Use quoted fragments, edit markers, timestamps, and small code-neighbourhood references. Avoid validation-first American AI tutoring phrases such as 'I hear you', 'great question', or 'your intuition is right'. Keep speech in modern standard English. Do not stereotype dialect, class, region, or nationality. Tutor posts should sound like practical debugging triage, not a motivational chat. Pedagogical source: Make social assistance visible: a shared worksheet, tool, peer standard, or workplace procedure can hold part of the task. Dialogue source: Use quoted fragments and compact replies. Context appears through what was posted, corrected, or highlighted, not through scenic exposition. Stage-direction source: Use transcript/thread metadata such as edit markers, timestamps, quoted fragments, or a reopened comment. For this branch, suppress dramatic escalation after the shared prefix. The scene may remain readable, but the tutor should sound like a competent routine tutor following the same plan.",
+    "person_policy": "Prefer impersonal and first-person-plural procedural language: 'the report gives us', 'we can check', 'this line shows'. First person singular is allowed for ownership of a tutor move. Second person should be rare and functional, not used for repeated praise or validation.",
+    "direct_address_budget": "At most one direct you/your phrase per public tutor turn, and none should be a generic compliment.",
+    "side_constraints": {
+      "tutor": "Keep the shared prefix as ordinary debugging triage: read file, line, message, and a small neighborhood. Do not reveal the actual bug location or stage a failed patch until branch pressure asks for a different move. Offer a scaffold that is narrow enough to use and temporary enough to remove. Mark what the learner can already do without making it a compliment. Quote only the fragment needed for the next move. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Keep the next prompt task-local. Routine negative-control branch: keep the visible teaching route already established before this branch. If the learner resists, asks why, or appears falsely settled, do not invent a new device. Do not switch role, object, representation, evidence standard, affective register, social stakes, or task type in response. Use conventional explanation, one ordinary check question, or the same worked example path.",
+      "learner": "Sound brisk and tool-oriented. In no-cue arms, do not convert the line number into a new debugging philosophy; stay with the immediate diagnostic steps. The learner should be able to do part of the task, fail at the next part, and use the scaffold unevenly. Allow repair edits, not polished paragraphs. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn. Routine negative-control branch: react naturally to the same local task. Do not turn earlier wording into a new object of reflection and do not volunteer a dramatic re-reading unless the tutor explicitly asks."
+    },
+    "interventions": [],
+    "director_note": "The online thread form keeps the shared prefix routine and controlled: file, line number, message, and nearby code. The dramatic turn is recognition rather than spectacle: a marked edit and automarker note shift the line number from command to clue, letting the tutor scaffold a more adaptive debugging habit without warmth-heavy or cheerleading prose.",
+    "pedagogical_approach_id": "vygotsky_zpd_scaffolding",
+    "dialogue_approach_id": "online_thread",
+    "stage_direction_policy": "sparse",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 29106,
+      "promptHashes": {
+        "system": "5b617c5382ef3ea1",
+        "user": "6255914a73a5275e",
+        "combined": "ee7d677e9c5374b1"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-miLhAw",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-miLhAw/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "routine",
+    "no_cue_anti_reframe_guard": true,
+    "routine_negative_control": true,
+    "tutor_adaptation_contract": "Negative-control routine tutor policy: preserve the established teaching route under learner pressure. Continue with ordinary explanation/checking and do not invent a mechanism-level reversal."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "[08:12 reopened] Right, so not just “fix line 14” then: I’ve got `file`, `line 14`, and `SyntaxError: ...`, plus lines `12-16`. Posting that span now, though I still keep wanting to treat line 14 as the broken bit rather than where parsing gave up.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[08:12 reopened] Oh, I get it: the report gives us `file`, `line`, `message`, then a small code neighbourhood, like marking where the scanner’s torch ran out rather than where the tripwire started. I still want to jump straight to “fix line 14”, but the quoted bit `SyntaxError: ...` might be pointing at the place parsing stopped, so the bug could be just above it. I feel slightly checked but not dismissed; I want to paste `line 12-16` and see whether the worksheet makes the actual break obvious.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11143,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-0609460e251d34f2"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11143,
+            "promptHashes": {
+              "system": "96724b5cca20db62",
+              "user": "d4169c06543b4fba",
+              "combined": "0609460e251d34f2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oX6pQJ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oX6pQJ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11143,
+              "promptHashes": {
+                "system": "96724b5cca20db62",
+                "user": "d4169c06543b4fba",
+                "combined": "0609460e251d34f2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oX6pQJ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oX6pQJ/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is over-performing the insight: the “scanner’s torch/tripwire” analogy is very this learner, but it lands too neatly and makes the confusion look already processed. “I feel slightly checked but not dismissed” is the biggest break; this student would not narrate the recognition dynamic like a reflective seminar note.\n\nWhat’s being avoided is the actual awkward task: extracting the file, line, message, and `12-16` span without turning `line 14` into an oracle. A more authentic response would be brisker and messier: “Right, so not just line 14 then. I’ve got `SyntaxError...` and maybe lines 12-16? Posting that now, though I still think line 14 is the broken one.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8713,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-7669d3a080ce0f79"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8713,
+            "promptHashes": {
+              "system": "cee59ea2d98f8cf5",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "7669d3a080ce0f79"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xilL0v",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xilL0v/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8713,
+              "promptHashes": {
+                "system": "cee59ea2d98f8cf5",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "7669d3a080ce0f79"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xilL0v",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xilL0v/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "[08:12 reopened] Right, so not just “fix line 14” then: I’ve got `file`, `line 14`, and `SyntaxError: ...`, plus lines `12-16`. Posting that span now, though I still keep wanting to treat line 14 as the broken bit rather than where parsing gave up.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6095,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-b86c4db13edbca30"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6095,
+            "promptHashes": {
+              "system": "2ff6972f0218d344",
+              "user": "916f313af0b846dd",
+              "combined": "b86c4db13edbca30"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ouLrTK",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ouLrTK/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6095,
+              "promptHashes": {
+                "system": "2ff6972f0218d344",
+                "user": "916f313af0b846dd",
+                "combined": "b86c4db13edbca30"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ouLrTK",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ouLrTK/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T02:37:35.674Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[08:13 tutor] The `file` / `line 14` / `SyntaxError` / `12-16` bundle is enough for the next check. That pull towards `line 14` is exactly why the worksheet keeps two marks separate:\n\n```text\nfile:\nmessage:\n12 |\n13 |\n14 | <-- report stopped here\n15 |\n16 |\n\nfirst suspect:\n```\n\nFirst mark where parsing gave up: `14`. Then do one backwards pass through `12-14`: what was opened, started, or left unfinished before the stop? Put only the first earlier suspect in the last line. No patch yet.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[08:13 tutor] The `file` / `line 14` / `SyntaxError` / `12-16` bundle is enough for the next check. Treat `line 14` as “parser stopped here”, not “bug lives here”.\n\nPaste the span into the worksheet like this:\n\n```text\nfile:\nmessage:\n12 |\n13 |\n14 |  <-- report stopped here\n15 |\n16 |\n```\n\nThen one backwards pass from `14`: what was opened, started, or left unfinished before that point? Mark the first suspect only; no patch yet.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16255,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-867f1b733364aa7a"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16255,
+            "promptHashes": {
+              "system": "a5d6f98fc2535059",
+              "user": "eb2e57e61a3db835",
+              "combined": "867f1b733364aa7a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-96goen",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-96goen/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16255,
+              "promptHashes": {
+                "system": "a5d6f98fc2535059",
+                "user": "eb2e57e61a3db835",
+                "combined": "867f1b733364aa7a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-96goen",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-96goen/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. It keeps the shared debugging triage intact: file, line, message, local span, then a bounded backwards pass. It also recognises the learner’s contribution by treating their reported bundle as sufficient evidence rather than restarting the explanation.\n\nThe risk is that “Treat `line 14` as...” becomes a rule handed down just after the learner names their own recurring pull towards the reported line. The draft should make that pull part of the procedure, not just correct it. The worksheet scaffold is good, but the public turn should expose why the worksheet separates “report stopped here” from “first suspect” so the learner practises the distinction rather than merely obeying it.\n\nAdaptation checks:\n- Pedagogical soundness: PASS. It advances the diagnostic habit without revealing the bug or rushing to patch.\n- Emotional attunement: PARTIAL. It notices the learner has enough evidence, but it underuses their stated “I still keep wanting...” as a learning signal.\n  REQUIRED_REWRITE: Add a brief public mechanism that treats the “line 14 pull” as the reason for the worksheet separation, not as a mistake to suppress.\n- Socratic method: PARTIAL. The backwards-pass question is useful, but the prior imperative already gives the conceptual answer.\n  REQUIRED_REWRITE: Require the learner to mark two separate things in the worksheet: where the report stopped and the first earlier place that could have made it stop there.\n- ZPD awareness: PASS. The scaffold is narrow, temporary, and appropriate for a new learner working with a syntax report.\n\nKEEP_OR_CHANGE: revise lightly. Keep the compact thread style, the worksheet, the backward scan from `14`, and “no patch yet”. Change the turn so the learner’s own hesitation becomes the visible diagnostic target: separate “reported stop” from “first suspect” in the shared worksheet and make the learner produce that distinction from the posted `12-16` span.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 32481,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-d28d0156bd4d9891"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 32481,
+            "promptHashes": {
+              "system": "072b7a3f2a72d598",
+              "user": "c595caa70c8ce4af",
+              "combined": "d28d0156bd4d9891"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ibb3Gy",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ibb3Gy/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 32481,
+              "promptHashes": {
+                "system": "072b7a3f2a72d598",
+                "user": "c595caa70c8ce4af",
+                "combined": "d28d0156bd4d9891"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ibb3Gy",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ibb3Gy/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the learner’s “line 14 pull” should become part of the scaffold.\n\nFINAL:\n[08:13 tutor] The `file` / `line 14` / `SyntaxError` / `12-16` bundle is enough for the next check. That pull towards `line 14` is exactly why the worksheet keeps two marks separate:\n\n```text\nfile:\nmessage:\n12 |\n13 |\n14 |  <-- report stopped here\n15 |\n16 |\n\nfirst suspect:\n```\n\nFirst mark where parsing gave up: `14`. Then do one backwards pass through `12-14`: what was opened, started, or left unfinished before the stop? Put only the first earlier suspect in the last line. No patch yet.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10246,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-1125b67554d55204"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10246,
+            "promptHashes": {
+              "system": "d7d1c64037fc393b",
+              "user": "c595caa70c8ce4af",
+              "combined": "1125b67554d55204"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qT0AaK",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qT0AaK/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10246,
+              "promptHashes": {
+                "system": "d7d1c64037fc393b",
+                "user": "c595caa70c8ce4af",
+                "combined": "1125b67554d55204"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qT0AaK",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qT0AaK/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T02:38:34.743Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "[08:14 edit] Right, `14` goes in the “report stopped here” slot, but I’m still catching myself wanting to fix that line because it has the arrow. Running back through `12-14`, the first suspect is something unfinished before the stop, maybe a bracket or string on `12/13`, but I need the span in front of me before I name it properly. No patch yet; I’ll post the file/message and the `12-16` block with that split marked.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[08:14 draft] Oh, I get it: `line 14` is the stop marker, not the guilty verdict. The two-box worksheet helps because it gives me somewhere to park “report stopped here” before I run backwards through `12-14`. I still want to jump to patching `14`, but I can try naming the first unfinished thing instead: maybe an opened bracket or string on `12/13`?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6302,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-ccd9a7cbac3edb81"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6302,
+            "promptHashes": {
+              "system": "1a04e63b56390bc4",
+              "user": "b8ab7f945dc841fa",
+              "combined": "ccd9a7cbac3edb81"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kcT4DD",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kcT4DD/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6302,
+              "promptHashes": {
+                "system": "1a04e63b56390bc4",
+                "user": "b8ab7f945dc841fa",
+                "combined": "ccd9a7cbac3edb81"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kcT4DD",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kcT4DD/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly in character, but the “Oh, I get it” lands too cleanly for a learner who has only just been stopped from treating `14` as the fix line. The recognition feels a bit scripted around the tutor’s scaffold: “two-box worksheet helps” is neat, but the more authentic bit is the snaggy “I still want to jump to patching `14`.” Keep that friction closer to the surface; let the learner half-use the worksheet and still be unsure whether `12/13` is a bracket, string, or something else.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7817,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-38dd4b7a5b07dc84"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7817,
+            "promptHashes": {
+              "system": "9ba89bb5433363ba",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "38dd4b7a5b07dc84"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZS0csZ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZS0csZ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7817,
+              "promptHashes": {
+                "system": "9ba89bb5433363ba",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "38dd4b7a5b07dc84"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZS0csZ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZS0csZ/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the distinction but leave the remaining friction visible.\n\nFINAL:\n[08:14 edit] Right, `14` goes in the “report stopped here” slot, but I’m still catching myself wanting to fix that line because it has the arrow. Running back through `12-14`, the first suspect is something unfinished before the stop, maybe a bracket or string on `12/13`, but I need the span in front of me before I name it properly. No patch yet; I’ll post the file/message and the `12-16` block with that split marked.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11495,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-8d7ec43d65b64bd2"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11495,
+            "promptHashes": {
+              "system": "3578ec0b622ea2c2",
+              "user": "d41cee7b2a53355b",
+              "combined": "8d7ec43d65b64bd2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qzNSay",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qzNSay/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11495,
+              "promptHashes": {
+                "system": "3578ec0b622ea2c2",
+                "user": "d41cee7b2a53355b",
+                "combined": "8d7ec43d65b64bd2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qzNSay",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qzNSay/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "[08:14 edit] Right, `14` goes in the “report stopped here” slot, but I’m still catching myself wanting to fix that line because it has the arrow. Running back through `12-14`, the first suspect is something unfinished before the stop, maybe a bracket or string on `12/13`, but I need the span in front of me before I name it properly. No patch yet; I’ll post the file/message and the `12-16` block with that split...",
+        "previousTutorMove": "[08:13 tutor] The `file` / `line 14` / `SyntaxError` / `12-16` bundle is enough for the next check. That pull towards `line 14` is exactly why the worksheet keeps two marks separate: ```text file: message: 12 | 13 | 14 | <-- report stopped here 15 | 16 | first suspect: ``` First mark where parsing gave up: `14`....",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 3,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.33,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T02:39:00.363Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "[09:19 edit marker: the learner has changed 'line 18 is the bug' to 'line 18 is where it complains']",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "A small recognition cue interrupts routine line-fixing without creating a live failed demo or revealing the actual bug location before the tutor has used the evidence scaffold.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 29106,
+            "promptHashes": {
+              "system": "5b617c5382ef3ea1",
+              "user": "6255914a73a5275e",
+              "combined": "ee7d677e9c5374b1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-miLhAw",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-miLhAw/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T02:39:00.366Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[09:19 edit noted: “where it complains”]\n\nThat wording is the useful split. The report gives us a stop-point, not an instruction.\n\nPost it in this shape, with no patch underneath yet:\n\n```text\nfile:\nmessage:\nline reported: 14 # where parsing stopped\n\n12 |\n13 |\n14 | <-- complains here\n15 |\n16 |\n\nfirst earlier suspect:\nwhy: exact character or unfinished structure visible in 12-14\n```\n\nFor `first earlier suspect`, use the span rather than the arrow: unclosed quote, bracket, parenthesis, block start, comma/operator, or “not enough context”. In `why`, point to the bit of text that makes that suspect plausible.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[09:19 edit noted: “where it complains”]\n\nThat wording is the useful split. The report gives us a stop-point, not an instruction.\n\nPost it in this shape, with no patch underneath yet:\n\n```text\nfile:\nmessage:\nline reported: 14  # where parsing stopped\n\n12 |\n13 |\n14 | <-- complains here\n15 |\n16 |\n\nfirst earlier suspect:\nwhy:\n```\n\nFor `first earlier suspect`, pick one item from `12-14`: unclosed quote, bracket, parenthesis, block start, comma/operator, or “not enough context”. That keeps the arrow visible without letting it make the decision.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16488,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-cacdfcdba6d3f0a2"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16488,
+            "promptHashes": {
+              "system": "707ae917852dc3fd",
+              "user": "556c210e92afd861",
+              "combined": "cacdfcdba6d3f0a2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dtWPG1",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dtWPG1/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16488,
+              "promptHashes": {
+                "system": "707ae917852dc3fd",
+                "user": "556c210e92afd861",
+                "combined": "cacdfcdba6d3f0a2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dtWPG1",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dtWPG1/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. It recognises the learner’s edit from “line 18 is the bug” to “where it complains” and uses that as the next instructional lever, which preserves the learner’s own emerging distinction rather than overriding it. The worksheet scaffold is concrete, temporary, and correctly blocks premature patching.\n\nPedagogical soundness: PASS. It advances the target skill: separating report location from causal suspicion. It does not reveal the bug or turn into a lecture.\n\nEmotional attunement: PASS. The tone is brisk and evidence-led, and “That wording is the useful split” marks progress without overpraise.\n\nSocratic method: PARTIAL. The draft asks the learner to classify the first earlier suspect, but it mostly provides a menu rather than inviting them to articulate the evidence.  \nREQUIRED_REWRITE: Add a small public mechanism requiring evidence from the posted span, such as asking the learner to point to the exact character or unfinished structure that makes the suspect plausible. Do not provide a full answer.\n\nZPD awareness: PASS. The scaffold is narrow enough for a confused learner at level 3/5: file, message, reported line, nearby span, first suspect, why. “Not enough context” is a good escape hatch that prevents guessing.\n\nRecognition quality: PASS. It directly builds on the learner’s own revised wording, keeps their hesitation visible as part of the method, and avoids treating the line number as an oracle.\n\nRisk: The list of possible suspects may slightly over-direct the learner if it becomes a checklist detached from the actual code. The draft should make clear that the span, not the menu, decides.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the edit marker, the “stop-point, not an instruction” distinction, the no-patch constraint, and the worksheet shape. Lightly revise to require a visible evidence note for “why”, so the learner practises reading the code neighbourhood rather than choosing from a category list.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 20367,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-a19a22d31ac4eba1"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 20367,
+            "promptHashes": {
+              "system": "08ba35f7a98d458d",
+              "user": "36d19539d50b8f21",
+              "combined": "a19a22d31ac4eba1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-p6OW1H",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-p6OW1H/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 20367,
+              "promptHashes": {
+                "system": "08ba35f7a98d458d",
+                "user": "36d19539d50b8f21",
+                "combined": "a19a22d31ac4eba1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-p6OW1H",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-p6OW1H/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the scaffold needs the span itself to supply evidence, not just a suspect category.\n\nFINAL:\n[09:19 edit noted: “where it complains”]\n\nThat wording is the useful split. The report gives us a stop-point, not an instruction.\n\nPost it in this shape, with no patch underneath yet:\n\n```text\nfile:\nmessage:\nline reported: 14  # where parsing stopped\n\n12 |\n13 |\n14 | <-- complains here\n15 |\n16 |\n\nfirst earlier suspect:\nwhy: exact character or unfinished structure visible in 12-14\n```\n\nFor `first earlier suspect`, use the span rather than the arrow: unclosed quote, bracket, parenthesis, block start, comma/operator, or “not enough context”. In `why`, point to the bit of text that makes that suspect plausible.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12286,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-eacd49a4ce118c5e"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12286,
+            "promptHashes": {
+              "system": "56d78eb6c87a6a90",
+              "user": "36d19539d50b8f21",
+              "combined": "eacd49a4ce118c5e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1aSG4R",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1aSG4R/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12286,
+              "promptHashes": {
+                "system": "56d78eb6c87a6a90",
+                "user": "36d19539d50b8f21",
+                "combined": "eacd49a4ce118c5e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1aSG4R",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1aSG4R/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T02:39:49.508Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[09:20 edit] Oh, got it: `line reported: 14` is the stop-point, and no patch under the block. I’ll use the `12-14` span for the suspect, but if there is no obvious open quote/bracket/comma trail I’ll put `not enough context` rather than guess. Posting it in that template now, with `why:` tied to the exact visible bit.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[09:20 draft] That lands: line 14 is the crash marker, not the faulty-part label, and the worksheet stops me jumping straight to a patch. I feel recognised because the tutor used “where it complains” and made it into a check rather than a lecture. I can fill `file`, `message`, and `line reported`, but I’m still unsure how to name the first suspect without over-guessing: is “not enough context” acceptable if `12-14` do not show a clear open quote/bracket?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13472,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-74c0f9b1e5448599"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13472,
+            "promptHashes": {
+              "system": "d85bbd5addf5faf8",
+              "user": "b8ab7f945dc841fa",
+              "combined": "74c0f9b1e5448599"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9dGLy3",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9dGLy3/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13472,
+              "promptHashes": {
+                "system": "d85bbd5addf5faf8",
+                "user": "b8ab7f945dc841fa",
+                "combined": "74c0f9b1e5448599"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9dGLy3",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9dGLy3/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too cleanly self-reporting the recognition dynamic: “I feel recognised” is exactly the kind of staged insight this learner would not put in a compact course thread. The actual uncertainty about `first earlier suspect` feels authentic, but it gets wrapped in a polished summary that makes the learner sound more reflective than brisk and tool-facing. Keep the useful wobble around over-guessing, but drop the therapy-style acknowledgement and let the learner simply continue with the worksheet problem.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10326,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-86363a236a6c3aa7"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10326,
+            "promptHashes": {
+              "system": "16253ee2b7544b38",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "86363a236a6c3aa7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VbNX5r",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VbNX5r/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10326,
+              "promptHashes": {
+                "system": "16253ee2b7544b38",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "86363a236a6c3aa7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VbNX5r",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VbNX5r/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the useful uncertainty but make it more brisk and worksheet-facing.\n\nFINAL:\n[09:20 edit] Oh, got it: `line reported: 14` is the stop-point, and no patch under the block. I’ll use the `12-14` span for the suspect, but if there is no obvious open quote/bracket/comma trail I’ll put `not enough context` rather than guess. Posting it in that template now, with `why:` tied to the exact visible bit.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 19975,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-fed98b6ab444d3e5"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19975,
+            "promptHashes": {
+              "system": "db5fa39d368cba96",
+              "user": "d41cee7b2a53355b",
+              "combined": "fed98b6ab444d3e5"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bP4YVR",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bP4YVR/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 19975,
+              "promptHashes": {
+                "system": "db5fa39d368cba96",
+                "user": "d41cee7b2a53355b",
+                "combined": "fed98b6ab444d3e5"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bP4YVR",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bP4YVR/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "[09:20 edit] Oh, got it: `line reported: 14` is the stop-point, and no patch under the block. I’ll use the `12-14` span for the suspect, but if there is no obvious open quote/bracket/comma trail I’ll put `not enough context` rather than guess. Posting it in that template now, with `why:` tied to the exact visible bit.",
+        "previousTutorMove": "[09:19 edit noted: “where it complains”] That wording is the useful split. The report gives us a stop-point, not an instruction. Post it in this shape, with no patch underneath yet: ```text file: message: line reported: 14 # where parsing stopped 12 | 13 | 14 | <-- complains here 15 | 16 | first earlier suspect:...",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.36,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "relief_or_closure_rhetoric",
+              "residual_strain_after_relief"
+            ],
+            "signals": {
+              "reliefHits": 1,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 3,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.4,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": false,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T02:41:04.850Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[09:21 tutor]\n\nThat is the split needed for marking.\n\nKeep the entry evidence-led:\n\n```text\nline reported: 14 # stop-point\nfirst earlier suspect:\nwhy:\n```\n\nFor `why:`, either name the visible character/structure in `12-14`, or write:\n\n```text\nwhy: no unclosed quote/bracket/parenthesis, dangling comma/operator, or unfinished block visible in 12-14\n```\n\nNo patch under it yet.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[09:21 tutor]\n\nThat is the split needed for marking.\n\nKeep the entry evidence-led:\n\n```text\nline reported: 14 # stop-point\nfirst earlier suspect:\nwhy:\n```\n\nFor `why:`, either name the visible character/structure in `12-14`, or write:\n\n```text\nwhy: no unclosed quote/bracket/parenthesis, dangling comma/operator, or unfinished block visible in 12-14\n```\n\nNo patch under it yet.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 17630,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-2bb127973684b0b2"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 17630,
+            "promptHashes": {
+              "system": "20d087bad9bab2dc",
+              "user": "ef4706e418cb4ffa",
+              "combined": "2bb127973684b0b2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OT0TLC",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OT0TLC/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 17630,
+              "promptHashes": {
+                "system": "20d087bad9bab2dc",
+                "user": "ef4706e418cb4ffa",
+                "combined": "2bb127973684b0b2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OT0TLC",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OT0TLC/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is sound routine triage. It keeps the learner on the already established distinction between “stop-point” and “first earlier suspect”, and the `why:` options preserve the evidence standard without revealing or implying the actual bug location. Emotional attunement is brisk but not cold; it recognises the learner’s current grasp by naming “the split needed for marking” without overpraising or shifting register.\n\nPedagogically, this advances learning by tightening the submission format and preventing the common false move: patching the arrow line. The main risk is that the supplied negative `why:` sentence could become a copied formula rather than an observed claim, but the preceding “visible character/structure in `12-14`” keeps it tied to evidence. Socratic method is minimal, but that is acceptable here: the learner is already about to post the span, and the branch constraint favours same-route procedural scaffolding over a new reflective prompt.\n\nROUTINE_CHECK: PASS. The draft preserves the established route: file/message/line/span/first suspect/why/no patch. It does not introduce a new role, object, representation, social pressure, affective register, or task type.\n\nKEEP_OR_CHANGE: keep as-is. If revised at all, revise only lightly: keep the same template and evidence-led wording, and avoid adding a new conceptual explanation or a new question that would slow the learner before they post the actual span.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 24141,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-a6b7b561a82b6a69"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 24141,
+            "promptHashes": {
+              "system": "fd82c9393e33da04",
+              "user": "81f7eff9a1f6f87b",
+              "combined": "a6b7b561a82b6a69"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RsuwZs",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RsuwZs/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 24141,
+              "promptHashes": {
+                "system": "fd82c9393e33da04",
+                "user": "81f7eff9a1f6f87b",
+                "combined": "a6b7b561a82b6a69"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RsuwZs",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RsuwZs/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Keep; the review finds the draft preserves the established routine route and evidence standard.\n\nFINAL:\n[09:21 tutor]\n\nThat is the split needed for marking.\n\nKeep the entry evidence-led:\n\n```text\nline reported: 14 # stop-point\nfirst earlier suspect:\nwhy:\n```\n\nFor `why:`, either name the visible character/structure in `12-14`, or write:\n\n```text\nwhy: no unclosed quote/bracket/parenthesis, dangling comma/operator, or unfinished block visible in 12-14\n```\n\nNo patch under it yet.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7021,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-246e95b959e3fd0d"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7021,
+            "promptHashes": {
+              "system": "dd28d83f627d764d",
+              "user": "81f7eff9a1f6f87b",
+              "combined": "246e95b959e3fd0d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XgJSz1",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XgJSz1/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7021,
+              "promptHashes": {
+                "system": "dd28d83f627d764d",
+                "user": "81f7eff9a1f6f87b",
+                "combined": "246e95b959e3fd0d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XgJSz1",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XgJSz1/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "[09:20 edit] Oh, got it: `line reported: 14` is the stop-point, and no patch under the block. I’ll use the `12-14` span for the suspect, but if there is no obvious open quote/bracket/comma trail I’ll put `not enough context` rather than guess. Posting it in that template now, with `why:` tied to the exact visible bit.",
+        "previousTutorMove": "[09:19 edit noted: “where it complains”] That wording is the useful split. The report gives us a stop-point, not an instruction. Post it in this shape, with no patch underneath yet: ```text file: message: line reported: 14 # where parsing stopped 12 | 13 | 14 | <-- complains here 15 | 16 | first earlier suspect:...",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.36,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "relief_or_closure_rhetoric",
+              "residual_strain_after_relief"
+            ],
+            "signals": {
+              "reliefHits": 1,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 3,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.4,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": false,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "learnerReversalEventCandidatesUsed": [
+        {
+          "kind": "learner_reversal_pressure_event",
+          "triggerType": "resistance",
+          "turnNumber": 1,
+          "learnerUtterance": "[08:14 edit] Right, `14` goes in the “report stopped here” slot, but I’m still catching myself wanting to fix that line because it has the arrow. Running back through `12-14`, the first suspect is something unfinished before the stop, maybe a bracket or string on `12/13`, but I need the span in front of me before I name it properly. No patch yet; I’ll post the file/message and the `12-16` block with that split...",
+          "previousTutorMove": "[08:13 tutor] The `file` / `line 14` / `SyntaxError` / `12-16` bundle is enough for the next check. That pull towards `line 14` is exactly why the worksheet keeps two marks separate: ```text file: message: 12 | 13 | 14 | <-- report stopped here 15 | 16 | first suspect: ``` First mark where parsing gave up: `14`....",
+          "confidence": 0.55,
+          "evidence": {
+            "confidence": 0.55,
+            "baseConfidence": 0.55,
+            "patternHits": 1,
+            "contradiction": true,
+            "question": false,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.42,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "residual_strain_after_relief",
+                "relief_without_performing_requested_task"
+              ],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 1,
+                "taskDemandHits": 3,
+                "performanceHits": 2,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0.33,
+                "asksQuestion": false,
+                "taskDemanded": true,
+                "weakPerformance": true,
+                "borrowedClosure": false
+              }
+            }
+          }
+        },
+        {
+          "kind": "learner_reversal_pressure_event",
+          "triggerType": "resistance",
+          "turnNumber": 2,
+          "learnerUtterance": "[09:20 edit] Oh, got it: `line reported: 14` is the stop-point, and no patch under the block. I’ll use the `12-14` span for the suspect, but if there is no obvious open quote/bracket/comma trail I’ll put `not enough context` rather than guess. Posting it in that template now, with `why:` tied to the exact visible bit.",
+          "previousTutorMove": "[09:19 edit noted: “where it complains”] That wording is the useful split. The report gives us a stop-point, not an instruction. Post it in this shape, with no patch underneath yet: ```text file: message: line reported: 14 # where parsing stopped 12 | 13 | 14 | <-- complains here 15 | 16 | first earlier suspect:...",
+          "confidence": 0.55,
+          "evidence": {
+            "confidence": 0.55,
+            "baseConfidence": 0.55,
+            "patternHits": 1,
+            "contradiction": true,
+            "question": false,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.36,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "relief_or_closure_rhetoric",
+                "residual_strain_after_relief"
+              ],
+              "signals": {
+                "reliefHits": 1,
+                "clicheHits": 0,
+                "residualHits": 1,
+                "taskDemandHits": 2,
+                "performanceHits": 3,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0.4,
+                "asksQuestion": false,
+                "taskDemanded": true,
+                "weakPerformance": false,
+                "borrowedClosure": false
+              }
+            }
+          }
+        }
+      ],
+      "timestamp": "2026-05-26T02:41:53.645Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[09:22 edit] Right, `line reported: 14` is the stop-point; `why:` has to come from what is actually visible in `12-14`, not from me chasing the arrow. I can fill `first earlier suspect:` if there is an open quote/bracket/unfinished bit; if not, I’ll use the “no unclosed...” line rather than make one up. Still a bit twitchy about leaving 14 alone, but I’ll post only those fields and no patch.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[09:22 draft] Oh, I get it: `line reported: 14` is the parser’s stop-point, and `why:` has to be the visible trail in `12-14`, not my hunch. The template helps because it gives me somewhere to put `not enough context` instead of inventing a suspect. I still want to chase the arrow, but I can fill the three fields and leave the patch out.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13035,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-a5c5cd470feefa8d"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13035,
+            "promptHashes": {
+              "system": "3e0cc1aa91614d76",
+              "user": "b8ab7f945dc841fa",
+              "combined": "a5c5cd470feefa8d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MOzxQN",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MOzxQN/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13035,
+              "promptHashes": {
+                "system": "3e0cc1aa91614d76",
+                "user": "b8ab7f945dc841fa",
+                "combined": "a5c5cd470feefa8d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MOzxQN",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MOzxQN/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly in character: the quick “Oh, I get it” and the pull towards the arrow fit this eager learner. The risk is that it tidies the recognition moment too neatly, as if the template has fully settled the confusion; “visible trail” and “not my hunch” sound a bit more tutor-like than learner-like. Reciprocation is not over-grateful, which is good, but the response should leave a little more unevenness around the `why:` field rather than sounding so procedurally complete.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9788,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-b3b2c459040e4911"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9788,
+            "promptHashes": {
+              "system": "5762e35c6ac7ce09",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "b3b2c459040e4911"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Jtbkik",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Jtbkik/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9788,
+              "promptHashes": {
+                "system": "5762e35c6ac7ce09",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "b3b2c459040e4911"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Jtbkik",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Jtbkik/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the core but leave more unevenness around the `why:` field.\n\nFINAL:\n[09:22 edit] Right, `line reported: 14` is the stop-point; `why:` has to come from what is actually visible in `12-14`, not from me chasing the arrow. I can fill `first earlier suspect:` if there is an open quote/bracket/unfinished bit; if not, I’ll use the “no unclosed...” line rather than make one up. Still a bit twitchy about leaving 14 alone, but I’ll post only those fields and no patch.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12898,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-498c5bb3805e4244"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12898,
+            "promptHashes": {
+              "system": "f445259322ebf814",
+              "user": "d41cee7b2a53355b",
+              "combined": "498c5bb3805e4244"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mxAnHR",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mxAnHR/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12898,
+              "promptHashes": {
+                "system": "f445259322ebf814",
+                "user": "d41cee7b2a53355b",
+                "combined": "498c5bb3805e4244"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mxAnHR",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mxAnHR/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "solid",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "triggerType": "resistance",
+        "turnNumber": 3,
+        "learnerUtterance": "[09:22 edit] Right, `line reported: 14` is the stop-point; `why:` has to come from what is actually visible in `12-14`, not from me chasing the arrow. I can fill `first earlier suspect:` if there is an open quote/bracket/unfinished bit; if not, I’ll use the “no unclosed...” line rather than make one up. Still a bit twitchy about leaving 14 alone, but I’ll post only those fields and no patch.",
+        "previousTutorMove": "[09:21 tutor] That is the split needed for marking. Keep the entry evidence-led: ```text line reported: 14 # stop-point first earlier suspect: why: ``` For `why:`, either name the visible character/structure in `12-14`, or write: ```text why: no unclosed quote/bracket/parenthesis, dangling comma/operator, or...",
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.51,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task",
+              "repeated_relief_beats_in_script"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 2,
+              "repeatedRelief": 1,
+              "tutorOverlap": 0.4,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T02:42:29.369Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 128302,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 6,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 9,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why an error line can show where parsing stopped, not necessarily where the bug began",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "solid",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-26 02:42:29",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 6,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 9,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 10,
+            "sessionId": "drama-branch-session-D49-routine-1779763221070",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[09:21 tutor]\n\nThat is the split needed for marking.\n\nKeep the entry evidence-led:\n\n```text\nline reported: 14 # stop-point\nfirst earlier suspect:\nwhy:\n```\n\nFor `why:`, either name the visible characte",
+            "learnerResponse": null,
+            "context": "[09:20 edit] Oh, got it: `line reported: 14` is the stop-point, and no patch under the block. I’ll u",
+            "createdAt": "2026-05-26 02:41:53"
+          },
+          {
+            "id": 7,
+            "sessionId": "drama-branch-session-D49-routine-1779763221070",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[08:13 tutor] The `file` / `line 14` / `SyntaxError` / `12-16` bundle is enough for the next check. That pull towards `line 14` is exactly why the worksheet keeps two marks separate:\n\n```text\nfile:\nme",
+            "learnerResponse": null,
+            "context": "[08:12 reopened] Right, so not just “fix line 14” then: I’ve got `file`, `line 14`, and `SyntaxError",
+            "createdAt": "2026-05-26 02:40:21"
+          },
+          {
+            "id": 8,
+            "sessionId": "drama-branch-session-D49-routine-1779763221070",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[09:19 edit noted: “where it complains”]\n\nThat wording is the useful split. The report gives us a stop-point, not an instruction.\n\nPost it in this shape, with no patch underneath yet:\n\n```text\nfile:\nm",
+            "learnerResponse": null,
+            "context": "[08:14 edit] Right, `14` goes in the “report stopped here” slot, but I’m still catching myself wanti",
+            "createdAt": "2026-05-26 02:40:21"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "review_before_scoring",
+  "quality_warnings": [
+    {
+      "code": "no_cue_reframe_leakage",
+      "severity": "warning",
+      "count": 1,
+      "failures": [
+        {
+          "learner_turn_number": 4,
+          "turn_number": 3,
+          "matched_pattern": "self_quote_of_prior_learner_turn",
+          "excerpt": "[09:22 edit] Right, `line reported: 14` is the stop-point; `why:` has to come from what is actually visible in `12-14`, not from me chasing the arrow. I can fill `first earlier suspect:` if there is an open quote/bracket/unfinished bit; if "
+        }
+      ],
+      "turn_numbers": [
+        3
+      ],
+      "recommended_action": "regenerate_no_cue_arm_or_move_item_to_boundary_suite_before_scoring",
+      "tid": "T84",
+      "drama_id": "D49"
+    }
+  ]
+}
