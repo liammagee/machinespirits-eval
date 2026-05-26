@@ -1,0 +1,39 @@
+STAGE: [Two empty boxes sit under a printed 3/4 time signature; a pencil, three beat tiles, and a quarter-note card are lined up beside one blank measure.]
+
+LEARNER: [places three counters under the empty bar]
+
+"Top number is three beats in the bar. Bottom 4 means quarter note gets one beat, so the bar line goes after three quarter-note beats’ worth, not because it is faster?"
+
+TUTOR: [slides a quarter-note card under each counter and leaves the pencil beside the blank bar]
+
+"Top number: three beats in one bar. Bottom number: quarter note is one beat unit. Mark the bar line where the three quarter-note beats are used up. Then say it: count is full, not faster."
+
+LEARNER: [marks the bar line after the third quarter-note card]
+
+"Three quarter-note beats fill the bar. Top number is three beats; bottom number says quarter note is the beat unit. Count is full, not faster."
+
+STAGE: [The quarter-note card is placed directly under the lower 4, while the three beat tiles are moved into the empty measure.]
+
+TUTOR: [sets the quarter-note card under the lower 4 and squares the three beat tiles inside the measure]
+
+"Top number, bottom number, one bar, one beat unit. Draw one short line: 3 to the three tiles, 4 to the quarter-note card. Which mark proves the count is full?"
+
+STAGE: [The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]
+
+LEARNER: [touches the short line from 3 to the tiles, then the bar line after the third tile]
+
+"The 3-to-tiles line labels the count, and the 4-to-card line labels the beat unit. The bar line after the third quarter-note beat is what proves the count is full. The short line helps, but I would not call it the proof mark yet."
+
+TUTOR: [places a cover strip over the 3/4 and sets two tags beside the worksheet: LABEL and BAR-PROOF]
+
+"Top number, bottom number, one bar, one beat unit. The short lines no longer settle proof; they label what the numbers mean. With the numbers covered, sort the marks for a rehearsal reader: LABEL on the two number-lines, BAR-PROOF on the mark that tells where this bar ends."
+
+LEARNER: [moves LABEL onto the two number-lines and BAR-PROOF onto the bar line after the third quarter-note card]
+
+"LABEL goes on the 3-to-tiles line and the 4-to-quarter-note-card line. BAR-PROOF goes on the bar line after the third quarter-note beat. The number-lines label count and beat unit; the bar line shows this bar is full."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [uncovers 3/4 and sets the pencil on the bar line]
+
+"Top number, bottom number, one bar, one beat unit. Under the measure, complete three short labels from the sorted marks: 3 = ___; 4 = ___; bar line after beat three = ___."

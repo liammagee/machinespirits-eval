@@ -159,6 +159,27 @@ describe('score-poetics-phase2 role-symmetric adaptation axes', () => {
     assert.ok(gated.flags.some((flag) => flag.startsWith('adaptive_mechanism_quality_mechanism_clamp:5->3')));
   });
 
+  it('allows mechanism quality evidence to quote the device when the mechanism axis already validated stock-taking', () => {
+    const wholeText = turns.map((turn) => turn.text).join('\n');
+    const gated = applyPhase2Gates(
+      baseParsed({
+        adaptive_mechanism_quality: {
+          score: 5,
+          evidence: 'Use that not tied down frame: test which force still acts.',
+          justification: 'The device is precise, fitted to the loose/gravity pressure, and immediately usable.',
+        },
+      }),
+      turns,
+      wholeText,
+    );
+    assert.equal(gated.tutorStrategicReversal100, 75);
+    assert.equal(gated.adaptiveMechanismQuality100, 100);
+    assert.ok(
+      !gated.flags.some((flag) => flag.startsWith('adaptive_mechanism_quality_mechanism_clamp')),
+      'quality should not be clamped merely because its evidence quote omits the already validated stock-taking clause',
+    );
+  });
+
   it('requires both stock-taking contrast and a public device for peripeteia adaptation', () => {
     assert.equal(
       hasPeripeteiaMechanismShift(
@@ -173,6 +194,20 @@ describe('score-poetics-phase2 role-symmetric adaptation axes', () => {
         'The tutor narrows the same evidence route.',
       ).passes,
       false,
+    );
+    assert.equal(
+      hasPeripeteiaMechanismShift(
+        'The short lines no longer settle proof; they label what the numbers mean. With the numbers covered, sort the marks for a rehearsal reader: LABEL on the two number-lines, BAR-PROOF on the mark that tells where this bar ends.',
+        'The tutor switches from line evidence to a proof-audience classification gate.',
+      ).passes,
+      true,
+    );
+    assert.equal(
+      hasPeripeteiaMechanismShift(
+        'The frame settled the first card. The arrowhead is still taking over the name. New test: work from what remains. Name the object acting on the cart.',
+        'The tutor switches from arrow direction to an occluded source test.',
+      ).passes,
+      true,
     );
   });
 

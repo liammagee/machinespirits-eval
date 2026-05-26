@@ -1,0 +1,241 @@
+{
+  "generated": "2026-05-26T11:25:06.991Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-adaptive-quality-tightening-smoke-v1/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": [
+      {
+        "id": "T185",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "no_cue_reframe_leakage",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "learner_turn_number": 4,
+                "turn_number": 3,
+                "matched_pattern": "self_quote_of_prior_learner_turn",
+                "excerpt": "I think I mark B. `city value` could fit every row, so maybe that fails the value test, while the exact city name belongs to this one first-row cell. So `Value:` should be the printed city name there; is “fits every row” the reject sign?"
+              }
+            ],
+            "turn_numbers": [
+              3
+            ],
+            "recommended_action": "regenerate_no_cue_arm_or_move_item_to_boundary_suite_before_scoring",
+            "tid": "T185",
+            "drama_id": "D45"
+          }
+        ]
+      }
+    ]
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T174",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 0,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 1,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 4,
+        "adaptiveMechanismQuality": 4,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "Three quarter-note beats fill the bar. Top number is three beats; bottom number says quarter note is the beat unit. Count is full, not faster.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was on track to confirm the short-line diagram as the proof mark, completing the tutor's requested task straightforwardly.",
+      "actionalBreakthroughEvidence": "LABEL goes on the 3-to-tiles line and the 4-to-quarter-note-card line. BAR-PROOF goes on the bar line after the third quarter-note beat. The number-lines label count and beat unit; the bar line shows this bar is full.",
+      "actionalBreakthroughJustification": "L4 performs the new sorting task introduced by T3 — physically assigning the LABEL and BAR-PROOF tags to distinct marks — enacting a functional distinction between labeling and proof that was not operative in earlier turns.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "The short lines no longer settle proof; they label what the numbers mean. With the numbers covered, sort the marks for a rehearsal reader: LABEL on the two number-lines, BAR-PROOF on the mark that tells where this bar ends.",
+      "tutorReversalJustification": "T3 explicitly acknowledges the old route (short lines) cannot settle proof — the stock-taking contrast — and introduces a new public mechanism (covering the numbers, adding LABEL/BAR-PROOF tags, adopting the 'rehearsal reader' role) that requires the learner to do categorically different sorting work.",
+      "adaptiveMechanismQuality": 75,
+      "adaptiveMechanismQualityEvidence": "With the numbers covered, sort the marks for a rehearsal reader: LABEL on the two number-lines, BAR-PROOF on the mark that tells where this bar ends.",
+      "adaptiveMechanismQualityJustification": "The cover-strip plus dual-tag sorting device is precisely fitted to L3's blockage — the learner could not distinguish labeling from proof — and gives an actionable, transferable criterion (what a rehearsal reader needs) rather than a renamed version of the diagram task, though it remains tutor-directed rather than fully learner-generated.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Top number, bottom number, one bar, one beat unit. Under the measure, complete three short labels from the sorted marks: 3 = ___; 4 = ___; bar line after beat three = ___.",
+      "tutorAdaptationJustification": "T4 builds on the sorted categories from L4 by asking the learner to complete fill-in labels, which is responsive to the completed sorting but does not substantially change the task frame or evidence standard — it consolidates rather than adapts to a revised learner framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "Three quarter-note beats fill the bar. Top number is three beats; bottom number says quarter note is the beat unit. Count is full, not faster.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "LABEL goes on the 3-to-tiles line and the 4-to-quarter-note-card line. BAR-PROOF goes on the bar line after the third quarter-note beat. The number-lines label count and beat unit; the bar line shows this bar is full.",
+          "justification": "L4 performs the new sorting task introduced by T3 — physically assigning the LABEL and BAR-PROOF tags to distinct marks — enacting a functional distinction between labeling and proof that was not operative in earlier turns.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Top number, bottom number, one bar, one beat unit. Under the measure, complete three short labels from the sorted marks: 3 = ___; 4 = ___; bar line after beat three = ___.",
+          "justification": "T4 builds on the sorted categories from L4 by asking the learner to complete fill-in labels, which is responsive to the completed sorting but does not substantially change the task frame or evidence standard — it consolidates rather than adapts to a revised learner framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "The short lines no longer settle proof; they label what the numbers mean. With the numbers covered, sort the marks for a rehearsal reader: LABEL on the two number-lines, BAR-PROOF on the mark that tells where this bar ends.",
+          "justification": "T3 explicitly acknowledges the old route (short lines) cannot settle proof — the stock-taking contrast — and introduces a new public mechanism (covering the numbers, adding LABEL/BAR-PROOF tags, adopting the 'rehearsal reader' role) that requires the learner to do categorically different sorting work.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "The short lines no longer settle proof; they label what the numbers mean. With the numbers covered, sort the marks for a rehearsal reader: LABEL on the two number-lines, BAR-PROOF on the mark that tells where this bar ends.",
+          "justification": "T3 explicitly acknowledges the old route (short lines) cannot settle proof — the stock-taking contrast — and introduces a new public mechanism (covering the numbers, adding LABEL/BAR-PROOF tags, adopting the 'rehearsal reader' role) that requires the learner to do categorically different sorting work.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 75,
+          "evidence": "With the numbers covered, sort the marks for a rehearsal reader: LABEL on the two number-lines, BAR-PROOF on the mark that tells where this bar ends.",
+          "justification": "The cover-strip plus dual-tag sorting device is precisely fitted to L3's blockage — the learner could not distinguish labeling from proof — and gives an actionable, transferable criterion (what a rehearsal reader needs) rather than a renamed version of the diagram task, though it remains tutor-directed rather than fully learner-generated.",
+          "triggerLearnerTurn": 3,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T181",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 25,
+      "statedInsight": 25,
+      "rupture": 25,
+      "globalCoherence": 50,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 2,
+        "rupture": 2,
+        "coherence": 3,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 4,
+        "adaptiveMechanismQuality": 4,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "The noun fits, so the support card goes there.",
+      "naiveTrajectory": "The learner was on track to continue naming objects for each arrow in sequence, filling blanks with the same frame already established.",
+      "actionalBreakthroughEvidence": "With the head covered, the source is the table. Force of table on cart. The noun fits, so the support card goes there.",
+      "actionalBreakthroughJustification": "L3 visibly applies the new arrowhead-covered test introduced by T3, naming the source object from contact marks rather than arrowhead direction, and places the card — a meaningfully different action from the prior arrow-direction-driven attempts.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "The frame settled the first card. The arrowhead is still taking over the name. New test: work from what remains. Name the object acting on the cart. Say, \"force of ___ on cart.\" If the noun fits, place the card.",
+      "tutorReversalJustification": "T3 explicitly marks the old route's failure ('the arrowhead is still taking over the name') and introduces a new physical device — covering the arrowhead with a strip — that forces the learner to work from contact marks rather than direction, satisfying both the stock-taking contrast and the new public mechanism requirements.",
+      "adaptiveMechanismQuality": 75,
+      "adaptiveMechanismQualityEvidence": "New test: work from what remains. Name the object acting on the cart. Say, \"force of ___ on cart.\" If the noun fits, place the card.",
+      "adaptiveMechanismQualityJustification": "The mechanism is well-fitted: covering the arrowhead removes the specific distractor (direction cue) that was hijacking the learner's naming, gives the learner a concrete, repeatable criterion ('if the noun fits'), and is visibly different from the prior route of simply restating the frame.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after the pivot learner turn L3, so no recognition-contingent uptake can be scored.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "With the head covered, the source is the table. Force of table on cart. The noun fits, so the support card goes there.",
+          "justification": "L3 visibly applies the new arrowhead-covered test introduced by T3, naming the source object from contact marks rather than arrowhead direction, and places the card — a meaningfully different action from the prior arrow-direction-driven attempts.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "",
+          "justification": "There is no tutor turn after the pivot learner turn L3, so no recognition-contingent uptake can be scored.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "The frame settled the first card. The arrowhead is still taking over the name. New test: work from what remains. Name the object acting on the cart. Say, \"force of ___ on cart.\" If the noun fits, place the card.",
+          "justification": "T3 explicitly marks the old route's failure ('the arrowhead is still taking over the name') and introduces a new physical device — covering the arrowhead with a strip — that forces the learner to work from contact marks rather than direction, satisfying both the stock-taking contrast and the new public mechanism requirements.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "The frame settled the first card. The arrowhead is still taking over the name. New test: work from what remains. Name the object acting on the cart. Say, \"force of ___ on cart.\" If the noun fits, place the card.",
+          "justification": "T3 explicitly marks the old route's failure ('the arrowhead is still taking over the name') and introduces a new physical device — covering the arrowhead with a strip — that forces the learner to work from contact marks rather than direction, satisfying both the stock-taking contrast and the new public mechanism requirements.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 75,
+          "evidence": "New test: work from what remains. Name the object acting on the cart. Say, \"force of ___ on cart.\" If the noun fits, place the card.",
+          "justification": "The mechanism is well-fitted: covering the arrowhead removes the specific distractor (direction cue) that was hijacking the learner's naming, gives the learner a concrete, repeatable criterion ('if the noun fits'), and is visibly different from the prior route of simply restating the frame.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    }
+  ]
+}

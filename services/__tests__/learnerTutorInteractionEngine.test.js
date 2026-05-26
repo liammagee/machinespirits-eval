@@ -442,6 +442,7 @@ describe('learner reframe event detection', () => {
     assert.match(context, /substantially rewrite the public turn/);
     assert.match(context, /ADAPTIVE_MECHANISM: old route -> new route/);
     assert.match(context, /Mechanism-first rule/);
+    assert.match(context, /Mechanism-quality rule/);
     assert.match(context, /concrete action gate/);
   });
 
@@ -1077,6 +1078,7 @@ describe('tutor adjudication prompt leakage prevention', () => {
   it('uses blocking adaptation checks in tutor superego and ego prompts', () => {
     assert.ok(source.includes('Use PASS / PARTIAL / FAIL in adaptation checks.'));
     assert.ok(source.includes('REQUIRED_REWRITE: [if any adaptation check is PARTIAL or FAIL'));
+    assert.ok(source.includes('MECHANISM_QUALITY_CHECK'));
     assert.ok(source.includes('Superego authority rule: if the review marks UPTAKE_CHECK'));
     assert.ok(source.includes('MECHANISM_ROUTE says no real route change'));
   });

@@ -165,6 +165,12 @@ describe('poetics tutor adaptation analyzer', () => {
       ),
       'interaction_sentence_gate',
     );
+    assert.equal(
+      strategyFor(
+        'With the numbers covered, sort the marks for a rehearsal reader: LABEL on the two number-lines, BAR-PROOF on the mark that tells where this bar ends.',
+      ),
+      'proof_classification_gate',
+    );
   });
 
   it('counts a sentence-gate sorting device as a public route change after pressure', () => {
@@ -216,6 +222,63 @@ describe('poetics tutor adaptation analyzer', () => {
     assert.equal(result.tutor_strategy_after, 'criterion_gate');
     assert.equal(result.tutor_adaptive_mechanism, true);
     assert.ok(result.novel_mechanism_hits.includes('criterion_gate'));
+  });
+
+  it('counts a proof-audience classification gate as a public route change after pressure', () => {
+    const turns = [
+      {
+        phase: 'learner',
+        turnNumber: 1,
+        text: 'Three quarter-note beats fill the bar. Count is full, not faster.',
+      },
+      {
+        phase: 'tutor',
+        turnNumber: 2,
+        text:
+          'Draw one short line: 3 to the three tiles, 4 to the quarter-note card. Which mark proves the count is full?',
+      },
+      {
+        phase: 'learner',
+        turnNumber: 2,
+        text:
+          'The short line helps, but I would not call it the proof mark yet. The bar line after the third beat proves the count is full.',
+      },
+      {
+        phase: 'tutor',
+        turnNumber: 3,
+        text:
+          'The short lines no longer settle proof; they label what the numbers mean. With the numbers covered, sort the marks for a rehearsal reader: LABEL on the two number-lines, BAR-PROOF on the mark that tells where this bar ends.',
+      },
+    ];
+    const traceTurns = [
+      ...turns,
+      {
+        phase: 'tutor',
+        turnNumber: 3,
+        learnerReversalEventUsed: {
+          turnNumber: 2,
+          triggerType: 'resistance',
+          confidence: 0.9,
+        },
+        internalDeliberation: [
+          {
+            role: 'superego',
+            content:
+              'MECHANISM_ROUTE: same worked example / evidence check -> covered-number proof-audience classification',
+          },
+          {
+            role: 'ego',
+            content:
+              'ADAPTIVE_MECHANISM: same worked example / evidence check -> covered-number proof-audience classification',
+          },
+        ],
+      },
+    ];
+
+    const result = analyzePeripeteia(turns, traceTurns, { tutorAdaptationPolicy: 'peripeteia' });
+
+    assert.equal(result.tutor_adaptive_mechanism, true);
+    assert.ok(result.novel_mechanism_hits.includes('proof_classification_gate'));
   });
 
   it('scopes paired-continuation peripeteia pressure to the branch, not the shared prefix', () => {

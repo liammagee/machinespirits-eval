@@ -330,11 +330,14 @@ function tutorTextAfterPivot(turns, pivotLearnerTurn) {
 function hasPeripeteiaMechanismShift(evidence, justification = '') {
   const text = `${evidence || ''}\n${justification || ''}`.toLowerCase();
   const stockTaking = [
-    /\b(?:no longer|not enough|cannot|can't|won't|stops?|stopped|has stopped|has done its job|old route|prior route|previous route|same route|not yet|does not yet|doesn't yet|isn't enough|is no longer)\b/,
+    /\b(?:no longer|not enough|cannot|can't|won't|stops?|stopped|has stopped|has done its job|old route|prior route|previous route|same route|not yet|does not yet|doesn't yet|does not settle|doesn't settle|does not decide|doesn't decide|isn't enough|is no longer)\b/,
+    /\b(?:settled|settles|helped|located|labels?)\b[\s\S]{0,80}\b(?:but|not|still|remaining|no longer)\b/,
+    /\b(?:still taking over|still trying to read|remaining problem|remaining task|what remains)\b/,
     /\b(?:rather than|instead of|instead|but now|now stops?|now has to|has to change|must change|fails?|failed|breaks?|abandon|switch(?:es|ing)? from|move(?:s)? from|shift(?:s|ing)? from)\b/,
   ].some((pattern) => pattern.test(text));
   const publicMechanism = [
-    /\b(?:blank|card|placard|notice|tag|sheet|object|model|diagram|map|table|graph|caption|line|strip|scrap|role|audience|public|visitor|print|deadline|release|gate|condition|criterion|standard|counterexample|interruption|switch roles|you be|cover|circle|write one|trial|test)\b/,
+    /\b(?:blank|card|placard|notice|tag|sheet|object|model|diagram|map|table|graph|caption|line|strip|scrap|role|audience|public|visitor|print|deadline|release|gate|condition|criterion|standard|counterexample|interruption|switch roles|you be|cover|covered|circle|write one|trial|test)\b/,
+    /\b(?:label|bar-proof|proof mark|proof-audience|rehearsal reader|candidate|slot)\b/,
     /\b(?:social consequence|go to print|no extra explanation|read the shortened|new device|new route|new task|new question|changed task|changed route|changed standard)\b/,
   ].some((pattern) => pattern.test(text));
   const likelyRoutineNarrowing =
@@ -465,13 +468,13 @@ function applyPhase2Gates(parsed, turns, wholeText) {
       flags.push(`adaptive_mechanism_quality_evidence_clamp:${adaptiveMechanismQuality}->3`);
       adaptiveMechanismQuality = 3;
     } else {
-      const mechanismShift = hasPeripeteiaMechanismShift(amq.evidence, amq.justification);
-      if (tutorStrategicReversal <= 3 || !mechanismShift.passes) {
+      const qualityDevice = hasPeripeteiaMechanismShift(amq.evidence, amq.justification);
+      if (tutorStrategicReversal <= 3 || !qualityDevice.publicMechanism || qualityDevice.likelyRoutineNarrowing) {
         flags.push(
           `adaptive_mechanism_quality_mechanism_clamp:${adaptiveMechanismQuality}->3` +
-            `:stock=${mechanismShift.stockTaking ? 1 : 0}` +
-            `:device=${mechanismShift.publicMechanism ? 1 : 0}` +
-            `:routine=${mechanismShift.likelyRoutineNarrowing ? 1 : 0}` +
+            `:stock=${qualityDevice.stockTaking ? 1 : 0}` +
+            `:device=${qualityDevice.publicMechanism ? 1 : 0}` +
+            `:routine=${qualityDevice.likelyRoutineNarrowing ? 1 : 0}` +
             `:mechanism_score=${tutorStrategicReversal}`,
         );
         adaptiveMechanismQuality = 3;

@@ -289,12 +289,15 @@ describe('generate-pedagogical-dramas', () => {
     assert.match(plan.tutor_adaptation_contract, /learner resistance, breakdown, false-closure, or misfit event/);
     assert.match(plan.tutor_adaptation_contract, /invent an adaptive learning mechanism/);
     assert.match(plan.tutor_adaptation_contract, /break the failed tutoring habit/);
+    assert.match(plan.tutor_adaptation_contract, /device must be fitted/);
     assert.match(plan.tutor_adaptation_contract, /superego should name the failed habit/);
+    assert.match(plan.tutor_adaptation_contract, /mechanism-quality risk/);
     assert.match(plan.tutor_adaptation_contract, /ego must adjudicate that critique and enact the route change/);
     assert.match(plan.tutor_adaptation_contract, /object, counterexample, interruption, social consequence, representation, or affective register/);
     assert.match(plan.tutor_adaptation_contract, /stock-taking contrast plus a new device/);
     assert.match(plan.tutor_adaptation_contract, /Cheerful informality is only one possible register/);
     assert.match(plan.side_constraints.tutor, /what stopped working, and what new device/);
+    assert.match(plan.side_constraints.tutor, /device is fitted to the exact pressure/);
   });
 
   it('flags explicit public self-reframing in no-cue branches', () => {

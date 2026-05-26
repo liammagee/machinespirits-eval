@@ -1,0 +1,44 @@
+STAGE: [The cart diagram lies flat; the arrow-label cards are squared beside it, not yet attached.]
+
+TUTOR: [sets the clear overlay over the cart diagram, with “force of ___ on cart” beside the first arrow.]
+
+"Push card first.
+
+Say the frame with the blank filled.
+
+“Force of ___ on cart.”
+
+Use an object name, not “right” or “moving.” Then place the card."
+
+LEARNER: [slides the push card to the first arrow, then holds it just below the blank.]
+
+"So the arrow points right, but the label should read “force of hand on cart,” not “force right.” The push card names the contact, but the blank wants the object name. Is that the check before the card goes down?"
+
+STAGE: [A clear overlay card is placed over the diagram so each arrow now begins with the printed words 'force of ___ on cart.']
+
+TUTOR: [holds the overlay steady and leaves the card just below the blank.]
+
+"Use the blank as the check.
+
+Say the frame: “force of hand on cart.”
+
+If “hand” fills it, the card goes down."
+
+STAGE: [The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]
+
+LEARNER: [sets the push card down, then keeps the blank card over the next arrow.]
+
+"“Hand” fits here, so this label is force of hand on cart.
+The arrow still pulls toward “right,” but the blank has to take an object again for the next one."
+
+TUTOR: [slides a small strip over the arrowhead, leaving the cart and the source marks visible.]
+
+"The frame settled the first card. The arrowhead is still taking over the name.
+
+New test: work from what remains. Name the object acting on the cart. Say, “force of ___ on cart.” If the noun fits, place the card."
+
+LEARNER: [slides the support card under the covered arrowhead and points to the contact mark.]
+
+"With the head covered, the source is the table.
+Force of table on cart.
+The noun fits, so the support card goes there."

@@ -433,6 +433,10 @@ describe('runInteraction (multi-turn)', () => {
       'tutor superego should require a concrete learner action gate',
     );
     assert.ok(
+      tutorSuperegoPrompts.some((prompt) => /MECHANISM_QUALITY_CHECK/.test(prompt)),
+      'tutor superego should evaluate whether the new device is fitted and usable',
+    );
+    assert.ok(
       tutorSuperegoPrompts.some((prompt) => /REGISTER_CHECK/.test(prompt)),
       'tutor superego should evaluate whether the register serves the mechanism',
     );
@@ -461,6 +465,10 @@ describe('runInteraction (multi-turn)', () => {
     assert.ok(
       tutorAdjudicationPrompts.some((prompt) => /stock-taking contrast/.test(prompt) && /new public device/.test(prompt)),
       'tutor ego adjudication should force a public contrast plus new device',
+    );
+    assert.ok(
+      tutorAdjudicationPrompts.some((prompt) => /pressure-to-device fit/.test(prompt)),
+      'tutor ego adjudication should force fit between the learner pressure and the device',
     );
     assert.ok(
       tutorAdjudicationPrompts.some((prompt) => /affective register/.test(prompt)),

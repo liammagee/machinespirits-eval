@@ -1,0 +1,43 @@
+LEARNER: "On this worksheet, are `city`, `rainfall_mm`, and `month` just the column names? I keep reading `city` like it says the whole row is a city, but maybe only that cell has the city value. Can you check if I am naming header, column, and cell correctly before I write the answer?"
+
+TUTOR: "Yes. The useful distinction is already there: `city` labels a field; the cell under `city` holds the city value for that row.
+
+Use this check before writing:
+
+Header: `city`
+Column: all boxes under `city`
+Cell: one box where a row crosses the `city` column
+Value: the actual city name inside that one box
+
+Now mark one row and name one header, one column, one cell, and one value. If those four stay separate, the answer is ready."
+
+LEARNER: "So `city` is the header or field name, not saying the whole row is a city. In one row, the box under `city` is the cell, and the actual city name inside it is the value. I think I can mark them, but I may still point to the column when I mean the cell. Can I try one row and have you check the four labels?"
+
+TUTOR: "Yes. Choose one row only.
+
+Write the check like this:
+
+Selected row: ___
+Header / field name: ___
+Column: ___
+Cell: ___
+Value: ___
+
+Use the box rule while marking: more than one box is probably a column; one box at one row-column crossing can be a cell."
+
+STAGE: [The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]
+
+LEARNER: "The box rule helps, but the Cell blank is where I slow down. I will use the first data row: header / field name is `city`, column is all boxes under `city`, and cell is the first data-row box under `city`. For Value, should I copy the actual city name printed in that box, or is “city value” enough?"
+
+TUTOR: "The box rule locates the cell; it does not decide the value. The remaining problem is not where the box is, but which words count as the row’s actual content.
+
+Use a two-candidate value test for the first data row:
+
+Candidate A: `city value`
+Candidate B: the exact city name printed in the first data-row box under `city`
+
+Test: could this same wording fit every row in the `city` column?
+
+Mark A or B. Then write only the candidate that passes as `Value:`."
+
+LEARNER: "I think I mark B. `city value` could fit every row, so maybe that fails the value test, while the exact city name belongs to this one first-row cell. So `Value:` should be the printed city name there; is “fits every row” the reject sign?"

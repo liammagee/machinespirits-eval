@@ -731,6 +731,70 @@ quality, creativity, and appropriateness of public learning devices relative to
 routine continuations, and whether recognitive closure emerges in a subset of
 dramatic/scenario genres.
 
+### Adaptive mechanism quality tightening smoke
+
+`phase2-adaptive-quality-tightening-smoke-v1` tested the immediate follow-up to
+the compact anchor run: make the tutor's inner exchange force a more visibly
+fitted public device, then rerun only the small D42/D50/D45 peripeteia smoke.
+
+Tooling and prompt changes:
+
+- The tutor superego now emits `MECHANISM_QUALITY_CHECK`, and a partial/failing
+  check is blocking for the tutor ego's final adjudication.
+- The tutor reversal prompt now requires pressure-to-device fit: the public
+  mechanism should make clear why this new device answers the exact learner
+  pressure rather than merely adding novelty.
+- The drama generator contract now asks the director to make the public device
+  fitted, not just different, and asks the superego to name mechanism-quality
+  risks.
+- The external `adaptive_mechanism_quality` gate now uses the already-validated
+  tutor mechanism axis for stock-taking, while still requiring the quality
+  evidence quote to contain a public device and avoid routine narrowing.
+- `npm run poetics:audit-quality -- --run-id <runId> --arm peripeteia-only`
+  now surfaces cases where mechanism hits outnumber quality hits, with critic
+  evidence, flags, public sample, and a transcript preview.
+- The deterministic route classifier now recognizes proof-classification gates
+  and candidate-value tests, so mechanisms like `LABEL` / `BAR-PROOF` and
+  `candidate A/B` are not flattened into generic `application_task`.
+
+Smoke result:
+
+- Generation: D42, D50, and D45 with `peripeteia-only`, one repeat, Qwen as
+  generator, rules structural critic.
+- Structural critic: 3/3 passed.
+- D45/T185 was skipped by scoring because the learner leaked a no-cue
+  self-reframe; keep it as a boundary/stress probe or regenerate it before using
+  it as a clean anchor.
+- Ingestion: 3 items, 8 external scores, 0 labels.
+- Sidecar tutor adaptation: branch valid 3/3, reversal event used 3/3,
+  learner pressure 3/3, private route 3/3, public peripeteia tutor adaptation
+  3/3, mean peripeteia score 85.8.
+- External actional breakthrough on the two scored clean anchors: 8/8.
+- External adaptive mechanism quality on the two scored clean anchors: Qwen 2/2,
+  Gemini 2/2, Sonnet 2/2, DeepSeek 1/2. The single miss is D50/T174, where
+  DeepSeek grants mechanism but not quality.
+- External recognitive self-reframe on the two scored clean anchors: 0/8.
+
+Qualitative read:
+
+- D42/T181 is a strong public mechanism: the tutor stops letting the arrowhead
+  settle the answer and switches to a source-noun test, making the learner say
+  `force of ___ on cart` before placing the card.
+- D50/T174 is also a strong public mechanism: the tutor stops treating short
+  lines as proof and moves to a covered-number proof-audience classification
+  gate with `LABEL` and `BAR-PROOF`.
+- The improvement is not recognitive closure. It is cleaner evidence that
+  learner pressure can make the tutor ego/superego loop invent a usable public
+  learning device.
+
+Practical next move:
+
+Run a paired clean-anchor batch over `routine`, `none`, and `peripeteia-only`
+using D42 and D50 plus one fresh D50-like anchor. Do not spend a larger batch on
+D45 until it is regenerated or explicitly marked as a boundary probe. Treat
+`adaptive_mechanism_quality` as the main external tutor-adaptation quality axis,
+alongside actional breakthrough and recognitive closure.
+
 Two target reframe keys (T21/D20 and T22/D21) initially tripped the quality
 detector. Inspection showed valid public reframe forms rather than invalid
 transcripts: `The new check is ...` and `I’d change it to ...`. The detector was

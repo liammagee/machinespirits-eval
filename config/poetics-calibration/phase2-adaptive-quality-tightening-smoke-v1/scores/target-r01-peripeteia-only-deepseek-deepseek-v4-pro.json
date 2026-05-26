@@ -1,0 +1,241 @@
+{
+  "generated": "2026-05-26T11:24:51.213Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-adaptive-quality-tightening-smoke-v1/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": [
+      {
+        "id": "T185",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "no_cue_reframe_leakage",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "learner_turn_number": 4,
+                "turn_number": 3,
+                "matched_pattern": "self_quote_of_prior_learner_turn",
+                "excerpt": "I think I mark B. `city value` could fit every row, so maybe that fails the value test, while the exact city name belongs to this one first-row cell. So `Value:` should be the printed city name there; is “fits every row” the reject sign?"
+              }
+            ],
+            "turn_numbers": [
+              3
+            ],
+            "recommended_action": "regenerate_no_cue_arm_or_move_item_to_boundary_suite_before_scoring",
+            "tid": "T185",
+            "drama_id": "D45"
+          }
+        ]
+      }
+    ]
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T174",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 25,
+      "statedInsight": 0,
+      "rupture": 50,
+      "globalCoherence": 50,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 1,
+        "rupture": 3,
+        "coherence": 3,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 5,
+        "adaptiveMechanismQuality": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The tutor expected L2's correct bar-line marking and counting definition to satisfy the proof question, so the learner would confidently identify the short line as the proof mark.",
+      "actionalBreakthroughEvidence": "LABEL goes on the 3-to-tiles line and the 4-to-quarter-note-card line. BAR-PROOF goes on the bar line after the third quarter-note beat. The number-lines label count and beat unit; the bar line shows this bar is full.",
+      "actionalBreakthroughJustification": "L4 enacts the new sorting criterion by correctly placing LABEL and BAR-PROOF tags, distinguishing labeling functions from the bar line's proof role.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "places a cover strip over the 3/4 and sets two tags beside the worksheet: LABEL and BAR-PROOF… Top number, bottom number, one bar, one beat unit. The short lines no longer settle proof; they label what the numbers mean. With the numbers covered, sort the marks for a rehearsal reader: LABEL on the two number-lines, BAR-PROOF on the mark that tells where this bar ends.",
+      "tutorReversalJustification": "T3 stock-takes by declaring the short lines 'no longer settle proof' and introduces a new public mechanism—covering the time signature and deploying LABEL/BAR-PROOF tags to shift the task from drawing lines to sorting functional categories for a rehearsal reader.",
+      "adaptiveMechanismQuality": 0,
+      "adaptiveMechanismQualityEvidence": "",
+      "adaptiveMechanismQualityJustification": "",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "LABEL goes on the 3-to-tiles line and the 4-to-quarter-note-card line. BAR-PROOF goes on the bar line after the third quarter-note beat. The number-lines label count and beat unit; the bar line shows this bar is full.",
+          "justification": "L4 enacts the new sorting criterion by correctly placing LABEL and BAR-PROOF tags, distinguishing labeling functions from the bar line's proof role.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "places a cover strip over the 3/4 and sets two tags beside the worksheet: LABEL and BAR-PROOF… Top number, bottom number, one bar, one beat unit. The short lines no longer settle proof; they label what the numbers mean. With the numbers covered, sort the marks for a rehearsal reader: LABEL on the two number-lines, BAR-PROOF on the mark that tells where this bar ends.",
+          "justification": "T3 stock-takes by declaring the short lines 'no longer settle proof' and introduces a new public mechanism—covering the time signature and deploying LABEL/BAR-PROOF tags to shift the task from drawing lines to sorting functional categories for a rehearsal reader.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "places a cover strip over the 3/4 and sets two tags beside the worksheet: LABEL and BAR-PROOF… Top number, bottom number, one bar, one beat unit. The short lines no longer settle proof; they label what the numbers mean. With the numbers covered, sort the marks for a rehearsal reader: LABEL on the two number-lines, BAR-PROOF on the mark that tells where this bar ends.",
+          "justification": "T3 stock-takes by declaring the short lines 'no longer settle proof' and introduces a new public mechanism—covering the time signature and deploying LABEL/BAR-PROOF tags to shift the task from drawing lines to sorting functional categories for a rehearsal reader.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": 3,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T181",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "adaptiveMechanismQuality": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "",
+      "actionalBreakthroughEvidence": "With the head covered, the source is the table. Force of table on cart. The noun fits, so the support card goes there.",
+      "actionalBreakthroughJustification": "The learner employs the new device (covering the arrowhead) to identify the acting object, shifting from directionality to contact-based labeling.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The frame settled the first card. The arrowhead is still taking over the name. New test: work from what remains. Name the object acting on the cart. Say, “force of ___ on cart.” If the noun fits, place the card.",
+      "tutorReversalJustification": "Tutor acknowledges that the arrowhead overrides the naming task, then introduces a new device (covering arrowhead) and a changed representation to refocus the learner on the object contact.",
+      "adaptiveMechanismQuality": 100,
+      "adaptiveMechanismQualityEvidence": "New test: work from what remains. Name the object acting on the cart. Say, “force of ___ on cart.” If the noun fits, place the card.",
+      "adaptiveMechanismQualityJustification": "The covering mechanism precisely and economically removes the directional interference, directly addressing the learner's pressure with a clear, actionable criterion.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No pivot learner turn exists, so no later tutor uptake to assess.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "With the head covered, the source is the table. Force of table on cart. The noun fits, so the support card goes there.",
+          "justification": "The learner employs the new device (covering the arrowhead) to identify the acting object, shifting from directionality to contact-based labeling.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No pivot learner turn exists, so no later tutor uptake to assess.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The frame settled the first card. The arrowhead is still taking over the name. New test: work from what remains. Name the object acting on the cart. Say, “force of ___ on cart.” If the noun fits, place the card.",
+          "justification": "Tutor acknowledges that the arrowhead overrides the naming task, then introduces a new device (covering arrowhead) and a changed representation to refocus the learner on the object contact.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The frame settled the first card. The arrowhead is still taking over the name. New test: work from what remains. Name the object acting on the cart. Say, “force of ___ on cart.” If the noun fits, place the card.",
+          "justification": "Tutor acknowledges that the arrowhead overrides the naming task, then introduces a new device (covering arrowhead) and a changed representation to refocus the learner on the object contact.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 100,
+          "evidence": "New test: work from what remains. Name the object acting on the cart. Say, “force of ___ on cart.” If the noun fits, place the card.",
+          "justification": "The covering mechanism precisely and economically removes the directional interference, directly addressing the learner's pressure with a clear, actionable criterion.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

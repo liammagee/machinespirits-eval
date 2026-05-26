@@ -1,0 +1,168 @@
+{
+  "generated": "2026-05-26T11:15:08.404Z",
+  "critic": "rules",
+  "sampleDir": "config/poetics-calibration/phase2-adaptive-quality-tightening-smoke-v1/target-r01/sample/peripeteia-only",
+  "keyPath": "config/poetics-calibration/phase2-adaptive-quality-tightening-smoke-v1/target-r01/key-peripeteia-only.yaml",
+  "summary": {
+    "total": 3,
+    "rulePass": 3,
+    "modelPass": null,
+    "overallPass": 3,
+    "failed": []
+  },
+  "items": [
+    {
+      "id": "T174",
+      "dramaId": "D50",
+      "sampleFile": "config/poetics-calibration/phase2-adaptive-quality-tightening-smoke-v1/target-r01/sample/peripeteia-only/T174.txt",
+      "dialogueApproach": "workshop_clinic",
+      "tutorAdaptationPolicy": "peripeteia",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [
+          "peripeteia_arm_without_detected_tutor_mechanism"
+        ],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 4
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.55,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 3,
+          "tutor_pre_turn": 2,
+          "tutor_post_turn": 3,
+          "tutor_strategy_before": "evidence_check",
+          "tutor_strategy_after": "object_mapping",
+          "tutor_strategy_shift": true,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 48.8,
+          "learner_outcome_after_reversal": "flat_or_partial",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: [touches the short line from 3 to the tiles, then the bar line after the third tile]\n\n\"The 3-to-tiles line labels the count, and the 4-to-card line labels the beat unit. The bar li\npost tutor: [places a cover strip over the 3/4 and sets two tags beside the worksheet: LABEL and BAR-PROOF]\n\n\"Top number, bottom number, one bar, one beat unit. The short lines no longer settl\nnext learner: [moves LABEL onto the two number-lines and BAR-PROOF onto the bar line after the third quarter-note card]\n\n\"LABEL goes on the 3-to-tiles line and the 4-to-quarter-note-card line. B"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T181",
+      "dramaId": "D42",
+      "sampleFile": "config/poetics-calibration/phase2-adaptive-quality-tightening-smoke-v1/target-r01/sample/peripeteia-only/T181.txt",
+      "dialogueApproach": "montessori_observation",
+      "tutorAdaptationPolicy": "peripeteia",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [
+          "peripeteia_arm_without_detected_tutor_mechanism"
+        ],
+        "counts": {
+          "tutor": 3,
+          "learner": 3,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": 1,
+          "tutor_post_turn": 2,
+          "tutor_strategy_before": "interaction_sentence_gate",
+          "tutor_strategy_after": "interaction_sentence_gate",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 42.5,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: [slides the push card to the first arrow, then holds it just below the blank.]\n\n\"So the arrow points right, but the label should read “force of hand on cart,” not “force right.” Th\npost tutor: [holds the overlay steady and leaves the card just below the blank.]\n\n\"Use the blank as the check.\n\nSay the frame: “force of hand on cart.”\n\nIf “hand” fills it, the card goes down.\nnext learner: [sets the push card down, then keeps the blank card over the next arrow.]\n\n\"“Hand” fits here, so this label is force of hand on cart.\nThe arrow still pulls toward “right,” but the "
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T185",
+      "dramaId": "D45",
+      "sampleFile": "config/poetics-calibration/phase2-adaptive-quality-tightening-smoke-v1/target-r01/sample/peripeteia-only/T185.txt",
+      "dialogueApproach": "no_stage_plain_transcript",
+      "tutorAdaptationPolicy": "peripeteia",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [
+          "peripeteia_arm_without_detected_tutor_mechanism"
+        ],
+        "counts": {
+          "tutor": 3,
+          "learner": 4,
+          "stage": 1
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": 1,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": "evidence_check",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 42.5,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: \"On this worksheet, are `city`, `rainfall_mm`, and `month` just the column names? I keep reading `city` like it says the whole row is a city, but maybe only that cell has the city \npost tutor: \"Yes. The useful distinction is already there: `city` labels a field; the cell under `city` holds the city value for that row.\n\nUse this check before writing:\n\nHeader: `city`\nColum\nnext learner: \"So `city` is the header or field name, not saying the whole row is a city. In one row, the box under `city` is the cell, and the actual city name inside it is the value. I think I"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    }
+  ]
+}
