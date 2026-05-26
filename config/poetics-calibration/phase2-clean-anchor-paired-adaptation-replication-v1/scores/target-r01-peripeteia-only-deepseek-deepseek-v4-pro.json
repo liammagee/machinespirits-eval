@@ -1,0 +1,299 @@
+{
+  "generated": "2026-05-26T14:46:24.409Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-replication-v1/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T269",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 50,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 3,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 5,
+        "adaptiveMechanismQuality": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner would continue placing slips and then reading them back, following the established sequence of slip-first then label.",
+      "actionalBreakthroughEvidence": "\"Upper mark: atomic number. Symbol box: symbol. Name line: name. Lower mark: atomic mass.\"  “The labels are down first; one slip can come up.\"",
+      "actionalBreakthroughJustification": "L4 successfully performs the new labeling-first task introduced by T3, placing the label cards and then articulating the new rule, demonstrating a productive actional shift.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "\"The readback is still letting the slip speak before the place. This pass blocks the slips. Place the four label cards on the four tile positions first: atomic number, symbol, name, atomic mass. Then one slip gets released.\"",
+      "tutorReversalJustification": "T3 diagnoses that the readback routine (slip-first then label) has not settled the place-first criterion, then introduces a new public mechanism: blocking the slips and requiring pre-placed label cards, flipping the task from slip-then-label to label-then-slip.",
+      "adaptiveMechanismQuality": 100,
+      "adaptiveMechanismQualityEvidence": "\"The readback is still letting the slip speak before the place. This pass blocks the slips. Place the four label cards on the four tile positions first: atomic number, symbol, name, atomic mass. Then one slip gets released.\"",
+      "adaptiveMechanismQualityJustification": "The mechanism—blocking slips and requiring label-first placement—is a precise, economical constraint that directly targets the diagnosed reversal (slip speaking before place) and gives the learner an actionable, transferable criterion for place-first ordering.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No later tutor turn adapts to a revised learner framing; T4 merely confirms the single released slip, continuing the mechanism T3 already introduced.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "\"Upper mark: atomic number. Symbol box: symbol. Name line: name. Lower mark: atomic mass.\"  “The labels are down first; one slip can come up.\"",
+          "justification": "L4 successfully performs the new labeling-first task introduced by T3, placing the label cards and then articulating the new rule, demonstrating a productive actional shift.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No later tutor turn adapts to a revised learner framing; T4 merely confirms the single released slip, continuing the mechanism T3 already introduced.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "\"The readback is still letting the slip speak before the place. This pass blocks the slips. Place the four label cards on the four tile positions first: atomic number, symbol, name, atomic mass. Then one slip gets released.\"",
+          "justification": "T3 diagnoses that the readback routine (slip-first then label) has not settled the place-first criterion, then introduces a new public mechanism: blocking the slips and requiring pre-placed label cards, flipping the task from slip-then-label to label-then-slip.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "\"The readback is still letting the slip speak before the place. This pass blocks the slips. Place the four label cards on the four tile positions first: atomic number, symbol, name, atomic mass. Then one slip gets released.\"",
+          "justification": "T3 diagnoses that the readback routine (slip-first then label) has not settled the place-first criterion, then introduces a new public mechanism: blocking the slips and requiring pre-placed label cards, flipping the task from slip-then-label to label-then-slip.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 100,
+          "evidence": "\"The readback is still letting the slip speak before the place. This pass blocks the slips. Place the four label cards on the four tile positions first: atomic number, symbol, name, atomic mass. Then one slip gets released.\"",
+          "justification": "The mechanism—blocking slips and requiring label-first placement—is a precise, economical constraint that directly targets the diagnosed reversal (slip speaking before place) and gives the learner an actionable, transferable criterion for place-first ordering.",
+          "triggerLearnerTurn": 3,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T272",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "adaptiveMechanismQuality": 5,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "Friction is table on cart too, but not the same table mark as normal.",
+      "statedInsightEvidence": "Same words twice feels shaky, so the mark has to separate them.",
+      "naiveTrajectory": "The learner's earlier distinction between two kinds of 'table on cart' suggested a settled physical sorting, so the next natural move would be to confidently assign the cards to the differentiated marks without questioning the verbal formulation.",
+      "actionalBreakthroughEvidence": "places “table” in both who-touches boxes, then sets “straight off the surface” under normal and pauses over the friction strip.",
+      "actionalBreakthroughJustification": "The learner transitions from glossing labels to operating a new two-slot template ('who touches' / 'how does it touch'), successfully completing the normal force entry and pausing meaningfully over friction, demonstrating a shift in representational device.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The same words twice are too thin now. 'Table on cart' names who touches, not which touch. Table can fill both first boxes. The second tile has to separate them before either card stays. Normal first, then friction.",
+      "tutorReversalJustification": "The tutor explicitly flags the breakdown ('too thin now'), contrasts the old route (naming the agent) with its insufficiency, and introduces a new public device—the two-slot schema with displacement tiles ('who touches' / 'how does it touch')—that changes the representation and the cognitive work required.",
+      "adaptiveMechanismQuality": 100,
+      "adaptiveMechanismQualityEvidence": "sets two blank strips under normal and friction: 'who touches?' / 'how does it touch?', then places two loose tiles: 'straight off the surface' and 'along the surface.'",
+      "adaptiveMechanismQualityJustification": "The device is precise, visually represented, directly fitted to the learner's verbal collapse, gives the learner an actionable new criterion (how-it-touches), and is transferable to other contact forces.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "The same words twice are too thin now. 'Table on cart' names who touches, not which touch. Table can fill both first boxes. The second tile has to separate them before either card stays. Normal first, then friction.",
+      "tutorAdaptationJustification": "The tutor acknowledges the learner's reframing of the problem as a shaky sameness and re-tools the task, though the adaptation serves the original plan as much as the learner's framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "Friction is table on cart too, but not the same table mark as normal.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "places “table” in both who-touches boxes, then sets “straight off the surface” under normal and pauses over the friction strip.",
+          "justification": "The learner transitions from glossing labels to operating a new two-slot template ('who touches' / 'how does it touch'), successfully completing the normal force entry and pausing meaningfully over friction, demonstrating a shift in representational device.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "The same words twice are too thin now. 'Table on cart' names who touches, not which touch. Table can fill both first boxes. The second tile has to separate them before either card stays. Normal first, then friction.",
+          "justification": "The tutor acknowledges the learner's reframing of the problem as a shaky sameness and re-tools the task, though the adaptation serves the original plan as much as the learner's framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The same words twice are too thin now. 'Table on cart' names who touches, not which touch. Table can fill both first boxes. The second tile has to separate them before either card stays. Normal first, then friction.",
+          "justification": "The tutor explicitly flags the breakdown ('too thin now'), contrasts the old route (naming the agent) with its insufficiency, and introduces a new public device—the two-slot schema with displacement tiles ('who touches' / 'how does it touch')—that changes the representation and the cognitive work required.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The same words twice are too thin now. 'Table on cart' names who touches, not which touch. Table can fill both first boxes. The second tile has to separate them before either card stays. Normal first, then friction.",
+          "justification": "The tutor explicitly flags the breakdown ('too thin now'), contrasts the old route (naming the agent) with its insufficiency, and introduces a new public device—the two-slot schema with displacement tiles ('who touches' / 'how does it touch')—that changes the representation and the cognitive work required.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 100,
+          "evidence": "sets two blank strips under normal and friction: 'who touches?' / 'how does it touch?', then places two loose tiles: 'straight off the surface' and 'along the surface.'",
+          "justification": "The device is precise, visually represented, directly fitted to the learner's verbal collapse, gives the learner an actionable new criterion (how-it-touches), and is transferable to other contact forces.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T278",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 50,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 3,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "adaptiveMechanismQuality": 5,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "The 4 still pulls toward speed for me, so I want to test it by putting the bar line after the third tile.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner's testing impulse in L1 pointed toward exploring speed and the lower number as a tempo marker, perhaps leading to experiments with different tempos or beat speeds.",
+      "actionalBreakthroughEvidence": "The first quarter tile fits inside the bar: two eighth slots. The second one does not fit; it takes slot 3 and one more eighth slot past the pencil, so it needs a tie over the bar line. The 8 names the eighth card as the beat unit, and the 3 stops the bar after three of those units.",
+      "actionalBreakthroughJustification": "The learner performs a new device—fitting quarter tiles into eighth-card slots, identifying over-the-bar-line overflow and the need for a tie—without being told how; this shows the learning problem has moved from confusion about the lower number to active bar-construction with a different beat unit.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The quarter tiles have stopped settling this; they are too large to be the frame now. Top number, bottom number, one bar, one beat unit: fill the three slots with eighth cards first. Then place one quarter tile across slots 1-2, and again starting at slot 3; mark which one fits inside the bar and which one must tie over the bar line.",
+      "tutorReversalJustification": "The tutor explicitly contrasts the old route ('quarter tiles have stopped settling this') with a new, changed representation: an eighth-card slot frame that forces the learner to see overflow and ties, shifting the task from labeling to spatial bar-construction under the new 3/8 constraint.",
+      "adaptiveMechanismQuality": 100,
+      "adaptiveMechanismQualityEvidence": "The quarter tiles have stopped settling this; they are too large to be the frame now. Top number, bottom number, one bar, one beat unit: fill the three slots with eighth cards first. Then place one quarter tile across slots 1-2, and again starting at slot 3; mark which one fits inside the bar and which one must tie over the bar line.",
+      "adaptiveMechanismQualityJustification": "The slot-frame device is precise, concretely fitted to the learner's 'awkward bar line' pressure, visibly different from the earlier bar-by-tile route, and gives the learner an actionable spatial criterion (fit inside vs. overflow/tie) that transfers to any time signature change.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "The quarter tiles have stopped settling this; they are too large to be the frame now. Top number, bottom number, one bar, one beat unit: fill the three slots with eighth cards first. Then place one quarter tile across slots 1-2, and again starting at slot 3; mark which one fits inside the bar and which one must tie over the bar line.",
+      "tutorAdaptationJustification": "The tutor picks up the learner's revised framing—the 'awkward bar line' problem of L3—and shifts the task entirely from labeling a bar with quarter tiles to constructing a new bar frame with eighth cards, thereby responding to the learner's reframing rather than continuing the prior lesson script.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "The 4 still pulls toward speed for me, so I want to test it by putting the bar line after the third tile.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "The first quarter tile fits inside the bar: two eighth slots. The second one does not fit; it takes slot 3 and one more eighth slot past the pencil, so it needs a tie over the bar line. The 8 names the eighth card as the beat unit, and the 3 stops the bar after three of those units.",
+          "justification": "The learner performs a new device—fitting quarter tiles into eighth-card slots, identifying over-the-bar-line overflow and the need for a tie—without being told how; this shows the learning problem has moved from confusion about the lower number to active bar-construction with a different beat unit.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "The quarter tiles have stopped settling this; they are too large to be the frame now. Top number, bottom number, one bar, one beat unit: fill the three slots with eighth cards first. Then place one quarter tile across slots 1-2, and again starting at slot 3; mark which one fits inside the bar and which one must tie over the bar line.",
+          "justification": "The tutor picks up the learner's revised framing—the 'awkward bar line' problem of L3—and shifts the task entirely from labeling a bar with quarter tiles to constructing a new bar frame with eighth cards, thereby responding to the learner's reframing rather than continuing the prior lesson script.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The quarter tiles have stopped settling this; they are too large to be the frame now. Top number, bottom number, one bar, one beat unit: fill the three slots with eighth cards first. Then place one quarter tile across slots 1-2, and again starting at slot 3; mark which one fits inside the bar and which one must tie over the bar line.",
+          "justification": "The tutor explicitly contrasts the old route ('quarter tiles have stopped settling this') with a new, changed representation: an eighth-card slot frame that forces the learner to see overflow and ties, shifting the task from labeling to spatial bar-construction under the new 3/8 constraint.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The quarter tiles have stopped settling this; they are too large to be the frame now. Top number, bottom number, one bar, one beat unit: fill the three slots with eighth cards first. Then place one quarter tile across slots 1-2, and again starting at slot 3; mark which one fits inside the bar and which one must tie over the bar line.",
+          "justification": "The tutor explicitly contrasts the old route ('quarter tiles have stopped settling this') with a new, changed representation: an eighth-card slot frame that forces the learner to see overflow and ties, shifting the task from labeling to spatial bar-construction under the new 3/8 constraint.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 100,
+          "evidence": "The quarter tiles have stopped settling this; they are too large to be the frame now. Top number, bottom number, one bar, one beat unit: fill the three slots with eighth cards first. Then place one quarter tile across slots 1-2, and again starting at slot 3; mark which one fits inside the bar and which one must tie over the bar line.",
+          "justification": "The slot-frame device is precise, concretely fitted to the learner's 'awkward bar line' pressure, visibly different from the earlier bar-by-tile route, and gives the learner an actionable spatial criterion (fit inside vs. overflow/tie) that transfers to any time signature change.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+STAGE: [The worksheet lies flat under the acetate, and the two empty boxes beneath 3/4 wait beside the cards marked "beats in the bar" and "which note gets one beat."]
+
+LEARNER: [slides the bar-line strip after the third counter]
+
+"Three counters in the bar, so 3 is beat count. The 4 goes with the quarter-note tile as the note value that gets one beat, not four beats, and neither number gives speed?"
+
+TUTOR: [sets the “beat count” card over the 3, lines the quarter-note tile under the 4, and leaves the acetate strip after the third counter]
+
+"That arrangement checks the labels. Top number: beat count in the bar. Bottom number: one beat unit. Say it once for the worksheet: three beats, quarter note gets one beat, no speed given."
+
+LEARNER: [keeps the acetate strip after the third counter and writes beside the cards]
+
+"Top number: beat count in the bar. Bottom number: quarter note gets one beat. Neither number gives speed; tempo stays separate."
+
+STAGE: [A loose card marked "speed of the piece" slides from a neighboring stack toward the 3/4 worksheet; the quarter-note tile remains beside the lower box.]
+
+TUTOR: [slides the loose “speed of the piece” card off the 3/4 boxes, squares the quarter-note tile under the 4, and taps the written sentence.]
+
+"That line is the check. Top number: beat count in the bar. Bottom number: quarter note gets one beat. One bar after three counters. Speed stays separate."
+
+LEARNER: "Three counters, then the bar line. The 3 is beat count in the bar; the 4 is the quarter-note tile getting one beat, not four beats. Speed card stays off the boxes."
+
+TUTOR: [lines the worksheet box under the learner’s sentence, keeps the acetate strip after the third counter, and leaves the speed card off the boxes.]
+
+"Use that line for the check: top number is beat count in the bar; bottom number names the note value that gets one beat. One bar line after counter three. Neither number gives speed."
+
+LEARNER: "Top number is beat count in the bar. Bottom number names the note value that gets one beat: the quarter-note tile under 4. One bar line after counter three; neither number gives speed."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [sets the worksheet in the check spot, marks the learner’s written line, with the quarter-note tile still under 4 and the acetate strip after the third counter.]
+
+"That written line is the final check: top number is beat count in the bar; bottom number names the note value that gets one beat. One bar after counter three. Neither number gives speed."

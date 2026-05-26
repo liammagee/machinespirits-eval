@@ -1,0 +1,38 @@
+STAGE: [Four blank label slips sit above the carbon tile: 6 at the top, C in the middle, carbon under it, 12.01 at the bottom.]
+
+LEARNER: [sets the C slip in the center and leaves the 6 and 12.01 slips loose]
+
+"C is the symbol, carbon is the name. Top 6 gets atomic number, and bottom 12.01 gets atomic mass, I think."
+
+TUTOR: [sets the carbon slip onto the name line, leaving the 6 and 12.01 slips loose beside the tile]
+
+"C is already in the symbol spot. Use the two open marks as the check: number above, mass below. Place those, then read the tile back in four parts."
+
+LEARNER: [sets the 6 slip on the upper mark and the 12.01 slip on the lower mark]
+
+"Top number: 6, atomic number. Symbol: C. Name: carbon. Bottom decimal: 12.01, atomic mass."
+
+TUTOR: [slides the clear sheet over the completed tile and taps the upper mark, the symbol box, the name line, and the lower mark in order]
+
+"Keep the slips still. Mark first, then label. Read the four spots once from the tile."
+
+STAGE: [The clear sheet is slid down so only one tile zone is visible at a time: first 6, then C, then carbon, then 12.01.]
+
+LEARNER: "Upper mark: 6, atomic number. Symbol box: C, symbol. Name line: carbon, name. Lower mark: 12.01, atomic mass."
+
+TUTOR: [slides a blank card over the printed labels, leaving 6, C, carbon, and 12.01 visible]
+
+"Labels are covered. Use the positions to supply them: upper mark, 6; symbol box, C; name line, carbon; lower mark, 12.01. Say each hidden label, then lift the card and check."
+
+LEARNER: [keeps the card down and taps each visible spot in order]
+
+"Upper mark, 6: atomic number.
+Symbol box, C: symbol.
+Name line, carbon: name.
+Lower mark, 12.01: atomic mass."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [lifts the card, checks the printed labels, then slides the loose slips into a small tray]
+
+"Each covered label matched its spot: 6, atomic number; C, symbol; carbon, name; 12.01, atomic mass. Carbon tile is checked."

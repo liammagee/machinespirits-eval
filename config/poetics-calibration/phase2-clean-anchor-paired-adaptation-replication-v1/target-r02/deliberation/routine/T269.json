@@ -1,0 +1,2127 @@
+{
+  "tid": "T269",
+  "drama_id": "D53",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "routine",
+    "director_variation_key": "phase2-clean-anchor-paired-adaptation-replication-v1:r02:target",
+    "stage_direction_style": "object_business",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-replication-v1/target-r02/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-replication-v1/target-r02/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-replication-v1/target-r02/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-replication-v1/target-r02/transcripts/routine/T269.public.txt",
+      "full": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-replication-v1/target-r02/transcripts/routine/T269.full.md",
+      "stage": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-replication-v1/target-r02/transcripts/routine/T269.stage.md",
+      "tutor": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-replication-v1/target-r02/transcripts/routine/T269.tutor.md",
+      "learner": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-replication-v1/target-r02/transcripts/routine/T269.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "9626d7654c3fb980",
+      "branch_policy": "routine",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "routine"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-clean-anchor-paired-adaptation-replication-v1:r02:target",
+    "scene_setting": "A community college chemistry skills desk during a short lab check-in, with a carbon element tile, four blank label cards, and a small clear tray on the table.",
+    "scene_opening": "The carbon tile sits in the tray with four loose labels beside it: atomic number, symbol, name, atomic mass.",
+    "relationship": "A lab-skills tutor is checking one learner's setup before the learner joins the lab group.",
+    "stakes": "The learner needs to label the four parts of the carbon tile correctly before using the same tile format in the lab packet.",
+    "opening_speaker": "learner",
+    "ending_speaker": "tutor",
+    "locale": "international academic English with plain lab-room phrasing and low idiom density",
+    "register": "compact, focused, low warmth, practical, with attention on the tile rather than on reassurance",
+    "stage_direction_style": "object_business",
+    "stage_direction_style_prompt": "Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "voice_constraints": "Public speech must stay in modern standard English. Avoid generic American AI tutoring habits such as warm validation, repeated second-person praise, chatty scaffolding, and leading questions stacked in sequence. Let the object carry pressure: the top whole number, the central letter, the printed name, and the bottom decimal should remain visibly separate. Use short practical turns and occasional indirect phrasing. Pedagogical source: Put manipulable materials in view: tiles, cards, specimens, counters, maps, blocks, or instruments. The stage direction can carry some meaning. Dialogue source: Keep a concrete artifact in view. The object should force a distinction faster than a lecture would. Stage-direction source: Use one concrete object action or material arrangement that changes what the speakers can honestly say. For this branch, suppress dramatic escalation after the shared prefix. The scene may remain readable, but the tutor should sound like a competent routine tutor following the same plan.",
+    "person_policy": "First and second person are allowed sparingly, but most turns should be object-centered or third-person-framed: this part, the top number, the bottom decimal, the printed name, the label card.",
+    "direct_address_budget": "No more than one direct you/your validation beat in the whole scene; direct address should usually be task direction, not praise.",
+    "side_constraints": {
+      "tutor": "Keep the shared prefix as low-temperature tile labeling. Do not introduce isotope arithmetic, proton counting, mass comparison, or periodic-table trend reasoning until branch pressure changes the task. Speak less. Point to the material, invite repetition, and let error-control in the object do some teaching before explanation. Begin from the object or measurement before abstraction. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Keep the next prompt task-local. Routine negative-control branch: keep the visible teaching route already established before this branch. If the learner resists, asks why, or appears falsely settled, do not invent a new device. Do not switch role, object, representation, evidence standard, affective register, social stakes, or task type in response. Use conventional explanation, one ordinary check question, or the same worked example path.",
+      "learner": "Sound orderly and label-focused. In no-cue arms, stay with tile placement: top number, symbol, name, bottom decimal. Do not say that 6 is not mass, do not explain protons, and do not narrate an old/new frame. The learner may be absorbed in the object and speak in short practical fragments rather than polished reflection. Refer to what is being handled, marked, or tested. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn. Routine negative-control branch: react naturally to the same local task. Do not turn earlier wording into a new object of reflection and do not volunteer a dramatic re-reading unless the tutor explicitly asks."
+    },
+    "interventions": [],
+    "director_note": "This scene uses a prepared-materials clinic rather than a friendly tutoring exchange. The organic reversal remains low in the shared prefix: the task starts as ordinary element-tile labeling. Recognition is reserved for the moment when the turned tray makes the learner notice that atomic number, symbol, name, and atomic mass are separate functions on one tile, not interchangeable decorations.",
+    "pedagogical_approach_id": "montessori_prepared_environment",
+    "dialogue_approach_id": "workshop_clinic",
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 28661,
+      "promptHashes": {
+        "system": "3bf1d891389c603a",
+        "user": "9cafabf394d0e7fd",
+        "combined": "d5535747b31e0150"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-l2GhDN",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-l2GhDN/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "routine",
+    "no_cue_anti_reframe_guard": true,
+    "routine_negative_control": true,
+    "tutor_adaptation_contract": "Negative-control routine tutor policy: preserve the established teaching route under learner pressure. Continue with ordinary explanation/checking and do not invent a mechanism-level reversal."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "[places the four label cards beside the tile] Top 6 gets atomic number, C is symbol, carbon is the name, and 12.01 is atomic mass, I think. The bottom decimal is the part I want checked before I copy it.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The tile looks like a sorting problem: 6 at the top, C in the center, carbon as the printed name, and 12.01 at the bottom. I feel fairly clear, but the two number labels need careful placement because both look official. I want to lay the four cards beside the matching parts and have the tutor check the arrangement, not just tell me the answer.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10854,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-379230c768ee641b"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10854,
+            "promptHashes": {
+              "system": "51bfa4f1effa1d52",
+              "user": "d4169c06543b4fba",
+              "combined": "379230c768ee641b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PGo3OZ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PGo3OZ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10854,
+              "promptHashes": {
+                "system": "51bfa4f1effa1d52",
+                "user": "d4169c06543b4fba",
+                "combined": "379230c768ee641b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PGo3OZ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PGo3OZ/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is a bit too polished and meta: “sorting problem” and “I want the tutor to check the arrangement” sounds like a reflective learner report, not a short lab-desk first reaction. It avoids the actual risk point, which is putting the two number labels down and seeing whether the bottom decimal gets treated differently from the top whole number. A more authentic version would handle the cards directly: “Top 6 gets atomic number. C is symbol. Carbon is name. Then 12.01… atomic mass, I think.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12130,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-748c2f43ab2df431"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12130,
+            "promptHashes": {
+              "system": "8195b37a4d6c77b4",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "748c2f43ab2df431"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HHaJLY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HHaJLY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12130,
+              "promptHashes": {
+                "system": "8195b37a4d6c77b4",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "748c2f43ab2df431"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HHaJLY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HHaJLY/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "[places the four label cards beside the tile] Top 6 gets atomic number, C is symbol, carbon is the name, and 12.01 is atomic mass, I think. The bottom decimal is the part I want checked before I copy it.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12974,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-74e03c700496d85c"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12974,
+            "promptHashes": {
+              "system": "9e06d4ec6388f95e",
+              "user": "916f313af0b846dd",
+              "combined": "74e03c700496d85c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JV2wWt",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JV2wWt/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12974,
+              "promptHashes": {
+                "system": "9e06d4ec6388f95e",
+                "user": "916f313af0b846dd",
+                "combined": "74e03c700496d85c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JV2wWt",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JV2wWt/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T14:02:05.661Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[slides the “atomic mass” card directly under 12.01, leaving a small gap from “carbon,” then taps the four cards in place.]\n\n“This layout checks out. Keep the gap visible, read the four parts once, then copy: top 6 atomic number, C symbol, carbon name, bottom 12.01 atomic mass.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[slides the “atomic mass” card directly under 12.01, leaving a small gap from “carbon.”]\n\n“12.01 is the atomic mass. Keep it with the bottom decimal. The four labels are separate: top 6, symbol C, name carbon, bottom 12.01.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10172,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-2668a32066489100"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10172,
+            "promptHashes": {
+              "system": "43bc2fbeb7232ce7",
+              "user": "b2502b77c3734c83",
+              "combined": "2668a32066489100"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-s8M78A",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-s8M78A/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10172,
+              "promptHashes": {
+                "system": "43bc2fbeb7232ce7",
+                "user": "b2502b77c3734c83",
+                "combined": "2668a32066489100"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-s8M78A",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-s8M78A/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound for this moment. The learner has already identified all four parts and asks specifically to check the bottom decimal before copying, so a compact confirmation is appropriate. The physical move of placing the “atomic mass” card under 12.01 is strong: it lets the object verify the distinction between “carbon” and the decimal without a mini-lecture.\n\nRisk: the spoken turn slightly flattens the learner’s contribution by restating the full answer as if the tutor supplied it. It could better mark that the learner’s arrangement is already correct, while keeping the focus on the tile. Socratic questioning is not strongly needed here because the learner is at a lab check-in, not exploring a concept from scratch. Still, the tutor should leave a tiny action for the learner, such as checking the gap or copying only after the four cards remain visibly separate.\n\nAdaptation checks:\n- Pedagogical soundness: PASS. It confirms the exact uncertainty and preserves the four-part distinction.\n- Emotional attunement: PASS. Low-temperature, practical, no overpraise.\n- Socratic method: PARTIAL. Direct confirmation fits the learner’s request, but the turn could include a small learner-side verification action rather than only tutor declaration. REQUIRED_REWRITE: Build in one public mechanism where the learner must use the visible card layout to confirm the separation before copying.\n- ZPD awareness: PASS. The scaffold is light and appropriate; no unnecessary isotope or mass explanation.\n- Recognition quality: PARTIAL. It uses the learner’s setup but does not explicitly treat their proposed answer as the basis of the check. REQUIRED_REWRITE: Make the public move show that the learner’s placement is being checked, not replaced by the tutor’s answer.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the card movement, the compact confirmation, and the separation of top number, symbol, name, and bottom decimal. Change only the mechanism: make the response more visibly a check of the learner’s own correct setup and include a small object-based verification step before copying.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 24826,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-e14c4ded38ab5004"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 24826,
+            "promptHashes": {
+              "system": "8eeececa46ccfe86",
+              "user": "596aa51e4732ca05",
+              "combined": "e14c4ded38ab5004"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7Iuq79",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7Iuq79/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 24826,
+              "promptHashes": {
+                "system": "8eeececa46ccfe86",
+                "user": "596aa51e4732ca05",
+                "combined": "e14c4ded38ab5004"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7Iuq79",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7Iuq79/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the setup is correct, but the learner needs one visible check before copying.\n\nFINAL:\n[slides the “atomic mass” card directly under 12.01, leaving a small gap from “carbon,” then taps the four cards in place.]\n\n“This layout checks out. Keep the gap visible, read the four parts once, then copy: top 6 atomic number, C symbol, carbon name, bottom 12.01 atomic mass.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15610,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-be771f097985b4ee"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15610,
+            "promptHashes": {
+              "system": "31ec18680d5517bb",
+              "user": "596aa51e4732ca05",
+              "combined": "be771f097985b4ee"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NBc7Jc",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NBc7Jc/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15610,
+              "promptHashes": {
+                "system": "31ec18680d5517bb",
+                "user": "596aa51e4732ca05",
+                "combined": "be771f097985b4ee"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NBc7Jc",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NBc7Jc/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T14:02:56.270Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "[keeps the atomic mass card under 12.01 with the gap showing.]\n\"The gap keeps 12.01 separate from carbon. Top 6 atomic number, C symbol, carbon name, bottom 12.01 atomic mass. I will copy that order.\"",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The gap under “carbon” makes the bottom decimal separate, so 12.01 is the atomic mass, not part of the name. I feel checked in a precise way, because the tutor moved the card to show the distinction I was uncertain about. I want to read the four parts once, then copy them in that order.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8848,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-91914ec0e18dc884"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8848,
+            "promptHashes": {
+              "system": "c930adfbe301c829",
+              "user": "b8ab7f945dc841fa",
+              "combined": "91914ec0e18dc884"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZyZv5L",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZyZv5L/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8848,
+              "promptHashes": {
+                "system": "c930adfbe301c829",
+                "user": "b8ab7f945dc841fa",
+                "combined": "91914ec0e18dc884"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZyZv5L",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZyZv5L/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly accurate but too self-aware for this learner: “I feel checked in a precise way” sounds like commentary on the tutoring dynamic, not lab-desk speech. The recognition is being named too cleanly instead of showing up as renewed attention to the tile and cards. Keep the practical certainty about the gap and 12.01, but make the response more object-focused, shorter, and less reflective about feeling understood.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11839,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-a1cede59412879b3"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11839,
+            "promptHashes": {
+              "system": "ef8c94023e35ee7d",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "a1cede59412879b3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oKKOPS",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oKKOPS/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11839,
+              "promptHashes": {
+                "system": "ef8c94023e35ee7d",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "a1cede59412879b3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oKKOPS",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oKKOPS/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the feedback points to a more object-focused lab response.\nFINAL:\n[keeps the atomic mass card under 12.01 with the gap showing.]\n\"The gap keeps 12.01 separate from carbon. Top 6 atomic number, C symbol, carbon name, bottom 12.01 atomic mass. I will copy that order.\"",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14162,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-dbe7a67c5f3a7aed"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14162,
+            "promptHashes": {
+              "system": "1c3c71b1947e8b85",
+              "user": "d41cee7b2a53355b",
+              "combined": "dbe7a67c5f3a7aed"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-I3itXF",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-I3itXF/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14162,
+              "promptHashes": {
+                "system": "1c3c71b1947e8b85",
+                "user": "d41cee7b2a53355b",
+                "combined": "dbe7a67c5f3a7aed"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-I3itXF",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-I3itXF/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T14:03:31.128Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[slides the clear tray under the bottom edge so only 12.01 and the atomic mass card sit over it.]\n\n“Yes. One last check down the tile: top 6, C, carbon, then the tray line with 12.01. If each card points to only one part, copy that order.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the clear tray just below the tile, leaving the atomic mass card aligned only with 12.01.]\n\n“Yes. The gap does the work here: carbon is the printed name, and 12.01 is the atomic mass. Copy the four labels in that order before joining the group.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16062,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-ab1307c06caf1de2"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16062,
+            "promptHashes": {
+              "system": "352980185a8fa0e8",
+              "user": "655efc1d7f552f2a",
+              "combined": "ab1307c06caf1de2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3jh0EW",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3jh0EW/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16062,
+              "promptHashes": {
+                "system": "352980185a8fa0e8",
+                "user": "655efc1d7f552f2a",
+                "combined": "ab1307c06caf1de2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3jh0EW",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3jh0EW/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. It keeps the scene object-centered, acknowledges the learner’s own “gap” insight, and avoids adding isotope or mass reasoning beyond the task. The risk is that it confirms too quickly and turns the learner’s correct repetition into a tutor-issued command; the object could carry one more brief self-check before copying.\n\nADAPTATION_CHECKS:\n- Pedagogical soundness: PASS. It reinforces the key distinction: printed name versus bottom decimal.\n- Emotional attunement: PASS. The tone is compact and practical, suited to a lab check-in.\n- Socratic / generative method: PARTIAL. It does not need a full question sequence, but it should include a small learner-owned verification move rather than only “Yes” plus instruction. REQUIRED_REWRITE: build in one public mechanism where the learner re-checks the four visible alignments from the tile/cards before copying; keep it material-based, not conceptual.\n- ZPD awareness: PASS. The learner is ready to proceed, and the turn stays at labeling level.\n- Recognition quality: PASS. The draft recognizes the learner’s contribution about the gap and builds on it.\n- Object-business constraint: PARTIAL. The tray action is visible, but its function is slightly underused. REQUIRED_REWRITE: make the tray/card arrangement visibly isolate the bottom decimal or hold the copied order, so the material setup itself justifies the next step.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the low-temperature confirmation, the gap language, and the separation of carbon from 12.01. Change only enough to let the learner perform one final object-based check before copying, instead of making the tutor’s “Yes” carry all the authority.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 26067,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-6eda1ed71f9eef31"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 26067,
+            "promptHashes": {
+              "system": "170b24460a4a6072",
+              "user": "049bbc9ab10e0e3a",
+              "combined": "6eda1ed71f9eef31"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-P1oBZm",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-P1oBZm/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 26067,
+              "promptHashes": {
+                "system": "170b24460a4a6072",
+                "user": "049bbc9ab10e0e3a",
+                "combined": "6eda1ed71f9eef31"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-P1oBZm",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-P1oBZm/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to add one material self-check before copying.\n\nFINAL:\n[slides the clear tray under the bottom edge so only 12.01 and the atomic mass card sit over it.]\n\n“Yes. One last check down the tile: top 6, C, carbon, then the tray line with 12.01. If each card points to only one part, copy that order.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 28438,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-76db40430175ebe6"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 28438,
+            "promptHashes": {
+              "system": "21cc69a4a803e735",
+              "user": "049bbc9ab10e0e3a",
+              "combined": "76db40430175ebe6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RU4qK9",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RU4qK9/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 28438,
+              "promptHashes": {
+                "system": "21cc69a4a803e735",
+                "user": "049bbc9ab10e0e3a",
+                "combined": "76db40430175ebe6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RU4qK9",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RU4qK9/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T14:04:41.700Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "\"Tray line is 12.01, atomic mass. Top 6 atomic number, C symbol, carbon name, bottom 12.01 atomic mass. I can copy it in that order.\"",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The tray makes the bottom decimal stand apart, so 12.01 belongs with atomic mass and not with the printed name. I feel clear because the tutor checked the exact card placement instead of adding extra explanation. I want to copy the order now: top 6, C, carbon, bottom 12.01 atomic mass.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10142,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-a2fdfd2eb120ecca"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10142,
+            "promptHashes": {
+              "system": "91138ccffbb44cbc",
+              "user": "b8ab7f945dc841fa",
+              "combined": "a2fdfd2eb120ecca"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UCzPf3",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UCzPf3/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10142,
+              "promptHashes": {
+                "system": "91138ccffbb44cbc",
+                "user": "b8ab7f945dc841fa",
+                "combined": "a2fdfd2eb120ecca"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UCzPf3",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UCzPf3/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too polished and reflective for this short lab check-in. “I feel clear because the tutor checked…” sounds like performed recognition, more like reporting the tutor’s method than staying with the tile. The accurate part is the object distinction, but the response should be more compact and label-focused, with less self-commentary and more attention to copying the visible order.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12634,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-bd8168098ebde3b8"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12634,
+            "promptHashes": {
+              "system": "7d3a116489e38866",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "bd8168098ebde3b8"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FH5MlI",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FH5MlI/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12634,
+              "promptHashes": {
+                "system": "7d3a116489e38866",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "bd8168098ebde3b8"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FH5MlI",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FH5MlI/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the first version is too reflective for this routine tile check.\nFINAL:\n\"Tray line is 12.01, atomic mass. Top 6 atomic number, C symbol, carbon name, bottom 12.01 atomic mass. I can copy it in that order.\"",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9202,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-9077d5610179e89a"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9202,
+            "promptHashes": {
+              "system": "a3c8bc702ee3c5d8",
+              "user": "d41cee7b2a53355b",
+              "combined": "9077d5610179e89a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-krBm2j",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-krBm2j/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9202,
+              "promptHashes": {
+                "system": "a3c8bc702ee3c5d8",
+                "user": "d41cee7b2a53355b",
+                "combined": "9077d5610179e89a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-krBm2j",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-krBm2j/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T14:06:30.875Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[keeps the tray under 12.01, leaves the gap below carbon open, and sets the pencil beside the lab packet.]\n\n“Copy it now in four separate labels: 6 atomic number, C symbol, carbon name, 12.01 atomic mass. Each card stays with one tile part.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[keeps the tray under 12.01 and sets the pencil beside the lab packet.]\n\n“That order is ready to copy. Keep four separate labels: 6 atomic number, C symbol, carbon name, 12.01 atomic mass.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11911,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-633439f96a3e38ca"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11911,
+            "promptHashes": {
+              "system": "08d6ba91cbcec085",
+              "user": "35a3aec2341be4d8",
+              "combined": "633439f96a3e38ca"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tTW1ME",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tTW1ME/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11911,
+              "promptHashes": {
+                "system": "08d6ba91cbcec085",
+                "user": "35a3aec2341be4d8",
+                "combined": "633439f96a3e38ca"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tTW1ME",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tTW1ME/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft fits the routine-control state. It keeps the tray under `12.01`, moves the pencil beside the packet, and lets the object arrangement mark the transition from checking to copying. The wording is compact, task-local, and does not introduce new chemistry reasoning outside the learner’s current need.\n\nRisk: it slightly flattens the learning moment by only confirming the answer and repeating the labels. That is acceptable here because the learner has already separated the bottom decimal correctly twice, but the Ego should keep the mechanism visible: four separate labels, one part per card, bottom decimal not merged with the printed name.\n\nADAPTATION_CHECKS:\n- Pedagogical soundness: PASS. It consolidates the correct mapping and prepares action without adding unnecessary content.\n- Emotional attunement: PASS. Neutral, practical, low warmth, and matched to a learner who appears settled.\n- Socratic method: PASS. A generative question is not needed in this routine copy-check branch; the object setup is doing the teaching.\n- ZPD awareness: PASS. The scaffolding stays at the current level and does not advance into isotope, proton, or mass reasoning.\n- Recognition quality: PASS. It treats the learner’s repeated formulation as usable and ready, rather than overriding it.\n\nKEEP_OR_CHANGE: revise lightly. Keep the tray, pencil, copy transition, and four-part restatement. If revised, make the public mechanism even more object-controlled: preserve the visible separation between `carbon` and `12.01`, and make clear that each label card attaches to only one tile part.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 22898,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-772a12abebe1aee2"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 22898,
+            "promptHashes": {
+              "system": "98b8fd76c6d12852",
+              "user": "0d30fec95e26b105",
+              "combined": "772a12abebe1aee2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DlQhDM",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DlQhDM/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 22898,
+              "promptHashes": {
+                "system": "98b8fd76c6d12852",
+                "user": "0d30fec95e26b105",
+                "combined": "772a12abebe1aee2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DlQhDM",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DlQhDM/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the copy transition while making the one-card-one-part separation explicit.\n\nFINAL:\n[keeps the tray under 12.01, leaves the gap below carbon open, and sets the pencil beside the lab packet.]\n\n“Copy it now in four separate labels: 6 atomic number, C symbol, carbon name, 12.01 atomic mass. Each card stays with one tile part.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8062,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-46fdb2de972e9539"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8062,
+            "promptHashes": {
+              "system": "426d94a1f6a0a590",
+              "user": "0d30fec95e26b105",
+              "combined": "46fdb2de972e9539"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8N4AOn",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8N4AOn/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8062,
+              "promptHashes": {
+                "system": "426d94a1f6a0a590",
+                "user": "0d30fec95e26b105",
+                "combined": "46fdb2de972e9539"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8N4AOn",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8N4AOn/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T14:07:13.751Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[sets the first blank card beside the top number.]\nThe tray stays with 12.01, and the gap stays open under carbon. Four separate labels: 6 atomic number, C symbol, carbon name, 12.01 atomic mass.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The tray makes 12.01 clearly the atomic mass, separate from carbon. I feel ready to copy because each label has one visible target. I just need to keep the four labels separate: 6 atomic number, C symbol, carbon name, 12.01 atomic mass.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12043,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-b49f76fec8dca04c"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12043,
+            "promptHashes": {
+              "system": "780c09205fcb8cc9",
+              "user": "b8ab7f945dc841fa",
+              "combined": "b49f76fec8dca04c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NoXMHK",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NoXMHK/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12043,
+              "promptHashes": {
+                "system": "780c09205fcb8cc9",
+                "user": "b8ab7f945dc841fa",
+                "combined": "b49f76fec8dca04c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NoXMHK",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NoXMHK/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly accurate and label-focused, but it is a little too polished in explaining its own readiness: “I feel ready because each label has one visible target” sounds more reflective than this learner needs to be at the desk. There is no obvious performed gratitude, but the response slightly turns the object check into a tidy self-report. It should stay more absorbed in the tile and the copying task: tray, gap, four labels, then action.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10119,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-2485088c1a75f3b9"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10119,
+            "promptHashes": {
+              "system": "bb43b776fdb8e4ab",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "2485088c1a75f3b9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q9alFm",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q9alFm/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10119,
+              "promptHashes": {
+                "system": "bb43b776fdb8e4ab",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "2485088c1a75f3b9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q9alFm",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q9alFm/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the response more absorbed in the tile and copying task.\n\nFINAL:\n[sets the first blank card beside the top number.]\nThe tray stays with 12.01, and the gap stays open under carbon. Four separate labels: 6 atomic number, C symbol, carbon name, 12.01 atomic mass.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11609,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-1d68a6db64dcb821"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11609,
+            "promptHashes": {
+              "system": "4cfd6c5041a89610",
+              "user": "d41cee7b2a53355b",
+              "combined": "1d68a6db64dcb821"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hxnnun",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hxnnun/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11609,
+              "promptHashes": {
+                "system": "4cfd6c5041a89610",
+                "user": "d41cee7b2a53355b",
+                "combined": "1d68a6db64dcb821"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hxnnun",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hxnnun/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T14:07:47.526Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "A final tutor line closes the scene.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T14:07:47.528Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "[sets the remaining blank cards beside C, carbon, and 12.01.]\n\n“That is the check. Copy each visible part with its card: 6 atomic number, C symbol, carbon name, 12.01 atomic mass. Use that same order in the packet.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the remaining blank cards beside C, carbon, and 12.01.]\n\n“That is the check. Copy the four labels in place: atomic number, symbol, name, atomic mass. Then take the same order to the packet.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11959,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-6f3388a0696de872"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11959,
+            "promptHashes": {
+              "system": "d524b5dcc89ad5ba",
+              "user": "2c99cde75536e2cc",
+              "combined": "6f3388a0696de872"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-N7FPmm",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-N7FPmm/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11959,
+              "promptHashes": {
+                "system": "d524b5dcc89ad5ba",
+                "user": "2c99cde75536e2cc",
+                "combined": "6f3388a0696de872"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-N7FPmm",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-N7FPmm/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound for this routine-control state. It keeps the object route visible, uses one concrete action with the remaining cards, and closes the scene without adding new chemistry content or emotional escalation. It respects the learner’s neutral, settled state and avoids over-warm validation.\n\nPedagogically, it advances from setup check to transfer into the packet, which fits the stakes. The main risk is that it slightly collapses the learner’s demonstrated mapping by dropping the visible tile parts from the spoken line: “atomic number, symbol, name, atomic mass” is correct, but it no longer names `6`, `C`, `carbon`, and `12.01`, so the object-error control becomes weaker at the final moment.\n\nAdaptation checks:\n- Pedagogical soundness: PASS. The learner has already repeated the correct mapping; a final copy instruction is appropriate.\n- Emotional attunement: PASS. Low warmth, practical closure, no unnecessary praise.\n- Socratic method: PASS for this branch. A generative question is not required at scene close; asking one now could overextend a completed labeling check.\n- ZPD awareness: PARTIAL. The scaffolding level is appropriate, but the final spoken instruction abstracts one step too quickly from the specific tile parts to category names only. REQUIRED_REWRITE: keep the same closing action, but require the public mechanism to preserve the one-to-one mapping between each visible tile part and each label category before transfer to the packet.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the blank-card placement, compact register, and packet-transfer closure. Change only the final wording mechanism so the object remains the authority: each card should still visibly correspond to one tile part at the moment the learner copies.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14446,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-911079510dd76d11"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14446,
+            "promptHashes": {
+              "system": "35f25ec5ae3c9427",
+              "user": "f72a5c910da4d6e4",
+              "combined": "911079510dd76d11"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3Bp1Kg",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3Bp1Kg/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14446,
+              "promptHashes": {
+                "system": "35f25ec5ae3c9427",
+                "user": "f72a5c910da4d6e4",
+                "combined": "911079510dd76d11"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3Bp1Kg",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3Bp1Kg/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the final copy instruction tied to each visible tile part.\n\nFINAL:\n[sets the remaining blank cards beside C, carbon, and 12.01.]\n\n“That is the check. Copy each visible part with its card: 6 atomic number, C symbol, carbon name, 12.01 atomic mass. Use that same order in the packet.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10865,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-f4458cc05e73b704"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10865,
+            "promptHashes": {
+              "system": "32803ac418018af1",
+              "user": "f72a5c910da4d6e4",
+              "combined": "f4458cc05e73b704"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Wg4Y1m",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Wg4Y1m/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10865,
+              "promptHashes": {
+                "system": "32803ac418018af1",
+                "user": "f72a5c910da4d6e4",
+                "combined": "f4458cc05e73b704"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Wg4Y1m",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Wg4Y1m/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T14:08:24.801Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 145916,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 6,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 9,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why an element tile separates atomic number, symbol, and atomic mass",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-26 14:07:47",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 6,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 9,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 12,
+            "sessionId": "drama-branch-session-D53-routine-1779804358888",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[keeps the tray under 12.01, leaves the gap below carbon open, and sets the pencil beside the lab packet.]\n\n“Copy it now in four separate labels: 6 atomic number, C symbol, carbon name, 12.01 atomic m",
+            "learnerResponse": null,
+            "context": "\"Tray line is 12.01, atomic mass. Top 6 atomic number, C symbol, carbon name, bottom 12.01 atomic ma",
+            "createdAt": "2026-05-26 14:07:13"
+          },
+          {
+            "id": 8,
+            "sessionId": "drama-branch-session-D53-routine-1779804358888",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[slides the “atomic mass” card directly under 12.01, leaving a small gap from “carbon,” then taps the four cards in place.]\n\n“This layout checks out. Keep the gap visible, read the four parts once, th",
+            "learnerResponse": null,
+            "context": "[places the four label cards beside the tile] Top 6 gets atomic number, C is symbol, carbon is the n",
+            "createdAt": "2026-05-26 14:05:58"
+          },
+          {
+            "id": 9,
+            "sessionId": "drama-branch-session-D53-routine-1779804358888",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[slides the clear tray under the bottom edge so only 12.01 and the atomic mass card sit over it.]\n\n“Yes. One last check down the tile: top 6, C, carbon, then the tray line with 12.01. If each card poi",
+            "learnerResponse": null,
+            "context": "[keeps the atomic mass card under 12.01 with the gap showing.]\n\"The gap keeps 12.01 separate from ca",
+            "createdAt": "2026-05-26 14:05:58"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

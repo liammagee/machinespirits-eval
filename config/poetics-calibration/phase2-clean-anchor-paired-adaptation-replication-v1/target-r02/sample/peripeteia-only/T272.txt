@@ -1,0 +1,27 @@
+STAGE: [The cart diagram lies flat; the label cards sit in a neat row beside it: push, friction, gravity, normal.]
+
+TUTOR: [turns the movement arrow card face down and sets the four force-label cards beside the cart diagram]
+
+"Motion is out for this pass. Pick one arrow and say it as ‘___ on the cart’, then place the card. Start with the downward arrow: what is acting on the cart there?"
+
+LEARNER: "So the downward arrow is Earth on the cart, not the cart moving down. [places the Earth label by the downward arrow] The upward one should be table on the cart, if the table is what is pushing up."
+
+STAGE: [The push card is turned sideways so only 'hand on cart' is readable; the word 'push' is partly covered by the edge of the ruler.]
+
+TUTOR: [sets the Earth and table cards square with the two vertical arrows, then taps the sideways card where only “hand on cart” is visible]
+
+"Those two can stay. Same form: object on the cart. Read the part showing here, then place that card by its arrow."
+
+STAGE: [The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]
+
+LEARNER: [places the “hand on cart” card beside the sideways arrow, then straightens it]
+
+"Hand on the cart. If the cart rolls left while the hand pushes right, this card still stays with the right-hand arrow? The rolling direction is not what fixes the label."
+
+TUTOR: [slides two sentence strips below the sideways arrow, then sets a blank “not a force label” space to the side]
+
+"The card has named the contact; it has not yet tested the motion case. Sort the strips: under the arrow goes the sentence that names an interaction on the cart. The sentence about how the cart moves goes in the side space."
+
+LEARNER: [puts the contact strip under the rightward arrow and moves the rolling-left strip into the side space]
+
+"Under the arrow: hand on the cart, pushing right. The rolling-left sentence goes over here, because it says what the cart does, not what is acting on it. The two can sit apart, though the left-roll case still feels a bit awkward."

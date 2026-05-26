@@ -1,0 +1,25 @@
+STAGE: [The cart diagram lies flat; the label cards sit in a neat row beside it: push, friction, gravity, normal.]
+
+TUTOR: [turns the movement arrow card face down and sets the four force-label cards beside the cart diagram]
+
+"Motion is out for this pass. Pick one arrow and say it as ‘___ on the cart’, then place the card. Start with the downward arrow: what is acting on the cart there?"
+
+LEARNER: "So the downward arrow is Earth on the cart, not the cart moving down. [places the Earth label by the downward arrow] The upward one should be table on the cart, if the table is what is pushing up."
+
+STAGE: [The push card is turned sideways so only 'hand on cart' is readable; the word 'push' is partly covered by the edge of the ruler.]
+
+TUTOR: [sets the Earth and table cards square with the two vertical arrows, then taps the sideways card where only “hand on cart” is visible]
+
+"Those two can stay. Same form: object on the cart. Read the part showing here, then place that card by its arrow."
+
+LEARNER: [places the hand card by the sideways arrow]
+
+"Hand on the cart goes with this sideways arrow. That names the interaction on the cart, not the cart’s motion. For the last arrow, the question is which object is acting on the cart there."
+
+TUTOR: [sets the remaining card just short of the last arrow, with “___ on the cart” facing up]
+
+"Use that question. Same form: which object is acting on the cart here? Say the label, then place the card."
+
+LEARNER: [moves the remaining card to the last arrow]
+
+"Table on the cart, for the friction contact. The arrow direction checks which force it is, but the label is the object acting on the cart."

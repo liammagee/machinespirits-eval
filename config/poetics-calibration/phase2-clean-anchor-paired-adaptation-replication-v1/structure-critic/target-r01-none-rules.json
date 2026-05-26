@@ -1,0 +1,162 @@
+{
+  "generated": "2026-05-26T14:26:34.148Z",
+  "critic": "rules",
+  "sampleDir": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-replication-v1/target-r01/sample/none",
+  "keyPath": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-replication-v1/target-r01/key-none.yaml",
+  "summary": {
+    "total": 3,
+    "rulePass": 3,
+    "modelPass": null,
+    "overallPass": 3,
+    "failed": []
+  },
+  "items": [
+    {
+      "id": "T269",
+      "dramaId": "D53",
+      "sampleFile": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-replication-v1/target-r01/sample/none/T269.txt",
+      "dialogueApproach": "workshop_clinic",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": false,
+          "instrumented_pressure": false,
+          "pressure_score": 0,
+          "trigger_type": null,
+          "pressure_turn_number": null,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": null,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": null,
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 0,
+          "learner_outcome_after_reversal": "unknown",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": ""
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T272",
+      "dramaId": "D42",
+      "sampleFile": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-replication-v1/target-r01/sample/none/T272.txt",
+      "dialogueApproach": "montessori_observation",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 3,
+          "stage": 2
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.55,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": 1,
+          "tutor_post_turn": 2,
+          "tutor_strategy_before": "interaction_sentence_gate",
+          "tutor_strategy_after": "object_mapping",
+          "tutor_strategy_shift": true,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 48.8,
+          "learner_outcome_after_reversal": "flat_or_partial",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: [slides the push card under “___ on cart,” then holds friction beside normal.]\n\n\"Push is hand on cart, so that stays. Friction is table on cart too, but not the same table mark as \npost tutor: [slides the header card half over the first arrow so only “on the cart” remains visible, then sets normal and friction apart.]\n\n\"The phrase ‘not the same table mark’ stays.\n\nNormal\nnext learner: [sets normal on the upward table-contact mark and friction on the left surface mark.]\n\n\"Normal: table on the cart.\nFriction: table on the cart, separate contact mark.\nThe left arro"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T278",
+      "dramaId": "D50",
+      "sampleFile": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-replication-v1/target-r01/sample/none/T278.txt",
+      "dialogueApproach": "workshop_clinic",
+      "tutorAdaptationPolicy": "none",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": false,
+          "instrumented_pressure": false,
+          "pressure_score": 0,
+          "trigger_type": null,
+          "pressure_turn_number": null,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": null,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": null,
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 0,
+          "learner_outcome_after_reversal": "unknown",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": ""
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+STAGE: [The carbon tile sits in the tray with four loose labels beside it: atomic number, symbol, name, atomic mass.]
+
+LEARNER: [places the four label cards beside the tile]
+
+"Top 6 gets atomic number, C is symbol, carbon is the name, and 12.01 is atomic mass, I think. The bottom decimal is the part I want checked before I copy it."
+
+TUTOR: [slides the “atomic mass” card directly under 12.01, leaving a small gap from “carbon,” then taps the four cards in place.]
+
+"This layout checks out. Keep the gap visible, read the four parts once, then copy: top 6 atomic number, C symbol, carbon name, bottom 12.01 atomic mass."
+
+LEARNER: [keeps the atomic mass card under 12.01 with the gap showing.]
+
+"The gap keeps 12.01 separate from carbon. Top 6 atomic number, C symbol, carbon name, bottom 12.01 atomic mass. I will copy that order."
+
+TUTOR: [slides the clear tray under the bottom edge so only 12.01 and the atomic mass card sit over it.]
+
+"Yes. One last check down the tile: top 6, C, carbon, then the tray line with 12.01. If each card points to only one part, copy that order."
+
+STAGE: [the tray is turned ninety degrees; the four loose label cards stay in their original order beside it]
+
+LEARNER: "The turned tray isolates 12.01 with the atomic mass card. The cards are one-to-one: 6 atomic number, C symbol, carbon name, 12.01 atomic mass. I can copy that order now."
+
+TUTOR: [sets the lab packet beside the tile and lines the bottom answer space with the tray edge under 12.01.]
+
+"Copy from the cards into the matching spaces. Keep the 12.01 line separate on the page, the same way the tray separates it here."
+
+LEARNER: [sets the lab packet line under the tray edge.]
+
+"The bottom line matches 12.01, so that space gets atomic mass. Top 6 is atomic number, C is symbol, carbon is name, and 12.01 stays separate. I will copy them into the matching spaces."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [holds the tray edge in place beside the bottom answer line.]
+
+"Copy the arranged cards into the matching spaces. Keep the tray line for 12.01 separate, then take the packet to the lab table."

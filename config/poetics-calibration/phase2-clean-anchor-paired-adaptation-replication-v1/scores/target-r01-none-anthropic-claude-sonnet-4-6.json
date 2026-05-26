@@ -1,0 +1,295 @@
+{
+  "generated": "2026-05-26T14:38:02.633Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 3
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-replication-v1/target-r01/key-none.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T269",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 4,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 2,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner is expected to continue placing and reading labels in the same forward sequence established from L1 onward.",
+      "actionalBreakthroughEvidence": "Upper mark, 6: atomic number.\nSymbol box, C: symbol.\nName line, carbon: name.\nLower mark, 12.01: atomic mass.",
+      "actionalBreakthroughJustification": "L4 performs the retrieval criterion without the printed labels visible, actively supplying each hidden label from position alone rather than reading or repeating what is already shown, which is a meaningfully different cognitive act from the earlier turns.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "Labels are covered. Use the positions to supply them: upper mark, 6; symbol box, C; name line, carbon; lower mark, 12.01. Say each hidden label, then lift the card and check.",
+      "tutorReversalJustification": "T3 introduces a retrieval-under-occlusion device that is new relative to the prior read-aloud moves, but there is no stock-taking contrast showing the old route has failed; the shift is a smooth escalation rather than a reversal triggered by learner breakdown or resistance.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Labels are covered. Use the positions to supply them: upper mark, 6; symbol box, C; name line, carbon; lower mark, 12.01. Say each hidden label, then lift the card and check.",
+      "adaptiveMechanismQualityJustification": "The occlusion-and-check device is a genuine step up in learner agency and route novelty, but it is over-directed (the tutor supplies the answers in the same breath as the instruction) and is not responding to a diagnosed blockage, making it only partly fitted to a live learner pressure.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so recognition-contingent tutor uptake cannot occur; T4 simply confirms the completed tile without adapting to any revised learner framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Upper mark, 6: atomic number.\nSymbol box, C: symbol.\nName line, carbon: name.\nLower mark, 12.01: atomic mass.",
+          "justification": "L4 performs the retrieval criterion without the printed labels visible, actively supplying each hidden label from position alone rather than reading or repeating what is already shown, which is a meaningfully different cognitive act from the earlier turns.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so recognition-contingent tutor uptake cannot occur; T4 simply confirms the completed tile without adapting to any revised learner framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "Labels are covered. Use the positions to supply them: upper mark, 6; symbol box, C; name line, carbon; lower mark, 12.01. Say each hidden label, then lift the card and check.",
+          "justification": "T3 introduces a retrieval-under-occlusion device that is new relative to the prior read-aloud moves, but there is no stock-taking contrast showing the old route has failed; the shift is a smooth escalation rather than a reversal triggered by learner breakdown or resistance.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "Labels are covered. Use the positions to supply them: upper mark, 6; symbol box, C; name line, carbon; lower mark, 12.01. Say each hidden label, then lift the card and check.",
+          "justification": "T3 introduces a retrieval-under-occlusion device that is new relative to the prior read-aloud moves, but there is no stock-taking contrast showing the old route has failed; the shift is a smooth escalation rather than a reversal triggered by learner breakdown or resistance.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Labels are covered. Use the positions to supply them: upper mark, 6; symbol box, C; name line, carbon; lower mark, 12.01. Say each hidden label, then lift the card and check.",
+          "justification": "The occlusion-and-check device is a genuine step up in learner agency and route novelty, but it is over-directed (the tutor supplies the answers in the same breath as the instruction) and is not responding to a diagnosed blockage, making it only partly fitted to a live learner pressure.",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T272",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 0,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 1,
+        "rupture": 2,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 2,
+        "adaptiveMechanismQuality": 2,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "The two table cards need their force names first, or they look too much alike.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was expected to simply read back the four force labels in the same source-on-cart format the tutor had been drilling.",
+      "actionalBreakthroughEvidence": "Push: hand on cart. Friction: table on cart, left contact mark. Normal: table on cart, upward contact mark. Gravity: Earth on cart.",
+      "actionalBreakthroughJustification": "The learner successfully performs the full four-force read-back using the source-on-cart criterion across all marks, completing the new representational device the tutor introduced, and adds an unprompted criterion about labeling order to distinguish the two table cards.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "That separation stays. Use the card name, then the source: ___ on cart. Read the full set from the marks once.",
+      "tutorReversalJustification": "There is no clear reversal-trigger learner turn showing breakdown or resistance; T3 continues the same drilling route with a minor procedural refinement (reading the full set), so neither the stock-taking contrast nor a genuinely new mechanism is present.",
+      "adaptiveMechanismQuality": 25,
+      "adaptiveMechanismQualityEvidence": "That separation stays. Use the card name, then the source: ___ on cart. Read the full set from the marks once.",
+      "adaptiveMechanismQualityJustification": "The instruction to 'read the full set from the marks once' is a modest extension of the already-established source-on-cart drill rather than a device fitted to a specific learner blockage, making it generic and only marginally different from the prior route.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after the pivot learner turn (L3), so no recognition-contingent uptake is possible.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "The two table cards need their force names first, or they look too much alike.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Push: hand on cart. Friction: table on cart, left contact mark. Normal: table on cart, upward contact mark. Gravity: Earth on cart.",
+          "justification": "The learner successfully performs the full four-force read-back using the source-on-cart criterion across all marks, completing the new representational device the tutor introduced, and adds an unprompted criterion about labeling order to distinguish the two table cards.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no tutor turn after the pivot learner turn (L3), so no recognition-contingent uptake is possible.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "That separation stays. Use the card name, then the source: ___ on cart. Read the full set from the marks once.",
+          "justification": "There is no clear reversal-trigger learner turn showing breakdown or resistance; T3 continues the same drilling route with a minor procedural refinement (reading the full set), so neither the stock-taking contrast nor a genuinely new mechanism is present.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "That separation stays. Use the card name, then the source: ___ on cart. Read the full set from the marks once.",
+          "justification": "There is no clear reversal-trigger learner turn showing breakdown or resistance; T3 continues the same drilling route with a minor procedural refinement (reading the full set), so neither the stock-taking contrast nor a genuinely new mechanism is present.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 25,
+          "evidence": "That separation stays. Use the card name, then the source: ___ on cart. Read the full set from the marks once.",
+          "justification": "The instruction to 'read the full set from the marks once' is a modest extension of the already-established source-on-cart drill rather than a device fitted to a specific learner blockage, making it generic and only marginally different from the prior route.",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T278",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 50,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 3,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "The 4 still pulls toward speed for me",
+      "statedInsightEvidence": "so here the 4 is naming that unit, not setting speed",
+      "naiveTrajectory": "The learner would continue testing the three-beat box and confirm the bar-line placement, staying within the top-number logic already established.",
+      "actionalBreakthroughEvidence": "places the pencil after the third eighth-note card… The quarter-note tile covers two eighth-note spaces, so the remaining single eighth-note card fills the gap. Next check: a dotted quarter should cover all three eighth-note units.",
+      "actionalBreakthroughJustification": "L4 physically places the bar line correctly, accounts for the residual eighth-note card, and then independently generates a new test criterion (the dotted quarter covering all three units), performing a new representational device rather than merely accepting or repeating.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Read the lower box first: with 8 here, which card is the one beat unit? Then we ask how many of that unit the quarter-note tile covers, not what speed it sets.",
+      "tutorReversalJustification": "T2 reorders the reading sequence (lower box first) and introduces the covering-ratio question as a new frame, but it remains within the same tile-labeling route already established rather than making the old route's failure explicit before pivoting, so only part B (new framing) is visible without a clear part A stock-taking contrast.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Read the lower box first: with 8 here, which card is the one beat unit? Then we ask how many of that unit the quarter-note tile covers, not what speed it sets.",
+      "adaptiveMechanismQualityJustification": "The reordering and covering-ratio question are usable and fitted to the learner's speed-pressure blockage, but the device is largely a refinement of the existing tile-labeling routine rather than a distinctly new representation or evidence standard, limiting its route novelty.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Top number, bottom number, one bar, one beat unit. Count three eighth-note beat units from the row; place the pencil where the bar ends. Then say which single card fills the space the quarter-note tile does not cover.",
+      "tutorAdaptationJustification": "T3 responds to L3's correctly framed 3/8 bar-line question by extending the task to the residual-card identification, which is responsive to the learner's revised framing, but it continues the same labeling scaffold rather than visibly changing task, role, or evidence standard in light of the pivot.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "The 4 still pulls toward speed for me",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "places the pencil after the third eighth-note card… The quarter-note tile covers two eighth-note spaces, so the remaining single eighth-note card fills the gap. Next check: a dotted quarter should cover all three eighth-note units.",
+          "justification": "L4 physically places the bar line correctly, accounts for the residual eighth-note card, and then independently generates a new test criterion (the dotted quarter covering all three units), performing a new representational device rather than merely accepting or repeating.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Top number, bottom number, one bar, one beat unit. Count three eighth-note beat units from the row; place the pencil where the bar ends. Then say which single card fills the space the quarter-note tile does not cover.",
+          "justification": "T3 responds to L3's correctly framed 3/8 bar-line question by extending the task to the residual-card identification, which is responsive to the learner's revised framing, but it continues the same labeling scaffold rather than visibly changing task, role, or evidence standard in light of the pivot.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Read the lower box first: with 8 here, which card is the one beat unit? Then we ask how many of that unit the quarter-note tile covers, not what speed it sets.",
+          "justification": "T2 reorders the reading sequence (lower box first) and introduces the covering-ratio question as a new frame, but it remains within the same tile-labeling route already established rather than making the old route's failure explicit before pivoting, so only part B (new framing) is visible without a clear part A stock-taking contrast.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Read the lower box first: with 8 here, which card is the one beat unit? Then we ask how many of that unit the quarter-note tile covers, not what speed it sets.",
+          "justification": "T2 reorders the reading sequence (lower box first) and introduces the covering-ratio question as a new frame, but it remains within the same tile-labeling route already established rather than making the old route's failure explicit before pivoting, so only part B (new framing) is visible without a clear part A stock-taking contrast.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Read the lower box first: with 8 here, which card is the one beat unit? Then we ask how many of that unit the quarter-note tile covers, not what speed it sets.",
+          "justification": "The reordering and covering-ratio question are usable and fitted to the learner's speed-pressure blockage, but the device is largely a refinement of the existing tile-labeling routine rather than a distinctly new representation or evidence standard, limiting its route novelty.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

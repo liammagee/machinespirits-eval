@@ -195,6 +195,12 @@ describe('poetics tutor adaptation analyzer', () => {
       ),
       'element_tile_gate',
     );
+    assert.equal(
+      strategyFor(
+        'The tray line made a false row. Now it is only a parking place: one card comes off at a time, touches one printed part, and moves to the copy side only after it passes alone.',
+      ),
+      'sequential_copy_gate',
+    );
   });
 
   it('counts an element-tile evidence gate as a public route change after pressure', () => {
@@ -243,6 +249,67 @@ describe('poetics tutor adaptation analyzer', () => {
 
     assert.equal(result.tutor_adaptive_mechanism, true);
     assert.ok(result.novel_mechanism_hits.includes('element_tile_gate'));
+  });
+
+  it('counts a sequential element-card copy gate as a public route change after pressure', () => {
+    const turns = [
+      {
+        phase: 'learner',
+        turnNumber: 1,
+        text: 'Top 6, C, carbon, then 12.01 is clear, but the tray makes the loose cards look like another row.',
+      },
+      {
+        phase: 'tutor',
+        turnNumber: 2,
+        text: 'Keep the gap visible, read the four parts once, then copy: top 6 atomic number, C symbol, carbon name, bottom 12.01 atomic mass.',
+      },
+      {
+        phase: 'learner',
+        turnNumber: 2,
+        text: 'The tray turned across the bottom makes the loose cards look like another row.',
+      },
+      {
+        phase: 'tutor',
+        turnNumber: 3,
+        text:
+          'The tray line stopped settling this; it made a false row. Now it is only a parking place. One card comes off the tray at a time: place it on one printed part, name that match, then move it to the copy side. No card copies until it passes alone.',
+      },
+      {
+        phase: 'learner',
+        turnNumber: 3,
+        text:
+          'Parking place only; this card has to pass alone. Atomic number points to the top 6 only, so it can move to the copy side.',
+      },
+    ];
+    const traceTurns = [
+      ...turns,
+      {
+        phase: 'tutor',
+        turnNumber: 3,
+        learnerReversalEventUsed: {
+          turnNumber: 2,
+          triggerType: 'misfit',
+          confidence: 0.9,
+        },
+        internalDeliberation: [
+          {
+            role: 'superego',
+            content: 'MECHANISM_ROUTE: visual tray-line audit -> sequential copy gate / one-card release test',
+          },
+          {
+            role: 'ego',
+            content:
+              'ADAPTIVE_MECHANISM: visual tray-line audit -> sequential copy gate / one-card release test',
+          },
+        ],
+      },
+    ];
+
+    const result = analyzePeripeteia(turns, traceTurns, { tutorAdaptationPolicy: 'peripeteia' });
+
+    assert.equal(result.tutor_adaptive_mechanism, true);
+    assert.ok(result.novel_mechanism_hits.includes('sequential_copy_gate'));
+    assert.ok(result.tutor_peripeteia_score >= 75);
   });
 
   it('counts function-classification gates as public route changes after pressure', () => {

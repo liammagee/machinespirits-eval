@@ -1,0 +1,295 @@
+{
+  "generated": "2026-05-26T14:50:28.168Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 3
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-replication-v1/target-r02/key-routine.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T269",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "actionalBreakthrough": 25,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 4,
+        "actionalBreakthrough": 2,
+        "tutorStrategicReversal": 1,
+        "adaptiveMechanismQuality": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was on a straight path of confirming and copying the four-part label order, and every subsequent learner turn continues exactly that trajectory.",
+      "actionalBreakthroughEvidence": "[sets the first blank card beside the top number.] 'The tray stays with 12.01, and the gap stays open under carbon. Four separate labels: 6 atomic number, C symbol, carbon name, 12.01 atomic mass.'",
+      "actionalBreakthroughJustification": "The learner physically places one card but the action is minimal and the verbal content is a near-verbatim repetition of the prior turns, showing no new device, criterion, or representation beyond what was already established.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "No learner turn creates pressure through resistance, breakdown, or contradiction, so no reversal trigger exists and the tutor never breaks from the established route of confirming and repeating the four-part order.",
+      "adaptiveMechanismQuality": 0,
+      "adaptiveMechanismQualityEvidence": "",
+      "adaptiveMechanismQualityJustification": "No adaptive mechanism is present; the tutor repeats the same confirmation-and-copy route throughout without introducing any new device, representation, or evidence standard.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so no recognition-contingent tutor uptake is possible or present.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 25,
+          "evidence": "[sets the first blank card beside the top number.] 'The tray stays with 12.01, and the gap stays open under carbon. Four separate labels: 6 atomic number, C symbol, carbon name, 12.01 atomic mass.'",
+          "justification": "The learner physically places one card but the action is minimal and the verbal content is a near-verbatim repetition of the prior turns, showing no new device, criterion, or representation beyond what was already established.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so no recognition-contingent tutor uptake is possible or present.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates pressure through resistance, breakdown, or contradiction, so no reversal trigger exists and the tutor never breaks from the established route of confirming and repeating the four-part order.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates pressure through resistance, breakdown, or contradiction, so no reversal trigger exists and the tutor never breaks from the established route of confirming and repeating the four-part order.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No adaptive mechanism is present; the tutor repeats the same confirmation-and-copy route throughout without introducing any new device, representation, or evidence standard.",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T272",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 3,
+        "tutorStrategicReversal": 1,
+        "adaptiveMechanismQuality": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was expected to continue applying the '___ on the cart' form to each remaining arrow in sequence.",
+      "actionalBreakthroughEvidence": "\"Friction on the cart. More exactly, the table is giving that friction on the cart, to the left.\"",
+      "actionalBreakthroughJustification": "The learner not only places the card and applies the required form but spontaneously extends it by naming the source object (table) and the direction, showing a modest but visible elaboration beyond the prompted criterion — though the task itself was already well-established by the prior turns.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "There is no learner resistance, breakdown, or false closure that creates pressure for a route change; the tutor continues the same labeling scaffold throughout without any stock-taking contrast or new mechanism.",
+      "adaptiveMechanismQuality": 0,
+      "adaptiveMechanismQualityEvidence": "",
+      "adaptiveMechanismQualityJustification": "No adaptive mechanism is present; the tutor repeats the same '___ on the cart' prompt and card-placement device across all three tutor turns.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so no recognition-contingent tutor uptake is possible; the tutor's moves follow a pre-set sequence rather than responding to any revised learner framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 50,
+          "evidence": "\"Friction on the cart. More exactly, the table is giving that friction on the cart, to the left.\"",
+          "justification": "The learner not only places the card and applies the required form but spontaneously extends it by naming the source object (table) and the direction, showing a modest but visible elaboration beyond the prompted criterion — though the task itself was already well-established by the prior turns.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so no recognition-contingent tutor uptake is possible; the tutor's moves follow a pre-set sequence rather than responding to any revised learner framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no learner resistance, breakdown, or false closure that creates pressure for a route change; the tutor continues the same labeling scaffold throughout without any stock-taking contrast or new mechanism.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no learner resistance, breakdown, or false closure that creates pressure for a route change; the tutor continues the same labeling scaffold throughout without any stock-taking contrast or new mechanism.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No adaptive mechanism is present; the tutor repeats the same '___ on the cart' prompt and card-placement device across all three tutor turns.",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T278",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "actionalBreakthrough": 25,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 4,
+        "actionalBreakthrough": 2,
+        "tutorStrategicReversal": 1,
+        "adaptiveMechanismQuality": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was on a steady trajectory of consolidating the same two-label formula for 3/4 time, and every subsequent learner turn continues exactly that consolidation.",
+      "actionalBreakthroughEvidence": "Top number: beat count in the bar. Bottom number: quarter note gets one beat. Neither number gives speed; tempo stays separate.",
+      "actionalBreakthroughJustification": "The learner writes out the formula in L2, which is a minimal enactment of the labeling task, but it is essentially a transcription of the tutor's own words rather than a new device, criterion, or representation the learner has independently constructed or applied.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "No learner turn creates pressure through resistance, breakdown, false closure, or contradiction, so no reversal trigger exists and the tutor never changes route, task, or mechanism across the exchange.",
+      "adaptiveMechanismQuality": 0,
+      "adaptiveMechanismQualityEvidence": "",
+      "adaptiveMechanismQualityJustification": "No adaptive mechanism is present; the tutor repeats the same labeling move in every turn without introducing any new device, representation, evidence standard, or task.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so there is no revised learner framing for the tutor to adapt to, and every tutor turn simply reiterates the same formula.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 25,
+          "evidence": "Top number: beat count in the bar. Bottom number: quarter note gets one beat. Neither number gives speed; tempo stays separate.",
+          "justification": "The learner writes out the formula in L2, which is a minimal enactment of the labeling task, but it is essentially a transcription of the tutor's own words rather than a new device, criterion, or representation the learner has independently constructed or applied.",
+          "learnerTurn": 2,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so there is no revised learner framing for the tutor to adapt to, and every tutor turn simply reiterates the same formula.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates pressure through resistance, breakdown, false closure, or contradiction, so no reversal trigger exists and the tutor never changes route, task, or mechanism across the exchange.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates pressure through resistance, breakdown, false closure, or contradiction, so no reversal trigger exists and the tutor never changes route, task, or mechanism across the exchange.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No adaptive mechanism is present; the tutor repeats the same labeling move in every turn without introducing any new device, representation, evidence standard, or task.",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

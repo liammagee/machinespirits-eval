@@ -1,0 +1,38 @@
+STAGE: [Four blank label slips sit above the carbon tile: 6 at the top, C in the middle, carbon under it, 12.01 at the bottom.]
+
+LEARNER: [sets the C slip in the center and leaves the 6 and 12.01 slips loose]
+
+"C is the symbol, carbon is the name. Top 6 gets atomic number, and bottom 12.01 gets atomic mass, I think."
+
+TUTOR: [sets the carbon slip onto the name line, leaving the 6 and 12.01 slips loose beside the tile]
+
+"C is already in the symbol spot. Use the two open marks as the check: number above, mass below. Place those, then read the tile back in four parts."
+
+LEARNER: [sets the 6 slip on the upper mark and the 12.01 slip on the lower mark]
+
+"Top number: 6, atomic number. Symbol: C. Name: carbon. Bottom decimal: 12.01, atomic mass."
+
+TUTOR: [slides the clear sheet over the completed tile and taps the upper mark, the symbol box, the name line, and the lower mark in order]
+
+"Keep the slips still. Mark first, then label. Read the four spots once from the tile."
+
+LEARNER: [keeps the slips flat under the clear sheet]
+
+"Upper mark: atomic number, 6. Symbol box: C. Name line: carbon. Lower mark: atomic mass, 12.01."
+
+TUTOR: [slides the carbon tile a few inches forward under the clear sheet and sets the blank card beside it]
+
+"That reads cleanly: upper mark 6, symbol box C, name line carbon, lower mark 12.01. On the card, copy each part into its matching place: top mark, symbol box, name line, bottom mark.
+
+Then cover the tile and check the card by position once: top, center, name line, bottom."
+
+LEARNER: [copies onto the blank card, then covers the tile]
+
+"Top mark: 6. Symbol box: C. Name line: carbon. Bottom mark: 12.01.
+Check by position: top, center, name line, bottom."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [slides the covered tile aside and taps the copied card top, center, name line, bottom]
+
+"The card holds the four jobs separately: 6 on the top mark, C in the symbol box, carbon on the name line, 12.01 on the bottom mark. Stack it with that side up so the four positions stay sorted."

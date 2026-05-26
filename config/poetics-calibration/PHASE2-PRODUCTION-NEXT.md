@@ -870,6 +870,72 @@ run should repeat D42/D50/D53 for one or two more repeats, then report:
 4. actional breakthrough;
 5. recognitive closure as a secondary outcome, not the main adaptation claim.
 
+### Clean-anchor paired adaptation replication v1
+
+`phase2-clean-anchor-paired-adaptation-replication-v1` repeats the current
+clean mechanism-adaptation anchors, D42/D50/D53, over `routine`, `none`, and
+`peripeteia-only` for two target repeats. It uses the same four external
+critics as the previous batch: Qwen 3.7 Max, Gemini 3.5 Flash, DeepSeek v4 Pro,
+and Claude Sonnet 4.6.
+
+Artifacts:
+
+- Run root:
+  `config/poetics-calibration/phase2-clean-anchor-paired-adaptation-replication-v1`
+- Sidecar report:
+  `exports/phase2-clean-anchor-paired-adaptation-replication-v1-report.md`
+- Tutor-adaptation sidecar:
+  `exports/phase2-clean-anchor-paired-adaptation-replication-v1-tutor-adaptation.json`
+- Adaptive-quality audit:
+  `exports/phase2-clean-anchor-paired-adaptation-replication-v1-adaptive-quality-audit.md`
+- Browser:
+  `http://127.0.0.1:3466/?runId=phase2-clean-anchor-paired-adaptation-replication-v1`
+
+Result:
+
+- Generation: 18 scripts, 72 external scores, 0 labels. No structural-critic
+  failures; rules critic passed 3/3 for every generated arm in both repeats.
+- Sidecar tutor adaptation: routine 0/6, none 0/6, peripeteia-only 6/6; mean
+  peripeteia score 81.5. Every peripeteia item was branch-valid, consumed the
+  learner reversal event, declared a private route, and produced a public
+  mechanism.
+- External recognitive form: peripeteia-only produced 2 claimable recognitions,
+  1 boundary case, and 3 negatives under the 3-of-4 rule. Routine and none
+  produced no claimable recognitions, but each had one boundary case.
+- Negative-arm floor: repeat 2 was clean across both negative arms and all four
+  critics. Repeat 1 exposed D42/D50 fragility: DeepSeek marked D42 `none` as
+  recognition, and Qwen/DeepSeek marked D50 `routine` and D50 `none` as
+  recognition. These are not consensus claimable, but they keep D42/D50 at
+  observed medium risk rather than low risk.
+- Anchor read: D53 is now the cleanest negative anchor, with 0/16 routine/none
+  recognition votes. D42 and D50 remain useful mechanism anchors, but should be
+  treated as medium-risk boundary probes when the paper needs a strict negative
+  denominator.
+- External actional breakthrough: all critics except Sonnet/DeepSeek edge cases
+  saw high actional scores in peripeteia-only; Gemini is especially consistent
+  in reading actional/mechanism movement while refusing recognitive closure.
+
+Analyzer refinement:
+
+The first pass showed one false negative in the deterministic sidecar:
+D53/r02/peripeteia used a public "parking place / one card passes alone / copy
+side" device, which the LLM quality audit correctly read as a strong mechanism.
+The analyzer previously folded this into the broad element-tile pattern and
+therefore missed the route change. It now has a separate
+`sequential_copy_gate`, with regression coverage, so this counts as a novel
+mechanism rather than generic tile labeling.
+
+Interpretation:
+
+This replication strengthens the mechanism-level adaptation claim and weakens
+any overclaim about recognitive closure. The redesigned architecture is doing
+the central thing we wanted: learner pressure enters the tutor ego/superego
+loop and forces a public mechanism shift. What it does not yet do reliably is
+make judges agree that the learner's following turn is a full recognitive
+self-reframe. The paper should therefore treat tutor adaptation as a
+mechanism/actional finding, with recognitive closure as a downstream dramatic
+outcome that is present in some cases and critic-sensitive in others.
+
 Two target reframe keys (T21/D20 and T22/D21) initially tripped the quality
 detector. Inspection showed valid public reframe forms rather than invalid
 transcripts: `The new check is ...` and `I’d change it to ...`. The detector was

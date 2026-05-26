@@ -1,0 +1,43 @@
+STAGE: [A cart sketch lies under a clear sheet; four label cards sit beside it, and a narrow header card reads, "Forces on the cart: name the interaction."]
+
+TUTOR: [sets the cart diagram flat, lines up push, friction, gravity, normal, and places a small strip above the diagram: “___ on cart.”]
+
+"First pass: no motion arrows. A card stays only if it can be said as ‘something on cart.’
+
+Gravity: Earth on cart. Normal: table on cart.
+
+Now try push. Say the interaction before the arrow stays. Then friction. If the arrow only copies the cart’s motion, the card goes back in the row."
+
+LEARNER: [slides the push card under “___ on cart,” then holds friction beside normal.]
+
+"Push is hand on cart, so that stays. Friction is table on cart too, but not the same table mark as normal. Normal is up from the table; friction is the surface rubbing the cart, probably left if the cart is sliding right."
+
+STAGE: [Slide the header card half over the learner's first arrow so only the words "on the cart" remain visible.]
+
+TUTOR: [slides the header card half over the first arrow so only “on the cart” remains visible, then sets normal and friction apart.]
+
+"The phrase ‘not the same table mark’ stays.
+
+Normal: ___ on the cart.
+
+Friction: ___ on the cart.
+
+Say each one, then place each card on its own mark."
+
+STAGE: [The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]
+
+LEARNER: [sets normal on the upward mark and friction on the surface mark.]
+
+"Normal: table on the cart. Friction: table on the cart.
+Same words twice feels shaky, so the mark has to separate them."
+
+TUTOR: [sets two blank strips under normal and friction: “who touches?” / “how does it touch?”, then places two loose tiles: “straight off the surface” and “along the surface.”]
+
+"The same words twice are too thin now. ‘Table on cart’ names who touches, not which touch.
+
+Table can fill both first boxes. The second tile has to separate them before either card stays. Normal first, then friction."
+
+LEARNER: [places “table” in both who-touches boxes, then sets “straight off the surface” under normal and pauses over the friction strip.]
+
+"Normal: table on cart, straight off the surface. Friction: table on cart, along the surface.
+The along tile names the kind of touch, but the left-or-right mark still needs the sliding part checked."

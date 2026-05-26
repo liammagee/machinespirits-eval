@@ -104,6 +104,14 @@ const STRATEGY_PATTERNS = [
     ],
   },
   {
+    id: 'sequential_copy_gate',
+    patterns: [
+      /\b(?:tray line|parking place|false row)\b[\s\S]{0,160}\b(?:one card|copy side|passes alone|pass alone|printed part|no card copies)\b/i,
+      /\bone card\b[\s\S]{0,140}\b(?:printed part|copy side|passes alone|pass alone|card copies)\b/i,
+      /\b(?:no card copies|move it to the copy side|passes alone|pass alone)\b/i,
+    ],
+  },
+  {
     id: 'element_tile_gate',
     patterns: [
       /\belement tile gate\b/i,
@@ -111,6 +119,8 @@ const STRATEGY_PATTERNS = [
       /\b(?:cover|covered|window|gate|sort|mark|label)\b[\s\S]{0,100}\b(?:mass|proton|atomic number|atomic mass|symbol)\b/i,
       /\batomic number\b[\s\S]{0,80}\bproton(?:s)?\b|\bproton(?:s)?\b[\s\S]{0,80}\batomic number\b/i,
       /\bbottom decimal\b[\s\S]{0,80}\batomic mass\b|\batomic mass\b[\s\S]{0,80}\bbottom decimal\b/i,
+      /\b(?:tray line|parking place|false row|copy side|passes alone|pass alone)\b[\s\S]{0,140}\b(?:cards?|printed part|copy|atomic|tile)\b/i,
+      /\bone card\b[\s\S]{0,120}\b(?:printed part|passes alone|pass alone|copy side|card copies)\b/i,
     ],
   },
   {
@@ -480,6 +490,14 @@ const MECHANISM_SHIFT_PATTERNS = [
     ],
   },
   {
+    id: 'sequential_copy_gate',
+    patterns: [
+      /\b(?:tray line|parking place|false row)\b[\s\S]{0,160}\b(?:one card|copy side|passes alone|pass alone|printed part|no card copies)\b/i,
+      /\bone card\b[\s\S]{0,140}\b(?:printed part|copy side|passes alone|pass alone|card copies)\b/i,
+      /\b(?:no card copies|move it to the copy side|passes alone|pass alone)\b/i,
+    ],
+  },
+  {
     id: 'element_tile_gate',
     patterns: [
       /\belement tile gate\b/i,
@@ -487,6 +505,8 @@ const MECHANISM_SHIFT_PATTERNS = [
       /\b(?:cover|covered|window|gate|sort|mark|label)\b[\s\S]{0,100}\b(?:mass|proton|atomic number|atomic mass|symbol)\b/i,
       /\batomic number\b[\s\S]{0,80}\bproton(?:s)?\b|\bproton(?:s)?\b[\s\S]{0,80}\batomic number\b/i,
       /\bbottom decimal\b[\s\S]{0,80}\batomic mass\b|\batomic mass\b[\s\S]{0,80}\bbottom decimal\b/i,
+      /\b(?:tray line|parking place|false row|copy side|passes alone|pass alone)\b[\s\S]{0,140}\b(?:cards?|printed part|copy|atomic|tile)\b/i,
+      /\bone card\b[\s\S]{0,120}\b(?:printed part|passes alone|pass alone|copy side|card copies)\b/i,
     ],
   },
   {

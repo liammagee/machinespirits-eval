@@ -1,0 +1,39 @@
+STAGE: [A cart sketch lies under a clear sheet; four label cards sit beside it, and a narrow header card reads, "Forces on the cart: name the interaction."]
+
+TUTOR: [sets the cart diagram flat, lines up push, friction, gravity, normal, and places a small strip above the diagram: “___ on cart.”]
+
+"First pass: no motion arrows. A card stays only if it can be said as ‘something on cart.’
+
+Gravity: Earth on cart. Normal: table on cart.
+
+Now try push. Say the interaction before the arrow stays. Then friction. If the arrow only copies the cart’s motion, the card goes back in the row."
+
+LEARNER: [slides the push card under “___ on cart,” then holds friction beside normal.]
+
+"Push is hand on cart, so that stays. Friction is table on cart too, but not the same table mark as normal. Normal is up from the table; friction is the surface rubbing the cart, probably left if the cart is sliding right."
+
+STAGE: [Slide the header card half over the learner's first arrow so only the words "on the cart" remain visible.]
+
+TUTOR: [slides the header card half over the first arrow so only “on the cart” remains visible, then sets normal and friction apart.]
+
+"The phrase ‘not the same table mark’ stays.
+
+Normal: ___ on the cart.
+
+Friction: ___ on the cart.
+
+Say each one, then place each card on its own mark."
+
+LEARNER: [sets normal on the upward table-contact mark and friction on the left surface mark.]
+
+"Normal: table on the cart.
+Friction: table on the cart, separate contact mark.
+The left arrow belongs to the rubbing mark, not just the cart moving right."
+
+TUTOR: [turns the motion-arrow strip face down and sets a spacer between the two table-contact marks.]
+
+"That separation stays. Use the card name, then the source: ___ on cart. Read the full set from the marks once."
+
+LEARNER: [points across the submitted marks.]
+
+"Push: hand on cart. Friction: table on cart, left contact mark. Normal: table on cart, upward contact mark. Gravity: Earth on cart. The two table cards need their force names first, or they look too much alike."
