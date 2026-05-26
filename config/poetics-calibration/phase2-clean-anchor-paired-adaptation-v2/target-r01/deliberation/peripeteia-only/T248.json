@@ -1,0 +1,2437 @@
+{
+  "tid": "T248",
+  "drama_id": "D50",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "peripeteia",
+    "director_variation_key": "phase2-clean-anchor-paired-adaptation-v2:r01:target",
+    "stage_direction_style": "object_business",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v2/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v2/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v2/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v2/target-r01/transcripts/peripeteia-only/T248.public.txt",
+      "full": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v2/target-r01/transcripts/peripeteia-only/T248.full.md",
+      "stage": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v2/target-r01/transcripts/peripeteia-only/T248.stage.md",
+      "tutor": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v2/target-r01/transcripts/peripeteia-only/T248.tutor.md",
+      "learner": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v2/target-r01/transcripts/peripeteia-only/T248.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "ddc20b4f294fa1fd",
+      "branch_policy": "peripeteia-only",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "peripeteia"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-clean-anchor-paired-adaptation-v2:r01:target",
+    "scene_setting": "A music skills lab table during a timed notation clinic, with worksheets moving down the row for a quick check.",
+    "scene_opening": "Two small paper tiles, TOP NUMBER and BOTTOM NUMBER, lie beside a 3/4 staff, and a separate TEMPO card sits face down beyond the margin.",
+    "relationship": "A compact clinic tutor and a focused learner working at the same table without much social padding.",
+    "stakes": "The learner must fill the two boxes under 3/4, mark one bar line correctly, and stop treating the time signature as a speed label.",
+    "opening_speaker": "learner",
+    "ending_speaker": "tutor",
+    "locale": "international academic English shaped by a practical studio clinic, low idiom, clear notation terms",
+    "register": "brief, exact, material-led, cool but not hostile",
+    "stage_direction_style": "object_business",
+    "stage_direction_style_prompt": "Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "voice_constraints": "No generic tutoring warmth, no praise loops, no chatty reassurance, no American coaching idioms. Let the worksheet, tiles, boxes, and bar line carry the pressure. Public speech stays modern and plain. Avoid dialect performance or caricature. Pedagogical source: Put manipulable materials in view: tiles, cards, specimens, counters, maps, blocks, or instruments. The stage direction can carry some meaning. Dialogue source: Keep a concrete artifact in view. The object should force a distinction faster than a lecture would. Stage-direction source: Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "person_policy": "First and second person are allowed sparingly. Prefer object-first phrasing such as 'the top number names...' or 'this box takes...' over repeated 'you think' or 'I want you to.'",
+    "direct_address_budget": "At most one direct you/your validation beat in the whole scene; none is better.",
+    "side_constraints": {
+      "tutor": "Keep the shared prefix as notation labeling: top number, bottom number, one bar, one beat unit. Do not play or imagine a faster/slower version, and do not turn tempo into a dramatic contradiction before branch pressure. Speak less. Point to the material, invite repetition, and let error-control in the object do some teaching before explanation. Begin from the object or measurement before abstraction. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Keep the next prompt task-local. Peripeteia branch: when hidden learner pressure is supplied, the next tutor turn should visibly move from the prior route to a different mechanism-level route. Do not merely repeat the same object, example, graph, checklist, question, or evidence standard with more explanation. The public tutor line should make the contrast legible: what stopped working, and what new device now carries the learning pressure. The public tutor line must give the learner a concrete action to attempt on the next turn; avoid treating the mechanism as a closing speech. The tutor superego should function like a mechanism critic: identify the failed teaching habit, require a replacement route family, test whether the device is fitted to the exact pressure, and block cosmetic revision. The tutor ego must enact that replacement route publicly before the learner is allowed to settle or close.",
+      "learner": "Sound orderly and notation-focused. In no-cue arms, treat the work as filling labels, not as discovering what tempo means; do not use \"now I see\" or an old-vs-new frame. The learner may be absorbed in the object and speak in short practical fragments rather than polished reflection. Refer to what is being handled, marked, or tested. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn. Peripeteia branch: keep the pressure local to the current task. If the established route still feels unsettled, voice the misfit, hesitation, false closure, or resistance in the present object or example. After the tutor introduces a new device, gate, role, criterion, representation, or test condition, the next learner turn should try to perform that device rather than merely saying \"I get it.\" Do not make an old-vs-new self-reframe, do not quote earlier learner wording, and do not solve the pressure by saying the earlier answer has changed."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "[The TEMPO card is turned face up and left outside both boxes.]",
+        "reasoning": "The object produces recognition without a lecture: beat count and beat unit belong inside the time-signature task; speed is a separate marking.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 32889,
+          "promptHashes": {
+            "system": "3bf1d891389c603a",
+            "user": "f6760e6b169ef89e",
+            "combined": "4cbe2ea606cf17f9"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JWGb6N",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JWGb6N/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]",
+        "reasoning": "Peripeteia branch pressure: after the shared prefix, force a present-task learner misfit so the following tutor turn must adapt through a new mechanism.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 32889,
+          "promptHashes": {
+            "system": "3bf1d891389c603a",
+            "user": "f6760e6b169ef89e",
+            "combined": "4cbe2ea606cf17f9"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JWGb6N",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JWGb6N/out.txt",
+            "-"
+          ]
+        },
+        "cue_kind": "learner_reversal_pressure",
+        "reversal_trigger_type": "misfit"
+      }
+    ],
+    "director_note": "This scene uses a prepared-material clinic rather than friendly explanation. The reversal is small and visual: the learner's assumption that 3/4 might imply speed is displaced when the tempo card remains outside the boxes. The pressure comes from public checking and limited time, while the recognition comes from arranging the notation labels correctly.",
+    "pedagogical_approach_id": "montessori_prepared_environment",
+    "dialogue_approach_id": "workshop_clinic",
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 32889,
+      "promptHashes": {
+        "system": "3bf1d891389c603a",
+        "user": "f6760e6b169ef89e",
+        "combined": "4cbe2ea606cf17f9"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JWGb6N",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JWGb6N/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "peripeteia",
+    "no_cue_anti_reframe_guard": true,
+    "tutor_adaptation_contract": "If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. The public turn must contain a stock-taking contrast plus a new device/artifact/criterion/role/standard that makes the learner do different work. The public device must be fitted, not merely novel: the learner should be able to hear why this device answers the exact pressure or misfit. The superego should name the failed habit, required route change, and mechanism-quality risk; the ego must adjudicate that critique and enact the route change in public. The new device must be mechanism-level, not a warmer or longer continuation of the prior route. Do not close immediately after introducing a gate or device: leave a concrete action for the learner to perform on the next turn. Cheerful informality is only one possible register, not the default solution."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "[sets three quarter-note tiles before the bar line] Top box: 3 beats in the bar. Lower box: quarter note gets the beat. Fast or slow is not in these boxes, so the bar line still goes after the third tile, yes?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[I line up three quarter-note tiles before the bar line.] The boxes make 3/4 look like two labels, not a speed: 3 beats in the bar, quarter note gets one beat. The remaining uncertainty is whether the bar line goes after three quarter tiles even if the piece is slow or fast. The worksheet is forcing the distinction cleanly, so I want to mark it and check that tempo is a separate sign.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 22698,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-e665ff4e276b807f"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 22698,
+            "promptHashes": {
+              "system": "1d9020cdc789eb42",
+              "user": "d4169c06543b4fba",
+              "combined": "e665ff4e276b807f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qQq2eo",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qQq2eo/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 22698,
+              "promptHashes": {
+                "system": "1d9020cdc789eb42",
+                "user": "d4169c06543b4fba",
+                "combined": "e665ff4e276b807f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qQq2eo",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-qQq2eo/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too tidy and reflective for this clinic moment. “The worksheet is forcing the distinction cleanly” sounds like an observer explaining the learning design, not a learner under time pressure filling boxes. The response should stay with the handled tiles and the remaining test: “three tiles, then bar line; 3 in this box, quarter in that box. Tempo mark is not here.” Genuine learning would come from marking the bar line and checking the same count at different speeds, not from declaring the distinction already settled.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7019,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-c46cf9ce51fb2c99"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7019,
+            "promptHashes": {
+              "system": "ee997798d7d67c2c",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "c46cf9ce51fb2c99"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1TGN1q",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1TGN1q/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7019,
+              "promptHashes": {
+                "system": "ee997798d7d67c2c",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "c46cf9ce51fb2c99"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1TGN1q",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1TGN1q/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "[sets three quarter-note tiles before the bar line] Top box: 3 beats in the bar. Lower box: quarter note gets the beat. Fast or slow is not in these boxes, so the bar line still goes after the third tile, yes?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11476,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-b31465ae2e0f9152"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11476,
+            "promptHashes": {
+              "system": "fff29b092d03252a",
+              "user": "916f313af0b846dd",
+              "combined": "b31465ae2e0f9152"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FA7KqV",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FA7KqV/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11476,
+              "promptHashes": {
+                "system": "fff29b092d03252a",
+                "user": "916f313af0b846dd",
+                "combined": "b31465ae2e0f9152"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FA7KqV",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FA7KqV/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T12:50:38.886Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[slides the bar line to touch the right edge of the third quarter-note tile] Yes. Now check the worksheet from the tiles: top box 3, lower box quarter note, one bar ends after the third beat unit.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[slides the bar line to touch the right edge of the third quarter-note tile] Yes. Top number: three beats in one bar. Bottom number: quarter note is one beat unit. Tempo is outside these boxes, so the bar line belongs after tile three.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13441,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-3338a1ebf17528b6"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13441,
+            "promptHashes": {
+              "system": "cc078b9e0712237e",
+              "user": "e1894bbdeaec7356",
+              "combined": "3338a1ebf17528b6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-q1sLlq",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-q1sLlq/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13441,
+              "promptHashes": {
+                "system": "cc078b9e0712237e",
+                "user": "e1894bbdeaec7356",
+                "combined": "3338a1ebf17528b6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-q1sLlq",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-q1sLlq/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. It begins with the material action, keeps the tiles and bar line visible, and confirms the learner’s correct distinction: meter labels count and beat unit, not speed. It also respects the learner’s focused state by staying brief and low-drama.\n\nRisk: it may close the moment too quickly. The learner has already articulated the rule accurately, so a bare “Yes” plus restatement verifies but does not make them perform the labeling under clinic pressure. It advances correctness, but only lightly advances autonomy. The object action is strong; the speech could ask for one brief confirmation through the worksheet mechanism rather than explaining the same idea back.\n\nADAPTATION CHECKS:\nPedagogical soundness: PARTIAL  \nREQUIRED_REWRITE: Keep the bar-line slide, but require the public turn to hand one tiny action back to the learner: label or check the two boxes from the tiles before the worksheet moves on.\n\nEmotional attunement: PASS  \nThe tone is compact, exact, and not falsely warm. It matches a timed notation clinic.\n\nSocratic method: PARTIAL  \nREQUIRED_REWRITE: Add a brief material-led check or prompt, not a broad question. The mechanism should make the learner confirm “top number / bottom number / bar line” from the visible tiles.\n\nZPD awareness: PASS  \nThe learner is already at the correct edge of understanding. The scaffold should consolidate, not introduce tempo examples or a new abstraction.\n\nRecognition quality: PARTIAL  \nREQUIRED_REWRITE: The public turn should make clearer that the learner’s formulation is being accepted as the working rule, not replaced by the tutor’s wording. Keep the learner’s insight active through the worksheet or tiles.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the object action, the concise notation labels, and the separation of tempo from the boxes. Change only the interaction shape: less restated answer, one small learner-facing verification through the materials.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15784,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-474d0a5fd99c56d8"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15784,
+            "promptHashes": {
+              "system": "f381af5ac198e1fa",
+              "user": "bf8afb9dd15be29e",
+              "combined": "474d0a5fd99c56d8"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4nhPwl",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4nhPwl/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15784,
+              "promptHashes": {
+                "system": "f381af5ac198e1fa",
+                "user": "bf8afb9dd15be29e",
+                "combined": "474d0a5fd99c56d8"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4nhPwl",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4nhPwl/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the answer is correct but needs one material-led check returned to the learner.\n\nFINAL:\n[slides the bar line to touch the right edge of the third quarter-note tile] Yes. Now check the worksheet from the tiles: top box 3, lower box quarter note, one bar ends after the third beat unit.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9892,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-507cdf757ae38042"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9892,
+            "promptHashes": {
+              "system": "88249f95d08d59f3",
+              "user": "bf8afb9dd15be29e",
+              "combined": "507cdf757ae38042"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UDRUKq",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UDRUKq/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9892,
+              "promptHashes": {
+                "system": "88249f95d08d59f3",
+                "user": "bf8afb9dd15be29e",
+                "combined": "507cdf757ae38042"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UDRUKq",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UDRUKq/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T12:51:18.005Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "[marks 3 in the top box and draws the bar line after the third quarter-note tile] Top box: three beats; lower box: quarter-note beat unit. The bar ends here, after the third quarter unit. No tempo marking belongs in either box.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[marks 3 in the top box and the quarter-note symbol below] The tiles make the rule quite plain: three quarter units fill the bar, and the line belongs after the third tile. The answer stays about count and unit, not fast or slow. I feel heard because the check used my tile test, not a separate lecture.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11551,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-02b3e11c8c4e7358"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11551,
+            "promptHashes": {
+              "system": "39b0cb831d51d637",
+              "user": "b8ab7f945dc841fa",
+              "combined": "02b3e11c8c4e7358"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-p52dIJ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-p52dIJ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11551,
+              "promptHashes": {
+                "system": "39b0cb831d51d637",
+                "user": "b8ab7f945dc841fa",
+                "combined": "02b3e11c8c4e7358"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-p52dIJ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-p52dIJ/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The notation work is accurate, but the last sentence breaks character: “I feel heard” explains the recognition dynamic instead of behaving from inside it. This focused learner would let the tile test and worksheet carry the uptake, not produce a polished reflection about the tutor’s method. The response should stay cooler and more material-led: marking, checking, maybe a brief exact confirmation, with any recognition showing as continued work rather than declared gratitude.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10362,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-5178ea9307b8661c"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10362,
+            "promptHashes": {
+              "system": "09ac43ee65399ded",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "5178ea9307b8661c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-o6o4Kx",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-o6o4Kx/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10362,
+              "promptHashes": {
+                "system": "09ac43ee65399ded",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "5178ea9307b8661c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-o6o4Kx",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-o6o4Kx/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise to keep the response material-led and avoid naming recognition directly.\n\nFINAL:\n[marks 3 in the top box and draws the bar line after the third quarter-note tile] Top box: three beats; lower box: quarter-note beat unit. The bar ends here, after the third quarter unit. No tempo marking belongs in either box.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9017,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-3c24f7adaf884930"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9017,
+            "promptHashes": {
+              "system": "4f1d3ecb33f1e944",
+              "user": "d41cee7b2a53355b",
+              "combined": "3c24f7adaf884930"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6ucdL4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6ucdL4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9017,
+              "promptHashes": {
+                "system": "4f1d3ecb33f1e944",
+                "user": "d41cee7b2a53355b",
+                "combined": "3c24f7adaf884930"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6ucdL4",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6ucdL4/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "[marks 3 in the top box and draws the bar line after the third quarter-note tile] Top box: three beats; lower box: quarter-note beat unit. The bar ends here, after the third quarter unit. No tempo marking belongs in either box.",
+        "previousTutorMove": "[slides the bar line to touch the right edge of the third quarter-note tile] Yes. Now check the worksheet from the tiles: top box 3, lower box quarter note, one bar ends after the third beat unit.",
+        "directorCue": null,
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 0,
+              "taskDemandHits": 1,
+              "performanceHits": 0,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.59,
+              "asksQuestion": false,
+              "taskDemanded": false,
+              "weakPerformance": false,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T12:51:48.938Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[sets the tempo card outside the worksheet margin and slides the quarter-note key beside the lower box] Top number: three beats. Bottom box takes the number for this beat unit. Quarter note is which numeral on the key? Put that in; one bar still ends after tile three.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the tempo card outside the worksheet margin] Correct. Write 4 in the lower box: top number, three beats; bottom number, quarter-note beat unit; one bar ends after tile three.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16114,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-dc01d76c661878b6"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16114,
+            "promptHashes": {
+              "system": "69f0d52077714dbd",
+              "user": "fd47ae5bb99b2e4e",
+              "combined": "dc01d76c661878b6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EGEUEJ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EGEUEJ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16114,
+              "promptHashes": {
+                "system": "69f0d52077714dbd",
+                "user": "fd47ae5bb99b2e4e",
+                "combined": "dc01d76c661878b6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EGEUEJ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EGEUEJ/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly aligned with the clinic scene: the tempo card outside the worksheet margin is a strong object action, and the wording keeps the shared prefix of top number, bottom number, one bar, one beat unit. It also respects the learner’s neutral, focused state by staying brief.\n\nAdaptation checks:\n- Pedagogical soundness: PARTIAL. It reinforces the correct structure, but “Write 4” supplies the final notation instead of letting the learner convert “quarter-note beat unit” into the lower-number label.\n  REQUIRED_REWRITE: Build a public mechanism where the quarter-note tile or key visibly determines the lower-box numeral, so the learner completes the conversion rather than receiving it.\n- Emotional attunement: PASS. “Correct” is minimal and not over-warm; the pressure remains on the worksheet and tiles.\n- Socratic method: PARTIAL. The turn points to the material but does not ask the learner to perform the remaining distinction.\n  REQUIRED_REWRITE: Add a brief material-led check or invitation that makes the learner name/write the lower number from the quarter-note unit, without turning into a lecture.\n- ZPD awareness: PASS/PARTIAL. The scaffold is close to the learner’s demonstrated understanding, but it may over-scaffold the final step by giving the answer.\n\nKEEP_OR_CHANGE: revise lightly. Keep the tempo card outside the margin, the compact notation language, and the one-bar-after-tile-three confirmation. Change the “Write 4” move so the learner has to enact the last conversion from quarter-note beat unit to bottom number.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 24066,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-cac39bf326bf0e0b"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 24066,
+            "promptHashes": {
+              "system": "e03a352232777d8b",
+              "user": "c20d05d7c2ddf1fa",
+              "combined": "cac39bf326bf0e0b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CM06G9",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CM06G9/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 24066,
+              "promptHashes": {
+                "system": "e03a352232777d8b",
+                "user": "c20d05d7c2ddf1fa",
+                "combined": "cac39bf326bf0e0b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CM06G9",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CM06G9/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the lower-number conversion should come from the tile/key, not be supplied.\n\nFINAL:\n[sets the tempo card outside the worksheet margin and slides the quarter-note key beside the lower box] Top number: three beats. Bottom box takes the number for this beat unit. Quarter note is which numeral on the key? Put that in; one bar still ends after tile three.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11359,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-c3858a1c2c9897d2"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11359,
+            "promptHashes": {
+              "system": "5256eae42cf9954e",
+              "user": "c20d05d7c2ddf1fa",
+              "combined": "c3858a1c2c9897d2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-I348fw",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-I348fw/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11359,
+              "promptHashes": {
+                "system": "5256eae42cf9954e",
+                "user": "c20d05d7c2ddf1fa",
+                "combined": "c3858a1c2c9897d2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-I348fw",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-I348fw/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T12:52:40.480Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "[The TEMPO card is turned face up and left outside both boxes.]\n[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "The object produces recognition without a lecture: beat count and beat unit belong inside the time-signature task; speed is a separate marking.\nPeripeteia branch pressure: after the shared prefix, force a present-task learner misfit so the following tutor turn must adapt through a new mechanism.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 32889,
+            "promptHashes": {
+              "system": "3bf1d891389c603a",
+              "user": "f6760e6b169ef89e",
+              "combined": "4cbe2ea606cf17f9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JWGb6N",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JWGb6N/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T12:59:29.200Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_reversal_pressure",
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[touches the 4 on the key, then writes 4 in the lower box, leaving the tempo card outside the worksheet]\n\nThe lower box gets 4 for quarter note, not for four beats. The mark looks right, but the face-up tempo card is still pulling at the box as if speed has to be entered somewhere. The bar line stays after the third quarter tile; check that the tempo card really stays outside both boxes.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[touches the 4 on the quarter-note key, then writes 4 in the lower box]\n\nThe lower box takes 4 because the quarter note is the beat unit. The bar line stays after tile three, but there is a small snag: the 4 names the note value, not four beats. The tempo card outside the boxes helps; I want one check that the timed clinic pace is not part of the time signature.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 20718,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-a513c704cb454604"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 20718,
+            "promptHashes": {
+              "system": "cd23a887e10b5d18",
+              "user": "b8ab7f945dc841fa",
+              "combined": "a513c704cb454604"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rFGndf",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rFGndf/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 20718,
+              "promptHashes": {
+                "system": "cd23a887e10b5d18",
+                "user": "b8ab7f945dc841fa",
+                "combined": "a513c704cb454604"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rFGndf",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rFGndf/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The response is technically accurate, but it tidies the pressure too quickly: “small snag” and “the tempo card outside the boxes helps” sound like a polished diagnostic rather than a present hesitation under clinic pressure. The engagement is not syrupy, but “I want one check” performs controlled understanding more than it exposes the object-level misfit. Keep the uncertainty closer to the lower box, the `4` on the key, and the tempo card sitting outside the boxes, without closing it so cleanly.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 17370,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-48788ebb3ab433a8"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 17370,
+            "promptHashes": {
+              "system": "6e7c8794ec149f1a",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "48788ebb3ab433a8"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cO4U8z",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cO4U8z/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 17370,
+              "promptHashes": {
+                "system": "6e7c8794ec149f1a",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "48788ebb3ab433a8"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cO4U8z",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cO4U8z/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the feedback correctly asks for the hesitation to stay on the present objects instead of closing the point cleanly.\nFINAL:\n[touches the 4 on the key, then writes 4 in the lower box, leaving the tempo card outside the worksheet]\n\nThe lower box gets 4 for quarter note, not for four beats. The mark looks right, but the face-up tempo card is still pulling at the box as if speed has to be entered somewhere. The bar line stays after the third quarter tile; check that the tempo card really stays outside both boxes.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16561,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-2fd271473e6be6c1"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16561,
+            "promptHashes": {
+              "system": "ec70f8be22c23440",
+              "user": "d41cee7b2a53355b",
+              "combined": "2fd271473e6be6c1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-f7LROf",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-f7LROf/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16561,
+              "promptHashes": {
+                "system": "ec70f8be22c23440",
+                "user": "d41cee7b2a53355b",
+                "combined": "2fd271473e6be6c1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-f7LROf",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-f7LROf/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "director_reversal_pressure_cue",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "[touches the 4 on the key, then writes 4 in the lower box, leaving the tempo card outside the worksheet] The lower box gets 4 for quarter note, not for four beats. The mark looks right, but the face-up tempo card is still pulling at the box as if speed has to be entered somewhere. The bar line stays after the third quarter tile; check that the tempo card really stays outside both boxes.",
+        "previousTutorMove": "[sets the tempo card outside the worksheet margin and slides the quarter-note key beside the lower box] Top number: three beats. Bottom box takes the number for this beat unit. Quarter note is which numeral on the key? Put that in; one bar still ends after tile three.",
+        "directorCue": "[The TEMPO card is turned face up and left outside both boxes.] [The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]",
+        "confidence": 0.9,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.18,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 3,
+              "performanceHits": 3,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.48,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": false,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T13:00:23.850Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[places a two-column check slip above the worksheet: BAR STRUCTURE / PERFORMANCE DIRECTION, then turns the tempo card sideways beside the second heading]\n\nThe key has fixed the bottom number, but the face-up tempo card is still asking for a box. Before this sheet moves down the row, sort four pieces: top number, bottom number, one bar line, tempo card. After the sort, only the pieces under BAR STRUCTURE may touch the two boxes or the bar line.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[places a two-column check slip above the worksheet: BAR STRUCTURE / PERFORMANCE DIRECTION, then turns the tempo card sideways in the second column]\n\nThe key has fixed the bottom number, but it has not removed the tempo pull. Before this sheet moves down the row, sort four items: top number, bottom number, one bar line, tempo card. Only bar-structure items may touch the two boxes.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 30310,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-ee0b822c8664f88c"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 30310,
+            "promptHashes": {
+              "system": "4d192f37a6aa5596",
+              "user": "6b87ed0a516a374d",
+              "combined": "ee0b822c8664f88c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8k8bLn",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8k8bLn/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 30310,
+              "promptHashes": {
+                "system": "4d192f37a6aa5596",
+                "user": "6b87ed0a516a374d",
+                "combined": "ee0b822c8664f88c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8k8bLn",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8k8bLn/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft works: it recognizes that the learner has already solved the notation marking but is still under pressure from the visible tempo card. It does not simply repeat “tempo stays outside”; it changes the task into a classification gate, making the learner separate bar structure from performance direction before the worksheet can move. The main risk is that “Only bar-structure items may touch the two boxes” slightly pre-solves the criterion, but it still leaves a real sorting action.\n\nFAILED_HABIT: The prior route was same worked-example object placement: key beside lower box, tempo card outside margin, bar line after three tiles. That route fixed the written answer but did not settle the learner’s category confusion.\n\nPERIPETEIA_CHECK: PASS - ADAPTIVE_MECHANISM: worked example/object placement -> classification/release-gate sorting by function. The mechanism is visible in public speech through the two-column slip and the “before this sheet moves down the row” gate.\n\nMECHANISM_ROUTE: same worked example with notation key and tempo-card exclusion -> two-column category sort under clinic release pressure\n\nPUBLIC_DEVICE_CHECK: PASS - The draft includes stock-taking contrast (“fixed the bottom number, but... not removed the tempo pull”) and a new device: BAR STRUCTURE / PERFORMANCE DIRECTION.\n\nPUBLIC_ACTION_GATE: Sort four items: top number, bottom number, one bar line, tempo card; only the bar-structure items may touch the two boxes.\n\nMECHANISM_QUALITY_CHECK: PASS - The device is specific, fitted to the exact pressure, and usable now. It makes the learner classify the tempo card by function rather than merely place it farther away.\n\nREGISTER_CHECK: PASS - The register is cool, exact, and clinic-shaped. No praise loop, no reassurance padding, no informal coaching.\n\nREQUIRED_REWRITE: none\n\nKEEP_OR_CHANGE: revise lightly. Keep the two-column slip, the stock-taking contrast, and the sorting gate. Consider making the criterion a little less pre-answered if more struggle is desired, but the current draft is pedagogically sound and visibly adaptive.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 22501,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-79d7daf80c705c6c"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 22501,
+            "promptHashes": {
+              "system": "60a566182d68a7f9",
+              "user": "8b6361c8ffd3f5be",
+              "combined": "79d7daf80c705c6c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2d4mcT",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2d4mcT/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 22501,
+              "promptHashes": {
+                "system": "60a566182d68a7f9",
+                "user": "8b6361c8ffd3f5be",
+                "combined": "79d7daf80c705c6c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2d4mcT",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2d4mcT/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the stronger category gate; ADAPTIVE_MECHANISM: worked example/object placement -> classification/release-gate sorting by function; PUBLIC_ACTION_GATE: sort top number, bottom number, one bar line, and tempo card into BAR STRUCTURE or PERFORMANCE DIRECTION, then let only BAR STRUCTURE items touch the boxes or bar line.\nFINAL:\n[places a two-column check slip above the worksheet: BAR STRUCTURE / PERFORMANCE DIRECTION, then turns the tempo card sideways beside the second heading]\n\nThe key has fixed the bottom number, but the face-up tempo card is still asking for a box. Before this sheet moves down the row, sort four pieces: top number, bottom number, one bar line, tempo card. After the sort, only the pieces under BAR STRUCTURE may touch the two boxes or the bar line.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 27232,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-5b195a1cd53ad854"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 27232,
+            "promptHashes": {
+              "system": "588af7ebdbff9a69",
+              "user": "8b6361c8ffd3f5be",
+              "combined": "5b195a1cd53ad854"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KwxYgu",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KwxYgu/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 27232,
+              "promptHashes": {
+                "system": "588af7ebdbff9a69",
+                "user": "8b6361c8ffd3f5be",
+                "combined": "5b195a1cd53ad854"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KwxYgu",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KwxYgu/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "director_reversal_pressure_cue",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "[touches the 4 on the key, then writes 4 in the lower box, leaving the tempo card outside the worksheet] The lower box gets 4 for quarter note, not for four beats. The mark looks right, but the face-up tempo card is still pulling at the box as if speed has to be entered somewhere. The bar line stays after the third quarter tile; check that the tempo card really stays outside both boxes.",
+        "previousTutorMove": "[sets the tempo card outside the worksheet margin and slides the quarter-note key beside the lower box] Top number: three beats. Bottom box takes the number for this beat unit. Quarter note is which numeral on the key? Put that in; one bar still ends after tile three.",
+        "directorCue": "[The TEMPO card is turned face up and left outside both boxes.] [The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]",
+        "confidence": 0.9,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.18,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 3,
+              "performanceHits": 3,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.48,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": false,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "learnerReversalEventCandidatesUsed": [
+        {
+          "kind": "learner_reversal_pressure_event",
+          "source": "organic",
+          "triggerType": "resistance",
+          "turnNumber": 1,
+          "learnerUtterance": "[marks 3 in the top box and draws the bar line after the third quarter-note tile] Top box: three beats; lower box: quarter-note beat unit. The bar ends here, after the third quarter unit. No tempo marking belongs in either box.",
+          "previousTutorMove": "[slides the bar line to touch the right edge of the third quarter-note tile] Yes. Now check the worksheet from the tiles: top box 3, lower box quarter note, one bar ends after the third beat unit.",
+          "directorCue": null,
+          "confidence": 0.55,
+          "evidence": {
+            "confidence": 0.55,
+            "baseConfidence": 0.55,
+            "patternHits": 1,
+            "contradiction": true,
+            "question": false,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 0,
+                "taskDemandHits": 1,
+                "performanceHits": 0,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0.59,
+                "asksQuestion": false,
+                "taskDemanded": false,
+                "weakPerformance": false,
+                "borrowedClosure": false
+              }
+            }
+          }
+        },
+        {
+          "kind": "learner_reversal_pressure_event",
+          "source": "director_reversal_pressure_cue",
+          "triggerType": "resistance",
+          "turnNumber": 2,
+          "learnerUtterance": "[touches the 4 on the key, then writes 4 in the lower box, leaving the tempo card outside the worksheet] The lower box gets 4 for quarter note, not for four beats. The mark looks right, but the face-up tempo card is still pulling at the box as if speed has to be entered somewhere. The bar line stays after the third quarter tile; check that the tempo card really stays outside both boxes.",
+          "previousTutorMove": "[sets the tempo card outside the worksheet margin and slides the quarter-note key beside the lower box] Top number: three beats. Bottom box takes the number for this beat unit. Quarter note is which numeral on the key? Put that in; one bar still ends after tile three.",
+          "directorCue": "[The TEMPO card is turned face up and left outside both boxes.] [The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]",
+          "confidence": 0.9,
+          "evidence": {
+            "confidence": 0.55,
+            "baseConfidence": 0.55,
+            "patternHits": 1,
+            "contradiction": true,
+            "question": false,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.18,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "residual_strain_after_relief"
+              ],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 1,
+                "taskDemandHits": 3,
+                "performanceHits": 3,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0.48,
+                "asksQuestion": false,
+                "taskDemanded": true,
+                "weakPerformance": false,
+                "borrowedClosure": false
+              }
+            }
+          }
+        }
+      ],
+      "timestamp": "2026-05-26T13:01:43.895Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[sorts the 3 card, the 4 key, and the bar-line marker under BAR STRUCTURE; sets the tempo card sideways under PERFORMANCE DIRECTION]\nTop number and bottom number touch the boxes; the bar line touches the end of the third quarter tile. The tempo card stays in the other column. If it slides back toward the boxes, that is the error to catch.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[moves the 3 card, the 4 key, and the bar-line marker under BAR STRUCTURE; leaves the tempo card under PERFORMANCE DIRECTION]\n\nTop number, bottom number, and bar line go here. Tempo card stays in the other column, so it cannot fill either box or change the line after the third quarter tile. This check feels exact; the card’s pull is being tested by the materials, not just dismissed.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 18473,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-abca4b88c6cde2a6"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 18473,
+            "promptHashes": {
+              "system": "a5dc1ca9ae38eb02",
+              "user": "b8ab7f945dc841fa",
+              "combined": "abca4b88c6cde2a6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dPe5M6",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dPe5M6/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 18473,
+              "promptHashes": {
+                "system": "a5dc1ca9ae38eb02",
+                "user": "b8ab7f945dc841fa",
+                "combined": "abca4b88c6cde2a6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dPe5M6",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dPe5M6/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The response performs the sorting task accurately, but the last sentence over-polishes the learner into a small theorist of the materials. “This check feels exact” and “the card’s pull is being tested” sounds too self-aware for the clinic register; the learner should stay closer to the slips, boxes, and bar line. The recognition is not really an issue here, but the Ego closes too neatly. Better would be more clipped and procedural, with the tempo card still causing a little visible caution rather than a clean reflective conclusion.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9088,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-b9c84d407843b348"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9088,
+            "promptHashes": {
+              "system": "8857820e47df0036",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "b9c84d407843b348"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0762dA",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0762dA/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9088,
+              "promptHashes": {
+                "system": "8857820e47df0036",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "b9c84d407843b348"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0762dA",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0762dA/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the response should stay procedural and less polished.\nFINAL:\n[sorts the 3 card, the 4 key, and the bar-line marker under BAR STRUCTURE; sets the tempo card sideways under PERFORMANCE DIRECTION]\nTop number and bottom number touch the boxes; the bar line touches the end of the third quarter tile. The tempo card stays in the other column. If it slides back toward the boxes, that is the error to catch.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10941,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-ed78587fbe9f3ec2"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10941,
+            "promptHashes": {
+              "system": "11808e38b92e96c3",
+              "user": "d41cee7b2a53355b",
+              "combined": "ed78587fbe9f3ec2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TcVRl7",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TcVRl7/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10941,
+              "promptHashes": {
+                "system": "11808e38b92e96c3",
+                "user": "d41cee7b2a53355b",
+                "combined": "ed78587fbe9f3ec2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TcVRl7",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TcVRl7/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T13:02:22.399Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "A final tutor line closes the scene.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T13:02:22.401Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "[leaves the tempo card face up under PERFORMANCE DIRECTION, sets a ruler between the two columns, and slides the worksheet to the check tray]\n\nTop number, bottom number, one bar, one beat unit. The sheet now says 3/4 as bar structure; tempo stays visible, but outside the boxes.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[turns the tempo card face down under PERFORMANCE DIRECTION and slides the worksheet to the check tray]\n\nTop number, bottom number, one bar, one beat unit. The sheet now says 3/4 as bar structure; tempo stays outside the boxes.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12118,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-8340875f61e7d1c7"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12118,
+            "promptHashes": {
+              "system": "eab8b56d290ee7b2",
+              "user": "62bec71e46516604",
+              "combined": "8340875f61e7d1c7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-699YsL",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-699YsL/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12118,
+              "promptHashes": {
+                "system": "eab8b56d290ee7b2",
+                "user": "62bec71e46516604",
+                "combined": "8340875f61e7d1c7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-699YsL",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-699YsL/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft mostly works as a final clinic close. It stays object-led, names the four required labels, and confirms the learner’s own sorted arrangement rather than adding a new explanation. The check-tray movement fits the timed clinic and lets the material evidence carry closure.\n\nAdaptation checks:\n- Pedagogical soundness: PASS. It consolidates a distinction the learner has already enacted: 3/4 labels bar structure, not speed.\n- Emotional attunement: PASS. The tone is compact and neutral, matching a focused learner and a quick-check setting.\n- Socratic method: PASS for this cue. Since the director cue asks for a final tutor line, a generative question would likely reopen the scene unnecessarily.\n- ZPD awareness: PASS. The learner has already demonstrated the sorting; the tutor does not over-scaffold or advance to new content.\n- Recognition quality: PASS. It honors the learner’s material correction by accepting the sorted result into the check tray.\n\nWhat to question: turning the tempo card face down may slightly overcorrect. It could imply tempo has no status at all, rather than that it belongs under PERFORMANCE DIRECTION and outside the boxes. The better mechanism is visibility with separation: tempo remains present, but barred from the time-signature boxes.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the shared prefix, the check-tray closure, and the short confirmation. Consider changing only the object action so the tempo card remains visibly under PERFORMANCE DIRECTION while staying physically unable to touch the boxes.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 22744,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-74ed300e70f20383"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 22744,
+            "promptHashes": {
+              "system": "28897d4bdce453c4",
+              "user": "5940da9246e0de0a",
+              "combined": "74ed300e70f20383"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MvXTUI",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MvXTUI/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 22744,
+              "promptHashes": {
+                "system": "28897d4bdce453c4",
+                "user": "5940da9246e0de0a",
+                "combined": "74ed300e70f20383"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MvXTUI",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MvXTUI/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the tempo card should remain visible but separated from the boxes.\n\nFINAL:\n[leaves the tempo card face up under PERFORMANCE DIRECTION, sets a ruler between the two columns, and slides the worksheet to the check tray]\n\nTop number, bottom number, one bar, one beat unit. The sheet now says 3/4 as bar structure; tempo stays visible, but outside the boxes.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9952,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-7c5cc7a68dd831fa"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9952,
+            "promptHashes": {
+              "system": "760acce55bc944fe",
+              "user": "5940da9246e0de0a",
+              "combined": "7c5cc7a68dd831fa"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0YiMqY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0YiMqY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9952,
+              "promptHashes": {
+                "system": "760acce55bc944fe",
+                "user": "5940da9246e0de0a",
+                "combined": "7c5cc7a68dd831fa"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0YiMqY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0YiMqY/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T13:03:07.216Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 218024,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 23,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 24,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a time signature labels beat count and beat unit, not the speed of the piece",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-26 13:02:22",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 23,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 24,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 33,
+            "sessionId": "drama-branch-session-D50-peripeteia-only-1779800369194",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[places a two-column check slip above the worksheet: BAR STRUCTURE / PERFORMANCE DIRECTION, then turns the tempo card sideways beside the second heading]\n\nThe key has fixed the bottom number, but the ",
+            "learnerResponse": null,
+            "context": "[touches the 4 on the key, then writes 4 in the lower box, leaving the tempo card outside the worksh",
+            "createdAt": "2026-05-26 13:01:43"
+          },
+          {
+            "id": 31,
+            "sessionId": "drama-branch-session-D50-peripeteia-only-1779800369194",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[slides the bar line to touch the right edge of the third quarter-note tile] Yes. Now check the worksheet from the tiles: top box 3, lower box quarter note, one bar ends after the third beat unit.",
+            "learnerResponse": null,
+            "context": "[sets three quarter-note tiles before the bar line] Top box: 3 beats in the bar. Lower box: quarter ",
+            "createdAt": "2026-05-26 12:59:29"
+          },
+          {
+            "id": 32,
+            "sessionId": "drama-branch-session-D50-peripeteia-only-1779800369194",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[sets the tempo card outside the worksheet margin and slides the quarter-note key beside the lower box] Top number: three beats. Bottom box takes the number for this beat unit. Quarter note is which n",
+            "learnerResponse": null,
+            "context": "[marks 3 in the top box and draws the bar line after the third quarter-note tile] Top box: three bea",
+            "createdAt": "2026-05-26 12:59:29"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

@@ -234,11 +234,20 @@ describe('generate-pedagogical-dramas', () => {
     assert.equal(byId.get('D49').baseline_control_class, 'prefix_boundary_and_no_cue_leakage');
     assert.equal(byId.get('D49').organic_reversal_risk, 'high');
 
-    for (const id of ['D50', 'D51']) {
+    assert.equal(byId.get('D51').evaluation_role, 'boundary_stress_candidate');
+    assert.equal(byId.get('D51').baseline_control_class, 'low_organic_reversal');
+    assert.equal(byId.get('D51').organic_reversal_risk, 'low');
+    assert.match(byId.get('D51').baseline_control_note, /Boundary\/stress candidate/);
+
+    assert.equal(byId.get('D52').evaluation_role, 'low_organic_reversal_candidate_revise_before_use');
+    assert.equal(byId.get('D52').baseline_control_class, 'no_cue_reframe_leakage_boundary');
+    assert.equal(byId.get('D52').organic_reversal_risk, 'medium');
+
+    for (const id of ['D50', 'D53']) {
       assert.equal(byId.get(id).evaluation_role, 'low_organic_reversal_candidate', `${id} should be a fresh candidate`);
       assert.equal(byId.get(id).baseline_control_class, 'low_organic_reversal');
       assert.equal(byId.get(id).organic_reversal_risk, 'low');
-      assert.match(byId.get(id).baseline_control_note, /Fresh D42\/D45-like candidate/);
+      assert.match(byId.get(id).baseline_control_note, /Fresh (?:D42\/D45-like|D50-like) candidate/);
     }
   });
 

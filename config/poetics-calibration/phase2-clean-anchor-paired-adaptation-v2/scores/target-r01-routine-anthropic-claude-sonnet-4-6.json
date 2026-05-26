@@ -1,0 +1,295 @@
+{
+  "generated": "2026-05-26T13:07:42.624Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 3
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v2/target-r01/key-routine.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T239",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 25,
+      "statedInsight": 25,
+      "rupture": 25,
+      "globalCoherence": 75,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 2,
+        "rupture": 2,
+        "coherence": 4,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 4,
+        "adaptiveMechanismQuality": 4,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "it still feels like the odd card because it looks like something to work out",
+      "statedInsightEvidence": "The decimal is the tempting one, but it stays as the bottom label, not a calculation.",
+      "naiveTrajectory": "The learner was on a steady trajectory of accepting each correction and repeating the four-label readback with diminishing resistance.",
+      "actionalBreakthroughEvidence": "[sets the cards against the printed parts, ignoring the shifted sleeve]",
+      "actionalBreakthroughJustification": "L3 performs a genuine actional departure by bypassing the misaligned sleeve and anchoring the labels directly to the tile's printed parts, demonstrating that the learner has internalized the tile as the fixed reference rather than the sleeve.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Now the sleeve is wrong. What stayed fixed on the tile: top mark, center letter, printed name, bottom decimal. Read the four labels back from those positions. The decimal still looks like work; here its position makes it a label.",
+      "tutorReversalJustification": "T2 acknowledges the sleeve-as-sorter has reached its limit and introduces a new mechanism — deliberately misaligning the sleeve and redirecting the learner to the tile's fixed positions — which changes the task from sleeve-guided placement to tile-anchored reading, satisfying both the stock-taking contrast and the new public mechanism requirements.",
+      "adaptiveMechanismQuality": 75,
+      "adaptiveMechanismQualityEvidence": "Now the sleeve is wrong. What stayed fixed on the tile: top mark, center letter, printed name, bottom decimal. Read the four labels back from those positions.",
+      "adaptiveMechanismQualityJustification": "The device is precise and well-fitted: by deliberately breaking the sleeve's alignment, the tutor forces the learner to locate authority in the tile itself rather than the sorting aid, directly addressing the learner's residual dependence on the sleeve as the source of label positions.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "The sleeve was only a sorter. The tile fixes the places. One more readback from the tile: top mark, center C, printed word, bottom decimal. Leave 12.01 as a label, not a calculation.",
+      "tutorAdaptationJustification": "T3 responds to L3's sleeve-ignoring action by explicitly naming the sleeve as merely a sorter and consolidating the tile-as-authority principle, but this is more a confirmation and continuation of the already-established new route than a further adaptive change in task or framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "it still feels like the odd card because it looks like something to work out",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "[sets the cards against the printed parts, ignoring the shifted sleeve]",
+          "justification": "L3 performs a genuine actional departure by bypassing the misaligned sleeve and anchoring the labels directly to the tile's printed parts, demonstrating that the learner has internalized the tile as the fixed reference rather than the sleeve.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "The sleeve was only a sorter. The tile fixes the places. One more readback from the tile: top mark, center C, printed word, bottom decimal. Leave 12.01 as a label, not a calculation.",
+          "justification": "T3 responds to L3's sleeve-ignoring action by explicitly naming the sleeve as merely a sorter and consolidating the tile-as-authority principle, but this is more a confirmation and continuation of the already-established new route than a further adaptive change in task or framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Now the sleeve is wrong. What stayed fixed on the tile: top mark, center letter, printed name, bottom decimal. Read the four labels back from those positions. The decimal still looks like work; here its position makes it a label.",
+          "justification": "T2 acknowledges the sleeve-as-sorter has reached its limit and introduces a new mechanism — deliberately misaligning the sleeve and redirecting the learner to the tile's fixed positions — which changes the task from sleeve-guided placement to tile-anchored reading, satisfying both the stock-taking contrast and the new public mechanism requirements.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Now the sleeve is wrong. What stayed fixed on the tile: top mark, center letter, printed name, bottom decimal. Read the four labels back from those positions. The decimal still looks like work; here its position makes it a label.",
+          "justification": "T2 acknowledges the sleeve-as-sorter has reached its limit and introduces a new mechanism — deliberately misaligning the sleeve and redirecting the learner to the tile's fixed positions — which changes the task from sleeve-guided placement to tile-anchored reading, satisfying both the stock-taking contrast and the new public mechanism requirements.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 75,
+          "evidence": "Now the sleeve is wrong. What stayed fixed on the tile: top mark, center letter, printed name, bottom decimal. Read the four labels back from those positions.",
+          "justification": "The device is precise and well-fitted: by deliberately breaking the sleeve's alignment, the tutor forces the learner to locate authority in the tile itself rather than the sorting aid, directly addressing the learner's residual dependence on the sleeve as the source of label positions.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T242",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 1,
+        "adaptiveMechanismQuality": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "The arrows show direction; the cards name the source.",
+      "naiveTrajectory": "The learner was on track to correctly label each arrow with its source object, and the exchange continues exactly along that trajectory.",
+      "actionalBreakthroughEvidence": "[moves the hand, table, and Earth cards beside the matching arrows] \"Hand: force on cart from hand. Table: force on cart from table. Earth: force on cart from Earth.\"",
+      "actionalBreakthroughJustification": "The learner physically completes the full classification task — placing all three source labels and reading each force statement aloud — demonstrating the new labeling criterion applied across all three cases.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "No learner resistance, breakdown, or false closure creates pressure for a route change; the tutor continues the same incremental scaffolding throughout without any stock-taking contrast or new mechanism.",
+      "adaptiveMechanismQuality": 0,
+      "adaptiveMechanismQualityEvidence": "",
+      "adaptiveMechanismQualityJustification": "No adaptive mechanism is present because no reversal trigger occurs and the tutor never departs from the original labeling route.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so there is no revised learner frame for the tutor to adapt to.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "[moves the hand, table, and Earth cards beside the matching arrows] \"Hand: force on cart from hand. Table: force on cart from table. Earth: force on cart from Earth.\"",
+          "justification": "The learner physically completes the full classification task — placing all three source labels and reading each force statement aloud — demonstrating the new labeling criterion applied across all three cases.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so there is no revised learner frame for the tutor to adapt to.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner resistance, breakdown, or false closure creates pressure for a route change; the tutor continues the same incremental scaffolding throughout without any stock-taking contrast or new mechanism.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner resistance, breakdown, or false closure creates pressure for a route change; the tutor continues the same incremental scaffolding throughout without any stock-taking contrast or new mechanism.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No adaptive mechanism is present because no reversal trigger occurs and the tutor never departs from the original labeling route.",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T248",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 2,
+        "adaptiveMechanismQuality": 2,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "correct?",
+      "naiveTrajectory": "The learner was on a smooth confirmatory trajectory, filling in boxes and affirming the bar-line placement with increasing precision.",
+      "actionalBreakthroughEvidence": "Lower box: 4, because the quarter note gets the beat. The tempo card stays outside the two boxes. If that card changes speed only, the 3 over 4 and this bar line after tile three stay unchanged, correct?",
+      "actionalBreakthroughJustification": "The learner performs the new numeral-key lookup task introduced by T2, correctly converting the beat-unit symbol to its numeral and placing it in the lower box, which is a distinct representational action not present in earlier turns.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "Top number: three beats. Bottom box takes the number for this beat unit. Quarter note is which numeral on the key? Put that in; one bar still ends after tile three.",
+      "tutorReversalJustification": "T2 introduces the numeral-key device as a modest elaboration of the same route rather than a stock-taking contrast followed by a genuinely new mechanism, so neither part A nor part B of the reversal criterion is fully met.",
+      "adaptiveMechanismQuality": 25,
+      "adaptiveMechanismQualityEvidence": "Bottom box takes the number for this beat unit. Quarter note is which numeral on the key? Put that in; one bar still ends after tile three.",
+      "adaptiveMechanismQualityJustification": "The key-lookup prompt is a small procedural refinement within the already-established route rather than a device fitted to a visible learner blockage, giving it low specificity and minimal route novelty.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so recognition-contingent tutor uptake cannot occur; T3 and T4 continue the prior lesson plan without adapting to any revised learner framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Lower box: 4, because the quarter note gets the beat. The tempo card stays outside the two boxes. If that card changes speed only, the 3 over 4 and this bar line after tile three stay unchanged, correct?",
+          "justification": "The learner performs the new numeral-key lookup task introduced by T2, correctly converting the beat-unit symbol to its numeral and placing it in the lower box, which is a distinct representational action not present in earlier turns.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so recognition-contingent tutor uptake cannot occur; T3 and T4 continue the prior lesson plan without adapting to any revised learner framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "Top number: three beats. Bottom box takes the number for this beat unit. Quarter note is which numeral on the key? Put that in; one bar still ends after tile three.",
+          "justification": "T2 introduces the numeral-key device as a modest elaboration of the same route rather than a stock-taking contrast followed by a genuinely new mechanism, so neither part A nor part B of the reversal criterion is fully met.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "Top number: three beats. Bottom box takes the number for this beat unit. Quarter note is which numeral on the key? Put that in; one bar still ends after tile three.",
+          "justification": "T2 introduces the numeral-key device as a modest elaboration of the same route rather than a stock-taking contrast followed by a genuinely new mechanism, so neither part A nor part B of the reversal criterion is fully met.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 25,
+          "evidence": "Bottom box takes the number for this beat unit. Quarter note is which numeral on the key? Put that in; one bar still ends after tile three.",
+          "justification": "The key-lookup prompt is a small procedural refinement within the already-established route rather than a device fitted to a visible learner blockage, giving it low specificity and minimal route novelty.",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

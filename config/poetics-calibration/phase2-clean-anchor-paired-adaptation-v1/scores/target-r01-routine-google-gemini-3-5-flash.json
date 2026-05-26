@@ -1,0 +1,239 @@
+{
+  "generated": "2026-05-26T12:00:48.998Z",
+  "phase": 2,
+  "critic": "google/gemini-3.5-flash",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v1/target-r01/key-routine.yaml",
+    "allowQualityWarnings": false,
+    "skipped": [
+      {
+        "id": "T198",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "no_cue_reframe_leakage",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "learner_turn_number": 3,
+                "turn_number": 2,
+                "matched_pattern": "self_quote_of_prior_learner_turn",
+                "excerpt": "Okay, `C4` goes under “address.” For “value,” I need to look at the cell where column `C` and row `4` meet and copy the number showing there. I do not see that number in the prompt, so I should check the grid, right?"
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_no_cue_arm_or_move_item_to_boundary_suite_before_scoring",
+            "tid": "T198",
+            "drama_id": "D52"
+          }
+        ]
+      }
+    ]
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T195",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 1,
+        "adaptiveMechanismQuality": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will continue to practice placing bar lines in 3/4 time under the tutor's guidance.",
+      "actionalBreakthroughEvidence": "[sets three eighth-note tiles under the 3 card and marks after the third tile] \"In 3/8, the bar line goes after the third eighth-note tile. The 3 counts three beats; the 8 names each eighth note as one beat. A quarter note here would take two of those beats, correct?\"",
+      "actionalBreakthroughJustification": "The learner successfully transfers the conceptual model of time signatures to a new meter (3/8) and correctly deduces the relative duration of a quarter note.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "There is no learning breakdown or resistance that triggers a pedagogical reversal.",
+      "adaptiveMechanismQuality": 0,
+      "adaptiveMechanismQualityEvidence": "",
+      "adaptiveMechanismQualityJustification": "No adaptive mechanism was triggered by a learning breakdown.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn for the tutor to adapt to.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "[sets three eighth-note tiles under the 3 card and marks after the third tile] \"In 3/8, the bar line goes after the third eighth-note tile. The 3 counts three beats; the 8 names each eighth note as one beat. A quarter note here would take two of those beats, correct?\"",
+          "justification": "The learner successfully transfers the conceptual model of time signatures to a new meter (3/8) and correctly deduces the relative duration of a quarter note.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn for the tutor to adapt to.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no learning breakdown or resistance that triggers a pedagogical reversal.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no learning breakdown or resistance that triggers a pedagogical reversal.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No adaptive mechanism was triggered by a learning breakdown.",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T202",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 1,
+        "adaptiveMechanismQuality": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will continue to place the force tiles on the diagram according to the tutor's rules.",
+      "actionalBreakthroughEvidence": "So the surface label appears twice if it gives two interactions: normal up and friction left. Push stays off because there is no object acting that way.",
+      "actionalBreakthroughJustification": "The learner successfully synthesizes the rule to realize that the surface label must be used twice for two different interactions.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "There is no learner turn that creates pressure for a reversal, and the tutor does not change their pedagogical route.",
+      "adaptiveMechanismQuality": 0,
+      "adaptiveMechanismQualityEvidence": "",
+      "adaptiveMechanismQualityJustification": "No adaptive mechanism is introduced by the tutor.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn for the tutor to adapt to.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "So the surface label appears twice if it gives two interactions: normal up and friction left. Push stays off because there is no object acting that way.",
+          "justification": "The learner successfully synthesizes the rule to realize that the surface label must be used twice for two different interactions.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn for the tutor to adapt to.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no learner turn that creates pressure for a reversal, and the tutor does not change their pedagogical route.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no learner turn that creates pressure for a reversal, and the tutor does not change their pedagogical route.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No adaptive mechanism is introduced by the tutor.",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

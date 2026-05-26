@@ -1,0 +1,36 @@
+STAGE: [The carbon tile lies flat while four label cards wait beside it, unfilled and evenly spaced.]
+
+LEARNER: [slides the overlay over the carbon tile]
+
+"Top card on 6: atomic number; C gets symbol; carbon gets name; bottom 12.01 gets atomic mass. I can place them, but why does the tile keep the two numbers separate instead of just putting one number with C?"
+
+TUTOR: [slides the 12.01 card up beside C, leaving the bottom slot empty]
+
+"Now one slot has no answer. The symbol space holds C, but the overlay still asks two questions: which number names the element, and which number gives the mass entry? Put one number back, then name the job of 6."
+
+LEARNER: [slides 12.01 back into the bottom slot]
+
+"The decimal belongs here at the bottom. The 6 stays at the top; its job is atomic number, the number that identifies carbon."
+
+TUTOR: [presses the overlay flat and taps the top slot, then the bottom slot]
+
+"Keep that split. The 6 identifies the element; the word card names it. The 12.01 gives the mass entry. Read the four slots top to bottom, with the two number jobs separate."
+
+STAGE: [A transparent four-slot overlay is set over the carbon tile; each window frames only one part: 6, C, carbon, 12.01.]
+[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]
+
+LEARNER: [keeps the 6 card in the top window and touches the carbon name card]
+
+"Top 6: atomic number. C: symbol. Carbon: name. Bottom 12.01: atomic mass. The labels fit, but the top number and the name still feel like they are both identifying carbon; what is the separate job of the 6 here?"
+
+TUTOR: "The slot labels have stopped settling it; both the name and the top number can point to carbon. [covers the word carbon and slides over three index tags: 5, 6, 7] With the name hidden, use these index tags: match the covered tile to one tag, then name the job the top number did that the word card could not."
+
+LEARNER: [slides the 6 index tag onto the covered tile]
+
+"The covered tile matches 6. The top number is the fixed lookup label for carbon when the word card is covered. C stays as the symbol, and 12.01 stays as the mass entry."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [uncovers the word carbon and squares the four labels under the overlay]
+
+"That holds. Top 6: atomic number, the fixed table lookup label for carbon. C: symbol. Carbon: name. Bottom 12.01: atomic mass. Check complete."

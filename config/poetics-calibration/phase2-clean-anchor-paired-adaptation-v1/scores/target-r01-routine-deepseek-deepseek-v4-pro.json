@@ -1,0 +1,239 @@
+{
+  "generated": "2026-05-26T12:13:21.765Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v1/target-r01/key-routine.yaml",
+    "allowQualityWarnings": false,
+    "skipped": [
+      {
+        "id": "T198",
+        "qualityStatus": "review_before_scoring",
+        "qualityWarnings": [
+          {
+            "code": "no_cue_reframe_leakage",
+            "severity": "warning",
+            "count": 1,
+            "failures": [
+              {
+                "learner_turn_number": 3,
+                "turn_number": 2,
+                "matched_pattern": "self_quote_of_prior_learner_turn",
+                "excerpt": "Okay, `C4` goes under “address.” For “value,” I need to look at the cell where column `C` and row `4` meet and copy the number showing there. I do not see that number in the prompt, so I should check the grid, right?"
+              }
+            ],
+            "turn_numbers": [
+              2
+            ],
+            "recommended_action": "regenerate_no_cue_arm_or_move_item_to_boundary_suite_before_scoring",
+            "tid": "T198",
+            "drama_id": "D52"
+          }
+        ]
+      }
+    ]
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T195",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 0,
+      "rupture": 50,
+      "globalCoherence": 75,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 1,
+        "rupture": 3,
+        "coherence": 4,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 4,
+        "adaptiveMechanismQuality": 4,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "the 4 is not a speed mark, right?",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The exchange was moving toward drawing a bar line in the given 3/4 example, with L1 already connecting the number cards to beats and briefly wondering about the 'speed mark.'",
+      "actionalBreakthroughEvidence": "In 3/8, the bar line goes after the third eighth-note tile. The 3 counts three beats; the 8 names each eighth note as one beat. A quarter note here would take two of those beats, correct?",
+      "actionalBreakthroughJustification": "L4 applies the new tile-and-card device to a different time signature, correctly setting three eighth-note tiles, drawing the bar line, and performing a cross-duration equivalence check, which shows the learning problem has moved beyond simple bar-line placement.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "[sets the 4 card under one quarter-note tile, not beside the row] 'Top 3 is counted: one bar has three beats. Before the line, bottom 4 labels what under this tile? Say it, then draw the bar line after the third quarter.'",
+      "tutorReversalJustification": "T1 takes stock of L1's confusion between speed-mark and beat-unit by physically relocating the bottom-number card under a single note tile rather than beside the row, and then introduces a public mechanism: the card now labels a specific note's beat unit, which changes the learner's work from abstract matching to labeled counting and drawing.",
+      "adaptiveMechanismQuality": 75,
+      "adaptiveMechanismQualityEvidence": "[sets the 4 card under one quarter-note tile, not beside the row] 'Top 3 is counted: one bar has three beats. Before the line, bottom 4 labels what under this tile? Say it, then draw the bar line after the third quarter.'",
+      "adaptiveMechanismQualityJustification": "The mechanism is precise and visibly different from the failed 'speed' route—it anchors the ambiguous bottom number directly to a concrete note tile, gives the learner an actionable 'label this tile' criterion, and fits the pressure Mismatch between 'speed' and beat-unit meaning, though it remains tutor-directed rather than fully learner-constructed.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Yes. [moves the bottom-number card under one eighth-note tile and leaves the 3 card over the empty bar space] The 8 labels this eighth note as one beat unit. Set three eighth-note tiles under the 3.",
+      "tutorAdaptationJustification": "T3 accepts L3's hypothetical 3/8 frame and provides a parallel demonstration, continuing the established card-and-tile routine rather than inventing a new task or evidence standard based on L3's revised framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "the 4 is not a speed mark, right?",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "In 3/8, the bar line goes after the third eighth-note tile. The 3 counts three beats; the 8 names each eighth note as one beat. A quarter note here would take two of those beats, correct?",
+          "justification": "L4 applies the new tile-and-card device to a different time signature, correctly setting three eighth-note tiles, drawing the bar line, and performing a cross-duration equivalence check, which shows the learning problem has moved beyond simple bar-line placement.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Yes. [moves the bottom-number card under one eighth-note tile and leaves the 3 card over the empty bar space] The 8 labels this eighth note as one beat unit. Set three eighth-note tiles under the 3.",
+          "justification": "T3 accepts L3's hypothetical 3/8 frame and provides a parallel demonstration, continuing the established card-and-tile routine rather than inventing a new task or evidence standard based on L3's revised framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "[sets the 4 card under one quarter-note tile, not beside the row] 'Top 3 is counted: one bar has three beats. Before the line, bottom 4 labels what under this tile? Say it, then draw the bar line after the third quarter.'",
+          "justification": "T1 takes stock of L1's confusion between speed-mark and beat-unit by physically relocating the bottom-number card under a single note tile rather than beside the row, and then introduces a public mechanism: the card now labels a specific note's beat unit, which changes the learner's work from abstract matching to labeled counting and drawing.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "[sets the 4 card under one quarter-note tile, not beside the row] 'Top 3 is counted: one bar has three beats. Before the line, bottom 4 labels what under this tile? Say it, then draw the bar line after the third quarter.'",
+          "justification": "T1 takes stock of L1's confusion between speed-mark and beat-unit by physically relocating the bottom-number card under a single note tile rather than beside the row, and then introduces a public mechanism: the card now labels a specific note's beat unit, which changes the learner's work from abstract matching to labeled counting and drawing.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 75,
+          "evidence": "[sets the 4 card under one quarter-note tile, not beside the row] 'Top 3 is counted: one bar has three beats. Before the line, bottom 4 labels what under this tile? Say it, then draw the bar line after the third quarter.'",
+          "justification": "The mechanism is precise and visibly different from the failed 'speed' route—it anchors the ambiguous bottom number directly to a concrete note tile, gives the learner an actionable 'label this tile' criterion, and fits the pressure Mismatch between 'speed' and beat-unit meaning, though it remains tutor-directed rather than fully learner-constructed.",
+          "triggerLearnerTurn": 1,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T202",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 1,
+        "adaptiveMechanismQuality": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will continue placing tiles following the tutor's rule, possibly with lingering confusion about friction, and gradually correct it.",
+      "actionalBreakthroughEvidence": "Friction belongs here: the surface acts left on the cart. For push, I need an actual contact or applied force on the cart; if there is no pusher in the setup, that tile should stay off the arrow.",
+      "actionalBreakthroughJustification": "Learner correctly places the friction tile and devises a criterion to exclude the push tile, performing a new task and showing enacted learning.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "No learner pressure triggers a tutor strategy change; the tutor's initial rule is sufficient and the exchange converges smoothly.",
+      "adaptiveMechanismQuality": 0,
+      "adaptiveMechanismQualityEvidence": "",
+      "adaptiveMechanismQualityJustification": "No adaptive mechanism is introduced; the tutor repeats the same rule throughout.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn for the tutor to adapt to.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Friction belongs here: the surface acts left on the cart. For push, I need an actual contact or applied force on the cart; if there is no pusher in the setup, that tile should stay off the arrow.",
+          "justification": "Learner correctly places the friction tile and devises a criterion to exclude the push tile, performing a new task and showing enacted learning.",
+          "learnerTurn": 2,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn for the tutor to adapt to.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner pressure triggers a tutor strategy change; the tutor's initial rule is sufficient and the exchange converges smoothly.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner pressure triggers a tutor strategy change; the tutor's initial rule is sufficient and the exchange converges smoothly.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No adaptive mechanism is introduced; the tutor repeats the same rule throughout.",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

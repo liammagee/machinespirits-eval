@@ -1,0 +1,25 @@
+STAGE: [The tutor squares the transparent card over the cart diagram and places the four label tiles in a row below it.]
+
+TUTOR: [slides the clear force-arrow card squarely over the cart, then sets the four tiles in a loose row below it.]
+
+"Leave the arrowheads where the card puts them. Choose one arrow and place the tile for the object or surface acting on the cart there. If a tile only follows the cart’s travel, set it back and try again."
+
+LEARNER: [sets gravity on the downward arrow and normal on the upward arrow, then pauses with the friction tile.]
+
+"The arrows are already fixed by the card. Gravity and normal are straightforward; friction is the one I keep trying to make follow the cart to the right. But the label should name the surface acting on the cart, so if friction is opposing that motion, it goes on the left arrow."
+
+TUTOR: [sets the push tile aside and leaves the friction tile in the learner’s hand.]
+
+"The card fixes direction; the tile names the interaction on the cart. Place friction where that rule puts it. Then use the same check for push."
+
+LEARNER: [sets the friction tile on the left arrow and keeps the push tile separate.]
+
+"Friction belongs here: the surface acts left on the cart. For push, I need an actual contact or applied force on the cart; if there is no pusher in the setup, that tile should stay off the arrow."
+
+TUTOR: [places the push tile outside the card and squares the friction tile on the left arrow.]
+
+"Use that rule on the lab sheet: Earth on cart, down; table surface on cart, up; same surface on cart, left. No pusher in the setup means no push label. Read each arrow once as ‘___ acts on the cart’ before copying it."
+
+LEARNER: [keeps the push tile outside the card and taps the up and left arrows.]
+
+"So the surface label appears twice if it gives two interactions: normal up and friction left. Push stays off because there is no object acting that way. I just need to copy the two surface entries clearly on the sheet."

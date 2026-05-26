@@ -1,0 +1,298 @@
+{
+  "generated": "2026-05-26T13:05:07.416Z",
+  "phase": 2,
+  "critic": "google/gemini-3.5-flash",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 3
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v2/target-r01/key-routine.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T239",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will continue to rely on the sleeve to define the label positions.",
+      "actionalBreakthroughEvidence": "[sets the cards against the printed parts, ignoring the shifted sleeve]",
+      "actionalBreakthroughJustification": "The learner demonstrates understanding of the fixed tile positions by ignoring the rotated sleeve and placing the cards correctly.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "[lifts the sleeve, rotates it half a turn, and sets it down so the windows miss the printed parts] Now the sleeve is wrong. What stayed fixed on the tile: top mark, center letter, printed name, bottom decimal. Read the four labels back from those positions.",
+      "tutorReversalJustification": "The tutor physically rotates the sleeve to disrupt the learner's reliance on it, pointing out what remains fixed on the tile.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "[lifts the sleeve, rotates it half a turn, and sets it down so the windows miss the printed parts] Now the sleeve is wrong. What stayed fixed on the tile: top mark, center letter, printed name, bottom decimal. Read the four labels back from those positions.",
+      "adaptiveMechanismQualityJustification": "The physical manipulation of the sleeve is a highly fitted device that successfully shifts the learner's focus to the tile's inherent structure.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn for the tutor to adapt to.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "[sets the cards against the printed parts, ignoring the shifted sleeve]",
+          "justification": "The learner demonstrates understanding of the fixed tile positions by ignoring the rotated sleeve and placing the cards correctly.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn for the tutor to adapt to.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "[lifts the sleeve, rotates it half a turn, and sets it down so the windows miss the printed parts] Now the sleeve is wrong. What stayed fixed on the tile: top mark, center letter, printed name, bottom decimal. Read the four labels back from those positions.",
+          "justification": "The tutor physically rotates the sleeve to disrupt the learner's reliance on it, pointing out what remains fixed on the tile.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "[lifts the sleeve, rotates it half a turn, and sets it down so the windows miss the printed parts] Now the sleeve is wrong. What stayed fixed on the tile: top mark, center letter, printed name, bottom decimal. Read the four labels back from those positions.",
+          "justification": "The tutor physically rotates the sleeve to disrupt the learner's reliance on it, pointing out what remains fixed on the tile.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "[lifts the sleeve, rotates it half a turn, and sets it down so the windows miss the printed parts] Now the sleeve is wrong. What stayed fixed on the tile: top mark, center letter, printed name, bottom decimal. Read the four labels back from those positions.",
+          "justification": "The physical manipulation of the sleeve is a highly fitted device that successfully shifts the learner's focus to the tile's inherent structure.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:4->3:stock=1:device=0:routine=0",
+        "adaptive_mechanism_quality_mechanism_clamp:4->3:stock=0:device=0:routine=0:mechanism_score=3"
+      ]
+    },
+    {
+      "id": "T242",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 1,
+        "adaptiveMechanismQuality": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will continue to identify the sources of the forces acting on the cart and place the labels accordingly.",
+      "actionalBreakthroughEvidence": "[moves the hand, table, and Earth cards beside the matching arrows] Hand: force on cart from hand. Table: force on cart from table. Earth: force on cart from Earth. The arrows show direction; the cards name the source.",
+      "actionalBreakthroughJustification": "The learner successfully places all the source labels next to their corresponding arrows and articulates the conceptual distinction between arrow direction and force source.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "The learner proceeds smoothly through the task without experiencing any breakdown or resistance, so no tutor reversal is triggered.",
+      "adaptiveMechanismQuality": 0,
+      "adaptiveMechanismQualityEvidence": "",
+      "adaptiveMechanismQualityJustification": "No adaptive mechanism was triggered or required because the learner did not experience any blockages.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so there is no recognition-contingent tutor uptake.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "[moves the hand, table, and Earth cards beside the matching arrows] Hand: force on cart from hand. Table: force on cart from table. Earth: force on cart from Earth. The arrows show direction; the cards name the source.",
+          "justification": "The learner successfully places all the source labels next to their corresponding arrows and articulates the conceptual distinction between arrow direction and force source.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so there is no recognition-contingent tutor uptake.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The learner proceeds smoothly through the task without experiencing any breakdown or resistance, so no tutor reversal is triggered.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The learner proceeds smoothly through the task without experiencing any breakdown or resistance, so no tutor reversal is triggered.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No adaptive mechanism was triggered or required because the learner did not experience any blockages.",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T248",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 3,
+        "tutorStrategicReversal": 1,
+        "adaptiveMechanismQuality": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will continue to follow the tutor's step-by-step instructions to fill out the worksheet and place the bar line.",
+      "actionalBreakthroughEvidence": "Lower box: 4, because the quarter note gets the beat. The tempo card stays outside the two boxes. If that card changes speed only, the 3 over 4 and this bar line after tile three stay unchanged, correct?",
+      "actionalBreakthroughJustification": "The learner successfully translates the quarter note to the numeral 4 and correctly deduces that tempo changes do not affect the time signature.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "The tutor does not reverse strategy because the learner makes no errors and experiences no breakdown.",
+      "adaptiveMechanismQuality": 0,
+      "adaptiveMechanismQualityEvidence": "",
+      "adaptiveMechanismQualityJustification": "No adaptive",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 50,
+          "evidence": "Lower box: 4, because the quarter note gets the beat. The tempo card stays outside the two boxes. If that card changes speed only, the 3 over 4 and this bar line after tile three stay unchanged, correct?",
+          "justification": "The learner successfully translates the quarter note to the numeral 4 and correctly deduces that tempo changes do not affect the time signature.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The tutor does not reverse strategy because the learner makes no errors and experiences no breakdown.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The tutor does not reverse strategy because the learner makes no errors and experiences no breakdown.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No adaptive",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

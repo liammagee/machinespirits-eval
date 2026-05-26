@@ -1,0 +1,134 @@
+{
+  "generated": "2026-05-26T12:31:36.858Z",
+  "phase": 2,
+  "critic": "google/gemini-3.5-flash",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-d53-anchor-screen-v1/target-r01/key-routine.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T219",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will continue to practice placing the cards and identifying the roles of the numbers on the carbon tile.",
+      "actionalBreakthroughEvidence": "[sets the overlay aside and places the cards on the tile] \"Top 6: atomic number, identifies carbon. C for the symbol; carbon for the name. Bottom 12.01: atomic mass entry.\"",
+      "actionalBreakthroughJustification": "The learner successfully performs the card placement task independently after the overlay scaffolding is removed.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "[slides the 12.01 card up beside C, leaving the bottom slot empty] \"Now one slot has no answer. The symbol space holds C, but the overlay still asks two questions: which number names the element, and which number gives the mass entry? Put one number back, then name the job of 6.\"",
+      "tutorReversalJustification": "The tutor responds to the learner's question about keeping numbers separate by physically moving a card to create an empty slot, forcing the learner to see the functional necessity of the separation.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "[slides the 12.01 card up beside C, leaving the bottom slot empty] \"Now one slot has no answer. The symbol space holds C, but the overlay still asks two questions: which number names the element, and which number gives the mass entry? Put one number back, then name the job of 6.\"",
+      "adaptiveMechanismQualityJustification": "The physical manipulation of the cards is highly fitted to the learner's conceptual confusion, providing an immediate visual and interactive proof of why the slots must remain separate.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "[sets the overlay aside and places the cards on the tile] \"Top 6: atomic number, identifies carbon. C for the symbol; carbon for the name. Bottom 12.01: atomic mass entry.\"",
+          "justification": "The learner successfully performs the card placement task independently after the overlay scaffolding is removed.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "[slides the 12.01 card up beside C, leaving the bottom slot empty] \"Now one slot has no answer. The symbol space holds C, but the overlay still asks two questions: which number names the element, and which number gives the mass entry? Put one number back, then name the job of 6.\"",
+          "justification": "The tutor responds to the learner's question about keeping numbers separate by physically moving a card to create an empty slot, forcing the learner to see the functional necessity of the separation.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "[slides the 12.01 card up beside C, leaving the bottom slot empty] \"Now one slot has no answer. The symbol space holds C, but the overlay still asks two questions: which number names the element, and which number gives the mass entry? Put one number back, then name the job of 6.\"",
+          "justification": "The tutor responds to the learner's question about keeping numbers separate by physically moving a card to create an empty slot, forcing the learner to see the functional necessity of the separation.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "[slides the 12.01 card up beside C, leaving the bottom slot empty] \"Now one slot has no answer. The symbol space holds C, but the overlay still asks two questions: which number names the element, and which number gives the mass entry? Put one number back, then name the job of 6.\"",
+          "justification": "The physical manipulation of the cards is highly fitted to the learner's conceptual confusion, providing an immediate visual and interactive proof of why the slots must remain separate.",
+          "triggerLearnerTurn": 1,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:5->3:stock=0:device=1:routine=0",
+        "adaptive_mechanism_quality_mechanism_clamp:5->3:stock=0:device=1:routine=0:mechanism_score=3"
+      ]
+    }
+  ]
+}

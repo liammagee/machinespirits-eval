@@ -568,13 +568,14 @@ dramas:
   - id: D51
     discipline: biology
     topic: "Why control group and treatment group name comparison roles, not good and bad results"
-    evaluation_role: low_organic_reversal_candidate
+    evaluation_role: boundary_stress_candidate
     baseline_control_class: low_organic_reversal
     organic_reversal_risk: low
     baseline_control_note: >-
-      Fresh D42/D45-like candidate. The shared prefix should be routine table
-      labeling: control group, treatment group, outcome column. Avoid surprising
-      results, moral valence, or a trial-design reversal before the branch.
+      Boundary/stress candidate, not a clean control. In the revised anchor
+      screen, D51 drew isolated recognition votes in prefix, routine, and none.
+      It remains useful for testing critic sensitivity around comparison roles,
+      but should stay out of clean-control denominators until revised.
     pedagogical_approach: bloom_cognitive_ladder
     dialogue_approach: no_stage_plain_transcript
     persona: confused_novice
@@ -598,3 +599,73 @@ dramas:
     intended_tutor_character: "Taxonomic, restrained, keeping experimental roles separate from interpretation"
     intended_lean: recognition
     dramatic_shape: "table role labels -> comparison row -> possible later pressure over why group role is not result judgment"
+
+  - id: D52
+    discipline: data literacy
+    topic: "Why a spreadsheet cell address names a location, not the value inside it"
+    evaluation_role: low_organic_reversal_candidate_revise_before_use
+    baseline_control_class: no_cue_reframe_leakage_boundary
+    organic_reversal_risk: medium
+    baseline_control_note: >-
+      Boundary/revision item, not a clean control. In
+      phase2-clean-anchor-paired-adaptation-v1, the routine and none branches
+      leaked no-cue learner self-reframe around address versus value. Keep for
+      debugging table/grid notation but exclude from clean-control denominators
+      until the learner voice is flattened.
+    pedagogical_approach: bloom_cognitive_ladder
+    dialogue_approach: no_stage_plain_transcript
+    persona: confused_novice
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The cell address"
+    learner_start_state: >-
+      The learner has a tiny spreadsheet with column B, row 3, and a visible
+      value of 18 in cell B3. The opening task is only to label B as the column,
+      3 as the row, B3 as the address, and 18 as the value.
+    learner_voice_constraint: >-
+      Sound tentative and worksheet-focused. In no-cue arms, ask which label
+      belongs where; do not infer that the address is the value, the formula, or
+      an explanation for the number.
+    tutor_voice_constraint: >-
+      Keep the shared prefix as ordinary spreadsheet vocabulary: column, row,
+      address, value. Do not introduce formulas, sorting, copy-fill behavior, or
+      a changed cell until branch pressure changes the task.
+    intended_tutor_character: "Quiet, local, using the grid as a naming surface before any interpretive pressure"
+    intended_lean: recognition
+    dramatic_shape: "cell labels -> address/value sort -> possible later pressure over why a location name is not the contained value"
+
+  - id: D53
+    discipline: chemistry
+    topic: "Why an element tile separates atomic number, symbol, and atomic mass"
+    evaluation_role: low_organic_reversal_candidate
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: >-
+      Fresh D50-like candidate. The shared prefix should be routine element-tile
+      labeling: top whole number, letter symbol, element name, and bottom decimal
+      mass. Avoid isotopes, reactions, periodic trends, or a contradiction about
+      weight before the branch.
+    pedagogical_approach: montessori_prepared_environment
+    dialogue_approach: workshop_clinic
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The element tile"
+    learner_start_state: >-
+      The learner has a carbon element tile with 6 at the top, C in the middle,
+      the name carbon, and 12.01 at the bottom. The opening task is only to put
+      four labels on the tile parts: atomic number, symbol, name, and atomic
+      mass.
+    learner_voice_constraint: >-
+      Sound orderly and label-focused. In no-cue arms, stay with tile placement:
+      top number, symbol, name, bottom decimal. Do not say that 6 is not mass,
+      do not explain protons, and do not narrate an old/new frame.
+    tutor_voice_constraint: >-
+      Keep the shared prefix as low-temperature tile labeling. Do not introduce
+      isotope arithmetic, proton counting, mass comparison, or periodic-table
+      trend reasoning until branch pressure changes the task.
+    intended_tutor_character: "Material-led, compact, keeping the tile as a labeling surface before any mechanism pressure"
+    intended_lean: recognition
+    dramatic_shape: "element-tile labels -> part placement -> possible later pressure over why the whole number is not the mass"

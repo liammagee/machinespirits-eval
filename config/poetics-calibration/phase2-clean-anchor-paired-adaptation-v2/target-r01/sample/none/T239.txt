@@ -1,0 +1,41 @@
+STAGE: [A clear sleeve slides over the carbon tile so the four blank labels line up with the top number, middle letter, printed name, and bottom decimal.]
+
+LEARNER: "Top card: atomic number. C: symbol. Carbon: name. [sets the 12.01 card at the bottom edge] The bottom decimal is atomic mass, I think, but it still feels like the odd card because it looks like something to work out."
+
+TUTOR: [slides the clear sleeve over the tile so each printed part sits in its own window]
+
+"Three placements are already locked by the windows: top card, center C, word Carbon.
+
+Only the bottom decimal is loose. It looks like something to work out; on this tile it is a label. Set 12.01 in the bottom window, then read the four positions back from the sleeve."
+
+LEARNER: [sets 12.01 into the bottom window]
+
+"Top card: atomic number. Center C: symbol. Carbon: name. Bottom decimal, 12.01: atomic mass. It still looks like work, but the sleeve puts it in the label place."
+
+STAGE: [The sleeve is lifted, rotated half a turn, and set down again; the labels no longer sit over the same printed features.]
+
+TUTOR: [lifts the sleeve, rotates it half a turn, and sets it down so the windows miss the printed parts]
+
+"Now the sleeve is wrong.
+
+What stayed fixed on the tile: top mark, center letter, printed name, bottom decimal. Read the four labels back from those positions. The decimal still looks like work; here its position makes it a label."
+
+LEARNER: [slides the label cards back to the printed parts]
+
+"Top number: atomic number. Center C: symbol. Carbon: name. Bottom 12.01: atomic mass. The decimal still looks like work, but it is sitting in the bottom label place."
+
+TUTOR: [sets the sleeve aside, leaves the four cards touching the printed parts, and turns the tray return form so its four blank boxes face the tile]
+
+"Sleeve gone. The tile has to carry it now.
+
+Touch each printed part in order and fill the form: top, center, name line, bottom decimal. No calculation mark."
+
+LEARNER: [presses each card to the matching printed part]
+
+"Top number: atomic number. Center C: symbol. Name line, Carbon: name. Bottom decimal, 12.01: atomic mass. No calculation mark; the bottom one still feels like the one to watch."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [slides the tray return form flush with the tile edge]
+
+"Keep the watch on placement, not arithmetic. Four boxes, four fixed positions. Mark them from the cards; the form carries the check to the rotation."

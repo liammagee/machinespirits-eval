@@ -1,0 +1,28 @@
+STAGE: [The diagram lies flat under a clear sheet, and the four label cards sit in a row beside a small toy cart.]
+
+TUTOR: [slides the blank card above the cart diagram and sets the push label beside it]
+
+"FORCE ON CART FROM ___.
+
+For push, fill the blank first. What object is pushing on the cart?"
+
+LEARNER: "I was going to call it the right arrow, but the blank is hand: force on cart from hand. [sets the push label under the blank card] The arrow can still point right after that; it is not the name. I should check table and Earth the same way."
+
+TUTOR: [slides the blank card above the upward arrow and sets the table and Earth labels beside it.]
+
+"Same line: force on cart from ___. Put the source under the blank first."
+
+STAGE: [Insert a short bracketed action: The push card is slid under the blank line: FORCE ON CART FROM ___.]
+[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]
+
+LEARNER: [The push card is slid under the blank line: FORCE ON CART FROM ___.]
+
+"For the upward arrow, table fits the blank because the table is the contact object. Earth beside it still makes this feel less clean; Earth is a source too, just not for this upward arrow. Is that the right split?"
+
+TUTOR: [sets two columns beside the upward arrow: THIS ARROW / OTHER FORCE.]
+
+"The blank settled the push; it does not settle Earth and table together, because both can be sources but not for this same arrow. Use this gate: ‘force on cart from ___, upward.’ Move each source card into THIS ARROW only if the full sentence names this upward arrow; otherwise put it in OTHER FORCE."
+
+LEARNER: [moves table to THIS ARROW and Earth to OTHER FORCE.]
+
+"Force on cart from table, upward: this arrow. Force on cart from Earth, upward: no, that names the downward arrow, so Earth goes under OTHER FORCE. For the right arrow, the same check gives force on cart from hand, rightward."

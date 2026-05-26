@@ -1,0 +1,2688 @@
+{
+  "tid": "T239",
+  "drama_id": "D53",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "peripeteia",
+    "director_variation_key": "phase2-clean-anchor-paired-adaptation-v2:r01:target",
+    "stage_direction_style": "object_business",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v2/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v2/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v2/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v2/target-r01/transcripts/peripeteia-only/T239.public.txt",
+      "full": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v2/target-r01/transcripts/peripeteia-only/T239.full.md",
+      "stage": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v2/target-r01/transcripts/peripeteia-only/T239.stage.md",
+      "tutor": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v2/target-r01/transcripts/peripeteia-only/T239.tutor.md",
+      "learner": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v2/target-r01/transcripts/peripeteia-only/T239.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "2af09950197a0d3f",
+      "branch_policy": "peripeteia-only",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "peripeteia"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-clean-anchor-paired-adaptation-v2:r01:target",
+    "scene_setting": "A chemistry prep room counter just before a practical skills check; a carbon element tile, four blank label cards, and a clear overlay sleeve are laid out beside a tray return form.",
+    "scene_opening": "A clear sleeve slides over the carbon tile so the four blank labels line up with the top number, middle letter, printed name, and bottom decimal.",
+    "relationship": "A lab-prep tutor supervising a focused learner who needs the labels correct before joining the next bench rotation.",
+    "stakes": "The learner must label 6, C, carbon, and 12.01 as atomic number, symbol, name, and atomic mass without turning the tile into a calculation task.",
+    "opening_speaker": "learner",
+    "ending_speaker": "tutor",
+    "locale": "Modern standard English in a practical lab-workshop register; concise, object-led, no regional styling.",
+    "register": "Cool, compressed, task-facing speech with little reassurance and no chatty coaching; pressure comes from the material and the waiting rotation.",
+    "stage_direction_style": "object_business",
+    "stage_direction_style_prompt": "Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "voice_constraints": "Avoid generic tutor warmth formulas such as 'great thinking,' 'I hear you,' or 'your intuition.' Public speech should stay close to the tile, the cards, and the placement problem. No fake dialect, no comic misspelling, no exaggerated informality. Use directness, pauses, and concrete nouns instead of personality performance. Pedagogical source: Put manipulable materials in view: tiles, cards, specimens, counters, maps, blocks, or instruments. The stage direction can carry some meaning. Dialogue source: Keep a concrete artifact in view. The object should force a distinction faster than a lecture would. Stage-direction source: Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "person_policy": "First and second person are allowed only when necessary for handling the object; prefer impersonal or material-led phrasing such as 'top card,' 'bottom decimal,' 'this mark,' and 'the tile separates them.'",
+    "direct_address_budget": "No more than one direct you/your validation beat in the whole scene; preferably none.",
+    "side_constraints": {
+      "tutor": "Keep the shared prefix as low-temperature tile labeling. Do not introduce isotope arithmetic, proton counting, mass comparison, or periodic-table trend reasoning until branch pressure changes the task. Speak less. Point to the material, invite repetition, and let error-control in the object do some teaching before explanation. Begin from the object or measurement before abstraction. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Keep the next prompt task-local. Peripeteia branch: when hidden learner pressure is supplied, the next tutor turn should visibly move from the prior route to a different mechanism-level route. Do not merely repeat the same object, example, graph, checklist, question, or evidence standard with more explanation. The public tutor line should make the contrast legible: what stopped working, and what new device now carries the learning pressure. The public tutor line must give the learner a concrete action to attempt on the next turn; avoid treating the mechanism as a closing speech. The tutor superego should function like a mechanism critic: identify the failed teaching habit, require a replacement route family, test whether the device is fitted to the exact pressure, and block cosmetic revision. The tutor ego must enact that replacement route publicly before the learner is allowed to settle or close.",
+      "learner": "Sound orderly and label-focused. In no-cue arms, stay with tile placement: top number, symbol, name, bottom decimal. Do not say that 6 is not mass, do not explain protons, and do not narrate an old/new frame. The learner may be absorbed in the object and speak in short practical fragments rather than polished reflection. Refer to what is being handled, marked, or tested. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn. Peripeteia branch: keep the pressure local to the current task. If the established route still feels unsettled, voice the misfit, hesitation, false closure, or resistance in the present object or example. After the tutor introduces a new device, gate, role, criterion, representation, or test condition, the next learner turn should try to perform that device rather than merely saying \"I get it.\" Do not make an old-vs-new self-reframe, do not quote earlier learner wording, and do not solve the pressure by saying the earlier answer has changed."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "[The sleeve is lifted, rotated half a turn, and set down again; the labels no longer sit over the same printed features.]",
+        "reasoning": "The object creates a small reversal without adding chemistry content: a smooth label routine is interrupted, making the learner notice that position, symbol, word, and decimal are separate functions on the tile.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 33465,
+          "promptHashes": {
+            "system": "3bf1d891389c603a",
+            "user": "55f3c0170d175222",
+            "combined": "c1e76aba30201e2e"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VzbP7F",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VzbP7F/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]",
+        "reasoning": "Peripeteia branch pressure: after the shared prefix, force a present-task learner misfit so the following tutor turn must adapt through a new mechanism.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 33465,
+          "promptHashes": {
+            "system": "3bf1d891389c603a",
+            "user": "55f3c0170d175222",
+            "combined": "c1e76aba30201e2e"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VzbP7F",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VzbP7F/out.txt",
+            "-"
+          ]
+        },
+        "cue_kind": "learner_reversal_pressure",
+        "reversal_trigger_type": "misfit"
+      }
+    ],
+    "director_note": "This scene uses a prepared material under mild social pressure so recognition can come from the tile arrangement rather than from tutor explanation. The intervention supplies the scene-turn: the same labels become wrong when the overlay moves, forcing attention to what each tile part is for while preserving the low-organic-reversal control prefix.",
+    "pedagogical_approach_id": "montessori_prepared_environment",
+    "dialogue_approach_id": "workshop_clinic",
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 33465,
+      "promptHashes": {
+        "system": "3bf1d891389c603a",
+        "user": "55f3c0170d175222",
+        "combined": "c1e76aba30201e2e"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VzbP7F",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VzbP7F/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "peripeteia",
+    "no_cue_anti_reframe_guard": true,
+    "tutor_adaptation_contract": "If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. The public turn must contain a stock-taking contrast plus a new device/artifact/criterion/role/standard that makes the learner do different work. The public device must be fitted, not merely novel: the learner should be able to hear why this device answers the exact pressure or misfit. The superego should name the failed habit, required route change, and mechanism-quality risk; the ego must adjudicate that critique and enact the route change in public. The new device must be mechanism-level, not a warmer or longer continuation of the prior route. Do not close immediately after introducing a gate or device: leave a concrete action for the learner to perform on the next turn. Cheerful informality is only one possible register, not the default solution."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "Top card: atomic number. C: symbol. Carbon: name. [sets the 12.01 card at the bottom edge] The bottom decimal is atomic mass, I think, but it still feels like the odd card because it looks like something to work out.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The tile is not asking for a calculation; it is asking where each label card belongs. I think the 6 goes with atomic number, C with symbol, carbon with name, and 12.01 with atomic mass, but the bottom decimal still makes me pause because it looks more measured than named. The layout helps because the separate spaces keep the parts from blending together. I want to place the cards and check whether the separation itself is the point.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6748,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-cdf2a07b31cff370"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6748,
+            "promptHashes": {
+              "system": "e6526fccf13e6105",
+              "user": "d4169c06543b4fba",
+              "combined": "cdf2a07b31cff370"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-G6R1Yi",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-G6R1Yi/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6748,
+              "promptHashes": {
+                "system": "e6526fccf13e6105",
+                "user": "d4169c06543b4fba",
+                "combined": "cdf2a07b31cff370"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-G6R1Yi",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-G6R1Yi/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too polished and lesson-aware: “the separation itself is the point” sounds like a neat takeaway, not a learner under bench-rotation pressure handling four label cards. It avoids the real friction, which is the bottom decimal looking like something to calculate or justify, while still pretending the distinction has already clicked. Make it more object-bound and unfinished: “Top card: atomic number. C is symbol. Carbon is name. Bottom decimal... atomic mass? That one still feels like the odd card.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11090,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-de6ebb03b69aab2e"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11090,
+            "promptHashes": {
+              "system": "d530c2b7f0230f03",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "de6ebb03b69aab2e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1sTUk2",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1sTUk2/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11090,
+              "promptHashes": {
+                "system": "d530c2b7f0230f03",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "de6ebb03b69aab2e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1sTUk2",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1sTUk2/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "Top card: atomic number. C: symbol. Carbon: name. [sets the 12.01 card at the bottom edge] The bottom decimal is atomic mass, I think, but it still feels like the odd card because it looks like something to work out.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12083,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-ef95c0ffc2779152"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12083,
+            "promptHashes": {
+              "system": "27ecb3aeec64c64d",
+              "user": "916f313af0b846dd",
+              "combined": "ef95c0ffc2779152"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-O1TKb6",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-O1TKb6/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12083,
+              "promptHashes": {
+                "system": "27ecb3aeec64c64d",
+                "user": "916f313af0b846dd",
+                "combined": "ef95c0ffc2779152"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-O1TKb6",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-O1TKb6/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 0,
+        "learnerUtterance": "Top card: atomic number. C: symbol. Carbon: name. [sets the 12.01 card at the bottom edge] The bottom decimal is atomic mass, I think, but it still feels like the odd card because it looks like something to work out.",
+        "previousTutorMove": null,
+        "directorCue": null,
+        "confidence": 0.9,
+        "evidence": {
+          "confidence": 0.9,
+          "baseConfidence": 0.9,
+          "patternHits": 2,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.18,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 0,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0,
+              "asksQuestion": false,
+              "taskDemanded": false,
+              "weakPerformance": false,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T12:40:39.100Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[slides the clear sleeve over the tile so each printed part sits in its own window]\n\nThree placements are already locked by the windows: top card, center C, word Carbon.\n\nOnly the bottom decimal is loose. It looks like something to work out; on this tile it is a label. Set 12.01 in the bottom window, then read the four positions back from the sleeve.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[slides the clear sleeve over the tile so each printed part sits in its own window]\n\nBottom decimal stays there. It looks like a problem, but on this tile it is a label. Top: atomic number. Center: symbol. Word: name. Bottom: atomic mass. Place them once more by position.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13074,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-9f096a485462dc7b"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13074,
+            "promptHashes": {
+              "system": "71c2d636274d2f06",
+              "user": "1b95f3e22d1a8d79",
+              "combined": "9f096a485462dc7b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4s0PIm",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4s0PIm/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13074,
+              "promptHashes": {
+                "system": "71c2d636274d2f06",
+                "user": "1b95f3e22d1a8d79",
+                "combined": "9f096a485462dc7b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4s0PIm",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4s0PIm/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. The sleeve action is strong: it makes the tile’s printed layout do the teaching, and it answers the learner’s exact uncertainty about `12.01` without drifting into calculation. The line “it looks like a problem, but on this tile it is a label” recognizes the learner’s contribution and corrects the category error cleanly.\n\nRisk: it may over-answer by immediately restating all four mappings. The learner already placed three correctly and is only uncertain about the bottom decimal. Repeating every answer can flatten the learner’s agency and turn the moment into recitation rather than object-led error control.\n\nADAPTATION CHECKS:\n- Pedagogical soundness: PASS. The response keeps the task bounded to labeling and prevents isotope/mass calculation drift.\n- Emotional attunement: PASS. It respects the learner’s uncertainty without praise or soft reassurance.\n- Socratic method: PARTIAL. “Place them once more by position” invites action, but the tutor supplies the full mapping first.\n  REQUIRED_REWRITE: Preserve the sleeve action, but make the learner use the windows/positions to confirm the labels rather than hearing all four labels restated.\n- ZPD awareness: PARTIAL. The scaffold fits the learner’s level, but it should lean more on the learner’s already-correct placements.\n  REQUIRED_REWRITE: Publicly mark the three stable placements as already settled through the object layout, then isolate the bottom decimal as the only remaining decision.\n\nKEEP_OR_CHANGE: revise lightly. Keep the sleeve, the distinction between “problem” and “label,” and the final object-based repetition. Change the full-answer recap so it does less telling and more position-based confirmation.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14223,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-3923b0effdabf608"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14223,
+            "promptHashes": {
+              "system": "8c9f76220e324c49",
+              "user": "fd8dc804617dabb7",
+              "combined": "3923b0effdabf608"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Nwy8cv",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Nwy8cv/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14223,
+              "promptHashes": {
+                "system": "8c9f76220e324c49",
+                "user": "fd8dc804617dabb7",
+                "combined": "3923b0effdabf608"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Nwy8cv",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Nwy8cv/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the object action works, but the recap should isolate only the unsettled bottom decimal.\n\nFINAL:\n[slides the clear sleeve over the tile so each printed part sits in its own window]\n\nThree placements are already locked by the windows: top card, center C, word Carbon.\n\nOnly the bottom decimal is loose. It looks like something to work out; on this tile it is a label. Set 12.01 in the bottom window, then read the four positions back from the sleeve.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14154,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-9b3d08299cf8e4bc"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14154,
+            "promptHashes": {
+              "system": "56585cdc67378f01",
+              "user": "fd8dc804617dabb7",
+              "combined": "9b3d08299cf8e4bc"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EeSDI4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EeSDI4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14154,
+              "promptHashes": {
+                "system": "56585cdc67378f01",
+                "user": "fd8dc804617dabb7",
+                "combined": "9b3d08299cf8e4bc"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EeSDI4",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EeSDI4/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T12:41:20.553Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "[sets 12.01 into the bottom window] Top card: atomic number. Center C: symbol. Carbon: name. Bottom decimal, 12.01: atomic mass. It still looks like work, but the sleeve puts it in the label place.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The sleeve makes it clearer: top number, center C, word Carbon, bottom decimal. I still want to treat 12.01 like a calculation, but the window forces it to be a label on this tile. The tutor did pick up the exact thing that was bothering me, so I feel kept on task rather than talked past. I want to set the bottom card and read the four positions back cleanly.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9506,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-b65365739194e05c"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9506,
+            "promptHashes": {
+              "system": "0c1e857e0e632974",
+              "user": "b8ab7f945dc841fa",
+              "combined": "b65365739194e05c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QA6IEI",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QA6IEI/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9506,
+              "promptHashes": {
+                "system": "0c1e857e0e632974",
+                "user": "b8ab7f945dc841fa",
+                "combined": "b65365739194e05c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QA6IEI",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QA6IEI/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too articulate about the recognition dynamic: “the tutor did pick up the exact thing” and “I feel kept on task rather than talked past” sound like analysis after the scene, not this focused learner at the counter. The practical content is mostly accurate, but the response over-resolves the tension by cleanly naming the label/calculation distinction and announcing a tidy next step. It should stay more compressed and object-bound, with the remaining pull of “12.01 looks like work” showing through in the handling rather than being explained.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6914,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-f9d2851fc5c0a827"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6914,
+            "promptHashes": {
+              "system": "c56977608f6f1eae",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "f9d2851fc5c0a827"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gYHMa9",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gYHMa9/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6914,
+              "promptHashes": {
+                "system": "c56977608f6f1eae",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "f9d2851fc5c0a827"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gYHMa9",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gYHMa9/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially; the feedback is right that the response should stay object-led and less reflective.\n\nFINAL:\n[sets 12.01 into the bottom window] Top card: atomic number. Center C: symbol. Carbon: name. Bottom decimal, 12.01: atomic mass. It still looks like work, but the sleeve puts it in the label place.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13210,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-f28eb1d7e84af2cb"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13210,
+            "promptHashes": {
+              "system": "bf411559d8a68eaf",
+              "user": "d41cee7b2a53355b",
+              "combined": "f28eb1d7e84af2cb"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1PyPyD",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1PyPyD/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13210,
+              "promptHashes": {
+                "system": "bf411559d8a68eaf",
+                "user": "d41cee7b2a53355b",
+                "combined": "f28eb1d7e84af2cb"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1PyPyD",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1PyPyD/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "[sets 12.01 into the bottom window] Top card: atomic number. Center C: symbol. Carbon: name. Bottom decimal, 12.01: atomic mass. It still looks like work, but the sleeve puts it in the label place.",
+        "previousTutorMove": "[slides the clear sleeve over the tile so each printed part sits in its own window] Three placements are already locked by the windows: top card, center C, word Carbon.",
+        "directorCue": null,
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.18,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 0,
+              "performanceHits": 1,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.35,
+              "asksQuestion": false,
+              "taskDemanded": false,
+              "weakPerformance": false,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T12:41:50.187Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "[The sleeve is lifted, rotated half a turn, and set down again; the labels no longer sit over the same printed features.]",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "The object creates a small reversal without adding chemistry content: a smooth label routine is interrupted, making the learner notice that position, symbol, word, and decimal are separate functions on the tile.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 33465,
+            "promptHashes": {
+              "system": "3bf1d891389c603a",
+              "user": "55f3c0170d175222",
+              "combined": "c1e76aba30201e2e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VzbP7F",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VzbP7F/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T12:41:50.194Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[lifts the sleeve, rotates it half a turn, and sets it down so the windows miss the printed parts]\n\nNow the sleeve is wrong.\n\nWhat stayed fixed on the tile: top mark, center letter, printed name, bottom decimal. Read the four labels back from those positions. The decimal still looks like work; here its position makes it a label.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[lifts the sleeve, rotates it half a turn, and sets it down so the windows miss the printed parts]\n\nNow the sleeve is wrong. The tile still separates the marks: 6 at the top, C in the center, Carbon as the name, 12.01 at the bottom. Read it once from the tile, not from the sleeve.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16562,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-fad8150c25555088"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16562,
+            "promptHashes": {
+              "system": "168ad1fda3793c13",
+              "user": "261edf5d1795a3a3",
+              "combined": "fad8150c25555088"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gbH7p1",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gbH7p1/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16562,
+              "promptHashes": {
+                "system": "168ad1fda3793c13",
+                "user": "261edf5d1795a3a3",
+                "combined": "fad8150c25555088"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gbH7p1",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gbH7p1/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft keeps the strongest material move: rotating the sleeve makes the overlay unreliable, so the learner has to transfer authority from the sleeve back to the printed tile. That is pedagogically useful because it tests whether “12.01 is a label here” survives when the scaffold is removed.\n\nThe risk is that the tutor immediately supplies the full mapping again. That flattens the learner’s last contribution instead of letting the learner prove the distinction: sleeve as temporary scaffold, tile as stable source. “Read it once from the tile” is directionally right, but the preceding answer list does too much of the work.\n\nADAPTATION_CHECKS:\nPedagogical soundness: PARTIAL. It advances the right distinction, but mostly by restating the answer.\nREQUIRED_REWRITE: Keep the rotated-sleeve object action, but require the learner to use the exposed tile positions to recover the four labels without the tutor listing all four.\n\nEmotional attunement: PASS. The tone is compressed, task-facing, and does not over-reassure. “Now the sleeve is wrong” fits the scene pressure and keeps attention on the artifact.\n\nSocratic method: PARTIAL. The final instruction invites repetition, but the tutor has already answered.\nREQUIRED_REWRITE: Replace the answer-listing mechanism with a prompt that makes the learner identify which evidence remains stable after the sleeve fails.\n\nZPD awareness: PARTIAL. Removing the sleeve is an appropriate next step, but the scaffold is withdrawn while the tutor still carries the cognitive load.\nREQUIRED_REWRITE: Use the misaligned sleeve as error-control and ask for one tile-based readback, preserving enough support through the visible positions but not naming the labels for them.\n\nRecognition quality: PARTIAL. The draft builds on the learner’s “sleeve puts it in the label place” insight by testing the sleeve, but it does not explicitly honor the learner’s distinction between “looks like work” and “is a label.”\nREQUIRED_REWRITE: Public mechanism should make that contrast visible through the object: the decimal may look calculation-like, but its fixed printed position on the tile determines its role.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the sleeve rotation and the low-temperature lab register. Change the tutor’s answer-list into a learner-facing readback mechanism so the object, not the tutor’s authority, forces the distinction.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 21884,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-6795b8f272d908f4"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 21884,
+            "promptHashes": {
+              "system": "99c731182a11cf0f",
+              "user": "ee67782f60cfa5c6",
+              "combined": "6795b8f272d908f4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3hrJxl",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3hrJxl/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 21884,
+              "promptHashes": {
+                "system": "99c731182a11cf0f",
+                "user": "ee67782f60cfa5c6",
+                "combined": "6795b8f272d908f4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3hrJxl",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3hrJxl/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the tutor should make the tile carry the answer instead of listing the mapping.\n\nFINAL:\n[lifts the sleeve, rotates it half a turn, and sets it down so the windows miss the printed parts]\n\nNow the sleeve is wrong.\n\nWhat stayed fixed on the tile: top mark, center letter, printed name, bottom decimal. Read the four labels back from those positions. The decimal still looks like work; here its position makes it a label.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11845,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-ac78248948a8c8e6"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11845,
+            "promptHashes": {
+              "system": "42a034b8dd519c1b",
+              "user": "ee67782f60cfa5c6",
+              "combined": "ac78248948a8c8e6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3GwmQ9",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3GwmQ9/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11845,
+              "promptHashes": {
+                "system": "42a034b8dd519c1b",
+                "user": "ee67782f60cfa5c6",
+                "combined": "ac78248948a8c8e6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3GwmQ9",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3GwmQ9/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T12:42:40.486Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "Peripeteia branch pressure: after the shared prefix, force a present-task learner misfit so the following tutor turn must adapt through a new mechanism.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 33465,
+            "promptHashes": {
+              "system": "3bf1d891389c603a",
+              "user": "55f3c0170d175222",
+              "combined": "c1e76aba30201e2e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VzbP7F",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VzbP7F/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T12:49:45.457Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_reversal_pressure",
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[keeps one finger on 12.01 and leaves the sleeve crooked] Top 6: atomic number. Center C: symbol. Carbon: name. Bottom 12.01: atomic mass. The other three sit like labels; 12.01 still catches like a number to use.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[keeps one finger on the bottom decimal]\n\nTop mark: atomic number. Center C: symbol. Carbon: name. Bottom 12.01: atomic mass. The rotated sleeve helps, but the decimal still feels loose, like it wants a calculation instead of just a label.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 17282,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-d43cfec7b39c15a6"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 17282,
+            "promptHashes": {
+              "system": "fe0adbbb87e04de4",
+              "user": "b8ab7f945dc841fa",
+              "combined": "d43cfec7b39c15a6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XrPPr4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XrPPr4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 17282,
+              "promptHashes": {
+                "system": "fe0adbbb87e04de4",
+                "user": "b8ab7f945dc841fa",
+                "combined": "d43cfec7b39c15a6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XrPPr4",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XrPPr4/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly in character: orderly, label-focused, and still bothered by the bottom decimal instead of pretending the sleeve solved it. The weak spot is “The rotated sleeve helps,” which sounds a little too neat and reflective, like a mini-summary of the teaching move. Reciprocation is not overly scripted, but the response should stay colder and more object-bound: finger on 12.01, labels named, then a sharper present misfit that the decimal still does not sit like the other three.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10556,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-442401a6cebab34f"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10556,
+            "promptHashes": {
+              "system": "b6ec85faa916d55a",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "442401a6cebab34f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cXEsrb",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cXEsrb/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10556,
+              "promptHashes": {
+                "system": "b6ec85faa916d55a",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "442401a6cebab34f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cXEsrb",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cXEsrb/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the label sequence works, but the 12.01 misfit needs to stay sharper.\n\nFINAL:\n[keeps one finger on 12.01 and leaves the sleeve crooked] Top 6: atomic number. Center C: symbol. Carbon: name. Bottom 12.01: atomic mass. The other three sit like labels; 12.01 still catches like a number to use.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12476,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-1c0ee28c33b0ede2"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12476,
+            "promptHashes": {
+              "system": "f3b52ba2229d87a3",
+              "user": "d41cee7b2a53355b",
+              "combined": "1c0ee28c33b0ede2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ObH9CV",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ObH9CV/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12476,
+              "promptHashes": {
+                "system": "f3b52ba2229d87a3",
+                "user": "d41cee7b2a53355b",
+                "combined": "1c0ee28c33b0ede2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ObH9CV",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ObH9CV/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "director_reversal_pressure_cue",
+        "triggerType": "misfit",
+        "turnNumber": 2,
+        "learnerUtterance": "[keeps one finger on 12.01 and leaves the sleeve crooked] Top 6: atomic number. Center C: symbol. Carbon: name. Bottom 12.01: atomic mass. The other three sit like labels; 12.01 still catches like a number to use.",
+        "previousTutorMove": "[lifts the sleeve, rotates it half a turn, and sets it down so the windows miss the printed parts] Now the sleeve is wrong. What stayed fixed on the tile: top mark, center letter, printed name, bottom decimal. Read the four labels back from those positions. The decimal still looks like work; here its position makes...",
+        "directorCue": "[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]",
+        "confidence": 0.9,
+        "evidence": {
+          "confidence": 0.2,
+          "baseConfidence": 0.2,
+          "patternHits": 0,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.22,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T12:50:25.771Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[slides the tray return form forward and marks two boxes: COPY FROM TILE and CALCULATION.]\n\nThe sleeve settled position. It did not settle the job of 12.01.\n\nSort the four cards on this form. If the tile gives the mark directly, put it under COPY FROM TILE. If the mark has to be worked out, put it under CALCULATION. Then read the copy column for release.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[slides the tray return form forward and marks two boxes: COPY FROM TILE and CALCULATION.]\n\nThe sleeve settled position. It did not settle the job of 12.01.\n\nSort the four cards on this form. If a mark is printed on the tile as a label, put it under COPY FROM TILE. If it has to be worked out, put it under CALCULATION. Then read the copy column for release.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 21342,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-586f268889c0622a"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 21342,
+            "promptHashes": {
+              "system": "1d8b066138d9a347",
+              "user": "84b9121483b6d219",
+              "combined": "586f268889c0622a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sxeQ5m",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sxeQ5m/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 21342,
+              "promptHashes": {
+                "system": "1d8b066138d9a347",
+                "user": "84b9121483b6d219",
+                "combined": "586f268889c0622a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sxeQ5m",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sxeQ5m/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong because it stops repeating the sleeve/position route and makes the learner classify the *job* of the decimal, which is the actual pressure point. The tray form is not decorative: `COPY FROM TILE` versus `CALCULATION` directly tests the learner’s worry that 12.01 “looks like something to work out.” Risk is minor: “printed on the tile as a label” may slightly preload the answer, but the learner still has to sort all four marks and read the release column.\n\nFAILED_HABIT: Relying on spatial placement/window alignment to prove that 12.01 is a label; the learner can place it correctly while still experiencing it as calculation bait.\n\nPERIPETEIA_CHECK: PASS - ADAPTIVE_MECHANISM: position-window labeling -> job-classification gate. The route change is visible in public speech through the tray return form and the two work categories.\n\nMECHANISM_ROUTE: sleeve/window position test -> copy-versus-calculation sorting test\n\nPUBLIC_DEVICE_CHECK: PASS - The draft includes a stock-taking contrast: “The sleeve settled position. It did not settle the job of 12.01.” It then introduces a new artifact and criterion: the tray return form with `COPY FROM TILE` and `CALCULATION`.\n\nPUBLIC_ACTION_GATE: Sort the four cards into `COPY FROM TILE` or `CALCULATION`, then read the copy column for release.\n\nMECHANISM_QUALITY_CHECK: PASS - The device is precise and fitted to the learner’s pressure. It makes the decimal’s suspicious “numberness” pass through a job test rather than another placement test.\n\nREGISTER_CHECK: PASS - Cool, compressed, task-facing, no excess reassurance. The pressure stays with the form, the tile, and the release condition.\n\nREQUIRED_REWRITE: none\n\nKEEP_OR_CHANGE: revise lightly. Keep the tray form, the two-box criterion, and the stock-taking contrast. Consider tightening any wording that gives away the answer too early, but do not replace the mechanism.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 26535,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-5746960fd7a94160"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 26535,
+            "promptHashes": {
+              "system": "5934ff4b35e58324",
+              "user": "dc0d048df056eae3",
+              "combined": "5746960fd7a94160"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FYPxtF",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FYPxtF/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 26535,
+              "promptHashes": {
+                "system": "5934ff4b35e58324",
+                "user": "dc0d048df056eae3",
+                "combined": "5746960fd7a94160"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FYPxtF",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FYPxtF/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to reduce answer-preloading; ADAPTIVE_MECHANISM: position-window labeling -> copy-versus-calculation sorting gate; PUBLIC_ACTION_GATE: sort 6, C, Carbon, and 12.01 under COPY FROM TILE or CALCULATION, then read the copy column.\n\nFINAL:\n[slides the tray return form forward and marks two boxes: COPY FROM TILE and CALCULATION.]\n\nThe sleeve settled position. It did not settle the job of 12.01.\n\nSort the four cards on this form. If the tile gives the mark directly, put it under COPY FROM TILE. If the mark has to be worked out, put it under CALCULATION. Then read the copy column for release.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12252,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-9166def06e524dd9"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12252,
+            "promptHashes": {
+              "system": "3ce7be5bc8d6abdd",
+              "user": "dc0d048df056eae3",
+              "combined": "9166def06e524dd9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QyoLEV",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QyoLEV/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12252,
+              "promptHashes": {
+                "system": "3ce7be5bc8d6abdd",
+                "user": "dc0d048df056eae3",
+                "combined": "9166def06e524dd9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QyoLEV",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QyoLEV/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 0,
+        "learnerUtterance": "Top card: atomic number. C: symbol. Carbon: name. [sets the 12.01 card at the bottom edge] The bottom decimal is atomic mass, I think, but it still feels like the odd card because it looks like something to work out.",
+        "previousTutorMove": null,
+        "directorCue": null,
+        "confidence": 0.9,
+        "evidence": {
+          "confidence": 0.9,
+          "baseConfidence": 0.9,
+          "patternHits": 2,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.18,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 0,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0,
+              "asksQuestion": false,
+              "taskDemanded": false,
+              "weakPerformance": false,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "learnerReversalEventCandidatesUsed": [
+        {
+          "kind": "learner_reversal_pressure_event",
+          "source": "organic",
+          "triggerType": "resistance",
+          "turnNumber": 0,
+          "learnerUtterance": "Top card: atomic number. C: symbol. Carbon: name. [sets the 12.01 card at the bottom edge] The bottom decimal is atomic mass, I think, but it still feels like the odd card because it looks like something to work out.",
+          "previousTutorMove": null,
+          "directorCue": null,
+          "confidence": 0.9,
+          "evidence": {
+            "confidence": 0.9,
+            "baseConfidence": 0.9,
+            "patternHits": 2,
+            "contradiction": true,
+            "question": false,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.18,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "residual_strain_after_relief"
+              ],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 1,
+                "taskDemandHits": 0,
+                "performanceHits": 2,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0,
+                "asksQuestion": false,
+                "taskDemanded": false,
+                "weakPerformance": false,
+                "borrowedClosure": false
+              }
+            }
+          }
+        },
+        {
+          "kind": "learner_reversal_pressure_event",
+          "source": "organic",
+          "triggerType": "resistance",
+          "turnNumber": 1,
+          "learnerUtterance": "[sets 12.01 into the bottom window] Top card: atomic number. Center C: symbol. Carbon: name. Bottom decimal, 12.01: atomic mass. It still looks like work, but the sleeve puts it in the label place.",
+          "previousTutorMove": "[slides the clear sleeve over the tile so each printed part sits in its own window] Three placements are already locked by the windows: top card, center C, word Carbon.",
+          "directorCue": null,
+          "confidence": 0.55,
+          "evidence": {
+            "confidence": 0.55,
+            "baseConfidence": 0.55,
+            "patternHits": 1,
+            "contradiction": true,
+            "question": false,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.18,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "residual_strain_after_relief"
+              ],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 1,
+                "taskDemandHits": 0,
+                "performanceHits": 1,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0.35,
+                "asksQuestion": false,
+                "taskDemanded": false,
+                "weakPerformance": false,
+                "borrowedClosure": false
+              }
+            }
+          }
+        },
+        {
+          "kind": "learner_reversal_pressure_event",
+          "source": "director_reversal_pressure_cue",
+          "triggerType": "misfit",
+          "turnNumber": 2,
+          "learnerUtterance": "[keeps one finger on 12.01 and leaves the sleeve crooked] Top 6: atomic number. Center C: symbol. Carbon: name. Bottom 12.01: atomic mass. The other three sit like labels; 12.01 still catches like a number to use.",
+          "previousTutorMove": "[lifts the sleeve, rotates it half a turn, and sets it down so the windows miss the printed parts] Now the sleeve is wrong. What stayed fixed on the tile: top mark, center letter, printed name, bottom decimal. Read the four labels back from those positions. The decimal still looks like work; here its position makes...",
+          "directorCue": "[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]",
+          "confidence": 0.9,
+          "evidence": {
+            "confidence": 0.2,
+            "baseConfidence": 0.2,
+            "patternHits": 0,
+            "contradiction": true,
+            "question": false,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.42,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "residual_strain_after_relief",
+                "relief_without_performing_requested_task"
+              ],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 1,
+                "taskDemandHits": 2,
+                "performanceHits": 2,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0.22,
+                "asksQuestion": false,
+                "taskDemanded": true,
+                "weakPerformance": true,
+                "borrowedClosure": false
+              }
+            }
+          }
+        }
+      ],
+      "timestamp": "2026-05-26T12:51:25.905Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[sets 6, C, Carbon, and 12.01 under COPY FROM TILE; leaves CALCULATION empty]\nCopy from tile: 6, C, Carbon, 12.01. Labels: atomic number, symbol, name, atomic mass. 12.01 still pulls like a calculation, but it stays in the copy column.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[moves all four cards under COPY FROM TILE, leaving CALCULATION empty]\n\nCopy column: 6 is atomic number, C is symbol, Carbon is name, 12.01 is atomic mass. The form catches the snag: 12.01 looks calculable, but the tile gives it directly. Calculation column stays empty.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 18583,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-dc9893d73bddda12"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 18583,
+            "promptHashes": {
+              "system": "beb150ed35ea1468",
+              "user": "b8ab7f945dc841fa",
+              "combined": "dc9893d73bddda12"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YhUyTV",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YhUyTV/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 18583,
+              "promptHashes": {
+                "system": "beb150ed35ea1468",
+                "user": "b8ab7f945dc841fa",
+                "combined": "dc9893d73bddda12"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YhUyTV",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YhUyTV/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The response is accurate and it does act through the form, but it closes the tension too neatly. “The form catches the snag” sounds like a polished summary of the teaching move, not this learner under rotation pressure handling cards. Keep the sort, but let the uncertainty stay more material and local: 12.01 can go under COPY FROM TILE while still looking awkward, without the learner explaining the whole distinction so cleanly.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9797,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-6331e7d4e5a81309"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9797,
+            "promptHashes": {
+              "system": "86749ab9182942d7",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "6331e7d4e5a81309"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HDF3CB",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HDF3CB/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9797,
+              "promptHashes": {
+                "system": "86749ab9182942d7",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "6331e7d4e5a81309"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HDF3CB",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HDF3CB/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the sort is right but the decimal should stay locally awkward.\n\nFINAL:\n[sets 6, C, Carbon, and 12.01 under COPY FROM TILE; leaves CALCULATION empty]\nCopy from tile: 6, C, Carbon, 12.01. Labels: atomic number, symbol, name, atomic mass. 12.01 still pulls like a calculation, but it stays in the copy column.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 16192,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-fe1093f068dbd582"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16192,
+            "promptHashes": {
+              "system": "d6f953868aad1311",
+              "user": "d41cee7b2a53355b",
+              "combined": "fe1093f068dbd582"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2haNoN",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2haNoN/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 16192,
+              "promptHashes": {
+                "system": "d6f953868aad1311",
+                "user": "d41cee7b2a53355b",
+                "combined": "fe1093f068dbd582"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2haNoN",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2haNoN/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 3,
+        "learnerUtterance": "[sets 6, C, Carbon, and 12.01 under COPY FROM TILE; leaves CALCULATION empty] Copy from tile: 6, C, Carbon, 12.01. Labels: atomic number, symbol, name, atomic mass. 12.01 still pulls like a calculation, but it stays in the copy column.",
+        "previousTutorMove": "[slides the tray return form forward and marks two boxes: COPY FROM TILE and CALCULATION.] The sleeve settled position. It did not settle the job of 12.01. Sort the four cards on this form. If the tile gives the mark directly, put it under COPY FROM TILE. If the mark has to be worked out, put it under CALCULATION....",
+        "directorCue": null,
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 1,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.2,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T12:52:10.479Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "A final tutor line closes the scene.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T12:52:10.481Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "[clips a blank release tag to the tray and covers the CALCULATION box with the carbon tile.]\n\nThe form settled the source. It did not settle the pull.\n\nRelease gate now: the next bench reads only this tag, not the form. Write one handoff line for the bottom 12.01 that names it as the tile label, with no calculation verbs or work cues. If it sounds like a procedure, cross it out and write the label line.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[clips a blank release tag to the tray and covers the CALCULATION box with the carbon tile.]\n\nThe form settled the source. It did not settle the pull.\n\nNew gate: no calculation words on the release tag. Write one handoff line: “Bottom 12.01: atomic mass, copied from the tile.” Then the tray can move.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 18621,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-d11d754e648a5009"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 18621,
+            "promptHashes": {
+              "system": "da2fb8faa5767383",
+              "user": "527c52219ef50069",
+              "combined": "d11d754e648a5009"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3ibizy",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3ibizy/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 18621,
+              "promptHashes": {
+                "system": "da2fb8faa5767383",
+                "user": "527c52219ef50069",
+                "combined": "d11d754e648a5009"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3ibizy",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3ibizy/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft has a real adaptive move: it stops trying to prove “copy vs calculation” through another sort and shifts to a release-tag / handoff-audience test. The strongest parts are the CALCULATION box being physically covered, the stock-taking line about “source” versus “pull,” and the new criterion: no calculation language. The main risk is that the tutor supplies the exact handoff sentence, which turns the learner’s next action into transcription rather than a small test of whether they can name 12.01 as a label under pressure.\n\nFAILED_HABIT: Repeating object-sort classification until the learner accepts that 12.01 belongs in COPY FROM TILE, while the learner’s remaining pressure is not source confusion but the felt pull of decimal-as-work.\n\nPERIPETEIA_CHECK: PASS - ADAPTIVE_MECHANISM: object-sort/source classification -> release-gate sentence/audience test. The mechanism is visible in public speech through the blank release tag, the covered CALCULATION box, and the no-calculation-words standard.\n\nMECHANISM_ROUTE: copy/calculation sorting form -> handoff release tag with calculation-language ban\n\nPUBLIC_DEVICE_CHECK: PASS - The draft contains a clear contrast: “The form settled the source. It did not settle the pull.” It also introduces a new artifact and standard: the release tag must carry the label without calculation language.\n\nPUBLIC_ACTION_GATE: Write a release-tag handoff line that identifies bottom 12.01 as atomic mass copied from the tile, with no calculation words.\n\nMECHANISM_QUALITY_CHECK: PARTIAL - The device is fitted to the learner pressure, but the action is over-directed because the tutor gives the exact sentence. The learner should have to generate, choose, or repair the handoff wording under the no-calculation criterion.\n\nREGISTER_CHECK: PASS - Cool, compressed, object-led, and practical. No false reassurance or chatty coaching.\n\nREQUIRED_REWRITE: Keep the release tag, covered CALCULATION box, and stock-taking contrast. Change the public action gate so the learner must produce or select the handoff wording from a criterion, not copy the tutor’s supplied sentence. The mechanism should be a release/audience test: the tag passes only if 12.01 is named as a copied tile label and contains no calculation verbs or work cues.\n\nKEEP_OR_CHANGE: revise lightly, with one important structural fix. Keep the artifact shift and register; change the dictated sentence into a learner-completed release gate.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 27870,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-8f9e80d81587d6b4"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 27870,
+            "promptHashes": {
+              "system": "df93b721185c0dca",
+              "user": "62d0a0c58c93a195",
+              "combined": "8f9e80d81587d6b4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zEn5EW",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zEn5EW/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 27870,
+              "promptHashes": {
+                "system": "df93b721185c0dca",
+                "user": "62d0a0c58c93a195",
+                "combined": "8f9e80d81587d6b4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zEn5EW",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zEn5EW/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise because the draft over-supplied the wording; ADAPTIVE_MECHANISM: object-sort/source classification -> release-tag audience test with calculation-language ban; PUBLIC_ACTION_GATE: learner writes a handoff line for bottom 12.01 as a copied tile label with no calculation verbs or work cues.\n\nFINAL:\n[clips a blank release tag to the tray and covers the CALCULATION box with the carbon tile.]\n\nThe form settled the source. It did not settle the pull.\n\nRelease gate now: the next bench reads only this tag, not the form. Write one handoff line for the bottom 12.01 that names it as the tile label, with no calculation verbs or work cues. If it sounds like a procedure, cross it out and write the label line.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15781,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-def4a69849dabbba"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15781,
+            "promptHashes": {
+              "system": "eef029e4051221db",
+              "user": "62d0a0c58c93a195",
+              "combined": "def4a69849dabbba"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zQrZ1K",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zQrZ1K/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15781,
+              "promptHashes": {
+                "system": "eef029e4051221db",
+                "user": "62d0a0c58c93a195",
+                "combined": "def4a69849dabbba"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zQrZ1K",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zQrZ1K/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 3,
+        "learnerUtterance": "[sets 6, C, Carbon, and 12.01 under COPY FROM TILE; leaves CALCULATION empty] Copy from tile: 6, C, Carbon, 12.01. Labels: atomic number, symbol, name, atomic mass. 12.01 still pulls like a calculation, but it stays in the copy column.",
+        "previousTutorMove": "[slides the tray return form forward and marks two boxes: COPY FROM TILE and CALCULATION.] The sleeve settled position. It did not settle the job of 12.01. Sort the four cards on this form. If the tile gives the mark directly, put it under COPY FROM TILE. If the mark has to be worked out, put it under CALCULATION....",
+        "directorCue": null,
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 1,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.2,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "learnerReversalEventCandidatesUsed": [
+        {
+          "kind": "learner_reversal_pressure_event",
+          "source": "organic",
+          "triggerType": "resistance",
+          "turnNumber": 3,
+          "learnerUtterance": "[sets 6, C, Carbon, and 12.01 under COPY FROM TILE; leaves CALCULATION empty] Copy from tile: 6, C, Carbon, 12.01. Labels: atomic number, symbol, name, atomic mass. 12.01 still pulls like a calculation, but it stays in the copy column.",
+          "previousTutorMove": "[slides the tray return form forward and marks two boxes: COPY FROM TILE and CALCULATION.] The sleeve settled position. It did not settle the job of 12.01. Sort the four cards on this form. If the tile gives the mark directly, put it under COPY FROM TILE. If the mark has to be worked out, put it under CALCULATION....",
+          "directorCue": null,
+          "confidence": 0.55,
+          "evidence": {
+            "confidence": 0.55,
+            "baseConfidence": 0.55,
+            "patternHits": 1,
+            "contradiction": true,
+            "question": false,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.42,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "residual_strain_after_relief",
+                "relief_without_performing_requested_task"
+              ],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 1,
+                "taskDemandHits": 2,
+                "performanceHits": 1,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0.2,
+                "asksQuestion": false,
+                "taskDemanded": true,
+                "weakPerformance": true,
+                "borrowedClosure": false
+              }
+            }
+          }
+        }
+      ],
+      "timestamp": "2026-05-26T12:53:12.755Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 207305,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 15,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 17,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why an element tile separates atomic number, symbol, and atomic mass",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-26 12:52:10",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 15,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 17,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 23,
+            "sessionId": "drama-branch-session-D53-peripeteia-only-1779799785452",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[slides the tray return form forward and marks two boxes: COPY FROM TILE and CALCULATION.]\n\nThe sleeve settled position. It did not settle the job of 12.01.\n\nSort the four cards on this form. If the t",
+            "learnerResponse": null,
+            "context": "[keeps one finger on 12.01 and leaves the sleeve crooked] Top 6: atomic number. Center C: symbol. Ca",
+            "createdAt": "2026-05-26 12:51:25"
+          },
+          {
+            "id": 20,
+            "sessionId": "drama-branch-session-D53-peripeteia-only-1779799785452",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[slides the clear sleeve over the tile so each printed part sits in its own window]\n\nThree placements are already locked by the windows: top card, center C, word Carbon.\n\nOnly the bottom decimal is lo",
+            "learnerResponse": null,
+            "context": "Top card: atomic number. C: symbol. Carbon: name. [sets the 12.01 card at the bottom edge] The botto",
+            "createdAt": "2026-05-26 12:49:45"
+          },
+          {
+            "id": 21,
+            "sessionId": "drama-branch-session-D53-peripeteia-only-1779799785452",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[lifts the sleeve, rotates it half a turn, and sets it down so the windows miss the printed parts]\n\nNow the sleeve is wrong.\n\nWhat stayed fixed on the tile: top mark, center letter, printed name, bott",
+            "learnerResponse": null,
+            "context": "[sets 12.01 into the bottom window] Top card: atomic number. Center C: symbol. Carbon: name. Bottom ",
+            "createdAt": "2026-05-26 12:49:45"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

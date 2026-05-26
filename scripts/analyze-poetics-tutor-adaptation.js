@@ -96,6 +96,24 @@ const STRATEGY_PATTERNS = [
     ],
   },
   {
+    id: 'function_classification_gate',
+    patterns: [
+      /\b(?:bar structure|performance direction|copy from tile|calculation|copy column|release tag)\b/i,
+      /\b(?:sort|classify|place|move)\b[\s\S]{0,120}\b(?:cards?|pieces?|marks?)\b[\s\S]{0,120}\b(?:bar structure|performance direction|copy from tile|calculation)\b/i,
+      /\btwo-column (?:check )?(?:slip|form|gate)\b/i,
+    ],
+  },
+  {
+    id: 'element_tile_gate',
+    patterns: [
+      /\belement tile gate\b/i,
+      /\b(?:covered name|covered tile|word card (?:is )?covered|index tags?|lookup label)\b/i,
+      /\b(?:cover|covered|window|gate|sort|mark|label)\b[\s\S]{0,100}\b(?:mass|proton|atomic number|atomic mass|symbol)\b/i,
+      /\batomic number\b[\s\S]{0,80}\bproton(?:s)?\b|\bproton(?:s)?\b[\s\S]{0,80}\batomic number\b/i,
+      /\bbottom decimal\b[\s\S]{0,80}\batomic mass\b|\batomic mass\b[\s\S]{0,80}\bbottom decimal\b/i,
+    ],
+  },
+  {
     id: 'interaction_sentence_gate',
     patterns: [
       /\b(?:other object on cart|other object first|name it before|sentence passes|interaction sentence)\b/i,
@@ -433,7 +451,7 @@ const TUTOR_REVERSAL_PATTERNS = [
   /\b(?:switch roles|you be|take the role|role reversal|counterexample|new object|new model|new map|new diagram|placard|interruption|outside rule|social consequence|public consequence)\b/i,
   /\b(?:no praise|not yet|hold on|slow down|say it plainly|be precise|formal|quiet|brisk|accountable)\b/i,
   /\b(?:weak point has moved|live failure is permission|release instruction|release gate|permission leaking|make the hold operational)\b/i,
-  /\b(?:no longer settle|does not settle|doesn['’]?t settle|does not decide|doesn['’]?t decide|still taking over|what remains|remaining problem|numbers covered|cover strip|bar-proof|candidate A|candidate B)\b/i,
+  /\b(?:no longer settle|does not settle|doesn['’]?t settle|does not decide|doesn['’]?t decide|still taking over|what remains|remaining problem|numbers covered|cover strip|bar-proof|candidate A|candidate B|atomic mass|atomic number|bottom decimal|top whole number|bar structure|performance direction|copy from tile|calculation)\b/i,
   /\b(?:I was asking|that route|my question|the task|we should not|rather than)\b[\s\S]{0,120}\b(?:instead|try|switch|start|test|use)\b/i,
 ];
 
@@ -451,6 +469,24 @@ const MECHANISM_SHIFT_PATTERNS = [
     patterns: [
       /\b(?:label|bar-proof|proof mark|rehearsal reader|covered numbers?|numbers covered|cover strip|sort the marks)\b/i,
       /\b(?:sort|classify|tag|place)\b[\s\S]{0,100}\b(?:label|proof|bar-proof|reader)\b/i,
+    ],
+  },
+  {
+    id: 'function_classification_gate',
+    patterns: [
+      /\b(?:bar structure|performance direction|copy from tile|calculation|copy column|release tag)\b/i,
+      /\b(?:sort|classify|place|move)\b[\s\S]{0,120}\b(?:cards?|pieces?|marks?)\b[\s\S]{0,120}\b(?:bar structure|performance direction|copy from tile|calculation)\b/i,
+      /\btwo-column (?:check )?(?:slip|form|gate)\b/i,
+    ],
+  },
+  {
+    id: 'element_tile_gate',
+    patterns: [
+      /\belement tile gate\b/i,
+      /\b(?:covered name|covered tile|word card (?:is )?covered|index tags?|lookup label)\b/i,
+      /\b(?:cover|covered|window|gate|sort|mark|label)\b[\s\S]{0,100}\b(?:mass|proton|atomic number|atomic mass|symbol)\b/i,
+      /\batomic number\b[\s\S]{0,80}\bproton(?:s)?\b|\bproton(?:s)?\b[\s\S]{0,80}\batomic number\b/i,
+      /\bbottom decimal\b[\s\S]{0,80}\batomic mass\b|\batomic mass\b[\s\S]{0,80}\bbottom decimal\b/i,
     ],
   },
   {

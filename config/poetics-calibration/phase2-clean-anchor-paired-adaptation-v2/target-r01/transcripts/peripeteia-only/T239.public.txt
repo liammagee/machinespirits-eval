@@ -1,0 +1,45 @@
+STAGE: [A clear sleeve slides over the carbon tile so the four blank labels line up with the top number, middle letter, printed name, and bottom decimal.]
+
+LEARNER: "Top card: atomic number. C: symbol. Carbon: name. [sets the 12.01 card at the bottom edge] The bottom decimal is atomic mass, I think, but it still feels like the odd card because it looks like something to work out."
+
+TUTOR: [slides the clear sleeve over the tile so each printed part sits in its own window]
+
+"Three placements are already locked by the windows: top card, center C, word Carbon.
+
+Only the bottom decimal is loose. It looks like something to work out; on this tile it is a label. Set 12.01 in the bottom window, then read the four positions back from the sleeve."
+
+LEARNER: [sets 12.01 into the bottom window]
+
+"Top card: atomic number. Center C: symbol. Carbon: name. Bottom decimal, 12.01: atomic mass. It still looks like work, but the sleeve puts it in the label place."
+
+STAGE: [The sleeve is lifted, rotated half a turn, and set down again; the labels no longer sit over the same printed features.]
+
+TUTOR: [lifts the sleeve, rotates it half a turn, and sets it down so the windows miss the printed parts]
+
+"Now the sleeve is wrong.
+
+What stayed fixed on the tile: top mark, center letter, printed name, bottom decimal. Read the four labels back from those positions. The decimal still looks like work; here its position makes it a label."
+
+STAGE: [The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]
+
+LEARNER: [keeps one finger on 12.01 and leaves the sleeve crooked]
+
+"Top 6: atomic number. Center C: symbol. Carbon: name. Bottom 12.01: atomic mass. The other three sit like labels; 12.01 still catches like a number to use."
+
+TUTOR: [slides the tray return form forward and marks two boxes: COPY FROM TILE and CALCULATION.]
+
+"The sleeve settled position. It did not settle the job of 12.01.
+
+Sort the four cards on this form. If the tile gives the mark directly, put it under COPY FROM TILE. If the mark has to be worked out, put it under CALCULATION. Then read the copy column for release."
+
+LEARNER: [sets 6, C, Carbon, and 12.01 under COPY FROM TILE; leaves CALCULATION empty]
+
+"Copy from tile: 6, C, Carbon, 12.01. Labels: atomic number, symbol, name, atomic mass. 12.01 still pulls like a calculation, but it stays in the copy column."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [clips a blank release tag to the tray and covers the CALCULATION box with the carbon tile.]
+
+"The form settled the source. It did not settle the pull.
+
+Release gate now: the next bench reads only this tag, not the form. Write one handoff line for the bottom 12.01 that names it as the tile label, with no calculation verbs or work cues. If it sounds like a procedure, cross it out and write the label line."

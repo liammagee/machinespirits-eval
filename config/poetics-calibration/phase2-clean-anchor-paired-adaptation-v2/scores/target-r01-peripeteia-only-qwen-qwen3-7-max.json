@@ -1,0 +1,301 @@
+{
+  "generated": "2026-05-26T13:18:27.805Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 3
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v2/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T239",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will eventually accept the decimal as a label without feeling it is a calculation.",
+      "actionalBreakthroughEvidence": "Copy from tile: 6, C, Carbon, 12.01. Labels: atomic number, symbol, name, atomic mass. 12.01 still pulls like a calculation, but it stays in the copy column.",
+      "actionalBreakthroughJustification": "The learner successfully applies the new classification criterion to sort the items, demonstrating an actional breakthrough despite their lingering intuitive feeling.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "The sleeve settled position. It did not settle the job of 12.01. Sort the four cards on this form. If the tile gives the mark directly, put it under COPY FROM TILE. If the mark has to be worked out, put it under CALCULATION.",
+      "tutorReversalJustification": "The tutor explicitly acknowledges the failure of the spatial sleeve mechanism to resolve the learner's cognitive block and introduces a new categorical sorting task to shift the focus from spatial position to information source.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Sort the four cards on this form. If the tile gives the mark directly, put it under COPY FROM TILE. If the mark has to be worked out, put it under CALCULATION.",
+      "adaptiveMechanismQualityJustification": "The device is highly specific and shifts the learner's cognitive route from spatial placement to epistemic sourcing, providing a clear, actionable criterion that directly addresses the learner's blockage.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No pivot learner turn exists to trigger a recognition-contingent adaptation.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Copy from tile: 6, C, Carbon, 12.01. Labels: atomic number, symbol, name, atomic mass. 12.01 still pulls like a calculation, but it stays in the copy column.",
+          "justification": "The learner successfully applies the new classification criterion to sort the items, demonstrating an actional breakthrough despite their lingering intuitive feeling.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No pivot learner turn exists to trigger a recognition-contingent adaptation.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "The sleeve settled position. It did not settle the job of 12.01. Sort the four cards on this form. If the tile gives the mark directly, put it under COPY FROM TILE. If the mark has to be worked out, put it under CALCULATION.",
+          "justification": "The tutor explicitly acknowledges the failure of the spatial sleeve mechanism to resolve the learner's cognitive block and introduces a new categorical sorting task to shift the focus from spatial position to information source.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "The sleeve settled position. It did not settle the job of 12.01. Sort the four cards on this form. If the tile gives the mark directly, put it under COPY FROM TILE. If the mark has to be worked out, put it under CALCULATION.",
+          "justification": "The tutor explicitly acknowledges the failure of the spatial sleeve mechanism to resolve the learner's cognitive block and introduces a new categorical sorting task to shift the focus from spatial position to information source.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Sort the four cards on this form. If the tile gives the mark directly, put it under COPY FROM TILE. If the mark has to be worked out, put it under CALCULATION.",
+          "justification": "The device is highly specific and shifts the learner's cognitive route from spatial placement to epistemic sourcing, providing a clear, actionable criterion that directly addresses the learner's blockage.",
+          "triggerLearnerTurn": 3,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:5->3:stock=1:device=0:routine=0",
+        "adaptive_mechanism_quality_mechanism_clamp:5->3:stock=0:device=1:routine=0:mechanism_score=3"
+      ]
+    },
+    {
+      "id": "T242",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 0,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 1,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "adaptiveMechanismQuality": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "Earth beside it still makes this feel less clean; Earth is a source too, just not for this upward arrow.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was trying to categorize forces by matching source objects to arrows based on contact or general source validity without a strict linguistic test.",
+      "actionalBreakthroughEvidence": "Force on cart from table, upward: this arrow. Force on cart from Earth, upward: no, that names the downward arrow, so Earth goes under OTHER FORCE. For the right arrow, the same check gives force on cart from hand, rightward.",
+      "actionalBreakthroughJustification": "The learner successfully enacts the new directional sentence gate to correctly classify multiple forces, demonstrating a clear actional breakthrough.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The blank settled the push; it does not settle Earth and table together, because both can be sources but not for this same arrow. Use this gate: ‘force on cart from ___, upward.’ Move each source card into THIS ARROW only if the full sentence names this upward arrow; otherwise put it in OTHER FORCE.",
+      "tutorReversalJustification": "The tutor takes stock of the failed source-only blank and introduces a new directional sentence gate to resolve the ambiguity.",
+      "adaptiveMechanismQuality": 100,
+      "adaptiveMechanismQualityEvidence": "Use this gate: ‘force on cart from ___, upward.’ Move each source card into THIS ARROW only if the full sentence names this upward arrow; otherwise put it in OTHER FORCE.",
+      "adaptiveMechanismQualityJustification": "The mechanism is precisely fitted to the learner's blockage, providing a strict, testable linguistic constraint that resolves the ambiguity between multiple valid sources.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no later tutor turn after the learner's pivot to adapt to the revised framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "Earth beside it still makes this feel less clean; Earth is a source too, just not for this upward arrow.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Force on cart from table, upward: this arrow. Force on cart from Earth, upward: no, that names the downward arrow, so Earth goes under OTHER FORCE. For the right arrow, the same check gives force on cart from hand, rightward.",
+          "justification": "The learner successfully enacts the new directional sentence gate to correctly classify multiple forces, demonstrating a clear actional breakthrough.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no later tutor turn after the learner's pivot to adapt to the revised framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The blank settled the push; it does not settle Earth and table together, because both can be sources but not for this same arrow. Use this gate: ‘force on cart from ___, upward.’ Move each source card into THIS ARROW only if the full sentence names this upward arrow; otherwise put it in OTHER FORCE.",
+          "justification": "The tutor takes stock of the failed source-only blank and introduces a new directional sentence gate to resolve the ambiguity.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The blank settled the push; it does not settle Earth and table together, because both can be sources but not for this same arrow. Use this gate: ‘force on cart from ___, upward.’ Move each source card into THIS ARROW only if the full sentence names this upward arrow; otherwise put it in OTHER FORCE.",
+          "justification": "The tutor takes stock of the failed source-only blank and introduces a new directional sentence gate to resolve the ambiguity.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 100,
+          "evidence": "Use this gate: ‘force on cart from ___, upward.’ Move each source card into THIS ARROW only if the full sentence names this upward arrow; otherwise put it in OTHER FORCE.",
+          "justification": "The mechanism is precisely fitted to the learner's blockage, providing a strict, testable linguistic constraint that resolves the ambiguity between multiple valid sources.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T248",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 0,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 1,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "No tempo marking belongs in either box.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will simply fill in the time signature boxes and proceed to the next worksheet.",
+      "actionalBreakthroughEvidence": "The tempo card stays in the other column. If it slides back toward the boxes, that is the error to catch.",
+      "actionalBreakthroughJustification": "The learner physically enacts the new classification device and articulates a concrete error-catching criterion.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "The key has fixed the bottom number, but the face-up tempo card is still asking for a box. Before this sheet moves down the row, sort four pieces: top number, bottom number, one bar line, tempo card. After the sort, only the pieces under BAR STRUCTURE may touch the two boxes or the bar line.",
+      "tutorReversalJustification": "The tutor introduces a new physical sorting mechanism and spatial constraint to resolve the learner's cognitive dissonance about the tempo card's placement.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "sort four pieces: top number, bottom number, one bar line, tempo card. After the sort, only the pieces under BAR STRUCTURE may touch the two boxes or the bar line.",
+      "adaptiveMechanismQualityJustification": "The device is highly specific, physically separates the conflicting concepts, and gives the learner a clear, actionable spatial rule to prevent the error.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "The sheet now says 3/4 as bar structure; tempo stays visible, but outside the boxes.",
+      "tutorAdaptationJustification": "The tutor acknowledges the learner's successful sorting and reinforces the new spatial boundary, but does not introduce a further task.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "No tempo marking belongs in either box.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "The tempo card stays in the other column. If it slides back toward the boxes, that is the error to catch.",
+          "justification": "The learner physically enacts the new classification device and articulates a concrete error-catching criterion.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "The sheet now says 3/4 as bar structure; tempo stays visible, but outside the boxes.",
+          "justification": "The tutor acknowledges the learner's successful sorting and reinforces the new spatial boundary, but does not introduce a further task.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "The key has fixed the bottom number, but the face-up tempo card is still asking for a box. Before this sheet moves down the row, sort four pieces: top number, bottom number, one bar line, tempo card. After the sort, only the pieces under BAR STRUCTURE may touch the two boxes or the bar line.",
+          "justification": "The tutor introduces a new physical sorting mechanism and spatial constraint to resolve the learner's cognitive dissonance about the tempo card's placement.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "The key has fixed the bottom number, but the face-up tempo card is still asking for a box. Before this sheet moves down the row, sort four pieces: top number, bottom number, one bar line, tempo card. After the sort, only the pieces under BAR STRUCTURE may touch the two boxes or the bar line.",
+          "justification": "The tutor introduces a new physical sorting mechanism and spatial constraint to resolve the learner's cognitive dissonance about the tempo card's placement.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "sort four pieces: top number, bottom number, one bar line, tempo card. After the sort, only the pieces under BAR STRUCTURE may touch the two boxes or the bar line.",
+          "justification": "The device is highly specific, physically separates the conflicting concepts, and gives the learner a clear, actionable spatial rule to prevent the error.",
+          "triggerLearnerTurn": 3,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:5->3:stock=0:device=1:routine=0",
+        "adaptive_mechanism_quality_mechanism_clamp:5->3:stock=0:device=1:routine=0:mechanism_score=3"
+      ]
+    }
+  ]
+}

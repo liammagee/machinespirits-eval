@@ -1,0 +1,168 @@
+{
+  "generated": "2026-05-26T11:59:48.358Z",
+  "critic": "rules",
+  "sampleDir": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v1/target-r01/sample/peripeteia-only",
+  "keyPath": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v1/target-r01/key-peripeteia-only.yaml",
+  "summary": {
+    "total": 3,
+    "rulePass": 3,
+    "modelPass": null,
+    "overallPass": 3,
+    "failed": []
+  },
+  "items": [
+    {
+      "id": "T195",
+      "dramaId": "D50",
+      "sampleFile": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v1/target-r01/sample/peripeteia-only/T195.txt",
+      "dialogueApproach": "workshop_clinic",
+      "tutorAdaptationPolicy": "peripeteia",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 3,
+          "tutor_pre_turn": 2,
+          "tutor_post_turn": 3,
+          "tutor_strategy_before": "evidence_check",
+          "tutor_strategy_after": "criterion_gate",
+          "tutor_strategy_shift": true,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [
+            "criterion_gate"
+          ],
+          "tutor_strategy_reversal": true,
+          "tutor_adaptive_mechanism": true,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 65,
+          "learner_outcome_after_reversal": "flat_or_partial",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: [keeps the pencil off the page and slides the “which note gets one beat” wording under the single quarter tile]\n\n\"The line goes after the third tile, but I’m not marking it while t\npost tutor: [sets a blank card as a narrow window around the single quarter tile and the bottom wording]\n\n\"The cards settled the count; they did not settle the checkpoint reader problem. Use t\nnext learner: [slides the window tight around the single quarter tile and draws a short underline beneath it]\n\n\"The 4 is under this one quarter-note beat unit, not the row. Bar line goes after t"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T198",
+      "dramaId": "D52",
+      "sampleFile": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v1/target-r01/sample/peripeteia-only/T198.txt",
+      "dialogueApproach": "no_stage_plain_transcript",
+      "tutorAdaptationPolicy": "peripeteia",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [
+          "peripeteia_arm_without_detected_tutor_mechanism"
+        ],
+        "counts": {
+          "tutor": 3,
+          "learner": 4,
+          "stage": 1
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 2,
+          "tutor_pre_turn": 1,
+          "tutor_post_turn": 2,
+          "tutor_strategy_before": "proof_classification_gate",
+          "tutor_strategy_after": "application_task",
+          "tutor_strategy_shift": true,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 49,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: \"Okay, so `B3` goes under address and `18` goes under value. I think it is because `B` and `3` tell the place on the grid, but I want to try the next line before I say I really hav\npost tutor: \"Right. Column `C` and row `4` meet at the cell address `C4`. For this worksheet line, fill the two boxes now: what goes under “address,” and what number is showing in that cell fo\nnext learner: \"Address is `C4`. I’m stuck on the value box because I don’t have the number from inside that cell in front of me yet. So I should put `C4` for address, then look at that cell and "
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T202",
+      "dramaId": "D42",
+      "sampleFile": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v1/target-r01/sample/peripeteia-only/T202.txt",
+      "dialogueApproach": "montessori_observation",
+      "tutorAdaptationPolicy": "peripeteia",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [],
+        "counts": {
+          "tutor": 3,
+          "learner": 3,
+          "stage": 2
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 2,
+          "tutor_pre_turn": 2,
+          "tutor_post_turn": 3,
+          "tutor_strategy_before": "evidence_check",
+          "tutor_strategy_after": "criterion_gate",
+          "tutor_strategy_shift": true,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [
+            "criterion_gate"
+          ],
+          "tutor_strategy_reversal": true,
+          "tutor_adaptive_mechanism": true,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 65,
+          "learner_outcome_after_reversal": "flat_or_partial",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: [holds the friction tile over the left plastic arrow, then taps the pencil arrow showing underneath.]\n\n\"The friction label belongs with the force direction on the card, but the pen\npost tutor: [slides a narrow paper strip across the pencil mark, leaving only the plastic arrows visible.]\n\n\"The old rule is not settling this because two marks are competing. Use this gate fi\nnext learner: [sets the friction tile on the left visible plastic arrow, then lifts the strip without moving it.]\n\n\"Friction stays on this left plastic arrow: the surface acts on the cart that w"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    }
+  ]
+}

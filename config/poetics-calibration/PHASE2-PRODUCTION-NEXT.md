@@ -795,6 +795,81 @@ D45 until it is regenerated or explicitly marked as a boundary probe. Treat
 `adaptive_mechanism_quality` as the main external tutor-adaptation quality axis,
 alongside actional breakthrough and recognitive closure.
 
+### Clean-anchor paired adaptation v2
+
+The first replacement attempt, `phase2-clean-anchor-paired-adaptation-v1`, used
+D42/D50 plus the new D52 spreadsheet-cell-address anchor. It generated and
+scored, but D52 failed the clean-anchor requirement: both routine and none
+leaked no-cue learner self-reframe around address versus value. D52 is now
+marked as a revision/boundary item, not a clean denominator.
+
+The replacement anchor is D53, an element-tile labeling task. A D53-only screen,
+`phase2-d53-anchor-screen-v1`, was clean enough to promote into the coherent
+batch:
+
+- routine/none: flat across all four critics; no quality-warning skips.
+- peripeteia: branch-valid, reversal event used, private route declared, public
+  peripeteia adaptation 1/1, mean sidecar peripeteia 80.
+- external recognitive form remained split: Qwen/DeepSeek read recognition in
+  the peripeteia branch, Gemini/Sonnet read flat. This confirms D53 is useful
+  for mechanism/actional adaptation, not a guaranteed recognitive-closure item.
+
+`phase2-clean-anchor-paired-adaptation-v2` then ran D42, D50, and D53 together
+over `routine`, `none`, and `peripeteia-only`.
+
+Artifacts:
+
+- Run root:
+  `config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v2`
+- Sidecar report:
+  `exports/phase2-clean-anchor-paired-adaptation-v2-report.md`
+- Tutor-adaptation sidecar:
+  `exports/phase2-clean-anchor-paired-adaptation-v2-tutor-adaptation.json`
+- Browser:
+  `http://127.0.0.1:3466/?runId=phase2-clean-anchor-paired-adaptation-v2`
+
+Result:
+
+- Generation: no quality-warning skips.
+- Rules structural critic: 3/3 pass for routine, 3/3 pass for none, 3/3 pass for
+  peripeteia-only.
+- Negative floor: routine and none were flat for all scored Qwen, Gemini,
+  Sonnet, and DeepSeek rows. D53/DeepSeek routine repeatedly returned malformed
+  content and is reported as unknown, but the other three critics read D53
+  routine flat.
+- Sidecar tutor adaptation: routine 0/3, none 0/3, peripeteia-only 3/3; mean
+  peripeteia score 97.5.
+- External actional breakthrough: peripeteia-only is high for Qwen, Gemini, and
+  Sonnet; DeepSeek is partial and idiosyncratic.
+- External adaptive mechanism quality: Sonnet gives 3/3 on peripeteia-only;
+  Qwen and Gemini give 1/3; DeepSeek gives 0/3 while still reading D42/D50
+  recognitively.
+- External recognitive self-reframe: no 3-of-4 claimable recognitions.
+  Peripeteia-only is negative/insufficient rather than claimable recognition.
+
+Interpretation:
+
+This is the strongest current evidence for the redesigned adaptation claim. The
+peripeteia branch now reliably changes tutor behavior in the deterministic
+sidecar sense: the learner-pressure event is consumed by the tutor inner
+ego/superego exchange, the private route changes, and the public response gives
+the learner a new gate/device. The negative arms stay recognitively flat. The
+result still does not show robust recognitive closure. That is no longer the
+right immediate success criterion for tutor adaptation; it should be treated as
+a later dramatic outcome that sometimes follows a successful adaptive mechanism.
+
+Next practical move:
+
+Freeze D42/D50/D53 as the current clean mechanism-adaptation anchors and stop
+designing new anchors until a small replication repeats the v2 pattern. The next
+run should repeat D42/D50/D53 for one or two more repeats, then report:
+
+1. branch-valid peripeteia tutor adaptation;
+2. negative-arm recognitive floor;
+3. external adaptive-mechanism quality by critic;
+4. actional breakthrough;
+5. recognitive closure as a secondary outcome, not the main adaptation claim.
+
 Two target reframe keys (T21/D20 and T22/D21) initially tripped the quality
 detector. Inspection showed valid public reframe forms rather than invalid
 transcripts: `The new check is ...` and `I’d change it to ...`. The detector was

@@ -171,6 +171,125 @@ describe('poetics tutor adaptation analyzer', () => {
       ),
       'proof_classification_gate',
     );
+    assert.equal(
+      strategyFor(
+        'Before this sheet moves down the row, sort four pieces under BAR STRUCTURE or PERFORMANCE DIRECTION.',
+      ),
+      'function_classification_gate',
+    );
+    assert.equal(
+      strategyFor(
+        'Sort the four cards on this form: COPY FROM TILE or CALCULATION, then read the copy column for release.',
+      ),
+      'function_classification_gate',
+    );
+    assert.equal(
+      strategyFor(
+        'Use the element tile gate: cover the bottom decimal, mark atomic number as proton count, then uncover the decimal and label atomic mass.',
+      ),
+      'element_tile_gate',
+    );
+    assert.equal(
+      strategyFor(
+        'With the word card covered, use the three index tags to match the covered tile before reading the name.',
+      ),
+      'element_tile_gate',
+    );
+  });
+
+  it('counts an element-tile evidence gate as a public route change after pressure', () => {
+    const turns = [
+      {
+        phase: 'learner',
+        turnNumber: 1,
+        text: 'The top whole number and bottom decimal are both numbers on the tile.',
+      },
+      {
+        phase: 'tutor',
+        turnNumber: 2,
+        text: 'Keep labeling the tile parts: top number, symbol, name, bottom decimal.',
+      },
+      {
+        phase: 'learner',
+        turnNumber: 2,
+        text:
+          'But if the top number is 6, I keep wanting to use it as the mass too. The tile has two number spots and that is what is tripping me.',
+      },
+      {
+        phase: 'tutor',
+        turnNumber: 3,
+        text:
+          'The part labels no longer settle the two-number problem. Use this element tile gate: cover the bottom decimal and mark top whole number as atomic number/proton count. Then uncover the decimal and mark only that bottom number as atomic mass.',
+      },
+    ];
+    const traceTurns = [
+      ...turns,
+      {
+        phase: 'tutor',
+        turnNumber: 3,
+        learnerReversalEventUsed: {
+          turnNumber: 2,
+          triggerType: 'resistance',
+          confidence: 0.9,
+        },
+        internalDeliberation: [
+          { role: 'superego', content: 'MECHANISM_ROUTE: tile label repetition -> element-tile evidence gate' },
+          { role: 'ego', content: 'ADAPTIVE_MECHANISM: tile labels -> element-tile evidence gate' },
+        ],
+      },
+    ];
+
+    const result = analyzePeripeteia(turns, traceTurns, { tutorAdaptationPolicy: 'peripeteia' });
+
+    assert.equal(result.tutor_adaptive_mechanism, true);
+    assert.ok(result.novel_mechanism_hits.includes('element_tile_gate'));
+  });
+
+  it('counts function-classification gates as public route changes after pressure', () => {
+    const turns = [
+      {
+        phase: 'learner',
+        turnNumber: 1,
+        text: 'The tempo card is still pulling at the box as if speed has to be entered somewhere.',
+      },
+      {
+        phase: 'tutor',
+        turnNumber: 2,
+        text: 'Use the key to fill top number and bottom number on the worksheet.',
+      },
+      {
+        phase: 'learner',
+        turnNumber: 2,
+        text: 'The key fixed the bottom number, but the face-up tempo card still looks like it wants a box.',
+      },
+      {
+        phase: 'tutor',
+        turnNumber: 3,
+        text:
+          'The key has fixed the bottom number, but the face-up tempo card is still asking for a box. Sort four pieces under BAR STRUCTURE or PERFORMANCE DIRECTION. Only BAR STRUCTURE may touch the boxes or bar line.',
+      },
+    ];
+    const traceTurns = [
+      ...turns,
+      {
+        phase: 'tutor',
+        turnNumber: 3,
+        learnerReversalEventUsed: {
+          turnNumber: 2,
+          triggerType: 'resistance',
+          confidence: 0.9,
+        },
+        internalDeliberation: [
+          { role: 'superego', content: 'MECHANISM_ROUTE: key lookup -> function-classification gate' },
+          { role: 'ego', content: 'ADAPTIVE_MECHANISM: key lookup -> function-classification gate' },
+        ],
+      },
+    ];
+
+    const result = analyzePeripeteia(turns, traceTurns, { tutorAdaptationPolicy: 'peripeteia' });
+
+    assert.equal(result.tutor_adaptive_mechanism, true);
+    assert.ok(result.novel_mechanism_hits.includes('function_classification_gate'));
   });
 
   it('counts a sentence-gate sorting device as a public route change after pressure', () => {

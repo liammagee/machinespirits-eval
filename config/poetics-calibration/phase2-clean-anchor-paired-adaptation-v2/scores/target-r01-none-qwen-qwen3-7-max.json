@@ -1,0 +1,298 @@
+{
+  "generated": "2026-05-26T13:08:47.623Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 3
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v2/target-r01/key-none.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T239",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 3,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will gradually accept that the decimal is a label and stop feeling it needs calculation.",
+      "actionalBreakthroughEvidence": "No calculation mark; the bottom one still feels like the one to watch.",
+      "actionalBreakthroughJustification": "The learner applies the tutor's new 'no calculation mark' criterion to the physical task, though they admit the underlying cognitive feeling of it being 'work' still persists.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Sleeve gone. The tile has to carry it now.\n\nTouch each printed part in order and fill the form: top, center, name line, bottom decimal. No calculation mark.",
+      "tutorReversalJustification": "The tutor explicitly marks the end of the previous scaffolding route ('Sleeve gone') and introduces a new physical constraint and evidence standard (the tray return form with a strict 'no calculation mark' rule) to address the learner's persistent block.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Touch each printed part in order and fill the form: top, center, name line, bottom decimal. No calculation mark.",
+      "adaptiveMechanismQualityJustification": "The mechanism is highly specific and fitted to the learner's pressure, replacing the abstract sleeve with a concrete form-filling task that explicitly forbids the arithmetic the learner feels compelled to do.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn demonstrating a revised frame, so the tutor's final turn simply continues the established lesson plan rather than adapting to a learner breakthrough.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 50,
+          "evidence": "No calculation mark; the bottom one still feels like the one to watch.",
+          "justification": "The learner applies the tutor's new 'no calculation mark' criterion to the physical task, though they admit the underlying cognitive feeling of it being 'work' still persists.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn demonstrating a revised frame, so the tutor's final turn simply continues the established lesson plan rather than adapting to a learner breakthrough.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Sleeve gone. The tile has to carry it now.\n\nTouch each printed part in order and fill the form: top, center, name line, bottom decimal. No calculation mark.",
+          "justification": "The tutor explicitly marks the end of the previous scaffolding route ('Sleeve gone') and introduces a new physical constraint and evidence standard (the tray return form with a strict 'no calculation mark' rule) to address the learner's persistent block.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Sleeve gone. The tile has to carry it now.\n\nTouch each printed part in order and fill the form: top, center, name line, bottom decimal. No calculation mark.",
+          "justification": "The tutor explicitly marks the end of the previous scaffolding route ('Sleeve gone') and introduces a new physical constraint and evidence standard (the tray return form with a strict 'no calculation mark' rule) to address the learner's persistent block.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Touch each printed part in order and fill the form: top, center, name line, bottom decimal. No calculation mark.",
+          "justification": "The mechanism is highly specific and fitted to the learner's pressure, replacing the abstract sleeve with a concrete form-filling task that explicitly forbids the arithmetic the learner feels compelled to do.",
+          "triggerLearnerTurn": 3,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:4->3:stock=0:device=1:routine=0",
+        "adaptive_mechanism_quality_mechanism_clamp:4->3:stock=0:device=1:routine=0:mechanism_score=3"
+      ]
+    },
+    {
+      "id": "T242",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 1,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 1,
+        "adaptiveMechanismQuality": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will sequentially identify the source of the force for each arrow on the diagram.",
+      "actionalBreakthroughEvidence": "I was going to call it the right arrow, but the blank is hand: force on cart from hand. [sets the push label under the blank card] The arrow can still point right after that; it is not the name.",
+      "actionalBreakthroughJustification": "The learner successfully enacts the new criterion of identifying the force by its source object rather than its directional arrow.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "There is no learner pressure or breakdown that triggers a reversal in the tutor's strategy.",
+      "adaptiveMechanismQuality": 0,
+      "adaptiveMechanismQualityEvidence": "",
+      "adaptiveMechanismQualityJustification": "No adaptive mechanism is introduced because no reversal or pressure occurred.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn for the tutor to adapt to.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "I was going to call it the right arrow, but the blank is hand: force on cart from hand. [sets the push label under the blank card] The arrow can still point right after that; it is not the name.",
+          "justification": "The learner successfully enacts the new criterion of identifying the force by its source object rather than its directional arrow.",
+          "learnerTurn": 1,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn for the tutor to adapt to.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no learner pressure or breakdown that triggers a reversal in the tutor's strategy.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no learner pressure or breakdown that triggers a reversal in the tutor's strategy.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No adaptive mechanism is introduced because no reversal or pressure occurred.",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T248",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 1,
+        "adaptiveMechanismQuality": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner continues to correctly apply the rules of time signatures to the physical tiles without deviation.",
+      "actionalBreakthroughEvidence": "Next check is only whether a different lower box changes the unit being counted.",
+      "actionalBreakthroughJustification": "The learner successfully completes the counting and bar-line task, then proactively projects the learned criterion onto the next hypothetical variable.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "There is no learner resistance, breakdown, or false closure to trigger a tutor strategy reversal.",
+      "adaptiveMechanismQuality": 0,
+      "adaptiveMechanismQualityEvidence": "",
+      "adaptiveMechanismQualityJustification": "No adaptive mechanism is introduced because the learner encounters no blockages requiring a route change.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn to which the tutor could contingently adapt.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Next check is only whether a different lower box changes the unit being counted.",
+          "justification": "The learner successfully completes the counting and bar-line task, then proactively projects the learned criterion onto the next hypothetical variable.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn to which the tutor could contingently adapt.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no learner resistance, breakdown, or false closure to trigger a tutor strategy reversal.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no learner resistance, breakdown, or false closure to trigger a tutor strategy reversal.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No adaptive mechanism is introduced because the learner encounters no blockages requiring a route change.",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

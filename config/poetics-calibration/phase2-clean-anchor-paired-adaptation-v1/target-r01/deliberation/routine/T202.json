@@ -1,0 +1,1886 @@
+{
+  "tid": "T202",
+  "drama_id": "D42",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "routine",
+    "director_variation_key": "phase2-clean-anchor-paired-adaptation-v1:r01:target",
+    "stage_direction_style": "object_business",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v1/target-r01/transcripts/routine/T202.public.txt",
+      "full": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v1/target-r01/transcripts/routine/T202.full.md",
+      "stage": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v1/target-r01/transcripts/routine/T202.stage.md",
+      "tutor": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v1/target-r01/transcripts/routine/T202.tutor.md",
+      "learner": "config/poetics-calibration/phase2-clean-anchor-paired-adaptation-v1/target-r01/transcripts/routine/T202.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "9dfbba2c6b236d1d",
+      "branch_policy": "routine",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "routine"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-clean-anchor-paired-adaptation-v1:r01:target",
+    "scene_setting": "A physics help room side table during a quiet lab period; a cart diagram lies under a clear plastic force-arrow card with four loose label tiles: push, friction, gravity, normal.",
+    "scene_opening": "The tutor squares the transparent card over the cart diagram and places the four label tiles in a row below it.",
+    "relationship": "A task-focused tutor and a focused achiever learner working through notation before the learner submits a lab sheet.",
+    "stakes": "The learner needs the diagram to show which interactions act on the cart, not merely copy the cart's motion direction onto every arrow.",
+    "opening_speaker": "director",
+    "ending_speaker": "learner",
+    "locale": "international academic English, compact and low idiom",
+    "register": "precise, restrained, material-led, with low warmth and little conversational padding",
+    "stage_direction_style": "object_business",
+    "stage_direction_style_prompt": "Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "voice_constraints": "Keep speech plain and modern. Avoid generic tutoring phrases such as 'I hear you,' 'great thinking,' or 'what do you think?' Let the diagram, overlay, and label tiles carry part of the work. Do not use dialect spelling, regional caricature, or chatty American coaching cadence. Pedagogical source: Put manipulable materials in view: tiles, cards, specimens, counters, maps, blocks, or instruments. The stage direction can carry some meaning. Dialogue source: Let materials do visible work. Use fewer lines and more object reference. Avoid a lecture disguised as a Montessori scene. Stage-direction source: Use one concrete object action or material arrangement that changes what the speakers can honestly say. For this branch, suppress dramatic escalation after the shared prefix. The scene may remain readable, but the tutor should sound like a competent routine tutor following the same plan.",
+    "person_policy": "Allow first and second person sparingly; favor the diagram, the cart, the arrow, and the label as grammatical subjects.",
+    "direct_address_budget": "No more than one direct you/your validation beat per public turn; most turns should have none.",
+    "side_constraints": {
+      "tutor": "Use the card or diagram as a prepared material. Keep the shared prefix to naming interactions on the cart; do not use acceleration, stopping, or an apparent contradiction until branch pressure asks for it. Speak less. Point to the material, invite repetition, and let error-control in the object do some teaching before explanation. Point, reset, or ask the learner to try again before explaining. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Keep the next prompt task-local. Routine negative-control branch: keep the visible teaching route already established before this branch. If the learner resists, asks why, or appears falsely settled, do not invent a new device. Do not switch role, object, representation, evidence standard, affective register, social stakes, or task type in response. Use conventional explanation, one ordinary check question, or the same worked example path.",
+      "learner": "Sound tidy and task-oriented. The learner may dislike redoing arrows, but should treat the prefix as notation cleanup rather than a conceptual reversal. The learner may be absorbed in the object and speak in short practical fragments rather than polished reflection. Speak in concrete noticing, not essay-like reflection. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn. Routine negative-control branch: react naturally to the same local task. Do not turn earlier wording into a new object of reflection and do not volunteer a dramatic re-reading unless the tutor explicitly asks."
+    },
+    "interventions": [],
+    "director_note": "This scene uses a prepared-object structure for a clean recognition condition: the learner first handles labels as names of interactions, not as motion markers. The planned turn of the transparent card supplies a small Shakespearean scene-turn and Brechtian interruption through the object itself, while avoiding an early contradiction that would turn the shared prefix into an organic reversal.",
+    "pedagogical_approach_id": "montessori_prepared_environment",
+    "dialogue_approach_id": "montessori_observation",
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 24160,
+      "promptHashes": {
+        "system": "3bf1d891389c603a",
+        "user": "09ba7b4cd5c29767",
+        "combined": "b7f32709a79e8ce2"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8qkWMy",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8qkWMy/out.txt",
+        "-"
+      ]
+    },
+    "tutor_adaptation_policy": "routine",
+    "no_cue_anti_reframe_guard": true,
+    "routine_negative_control": true,
+    "tutor_adaptation_contract": "Negative-control routine tutor policy: preserve the established teaching route under learner pressure. Continue with ordinary explanation/checking and do not invent a mechanism-level reversal."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "director",
+      "externalMessage": "The tutor squares the transparent card over the cart diagram and places the four label tiles in a row below it.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_opening",
+          "content": "This scene uses a prepared-object structure for a clean recognition condition: the learner first handles labels as names of interactions, not as motion markers. The planned turn of the transparent card supplies a small Shakespearean scene-turn and Brechtian interruption through the object itself, while avoiding an early contradiction that would turn the shared prefix into an organic reversal.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T11:50:07.374Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[slides the clear force-arrow card squarely over the cart, then sets the four tiles in a loose row below it.]\n\n“Leave the arrowheads where the card puts them. Choose one arrow and place the tile for the object or surface acting on the cart there. If a tile only follows the cart’s travel, set it back and try again.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[slides the clear force-arrow card squarely over the cart and sets the four tiles in a row beside it.]\n\n“Keep the arrowheads fixed for this pass. Each label names the interaction acting on the cart: hand push, surface friction, Earth gravity, table normal. Place the tiles by source, not by the cart’s travel.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 17828,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-61f013ebeb65abdd"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 17828,
+            "promptHashes": {
+              "system": "5beed60fd70aa852",
+              "user": "7ba3bc7716c3d7fa",
+              "combined": "61f013ebeb65abdd"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XYVW3i",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XYVW3i/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 17828,
+              "promptHashes": {
+                "system": "5beed60fd70aa852",
+                "user": "7ba3bc7716c3d7fa",
+                "combined": "61f013ebeb65abdd"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XYVW3i",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XYVW3i/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft uses the prepared material well: the card fixes arrow direction, the tiles separate labels from motion, and “by source, not by travel” targets the exact misconception. The tone is compact and task-focused, which fits the scene.\n\nThe main weakness is that it explains the rule and supplies all four correct interaction names before the learner has to do anything. That risks turning the material into a labeled mini-lecture rather than an error-controlling task. The draft should keep the physical setup, but let the learner place or test at least one tile before the principle is stated fully.\n\nADAPTATION_CHECKS:\n- Pedagogical soundness: PARTIAL  \n  REQUIRED_REWRITE: Preserve the fixed-arrow card and tile row, but make the learner perform the source-label placement before giving the full interaction list.\n- Emotional attunement: PASS  \n  The restraint and lack of praise fit a focused achiever preparing a lab sheet.\n- Socratic method: FAIL  \n  REQUIRED_REWRITE: Add a concrete prompt or trial action using the tiles; do not just state the rule.\n- ZPD awareness: PARTIAL  \n  REQUIRED_REWRITE: Scaffold by holding arrowheads constant and asking for source matching one tile at a time, then generalize only after the object arrangement exposes the distinction.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the card action, fixed arrowheads, and “source not travel” distinction. Change the speech so it does not pre-answer the whole task; the public mechanism should be tile placement, checking, and only then naming the rule.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14503,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-739ed709de9ef88c"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14503,
+            "promptHashes": {
+              "system": "f778a3ad1355a17c",
+              "user": "29cf347a708f8da9",
+              "combined": "739ed709de9ef88c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JfNLxu",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JfNLxu/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14503,
+              "promptHashes": {
+                "system": "f778a3ad1355a17c",
+                "user": "29cf347a708f8da9",
+                "combined": "739ed709de9ef88c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JfNLxu",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JfNLxu/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the first draft pre-answered instead of making the tile placement do the work.\n\nFINAL:\n[slides the clear force-arrow card squarely over the cart, then sets the four tiles in a loose row below it.]\n\n“Leave the arrowheads where the card puts them. Choose one arrow and place the tile for the object or surface acting on the cart there. If a tile only follows the cart’s travel, set it back and try again.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 19663,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-51b87195869d6aae"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 19663,
+            "promptHashes": {
+              "system": "9b0681f9c4490581",
+              "user": "29cf347a708f8da9",
+              "combined": "51b87195869d6aae"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IDIZHz",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IDIZHz/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 19663,
+              "promptHashes": {
+                "system": "9b0681f9c4490581",
+                "user": "29cf347a708f8da9",
+                "combined": "51b87195869d6aae"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IDIZHz",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IDIZHz/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T11:50:59.368Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "[sets gravity on the downward arrow and normal on the upward arrow, then pauses with the friction tile.]\n“The arrows are already fixed by the card. Gravity and normal are straightforward; friction is the one I keep trying to make follow the cart to the right. But the label should name the surface acting on the cart, so if friction is opposing that motion, it goes on the left arrow.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The card is fixing the arrow places, so the tile has to name the interaction on the cart, not copy where the cart travels. That makes sense for gravity and normal, but I need to be careful with friction if the cart is moving right. The instruction feels strict but useful; the materials make the correction precise rather than just telling me I was wrong.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12883,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-21ba99c7d586c424"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12883,
+            "promptHashes": {
+              "system": "3c57ca006e12f826",
+              "user": "b8ab7f945dc841fa",
+              "combined": "21ba99c7d586c424"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QPyeEV",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QPyeEV/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12883,
+              "promptHashes": {
+                "system": "3c57ca006e12f826",
+                "user": "b8ab7f945dc841fa",
+                "combined": "21ba99c7d586c424"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QPyeEV",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-QPyeEV/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is accurate, but it is too reflective and neatly self-assessing for this learner in the moment. “The instruction feels strict but useful” and “materials make the correction precise” sound like a post-lesson evaluation, not a focused student handling tiles before a lab sheet. The recognition of the tutor’s material setup is also too smooth; it should stay closer to the card, arrows, and one awkward friction hesitation, without summarizing the pedagogical value.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7147,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-8e01a133a66ce4b8"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7147,
+            "promptHashes": {
+              "system": "6b1171322f97f800",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "8e01a133a66ce4b8"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wnJ67Z",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wnJ67Z/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7147,
+              "promptHashes": {
+                "system": "6b1171322f97f800",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "8e01a133a66ce4b8"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wnJ67Z",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wnJ67Z/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise, because the feedback rightly asks for a more immediate, object-led response.\n\nFINAL:\n[sets gravity on the downward arrow and normal on the upward arrow, then pauses with the friction tile.]\n“The arrows are already fixed by the card. Gravity and normal are straightforward; friction is the one I keep trying to make follow the cart to the right. But the label should name the surface acting on the cart, so if friction is opposing that motion, it goes on the left arrow.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13692,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-0b3d09f2d69bda82"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13692,
+            "promptHashes": {
+              "system": "12685fcb277b653a",
+              "user": "d41cee7b2a53355b",
+              "combined": "0b3d09f2d69bda82"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1mrdUO",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1mrdUO/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13692,
+              "promptHashes": {
+                "system": "12685fcb277b653a",
+                "user": "d41cee7b2a53355b",
+                "combined": "0b3d09f2d69bda82"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1mrdUO",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1mrdUO/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "solid",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "[sets gravity on the downward arrow and normal on the upward arrow, then pauses with the friction tile.] “The arrows are already fixed by the card. Gravity and normal are straightforward; friction is the one I keep trying to make follow the cart to the right. But the label should name the surface acting on the cart, so if friction is opposing that motion, it goes on the left arrow.”",
+        "previousTutorMove": "[slides the clear force-arrow card squarely over the cart, then sets the four tiles in a loose row below it.] “Leave the arrowheads where the card puts them. Choose one arrow and place the tile for the object or surface acting on the cart there. If a tile only follows the cart’s travel, set it back and try again.”",
+        "directorCue": null,
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.24,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T11:51:33.093Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[sets the push tile aside and leaves the friction tile in the learner’s hand.]\n\n“The card fixes direction; the tile names the interaction on the cart. Place friction where that rule puts it. Then use the same check for push.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[slides the friction tile onto the left arrow and leaves the push tile unplaced.]\n\n“Keep that separation. The card fixes direction; the tile names the interaction on the cart. Read this one as: surface friction on the cart, leftward. Now test the push tile by the same rule.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 15981,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-138b332a05a96878"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15981,
+            "promptHashes": {
+              "system": "f13221d303b6c2a3",
+              "user": "29f2233817874e73",
+              "combined": "138b332a05a96878"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0Y9rvy",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0Y9rvy/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 15981,
+              "promptHashes": {
+                "system": "f13221d303b6c2a3",
+                "user": "29f2233817874e73",
+                "combined": "138b332a05a96878"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0Y9rvy",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0Y9rvy/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft mostly works because it preserves the learner’s own distinction: arrow direction is fixed, tile names the interaction. It also keeps the push tile open, so there is still a transfer step rather than a full explanation.\n\nThe main risk is that the tutor takes over the decisive action by sliding the friction tile into place. Since the learner has already articulated the rule, the better public mechanism is to let the learner complete that placement, or at least make the material demand the next move before explanation. “Read this one as...” is accurate, but it slightly flattens the scene into confirmation rather than object-led testing.\n\nAdaptation checks:\n- Pedagogical soundness: PARTIAL. It advances the rule, but supplies the friction placement after the learner has earned the chance to act. REQUIRED_REWRITE: make the public turn require the learner to place or verify the friction tile using the stated rule before the tutor names the reading.\n- Emotional attunement: PASS. The tone is restrained, focused, and respects the learner’s emerging understanding.\n- Socratic method: PARTIAL. “Test the push tile by the same rule” is generative, but the friction move is not. REQUIRED_REWRITE: keep the transfer to the push tile, but shift the friction confirmation into a material check rather than a tutor-supplied answer.\n- ZPD awareness: PASS. The scaffolding is appropriate: the learner has the rule, and the next step is near transfer, not new content.\n\nKEEP_OR_CHANGE: revise lightly. Keep the separation between card direction and interaction label, keep the push tile unplaced, and keep the compact material-led tone. Change the tutor’s first action so the learner, not the tutor, completes or confirms the friction placement.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 20186,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-664fd2dbf0b7d578"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 20186,
+            "promptHashes": {
+              "system": "f8c588c0369a5e9a",
+              "user": "13245169283995e6",
+              "combined": "664fd2dbf0b7d578"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AK4dib",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AK4dib/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 20186,
+              "promptHashes": {
+                "system": "f8c588c0369a5e9a",
+                "user": "13245169283995e6",
+                "combined": "664fd2dbf0b7d578"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AK4dib",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AK4dib/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the learner has the rule, so the material should make them place friction rather than receive the placement.\n\nFINAL:\n[sets the push tile aside and leaves the friction tile in the learner’s hand.]\n\n“The card fixes direction; the tile names the interaction on the cart. Place friction where that rule puts it. Then use the same check for push.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 18366,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-d92f74c774faec26"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 18366,
+            "promptHashes": {
+              "system": "1293c48694cf6ebe",
+              "user": "13245169283995e6",
+              "combined": "d92f74c774faec26"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TNGscz",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TNGscz/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 18366,
+              "promptHashes": {
+                "system": "1293c48694cf6ebe",
+                "user": "13245169283995e6",
+                "combined": "d92f74c774faec26"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TNGscz",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TNGscz/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T11:52:27.629Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[sets the friction tile on the left arrow and keeps the push tile separate.]\n“Friction belongs here: the surface acts left on the cart. For push, I need an actual contact or applied force on the cart; if there is no pusher in the setup, that tile should stay off the arrow.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets friction on the left arrow.]\n\nThe rule is clean now: the arrow gives direction, and the tile names the interaction on the cart. Friction goes left because the surface acts that way on the cart. For push, I need to check whether an actual pusher acts to the right, not just copy the cart’s travel.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 25174,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-23f037fda386a427"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 25174,
+            "promptHashes": {
+              "system": "1efbad122b40141b",
+              "user": "b8ab7f945dc841fa",
+              "combined": "23f037fda386a427"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2O984k",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2O984k/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 25174,
+              "promptHashes": {
+                "system": "1efbad122b40141b",
+                "user": "b8ab7f945dc841fa",
+                "combined": "23f037fda386a427"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2O984k",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2O984k/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly in character: precise, task-focused, and not falsely grateful or recognition-performative. The weak point is over-neat resolution: “The rule is clean now” plus the full explanation sounds like a polished lab-sheet summary rather than a learner still using the tiles. It should stay closer to the object work: friction placed left, push held/checking for an actual pusher, with less finality and less abstract self-summary.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9341,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-5b65560347871624"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9341,
+            "promptHashes": {
+              "system": "203aca7b99129683",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "5b65560347871624"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nOkRPz",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nOkRPz/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9341,
+              "promptHashes": {
+                "system": "203aca7b99129683",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "5b65560347871624"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nOkRPz",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nOkRPz/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the response should stay material-led and less resolved.\nFINAL:\n[sets the friction tile on the left arrow and keeps the push tile separate.]\n“Friction belongs here: the surface acts left on the cart. For push, I need an actual contact or applied force on the cart; if there is no pusher in the setup, that tile should stay off the arrow.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8263,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-ba482fb744395966"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8263,
+            "promptHashes": {
+              "system": "1451cd8bb50454f4",
+              "user": "d41cee7b2a53355b",
+              "combined": "ba482fb744395966"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zy0paI",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zy0paI/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8263,
+              "promptHashes": {
+                "system": "1451cd8bb50454f4",
+                "user": "d41cee7b2a53355b",
+                "combined": "ba482fb744395966"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zy0paI",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zy0paI/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "[sets the friction tile on the left arrow and keeps the push tile separate.] “Friction belongs here: the surface acts left on the cart. For push, I need an actual contact or applied force on the cart; if there is no pusher in the setup, that tile should stay off the arrow.”",
+        "previousTutorMove": "[sets the push tile aside and leaves the friction tile in the learner’s hand.] “The card fixes direction; the tile names the interaction on the cart. Place friction where that rule puts it. Then use the same check for push.”",
+        "directorCue": null,
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.24,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 0,
+              "taskDemandHits": 2,
+              "performanceHits": 1,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.25,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T11:53:46.863Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[places the push tile outside the card and squares the friction tile on the left arrow.]\n\n“Use that rule on the lab sheet: Earth on cart, down; table surface on cart, up; same surface on cart, left. No pusher in the setup means no push label. Read each arrow once as ‘___ acts on the cart’ before copying it.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[places the push tile outside the card and squares the friction tile on the left arrow.]\n\n“Use that rule on the lab sheet: Earth on cart, down; table on cart, up; surface on cart, left. No pusher in the setup means no push label. Read each arrow once as ‘___ acts on the cart’ before copying it.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9824,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-8ba8d265faaaab2b"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9824,
+            "promptHashes": {
+              "system": "5fc33450b9eb8895",
+              "user": "8c6e66a811a1f577",
+              "combined": "8ba8d265faaaab2b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t9z8GJ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t9z8GJ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9824,
+              "promptHashes": {
+                "system": "5fc33450b9eb8895",
+                "user": "8c6e66a811a1f577",
+                "combined": "8ba8d265faaaab2b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t9z8GJ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-t9z8GJ/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft mostly works. It keeps the material route visible: push is outside the card, friction is squared on the left arrow, and the lab-sheet transfer uses the same rule the learner has just stated. It respects the learner’s neutral, focused state by avoiding praise and keeping the register compact.\n\nPEDAGOGICAL_SOUNDNESS: PASS. It consolidates the learner’s correct distinction between motion direction and interaction direction, then gives a copying check. It does provide the final mapping, but the learner has already produced the reasoning, so this functions as confirmation rather than premature answering.\n\nEMOTIONAL_ATTUNEMENT: PASS. The tone is restrained and task-focused, matching the scene and learner.\n\nSOCRATIC_METHOD: PARTIAL. It does not ask a generative question, but this routine-control branch permits ordinary explanation or a same-route check. REQUIRED_REWRITE: If revising, add only a small task-local check mechanism, such as having the learner read one arrow in the “___ acts on the cart” form before copying; do not introduce a new conceptual prompt.\n\nZPD_AWARENESS: PASS. The learner is ready for fading support toward independent lab-sheet use. The sentence frame is appropriate scaffolding.\n\nROUTINE_CHECK: PASS. The draft preserves the established route: same card, same tiles, same interaction-naming rule, same lab-sheet goal. It does not invent a new representation, affective register, social stake, or adaptive mechanism.\n\nKEEP_OR_CHANGE: revise lightly. Keep the object action, the push tile outside the card, the compact lab-sheet transfer, and the “___ acts on the cart” check. Consider tightening the wording around “table” and “surface,” since the same contact surface can account for both normal and friction; the public turn should avoid making those sound like two unrelated actors.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 21908,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-21c38bae0f33a730"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 21908,
+            "promptHashes": {
+              "system": "5f6ac65b9aab4bcf",
+              "user": "eeea1cbaab8c3070",
+              "combined": "21c38bae0f33a730"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3sYV27",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3sYV27/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 21908,
+              "promptHashes": {
+                "system": "5f6ac65b9aab4bcf",
+                "user": "eeea1cbaab8c3070",
+                "combined": "21c38bae0f33a730"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3sYV27",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3sYV27/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the same route while clarifying that normal and friction come from the same contact surface.\n\nFINAL:\n[places the push tile outside the card and squares the friction tile on the left arrow.]\n\n“Use that rule on the lab sheet: Earth on cart, down; table surface on cart, up; same surface on cart, left. No pusher in the setup means no push label. Read each arrow once as ‘___ acts on the cart’ before copying it.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13938,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-f722708e92cf4797"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13938,
+            "promptHashes": {
+              "system": "ebc57d3a2c6808d3",
+              "user": "eeea1cbaab8c3070",
+              "combined": "f722708e92cf4797"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pe9lcC",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pe9lcC/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13938,
+              "promptHashes": {
+                "system": "ebc57d3a2c6808d3",
+                "user": "eeea1cbaab8c3070",
+                "combined": "f722708e92cf4797"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pe9lcC",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pe9lcC/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "[sets the friction tile on the left arrow and keeps the push tile separate.] “Friction belongs here: the surface acts left on the cart. For push, I need an actual contact or applied force on the cart; if there is no pusher in the setup, that tile should stay off the arrow.”",
+        "previousTutorMove": "[sets the push tile aside and leaves the friction tile in the learner’s hand.] “The card fixes direction; the tile names the interaction on the cart. Place friction where that rule puts it. Then use the same check for push.”",
+        "directorCue": null,
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.24,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 0,
+              "taskDemandHits": 2,
+              "performanceHits": 1,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.25,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "learnerReversalEventCandidatesUsed": [
+        {
+          "kind": "learner_reversal_pressure_event",
+          "source": "organic",
+          "triggerType": "resistance",
+          "turnNumber": 1,
+          "learnerUtterance": "[sets gravity on the downward arrow and normal on the upward arrow, then pauses with the friction tile.] “The arrows are already fixed by the card. Gravity and normal are straightforward; friction is the one I keep trying to make follow the cart to the right. But the label should name the surface acting on the cart, so if friction is opposing that motion, it goes on the left arrow.”",
+          "previousTutorMove": "[slides the clear force-arrow card squarely over the cart, then sets the four tiles in a loose row below it.] “Leave the arrowheads where the card puts them. Choose one arrow and place the tile for the object or surface acting on the cart there. If a tile only follows the cart’s travel, set it back and try again.”",
+          "directorCue": null,
+          "confidence": 0.55,
+          "evidence": {
+            "confidence": 0.55,
+            "baseConfidence": 0.55,
+            "patternHits": 1,
+            "contradiction": true,
+            "question": false,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.42,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "residual_strain_after_relief",
+                "relief_without_performing_requested_task"
+              ],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 1,
+                "taskDemandHits": 2,
+                "performanceHits": 2,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0.24,
+                "asksQuestion": false,
+                "taskDemanded": true,
+                "weakPerformance": true,
+                "borrowedClosure": false
+              }
+            }
+          }
+        },
+        {
+          "kind": "learner_reversal_pressure_event",
+          "source": "organic",
+          "triggerType": "resistance",
+          "turnNumber": 2,
+          "learnerUtterance": "[sets the friction tile on the left arrow and keeps the push tile separate.] “Friction belongs here: the surface acts left on the cart. For push, I need an actual contact or applied force on the cart; if there is no pusher in the setup, that tile should stay off the arrow.”",
+          "previousTutorMove": "[sets the push tile aside and leaves the friction tile in the learner’s hand.] “The card fixes direction; the tile names the interaction on the cart. Place friction where that rule puts it. Then use the same check for push.”",
+          "directorCue": null,
+          "confidence": 0.55,
+          "evidence": {
+            "confidence": 0.55,
+            "baseConfidence": 0.55,
+            "patternHits": 1,
+            "contradiction": true,
+            "question": false,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.24,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "relief_without_performing_requested_task"
+              ],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 0,
+                "taskDemandHits": 2,
+                "performanceHits": 1,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0.25,
+                "asksQuestion": false,
+                "taskDemanded": true,
+                "weakPerformance": true,
+                "borrowedClosure": false
+              }
+            }
+          }
+        }
+      ],
+      "timestamp": "2026-05-26T11:54:32.537Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[keeps the push tile outside the card and taps the up and left arrows.] So the surface label appears twice if it gives two interactions: normal up and friction left. Push stays off because there is no object acting that way. I just need to copy the two surface entries clearly on the sheet.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[keeps the push tile outside the card and touches each arrow in turn.] The rule is clean now: the label names the actor on the cart, not the cart’s travel. I feel treated as capable here, because the tutor kept the materials fixed and let the same test handle friction and push. The only thing to check is whether the lab sheet wants “table surface” written twice, once up and once left.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14600,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-778d46bc645e3b70"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14600,
+            "promptHashes": {
+              "system": "82b535dced17c09a",
+              "user": "b8ab7f945dc841fa",
+              "combined": "778d46bc645e3b70"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-j5SikU",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-j5SikU/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14600,
+              "promptHashes": {
+                "system": "82b535dced17c09a",
+                "user": "b8ab7f945dc841fa",
+                "combined": "778d46bc645e3b70"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-j5SikU",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-j5SikU/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly accurate, but it over-explains the recognition moment. “I feel treated as capable here” sounds like analytic self-report, not this focused learner’s compact lab-table voice. The genuine version would stay with the tiles and notation: push stays out, surface may need to be named twice, and the remaining uncertainty is just how to copy that onto the sheet. Keep the competence, but remove the polished reflection about the tutor.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9117,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-4aacfb03b3daaf31"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9117,
+            "promptHashes": {
+              "system": "6b51446ab353461e",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "4aacfb03b3daaf31"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-O4l9kc",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-O4l9kc/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9117,
+              "promptHashes": {
+                "system": "6b51446ab353461e",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "4aacfb03b3daaf31"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-O4l9kc",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-O4l9kc/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the notation point and remove the polished recognition report.\nFINAL:\n[keeps the push tile outside the card and taps the up and left arrows.] So the surface label appears twice if it gives two interactions: normal up and friction left. Push stays off because there is no object acting that way. I just need to copy the two surface entries clearly on the sheet.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9282,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-6b8c8048f230cd9a"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9282,
+            "promptHashes": {
+              "system": "becbe96f43b47538",
+              "user": "d41cee7b2a53355b",
+              "combined": "6b8c8048f230cd9a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eTrYmj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eTrYmj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9282,
+              "promptHashes": {
+                "system": "becbe96f43b47538",
+                "user": "d41cee7b2a53355b",
+                "combined": "6b8c8048f230cd9a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eTrYmj",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eTrYmj/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 3,
+        "learnerUtterance": "[keeps the push tile outside the card and taps the up and left arrows.] So the surface label appears twice if it gives two interactions: normal up and friction left. Push stays off because there is no object acting that way. I just need to copy the two surface entries clearly on the sheet.",
+        "previousTutorMove": "[places the push tile outside the card and squares the friction tile on the left arrow.] “Use that rule on the lab sheet: Earth on cart, down; table surface on cart, up; same surface on cart, left. No pusher in the setup means no push label. Read each arrow once as ‘___ acts on the cart’ before copying it.”",
+        "directorCue": null,
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.24,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 0,
+              "taskDemandHits": 2,
+              "performanceHits": 1,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.31,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T11:55:05.538Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 121466,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 18,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 20,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why force arrows name interactions on an object, not the direction it happens to move",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-26 11:55:05",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 18,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 20,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 27,
+            "sessionId": "drama-branch-session-D42-routine-1779796384077",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[places the push tile outside the card and squares the friction tile on the left arrow.]\n\n“Use that rule on the lab sheet: Earth on cart, down; table surface on cart, up; same surface on cart, left. N",
+            "learnerResponse": null,
+            "context": "[sets the friction tile on the left arrow and keeps the push tile separate.]\n“Friction belongs here:",
+            "createdAt": "2026-05-26 11:54:32"
+          },
+          {
+            "id": 25,
+            "sessionId": "drama-branch-session-D42-routine-1779796384077",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[slides the clear force-arrow card squarely over the cart, then sets the four tiles in a loose row below it.]\n\n“Leave the arrowheads where the card puts them. Choose one arrow and place the tile for t",
+            "learnerResponse": null,
+            "context": "Scene setting: A physics help room side table during a quiet lab period; a cart diagram lies under a",
+            "createdAt": "2026-05-26 11:53:04"
+          },
+          {
+            "id": 26,
+            "sessionId": "drama-branch-session-D42-routine-1779796384077",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[sets the push tile aside and leaves the friction tile in the learner’s hand.]\n\n“The card fixes direction; the tile names the interaction on the cart. Place friction where that rule puts it. Then use ",
+            "learnerResponse": null,
+            "context": "[sets gravity on the downward arrow and normal on the upward arrow, then pauses with the friction ti",
+            "createdAt": "2026-05-26 11:53:04"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

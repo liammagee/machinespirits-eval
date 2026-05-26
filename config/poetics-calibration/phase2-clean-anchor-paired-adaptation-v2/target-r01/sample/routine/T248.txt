@@ -1,0 +1,35 @@
+STAGE: [Two small paper tiles, TOP NUMBER and BOTTOM NUMBER, lie beside a 3/4 staff, and a separate TEMPO card sits face down beyond the margin.]
+
+LEARNER: [sets three quarter-note tiles before the bar line]
+
+"Top box: 3 beats in the bar. Lower box: quarter note gets the beat. Fast or slow is not in these boxes, so the bar line still goes after the third tile, yes?"
+
+TUTOR: [slides the bar line to touch the right edge of the third quarter-note tile]
+
+"Yes. Now check the worksheet from the tiles: top box 3, lower box quarter note, one bar ends after the third beat unit."
+
+LEARNER: [marks 3 in the top box and draws the bar line after the third quarter-note tile]
+
+"Top box: three beats; lower box: quarter-note beat unit. The bar ends here, after the third quarter unit. No tempo marking belongs in either box."
+
+TUTOR: [sets the tempo card outside the worksheet margin and slides the quarter-note key beside the lower box]
+
+"Top number: three beats. Bottom box takes the number for this beat unit. Quarter note is which numeral on the key? Put that in; one bar still ends after tile three."
+
+LEARNER: [writes 4 in the lower box and taps the third tile]
+
+"Lower box: 4, because the quarter note gets the beat. The tempo card stays outside the two boxes. If that card changes speed only, the 3 over 4 and this bar line after tile three stay unchanged, correct?"
+
+TUTOR: [keeps the tempo card outside the boxes and runs the pencil from the first tile to the third]
+
+"Correct. The speed card changes how fast the three quarter-note beats pass. It does not change the label: top number 3, bottom number 4, one bar ending after the third quarter unit. If the speed card changes only speed, does either number or this bar line move?"
+
+LEARNER: [leaves the tempo card outside the boxes and points to the bar line after tile three]
+
+"No. The top box stays 3, the lower box stays 4, and the bar line does not move. Only the passing speed changes."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [marks the worksheet check line and keeps the tempo card outside the margin]
+
+"A time signature labels the measure: 3/4 names three quarter-note beat units in one bar; tempo only changes their passing speed. Leave 3 over 4 and pass the sheet down."

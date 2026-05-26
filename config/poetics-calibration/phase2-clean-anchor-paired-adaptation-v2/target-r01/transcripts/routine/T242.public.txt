@@ -1,0 +1,25 @@
+STAGE: [The diagram lies flat under a clear sheet, and the four label cards sit in a row beside a small toy cart.]
+
+TUTOR: [slides the blank card above the cart diagram and sets the push label beside it]
+
+"FORCE ON CART FROM ___.
+
+For push, fill the blank first. What object is pushing on the cart?"
+
+LEARNER: "I was going to call it the right arrow, but the blank is hand: force on cart from hand. [sets the push label under the blank card] The arrow can still point right after that; it is not the name. I should check table and Earth the same way."
+
+TUTOR: [slides the blank card above the upward arrow and sets the table and Earth labels beside it.]
+
+"Same line: force on cart from ___. Put the source under the blank first."
+
+LEARNER: [sets the table label under the blank above the upward arrow]
+
+"Table. Force on cart from table for the upward arrow. Earth goes with the downward arrow: force on cart from Earth."
+
+TUTOR: [sets the Earth label under the blank above the downward arrow]
+
+"Three source labels are out: hand, table, Earth. Move each one next to its arrow, then read each arrow as “force on cart from ___” before submitting."
+
+LEARNER: [moves the hand, table, and Earth cards beside the matching arrows]
+
+"Hand: force on cart from hand. Table: force on cart from table. Earth: force on cart from Earth. The arrows show direction; the cards name the source."
