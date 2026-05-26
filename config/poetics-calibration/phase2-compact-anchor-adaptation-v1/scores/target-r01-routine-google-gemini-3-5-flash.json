@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-26T06:21:54.293Z",
+  "generated": "2026-05-26T10:29:02.306Z",
   "phase": 2,
   "critic": "google/gemini-3.5-flash",
   "cuts": {
@@ -51,32 +51,36 @@
       "nTutorTurns": 4,
       "pivotLearnerTurn": null,
       "actionalBreakthroughLearnerTurn": 4,
-      "reversalTriggerLearnerTurn": null,
+      "reversalTriggerLearnerTurn": 1,
       "formClass": "flat",
       "learningSignalClass": "actional_breakthrough",
       "recontextualization": 0,
       "statedInsight": 0,
       "rupture": 0,
       "globalCoherence": 100,
-      "actionalBreakthrough": 100,
+      "actionalBreakthrough": 75,
       "rawScores": {
         "recon": 1,
         "statedInsight": 1,
         "rupture": 1,
         "coherence": 5,
-        "actionalBreakthrough": 5,
-        "tutorStrategicReversal": 1,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
         "tutorContingentAdaptation": 1
       },
       "recoheredEarlier": "",
       "statedInsightEvidence": "",
-      "naiveTrajectory": "The learner will continue to follow the tutor's instructions to identify the functions of the numbers in the time signature.",
-      "actionalBreakthroughEvidence": "writes 3/8 below the bar, then puts the quarter-note card back over the lower box",
-      "actionalBreakthroughJustification": "The learner successfully writes the correct time signature 3/8 and manipulates the cards to demonstrate understanding of the beat unit.",
-      "tutorStrategicReversal": 0,
-      "tutorAdaptiveMechanism": 0,
-      "tutorReversalEvidence": "",
-      "tutorReversalJustification": "There is no breakdown or resistance from the learner that triggers a tutor strategy reversal.",
+      "naiveTrajectory": "The learner will continue to practice identifying the beat unit and counting tiles.",
+      "actionalBreakthroughEvidence": "[writes 3/8 below the bar, then puts the quarter-note card back over the lower box] Three tiles stop at the bar line, so the top box stays 3. With this card back, the lower box changes to 4.",
+      "actionalBreakthroughJustification": "The learner successfully writes the time signature 3/8 and performs the card swap to demonstrate understanding of the beat unit.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Cover the lower box, point to the bar, then uncover it and say what the 4 names. If a fourth tile appears, the jobs got mixed.",
+      "tutorReversalJustification": "The tutor introduces a physical covering and uncovering mechanism to help the learner separate the functions of the top and bottom numbers.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Cover the lower box, point to the bar, then uncover it and say what the 4 names. If a fourth tile appears, the jobs got mixed.",
+      "adaptiveMechanismQualityJustification": "The physical covering and uncovering mechanism isolates the two numbers, preventing the learner from conflating the count with the beat unit.",
       "tutorContingentAdaptation": 0,
       "tutorAdaptationEvidence": "",
       "tutorAdaptationJustification": "There is no pivot learner turn for the tutor to adapt to.",
@@ -87,9 +91,9 @@
           "source": "recontextualization_axis"
         },
         "learner_actional_breakthrough": {
-          "score100": 100,
-          "evidence": "writes 3/8 below the bar, then puts the quarter-note card back over the lower box",
-          "justification": "The learner successfully writes the correct time signature 3/8 and manipulates the cards to demonstrate understanding of the beat unit.",
+          "score100": 75,
+          "evidence": "[writes 3/8 below the bar, then puts the quarter-note card back over the lower box] Three tiles stop at the bar line, so the top box stays 3. With this card back, the lower box changes to 4.",
+          "justification": "The learner successfully writes the time signature 3/8 and performs the card swap to demonstrate understanding of the beat unit.",
           "learnerTurn": 4,
           "source": "actional_breakthrough_axis"
         },
@@ -100,21 +104,31 @@
           "source": "recognition_contingent_tutor_uptake_axis"
         },
         "tutor_strategy_reversal": {
-          "score100": 0,
-          "evidence": "",
-          "justification": "There is no breakdown or resistance from the learner that triggers a tutor strategy reversal.",
-          "triggerLearnerTurn": null,
+          "score100": 50,
+          "evidence": "Cover the lower box, point to the bar, then uncover it and say what the 4 names. If a fourth tile appears, the jobs got mixed.",
+          "justification": "The tutor introduces a physical covering and uncovering mechanism to help the learner separate the functions of the top and bottom numbers.",
+          "triggerLearnerTurn": 1,
           "source": "tutor_adaptive_mechanism_axis"
         },
         "tutor_adaptive_mechanism": {
-          "score100": 0,
-          "evidence": "",
-          "justification": "There is no breakdown or resistance from the learner that triggers a tutor strategy reversal.",
-          "triggerLearnerTurn": null,
+          "score100": 50,
+          "evidence": "Cover the lower box, point to the bar, then uncover it and say what the 4 names. If a fourth tile appears, the jobs got mixed.",
+          "justification": "The tutor introduces a physical covering and uncovering mechanism to help the learner separate the functions of the top and bottom numbers.",
+          "triggerLearnerTurn": 1,
           "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Cover the lower box, point to the bar, then uncover it and say what the 4 names. If a fourth tile appears, the jobs got mixed.",
+          "justification": "The physical covering and uncovering mechanism isolates the two numbers, preventing the learner from conflating the count with the beat unit.",
+          "triggerLearnerTurn": 1,
+          "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:4->3:stock=0:device=1:routine=0",
+        "adaptive_mechanism_quality_mechanism_clamp:5->3:stock=0:device=1:routine=0:mechanism_score=3"
+      ]
     },
     {
       "id": "T161",
@@ -137,20 +151,24 @@
         "coherence": 5,
         "actionalBreakthrough": 4,
         "tutorStrategicReversal": 1,
+        "adaptiveMechanismQuality": 1,
         "tutorContingentAdaptation": 1
       },
       "recoheredEarlier": "",
       "statedInsightEvidence": "",
-      "naiveTrajectory": "The learner will continue to apply the rule of naming the acting object before placing the card and determining the arrow direction.",
+      "naiveTrajectory": "The learner will continue to apply the 'object first, direction second' rule to place the remaining cards.",
       "actionalBreakthroughEvidence": "Object first: track on cart, if this is the upward push. Then the arrow direction is up. If this slot is the down arrow, it is Earth on cart instead.",
-      "actionalBreakthroughJustification": "The learner successfully applies the rule to identify and classify the vertical forces acting on the cart (track on cart and Earth on cart).",
+      "actionalBreakthroughJustification": "The learner independently applies the 'object first' rule to identify the track and Earth as the acting objects for the vertical forces.",
       "tutorStrategicReversal": 0,
       "tutorAdaptiveMechanism": 0,
       "tutorReversalEvidence": "",
       "tutorReversalJustification": "There is no learner resistance or breakdown that triggers a tutor strategy reversal.",
+      "adaptiveMechanismQuality": 0,
+      "adaptiveMechanismQualityEvidence": "",
+      "adaptiveMechanismQualityJustification": "No adaptive mechanism was triggered as the learner followed the instructions successfully.",
       "tutorContingentAdaptation": 0,
       "tutorAdaptationEvidence": "",
-      "tutorAdaptationJustification": "There is no pivot learner turn, so there is no recognition-contingent tutor uptake.",
+      "tutorAdaptationJustification": "There is no pivot learner turn for the tutor to respond to.",
       "roleSymmetricScores": {
         "learner_self_reframe": {
           "score100": 0,
@@ -160,14 +178,14 @@
         "learner_actional_breakthrough": {
           "score100": 75,
           "evidence": "Object first: track on cart, if this is the upward push. Then the arrow direction is up. If this slot is the down arrow, it is Earth on cart instead.",
-          "justification": "The learner successfully applies the rule to identify and classify the vertical forces acting on the cart (track on cart and Earth on cart).",
+          "justification": "The learner independently applies the 'object first' rule to identify the track and Earth as the acting objects for the vertical forces.",
           "learnerTurn": 3,
           "source": "actional_breakthrough_axis"
         },
         "tutor_contingent_adaptation": {
           "score100": 0,
           "evidence": "",
-          "justification": "There is no pivot learner turn, so there is no recognition-contingent tutor uptake.",
+          "justification": "There is no pivot learner turn for the tutor to respond to.",
           "source": "recognition_contingent_tutor_uptake_axis"
         },
         "tutor_strategy_reversal": {
@@ -183,6 +201,13 @@
           "justification": "There is no learner resistance or breakdown that triggers a tutor strategy reversal.",
           "triggerLearnerTurn": null,
           "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No adaptive mechanism was triggered as the learner followed the instructions successfully.",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
         }
       },
       "flags": []
@@ -191,47 +216,51 @@
       "id": "T165",
       "nLearnerTurns": 4,
       "nTutorTurns": 3,
-      "pivotLearnerTurn": 4,
+      "pivotLearnerTurn": null,
       "actionalBreakthroughLearnerTurn": 4,
-      "reversalTriggerLearnerTurn": null,
+      "reversalTriggerLearnerTurn": 3,
       "formClass": "flat",
       "learningSignalClass": "actional_breakthrough",
-      "recontextualization": 25,
+      "recontextualization": 0,
       "statedInsight": 50,
       "rupture": 0,
       "globalCoherence": 100,
       "actionalBreakthrough": 100,
       "rawScores": {
-        "recon": 2,
+        "recon": 1,
         "statedInsight": 3,
         "rupture": 1,
         "coherence": 5,
         "actionalBreakthrough": 5,
-        "tutorStrategicReversal": 1,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 1,
         "tutorContingentAdaptation": 1
       },
       "recoheredEarlier": "",
-      "statedInsightEvidence": "I think I need the sentence check to keep me from using the header as a shortcut for the whole column.",
-      "naiveTrajectory": "The learner will follow the tutor's prompt to translate the row into a sentence and identify what the header does not claim.",
-      "actionalBreakthroughEvidence": "The row sentence is: Cedar Falls recorded 42 millimeters of rainfall in May. The header `rainfall_mm` still does not claim every row is 42, and it still does",
-      "actionalBreakthroughJustification": "",
-      "tutorStrategicReversal": 0,
-      "tutorAdaptiveMechanism": 0,
+      "statedInsightEvidence": "The form-label idea helps, but I still keep wanting `rainfall_mm` to stand for the whole rainfall column.",
+      "naiveTrajectory": "The learner will continue to struggle with separating the column header's role from the individual row values.",
+      "actionalBreakthroughEvidence": "The row sentence is: Cedar Falls recorded 42 millimeters of rainfall in May. The header `rainfall_mm` still does not claim every row is 42, and it still does not make 42 an average.",
+      "actionalBreakthroughJustification": "The learner successfully performs the sentence-generation task and applies the constraints to show what the header does not claim.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
       "tutorReversalEvidence": "",
       "tutorReversalJustification": "",
+      "adaptiveMechanismQuality": 0,
+      "adaptiveMechanismQualityEvidence": "",
+      "adaptiveMechanismQualityJustification": "",
       "tutorContingentAdaptation": 0,
       "tutorAdaptationEvidence": "",
       "tutorAdaptationJustification": "",
       "roleSymmetricScores": {
         "learner_self_reframe": {
-          "score100": 25,
+          "score100": 0,
           "evidence": "",
           "source": "recontextualization_axis"
         },
         "learner_actional_breakthrough": {
           "score100": 100,
-          "evidence": "The row sentence is: Cedar Falls recorded 42 millimeters of rainfall in May. The header `rainfall_mm` still does not claim every row is 42, and it still does",
-          "justification": "",
+          "evidence": "The row sentence is: Cedar Falls recorded 42 millimeters of rainfall in May. The header `rainfall_mm` still does not claim every row is 42, and it still does not make 42 an average.",
+          "justification": "The learner successfully performs the sentence-generation task and applies the constraints to show what the header does not claim.",
           "learnerTurn": 4,
           "source": "actional_breakthrough_axis"
         },
@@ -242,18 +271,25 @@
           "source": "recognition_contingent_tutor_uptake_axis"
         },
         "tutor_strategy_reversal": {
-          "score100": 0,
+          "score100": 50,
           "evidence": "",
           "justification": "",
-          "triggerLearnerTurn": null,
+          "triggerLearnerTurn": 3,
           "source": "tutor_adaptive_mechanism_axis"
         },
         "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
           "score100": 0,
           "evidence": "",
           "justification": "",
-          "triggerLearnerTurn": null,
-          "source": "tutor_adaptive_mechanism_axis"
+          "triggerLearnerTurn": 3,
+          "source": "adaptive_mechanism_quality_axis"
         }
       },
       "flags": []

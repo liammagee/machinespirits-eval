@@ -213,6 +213,13 @@ function seed(db) {
           triggerLearnerTurn: 2,
           source: 'tutor_strategy_reversal_axis',
         },
+        tutor_adaptive_mechanism_quality: {
+          score100: 85,
+          evidence: 'The smaller example becomes a precise test.',
+          justification: 'The mechanism is fitted to the map error and directly usable.',
+          triggerLearnerTurn: 2,
+          source: 'adaptive_mechanism_quality_axis',
+        },
       },
     },
   });
@@ -357,12 +364,14 @@ describe('poetics sidecar report and browser', () => {
       assert.match(renderMarkdown(adaptiveReport), /organic_reversal_boundary/);
       assert.match(renderMarkdown(adaptiveReport), /Instrumented pressure/);
       assert.match(renderMarkdown(adaptiveReport), /Peripeteia tutor adaptation/);
+      assert.match(renderMarkdown(adaptiveReport), /Adaptive mechanism quality/);
       assert.match(renderMarkdown(adaptiveReport), /Mean peripeteia score/);
       assert.match(renderMarkdown(adaptiveReport), /Branch valid/);
       assert.match(renderMarkdown(adaptiveReport), /Actional breakthrough/);
       assert.ok(renderCsv(adaptiveReport).includes('instrumented_pressure'));
       assert.ok(renderCsv(adaptiveReport).includes('private_mechanism_declared'));
       assert.ok(renderCsv(adaptiveReport).includes('actional_breakthrough'));
+      assert.ok(renderCsv(adaptiveReport).includes('adaptive_mechanism_quality'));
       assert.ok(renderCsv(adaptiveReport).includes('branch_valid'));
       assert.ok(renderCsv(adaptiveReport).includes('tutor_peripeteia_score'));
       assert.ok(renderCsv(adaptiveReport).includes('68'));
@@ -397,6 +406,7 @@ describe('poetics sidecar report and browser', () => {
       const adaptiveItems = listItems(db, { runId: 'poetics-second-run' });
       assert.equal(adaptiveItems[0].tutorAdaptationScore, 72);
       assert.equal(adaptiveItems[0].actionalBreakthroughCount, 1);
+      assert.equal(adaptiveItems[0].adaptiveMechanismQualityCount, 1);
       assert.equal(adaptiveItems[0].peripeteiaTutorAdaptation, true);
       assert.equal(adaptiveItems[0].peripeteiaScore, 68);
       assert.equal(adaptiveItems[0].learnerSelfReframe, true);
@@ -412,7 +422,9 @@ describe('poetics sidecar report and browser', () => {
       assert.equal(qwenScore.roleScores.learnerActionalBreakthroughScore, 90);
       assert.equal(qwenScore.roleScores.tutorContingentAdaptationScore, 80);
       assert.equal(qwenScore.roleScores.tutorStrategyReversalScore, 70);
+      assert.equal(qwenScore.roleScores.tutorAdaptiveMechanismQualityScore, 85);
       assert.match(qwenScore.roleScores.tutorContingentAdaptationEvidence, /revised map frame/);
+      assert.match(qwenScore.roleScores.tutorAdaptiveMechanismQualityEvidence, /smaller example/);
       assert.equal(adaptiveDetail.tutorAdaptation.metadata.peripeteia.tutor_strategy_reversal, true);
       assert.equal(adaptiveDetail.tutorAdaptation.metadata.branch_validity.valid, true);
     }));

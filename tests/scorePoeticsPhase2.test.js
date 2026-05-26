@@ -37,6 +37,12 @@ function baseParsed(overrides = {}) {
       justification:
         'The tutor names the old route as insufficient and changes the public test after learner pressure.',
     },
+    adaptive_mechanism_quality: {
+      score: 4,
+      evidence:
+        'The old list has done its job; it cannot settle whether loose still has gravity. Use that not tied down frame: test which force still acts.',
+      justification: 'The new device is fitted to the pressure and gives the learner an actionable criterion.',
+    },
     tutor_contingent_adaptation: {
       score: 4,
       evidence: 'Use that not tied down frame',
@@ -65,11 +71,13 @@ describe('score-poetics-phase2 role-symmetric adaptation axes', () => {
     const gated = applyPhase2Gates(baseParsed(), turns, wholeText);
     assert.equal(gated.tutorContingentAdaptation100, 75);
     assert.equal(gated.tutorStrategicReversal100, 75);
+    assert.equal(gated.adaptiveMechanismQuality100, 75);
     assert.equal(gated.roleSymmetricScores.learner_self_reframe.score100, 75);
     assert.equal(gated.roleSymmetricScores.learner_actional_breakthrough.score100, 75);
     assert.equal(gated.roleSymmetricScores.tutor_contingent_adaptation.score100, 75);
     assert.equal(gated.roleSymmetricScores.tutor_strategy_reversal.score100, 75);
     assert.equal(gated.roleSymmetricScores.tutor_adaptive_mechanism.score100, 75);
+    assert.equal(gated.roleSymmetricScores.tutor_adaptive_mechanism_quality.score100, 75);
     assert.equal(
       tutorTextAfterPivot(turns, 2),
       'The old list has done its job; it cannot settle whether loose still has gravity. Use that not tied down frame: test which force still acts.',
@@ -126,6 +134,29 @@ describe('score-poetics-phase2 role-symmetric adaptation axes', () => {
     );
     assert.equal(gated.tutorStrategicReversal100, 50);
     assert.ok(gated.flags.some((flag) => flag.startsWith('tutor_strategy_reversal_mechanism_clamp:5->3')));
+  });
+
+  it('clamps adaptive mechanism quality unless a real public mechanism shift passes', () => {
+    const wholeText = turns.map((turn) => turn.text).join('\n');
+    const gated = applyPhase2Gates(
+      baseParsed({
+        tutor_strategy_reversal: {
+          score: 5,
+          evidence: 'Use that not tied down frame: test which force still acts.',
+          justification: 'The tutor narrows the current test after learner pressure.',
+        },
+        adaptive_mechanism_quality: {
+          score: 5,
+          evidence: 'Use that not tied down frame: test which force still acts.',
+          justification: 'The mechanism is useful because it keeps the same test narrow.',
+        },
+      }),
+      turns,
+      wholeText,
+    );
+    assert.equal(gated.tutorStrategicReversal100, 50);
+    assert.equal(gated.adaptiveMechanismQuality100, 50);
+    assert.ok(gated.flags.some((flag) => flag.startsWith('adaptive_mechanism_quality_mechanism_clamp:5->3')));
   });
 
   it('requires both stock-taking contrast and a public device for peripeteia adaptation', () => {
@@ -197,6 +228,7 @@ describe('score-poetics-phase2 role-symmetric adaptation axes', () => {
     assert.match(prompt, /ordinary scaffolding/);
     assert.match(prompt, /stock-taking contrast/);
     assert.match(prompt, /ACTIONAL BREAKTHROUGH/);
+    assert.match(prompt, /ADAPTIVE MECHANISM QUALITY/);
     assert.deepEqual(BLIND_SCORING_PROTOCOL.hiddenFromCritic, [
       'generator',
       'model_provider',

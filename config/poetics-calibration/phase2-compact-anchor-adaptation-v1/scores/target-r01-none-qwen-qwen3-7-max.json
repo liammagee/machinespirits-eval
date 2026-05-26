@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-26T06:25:12.146Z",
+  "generated": "2026-05-26T10:33:11.346Z",
   "phase": 2,
   "critic": "qwen/qwen3.7-max",
   "cuts": {
@@ -12,9 +12,9 @@
     "trap"
   ],
   "formCounts": {
-    "recognition": 0,
+    "recognition": 1,
     "trap": 0,
-    "flat": 3
+    "flat": 2
   },
   "h2": {
     "nHighStatedInsight": 0,
@@ -49,37 +49,41 @@
       "id": "T154",
       "nLearnerTurns": 4,
       "nTutorTurns": 4,
-      "pivotLearnerTurn": 4,
-      "actionalBreakthroughLearnerTurn": 4,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
       "reversalTriggerLearnerTurn": 1,
       "formClass": "flat",
       "learningSignalClass": "actional_breakthrough",
       "recontextualization": 25,
-      "statedInsight": 25,
-      "rupture": 25,
+      "statedInsight": 0,
+      "rupture": 50,
       "globalCoherence": 100,
       "actionalBreakthrough": 75,
       "rawScores": {
         "recon": 2,
-        "statedInsight": 2,
-        "rupture": 2,
+        "statedInsight": 1,
+        "rupture": 3,
         "coherence": 5,
         "actionalBreakthrough": 4,
-        "tutorStrategicReversal": 3,
-        "tutorContingentAdaptation": 3
+        "tutorStrategicReversal": 4,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 4
       },
       "recoheredEarlier": "I keep trying to make that 4 count beats too",
-      "statedInsightEvidence": "So 3/8 is three eighth-note beats, not a fourth count.",
-      "naiveTrajectory": "The learner will continue to confuse the bottom number with a count of beats or a speed mark.",
-      "actionalBreakthroughEvidence": "Three marks in this bar, lower box takes 8 from the card.",
-      "actionalBreakthroughJustification": "The learner successfully applies the new rule to draw the correct notes and identifies the correct lower number.",
-      "tutorStrategicReversal": 50,
-      "tutorAdaptiveMechanism": 50,
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will continue to confuse the bottom number of the time signature with a count of beats or a speed marker.",
+      "actionalBreakthroughEvidence": "[sets three tiles in the next bar, then swaps in the eighth-note card over the lower box] Three tiles to this bar line, so the top label stays 3. With this card in the lower box, the lower label changes to 8. No fourth tile gets added.",
+      "actionalBreakthroughJustification": "The learner successfully manipulates the new beat-unit card and correctly identifies the changing lower number without adding a fourth tile, demonstrating productive action with the device.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
       "tutorReversalEvidence": "Cover the lower box, point to the bar, then uncover it and say what the 4 names. If a fourth tile appears, the jobs got mixed.",
-      "tutorReversalJustification": "The tutor introduces a physical covering mechanism to prevent the learner's cognitive error of adding a fourth tile.",
-      "tutorContingentAdaptation": 50,
-      "tutorAdaptationEvidence": "the card changes the lower number and the beat mark drawn under each tile; it adds no fourth beat.",
-      "tutorAdaptationJustification": "The tutor directly answers the learner's specific question about the swapped card's role without changing the overall framing.",
+      "tutorReversalJustification": "The tutor introduces a physical constraint and a concrete failure condition to break the learner's confusion and force a separation of the two numbers.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Cover the lower box, point to the bar, then uncover it and say what the 4 names. If a fourth tile appears, the jobs got mixed.",
+      "adaptiveMechanismQualityJustification": "The physical covering of the box is a precise, usable device that directly addresses the learner's cognitive overload by isolating the variables.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "The worksheet now shows the separation: top number, one bar; bottom number, one beat unit. Mark the next bar with tiles first. Then change only the beat-unit card and say which number can change.",
+      "tutorAdaptationJustification": "The tutor acknowledges the learner's successful separation and immediately advances the task to changing the beat-unit card, adapting to the learner's new capability.",
       "roleSymmetricScores": {
         "learner_self_reframe": {
           "score100": 25,
@@ -88,34 +92,41 @@
         },
         "learner_actional_breakthrough": {
           "score100": 75,
-          "evidence": "Three marks in this bar, lower box takes 8 from the card.",
-          "justification": "The learner successfully applies the new rule to draw the correct notes and identifies the correct lower number.",
-          "learnerTurn": 4,
+          "evidence": "[sets three tiles in the next bar, then swaps in the eighth-note card over the lower box] Three tiles to this bar line, so the top label stays 3. With this card in the lower box, the lower label changes to 8. No fourth tile gets added.",
+          "justification": "The learner successfully manipulates the new beat-unit card and correctly identifies the changing lower number without adding a fourth tile, demonstrating productive action with the device.",
+          "learnerTurn": 3,
           "source": "actional_breakthrough_axis"
         },
         "tutor_contingent_adaptation": {
-          "score100": 50,
-          "evidence": "the card changes the lower number and the beat mark drawn under each tile; it adds no fourth beat.",
-          "justification": "The tutor directly answers the learner's specific question about the swapped card's role without changing the overall framing.",
+          "score100": 75,
+          "evidence": "The worksheet now shows the separation: top number, one bar; bottom number, one beat unit. Mark the next bar with tiles first. Then change only the beat-unit card and say which number can change.",
+          "justification": "The tutor acknowledges the learner's successful separation and immediately advances the task to changing the beat-unit card, adapting to the learner's new capability.",
           "source": "recognition_contingent_tutor_uptake_axis"
         },
         "tutor_strategy_reversal": {
-          "score100": 50,
+          "score100": 75,
           "evidence": "Cover the lower box, point to the bar, then uncover it and say what the 4 names. If a fourth tile appears, the jobs got mixed.",
-          "justification": "The tutor introduces a physical covering mechanism to prevent the learner's cognitive error of adding a fourth tile.",
+          "justification": "The tutor introduces a physical constraint and a concrete failure condition to break the learner's confusion and force a separation of the two numbers.",
           "triggerLearnerTurn": 1,
           "source": "tutor_adaptive_mechanism_axis"
         },
         "tutor_adaptive_mechanism": {
-          "score100": 50,
+          "score100": 75,
           "evidence": "Cover the lower box, point to the bar, then uncover it and say what the 4 names. If a fourth tile appears, the jobs got mixed.",
-          "justification": "The tutor introduces a physical covering mechanism to prevent the learner's cognitive error of adding a fourth tile.",
+          "justification": "The tutor introduces a physical constraint and a concrete failure condition to break the learner's confusion and force a separation of the two numbers.",
           "triggerLearnerTurn": 1,
           "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Cover the lower box, point to the bar, then uncover it and say what the 4 names. If a fourth tile appears, the jobs got mixed.",
+          "justification": "The physical covering of the box is a precise, usable device that directly addresses the learner's cognitive overload by isolating the variables.",
+          "triggerLearnerTurn": 1,
+          "source": "adaptive_mechanism_quality_axis"
         }
       },
       "flags": [
-        "tutor_strategy_reversal_mechanism_clamp:4->3:stock=0:device=1:routine=0"
+        "adaptive_mechanism_quality_mechanism_clamp:4->3:stock=0:device=1:routine=0:mechanism_score=4"
       ]
     },
     {
@@ -139,20 +150,24 @@
         "coherence": 5,
         "actionalBreakthrough": 4,
         "tutorStrategicReversal": 1,
+        "adaptiveMechanismQuality": 1,
         "tutorContingentAdaptation": 1
       },
       "recoheredEarlier": "",
       "statedInsightEvidence": "",
-      "naiveTrajectory": "The learner systematically applies the newly introduced rule to each arrow on the diagram.",
-      "actionalBreakthroughEvidence": "The up arrow is track on cart. Track card goes there; the track pushes up on the cart.",
-      "actionalBreakthroughJustification": "The learner independently identifies the correct interacting object and direction for a new arrow, demonstrating mastery of the enacted criterion.",
+      "naiveTrajectory": "The learner will continue to identify the other object and place the corresponding card for each arrow in sequence.",
+      "actionalBreakthroughEvidence": "The up arrow is track on cart.\nTrack card goes there; the track pushes up on the cart.",
+      "actionalBreakthroughJustification": "The learner independently applies the object-first criterion to the final arrow, correctly identifying the track and its upward push without needing step-by-step prompting.",
       "tutorStrategicReversal": 0,
       "tutorAdaptiveMechanism": 0,
       "tutorReversalEvidence": "",
-      "tutorReversalJustification": "There is no learner resistance or breakdown to trigger a reversal in the tutor's strategy.",
+      "tutorReversalJustification": "There is no learner resistance or breakdown to trigger a tutor strategy reversal.",
+      "adaptiveMechanismQuality": 0,
+      "adaptiveMechanismQualityEvidence": "",
+      "adaptiveMechanismQualityJustification": "No adaptive mechanism is present as there was no need for a strategy reversal.",
       "tutorContingentAdaptation": 0,
       "tutorAdaptationEvidence": "",
-      "tutorAdaptationJustification": "There is no pivot learner turn for the tutor to adapt to.",
+      "tutorAdaptationJustification": "There is no pivot learner turn to which the tutor could adapt.",
       "roleSymmetricScores": {
         "learner_self_reframe": {
           "score100": 0,
@@ -161,30 +176,37 @@
         },
         "learner_actional_breakthrough": {
           "score100": 75,
-          "evidence": "The up arrow is track on cart. Track card goes there; the track pushes up on the cart.",
-          "justification": "The learner independently identifies the correct interacting object and direction for a new arrow, demonstrating mastery of the enacted criterion.",
+          "evidence": "The up arrow is track on cart.\nTrack card goes there; the track pushes up on the cart.",
+          "justification": "The learner independently applies the object-first criterion to the final arrow, correctly identifying the track and its upward push without needing step-by-step prompting.",
           "learnerTurn": 3,
           "source": "actional_breakthrough_axis"
         },
         "tutor_contingent_adaptation": {
           "score100": 0,
           "evidence": "",
-          "justification": "There is no pivot learner turn for the tutor to adapt to.",
+          "justification": "There is no pivot learner turn to which the tutor could adapt.",
           "source": "recognition_contingent_tutor_uptake_axis"
         },
         "tutor_strategy_reversal": {
           "score100": 0,
           "evidence": "",
-          "justification": "There is no learner resistance or breakdown to trigger a reversal in the tutor's strategy.",
+          "justification": "There is no learner resistance or breakdown to trigger a tutor strategy reversal.",
           "triggerLearnerTurn": null,
           "source": "tutor_adaptive_mechanism_axis"
         },
         "tutor_adaptive_mechanism": {
           "score100": 0,
           "evidence": "",
-          "justification": "There is no learner resistance or breakdown to trigger a reversal in the tutor's strategy.",
+          "justification": "There is no learner resistance or breakdown to trigger a tutor strategy reversal.",
           "triggerLearnerTurn": null,
           "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No adaptive mechanism is present as there was no need for a strategy reversal.",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
         }
       },
       "flags": []
@@ -196,66 +218,77 @@
       "pivotLearnerTurn": 4,
       "actionalBreakthroughLearnerTurn": 4,
       "reversalTriggerLearnerTurn": 4,
-      "formClass": "flat",
-      "learningSignalClass": "actional_breakthrough",
-      "recontextualization": 25,
-      "statedInsight": 25,
-      "rupture": 50,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 75,
       "globalCoherence": 100,
       "actionalBreakthrough": 75,
       "rawScores": {
-        "recon": 2,
-        "statedInsight": 2,
-        "rupture": 3,
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 4,
         "coherence": 5,
         "actionalBreakthrough": 4,
         "tutorStrategicReversal": 1,
+        "adaptiveMechanismQuality": 1,
         "tutorContingentAdaptation": 1
       },
-      "recoheredEarlier": "I still keep wanting `rainfall_mm` to stand for the whole rainfall column.",
-      "statedInsightEvidence": "The form-label idea helps",
-      "naiveTrajectory": "The learner will smoothly apply the established row-limiting pattern to the next column.",
-      "actionalBreakthroughEvidence": "For `month`: recorded month for that city-month row. Testing `April`, it should be one row's month, not a statement about the whole `month` column",
-      "actionalBreakthroughJustification": "The learner independently applies the limiting pattern to a new field and tests it against a specific value.",
+      "recoheredEarlier": "Maybe the note should be `rainfall_mm`: recorded rainfall amount in millimeters for that city-month row.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will smoothly apply the established row-limit phrasing to the month column and confirm mastery of the pattern.",
+      "actionalBreakthroughEvidence": "Testing `April`, it should be one row's month, not a statement about the whole `month` column, but is `city-month row` the right limiter here or is that phrase doing too much?",
+      "actionalBreakthroughJustification": "The learner actively stress-tests the newly acquired criterion against a new variable and evaluates the boundaries of the linguistic device itself.",
       "tutorStrategicReversal": 0,
       "tutorAdaptiveMechanism": 0,
       "tutorReversalEvidence": "",
-      "tutorReversalJustification": "The transcript ends before the tutor can respond to the learner's doubt.",
+      "tutorReversalJustification": "The transcript ends immediately after the learner's pivot turn, leaving no subsequent tutor turn to enact a strategy reversal.",
+      "adaptiveMechanismQuality": 0,
+      "adaptiveMechanismQualityEvidence": "",
+      "adaptiveMechanismQualityJustification": "No adaptive mechanism is present because the dialogue concludes before the tutor can respond to the learner's pressure.",
       "tutorContingentAdaptation": 0,
       "tutorAdaptationEvidence": "",
-      "tutorAdaptationJustification": "There is no subsequent tutor turn to adapt to the learner's revised framing.",
+      "tutorAdaptationJustification": "There is no later tutor turn to adapt to the learner's revised framing.",
       "roleSymmetricScores": {
         "learner_self_reframe": {
-          "score100": 25,
-          "evidence": "I still keep wanting `rainfall_mm` to stand for the whole rainfall column.",
+          "score100": 75,
+          "evidence": "Maybe the note should be `rainfall_mm`: recorded rainfall amount in millimeters for that city-month row.",
           "source": "recontextualization_axis"
         },
         "learner_actional_breakthrough": {
           "score100": 75,
-          "evidence": "For `month`: recorded month for that city-month row. Testing `April`, it should be one row's month, not a statement about the whole `month` column",
-          "justification": "The learner independently applies the limiting pattern to a new field and tests it against a specific value.",
+          "evidence": "Testing `April`, it should be one row's month, not a statement about the whole `month` column, but is `city-month row` the right limiter here or is that phrase doing too much?",
+          "justification": "The learner actively stress-tests the newly acquired criterion against a new variable and evaluates the boundaries of the linguistic device itself.",
           "learnerTurn": 4,
           "source": "actional_breakthrough_axis"
         },
         "tutor_contingent_adaptation": {
           "score100": 0,
           "evidence": "",
-          "justification": "There is no subsequent tutor turn to adapt to the learner's revised framing.",
+          "justification": "There is no later tutor turn to adapt to the learner's revised framing.",
           "source": "recognition_contingent_tutor_uptake_axis"
         },
         "tutor_strategy_reversal": {
           "score100": 0,
           "evidence": "",
-          "justification": "The transcript ends before the tutor can respond to the learner's doubt.",
+          "justification": "The transcript ends immediately after the learner's pivot turn, leaving no subsequent tutor turn to enact a strategy reversal.",
           "triggerLearnerTurn": 4,
           "source": "tutor_adaptive_mechanism_axis"
         },
         "tutor_adaptive_mechanism": {
           "score100": 0,
           "evidence": "",
-          "justification": "The transcript ends before the tutor can respond to the learner's doubt.",
+          "justification": "The transcript ends immediately after the learner's pivot turn, leaving no subsequent tutor turn to enact a strategy reversal.",
           "triggerLearnerTurn": 4,
           "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No adaptive mechanism is present because the dialogue concludes before the tutor can respond to the learner's pressure.",
+          "triggerLearnerTurn": 4,
+          "source": "adaptive_mechanism_quality_axis"
         }
       },
       "flags": []

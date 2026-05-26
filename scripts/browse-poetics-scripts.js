@@ -161,6 +161,15 @@ function listItems(db, filters = {}) {
               OR CAST(json_extract(sx.metadata, '$.role_symmetric_scores.learner_actional_breakthrough.score100') AS REAL) >= 75
             )
         ) AS actionalBreakthroughCount,
+        (
+          SELECT COUNT(*)
+          FROM poetics_scores sx
+          WHERE sx.item_id = i.id
+            AND (
+              CAST(json_extract(sx.metadata, '$.adaptive_mechanism_quality') AS REAL) >= 75
+              OR CAST(json_extract(sx.metadata, '$.role_symmetric_scores.tutor_adaptive_mechanism_quality.score100') AS REAL) >= 75
+            )
+        ) AS adaptiveMechanismQualityCount,
         COUNT(DISTINCT l.id) AS labelCount,
         COUNT(DISTINCT rf.id) AS reviewFlagCount
       FROM poetics_items i
@@ -203,6 +212,7 @@ function listItems(db, filters = {}) {
         tutorAdaptationMetadata: decodeJson(row.tutorAdaptationMetadata, {}),
         criticForms: parseCriticForms(row.criticForms),
         actionalBreakthroughCount: Number(row.actionalBreakthroughCount || 0),
+        adaptiveMechanismQualityCount: Number(row.adaptiveMechanismQualityCount || 0),
       };
       hydrated.branchValidity = hydrated.tutorAdaptationMetadata?.branch_validity || null;
       hydrated.peripeteia = hydrated.tutorAdaptationMetadata?.peripeteia || null;
@@ -265,6 +275,7 @@ function roleSymmetricScoresForScore(row) {
   const actional = roleScores.learner_actional_breakthrough || {};
   const tutor = roleScores.tutor_contingent_adaptation || {};
   const reversal = roleScores.tutor_adaptive_mechanism || roleScores.tutor_strategy_reversal || {};
+  const quality = roleScores.tutor_adaptive_mechanism_quality || {};
   return {
     learnerSelfReframeScore: scoreValue(learner.score100 ?? row.recontextualization),
     learnerSelfReframeEvidence: learner.evidence || row.recohered_earlier || '',
@@ -287,6 +298,12 @@ function roleSymmetricScoresForScore(row) {
     tutorStrategyReversalJustification: reversal.justification || metadata.tutor_reversal_justification || '',
     tutorStrategyReversalTrigger: reversal.triggerLearnerTurn || metadata.reversal_trigger_learner_turn || null,
     tutorStrategyReversalSource: reversal.source || (metadata.tutor_strategic_reversal == null ? null : 'metadata'),
+    tutorAdaptiveMechanismQualityScore: scoreValue(quality.score100 ?? metadata.adaptive_mechanism_quality),
+    tutorAdaptiveMechanismQualityEvidence: quality.evidence || metadata.adaptive_mechanism_quality_evidence || '',
+    tutorAdaptiveMechanismQualityJustification:
+      quality.justification || metadata.adaptive_mechanism_quality_justification || '',
+    tutorAdaptiveMechanismQualitySource:
+      quality.source || (metadata.adaptive_mechanism_quality == null ? null : 'metadata'),
   };
 }
 
@@ -1021,6 +1038,7 @@ function renderItems() {
     '<div class="chips">' + item.criticForms.map(formChip).join('') +
       consensusChip(item.consensus) +
       (item.scoreCount ? '<span class="chip recognition">' + esc('action ' + item.actionalBreakthroughCount + '/' + item.scoreCount) + '</span>' : '') +
+      (item.scoreCount ? '<span class="chip">' + esc('quality ' + item.adaptiveMechanismQualityCount + '/' + item.scoreCount) + '</span>' : '') +
       (item.peripeteiaScore == null ? '' : '<span class="chip">' + esc('peripeteia ' + Math.round(item.peripeteiaScore)) + '</span>') +
       (item.peripeteiaTutorAdaptation ? '<span class="chip recognition">public mechanism</span>' : '') +
       (item.tutorAdaptationScore == null ? '' : '<span class="chip">' + esc('uptake ' + Math.round(item.tutorAdaptationScore)) + '</span>') +
@@ -1103,14 +1121,15 @@ function renderPane() {
     const adaptation = detail.tutorAdaptation;
     const adaptationHtml = renderAdaptationSidecar(adaptation);
     pane.innerHTML = renderConsensusPanel(detail.consensus) +
-      '<div class="score-note"><strong>LLM critic scores.</strong> Each row is one critic model judging the same public transcript. Learner self-reframe is the existing recontextualization axis. Actional breakthrough is separate: did the learner perform a new device or criterion even without narrating self-reframe? Peripeteia tutor adaptation is the main tutor-adaptation axis. Recognition-contingent uptake is a secondary closure axis after a learner reframe. New axes show n/a for older scorer artifacts.</div>' +
-      '<table class="score-table"><thead><tr><th>Critic</th><th>Form</th><th>Learner reframe (LLM)</th><th>Actional breakthrough (LLM)</th><th>Peripeteia tutor adaptation (LLM)</th><th>Recognition-contingent uptake (LLM)</th><th>Insight</th><th>Pivot</th><th>Evidence</th></tr></thead><tbody>' +
+      '<div class="score-note"><strong>LLM critic scores.</strong> Each row is one critic model judging the same public transcript. Learner self-reframe is the existing recontextualization axis. Actional breakthrough is separate: did the learner perform a new device or criterion even without narrating self-reframe? Peripeteia tutor adaptation asks whether the tutor visibly changed mechanism after pressure. Adaptive mechanism quality asks whether that new public device is fitted and usable, not just different. Recognition-contingent uptake is a secondary closure axis after a learner reframe. New axes show n/a for older scorer artifacts.</div>' +
+      '<table class="score-table"><thead><tr><th>Critic</th><th>Form</th><th>Learner reframe (LLM)</th><th>Actional breakthrough (LLM)</th><th>Peripeteia tutor adaptation (LLM)</th><th>Adaptive mechanism quality (LLM)</th><th>Recognition-contingent uptake (LLM)</th><th>Insight</th><th>Pivot</th><th>Evidence</th></tr></thead><tbody>' +
       detail.scores.map((s) => {
         const role = s.roleScores || {};
         const evidence = [
           role.learnerSelfReframeEvidence ? 'learner: ' + role.learnerSelfReframeEvidence : '',
           role.learnerActionalBreakthroughEvidence ? 'action: ' + role.learnerActionalBreakthroughEvidence : '',
           role.tutorStrategyReversalEvidence ? 'mechanism: ' + role.tutorStrategyReversalEvidence : '',
+          role.tutorAdaptiveMechanismQualityEvidence ? 'quality: ' + role.tutorAdaptiveMechanismQualityEvidence : '',
           role.tutorContingentAdaptationEvidence ? 'tutor: ' + role.tutorContingentAdaptationEvidence : '',
           s.stated_insight_evidence ? 'insight: ' + s.stated_insight_evidence : '',
         ].filter(Boolean).join(' / ');
@@ -1118,6 +1137,7 @@ function renderPane() {
           esc(scoreOrNA(role.learnerSelfReframeScore)) + '</td><td>' +
           esc(scoreOrNA(role.learnerActionalBreakthroughScore)) + '</td><td>' +
           esc(scoreOrNA(role.tutorStrategyReversalScore)) + '</td><td>' +
+          esc(scoreOrNA(role.tutorAdaptiveMechanismQualityScore)) + '</td><td>' +
           esc(scoreOrNA(role.tutorContingentAdaptationScore)) + '</td><td>' +
           esc(scoreOrNA(s.stated_insight)) + '</td><td>' + esc(s.pivot_learner_turn ?? 'n/a') +
           '</td><td class="evidence-cell">' + esc(evidence) + '</td></tr>';

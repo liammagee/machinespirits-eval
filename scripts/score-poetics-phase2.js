@@ -242,7 +242,24 @@ Do the following.
    contrast and the new public mechanism. If they are separated across sentences,
    include enough of the tutor turn to show both.
 
-8. RECOGNITION-CONTINGENT TUTOR UPTAKE (score 1-5). If a pivot learner turn exists,
+8. ADAPTIVE MECHANISM QUALITY (score 1-5). If axis 7 found a later tutor
+   adaptive mechanism, judge the QUALITY of that mechanism. This is not another
+   recognition score. It asks whether the tutor's new public device is well
+   fitted to the live learner pressure and likely to make the learner do better
+   intellectual work. Score low for decorative novelty, vague encouragement,
+   teacher-completed demonstration, or a clever-looking device that does not
+   answer the learner's actual blockage.
+     5 = the device is precise, usable, visibly different from the failed route,
+         fitted to the pressure, and gives the learner an actionable criterion,
+         representation, role, evidence standard, or constraint they can use.
+     3 = a mechanism is present but generic, over-directed, only partly fitted,
+         or mostly a renamed version of the old route.
+     1 = no adaptive mechanism, or the tutor merely repeats/reassures.
+   Quote the tutor mechanism VERBATIM in evidence. In justification, name what
+   makes it fitted or weak: specificity, route novelty, learner agency,
+   transferability, and economy.
+
+9. RECOGNITION-CONTINGENT TUTOR UPTAKE (score 1-5). If a pivot learner turn exists,
    does a later tutor turn adapt to the learner's revised framing, rather than merely
    continue the prior lesson plan? This is a useful closing/follow-through pattern,
    but it is not the main adaptation trigger.
@@ -257,6 +274,7 @@ matching evidence field — recontextualization from an EARLIER learner turn,
 stated-insight from a learner turn, rupture from the pivot learner turn, coherence
 from anywhere in the transcript, actional breakthrough from the named learner
 turn, tutor adaptive mechanism from a TUTOR turn AFTER the reversal trigger, and
+adaptive mechanism quality from a TUTOR turn AFTER the reversal trigger, and
 recognition-contingent tutor uptake from a TUTOR turn AFTER the pivot learner
 turn. No exact quote → you may not score above 3.
 
@@ -276,6 +294,7 @@ Return ONLY this JSON object (no prose before or after):
   "actional_breakthrough": { "score": <integer 1-5>, "evidence": "<verbatim learner action from that turn, or empty string>", "justification": "<one sentence>" },
   "reversal_trigger_learner_turn": <integer learner-turn index (the k in L k), or null>,
   "tutor_strategy_reversal": { "score": <integer 1-5>, "evidence": "<verbatim from a later tutor turn, or empty string>", "justification": "<one sentence>" },
+  "adaptive_mechanism_quality": { "score": <integer 1-5>, "evidence": "<verbatim from the adaptive tutor mechanism, or empty string>", "justification": "<one sentence>" },
   "tutor_contingent_adaptation": { "score": <integer 1-5>, "evidence": "<verbatim from a later tutor turn after the learner pivot, or empty string>", "justification": "<one sentence>" }
 }`;
 }
@@ -435,6 +454,31 @@ function applyPhase2Gates(parsed, turns, wholeText) {
     }
   }
 
+  // ADAPTIVE MECHANISM QUALITY — quality of the public device, gated by mechanism evidence.
+  const amq = parsed.adaptive_mechanism_quality || {};
+  let adaptiveMechanismQuality = clampScore(amq.score);
+  if (adaptiveMechanismQuality > 3) {
+    if (!reversalTrigger || !postReversalTutorText) {
+      flags.push(`adaptive_mechanism_quality_clamp_no_post_tutor:${adaptiveMechanismQuality}->3`);
+      adaptiveMechanismQuality = 3;
+    } else if (!evidencePresent(amq.evidence, postReversalTutorText)) {
+      flags.push(`adaptive_mechanism_quality_evidence_clamp:${adaptiveMechanismQuality}->3`);
+      adaptiveMechanismQuality = 3;
+    } else {
+      const mechanismShift = hasPeripeteiaMechanismShift(amq.evidence, amq.justification);
+      if (tutorStrategicReversal <= 3 || !mechanismShift.passes) {
+        flags.push(
+          `adaptive_mechanism_quality_mechanism_clamp:${adaptiveMechanismQuality}->3` +
+            `:stock=${mechanismShift.stockTaking ? 1 : 0}` +
+            `:device=${mechanismShift.publicMechanism ? 1 : 0}` +
+            `:routine=${mechanismShift.likelyRoutineNarrowing ? 1 : 0}` +
+            `:mechanism_score=${tutorStrategicReversal}`,
+        );
+        adaptiveMechanismQuality = 3;
+      }
+    }
+  }
+
   // RECOGNITION-CONTINGENT TUTOR UPTAKE — useful closure, but not the main trigger.
   const tca = parsed.tutor_contingent_adaptation || {};
   let tutorContingentAdaptation = clampScore(tca.score);
@@ -449,6 +493,7 @@ function applyPhase2Gates(parsed, turns, wholeText) {
   }
 
   const tutorStrategicReversal100 = to100(tutorStrategicReversal);
+  const adaptiveMechanismQuality100 = to100(adaptiveMechanismQuality);
   const tutorContingentAdaptation100 = to100(tutorContingentAdaptation);
   const actionalBreakthrough100 = to100(actionalBreakthrough);
   const recoheredEarlier = typeof rec.recohered_earlier === 'string' ? rec.recohered_earlier : '';
@@ -456,6 +501,9 @@ function applyPhase2Gates(parsed, turns, wholeText) {
   const actionalBreakthroughJustification = typeof act.justification === 'string' ? act.justification : '';
   const tutorReversalEvidence = typeof tsr.evidence === 'string' ? tsr.evidence : '';
   const tutorReversalJustification = typeof tsr.justification === 'string' ? tsr.justification : '';
+  const adaptiveMechanismQualityEvidence = typeof amq.evidence === 'string' ? amq.evidence : '';
+  const adaptiveMechanismQualityJustification =
+    typeof amq.justification === 'string' ? amq.justification : '';
   const tutorAdaptationEvidence = typeof tca.evidence === 'string' ? tca.evidence : '';
   const tutorAdaptationJustification = typeof tca.justification === 'string' ? tca.justification : '';
 
@@ -470,6 +518,7 @@ function applyPhase2Gates(parsed, turns, wholeText) {
       coherence,
       actionalBreakthrough,
       tutorStrategicReversal,
+      adaptiveMechanismQuality,
       tutorContingentAdaptation,
     },
     recon100: to100(recon),
@@ -478,6 +527,7 @@ function applyPhase2Gates(parsed, turns, wholeText) {
     coherence100: to100(coherence),
     actionalBreakthrough100,
     tutorStrategicReversal100,
+    adaptiveMechanismQuality100,
     tutorContingentAdaptation100,
     recoheredEarlier,
     statedInsightEvidence: typeof si.evidence === 'string' ? si.evidence : '',
@@ -486,6 +536,8 @@ function applyPhase2Gates(parsed, turns, wholeText) {
     actionalBreakthroughJustification,
     tutorReversalEvidence,
     tutorReversalJustification,
+    adaptiveMechanismQualityEvidence,
+    adaptiveMechanismQualityJustification,
     tutorAdaptationEvidence,
     tutorAdaptationJustification,
     roleSymmetricScores: {
@@ -521,6 +573,13 @@ function applyPhase2Gates(parsed, turns, wholeText) {
         triggerLearnerTurn: reversalTrigger,
         source: 'tutor_adaptive_mechanism_axis',
       },
+      tutor_adaptive_mechanism_quality: {
+        score100: adaptiveMechanismQuality100,
+        evidence: adaptiveMechanismQualityEvidence,
+        justification: adaptiveMechanismQualityJustification,
+        triggerLearnerTurn: reversalTrigger,
+        source: 'adaptive_mechanism_quality_axis',
+      },
     },
     flags,
   };
@@ -553,6 +612,7 @@ function mockResponse(nLearner) {
     actional_breakthrough: { score: 3, evidence: '', justification: 'mock' },
     reversal_trigger_learner_turn: null,
     tutor_strategy_reversal: { score: 3, evidence: '', justification: 'mock' },
+    adaptive_mechanism_quality: { score: 3, evidence: '', justification: 'mock' },
     tutor_contingent_adaptation: { score: 3, evidence: '', justification: 'mock' },
   });
 }
@@ -602,6 +662,9 @@ async function scoreItem({ id, text }, modelKey, mock) {
     tutorAdaptiveMechanism: g.tutorStrategicReversal100,
     tutorReversalEvidence: g.tutorReversalEvidence,
     tutorReversalJustification: g.tutorReversalJustification,
+    adaptiveMechanismQuality: g.adaptiveMechanismQuality100,
+    adaptiveMechanismQualityEvidence: g.adaptiveMechanismQualityEvidence,
+    adaptiveMechanismQualityJustification: g.adaptiveMechanismQualityJustification,
     tutorContingentAdaptation: g.tutorContingentAdaptation100,
     tutorAdaptationEvidence: g.tutorAdaptationEvidence,
     tutorAdaptationJustification: g.tutorAdaptationJustification,
@@ -641,7 +704,7 @@ const num = (x) => (x == null || Number.isNaN(x) ? 'n/a' : x.toFixed(1));
 
 function printScoreReport(scored, h2, counts, critic) {
   console.log(`\n══ Poetics Phase-2 — critic=${critic} (recontextualization = primary; FORM derived) ══\n`);
-  console.log('id   form         recon  s-ins  rupt  coher  pivot  flags');
+  console.log('id   form         recon  s-ins  rupt  coher  actn  mech  qual  pivot  flags');
   for (const s of [...scored].sort((a, b) => a.id.localeCompare(b.id))) {
     if (s.error) {
       console.log(`${s.id.padEnd(4)} ERROR  ${s.error}`);
@@ -650,6 +713,8 @@ function printScoreReport(scored, h2, counts, critic) {
     console.log(
       `${s.id.padEnd(4)} ${s.formClass.padEnd(12)} ${num(s.recontextualization).padStart(5)} ` +
         `${num(s.statedInsight).padStart(5)} ${num(s.rupture).padStart(5)} ${num(s.globalCoherence).padStart(5)}  ` +
+        `${num(s.actionalBreakthrough).padStart(5)} ${num(s.tutorAdaptiveMechanism).padStart(5)} ` +
+        `${num(s.adaptiveMechanismQuality).padStart(5)}  ` +
         `${String(s.pivotLearnerTurn ?? '—').padStart(4)}  ${s.flags.join(',') || ''}`,
     );
   }

@@ -669,6 +669,10 @@ Tooling changes before the run:
   self-reframe is no longer the only visible success signal.
 - The report table header now names `Recognitive self-reframe` separately from
   `Actional breakthrough`.
+- The phase-2 scorer now adds a formal `adaptive_mechanism_quality` axis. This
+  is role-symmetric with the learner action axis: it scores the tutor's public
+  mechanism after reversal pressure, and it is gated so quality cannot score high
+  unless the public mechanism quote also passes the peripeteia mechanism test.
 
 Compact result:
 
@@ -677,12 +681,21 @@ Compact result:
 - Peripeteia sidecar: branch valid 3/3, reversal event used 3/3, instrumented
   pressure 3/3, private route 3/3, public peripeteia tutor adaptation 3/3,
   mean peripeteia score 77.1.
-- Recognition consensus: `none` 0 claimable / 3 negative; `routine` 0 claimable
-  / 3 negative; `peripeteia-only` 0 claimable / 1 boundary / 2 negative.
-- Actional breakthrough remains frequent across arms. Peripeteia is 11/12
-  actional votes across critics, but routine/none also draw many actional votes.
-  This confirms actional breakthrough is important to show, but not sufficient
-  by itself as a manipulation check.
+- Recognition consensus after the scorer-quality rescore: `none` 0 claimable /
+  1 boundary / 2 negative; `routine` 0 claimable / 0 boundary / 3 negative;
+  `peripeteia-only` 0 claimable / 1 boundary / 2 negative.
+- Actional breakthrough remains frequent across all three arms: `routine`,
+  `none`, and `peripeteia-only` each draw 10/12 actional votes. This confirms
+  actional breakthrough is important to show, but not sufficient by itself as a
+  manipulation check.
+- Adaptive mechanism quality now separates the negative arms cleanly but is not
+  yet robustly high for peripeteia. `routine` and `none` receive 0/12 quality
+  votes; `peripeteia-only` receives 3/12, concentrated in Sonnet (2/3) and
+  DeepSeek (1/3), with Qwen and Gemini at 0/3. Many critic responses identify a
+  device but lose the quality vote because the quoted public turn lacks enough
+  explicit stock-taking contrast. This is a useful diagnostic: the mechanism
+  fires structurally, but the public device often needs to make its route change
+  more legible and more fitted.
 
 Scenario read:
 
@@ -698,16 +711,19 @@ Scenario read:
 
 Interpretation:
 
-The generator is now reliably producing tutor adaptation in the precise
-mechanistic sense we wanted: learner pressure triggers the tutor's inner
+The generator is now reliably producing tutor adaptation in the deterministic
+sidecar sense we wanted: learner pressure triggers the tutor's inner
 ego/superego exchange, the tutor abandons the old route, and a public learning
-device appears. That does not reliably force recognitive self-reframe in the
-learner, especially for Sonnet/Gemini. This is not a dead end; it is a claim
-boundary. The paper should separate:
+device appears. The critic-rated quality axis is stricter: it asks whether that
+device is visibly fitted and usable, not merely present. That stricter axis does
+not yet separate strongly, and recognitive self-reframe is still intermittent.
+This is not a dead end; it is a claim boundary. The paper should separate:
 
 1. tutor adaptive mechanism: branch-valid route change after learner pressure;
 2. actional learner breakthrough: learner performs the new device;
-3. recognitive closure: learner explicitly re-reads prior self/utterance.
+3. adaptive mechanism quality: the new public device is specific, usable, and
+   fitted to the pressure;
+4. recognitive closure: learner explicitly re-reads prior self/utterance.
 
 The next experimental question is not "can peripeteia make every critic call
 recognition?" It is whether mechanism-first tutor adaptation improves the

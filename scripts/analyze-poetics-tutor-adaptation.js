@@ -903,12 +903,28 @@ function summarizeRows(rows) {
       total: 0,
       learnerSelfReframes: 0,
       tutorAdaptations: 0,
+      branchValid: 0,
+      reversalEventsUsed: 0,
+      instrumentedPressure: 0,
+      privateRoutes: 0,
+      peripeteiaAdaptations: 0,
+      peripeteiaScoreSum: 0,
       scoreSum: 0,
       uptakeDeltaSum: 0,
     };
+    const peripeteia = row.metadata?.peripeteia || {};
+    const branchValidity = row.metadata?.branch_validity || {};
     groups[key].total += 1;
     if (row.learnerSelfReframe) groups[key].learnerSelfReframes += 1;
     if (row.tutorContingentAdaptation) groups[key].tutorAdaptations += 1;
+    if (branchValidity.valid) groups[key].branchValid += 1;
+    if (branchValidity.learner_reversal_event_used) groups[key].reversalEventsUsed += 1;
+    if (peripeteia.instrumented_pressure) groups[key].instrumentedPressure += 1;
+    if (peripeteia.private_mechanism_declared) groups[key].privateRoutes += 1;
+    if (peripeteia.tutor_adaptive_mechanism || peripeteia.tutor_strategy_reversal) {
+      groups[key].peripeteiaAdaptations += 1;
+    }
+    groups[key].peripeteiaScoreSum += peripeteia.tutor_peripeteia_score || 0;
     groups[key].scoreSum += row.tutorAdaptationScore || 0;
     groups[key].uptakeDeltaSum += row.uptakeDelta || 0;
   }
@@ -917,6 +933,7 @@ function summarizeRows(rows) {
     .map((group) => ({
       ...group,
       meanTutorAdaptationScore: round(group.scoreSum / group.total, 1),
+      meanPeripeteiaScore: round(group.peripeteiaScoreSum / group.total, 1),
       meanUptakeDelta: round(group.uptakeDeltaSum / group.total),
     }));
 }
@@ -1030,7 +1047,8 @@ function main() {
     for (const group of analysis.summary) {
       console.log(
         `  ${group.runId} ${group.arm}: learner ${group.learnerSelfReframes}/${group.total}, ` +
-          `tutor ${group.tutorAdaptations}/${group.total}, mean score ${group.meanTutorAdaptationScore}`,
+          `uptake ${group.tutorAdaptations}/${group.total}, mean uptake ${group.meanTutorAdaptationScore}, ` +
+          `peripeteia ${group.peripeteiaAdaptations}/${group.total}, mean peripeteia ${group.meanPeripeteiaScore}`,
       );
     }
   } finally {

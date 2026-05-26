@@ -228,11 +228,16 @@ function summarizeRun(runId, rows) {
       flat: 0,
       other: 0,
       actional: 0,
+      adaptiveQuality: 0,
       total: 0,
     };
     const bucket = ['recognition', 'trap', 'flat'].includes(row.form_class) ? row.form_class : 'other';
     targetByCriticArm[critic][arm][bucket] += 1;
     if (Number(row.score_metadata?.actional_breakthrough || 0) >= 75) targetByCriticArm[critic][arm].actional += 1;
+    const adaptiveQuality =
+      row.score_metadata?.adaptive_mechanism_quality ??
+      row.score_metadata?.role_symmetric_scores?.tutor_adaptive_mechanism_quality?.score100;
+    if (Number(adaptiveQuality || 0) >= 75) targetByCriticArm[critic][arm].adaptiveQuality += 1;
     targetByCriticArm[critic][arm].total += 1;
   }
 
@@ -422,14 +427,14 @@ function renderTargetSection(run) {
   const critics = Object.keys(run.targetByCriticArm).sort();
   if (!critics.length) return 'No target-arm scores found.';
   const lines = [
-    '| Critic | Arm | Recognitive self-reframe | Actional breakthrough | Trap | Flat | Other |',
-    '|---|---|---:|---:|---:|---:|---:|',
+    '| Critic | Arm | Recognitive self-reframe | Actional breakthrough | Adaptive mechanism quality | Trap | Flat | Other |',
+    '|---|---|---:|---:|---:|---:|---:|---:|',
   ];
   for (const critic of critics) {
     for (const arm of Object.keys(run.targetByCriticArm[critic]).sort()) {
       const c = run.targetByCriticArm[critic][arm];
       lines.push(
-        `| ${critic} | ${arm} | ${c.recognition}/${c.total} (${pct(c.recognition, c.total)}) | ${c.actional}/${c.total} (${pct(c.actional, c.total)}) | ${c.trap} | ${c.flat} | ${c.other} |`,
+        `| ${critic} | ${arm} | ${c.recognition}/${c.total} (${pct(c.recognition, c.total)}) | ${c.actional}/${c.total} (${pct(c.actional, c.total)}) | ${c.adaptiveQuality}/${c.total} (${pct(c.adaptiveQuality, c.total)}) | ${c.trap} | ${c.flat} | ${c.other} |`,
       );
     }
   }
@@ -597,6 +602,7 @@ function renderCsv(report) {
     'critic_disagreement',
     'recontextualization',
     'actional_breakthrough',
+    'adaptive_mechanism_quality',
     'stated_insight',
     'pivot_learner_turn',
     'learner_self_reframe',
@@ -653,6 +659,8 @@ function renderCsv(report) {
         consensus?.disagreement,
         row.recontextualization,
         row.score_metadata?.actional_breakthrough,
+        row.score_metadata?.adaptive_mechanism_quality ??
+          row.score_metadata?.role_symmetric_scores?.tutor_adaptive_mechanism_quality?.score100,
         row.stated_insight,
         row.pivot_learner_turn,
         row.learner_self_reframe,
