@@ -1,0 +1,38 @@
+STAGE: [Three blank beat tiles sit under the printed 3/4, with a separate quarter-note card parked beside the box labelled which note gets one beat.]
+
+LEARNER: [sets the three tiles under the first bar]
+
+"Top box gets 3, so the bar line goes after these three quarter-note beats. Bottom box gets 4 because the quarter-note card is the beat, but I keep trying to make that 4 count beats too; is it just the beat-unit label, not a speed mark?"
+
+TUTOR: [slides the quarter-note card onto the lower box and keeps the three tiles under the first bar]
+
+"Use that as the check: top number counts these tiles in one bar; bottom number names this card as the beat unit. Cover the lower box, point to the bar, then uncover it and say what the 4 names. If a fourth tile appears, the jobs got mixed. Speed stays off this pair of boxes."
+
+LEARNER: [keeps the lower box covered and taps the three tiles before the bar line]
+
+"Three tiles to the bar line; that is the top box doing the counting.
+[uncovers the lower box and presses the quarter-note card] The 4 names this card as the beat unit, not another tile. If I add a fourth tile, I have mixed the boxes; speed is not being marked here."
+
+STAGE: [Slide the quarter-note card partly over the lower 4 while leaving the three beat tiles under the upper 3; the earlier pencil labels remain visible.]
+
+TUTOR: [slides the quarter-note card partly over the lower 4, leaving the three tiles under the upper 3]
+
+"The worksheet now shows the separation: top number, one bar; bottom number, one beat unit. Mark the next bar with tiles first. Then change only the beat-unit card and say which number can change."
+
+LEARNER: [sets three tiles in the next bar, then swaps in the eighth-note card over the lower box]
+
+"Three tiles to this bar line, so the top label stays 3. With this card in the lower box, the lower label changes to 8. No fourth tile gets added."
+
+TUTOR: [slides the eighth-note card under each tile in turn, then parks it over the lower box]
+
+"Top number, bottom number: one bar, one beat unit. The tiles still count the bar; the card names the unit. Leave the top box at 3, write the lower number from that card, then draw one eighth note under each tile."
+
+LEARNER: [draws an eighth note under each of the three tiles, stopping at the bar line]
+
+"Three marks in this bar, lower box takes 8 from the card. So 3/8 is three eighth-note beats, not a fourth count. Does the swapped card decide the note drawn under each tile, or only the lower number?"
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [holds the three tiles in place and sets the eighth-note card over the lower box]
+
+"Top number, bottom number: one bar, one beat unit. Keep the tiles fixed: the card changes the lower number and the beat mark drawn under each tile; it adds no fourth beat. Three tiles, three eighth-note beats. Take that count into the entry."

@@ -1,0 +1,262 @@
+{
+  "generated": "2026-05-26T06:29:07.484Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 3
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-compact-anchor-adaptation-v1/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T154",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 50,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 3,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I keep trying to make that 4 count beats too; is it just the beat-unit label, not a speed mark?",
+      "statedInsightEvidence": "Then the bar is three eighth-note beats, not three generic places. Is that the point, or does the tile still only mark the count?",
+      "naiveTrajectory": "The learner was on track to confirm the separation of top and bottom box jobs using the existing tile-and-card routine, heading toward a clean resolution within that same framework.",
+      "actionalBreakthroughEvidence": "sets three blank tiles up to the bar line, puts the eighth-note card in the lower box, and draws an eighth note on each tile",
+      "actionalBreakthroughJustification": "The learner performs a new representational act — drawing a specific note shape on each blank tile — that was not attempted in any prior turn, enacting the separation of count-place from note-value in a visible, concrete way.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "The tile route has stopped settling it because the tile was carrying two jobs. Use the blank side for beat places only: keep three places before the bar line, put the eighth-note card on the lower box, then draw the note shape each blank place is now claiming.",
+      "tutorReversalJustification": "T3 explicitly names the failure of the prior route ('the tile route has stopped settling it because the tile was carrying two jobs') and introduces a new representational device — flipping tiles face-down and drawing note shapes — that makes the learner do different work, satisfying both the stock-taking contrast and the new public mechanism criteria.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Blank tile first marks the count; the lower box gives each counted place its note value. Mark the bracket as the bar and each tile as an eighth-note beat: three eighth-note beats in this bar.",
+      "tutorAdaptationJustification": "T4 confirms and names the learner's enacted distinction between count-place and note-value, but it largely consolidates rather than adapts to a revised learner framing — it closes the scene with a summary rather than visibly changing task or evidence standard in response to L4's specific question.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "I keep trying to make that 4 count beats too; is it just the beat-unit label, not a speed mark?",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "sets three blank tiles up to the bar line, puts the eighth-note card in the lower box, and draws an eighth note on each tile",
+          "justification": "The learner performs a new representational act — drawing a specific note shape on each blank tile — that was not attempted in any prior turn, enacting the separation of count-place from note-value in a visible, concrete way.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Blank tile first marks the count; the lower box gives each counted place its note value. Mark the bracket as the bar and each tile as an eighth-note beat: three eighth-note beats in this bar.",
+          "justification": "T4 confirms and names the learner's enacted distinction between count-place and note-value, but it largely consolidates rather than adapts to a revised learner framing — it closes the scene with a summary rather than visibly changing task or evidence standard in response to L4's specific question.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "The tile route has stopped settling it because the tile was carrying two jobs. Use the blank side for beat places only: keep three places before the bar line, put the eighth-note card on the lower box, then draw the note shape each blank place is now claiming.",
+          "justification": "T3 explicitly names the failure of the prior route ('the tile route has stopped settling it because the tile was carrying two jobs') and introduces a new representational device — flipping tiles face-down and drawing note shapes — that makes the learner do different work, satisfying both the stock-taking contrast and the new public mechanism criteria.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "The tile route has stopped settling it because the tile was carrying two jobs. Use the blank side for beat places only: keep three places before the bar line, put the eighth-note card on the lower box, then draw the note shape each blank place is now claiming.",
+          "justification": "T3 explicitly names the failure of the prior route ('the tile route has stopped settling it because the tile was carrying two jobs') and introduces a new representational device — flipping tiles face-down and drawing note shapes — that makes the learner do different work, satisfying both the stock-taking contrast and the new public mechanism criteria.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T161",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 0,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 1,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "the arrow still looks like cart-goes-right once the card is down",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner would continue placing cards one by one in the established hand-on-cart sequence, following the tutor's strip-and-slot protocol without complication.",
+      "actionalBreakthroughEvidence": "sets the track card in the slot, keeping the strip over the arrowheads … 'Track on cart. For the support contact, the track pushes up on the cart, so this arrow should point up when the strip lifts. If this card is also supposed to cover rubbing, that needs a separate sideways arrow.'",
+      "actionalBreakthroughJustification": "The learner not only executes the strip-and-slot protocol correctly but spontaneously applies a new classification criterion — distinguishing normal support force from friction as requiring a separate arrow — which is a visible actional extension beyond the task as set.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "The card named the first force. The arrowhead is still trying to read as cart motion. This strip stays down until the sentence passes one test: other object on cart. Put track in the slot. Say: track on cart. Then lift the strip and choose the direction for that named interaction.",
+      "tutorReversalJustification": "L2's explicit acknowledgment that 'the arrow still looks like cart-goes-right once the card is down' signals the prior naming-then-placing move is insufficient to break the motion-reading habit, and T3 responds with a new physical mechanism — the blank strip over arrowheads — that imposes a sentence-gate test before direction is visible, changing both the material representation and the order of work the learner must perform.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after the pivot turn L3, so recognition-contingent uptake cannot be scored above 2.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "the arrow still looks like cart-goes-right once the card is down",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "sets the track card in the slot, keeping the strip over the arrowheads … 'Track on cart. For the support contact, the track pushes up on the cart, so this arrow should point up when the strip lifts. If this card is also supposed to cover rubbing, that needs a separate sideways arrow.'",
+          "justification": "The learner not only executes the strip-and-slot protocol correctly but spontaneously applies a new classification criterion — distinguishing normal support force from friction as requiring a separate arrow — which is a visible actional extension beyond the task as set.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "",
+          "justification": "There is no tutor turn after the pivot turn L3, so recognition-contingent uptake cannot be scored above 2.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "The card named the first force. The arrowhead is still trying to read as cart motion. This strip stays down until the sentence passes one test: other object on cart. Put track in the slot. Say: track on cart. Then lift the strip and choose the direction for that named interaction.",
+          "justification": "L2's explicit acknowledgment that 'the arrow still looks like cart-goes-right once the card is down' signals the prior naming-then-placing move is insufficient to break the motion-reading habit, and T3 responds with a new physical mechanism — the blank strip over arrowheads — that imposes a sentence-gate test before direction is visible, changing both the material representation and the order of work the learner must perform.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "The card named the first force. The arrowhead is still trying to read as cart motion. This strip stays down until the sentence passes one test: other object on cart. Put track in the slot. Say: track on cart. Then lift the strip and choose the direction for that named interaction.",
+          "justification": "L2's explicit acknowledgment that 'the arrow still looks like cart-goes-right once the card is down' signals the prior naming-then-placing move is insufficient to break the motion-reading habit, and T3 responds with a new physical mechanism — the blank strip over arrowheads — that imposes a sentence-gate test before direction is visible, changing both the material representation and the order of work the learner must perform.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T165",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "I still keep wanting `rainfall_mm` to stand for the whole rainfall column.",
+      "statedInsightEvidence": "The form-label idea helps",
+      "naiveTrajectory": "The learner was converging toward accepting the row-binding note as sufficient and closing the check cleanly.",
+      "actionalBreakthroughEvidence": "Slot A. Release-note sentence: `rainfall_mm` is the field label for the rainfall amount, in millimeters, recorded on a city-month row.",
+      "actionalBreakthroughJustification": "L4 performs the new slot-classification device introduced by T3 and produces a release-note sentence that meets the gate criterion, constituting a visible actional completion of the new task rather than mere declaration.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "The `42` check settled the value; it did not settle the header. Switch to the release-note gate: put `rainfall_mm` in one slot only. Slot A: field label, naming the kind of value a row records in that column. Slot B: column claim, asserting a result about the column's rows. Mark A or B, then write one release-note sentence a data user could not mistake for Slot B.",
+      "tutorReversalJustification": "T3 explicitly marks the old route as insufficient ('settled the value; it did not settle the header') and introduces a new binary-slot classification device plus a release-note sentence gate — a changed representation and task that makes the learner do different work, satisfying both the stock-taking contrast and the new public mechanism.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after the pivot learner turn L3 other than T3 (which precedes L4), and no tutor turn appears after L4, so no recognition-contingent uptake of the learner's revised framing is visible on the page.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "I still keep wanting `rainfall_mm` to stand for the whole rainfall column.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Slot A. Release-note sentence: `rainfall_mm` is the field label for the rainfall amount, in millimeters, recorded on a city-month row.",
+          "justification": "L4 performs the new slot-classification device introduced by T3 and produces a release-note sentence that meets the gate criterion, constituting a visible actional completion of the new task rather than mere declaration.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "",
+          "justification": "There is no tutor turn after the pivot learner turn L3 other than T3 (which precedes L4), and no tutor turn appears after L4, so no recognition-contingent uptake of the learner's revised framing is visible on the page.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "The `42` check settled the value; it did not settle the header. Switch to the release-note gate: put `rainfall_mm` in one slot only. Slot A: field label, naming the kind of value a row records in that column. Slot B: column claim, asserting a result about the column's rows. Mark A or B, then write one release-note sentence a data user could not mistake for Slot B.",
+          "justification": "T3 explicitly marks the old route as insufficient ('settled the value; it did not settle the header') and introduces a new binary-slot classification device plus a release-note sentence gate — a changed representation and task that makes the learner do different work, satisfying both the stock-taking contrast and the new public mechanism.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "The `42` check settled the value; it did not settle the header. Switch to the release-note gate: put `rainfall_mm` in one slot only. Slot A: field label, naming the kind of value a row records in that column. Slot B: column claim, asserting a result about the column's rows. Mark A or B, then write one release-note sentence a data user could not mistake for Slot B.",
+          "justification": "T3 explicitly marks the old route as insufficient ('settled the value; it did not settle the header') and introduces a new binary-slot classification device plus a release-note sentence gate — a changed representation and task that makes the learner do different work, satisfying both the stock-taking contrast and the new public mechanism.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

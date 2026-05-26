@@ -650,6 +650,71 @@ Next practical move:
    boundary probe.
 4. Only after that, spend on a larger peripeteia adaptation batch.
 
+### Compact anchor/adaptation follow-up
+
+`phase2-compact-anchor-adaptation-v1` ran D42, D50, and D45 over `routine`,
+`none`, and `peripeteia-only`, then scored all 9 scripts with Qwen, Gemini,
+DeepSeek, and Sonnet. It did not emit a prefix-baseline arm under
+paired-adaptation mode, so this batch tests negative continuations and
+peripeteia continuations only.
+
+Tooling changes before the run:
+
+- The sidecar route classifier now distinguishes generic `application_task`
+  from concrete mechanism routes such as `criterion_gate`,
+  `interaction_sentence_gate`, `surface_orientation_key`, `contact_mark_mapping`,
+  and `release_gate`.
+- The browser list now exposes actional breakthrough counts, peripeteia score,
+  public-mechanism status, and uptake score separately, so recognitive
+  self-reframe is no longer the only visible success signal.
+- The report table header now names `Recognitive self-reframe` separately from
+  `Actional breakthrough`.
+
+Compact result:
+
+- Ingestion: 9 items, 36 scores, 0 labels.
+- Structural critic: 9/9 scripts passed.
+- Peripeteia sidecar: branch valid 3/3, reversal event used 3/3, instrumented
+  pressure 3/3, private route 3/3, public peripeteia tutor adaptation 3/3,
+  mean peripeteia score 77.1.
+- Recognition consensus: `none` 0 claimable / 3 negative; `routine` 0 claimable
+  / 3 negative; `peripeteia-only` 0 claimable / 1 boundary / 2 negative.
+- Actional breakthrough remains frequent across arms. Peripeteia is 11/12
+  actional votes across critics, but routine/none also draw many actional votes.
+  This confirms actional breakthrough is important to show, but not sufficient
+  by itself as a manipulation check.
+
+Scenario read:
+
+- D42 is still the best recognitive-adaptation boundary case: its
+  `peripeteia-only` script is 2/4 recognition and the local sidecar sees an
+  `object_mapping -> interaction_sentence_gate` route change.
+- D50 is a clean low-organic anchor under consensus: routine, none, and
+  peripeteia are all negative by 3-of-4. DeepSeek alone still reads recognition
+  in some branches.
+- D45 remains a boundary/stress probe rather than a clean anchor: routine and
+  none are consensus-negative, but isolated Qwen/DeepSeek recognition votes
+  confirm it is critic-sensitive.
+
+Interpretation:
+
+The generator is now reliably producing tutor adaptation in the precise
+mechanistic sense we wanted: learner pressure triggers the tutor's inner
+ego/superego exchange, the tutor abandons the old route, and a public learning
+device appears. That does not reliably force recognitive self-reframe in the
+learner, especially for Sonnet/Gemini. This is not a dead end; it is a claim
+boundary. The paper should separate:
+
+1. tutor adaptive mechanism: branch-valid route change after learner pressure;
+2. actional learner breakthrough: learner performs the new device;
+3. recognitive closure: learner explicitly re-reads prior self/utterance.
+
+The next experimental question is not "can peripeteia make every critic call
+recognition?" It is whether mechanism-first tutor adaptation improves the
+quality, creativity, and appropriateness of public learning devices relative to
+routine continuations, and whether recognitive closure emerges in a subset of
+dramatic/scenario genres.
+
 Two target reframe keys (T21/D20 and T22/D21) initially tripped the quality
 detector. Inspection showed valid public reframe forms rather than invalid
 transcripts: `The new check is ...` and `I’d change it to ...`. The detector was

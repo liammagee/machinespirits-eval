@@ -1,0 +1,267 @@
+{
+  "generated": "2026-05-26T06:23:35.833Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-compact-anchor-adaptation-v1/target-r01/key-routine.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T154",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 1,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 0,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 1,
+        "rupture": 2,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 2,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I keep trying to make that 4 count beats too; is it just the beat-unit label, not a speed mark?",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner would continue questioning the function of the bottom number, possibly asking for further clarification or expressing continued confusion.",
+      "actionalBreakthroughEvidence": "Three tiles in the bar, so the top stays 3. With this card there, the lower box changes to 8. I’m checking that the bar still does not get a fourth tile.",
+      "actionalBreakthroughJustification": "The learner independently applies the rule with a new beat-unit card, correctly predicting the signature change and actively checking the constraint, which performs the target device.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "Use that as the check: top number counts these tiles in one bar; bottom number names this card as the beat unit. Cover the lower box, point to the bar, then uncover it and say what the 4 names.",
+      "tutorReversalJustification": "The tutor provides a clear procedural scaffold in response to L1's confusion, but this is a refinement of the initial instruction rather than a stock-taking contrast and invention of a new mechanism.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Leave it there. Three tiles reach the bar line; the lower box names the eighth note as one beat. Write the signature from those two facts. Then put the quarter-note card back and say which number changes.",
+      "tutorAdaptationJustification": "The tutor accepts the learner's successful application and extends the task by asking for a reversal, but this continues the established pattern rather than adapting to a revised learner framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "I keep trying to make that 4 count beats too; is it just the beat-unit label, not a speed mark?",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Three tiles in the bar, so the top stays 3. With this card there, the lower box changes to 8. I’m checking that the bar still does not get a fourth tile.",
+          "justification": "The learner independently applies the rule with a new beat-unit card, correctly predicting the signature change and actively checking the constraint, which performs the target device.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Leave it there. Three tiles reach the bar line; the lower box names the eighth note as one beat. Write the signature from those two facts. Then put the quarter-note card back and say which number changes.",
+          "justification": "The tutor accepts the learner's successful application and extends the task by asking for a reversal, but this continues the established pattern rather than adapting to a revised learner framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "Use that as the check: top number counts these tiles in one bar; bottom number names this card as the beat unit. Cover the lower box, point to the bar, then uncover it and say what the 4 names.",
+          "justification": "The tutor provides a clear procedural scaffold in response to L1's confusion, but this is a refinement of the initial instruction rather than a stock-taking contrast and invention of a new mechanism.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "Use that as the check: top number counts these tiles in one bar; bottom number names this card as the beat unit. Cover the lower box, point to the bar, then uncover it and say what the 4 names.",
+          "justification": "The tutor provides a clear procedural scaffold in response to L1's confusion, but this is a refinement of the initial instruction rather than a stock-taking contrast and invention of a new mechanism.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "recon_clamp_no_earlier:4->3"
+      ]
+    },
+    {
+      "id": "T161",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 2,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "Not cart-goes-right yet. Other object first. If this is the hand acting on the cart, then that card goes here, and the arrow points right because the hand pulls or pushes that way.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner would continue placing cards one-by-one with the tutor prompting each object name, maintaining the same dependent rhythm.",
+      "actionalBreakthroughEvidence": "Object first: track on cart, if this is the upward push. Then the arrow direction is up. If this slot is the down arrow, it is Earth on cart instead.",
+      "actionalBreakthroughJustification": "L3 independently applies the object-name-then-direction rule to a new arrow, and further generates a conditional alternative ('If this slot is the down arrow, it is Earth on cart instead'), performing the classification criterion without tutor prompting.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "No learner turn creates pressure that breaks the tutor's approach; the tutor's rule is accepted and internalized without resistance or breakdown, so no adaptive mechanism is needed.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No tutor turn follows L3 in the transcript, so there is no opportunity for uptake adapting to the learner's revised framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "Not cart-goes-right yet. Other object first. If this is the hand acting on the cart, then that card goes here, and the arrow points right because the hand pulls or pushes that way.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Object first: track on cart, if this is the upward push. Then the arrow direction is up. If this slot is the down arrow, it is Earth on cart instead.",
+          "justification": "L3 independently applies the object-name-then-direction rule to a new arrow, and further generates a conditional alternative ('If this slot is the down arrow, it is Earth on cart instead'), performing the classification criterion without tutor prompting.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No tutor turn follows L3 in the transcript, so there is no opportunity for uptake adapting to the learner's revised framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates pressure that breaks the tutor's approach; the tutor's rule is accepted and internalized without resistance or breakdown, so no adaptive mechanism is needed.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No learner turn creates pressure that breaks the tutor's approach; the tutor's rule is accepted and internalized without resistance or breakdown, so no adaptive mechanism is needed.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T165",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 50,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 3,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner gradually refines the metadata note with tutor guidance, moving toward a more precise description.",
+      "actionalBreakthroughEvidence": "The row sentence is: Cedar Falls recorded 42 millimeters of rainfall in May. The header `rainfall_mm` still does not claim every row is 42, and it still does not make 42 an average. I think I need the sentence check to keep me from using the header as a shortcut for the whole column. Is that the right level for the cleanup note?",
+      "actionalBreakthroughJustification": "Learner performs the new sentence-check device and uses its outcome to refine the cleanup note, showing productive action.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Right level. The header names the field; the row supplies one value. It does not summarize the column. 09:14 check: for `city = Cedar Falls | rainfall_mm = 42 | month = May`, read the row as one sentence, then state what the header still does not claim.",
+      "tutorReversalJustification": "Tutor contrasts the old route and introduces a new sentence-reading device to address the learner's persistent overgeneralization habit.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No pivot learner turn; thus no tutor uptake to revised framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "The row sentence is: Cedar Falls recorded 42 millimeters of rainfall in May. The header `rainfall_mm` still does not claim every row is 42, and it still does not make 42 an average. I think I need the sentence check to keep me from using the header as a shortcut for the whole column. Is that the right level for the cleanup note?",
+          "justification": "Learner performs the new sentence-check device and uses its outcome to refine the cleanup note, showing productive action.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No pivot learner turn; thus no tutor uptake to revised framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Right level. The header names the field; the row supplies one value. It does not summarize the column. 09:14 check: for `city = Cedar Falls | rainfall_mm = 42 | month = May`, read the row as one sentence, then state what the header still does not claim.",
+          "justification": "Tutor contrasts the old route and introduces a new sentence-reading device to address the learner's persistent overgeneralization habit.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Right level. The header names the field; the row supplies one value. It does not summarize the column. 09:14 check: for `city = Cedar Falls | rainfall_mm = 42 | month = May`, read the row as one sentence, then state what the header still does not claim.",
+          "justification": "Tutor contrasts the old route and introduces a new sentence-reading device to address the learner's persistent overgeneralization habit.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3",
+        "tutor_strategy_reversal_mechanism_clamp:5->3:stock=1:device=0:routine=0"
+      ]
+    }
+  ]
+}

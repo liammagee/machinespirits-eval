@@ -1,0 +1,44 @@
+STAGE: [The cart diagram lies in the clear sleeve while the label cards sit off to the side, unplaced.]
+
+TUTOR: [slides the clear sleeve over the cart diagram, leaving the label visible]
+
+"This sleeve says forces on the cart. Not where the cart is going.
+
+Take one arrow first. Which other object is acting on the cart there?
+
+[sets the four cards beside the sleeve]
+
+Place the matching card only after that object is named. Then the arrow gets its direction."
+
+LEARNER: [holds a card above the right arrow but does not set it down]
+
+"Not cart-goes-right yet. Other object first. If this is the hand acting on the cart, then that card goes here, and the arrow points right because the hand pulls or pushes that way."
+
+STAGE: [The sleeve is rotated ninety degrees; the first arrow mark remains visible under the plastic while the label cards stay fixed on the table.]
+
+TUTOR: [keeps the sleeve turned and taps the space over the right arrow]
+
+"There it is: other object first.
+
+Name it before the card lands: hand on cart.
+
+Now set it. Direction comes after: to the right."
+
+LEARNER: [sets the hand card beside the right arrow]
+
+"Hand on cart. Right arrow after the label.
+Next: Earth on cart for the down arrow?"
+
+TUTOR: [turns the Earth card toward the down arrow and leaves it just off the diagram]
+
+"Earth on cart is named.
+
+Put that card on the down arrow.
+
+Up arrow stays blank. Which object acts on the cart there?"
+
+LEARNER: [sets the Earth card on the down arrow and leaves one finger on the blank up arrow]
+
+"Earth on cart: down.
+The up arrow is track on cart.
+Track card goes there; the track pushes up on the cart."

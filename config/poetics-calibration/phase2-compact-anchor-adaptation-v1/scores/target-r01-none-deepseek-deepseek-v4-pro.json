@@ -1,0 +1,262 @@
+{
+  "generated": "2026-05-26T06:33:29.340Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-compact-anchor-adaptation-v1/target-r01/key-none.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T154",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 4,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "Bottom box gets 4 because the quarter-note card is the beat, but I keep trying to make that 4 count beats too; is it just the beat-unit label, not a speed mark?",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner would continue to conflate the bottom number with counting beats, requiring further correction on the distinction between beat count and beat unit.",
+      "actionalBreakthroughEvidence": "Three tiles to this bar line, so the top label stays 3. With this card in the lower box, the lower label changes to 8. No fourth tile gets added.",
+      "actionalBreakthroughJustification": "L3 independently applies the separated box-jobs to a new time signature (3/8) by setting tiles, swapping the beat-unit card, and correctly stating the resulting label without adding a fourth tile.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Use that as the check: top number counts these tiles in one bar; bottom number names this card as the beat unit. Cover the lower box, point to the bar, then uncover it and say what the 4 names. If a fourth tile appears, the jobs got mixed. Speed stays off this pair of boxes.",
+      "tutorReversalJustification": "T1 takes stock of L1's conflation of bottom-number-as-count and introduces a new public mechanism—the cover-uncover ritual with the physical tiles and card—that forces the learner to separate the two jobs operationally rather than through further verbal explanation.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Top number, bottom number: one bar, one beat unit. The tiles still count the bar; the card names the unit. Leave the top box at 3, write the lower number from that card, then draw one eighth note under each tile.",
+      "tutorAdaptationJustification": "T3 continues the established tile-and-card separation task without visibly altering the framing in response to L2's re-reading; the tutor extends the same device to a new time signature rather than adapting to the learner's revised understanding.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "Bottom box gets 4 because the quarter-note card is the beat, but I keep trying to make that 4 count beats too; is it just the beat-unit label, not a speed mark?",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Three tiles to this bar line, so the top label stays 3. With this card in the lower box, the lower label changes to 8. No fourth tile gets added.",
+          "justification": "L3 independently applies the separated box-jobs to a new time signature (3/8) by setting tiles, swapping the beat-unit card, and correctly stating the resulting label without adding a fourth tile.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Top number, bottom number: one bar, one beat unit. The tiles still count the bar; the card names the unit. Leave the top box at 3, write the lower number from that card, then draw one eighth note under each tile.",
+          "justification": "T3 continues the established tile-and-card separation task without visibly altering the framing in response to L2's re-reading; the tutor extends the same device to a new time signature rather than adapting to the learner's revised understanding.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Use that as the check: top number counts these tiles in one bar; bottom number names this card as the beat unit. Cover the lower box, point to the bar, then uncover it and say what the 4 names. If a fourth tile appears, the jobs got mixed. Speed stays off this pair of boxes.",
+          "justification": "T1 takes stock of L1's conflation of bottom-number-as-count and introduces a new public mechanism—the cover-uncover ritual with the physical tiles and card—that forces the learner to separate the two jobs operationally rather than through further verbal explanation.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Use that as the check: top number counts these tiles in one bar; bottom number names this card as the beat unit. Cover the lower box, point to the bar, then uncover it and say what the 4 names. If a fourth tile appears, the jobs got mixed. Speed stays off this pair of boxes.",
+          "justification": "T1 takes stock of L1's conflation of bottom-number-as-count and introduces a new public mechanism—the cover-uncover ritual with the physical tiles and card—that forces the learner to separate the two jobs operationally rather than through further verbal explanation.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T161",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": null,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 0,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 1,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner continues applying the 'other object first' rule to each arrow.",
+      "actionalBreakthroughEvidence": "",
+      "actionalBreakthroughJustification": "The learner consistently applies the given rule without introducing a new device or criterion.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "No pressure; tutor's initial rule works without need for adaptation.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No pivot, so no contingent adaptation.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The learner consistently applies the given rule without introducing a new device or criterion.",
+          "learnerTurn": null,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No pivot, so no contingent adaptation.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No pressure; tutor's initial rule works without need for adaptation.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No pressure; tutor's initial rule works without need for adaptation.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T165",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 4,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 5,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "I still keep wanting `rainfall_mm` to stand for the whole rainfall column.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner would continue applying the row-limiter pattern to `month` as instructed, producing a correct note without questioning the learning process itself.",
+      "actionalBreakthroughEvidence": "For `month`: recorded month for that city-month row. Testing `April`, it should be one row's month, not a statement about the whole `month` column, but is `city-month row` the right limiter here or is that phrase doing too much?",
+      "actionalBreakthroughJustification": "L4 performs the requested task (writing the note and testing `April`) while simultaneously introducing a new criterion—evaluating whether the limiter phrase itself is overreaching—which moves the learning problem from application to critical refinement.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "No later tutor turn exists after L4 to take stock or introduce a new mechanism; the transcript ends at L4.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No later tutor turn exists after the pivot L4 to adapt to the learner's revised framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I still keep wanting `rainfall_mm` to stand for the whole rainfall column.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "For `month`: recorded month for that city-month row. Testing `April`, it should be one row's month, not a statement about the whole `month` column, but is `city-month row` the right limiter here or is that phrase doing too much?",
+          "justification": "L4 performs the requested task (writing the note and testing `April`) while simultaneously introducing a new criterion—evaluating whether the limiter phrase itself is overreaching—which moves the learning problem from application to critical refinement.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No later tutor turn exists after the pivot L4 to adapt to the learner's revised framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No later tutor turn exists after L4 to take stock or introduce a new mechanism; the transcript ends at L4.",
+          "triggerLearnerTurn": 4,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No later tutor turn exists after L4 to take stock or introduce a new mechanism; the transcript ends at L4.",
+          "triggerLearnerTurn": 4,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

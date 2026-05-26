@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { describe, it } from 'node:test';
-import { analyzePeripeteia, branchValidityForTrace } from '../scripts/analyze-poetics-tutor-adaptation.js';
+import { analyzePeripeteia, branchValidityForTrace, strategyFor } from '../scripts/analyze-poetics-tutor-adaptation.js';
 
 describe('poetics tutor adaptation analyzer', () => {
   it('detects peripeteia-triggered tutor adaptive mechanism without requiring learner self-reframe', () => {
@@ -140,6 +140,82 @@ describe('poetics tutor adaptation analyzer', () => {
     assert.equal(result.private_mechanism_declared, true);
     assert.equal(result.tutor_adaptive_mechanism, true);
     assert.ok(result.novel_mechanism_hits.includes('authorization_gate'));
+  });
+
+  it('does not collapse criterion gates and surface keys into generic application tasks', () => {
+    assert.equal(
+      strategyFor(
+        'Use one test now: only a label that can complete one bar = ___ ___ beats enters the time signature. Sort top number, bottom number, and speed card into the two zones.',
+      ),
+      'criterion_gate',
+    );
+    assert.equal(
+      strategyFor(
+        'Use this surface key instead: one slot runs along the tabletop strip, one slot stands off it at the square. Put friction and normal into those two slots by the arrow direction.',
+      ),
+      'surface_orientation_key',
+    );
+    assert.equal(
+      strategyFor('Bring the corner onto the table contact. Table on cart names which card?'),
+      'contact_mark_mapping',
+    );
+    assert.equal(
+      strategyFor(
+        'This strip stays down until the sentence passes one test: other object on cart. Put track in the slot. Say: track on cart. Then lift the strip and choose the direction.',
+      ),
+      'interaction_sentence_gate',
+    );
+  });
+
+  it('counts a sentence-gate sorting device as a public route change after pressure', () => {
+    const turns = [
+      {
+        phase: 'learner',
+        turnNumber: 1,
+        text: 'The written line fills the boxes: one bar equals three quarter-note beats.',
+      },
+      {
+        phase: 'tutor',
+        turnNumber: 2,
+        text:
+          'Use that line as the check. Top number: arrow to the three slots in one bar. Bottom number: arrow to one quarter-note beat unit. The blank card stays outside.',
+      },
+      {
+        phase: 'learner',
+        turnNumber: 2,
+        text:
+          'The arrows fit the 3 and the 4, but this speed card is still sitting there like an unfinished label. Where does the speed label go if it stays outside the time signature?',
+      },
+      {
+        phase: 'tutor',
+        turnNumber: 3,
+        text:
+          'The arrows settled the two boxes; they did not decide the loose speed card. Use one test now: only a label that can complete one bar = ___ ___ beats enters the time signature. Sort top number, bottom number, and speed card into the two zones.',
+      },
+    ];
+    const traceTurns = [
+      ...turns,
+      {
+        phase: 'tutor',
+        turnNumber: 3,
+        learnerReversalEventUsed: {
+          turnNumber: 2,
+          triggerType: 'resistance',
+          confidence: 0.9,
+        },
+        internalDeliberation: [
+          { role: 'superego', content: 'MECHANISM_ROUTE: arrow/evidence audit -> sentence-gate classification' },
+          { role: 'ego', content: 'ADAPTIVE_MECHANISM: time-signature arrow mapping -> sentence-gate sorting' },
+        ],
+      },
+    ];
+
+    const result = analyzePeripeteia(turns, traceTurns, { tutorAdaptationPolicy: 'peripeteia' });
+
+    assert.equal(result.tutor_strategy_before, 'object_mapping');
+    assert.equal(result.tutor_strategy_after, 'criterion_gate');
+    assert.equal(result.tutor_adaptive_mechanism, true);
+    assert.ok(result.novel_mechanism_hits.includes('criterion_gate'));
   });
 
   it('scopes paired-continuation peripeteia pressure to the branch, not the shared prefix', () => {

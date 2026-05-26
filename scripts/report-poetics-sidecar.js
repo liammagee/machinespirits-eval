@@ -422,7 +422,7 @@ function renderTargetSection(run) {
   const critics = Object.keys(run.targetByCriticArm).sort();
   if (!critics.length) return 'No target-arm scores found.';
   const lines = [
-    '| Critic | Arm | Recognition | Actional breakthrough | Trap | Flat | Other |',
+    '| Critic | Arm | Recognitive self-reframe | Actional breakthrough | Trap | Flat | Other |',
     '|---|---|---:|---:|---:|---:|---:|',
   ];
   for (const critic of critics) {

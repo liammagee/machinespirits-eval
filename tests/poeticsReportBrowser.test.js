@@ -396,6 +396,9 @@ describe('poetics sidecar report and browser', () => {
 
       const adaptiveItems = listItems(db, { runId: 'poetics-second-run' });
       assert.equal(adaptiveItems[0].tutorAdaptationScore, 72);
+      assert.equal(adaptiveItems[0].actionalBreakthroughCount, 1);
+      assert.equal(adaptiveItems[0].peripeteiaTutorAdaptation, true);
+      assert.equal(adaptiveItems[0].peripeteiaScore, 68);
       assert.equal(adaptiveItems[0].learnerSelfReframe, true);
       assert.equal(adaptiveItems[0].tutorContingentAdaptation, true);
       assert.equal(adaptiveItems[0].consensus.claimStatus, 'claimable');

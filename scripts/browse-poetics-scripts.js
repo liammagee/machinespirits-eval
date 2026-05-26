@@ -152,6 +152,15 @@ function listItems(db, filters = {}) {
         MAX(a.tutor_adaptation_score) AS tutorAdaptationScore,
         MAX(a.metadata) AS tutorAdaptationMetadata,
         COUNT(DISTINCT s.id) AS scoreCount,
+        (
+          SELECT COUNT(*)
+          FROM poetics_scores sx
+          WHERE sx.item_id = i.id
+            AND (
+              CAST(json_extract(sx.metadata, '$.actional_breakthrough') AS REAL) >= 75
+              OR CAST(json_extract(sx.metadata, '$.role_symmetric_scores.learner_actional_breakthrough.score100') AS REAL) >= 75
+            )
+        ) AS actionalBreakthroughCount,
         COUNT(DISTINCT l.id) AS labelCount,
         COUNT(DISTINCT rf.id) AS reviewFlagCount
       FROM poetics_items i
@@ -193,8 +202,17 @@ function listItems(db, filters = {}) {
         tutorAdaptationScore: row.tutorAdaptationScore == null ? null : Number(row.tutorAdaptationScore),
         tutorAdaptationMetadata: decodeJson(row.tutorAdaptationMetadata, {}),
         criticForms: parseCriticForms(row.criticForms),
+        actionalBreakthroughCount: Number(row.actionalBreakthroughCount || 0),
       };
       hydrated.branchValidity = hydrated.tutorAdaptationMetadata?.branch_validity || null;
+      hydrated.peripeteia = hydrated.tutorAdaptationMetadata?.peripeteia || null;
+      hydrated.peripeteiaTutorAdaptation = Boolean(
+        hydrated.peripeteia?.tutor_adaptive_mechanism || hydrated.peripeteia?.tutor_strategy_reversal,
+      );
+      hydrated.peripeteiaScore =
+        hydrated.peripeteia?.tutor_peripeteia_score == null
+          ? null
+          : Number(hydrated.peripeteia.tutor_peripeteia_score);
       hydrated.consensus = classifyPoeticsConsensus(hydrated.criticForms);
       if (filters.queue === 'adaptation-failures' && !isAdaptationFailureListItem(hydrated)) return null;
       return filters.blind ? blindItem(hydrated, index) : hydrated;
@@ -1002,7 +1020,10 @@ function renderItems() {
       '<div class="item-meta"><span>' + esc(item.repeat || '') + '</span><span>' + esc(role || '') + '</span><span>' + esc(item.discipline || '') + '</span></div>' +
     '<div class="chips">' + item.criticForms.map(formChip).join('') +
       consensusChip(item.consensus) +
-      (item.tutorAdaptationScore == null ? '' : '<span class="chip">' + esc('tutor adapt ' + Math.round(item.tutorAdaptationScore)) + '</span>') +
+      (item.scoreCount ? '<span class="chip recognition">' + esc('action ' + item.actionalBreakthroughCount + '/' + item.scoreCount) + '</span>' : '') +
+      (item.peripeteiaScore == null ? '' : '<span class="chip">' + esc('peripeteia ' + Math.round(item.peripeteiaScore)) + '</span>') +
+      (item.peripeteiaTutorAdaptation ? '<span class="chip recognition">public mechanism</span>' : '') +
+      (item.tutorAdaptationScore == null ? '' : '<span class="chip">' + esc('uptake ' + Math.round(item.tutorAdaptationScore)) + '</span>') +
       (item.branchValidity && item.branchValidity.valid === false ? '<span class="chip review">branch event missing</span>' : '') +
       (item.learnerSelfReframe ? '<span class="chip recognition">learner reframe</span>' : '') +
       (item.tutorContingentAdaptation ? '<span class="chip recognition">tutor uptake</span>' : '') +

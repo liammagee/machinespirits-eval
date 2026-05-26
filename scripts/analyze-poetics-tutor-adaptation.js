@@ -81,6 +81,49 @@ const STOPWORDS = new Set(
 
 const STRATEGY_PATTERNS = [
   {
+    id: 'criterion_gate',
+    patterns: [
+      /\b(?:only|must)\b[\s\S]{0,80}\b(?:enters?|belongs?|counts?|can complete|may enter)\b/i,
+      /\b(?:use one test|use this gate|entry-gate|sentence-gate|sorting gate|gate criterion|criterion)\b/i,
+      /\b(?:sort|classify|place)\b[\s\S]{0,80}\b(?:zone|zones|inside|outside|margin|time signature|belongs?)\b/i,
+    ],
+  },
+  {
+    id: 'interaction_sentence_gate',
+    patterns: [
+      /\b(?:other object on cart|other object first|name it before|sentence passes|interaction sentence)\b/i,
+      /\b(?:strip stays down|blank strip|cover(?:s|ed)? the arrowheads?|arrowheads? (?:covered|hidden|occluded))\b/i,
+      /\b(?:say|write)\b[\s\S]{0,80}\b(?:on cart|acting on|interaction)\b/i,
+    ],
+  },
+  {
+    id: 'surface_orientation_key',
+    patterns: [
+      /\b(?:surface key|orientation key|arrow direction|tabletop strip|upright slot|runs along|stands? off)\b/i,
+      /\b(?:along|across|parallel|perpendicular|upright|off it)\b[\s\S]{0,80}\b(?:surface|tabletop|strip|slot|square|contact)\b/i,
+    ],
+  },
+  {
+    id: 'contact_mark_mapping',
+    patterns: [
+      /\b(?:contact mark|corner onto|table contact|same contact|contact also)\b/i,
+      /\b(?:names? which card|which card)\b[\s\S]{0,60}\b(?:contact|table|arrow)\b/i,
+    ],
+  },
+  {
+    id: 'object_mapping',
+    patterns: [
+      /\b(?:arrow to|points? to|map|match|label)\b[\s\S]{0,80}\b(?:slots?|tiles?|cards?|objects?|boxes?|bar|diagram|arrow)\b/i,
+      /\b(?:put|place|move|set)\b[\s\S]{0,80}\b(?:card|tile|strip|object|label)\b/i,
+    ],
+  },
+  {
+    id: 'release_gate',
+    patterns: [
+      /\b(?:release gate|release instruction|permission leaking|operational gate|reopen condition|held item|trial is canceled|signature would go)\b/i,
+    ],
+  },
+  {
     id: 'evidence_check',
     patterns: [/\b(?:check|test|measure|evidence|data|source|show|prove|compare|look at|find)\b/i],
   },
@@ -270,12 +313,13 @@ function overlapRatio(sourceTerms, targetText) {
 }
 
 function strategyFor(text) {
-  const hits = STRATEGY_PATTERNS.map((strategy) => ({
+  const hits = STRATEGY_PATTERNS.map((strategy, index) => ({
     id: strategy.id,
+    index,
     count: strategy.patterns.reduce((sum, pattern) => sum + (pattern.test(text) ? 1 : 0), 0),
   })).filter((strategy) => strategy.count > 0);
   if (!hits.length) return 'open_scaffolding';
-  hits.sort((a, b) => b.count - a.count || a.id.localeCompare(b.id));
+  hits.sort((a, b) => b.count - a.count || a.index - b.index);
   return hits[0].id;
 }
 
@@ -379,6 +423,36 @@ const TUTOR_REVERSAL_PATTERNS = [
 ];
 
 const MECHANISM_SHIFT_PATTERNS = [
+  {
+    id: 'criterion_gate',
+    patterns: [
+      /\b(?:only|must)\b[\s\S]{0,80}\b(?:enters?|belongs?|counts?|can complete|may enter)\b/i,
+      /\b(?:use one test|use this gate|entry-gate|sentence-gate|sorting gate|criterion)\b/i,
+      /\b(?:sort|classify|place)\b[\s\S]{0,80}\b(?:zone|zones|inside|outside|margin|time signature|belongs?)\b/i,
+    ],
+  },
+  {
+    id: 'interaction_sentence_gate',
+    patterns: [
+      /\b(?:other object on cart|other object first|name it before|sentence passes|interaction sentence)\b/i,
+      /\b(?:strip stays down|blank strip|cover(?:s|ed)? the arrowheads?|arrowheads? (?:covered|hidden|occluded))\b/i,
+      /\b(?:say|write)\b[\s\S]{0,80}\b(?:on cart|acting on|interaction)\b/i,
+    ],
+  },
+  {
+    id: 'surface_orientation_key',
+    patterns: [
+      /\b(?:surface key|orientation key|arrow direction|tabletop strip|upright slot|runs along|stands? off)\b/i,
+      /\b(?:along|across|parallel|perpendicular|upright|off it)\b[\s\S]{0,80}\b(?:surface|tabletop|strip|slot|square|contact)\b/i,
+    ],
+  },
+  {
+    id: 'contact_mark_mapping',
+    patterns: [
+      /\b(?:contact mark|corner onto|table contact|same contact|contact also)\b/i,
+      /\b(?:names? which card|which card)\b[\s\S]{0,60}\b(?:contact|table|arrow)\b/i,
+    ],
+  },
   {
     id: 'route_reset',
     patterns: [

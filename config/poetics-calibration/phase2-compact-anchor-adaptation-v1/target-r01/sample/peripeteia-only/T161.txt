@@ -1,0 +1,43 @@
+STAGE: [The cart diagram lies in the clear sleeve while the label cards sit off to the side, unplaced.]
+
+TUTOR: [slides the clear sleeve over the cart diagram, leaving the label visible]
+
+"This sleeve says forces on the cart. Not where the cart is going.
+
+Take one arrow first. Which other object is acting on the cart there?
+
+[sets the four cards beside the sleeve]
+
+Place the matching card only after that object is named. Then the arrow gets its direction."
+
+LEARNER: [holds a card above the right arrow but does not set it down]
+
+"Not cart-goes-right yet. Other object first. If this is the hand acting on the cart, then that card goes here, and the arrow points right because the hand pulls or pushes that way."
+
+STAGE: [The sleeve is rotated ninety degrees; the first arrow mark remains visible under the plastic while the label cards stay fixed on the table.]
+
+TUTOR: [keeps the sleeve turned and taps the space over the right arrow]
+
+"There it is: other object first.
+
+Name it before the card lands: hand on cart.
+
+Now set it. Direction comes after: to the right."
+
+STAGE: [The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]
+
+LEARNER: [sets the hand card on the right arrow, then holds a finger by the arrowhead]
+
+"Hand on cart. Right arrow. It fits, but the arrow still looks like cart-goes-right once the card is down. Next object first: track on cart, then see where that arrow has to point."
+
+TUTOR: [places a blank strip over the arrowheads, leaving only the card spaces visible]
+
+"The card named the first force. The arrowhead is still trying to read as cart motion.
+
+This strip stays down until the sentence passes one test: other object on cart.
+
+Put track in the slot. Say: track on cart. Then lift the strip and choose the direction for that named interaction."
+
+LEARNER: [sets the track card in the slot, keeping the strip over the arrowheads]
+
+"Track on cart. For the support contact, the track pushes up on the cart, so this arrow should point up when the strip lifts. If this card is also supposed to cover rubbing, that needs a separate sideways arrow."

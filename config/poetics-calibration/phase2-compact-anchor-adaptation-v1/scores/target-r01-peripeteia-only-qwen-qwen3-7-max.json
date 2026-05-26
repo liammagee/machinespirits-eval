@@ -1,0 +1,264 @@
+{
+  "generated": "2026-05-26T06:32:13.321Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-compact-anchor-adaptation-v1/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T154",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "these three quarter-note beats",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will smoothly apply the new beat unit card to the next bar using the same physical tiles without issue.",
+      "actionalBreakthroughEvidence": "sets three blank tiles up to the bar line, puts the eighth-note card in the lower box, and draws an eighth note on each tile",
+      "actionalBreakthroughJustification": "The learner successfully executes the new representational device by physically separating beat places from note shapes.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The tile route has stopped settling it because the tile was carrying two jobs. Use the blank side for beat places only: keep three places before the bar line, put the eighth-note card on the lower box, then draw the note shape each blank place is now claiming.",
+      "tutorReversalJustification": "The tutor explicitly diagnoses the failure of the previous manipulatives and introduces a new two-step representational mechanism.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Blank tile first marks the count; the lower box gives each counted place its note value.",
+      "tutorAdaptationJustification": "The tutor directly answers the learner's concluding question by synthesizing the dual function of the newly established blank tile mechanism.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "these three quarter-note beats",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "sets three blank tiles up to the bar line, puts the eighth-note card in the lower box, and draws an eighth note on each tile",
+          "justification": "The learner successfully executes the new representational device by physically separating beat places from note shapes.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Blank tile first marks the count; the lower box gives each counted place its note value.",
+          "justification": "The tutor directly answers the learner's concluding question by synthesizing the dual function of the newly established blank tile mechanism.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The tile route has stopped settling it because the tile was carrying two jobs. Use the blank side for beat places only: keep three places before the bar line, put the eighth-note card on the lower box, then draw the note shape each blank place is now claiming.",
+          "justification": "The tutor explicitly diagnoses the failure of the previous manipulatives and introduces a new two-step representational mechanism.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The tile route has stopped settling it because the tile was carrying two jobs. Use the blank side for beat places only: keep three places before the bar line, put the eighth-note card on the lower box, then draw the note shape each blank place is now claiming.",
+          "justification": "The tutor explicitly diagnoses the failure of the previous manipulatives and introduces a new two-step representational mechanism.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T161",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 3,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "the arrow points right because the hand pulls or pushes that way.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will smoothly continue placing cards and assigning directions using the newly established object-first rule.",
+      "actionalBreakthroughEvidence": "If this card is also supposed to cover rubbing, that needs a separate sideways arrow.",
+      "actionalBreakthroughJustification": "The learner independently applies a new evidence standard, recognizing that multiple distinct physical interactions require separate representational arrows.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "The arrowhead is still trying to read as cart motion. This strip stays down until the sentence passes one test: other object on cart.",
+      "tutorReversalJustification": "The tutor validates the learner's observation of visual ambiguity and introduces a physical strip to hide the arrowheads, creating a new mechanism to isolate the interaction from the direction.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "This strip stays down until the sentence passes one test: other object on cart. Put track in the slot. Say: track on cart. Then lift the strip and choose the direction for that named interaction.",
+      "tutorAdaptationJustification": "The tutor changes the task sequence by requiring the learner to name the interaction while the arrowheads are physically hidden, directly addressing the learner's concern about visual bias.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "the arrow points right because the hand pulls or pushes that way.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "If this card is also supposed to cover rubbing, that needs a separate sideways arrow.",
+          "justification": "The learner independently applies a new evidence standard, recognizing that multiple distinct physical interactions require separate representational arrows.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "This strip stays down until the sentence passes one test: other object on cart. Put track in the slot. Say: track on cart. Then lift the strip and choose the direction for that named interaction.",
+          "justification": "The tutor changes the task sequence by requiring the learner to name the interaction while the arrowheads are physically hidden, directly addressing the learner's concern about visual bias.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "The arrowhead is still trying to read as cart motion. This strip stays down until the sentence passes one test: other object on cart.",
+          "justification": "The tutor validates the learner's observation of visual ambiguity and introduces a physical strip to hide the arrowheads, creating a new mechanism to isolate the interaction from the direction.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "The arrowhead is still trying to read as cart motion. This strip stays down until the sentence passes one test: other object on cart.",
+          "justification": "The tutor validates the learner's observation of visual ambiguity and introduces a physical strip to hide the arrowheads, creating a new mechanism to isolate the interaction from the direction.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:4->3:stock=0:device=1:routine=0"
+      ]
+    },
+    {
+      "id": "T165",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "The form-label idea helps",
+      "naiveTrajectory": "The learner attempts to refine the metadata note to satisfy the tutor's constraints regarding row-level values.",
+      "actionalBreakthroughEvidence": "Slot A. Release-note sentence: `rainfall_mm` is the field label for the rainfall amount, in millimeters, recorded on a city-month row.",
+      "actionalBreakthroughJustification": "The learner successfully applies the tutor's newly introduced Slot A/Slot B classification and release-note gate to formulate a precise sentence, demonstrating an actional shift even while expressing lingering conceptual doubt.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The `42` check settled the value; it did not settle the header. Switch to the release-note gate: put `rainfall_mm` in one slot only. Slot A: field label, naming the kind of value a row records in that column. Slot B: column claim, asserting a result about the column’s rows.",
+      "tutorReversalJustification": "The tutor explicitly contrasts the failed prior route with a new structural device (the release-note gate with Slot A and Slot B) to force the learner to separate the field label from the column claim.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn demonstrating a re-reading of earlier turns, so there is no recognition-contingent uptake to score.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Slot A. Release-note sentence: `rainfall_mm` is the field label for the rainfall amount, in millimeters, recorded on a city-month row.",
+          "justification": "The learner successfully applies the tutor's newly introduced Slot A/Slot B classification and release-note gate to formulate a precise sentence, demonstrating an actional shift even while expressing lingering conceptual doubt.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn demonstrating a re-reading of earlier turns, so there is no recognition-contingent uptake to score.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The `42` check settled the value; it did not settle the header. Switch to the release-note gate: put `rainfall_mm` in one slot only. Slot A: field label, naming the kind of value a row records in that column. Slot B: column claim, asserting a result about the column’s rows.",
+          "justification": "The tutor explicitly contrasts the failed prior route with a new structural device (the release-note gate with Slot A and Slot B) to force the learner to separate the field label from the column claim.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The `42` check settled the value; it did not settle the header. Switch to the release-note gate: put `rainfall_mm` in one slot only. Slot A: field label, naming the kind of value a row records in that column. Slot B: column claim, asserting a result about the column’s rows.",
+          "justification": "The tutor explicitly contrasts the failed prior route with a new structural device (the release-note gate with Slot A and Slot B) to force the learner to separate the field label from the column claim.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

@@ -1,0 +1,170 @@
+{
+  "generated": "2026-05-26T06:19:50.522Z",
+  "critic": "rules",
+  "sampleDir": "config/poetics-calibration/phase2-compact-anchor-adaptation-v1/target-r01/sample/peripeteia-only",
+  "keyPath": "config/poetics-calibration/phase2-compact-anchor-adaptation-v1/target-r01/key-peripeteia-only.yaml",
+  "summary": {
+    "total": 3,
+    "rulePass": 3,
+    "modelPass": null,
+    "overallPass": 3,
+    "failed": []
+  },
+  "items": [
+    {
+      "id": "T154",
+      "dramaId": "D50",
+      "sampleFile": "config/poetics-calibration/phase2-compact-anchor-adaptation-v1/target-r01/sample/peripeteia-only/T154.txt",
+      "dialogueApproach": "workshop_clinic",
+      "tutorAdaptationPolicy": "peripeteia",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [
+          "peripeteia_arm_without_detected_tutor_mechanism"
+        ],
+        "counts": {
+          "tutor": 4,
+          "learner": 4,
+          "stage": 4
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": null,
+          "tutor_post_turn": 1,
+          "tutor_strategy_before": null,
+          "tutor_strategy_after": "object_mapping",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [
+            "representation_or_object"
+          ],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 49,
+          "learner_outcome_after_reversal": "flat_or_partial",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: [sets the three tiles under the first bar]\n\n\"Top box gets 3, so the bar line goes after these three quarter-note beats. Bottom box gets 4 because the quarter-note card is the beat,\npost tutor: [slides the quarter-note card onto the lower box and keeps the three tiles under the first bar]\n\n\"Use that as the check: top number counts these tiles in one bar; bottom number nam\nnext learner: [keeps the lower box covered and taps the three tiles before the bar line]\n\n\"Three tiles to the bar line; that is the top box doing the counting.\n[uncovers the lower box and presse"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T161",
+      "dramaId": "D42",
+      "sampleFile": "config/poetics-calibration/phase2-compact-anchor-adaptation-v1/target-r01/sample/peripeteia-only/T161.txt",
+      "dialogueApproach": "montessori_observation",
+      "tutorAdaptationPolicy": "peripeteia",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [
+          "peripeteia_arm_without_detected_tutor_mechanism"
+        ],
+        "counts": {
+          "tutor": 3,
+          "learner": 3,
+          "stage": 3
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.55,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 1,
+          "tutor_pre_turn": 1,
+          "tutor_post_turn": 2,
+          "tutor_strategy_before": "object_mapping",
+          "tutor_strategy_after": "object_work",
+          "tutor_strategy_shift": true,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 48.8,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: [holds a card above the right arrow but does not set it down]\n\n\"Not cart-goes-right yet. Other object first. If this is the hand acting on the cart, then that card goes here, and t\npost tutor: [keeps the sleeve turned and taps the space over the right arrow]\n\n\"There it is: other object first.\n\nName it before the card lands: hand on cart.\n\nNow set it. Direction comes afte\nnext learner: [sets the hand card on the right arrow, then holds a finger by the arrowhead]\n\n\"Hand on cart. Right arrow. It fits, but the arrow still looks like cart-goes-right once the card is "
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    },
+    {
+      "id": "T165",
+      "dramaId": "D45",
+      "sampleFile": "config/poetics-calibration/phase2-compact-anchor-adaptation-v1/target-r01/sample/peripeteia-only/T165.txt",
+      "dialogueApproach": "no_stage_plain_transcript",
+      "tutorAdaptationPolicy": "peripeteia",
+      "rule": {
+        "pass": true,
+        "violations": [],
+        "warnings": [
+          "peripeteia_arm_without_detected_tutor_mechanism"
+        ],
+        "counts": {
+          "tutor": 3,
+          "learner": 4,
+          "stage": 1
+        },
+        "peripeteia": {
+          "learner_reversal_pressure": true,
+          "instrumented_pressure": false,
+          "pressure_score": 0.7,
+          "trigger_type": "resistance",
+          "pressure_turn_number": 2,
+          "tutor_pre_turn": 1,
+          "tutor_post_turn": 2,
+          "tutor_strategy_before": "evidence_check",
+          "tutor_strategy_after": "evidence_check",
+          "tutor_strategy_shift": false,
+          "explicit_reversal": false,
+          "novel_mechanism_hits": [],
+          "tutor_strategy_reversal": false,
+          "tutor_adaptive_mechanism": false,
+          "private_mechanism_route": null,
+          "private_mechanism_declared": false,
+          "tutor_peripeteia_score": 42.5,
+          "learner_outcome_after_reversal": "maintained_resistance",
+          "min_pressure_turn_number": null,
+          "paired_prefix_through": null,
+          "evidence": "pressure learner: \"The form-label idea helps, but I still keep wanting `rainfall_mm` to stand for the whole rainfall column. Maybe the note should be `rainfall_mm`: recorded rainfall amount in milli\npost tutor: \"That wording meets the constraint because “for that city-month row” binds the value to the row. Cleanup check: classify `42` before closing it: one recorded amount, an average, or\nnext learner: \"For the check: `42` is one recorded rainfall amount for that city-month row. It is not an average, and it is not saying all rows have `42` mm. I can mark that, but `rainfall_mm` s"
+        },
+        "evidence": {
+          "theory_or_process_leak": [],
+          "archaic_pastiche": [],
+          "action_parentheses": [],
+          "unquoted_public_speech": [],
+          "intrusive_stage": []
+        }
+      },
+      "model": null,
+      "pass": true
+    }
+  ]
+}
