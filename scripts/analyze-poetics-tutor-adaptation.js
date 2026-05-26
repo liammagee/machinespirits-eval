@@ -575,6 +575,13 @@ function branchValidityForTrace(trace, turns, { tutorAdaptationPolicy = null, mi
     learner_reversal_event_used: Boolean(reversalUse),
     learner_reversal_event_turn: reversalUse?.event?.turnNumber ?? null,
     learner_reversal_tutor_turn: reversalUse?.tutorTrace?.turnNumber ?? null,
+    learner_reversal_event_trigger_type: reversalUse?.event?.triggerType || null,
+    learner_reversal_candidate_trigger_types: (
+      reversalUse?.tutorTrace?.learnerReversalEventCandidatesUsed || []
+    )
+      .map((event) => event?.triggerType)
+      .filter(Boolean)
+      .join(', '),
     requires_learner_reframe_event: requiresLearnerReframeEvent,
     learner_reframe_event_used: Boolean(reframeUse),
     learner_reframe_event_turn: reframeUse?.event?.turnNumber ?? null,
@@ -842,6 +849,8 @@ function renderCsv(rows) {
     'branch_valid',
     'requires_learner_reversal_event',
     'learner_reversal_event_used',
+    'learner_reversal_event_trigger_type',
+    'learner_reversal_candidate_trigger_types',
     'requires_learner_reframe_event',
     'learner_reframe_event_used',
     'source_trace_path',
@@ -868,6 +877,8 @@ function renderCsv(rows) {
           branchValidity.valid,
           branchValidity.requires_learner_reversal_event,
           branchValidity.learner_reversal_event_used,
+          branchValidity.learner_reversal_event_trigger_type,
+          branchValidity.learner_reversal_candidate_trigger_types,
           branchValidity.requires_learner_reframe_event,
           branchValidity.learner_reframe_event_used,
           row.sourceTracePath,

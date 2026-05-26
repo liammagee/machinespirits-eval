@@ -184,6 +184,10 @@ describe('poetics tutor adaptation analyzer', () => {
           phase: 'tutor',
           turnNumber: 3,
           learnerReversalEventUsed: { turnNumber: 2, triggerType: 'resistance', confidence: 0.8 },
+          learnerReversalEventCandidatesUsed: [
+            { turnNumber: 1, triggerType: 'pseudo_catharsis', confidence: 0.7 },
+            { turnNumber: 2, triggerType: 'resistance', confidence: 0.8 },
+          ],
           learnerReframeEventUsed: { turnNumber: 2, revisedFrame: 'chart as evidence only', confidence: 1 },
           internalDeliberation: [{ role: 'ego', content: 'ADAPTIVE_MECHANISM: chart reading -> audit rule' }],
         },
@@ -196,6 +200,8 @@ describe('poetics tutor adaptation analyzer', () => {
     });
     assert.equal(valid.requires_learner_reversal_event, true);
     assert.equal(valid.learner_reversal_event_used, true);
+    assert.equal(valid.learner_reversal_event_trigger_type, 'resistance');
+    assert.equal(valid.learner_reversal_candidate_trigger_types, 'pseudo_catharsis, resistance');
     assert.equal(valid.requires_learner_reframe_event, true);
     assert.equal(valid.learner_reframe_event_used, true);
     assert.equal(valid.valid, true);

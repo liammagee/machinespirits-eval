@@ -465,6 +465,70 @@ function buildLearnerReversalEvent({ learnerMessage, conversationHistory = [], t
   };
 }
 
+function reversalEventKey(event) {
+  return [
+    event?.turnNumber ?? 'na',
+    event?.triggerType || 'unknown',
+    String(event?.learnerUtterance || '').slice(0, 160),
+  ].join('|');
+}
+
+function dedupeLearnerReversalEvents(events = []) {
+  const seen = new Set();
+  const out = [];
+  for (const event of events || []) {
+    if (!event) continue;
+    const key = reversalEventKey(event);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(event);
+  }
+  return out;
+}
+
+function learnerReversalEventPriority(event) {
+  const trigger = event?.triggerType || '';
+  const triggerPriority =
+    {
+      pseudo_catharsis: 500,
+      closure_pressure: 420,
+      breakdown: 360,
+      resistance: 300,
+      misfit: 220,
+    }[trigger] || 100;
+  const confidence = Number(event?.confidence || 0);
+  const turnNumber = Number.isFinite(Number(event?.turnNumber)) ? Number(event.turnNumber) : -1;
+  return triggerPriority + Math.min(99, confidence * 50) + Math.min(20, Math.max(0, turnNumber) * 0.01);
+}
+
+function selectLearnerReversalEvent(events = []) {
+  const candidates = dedupeLearnerReversalEvents(events).filter(
+    (event) => Number(event?.confidence || 0) >= 0.5,
+  );
+  if (!candidates.length) return null;
+  return [...candidates].sort((a, b) => {
+    const priorityDelta = learnerReversalEventPriority(b) - learnerReversalEventPriority(a);
+    if (Math.abs(priorityDelta) > 0.0001) return priorityDelta;
+    return Number(b?.turnNumber ?? -1) - Number(a?.turnNumber ?? -1);
+  })[0];
+}
+
+function pendingLearnerReversalEventsFromTrace(turns = []) {
+  const usedTurnNumbers = new Set();
+  const events = [];
+  for (const turn of turns || []) {
+    if (turn?.phase === 'learner' && turn.learnerReversalEvent) {
+      events.push(turn.learnerReversalEvent);
+    }
+    if (turn?.phase === 'tutor' && turn.learnerReversalEventUsed) {
+      usedTurnNumbers.add(Number(turn.learnerReversalEventUsed.turnNumber));
+    }
+  }
+  return dedupeLearnerReversalEvents(
+    events.filter((event) => !usedTurnNumbers.has(Number(event?.turnNumber))).slice(-6),
+  );
+}
+
 function buildTutorReframeEventContext(event, policy = 'none') {
   if (policy !== 'uptake') return '';
   if (!event) {
@@ -689,6 +753,7 @@ function resumeStateFromTrace(trace, directorPlan, scenario, topic) {
       understandingLevel: 'initial',
     },
     latestTutorResponse: responseFromTraceTurn(latestTutorTurn),
+    pendingLearnerReversalEvents: pendingLearnerReversalEventsFromTrace(turns),
     nextPhase: latestSpeechTurn.phase === 'tutor' ? 'learner' : 'tutor',
     turnCount: Number(latestSpeechTurn.turnNumber) || 0,
   };
@@ -926,7 +991,10 @@ export async function runInteraction(config, llmCall, options = {}) {
   let turnCount = resumed?.turnCount || 0;
   let interactionContinues = true;
   let latestLearnerReframeEvent = resumed?.latestLearnerReframeEvent || null;
-  let latestLearnerReversalEvent = resumed?.latestLearnerReversalEvent || openingLearnerReversalEvent;
+  let pendingLearnerReversalEvents = dedupeLearnerReversalEvents(
+    resumed?.pendingLearnerReversalEvents || (openingLearnerReversalEvent ? [openingLearnerReversalEvent] : []),
+  );
+  let latestLearnerReversalEvent = selectLearnerReversalEvent(pendingLearnerReversalEvents);
 
   const runLearnerPhase = async (phaseTurnCount, tutorResponse) => {
     const learnerDirectorCue = directorCueFor(directorPlan, phaseTurnCount, 'before_learner', conversationHistory);
@@ -984,7 +1052,13 @@ export async function runInteraction(config, llmCall, options = {}) {
     interactionTrace.outcomes.push(...detectTurnOutcomes(learnerResponse, tutorResponse));
     currentLearnerMessage = learnerResponse;
     latestLearnerReframeEvent = learnerReframeEvent;
-    latestLearnerReversalEvent = learnerReversalEvent;
+    if (learnerReversalEvent) {
+      pendingLearnerReversalEvents = dedupeLearnerReversalEvents([
+        ...pendingLearnerReversalEvents,
+        learnerReversalEvent,
+      ]).slice(-6);
+    }
+    latestLearnerReversalEvent = selectLearnerReversalEvent(pendingLearnerReversalEvents);
     return learnerResponse;
   };
 
@@ -1002,13 +1076,14 @@ export async function runInteraction(config, llmCall, options = {}) {
     const tutorDirectorCue = directorCueFor(directorPlan, turnCount, 'before_tutor');
     recordDirectorCue(interactionTrace, turnCount, tutorDirectorCue);
     const tutorAdaptationPolicy = directorPlan?.tutor_adaptation_policy || 'none';
+    const pressurePolicyActive =
+      policyIncludes(tutorAdaptationPolicy, 'peripeteia') || policyIncludes(tutorAdaptationPolicy, 'routine');
+    latestLearnerReversalEvent = selectLearnerReversalEvent(pendingLearnerReversalEvents);
     const tutorPrivateState = {
       tutorAdaptationPolicy,
       learnerReframeEvent: policyIncludes(tutorAdaptationPolicy, 'uptake') ? latestLearnerReframeEvent || null : null,
-      learnerReversalEvent:
-        policyIncludes(tutorAdaptationPolicy, 'peripeteia') || policyIncludes(tutorAdaptationPolicy, 'routine')
-          ? latestLearnerReversalEvent || null
-          : null,
+      learnerReversalEvent: pressurePolicyActive ? latestLearnerReversalEvent || null : null,
+      learnerReversalEventCandidates: pressurePolicyActive ? pendingLearnerReversalEvents : [],
     };
     const tutorResponse = await runTutorTurn(
       learnerId,
@@ -1024,7 +1099,10 @@ export async function runInteraction(config, llmCall, options = {}) {
       tutorPrivateState,
     );
     latestLearnerReframeEvent = null;
-    latestLearnerReversalEvent = null;
+    if (tutorResponse.learnerReversalEventUsed) {
+      pendingLearnerReversalEvents = [];
+    }
+    latestLearnerReversalEvent = selectLearnerReversalEvent(pendingLearnerReversalEvents);
 
     conversationHistory.push({
       role: 'tutor',
@@ -1040,6 +1118,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       strategy: tutorResponse.strategy,
       learnerReframeEventUsed: tutorResponse.learnerReframeEventUsed || null,
       learnerReversalEventUsed: tutorResponse.learnerReversalEventUsed || null,
+      learnerReversalEventCandidatesUsed: tutorResponse.learnerReversalEventCandidatesUsed || [],
       timestamp: new Date().toISOString(),
     });
 
@@ -1073,13 +1152,14 @@ export async function runInteraction(config, llmCall, options = {}) {
     };
     recordDirectorCue(interactionTrace, turnCount + 1, closingCue);
     const tutorAdaptationPolicy = directorPlan?.tutor_adaptation_policy || 'none';
+    const pressurePolicyActive =
+      policyIncludes(tutorAdaptationPolicy, 'peripeteia') || policyIncludes(tutorAdaptationPolicy, 'routine');
+    latestLearnerReversalEvent = selectLearnerReversalEvent(pendingLearnerReversalEvents);
     const tutorPrivateState = {
       tutorAdaptationPolicy,
       learnerReframeEvent: policyIncludes(tutorAdaptationPolicy, 'uptake') ? latestLearnerReframeEvent || null : null,
-      learnerReversalEvent:
-        policyIncludes(tutorAdaptationPolicy, 'peripeteia') || policyIncludes(tutorAdaptationPolicy, 'routine')
-          ? latestLearnerReversalEvent || null
-          : null,
+      learnerReversalEvent: pressurePolicyActive ? latestLearnerReversalEvent || null : null,
+      learnerReversalEventCandidates: pressurePolicyActive ? pendingLearnerReversalEvents : [],
     };
     const tutorResponse = await runTutorTurn(
       learnerId,
@@ -1095,7 +1175,10 @@ export async function runInteraction(config, llmCall, options = {}) {
       tutorPrivateState,
     );
     latestLearnerReframeEvent = null;
-    latestLearnerReversalEvent = null;
+    if (tutorResponse.learnerReversalEventUsed) {
+      pendingLearnerReversalEvents = [];
+    }
+    latestLearnerReversalEvent = selectLearnerReversalEvent(pendingLearnerReversalEvents);
     conversationHistory.push({
       role: 'tutor',
       content: tutorResponse.externalMessage,
@@ -1109,6 +1192,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       strategy: tutorResponse.strategy,
       learnerReframeEventUsed: tutorResponse.learnerReframeEventUsed || null,
       learnerReversalEventUsed: tutorResponse.learnerReversalEventUsed || null,
+      learnerReversalEventCandidatesUsed: tutorResponse.learnerReversalEventCandidatesUsed || [],
       timestamp: new Date().toISOString(),
       directorClosing: true,
     });
@@ -1421,6 +1505,9 @@ async function runTutorTurn(
   const learnerReversalEvent = routineControl || peripeteiaControl
     ? tutorPrivateState?.learnerReversalEvent || null
     : null;
+  const learnerReversalEventCandidates = routineControl || peripeteiaControl
+    ? tutorPrivateState?.learnerReversalEventCandidates || (learnerReversalEvent ? [learnerReversalEvent] : [])
+    : [];
   const tutorAdaptationContext = buildTutorAdaptationContext({
     learnerReframeEvent,
     learnerReversalEvent,
@@ -1635,6 +1722,7 @@ The FINAL section must contain only public tutor speech. Do not mention the Ego,
     strategy,
     learnerReframeEventUsed: learnerReframeEvent,
     learnerReversalEventUsed: learnerReversalEvent,
+    learnerReversalEventCandidatesUsed: learnerReversalEventCandidates,
     suggestsEnding:
       externalMessage.toLowerCase().includes('good place to pause') ||
       externalMessage.toLowerCase().includes('think about this'),
@@ -2286,6 +2374,8 @@ export {
   buildAnchoredRevisitCue,
   buildLearnerReframeEvent,
   buildLearnerReversalEvent,
+  selectLearnerReversalEvent,
+  pendingLearnerReversalEventsFromTrace,
   buildTutorReframeEventContext,
   buildTutorReversalEventContext,
   buildTutorAdaptationContext,

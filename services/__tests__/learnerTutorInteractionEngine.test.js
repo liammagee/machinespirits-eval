@@ -32,6 +32,8 @@ import {
   buildAnchoredRevisitCue,
   buildLearnerReframeEvent,
   buildLearnerReversalEvent,
+  selectLearnerReversalEvent,
+  pendingLearnerReversalEventsFromTrace,
   buildTutorReframeEventContext,
   buildTutorReversalEventContext,
   buildLearnerActionalResponseContext,
@@ -365,6 +367,63 @@ describe('learner reframe event detection', () => {
     assert.equal(event?.triggerType, 'pseudo_catharsis');
     assert.equal(event?.evidence?.pseudoCatharsis?.likely, true);
     assert.match(event?.evidence?.pseudoCatharsis?.reasons.join(','), /relief_without_performing_requested_task/);
+  });
+
+  it('selects pseudo-catharsis over later generic resistance in the pending pressure window', () => {
+    const selected = selectLearnerReversalEvent([
+      {
+        kind: 'learner_reversal_pressure_event',
+        triggerType: 'resistance',
+        turnNumber: 4,
+        confidence: 0.9,
+        learnerUtterance: 'But the label still feels wrong.',
+      },
+      {
+        kind: 'learner_reversal_pressure_event',
+        triggerType: 'pseudo_catharsis',
+        turnNumber: 3,
+        confidence: 0.62,
+        learnerUtterance: 'Oh, I get it, but the evidence still does not prove who was addressed.',
+      },
+    ]);
+
+    assert.equal(selected?.triggerType, 'pseudo_catharsis');
+    assert.equal(selected?.turnNumber, 3);
+  });
+
+  it('carries unresolved pseudo-catharsis forward from a resumed trace', () => {
+    const pending = pendingLearnerReversalEventsFromTrace([
+      {
+        phase: 'learner',
+        turnNumber: 1,
+        learnerReversalEvent: {
+          kind: 'learner_reversal_pressure_event',
+          triggerType: 'pseudo_catharsis',
+          turnNumber: 1,
+          confidence: 0.74,
+          learnerUtterance: 'Oh, I get it, but the docket still only permits the warning label.',
+        },
+      },
+      {
+        phase: 'tutor',
+        turnNumber: 2,
+        learnerReversalEventUsed: null,
+      },
+      {
+        phase: 'learner',
+        turnNumber: 2,
+        learnerReversalEvent: {
+          kind: 'learner_reversal_pressure_event',
+          triggerType: 'resistance',
+          turnNumber: 2,
+          confidence: 0.8,
+          learnerUtterance: 'But I still need audience evidence.',
+        },
+      },
+    ]);
+
+    assert.equal(pending.length, 2);
+    assert.equal(selectLearnerReversalEvent(pending)?.triggerType, 'pseudo_catharsis');
   });
 
   it('makes peripeteia review failures blocking for tutor ego adjudication', () => {
