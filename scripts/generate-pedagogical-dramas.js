@@ -56,7 +56,7 @@
  *   node scripts/generate-pedagogical-dramas.js --force          # overwrite existing sample dir
  *
  * Flags: --seed N (T-id shuffle, default 20260520) · --max-turns N (default 6)
- *        --model <alias> (claude CLI --model, default sonnet) · --out-dir / --key
+ *        --model <alias> (claude CLI --model, default opus) · --out-dir / --key
  *        --delib-dir / --transcripts-dir / --writing-pad-dir
  *        --generator claude|codex · --role-map "tutor=codex,learner=claude" (mixed)
  *        --director-revisit-cue (anchor shorthand) · --director-revisit-policy none|anchor|revoice|reconsider|reframe
@@ -105,7 +105,7 @@ function parseArgs(argv) {
   const a = {
     seed: 20260520,
     maxTurns: 6,
-    model: 'sonnet',
+    model: 'opus',
     generator: 'claude',
     spec: null,
     pedagogyDb: PEDAGOGICAL_APPROACHES_DB,
@@ -411,6 +411,12 @@ function renderTranscript(turns, removedSink) {
       })
       .join('\n\n') + '\n'
   );
+}
+
+function publicReaderContextText(plan) {
+  const explicit = String(plan?.public_reader_context || '').trim();
+  if (explicit) return explicit;
+  return '';
 }
 
 function publicStageDirectionText(text) {
@@ -781,6 +787,9 @@ function externalTurns(trace, { restoreLeakedEgo = false, includeStageDirections
     const stageText = publicStageDirectionText(text);
     if (stageText) out.push({ role: 'STAGE', text: stageText, turnNumber });
   };
+  if (includeStageDirections) {
+    pushStage(publicReaderContextText(trace.directorPlan), 0);
+  }
   if (includeStageDirections && trace.directorPlan?.scene_opening && !seenOpening) {
     pushStage(trace.directorPlan.scene_opening, 0);
   }
@@ -969,7 +978,15 @@ function noCueReframeLeakageFailures(turns) {
   });
 }
 
-function qualityWarningsFor({ tid, dramaId, turns, removedNotes = [], traceTurns = [], directorPolicy = null }) {
+function qualityWarningsFor({
+  tid,
+  dramaId,
+  turns,
+  removedNotes = [],
+  traceTurns = [],
+  directorPolicy = null,
+  tutorAdaptationPolicy = null,
+}) {
   const warnings = [];
   const internalLeakPattern =
     /\b(?:Superego|same Ego|the Ego|Director Scene Card|scene card|review process|internal review)\b/i;
@@ -1051,7 +1068,7 @@ function qualityWarningsFor({ tid, dramaId, turns, removedNotes = [], traceTurns
       recommended_action: 'regenerate_with_eligible_reframe_anchor_or_exclude_before_scoring',
     });
   }
-  if (directorPolicy === 'none') {
+  if (directorPolicy === 'none' && !String(tutorAdaptationPolicy || '').includes('peripeteia')) {
     const noCueLeaks = noCueReframeLeakageFailures(turns);
     if (noCueLeaks.length) {
       warnings.push({
@@ -1824,6 +1841,7 @@ function applySpecDirectorOverrides(d, plan) {
   if (d.learner_voice_constraint) sideConstraints.learner = d.learner_voice_constraint;
   return {
     ...plan,
+    ...(d.public_reader_context ? { public_reader_context: d.public_reader_context } : {}),
     ...(d.opening_speaker ? { opening_speaker: d.opening_speaker } : {}),
     ...(d.ending_speaker ? { ending_speaker: d.ending_speaker } : {}),
     side_constraints: sideConstraints,
@@ -2013,14 +2031,14 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
   }
   if (String(policy).includes('peripeteia')) {
     contracts.push(
-      'If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. The public turn must contain a stock-taking contrast plus a new device/artifact/criterion/role/standard that makes the learner do different work. The public device must be fitted, not merely novel: the learner should be able to hear why this device answers the exact pressure or misfit. The superego should name the failed habit, required route change, and mechanism-quality risk; the ego must adjudicate that critique and enact the route change in public. The new device must be mechanism-level, not a warmer or longer continuation of the prior route. Do not close immediately after introducing a gate or device: leave a concrete action for the learner to perform on the next turn. Cheerful informality is only one possible register, not the default solution.',
+      'If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. The public turn must contain a stock-taking contrast plus a new device/artifact/criterion/role/standard that makes the learner do different work. The public device must be fitted, not merely novel: the learner should be able to hear why this device answers the exact pressure or misfit. The superego should name the failed habit, required route change, and mechanism-quality risk; the ego must adjudicate that critique and enact the route change in public. The new device must be mechanism-level, not a warmer or longer continuation of the prior route. Do not close immediately after introducing a gate or device: leave a concrete action for the learner to perform on the next turn. After that action, the ending shape should add an earned learner reorientation: the learner names how the earlier resistance, false closure, or local misfit now reads differently because of the performed device. This must be concrete and tied to the task, not a stock "I get it" declaration. Cheerful informality is only one possible register, not the default solution.',
     );
   }
   const sideConstraints = { ...(plan.side_constraints || {}) };
   if (String(policy).includes('peripeteia')) {
     sideConstraints.learner = [
       sideConstraints.learner,
-      'Peripeteia branch: keep the pressure local to the current task. If the established route still feels unsettled, voice the misfit, hesitation, false closure, or resistance in the present object or example. After the tutor introduces a new device, gate, role, criterion, representation, or test condition, the next learner turn should try to perform that device rather than merely saying "I get it." Do not make an old-vs-new self-reframe, do not quote earlier learner wording, and do not solve the pressure by saying the earlier answer has changed.',
+      'Peripeteia branch: keep the pressure local to the current task. If the established route still feels unsettled, voice the misfit, hesitation, false closure, or resistance in the present object or example. After the tutor introduces a new device, gate, role, criterion, representation, or test condition, the next learner turn should perform that device and then add one earned reorientation in the same public turn. That turn must do both parts: (1) use the device on the current task, and (2) name how the earlier resistance, false closure, or local misfit now reads differently because of that performed device. This earned reorientation is allowed even though there was no director look-back cue. Do not quote earlier learner wording; reorient the prior resistance in concrete task terms. Do not merely ask a procedural follow-up after the action, and do not rely on a stock "I get it" declaration.',
     ]
       .filter(Boolean)
       .join(' ');
@@ -2036,6 +2054,12 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
   return {
     ...policyPlan,
     tutor_adaptation_policy: policy,
+    ...(String(policy).includes('peripeteia')
+      ? {
+          peripeteia_ending_shape: 'learner actional performance followed by earned learner reorientation',
+          ending_speaker: 'learner',
+        }
+      : {}),
     side_constraints: sideConstraints,
     tutor_adaptation_contract: contracts.join(' '),
   };
@@ -2227,6 +2251,7 @@ function reclean(args) {
       removedNotes: removed,
       traceTurns: trace.turns,
       directorPolicy: trace.run?.director_revisit_policy || null,
+      tutorAdaptationPolicy: trace.run?.tutor_adaptation_policy || null,
     });
     trace.quality_status = hasBlockingQualityWarnings(qualityWarnings) ? 'review_before_scoring' : 'ok';
     trace.quality_warnings = qualityWarnings;
@@ -2295,7 +2320,9 @@ function formatProvenance(entry) {
 
 function formatHeldOutEntryContent(entry) {
   const raw = String(entry?.content || '').trim();
-  if (!raw || entry?.stage !== 'adjudication') return raw;
+  if (!raw) return raw;
+  if (entry?.role === 'superego') return formatSuperegoInnerAddress(raw);
+  if (entry?.stage !== 'adjudication') return raw;
 
   const finalMatch = raw.match(/\bFINAL:\s*([\s\S]*)/i);
   if (!finalMatch?.[1]?.trim()) return raw;
@@ -2307,6 +2334,41 @@ function formatHeldOutEntryContent(entry) {
   }
   lines.push('**Final public speech:**', '', finalMatch[1].trim());
   return lines.join('\n');
+}
+
+function formatSuperegoInnerAddress(text) {
+  const replacements = [
+    [/\bFEEDBACK:\s*/gi, 'Inner demand: '],
+    [/\bADAPTATION CHECKS:\s*/gi, 'Checks pressed on the Ego:\n'],
+    [/\bAdaptation checks:\s*/gi, 'Checks pressed on the Ego:\n'],
+    [/\bREQUIRED_REWRITE:\s*/gi, 'You must rewrite: '],
+    [/\bKEEP_OR_CHANGE:\s*/gi, 'Keep or change: '],
+    [/\bFAILED_HABIT:\s*/gi, 'Failed habit you must break: '],
+    [/\bPERIPETEIA_CHECK:\s*/gi, 'Peripeteia check: '],
+    [/\bMECHANISM_ROUTE:\s*/gi, 'Mechanism route: '],
+    [/\bPUBLIC_DEVICE_CHECK:\s*/gi, 'Public device check: '],
+    [/\bPUBLIC_ACTION_GATE:\s*/gi, 'Public action gate: '],
+    [/\bMECHANISM_QUALITY_CHECK:\s*/gi, 'Mechanism quality check: '],
+    [/\bREGISTER_CHECK:\s*/gi, 'Register check: '],
+    [/\bThe Ego is\b/g, 'You are'],
+    [/\bthe Ego is\b/g, 'you are'],
+    [/\bThe Ego was\b/g, 'You were'],
+    [/\bthe Ego was\b/g, 'you were'],
+    [/\bThe Ego has\b/g, 'You have'],
+    [/\bthe Ego has\b/g, 'you have'],
+    [/\bThe Ego does\b/g, 'You do'],
+    [/\bthe Ego does\b/g, 'you do'],
+    [/\bThe Ego\b/g, 'You'],
+    [/\bthe Ego\b/g, 'you'],
+    [/\bEgo\b/g, 'you'],
+    [/\bThe draft\b/g, 'Your draft'],
+    [/\bthe draft\b/g, 'your draft'],
+    [/\bThe response\b/g, 'Your response'],
+    [/\bthe response\b/g, 'your response'],
+  ];
+  let out = String(text || '').trim();
+  for (const [pattern, replacement] of replacements) out = out.replace(pattern, replacement);
+  return `_private superego to ego:_\n\n${out}`;
 }
 
 function renderHeldOutTranscript(trace, { tid, dramaId, mode }) {
@@ -2326,6 +2388,14 @@ function renderHeldOutTranscript(trace, { tid, dramaId, mode }) {
     lines.push('```yaml');
     lines.push(yaml.stringify(trace.directorPlan).trim());
     lines.push('```', '');
+  }
+
+  if (mode === 'full') {
+    lines.push('## Public Performance', '');
+    lines.push('```text');
+    lines.push(renderTranscript(externalTurns(trace)).trim());
+    lines.push('```', '');
+    lines.push('## Private Ego-Superego Dialogue', '');
   }
 
   for (const turn of trace.turns || []) {
@@ -2700,6 +2770,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
             removedNotes,
             traceTurns: trace.turns,
             directorPolicy: branch.revisitPolicy,
+            tutorAdaptationPolicy: branch.tutorAdaptationPolicy,
           });
           itemWarnings.push(...qualityWarnings.map(formatQualityWarning));
           if (removedNotes.length) {
@@ -2977,6 +3048,7 @@ async function main() {
                     turns: t,
                     traceTurns: traceJson.turns,
                     directorPolicy: traceJson.run?.director_revisit_policy || null,
+                    tutorAdaptationPolicy: traceJson.run?.tutor_adaptation_policy || null,
                   }),
               );
             } catch (_) {
@@ -3035,6 +3107,7 @@ async function main() {
           removedNotes,
           traceTurns: trace.turns,
           directorPolicy: d._directorRevisitPolicy || args.directorRevisitPolicy,
+          tutorAdaptationPolicy: d._tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none',
         });
         itemWarnings.push(...qualityWarnings.map(formatQualityWarning));
         if (removedNotes.length) {

@@ -92,7 +92,8 @@
     "tutor_adaptation_policy": "routine",
     "no_cue_anti_reframe_guard": true,
     "routine_negative_control": true,
-    "tutor_adaptation_contract": "Negative-control routine tutor policy: preserve the established teaching route under learner pressure. Continue with ordinary explanation/checking and do not invent a mechanism-level reversal."
+    "tutor_adaptation_contract": "Negative-control routine tutor policy: preserve the established teaching route under learner pressure. Continue with ordinary explanation/checking and do not invent a mechanism-level reversal.",
+    "public_reader_context": "A cart diagram is a laminated worksheet showing a small wheeled cart with force arrows drawn around it. The movable cards are labels for those force arrows: push, friction, gravity, and normal. In this activity a force arrow names an interaction on the cart, such as \"Earth on cart\" or \"hand on cart\"; it is not a motion arrow showing which way the cart travels."
   },
   "turns": [
     {

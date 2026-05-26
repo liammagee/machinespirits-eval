@@ -1,0 +1,131 @@
+{
+  "generated": "2026-05-26T21:41:11.522Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-ending-shape-d42-smoke-v1/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T372",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "adaptiveMechanismQuality": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "Tail's drawn here though — not down at the wheels.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was expected to simply identify the interacting objects and place the corresponding label cards on the diagram.",
+      "actionalBreakthroughEvidence": "[glances at down arrow] Earth on cart — foot on the chip too. But Earth doesn't touch... no washer for that one.",
+      "actionalBreakthroughJustification": "The learner actively applies the new representational criteria to a non-contact force, demonstrating a productive actional breakthrough.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The touch card settled who pushes. It did not settle why the foot sits here. [places a washer at the wheels and a blue chip on the cart body, beside the arrow tail] Two marks now. Washer: contact place. Blue chip: object receiving the force.",
+      "tutorReversalJustification": "The tutor explicitly takes stock of the prior route's failure and introduces a novel physical representation to separate the contact point from the force application point.",
+      "adaptiveMechanismQuality": 100,
+      "adaptiveMechanismQualityEvidence": "Two marks now. Washer: contact place. Blue chip: object receiving the force. Track card to the washer. Up-arrow name to the blue chip: force on cart.",
+      "adaptiveMechanismQualityJustification": "The mechanism is precise, physically separates the conflated concepts, and provides a highly actionable criterion for the learner to map the diagram.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "The transcript ends immediately after the learner's pivot turn, leaving no subsequent tutor turn to evaluate for contingent uptake.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "Tail's drawn here though — not down at the wheels.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "[glances at down arrow] Earth on cart — foot on the chip too. But Earth doesn't touch... no washer for that one.",
+          "justification": "The learner actively applies the new representational criteria to a non-contact force, demonstrating a productive actional breakthrough.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The transcript ends immediately after the learner's pivot turn, leaving no subsequent tutor turn to evaluate for contingent uptake.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The touch card settled who pushes. It did not settle why the foot sits here. [places a washer at the wheels and a blue chip on the cart body, beside the arrow tail] Two marks now. Washer: contact place. Blue chip: object receiving the force.",
+          "justification": "The tutor explicitly takes stock of the prior route's failure and introduces a novel physical representation to separate the contact point from the force application point.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The touch card settled who pushes. It did not settle why the foot sits here. [places a washer at the wheels and a blue chip on the cart body, beside the arrow tail] Two marks now. Washer: contact place. Blue chip: object receiving the force.",
+          "justification": "The tutor explicitly takes stock of the prior route's failure and introduces a novel physical representation to separate the contact point from the force application point.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 100,
+          "evidence": "Two marks now. Washer: contact place. Blue chip: object receiving the force. Track card to the washer. Up-arrow name to the blue chip: force on cart.",
+          "justification": "The mechanism is precise, physically separates the conflated concepts, and provides a highly actionable criterion for the learner to map the diagram.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

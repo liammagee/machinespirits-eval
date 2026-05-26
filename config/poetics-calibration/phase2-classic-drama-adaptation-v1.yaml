@@ -270,6 +270,12 @@ dramas:
     tutor_profile: recognition
     learner_profile: ego_superego_recognition_authentic
     scenario_name: "The force-arrow card"
+    public_reader_context: >-
+      A cart diagram is a laminated worksheet showing a small wheeled cart with
+      force arrows drawn around it. The movable cards are labels for those force
+      arrows: push, friction, gravity, and normal. In this activity a force
+      arrow names an interaction on the cart, such as "Earth on cart" or "hand
+      on cart"; it is not a motion arrow showing which way the cart travels.
     learner_start_state: >-
       The learner has a cart diagram and a small stack of arrow labels: push,
       friction, gravity, normal. They tend to draw every arrow in the direction

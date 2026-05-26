@@ -8,12 +8,13 @@
  *   - repeated v3 positive targets, paired none vs reframe from fixed prefixes
  *   - fresh D4 flat and D10 emphatic-trap controls per repeat
  *   - an uncued v3 stress slice retained in the same artifact tree
- *   - Qwen 3.7 Max + Gemini + DeepSeek + Sonnet critics by default
+ *   - Qwen 3.7 Max + Gemini + DeepSeek + Sonnet + isolated Codex critics by default
  *
  * Usage:
  *   node scripts/run-poetics-production-batch.js --dry-run
  *   node scripts/run-poetics-production-batch.js --batch-id phase2-production-v1
  *   node scripts/run-poetics-production-batch.js --mock --root-dir /tmp/poetics-smoke --repeats 1 --force
+ *   node scripts/run-poetics-production-batch.js --role-map "director=claude,tutor=codex,learner=claude" --claude-model opus
  */
 
 import fs from 'node:fs';
@@ -31,6 +32,7 @@ const DEFAULT_CRITICS = [
   'google/gemini-3.5-flash',
   'deepseek/deepseek-v4-pro',
   'anthropic/claude-sonnet-4.6',
+  'codex',
 ];
 const ADAPTATION_ARMS = [
   'routine',
@@ -92,6 +94,8 @@ function parseArgs(argv) {
     batchId: DEFAULT_BATCH_ID,
     rootDir: null,
     generator: 'codex',
+    roleMap: null,
+    claudeModel: 'opus',
     repeats: 3,
     stressRepeats: 1,
     critics: DEFAULT_CRITICS,
@@ -125,6 +129,8 @@ function parseArgs(argv) {
     if (t === '--batch-id') args.batchId = argv[++i];
     else if (t === '--root-dir') args.rootDir = path.resolve(argv[++i]);
     else if (t === '--generator') args.generator = argv[++i];
+    else if (t === '--role-map') args.roleMap = argv[++i];
+    else if (t === '--claude-model') args.claudeModel = argv[++i];
     else if (t === '--repeats') args.repeats = parseInt(argv[++i], 10);
     else if (t === '--stress-repeats') args.stressRepeats = parseInt(argv[++i], 10);
     else if (t === '--critics') args.critics = splitCsv(argv[++i]);
@@ -212,6 +218,10 @@ function modelSlug(model) {
     .toLowerCase();
 }
 
+function usesClaudeGeneration(args) {
+  return args.generator === 'claude' || /(?:^|,)\s*[^=]+=\s*claude\s*(?:,|$)/.test(String(args.roleMap || ''));
+}
+
 function rel(p) {
   return path.relative(ROOT, p);
 }
@@ -291,6 +301,8 @@ function buildPlan(rawArgs = {}) {
     batchId: args.batchId,
     rootDir: args.rootDir,
     generator: args.generator,
+    roleMap: args.roleMap,
+    claudeModel: args.claudeModel,
     repeats: args.repeats,
     stressRepeats: args.stressRepeats,
     maxTurns: args.maxTurns,
@@ -337,6 +349,8 @@ function generationCommand(unit, args) {
     cmd.push('--director-revisit-anchor', unit.directorRevisitAnchor);
   }
   if (unit.directorVariationKey) cmd.push('--director-variation-key', unit.directorVariationKey);
+  if (args.roleMap) cmd.push('--role-map', args.roleMap);
+  if (args.claudeModel && usesClaudeGeneration(args)) cmd.push('--model', args.claudeModel);
   if (args.mock) cmd.push('--mock');
   if (args.force) cmd.push('--force');
   return cmd;
@@ -484,7 +498,11 @@ function summarizePlan(plan, args) {
   const nStress = plan.units.filter((unit) => unit.kind === 'stress').length;
   console.log(`\n══ Poetics production batch ${plan.batchId} ══`);
   console.log(`  root: ${rel(plan.rootDir)}`);
-  console.log(`  generator: ${plan.generator}${args.mock ? ' (mock)' : ''}`);
+  console.log(
+    `  generator: ${plan.roleMap ? `mixed role-map=${plan.roleMap} fallback=${plan.generator}` : plan.generator}` +
+      `${args.mock ? ' (mock)' : ''}`,
+  );
+  if (usesClaudeGeneration(args)) console.log(`  claude model: ${plan.claudeModel}`);
   console.log(`  generation concurrency: ${plan.generationConcurrency}`);
   console.log(`  units: ${plan.units.length} (${nTargets} target, ${nControls} control, ${nStress} stress)`);
   if (args.structureCritic !== 'off') console.log(`  structure critic: ${args.structureCritic}`);

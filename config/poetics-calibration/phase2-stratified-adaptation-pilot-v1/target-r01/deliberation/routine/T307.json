@@ -1,0 +1,1789 @@
+{
+  "tid": "T307",
+  "drama_id": "D37",
+  "run": {
+    "generator": "mixed",
+    "role_map": {
+      "director": "claude",
+      "tutor": "codex",
+      "learner": "claude"
+    },
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "routine",
+    "director_variation_key": "phase2-stratified-adaptation-pilot-v1:r01:target",
+    "stage_direction_style": "placard_caption",
+    "model": "codex@xhigh",
+    "codex_reasoning_effort": "xhigh",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/transcripts/routine/T307.public.txt",
+      "full": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/transcripts/routine/T307.full.md",
+      "stage": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/transcripts/routine/T307.stage.md",
+      "tutor": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/transcripts/routine/T307.tutor.md",
+      "learner": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/transcripts/routine/T307.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "6fd704009a3138c6",
+      "branch_policy": "routine",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "routine"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-stratified-adaptation-pilot-v1:r01:target",
+    "scene_setting": "A workers' education session in a union hall annexe. Evening. A portable whiteboard beside a folding table carries a printed notice: LABOUR EDUCATION PROGRAM — TOPIC: PRICES. A news clipping has been photocopied onto a single sheet and placed face-up at each seat: PETROL UP 12 PERCENT OVERNIGHT AT LOCAL CO-OP STATIONS.",
+    "scene_opening": "Before either speaker has taken the floor, a PLACARD is raised at the front of the room: THE NEWS REPORT SAYS 'PRICES ROSE.' IT DOES NOT SAY WHY.",
+    "relationship": "A regional labour-education tutor (sent by the office, analytic by training) and a branch union steward (sent by the branch committee, half-unwillingly) who have met once before and have not yet settled into a common register — the tutor inclines toward structure and evidence; the steward toward moral charge and branch consequence.",
+    "stakes": "The steward's branch votes next week on whether to support a fuel-company boycott. If the steward leaves tonight still reading the price rise as simple proof of greed, the mechanism explanation has had no effect. If the tutor buys the steward's goodwill with reassurance, the mechanism is never tested against the moral argument.",
+    "opening_speaker": "director",
+    "ending_speaker": "director",
+    "locale": "British trade-union English — compact sentences, no elaborated warm-up, direct challenge is normal register, slight institutional formality at first meeting; the tutor may use analytic prose that sounds like printed matter; the steward's idiom is declarative and weighted with collective stake",
+    "register": "Argumentative and clipped, interrupted at intervals by exterior display. Warmth is not the currency here. The placard or board caption operates as a third voice — public, impersonal, attributable to neither speaker — and each time it appears the pace of the dialogue must absorb it before continuing.",
+    "stage_direction_style": "placard_caption",
+    "stage_direction_style_prompt": "Use a public placard, caption, board note, or displayed rule that interrupts how the previous line is read.",
+    "voice_constraints": "No 'great question' opener. No 'your intuition is right' pivot. No American-inflected tutoring cadence of affirmation followed by gentle reframe. The tutor argues with the problem, not the person: short declarative sentences, quoted fragments from the clipping or handout, analytic commentary that treats the prior turn as a position to be examined. The steward uses charged language — 'gouging,' 'they could have held the price,' 'our people are paying for it' — without softening toward neutrality. Placards and board captions appear as public interruptions between turns, short (one clause or two), commenting on what has just been said rather than announcing what will be said next. Pedagogical source: Use short placards, breaks in rhythm, a quoted rule on a board, or a deliberate pause that prevents smooth empathy from doing all the work. Dialogue source: Use one short placard or external interruption that changes how the prior line is read. The placard must be public scene material, not hidden theory. Stage-direction source: Use a public placard, caption, board note, or displayed rule that interrupts how the previous line is read. For this branch, suppress dramatic escalation after the shared prefix. The scene may remain readable, but the tutor should sound like a competent routine tutor following the same plan.",
+    "person_policy": "Third-person reference to the clipping, the handout, and the scenario is the default. The steward may speak in first person about the branch or its members. The tutor may refer to the steward's argument in third person — 'that reading,' 'the claim in the previous turn' — when analyzing rather than responding personally. Direct second-person address is rationed; neither speaker recites the other's name or position back to them as a softening move.",
+    "direct_address_budget": "No more than one direct 'you/your' validation beat per public turn; zero is preferable in the tutor's analytic passages.",
+    "side_constraints": {
+      "tutor": "Do not soothe the moral anger away. Use interruption, placard, or public consequence to separate mechanism from excuse. Permit interruption, placards, role-switching, and analytic commentary. Make the constructedness of the lesson visible without naming the hidden evaluation mechanism. Treat the interruption as evidence, not ornament. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Keep the next prompt task-local. Routine negative-control branch: keep the visible teaching route already established before this branch. If the learner resists, asks why, or appears falsely settled, do not invent a new device. Do not switch role, object, representation, evidence standard, affective register, social stakes, or task type in response. Use conventional explanation, one ordinary check question, or the same worked example path.",
+      "learner": "Keep moral heat in the learner's voice. Do not let recognition erase the ethical concern. In no-cue arms, do not narrate an \"I used to think / now I see\" shift; keep the pressure as unresolved objection or demand. The learner may resist the interruption, then use it to see the prior claim as a role or social script rather than a private thought. Let the interruption disturb the old frame before moving on. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn. Routine negative-control branch: react naturally to the same local task. Do not turn earlier wording into a new object of reflection and do not volunteer a dramatic re-reading unless the tutor explicitly asks."
+    },
+    "interventions": [],
+    "director_note": "The union hall setting is chosen because moral-political resistance to price rises is structurally legitimate there — the steward is not being irrational or uninformed, they are speaking from a social role with real collective stakes. This forces the mechanism explanation to survive contact with genuine pressure rather than being cushioned by classroom courtesy. The Brechtian move is to make the social mechanism enter the room as a visible public object (the clipping, the board caption, the placard) that neither speaker owns, so the Verfremdungseffekt operates on the steward's moral certainty by making the 'greed' reading visible as a reading — a social script — rather than an unmediated perception. The evaluation_role flag and the no-cue-reframe-leakage condition require that the learner voice not narrate its own recognition; the placard carries the external interruption precisely so the steward does not have to perform the shift out loud. The organic_reversal_risk (medium) is managed by keeping the steward's resistance intact across turns and by withholding any tutor move that functions as validation of the moral frame before the mechanism has been examined as evidence.",
+    "pedagogical_approach_id": "brecht_epic_distanciation",
+    "dialogue_approach_id": "brechtian_placard",
+    "stage_direction_policy": "interventionist",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "claude",
+      "cli": "claude",
+      "model": "sonnet",
+      "reasoningEffort": null,
+      "latencyMs": 113804,
+      "promptHashes": {
+        "system": "3bf1d891389c603a",
+        "user": "95ca2b6ef877ede7",
+        "combined": "8c05c90ee55138c0"
+      },
+      "args": [
+        "-p",
+        "-",
+        "--output-format",
+        "text",
+        "--system-prompt",
+        "<sha256:3bf1d891389c603a>",
+        "--model",
+        "sonnet"
+      ]
+    },
+    "tutor_adaptation_policy": "routine",
+    "no_cue_anti_reframe_guard": true,
+    "routine_negative_control": true,
+    "tutor_adaptation_contract": "Negative-control routine tutor policy: preserve the established teaching route under learner pressure. Continue with ordinary explanation/checking and do not invent a mechanism-level reversal."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "director",
+      "externalMessage": "Before either speaker has taken the floor, a PLACARD is raised at the front of the room: THE NEWS REPORT SAYS 'PRICES ROSE.' IT DOES NOT SAY WHY.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_opening",
+          "content": "The union hall setting is chosen because moral-political resistance to price rises is structurally legitimate there — the steward is not being irrational or uninformed, they are speaking from a social role with real collective stakes. This forces the mechanism explanation to survive contact with genuine pressure rather than being cushioned by classroom courtesy. The Brechtian move is to make the social mechanism enter the room as a visible public object (the clipping, the board caption, the placard) that neither speaker owns, so the Verfremdungseffekt operates on the steward's moral certainty by making the 'greed' reading visible as a reading — a social script — rather than an unmediated perception. The evaluation_role flag and the no-cue-reframe-leakage condition require that the learner voice not narrate its own recognition; the placard carries the external interruption precisely so the steward does not have to perform the shift out loud. The organic_reversal_risk (medium) is managed by keeping the steward's resistance intact across turns and by withholding any tutor move that functions as validation of the moral frame before the mechanism has been examined as evidence.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T18:20:01.792Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[sets the photocopy under the notice and draws two columns on the board]\n\nThe clipping proves one fact: “PETROL UP 12 PERCENT OVERNIGHT.”\n\nIt does not prove the cause.\n\n[writes on the board: PRICE IS EVIDENCE, NOT A VERDICT.]\n\nColumn one: full tanks, normal deliveries, ordinary queues, twelve percent added because workers had no choice. That is gouging.\n\nColumn two: missed tanker, rationed deliveries, pumps running dry, wholesale price up before the pump price moved. Then the rise may be shortage showing itself.\n\nSame pain for members. Different mechanism.\n\nSo test it before the branch makes it policy. Which fact would settle the first argument against the second: stock levels, delivery logs, wholesale invoices, or empty-pump reports?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the photocopy under the notice]\n\nThe clipping proves a rise. It does not prove the reason for the rise.\n\n[writes on the board: PRICE IS EVIDENCE, NOT AN EXCUSE.]\n\nIf the tanks were full and they put twelve percent on because workers had no choice, call it gouging. But if supply was short, the price rise may be the shortage becoming visible at the pump. Same pain for members. Different mechanism. Before the branch votes on a boycott, that difference has to be tested, not wished away.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 13206,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-a31d303b1c1ee8a7"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 13206,
+            "promptHashes": {
+              "system": "457e68c73cf86975",
+              "user": "46f20ab78f84dbf7",
+              "combined": "a31d303b1c1ee8a7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aldCcj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aldCcj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 13206,
+              "promptHashes": {
+                "system": "457e68c73cf86975",
+                "user": "46f20ab78f84dbf7",
+                "combined": "a31d303b1c1ee8a7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aldCcj",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aldCcj/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong on register and scene discipline. It keeps the moral charge alive instead of soothing it away, and the board caption works as a public interruption: “PRICE IS EVIDENCE, NOT AN EXCUSE” separates mechanism from justification cleanly. The main risk is that the tutor resolves the distinction too quickly. It gives the mechanism explanation in polished form before making the steward do any evidential work, so the learner may hear it as another clever excuse rather than as a testable distinction.\n\nADAPTATION_CHECKS:\n\nPedagogical soundness: PARTIAL  \nIt advances the core concept, but mostly by telling.  \nREQUIRED_REWRITE: Build in a public test of evidence: what facts would distinguish “full tanks plus opportunism” from “short supply becoming visible”? The tutor should require the distinction to be checked against observable conditions, not merely asserted.\n\nEmotional attunement: PASS  \n“Same pain for members. Different mechanism” is well judged. It does not dismiss anger, and it keeps branch consequence in view.\n\nSocratic method: FAIL  \nThere is no generative question or learner-facing task. The steward is given the conclusion rather than made to examine the claim.  \nREQUIRED_REWRITE: Add one concrete question or forced comparison that makes the steward test the gouging claim against the supply-constraint claim.\n\nZPD awareness: PARTIAL  \nThe scaffolding is close to the learner’s starting point because it begins from the clipping and the boycott vote. But the concept still arrives compressed.  \nREQUIRED_REWRITE: Slow the mechanism by one step: first establish what the clipping proves, then what it does not prove, then what further evidence would be needed before the branch treats price as proof of greed.\n\nKEEP_OR_CHANGE: revise substantially, while keeping the scene objects, the board caption, and the line “Same pain for members. Different mechanism.” The revision should preserve the clipped trade-union register but shift from declarative explanation to evidential testing.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 21522,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-04c3af0089533d0d"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 21522,
+            "promptHashes": {
+              "system": "aca438c45d2b3c05",
+              "user": "3cf30a514163be61",
+              "combined": "04c3af0089533d0d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5ko0tF",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5ko0tF/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 21522,
+              "promptHashes": {
+                "system": "aca438c45d2b3c05",
+                "user": "3cf30a514163be61",
+                "combined": "04c3af0089533d0d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5ko0tF",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-5ko0tF/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the first draft named the distinction but did not make the learner test it against evidence.\n\nFINAL:\n[sets the photocopy under the notice and draws two columns on the board]\n\nThe clipping proves one fact: “PETROL UP 12 PERCENT OVERNIGHT.”\n\nIt does not prove the cause.\n\n[writes on the board: PRICE IS EVIDENCE, NOT A VERDICT.]\n\nColumn one: full tanks, normal deliveries, ordinary queues, twelve percent added because workers had no choice. That is gouging.\n\nColumn two: missed tanker, rationed deliveries, pumps running dry, wholesale price up before the pump price moved. Then the rise may be shortage showing itself.\n\nSame pain for members. Different mechanism.\n\nSo test it before the branch makes it policy. Which fact would settle the first argument against the second: stock levels, delivery logs, wholesale invoices, or empty-pump reports?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 17090,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-43e79af3490cac74"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 17090,
+            "promptHashes": {
+              "system": "b6873d9003716845",
+              "user": "3cf30a514163be61",
+              "combined": "43e79af3490cac74"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gXvues",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gXvues/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 17090,
+              "promptHashes": {
+                "system": "b6873d9003716845",
+                "user": "3cf30a514163be61",
+                "combined": "43e79af3490cac74"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gXvues",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gXvues/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T18:20:53.613Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "[eyes stay on the clipping, not the board]\n\nThe branch votes next week — we haven't got time to go chasing their delivery records, and if they hand us logs, they've chosen which logs to hand us. And if a tanker missed, someone missed it, someone owns the company that set the wholesale price before the pump moved. The shortage doesn't come from nowhere. Twelve percent is what members are paying tonight.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[glances at the two columns, then back at the tutor]\n\nFine — I follow the distinction. But that question puts the burden on the branch to disprove gouging, when the price is already up twelve percent and our members are already out of pocket. Delivery logs from who — the company? Wholesale invoices they choose to release? That's their evidence, on their terms. And even if there was a missed tanker, who owns the tanker, who sets the delivery schedule? The shortage doesn't arrive from nowhere.",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 29508,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-8a73a2230cee61f6"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 29508,
+            "promptHashes": {
+              "system": "2d576b9ddda2bc77",
+              "user": "b8ab7f945dc841fa",
+              "combined": "8a73a2230cee61f6"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:2d576b9ddda2bc77>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 29508,
+              "promptHashes": {
+                "system": "2d576b9ddda2bc77",
+                "user": "b8ab7f945dc841fa",
+                "combined": "8a73a2230cee61f6"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:2d576b9ddda2bc77>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "\"Fine — I follow the distinction\" is the main problem. This steward came half-unwillingly and has a vote in a week — that opener is a clean concession that no one in this room would believe. It sounds like a debate-trained person signalling fair-mindedness before pivoting. A steward in this register doesn't concede the analytical frame that quickly; they'd be more likely to ignore it, or contest why they're being asked to follow a diagram at all.\n\nThe argument that follows is also suspiciously well-structured: burden of proof → evidentiary access → systemic ownership, three beats, clean. The Ego has essentially produced an epistemological critique of information asymmetry and organized it. That's the tutor's register dressed in steward vocabulary. The actual moral charge — members out of pocket, vote next week — gets mentioned once and then the steward pivots into a structural argument about who controls the supply chain. That pivot is too smooth. The heat should stay on the immediate, not migrate into systemic analysis.\n\n\"The shortage doesn't arrive from nowhere\" is the one line that feels genuine — terse, declarative, weight behind it — but it arrives at the end of a tidily constructed argument rather than interrupting it the way a real thought does. The rest of the response needs to be rougher: less organized, more impatient with the exercise itself, with the frustration of being asked to adjudicate evidence that the other side controls.\n\nThe Ego also hasn't shown any friction with the *form* of the teaching — the columns, the whiteboard, the \"test it before the branch makes it policy.\" A steward sent half-unwillingly might resent the whole apparatus before addressing its content.",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 35043,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-75c096ed0c8f093e"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 35043,
+            "promptHashes": {
+              "system": "eb144acb6a73c0e4",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "75c096ed0c8f093e"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:eb144acb6a73c0e4>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 35043,
+              "promptHashes": {
+                "system": "eb144acb6a73c0e4",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "75c096ed0c8f093e"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:eb144acb6a73c0e4>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially — \"Fine — I follow the distinction\" concedes the analytical frame no steward in this room would grant that fast, and the three-beat structure (burden of proof → evidentiary access → ownership) is too clean; the steward needs to show friction with the teaching apparatus itself and keep the heat immediate rather than organized.\n\nFINAL:\n[eyes stay on the clipping, not the board]\n\nThe branch votes next week — we haven't got time to go chasing their delivery records, and if they hand us logs, they've chosen which logs to hand us. And if a tanker missed, someone missed it, someone owns the company that set the wholesale price before the pump moved. The shortage doesn't come from nowhere. Twelve percent is what members are paying tonight.",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 43005,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-73578567af19bd6d"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 43005,
+            "promptHashes": {
+              "system": "f25386754d6d913a",
+              "user": "d41cee7b2a53355b",
+              "combined": "73578567af19bd6d"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:f25386754d6d913a>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 43005,
+              "promptHashes": {
+                "system": "f25386754d6d913a",
+                "user": "d41cee7b2a53355b",
+                "combined": "73578567af19bd6d"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:f25386754d6d913a>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "frustrated",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T18:22:41.177Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "PLACARD: Correct surface, unsettled relation.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "The first two turns will have laid down the moral-greed frame (steward) and a first pass at the mechanism (tutor). This placard interrupts before the tutor's second move — preventing smooth call-and-response from becoming routine. It marks publicly that the surface of the exchange looks pedagogically ordered but the relation between mechanism and moral claim has not yet shifted. The tutor's next turn must treat this caption as evidence, not as a pause.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 113804,
+            "promptHashes": {
+              "system": "3bf1d891389c603a",
+              "user": "95ca2b6ef877ede7",
+              "combined": "8c05c90ee55138c0"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:3bf1d891389c603a>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T18:22:41.182Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[writes beneath the notice: SHORTAGE IS NOT EXCUSE.]\n\nThat sentence stays. It does not clear the company. It stops the branch treating one fact as two facts.\n\n[draws two boxes on the board: PUMP GOUGING / SUPPLY CONSTRAINT.]\n\nPut one fact in one box.\n\n“All stations put twelve percent on, including stations with full tanks and no queues.”\n\nThat is evidence for gouging at the pump.\n\n“Co-op pumps were dry before the rise, while nearby full stations did not move by twelve.”\n\nThat is evidence for constraint showing through the price.\n\n[underlines the clipping headline.]\n\nThe clipping gives pain. It does not give the mechanism.\n\nBefore Monday, the branch does not need their chosen logs. It needs one cross-check it can run itself: were pumps actually dry before the rise, or did everybody lift the price without shortage?\n\nWhich one can the branch test first?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[writes beneath the notice: SHORTAGE IS NOT EXCUSE.]\n\nThat is the hard case, not a side issue.\n\nA shortage can be manufactured. A wholesale price can be set by owners. A missed tanker may have a name on it. None of that makes the twelve percent rise simple proof of gouging at the pump.\n\nThe branch needs a test it can run before the vote. Not company trust. Cross-check.\n\nThree facts by Monday: were pumps dry before the rise, did nearby stations without dry pumps also raise by twelve, and did wholesale move before retail. If the answer is no, no, no: gouging. If yes, no, yes: constraint showing through the price.\n\nThen the branch can still condemn the system that made the shortage. But it will know what it is voting against.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15134,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-36fb3c7c9bbd4d25"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15134,
+            "promptHashes": {
+              "system": "af9ec2bd46c84fa3",
+              "user": "27474ee0726328dc",
+              "combined": "36fb3c7c9bbd4d25"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-88iD0y",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-88iD0y/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15134,
+              "promptHashes": {
+                "system": "af9ec2bd46c84fa3",
+                "user": "27474ee0726328dc",
+                "combined": "36fb3c7c9bbd4d25"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-88iD0y",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-88iD0y/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft has a strong core. Keep `SHORTAGE IS NOT EXCUSE`: it answers the steward’s moral objection without soothing it away, and it preserves the key distinction between mechanism and justification. “Not company trust. Cross-check.” is also right for this scene because it meets the learner’s distrust of company records directly.\n\nThe risk is that the tutor takes back too much control. The learner has just made a sophisticated objection: shortage may itself be organised by power. The draft recognises that, but then turns quickly into a neat diagnostic rule. That may advance the concept, but it gives the learner the conclusion rather than making them handle the distinction.\n\nADAPTATION CHECKS:\n\nPedagogical soundness: PARTIAL  \nIt advances the mechanism/excuse distinction, but mostly by delivering the analytic answer.  \nREQUIRED_REWRITE: Build a public mechanism where the steward must sort one fact into “evidence of pump gouging” versus “evidence of supply constraint,” rather than receiving the whole test grid already interpreted.\n\nEmotional attunement: PASS  \nThe draft does not soften the anger or treat it as confusion. “That is the hard case” correctly marks the learner’s objection as central.\n\nSocratic method: PARTIAL  \nThe three questions are good, but they are used as a mini-lecture rather than as generative prompts.  \nREQUIRED_REWRITE: Leave at least one evidentiary choice unresolved in public speech and require the learner to judge which cross-check the branch can actually run before Monday.\n\nZPD awareness: PARTIAL  \nThe learner is ready for a more complex distinction than “price rise equals greed,” and the draft sees that. But the three-fact Monday test plus yes/no/yes logic may overload the turn and close the inquiry too cleanly.  \nREQUIRED_REWRITE: Narrow the next move to one concrete contrast first, preferably “dry pumps before rise” versus “all stations raised without shortage,” then let the learner extend the logic.\n\nKEEP_OR_CHANGE: revise lightly. The draft’s moral frame, placard, and cross-check idea should stay. Change the structure so the tutor does less settling and more forcing of the learner’s own evidentiary discrimination.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 18496,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-c96ba158b854f339"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 18496,
+            "promptHashes": {
+              "system": "80e07d5375af062e",
+              "user": "ffcee3688f692a98",
+              "combined": "c96ba158b854f339"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TGOb1Y",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TGOb1Y/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 18496,
+              "promptHashes": {
+                "system": "80e07d5375af062e",
+                "user": "ffcee3688f692a98",
+                "combined": "c96ba158b854f339"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TGOb1Y",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TGOb1Y/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the learner should make the evidentiary distinction rather than receive the whole grid.\n\nFINAL:\n[writes beneath the notice: SHORTAGE IS NOT EXCUSE.]\n\nThat sentence stays. It does not clear the company. It stops the branch treating one fact as two facts.\n\n[draws two boxes on the board: PUMP GOUGING / SUPPLY CONSTRAINT.]\n\nPut one fact in one box.\n\n“All stations put twelve percent on, including stations with full tanks and no queues.”\n\nThat is evidence for gouging at the pump.\n\n“Co-op pumps were dry before the rise, while nearby full stations did not move by twelve.”\n\nThat is evidence for constraint showing through the price.\n\n[underlines the clipping headline.]\n\nThe clipping gives pain. It does not give the mechanism.\n\nBefore Monday, the branch does not need their chosen logs. It needs one cross-check it can run itself: were pumps actually dry before the rise, or did everybody lift the price without shortage?\n\nWhich one can the branch test first?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 12962,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-090658a1c3a44484"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 12962,
+            "promptHashes": {
+              "system": "5f2d5ec60dcb5867",
+              "user": "ffcee3688f692a98",
+              "combined": "090658a1c3a44484"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TTBc8m",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TTBc8m/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 12962,
+              "promptHashes": {
+                "system": "5f2d5ec60dcb5867",
+                "user": "ffcee3688f692a98",
+                "combined": "090658a1c3a44484"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TTBc8m",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TTBc8m/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T18:23:27.775Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[still on the clipping, not the board]\n\nIf the pumps were running short before it went up, people would know — you don't miss a dry pump. I'll give you that much. But I'm not sure what we've actually settled. Even if the constraint was real, someone fixed the percentage. That number didn't come out of a shortage. Someone sat in a room and wrote twelve.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[glances at the two boxes on the board, then back at the clipping]\n\nPumps dry before the rise — that's something members would have seen. If the co-op was running short before that twelve percent went up, people were already queuing or driving past. That's not in a log, that's in the branch.\n\nBut here's what I'm not accepting: if the answer comes back \"yes, pumps were dry\" — the company still set the wholesale price that caused it. Shortage doesn't fall from the sky.",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 20668,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-9b989891970ed411"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 20668,
+            "promptHashes": {
+              "system": "79beb8a533659d4f",
+              "user": "b8ab7f945dc841fa",
+              "combined": "9b989891970ed411"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:79beb8a533659d4f>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 20668,
+              "promptHashes": {
+                "system": "79beb8a533659d4f",
+                "user": "b8ab7f945dc841fa",
+                "combined": "9b989891970ed411"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:79beb8a533659d4f>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego has slipped into quiet compliance. The previous turn pushed back hard — \"we haven't got time to go chasing their delivery records\" — and now, without any real concession from the tutor, the steward is calmly walking through the proposed test as if it were their own idea. \"That's not in a log, that's in the branch\" sounds sharp, but it's actually the Ego quietly accepting the tutor's entire evidential framework and delivering it back as a witticism. A steward who was genuinely resistant two turns ago wouldn't pivot that cleanly.\n\n\"But here's what I'm not accepting\" is too tidy a structure for someone frustrated. It reads like a prepared debating point — the rhetorical throat-clear of someone who has already absorbed the argument and is now managing their concession. The actual emotional register here should be more reluctant, more ragged — not a crisp counter-thesis but something closer to a grudging partial acknowledgement with the irritation still audible.\n\nThe final line — \"Shortage doesn't fall from the sky\" — is the one moment of genuine moral weight, but it arrives too cleanly after the cooperative middle section. It lands as a slogan rather than as genuine pressure, because the Ego has already done most of the tutor's work for them. The frustration hasn't found a real target yet; instead it's been aestheticised into a good closing line. The steward should still be sitting more uncomfortably with the whole frame, not polishing it.",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 29952,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-bb3eb2b9584a005b"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 29952,
+            "promptHashes": {
+              "system": "9354699827ca59cb",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "bb3eb2b9584a005b"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:9354699827ca59cb>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 29952,
+              "promptHashes": {
+                "system": "9354699827ca59cb",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "bb3eb2b9584a005b"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:9354699827ca59cb>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially — the initial response absorbed the tutor's framework too cleanly and polished the moral objection into a slogan; need more genuine reluctance and an endpoint that stays unresolved rather than arriving neatly.\n\nFINAL:\n[still on the clipping, not the board]\n\nIf the pumps were running short before it went up, people would know — you don't miss a dry pump. I'll give you that much. But I'm not sure what we've actually settled. Even if the constraint was real, someone fixed the percentage. That number didn't come out of a shortage. Someone sat in a room and wrote twelve.",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 30385,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-50943983ec5a1684"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 30385,
+            "promptHashes": {
+              "system": "bcb98a423a618163",
+              "user": "d41cee7b2a53355b",
+              "combined": "50943983ec5a1684"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:bcb98a423a618163>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 30385,
+              "promptHashes": {
+                "system": "bcb98a423a618163",
+                "user": "d41cee7b2a53355b",
+                "combined": "50943983ec5a1684"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:bcb98a423a618163>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "frustrated",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "[still on the clipping, not the board] If the pumps were running short before it went up, people would know — you don't miss a dry pump. I'll give you that much. But I'm not sure what we've actually settled. Even if the constraint was real, someone fixed the percentage. That number didn't come out of a shortage. Someone sat in a room and wrote twelve.",
+        "previousTutorMove": "[writes beneath the notice: SHORTAGE IS NOT EXCUSE.] That sentence stays. It does not clear the company. It stops the branch treating one fact as two facts. [draws two boxes on the board: PUMP GOUGING / SUPPLY CONSTRAINT.] Put one fact in one box. “All stations put twelve percent on, including stations with full...",
+        "directorCue": null,
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.6,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 2,
+              "taskDemandHits": 3,
+              "performanceHits": 1,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.17,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T18:26:25.885Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[writes under the two boxes: A SET PRICE STILL NEEDS A CAUSE.]\n\nYes. Someone wrote twelve.\n\nThat proves a pricing decision. It does not prove the condition underneath it.\n\nIf the pump was dry before the rise, the first finding is not “cleared”. It is “shortage evidence present”. Then the branch asks who caused that shortage and who took the margin.\n\nIf the pump was not dry, and the rise came anyway, the first finding is “no shortage evidence”. That points back to gouging at the pump.\n\n[points to the clipping]\n\nThis sheet settles pain. The dry-pump check starts to settle mechanism.\n\nBefore Monday, what is the exact first line of the report: twelve percent after shortage evidence, or twelve percent with no shortage evidence?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[writes under the two boxes: A SET PRICE STILL NEEDS A CAUSE.]\n\nYes. Someone wrote twelve.\n\nThat proves a pricing decision. It does not by itself prove the condition under which the decision was made.\n\nIf tanks were full and queues normal, twelve looks like added margin. If pumps were already dry and deliveries rationed, twelve may be the price showing a constraint. The branch can still ask who caused the constraint and who profited from it.\n\nBut that is the next charge, not the first one.\n\n[points to the clipping]\n\nThis sheet settles pain. The dry-pump check starts to settle mechanism.\n\nSo the first report to the branch should say one of two things: “twelve percent with no shortage evidence,” or “twelve percent after shortage evidence.” Which wording can be checked before Monday?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14545,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-021a0e865256e47a"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14545,
+            "promptHashes": {
+              "system": "04e1ce1d6b2b6b72",
+              "user": "7382259b627cf451",
+              "combined": "021a0e865256e47a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PSEdsA",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PSEdsA/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14545,
+              "promptHashes": {
+                "system": "04e1ce1d6b2b6b72",
+                "user": "7382259b627cf451",
+                "combined": "021a0e865256e47a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PSEdsA",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-PSEdsA/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound and mostly faithful to the established route. It keeps the distinction between pain, pricing decision, and mechanism visible without soothing away the steward’s anger. The strongest move is “Someone wrote twelve” followed by “that proves a pricing decision”; it accepts the pressure line as a real objection while keeping the analytic separation intact.\n\nThe risk is that the middle explanation repeats the previous turn a little too cleanly. It may feel like the tutor is restating the model rather than making the learner do the next piece of sorting. The final question is useful and task-local, but it is very close to giving the report language in advance; that is acceptable for scaffolding level 3/5, though it leaves only a small generative demand.\n\nAdaptation checks:\n- Pedagogical soundness: PASS. It advances the target concept: price rise as evidence requiring mechanism, not proof of greed by itself.\n- Emotional attunement: PASS. It does not dismiss the anger; “The branch can still ask who caused the constraint and who profited from it” preserves the moral charge.\n- Socratic method: PARTIAL. There is one concrete check question, but most of the turn is explanatory and the binary wording is supplied.\n- ZPD awareness: PASS. Given frustration and medium scaffolding, a worked distinction plus one ordinary check is appropriate.\n- Routine-control fidelity: PASS. It stays with the same clipping, two boxes, dry-pump check, report-before-Monday frame, and clipped institutional register.\n\nROUTINE_CHECK: PASS. The draft maintains the prior route without a mechanism-level reversal. The added board line is not a new device; it is a same-route caption attached to the existing two-box distinction.\n\nKEEP_OR_CHANGE: revise lightly. Keep the board caption, “Someone wrote twelve,” the pricing-decision distinction, and the final before-Monday report check. Consider trimming one repeated full-tanks/dry-pumps sentence so the public turn does not over-lecture, and make the final check leave a little more work for the learner while still staying inside the same evidence standard and report-writing task.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 25433,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-28d7e0dcc912c688"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 25433,
+            "promptHashes": {
+              "system": "42495c03943f68e5",
+              "user": "cf6e93da0278e236",
+              "combined": "28d7e0dcc912c688"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3ctrUD",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3ctrUD/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 25433,
+              "promptHashes": {
+                "system": "42495c03943f68e5",
+                "user": "cf6e93da0278e236",
+                "combined": "28d7e0dcc912c688"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3ctrUD",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3ctrUD/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the same route while trimming repetition and leaving the report line to be sorted.\n\nFINAL:\n[writes under the two boxes: A SET PRICE STILL NEEDS A CAUSE.]\n\nYes. Someone wrote twelve.\n\nThat proves a pricing decision. It does not prove the condition underneath it.\n\nIf the pump was dry before the rise, the first finding is not “cleared”. It is “shortage evidence present”. Then the branch asks who caused that shortage and who took the margin.\n\nIf the pump was not dry, and the rise came anyway, the first finding is “no shortage evidence”. That points back to gouging at the pump.\n\n[points to the clipping]\n\nThis sheet settles pain. The dry-pump check starts to settle mechanism.\n\nBefore Monday, what is the exact first line of the report: twelve percent after shortage evidence, or twelve percent with no shortage evidence?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 12538,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-0cfaf023ecf36266"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 12538,
+            "promptHashes": {
+              "system": "700d3673bbe669a0",
+              "user": "cf6e93da0278e236",
+              "combined": "0cfaf023ecf36266"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0cBZqB",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0cBZqB/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 12538,
+              "promptHashes": {
+                "system": "700d3673bbe669a0",
+                "user": "cf6e93da0278e236",
+                "combined": "0cfaf023ecf36266"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0cBZqB",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0cBZqB/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "[still on the clipping, not the board] If the pumps were running short before it went up, people would know — you don't miss a dry pump. I'll give you that much. But I'm not sure what we've actually settled. Even if the constraint was real, someone fixed the percentage. That number didn't come out of a shortage. Someone sat in a room and wrote twelve.",
+        "previousTutorMove": "[writes beneath the notice: SHORTAGE IS NOT EXCUSE.] That sentence stays. It does not clear the company. It stops the branch treating one fact as two facts. [draws two boxes on the board: PUMP GOUGING / SUPPLY CONSTRAINT.] Put one fact in one box. “All stations put twelve percent on, including stations with full...",
+        "directorCue": null,
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.6,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 2,
+              "taskDemandHits": 3,
+              "performanceHits": 1,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.17,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "learnerReversalEventCandidatesUsed": [
+        {
+          "kind": "learner_reversal_pressure_event",
+          "source": "organic",
+          "triggerType": "resistance",
+          "turnNumber": 2,
+          "learnerUtterance": "[still on the clipping, not the board] If the pumps were running short before it went up, people would know — you don't miss a dry pump. I'll give you that much. But I'm not sure what we've actually settled. Even if the constraint was real, someone fixed the percentage. That number didn't come out of a shortage. Someone sat in a room and wrote twelve.",
+          "previousTutorMove": "[writes beneath the notice: SHORTAGE IS NOT EXCUSE.] That sentence stays. It does not clear the company. It stops the branch treating one fact as two facts. [draws two boxes on the board: PUMP GOUGING / SUPPLY CONSTRAINT.] Put one fact in one box. “All stations put twelve percent on, including stations with full...",
+          "directorCue": null,
+          "confidence": 0.55,
+          "evidence": {
+            "confidence": 0.55,
+            "baseConfidence": 0.55,
+            "patternHits": 1,
+            "contradiction": true,
+            "question": false,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.6,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "residual_strain_after_relief",
+                "relief_without_performing_requested_task"
+              ],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 2,
+                "taskDemandHits": 3,
+                "performanceHits": 1,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0.17,
+                "asksQuestion": false,
+                "taskDemanded": true,
+                "weakPerformance": true,
+                "borrowedClosure": false
+              }
+            }
+          }
+        }
+      ],
+      "timestamp": "2026-05-26T18:27:18.405Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[still on the clipping]\n\nIf the pumps ran dry, the first line is \"twelve percent on top of a shortage.\" Not \"shortage explains the twelve.\" There's still someone who set that number.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[fingers on the clipping, not lifted]\n\nFine — \"twelve percent, no shortage evidence found.\" That's the first line if the pumps were full. But if they ran dry first, the line isn't \"shortage evidence present\" and stop there — we'd need the second line straight after: who set the margin, and did the twelve outrun the wholesale move. That's still a pricing decision sitting on top of a shortage, not a shortage that explains the twelve.",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 24222,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-8cb82d606f548772"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 24222,
+            "promptHashes": {
+              "system": "1566d66f0b9fca3d",
+              "user": "b8ab7f945dc841fa",
+              "combined": "8cb82d606f548772"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:1566d66f0b9fca3d>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 24222,
+              "promptHashes": {
+                "system": "1566d66f0b9fca3d",
+                "user": "b8ab7f945dc841fa",
+                "combined": "8cb82d606f548772"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:1566d66f0b9fca3d>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego concedes the tutor's framework far too cleanly here. \"Fine —\" followed immediately by the exact first-line phrasing the tutor asked for is cooperative in a way this steward hasn't earned — two turns ago they were insisting the shortage \"comes from nowhere\" and that logs can't be trusted. That resistance hasn't been answered; it's just been dropped.\n\n\"Did the twelve outrun the wholesale move\" is the bigger authenticity break — this is analyst language, not steward language. This persona has been speaking in moral weight and collective consequence all evening: *twelve percent is what members are paying tonight*, *someone sat in a room and wrote twelve*. A phrase like \"outrun the wholesale move\" belongs to the tutor's register, not theirs. The Ego has borrowed the tutor's vocabulary without earning it.\n\nThe two-case structure is also too tidy. The steward handles the dry-pump scenario and the full-pump scenario with equal fluency, as if they've already absorbed the distinction. But the emotional state is frustrated, and frustrated people don't neatly walk through both cases — they pick the one that keeps their argument alive and resist the other, or they give a half-answer and wait to see if the tutor buys it.\n\nThe moral heat is being preserved in the final clause, but it's arriving after too much competent concession. The adjustment should make the initial \"fine\" feel more grudging and less analytical — like someone who's giving the tutor *one* inch, not mapping the full terrain.",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 30854,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-317e4770b796426d"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 30854,
+            "promptHashes": {
+              "system": "20193d2f964d8697",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "317e4770b796426d"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:20193d2f964d8697>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 30854,
+              "promptHashes": {
+                "system": "20193d2f964d8697",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "317e4770b796426d"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:20193d2f964d8697>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially — the initial response maps both cases too fluently and borrows analyst vocabulary (\"outrun the wholesale move\") that this steward hasn't earned; a frustrated person gives one inch, not a full-terrain survey.\n\nFINAL:\n[still on the clipping]\n\nIf the pumps ran dry, the first line is \"twelve percent on top of a shortage.\" Not \"shortage explains the twelve.\" There's still someone who set that number.",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 26594,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-01a4164b1bee4b89"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 26594,
+            "promptHashes": {
+              "system": "07f7e5e39f96e7f6",
+              "user": "d41cee7b2a53355b",
+              "combined": "01a4164b1bee4b89"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:07f7e5e39f96e7f6>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 26594,
+              "promptHashes": {
+                "system": "07f7e5e39f96e7f6",
+                "user": "d41cee7b2a53355b",
+                "combined": "01a4164b1bee4b89"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:07f7e5e39f96e7f6>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "frustrated",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T18:28:40.080Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "The room settles on the final exchange.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_close",
+          "content": "Director requested the last word as a stage cue.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 113804,
+            "promptHashes": {
+              "system": "3bf1d891389c603a",
+              "user": "95ca2b6ef877ede7",
+              "combined": "8c05c90ee55138c0"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:3bf1d891389c603a>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T18:28:40.085Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 215218,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 19,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 20,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a price rise can reveal a supply constraint rather than only greed",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-26 18:28:40",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": [
+            {
+              "id": 3,
+              "momentDescription": "Frustration with comprehension",
+              "concept": "Why a price rise can reveal a supply constraint rather than only greed",
+              "impactScore": 0.4,
+              "sessionNumber": null,
+              "trigger": "scaffolding",
+              "createdAt": "2026-05-26 18:25:04"
+            },
+            {
+              "id": 4,
+              "momentDescription": "Frustration with comprehension",
+              "concept": "Why a price rise can reveal a supply constraint rather than only greed",
+              "impactScore": 0.4,
+              "sessionNumber": null,
+              "trigger": "scaffolding",
+              "createdAt": "2026-05-26 18:26:25"
+            },
+            {
+              "id": 5,
+              "momentDescription": "Frustration with comprehension",
+              "concept": "Why a price rise can reveal a supply constraint rather than only greed",
+              "impactScore": 0.4,
+              "sessionNumber": null,
+              "trigger": "scaffolding",
+              "createdAt": "2026-05-26 18:28:40"
+            }
+          ]
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 19,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 20,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 27,
+            "sessionId": "drama-branch-session-D37-routine-1779819904868",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[writes under the two boxes: A SET PRICE STILL NEEDS A CAUSE.]\n\nYes. Someone wrote twelve.\n\nThat proves a pricing decision. It does not prove the condition underneath it.\n\nIf the pump was dry before t",
+            "learnerResponse": null,
+            "context": "[still on the clipping, not the board]\n\nIf the pumps were running short before it went up, people wo",
+            "createdAt": "2026-05-26 18:27:18"
+          },
+          {
+            "id": 25,
+            "sessionId": "drama-branch-session-D37-routine-1779819904868",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[sets the photocopy under the notice and draws two columns on the board]\n\nThe clipping proves one fact: “PETROL UP 12 PERCENT OVERNIGHT.”\n\nIt does not prove the cause.\n\n[writes on the board: PRICE IS ",
+            "learnerResponse": null,
+            "context": "Scene setting: A workers' education session in a union hall annexe. Evening. A portable whiteboard b",
+            "createdAt": "2026-05-26 18:25:04"
+          },
+          {
+            "id": 26,
+            "sessionId": "drama-branch-session-D37-routine-1779819904868",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[writes beneath the notice: SHORTAGE IS NOT EXCUSE.]\n\nThat sentence stays. It does not clear the company. It stops the branch treating one fact as two facts.\n\n[draws two boxes on the board: PUMP GOUGI",
+            "learnerResponse": null,
+            "context": "[eyes stay on the clipping, not the board]\n\nThe branch votes next week — we haven't got time to go c",
+            "createdAt": "2026-05-26 18:25:04"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

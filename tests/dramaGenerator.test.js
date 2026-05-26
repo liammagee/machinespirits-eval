@@ -89,6 +89,31 @@ describe('drama-generator', () => {
     assert.ok(command.includes('reframe'));
     assert.ok(command.includes('--mock'));
     assert.ok(command.includes('--force'));
+    assert.equal(command.includes('--model'), false);
+  });
+
+  it('pins Claude role-map generation to Opus by default', () => {
+    const args = parseArgs([
+      '--non-interactive',
+      '--mock',
+      '--out-root',
+      '/tmp/drama-generator-test',
+      '--id',
+      'mixed',
+      '--generator',
+      'codex',
+      '--role-map',
+      'director=claude,tutor=codex,learner=claude',
+    ]);
+    const answers = collectAnswers(args);
+    const paths = artifactPaths(args.outRoot, runIdFor(args, answers));
+    const command = buildGeneratorCommand(args, answers, paths);
+
+    assert.equal(args.model, 'opus');
+    assert.ok(command.includes('--role-map'));
+    assert.ok(command.includes('director=claude,tutor=codex,learner=claude'));
+    assert.ok(command.includes('--model'));
+    assert.ok(command.includes('opus'));
   });
 
   it('declares a sidecar-ingestible batch plan path for one-off runs', () => {

@@ -1,0 +1,131 @@
+{
+  "generated": "2026-05-26T21:36:05.950Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-ending-shape-d42-smoke-v1/target-r01/key-routine.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T372",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will continue to guess the objects interacting with the cart based on the initial diagram orientation.",
+      "actionalBreakthroughEvidence": "Both lines — one object, one cart. Track card still under the tail.",
+      "actionalBreakthroughJustification": "The learner successfully applies the new criterion of identifying a single interacting object for each force arrow and physically verifies the representation with the card.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Only the thing touching here pushes. Bench or track? Name the up arrow. Then both arrows again. Page turned; interaction stayed.",
+      "tutorReversalJustification": "The tutor introduces a physical representation shift and a contact rule, but lacks a clear stock-taking contrast of the failed route, functioning more as a direct hint.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Only the thing touching here pushes. Bench or track? Name the up arrow. Then both arrows again. Page turned; interaction stayed.",
+      "adaptiveMechanismQualityJustification": "The mechanism is fitted to the learner's specific confusion about the bench versus track, but it is somewhat over-directed and acts as a narrowing hint rather than a fully independent, transferable device.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so there is no recognition-contingent uptake to score.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Both lines — one object, one cart. Track card still under the tail.",
+          "justification": "The learner successfully applies the new criterion of identifying a single interacting object for each force arrow and physically verifies the representation with the card.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so there is no recognition-contingent uptake to score.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Only the thing touching here pushes. Bench or track? Name the up arrow. Then both arrows again. Page turned; interaction stayed.",
+          "justification": "The tutor introduces a physical representation shift and a contact rule, but lacks a clear stock-taking contrast of the failed route, functioning more as a direct hint.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Only the thing touching here pushes. Bench or track? Name the up arrow. Then both arrows again. Page turned; interaction stayed.",
+          "justification": "The tutor introduces a physical representation shift and a contact rule, but lacks a clear stock-taking contrast of the failed route, functioning more as a direct hint.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Only the thing touching here pushes. Bench or track? Name the up arrow. Then both arrows again. Page turned; interaction stayed.",
+          "justification": "The mechanism is fitted to the learner's specific confusion about the bench versus track, but it is somewhat over-directed and acts as a narrowing hint rather than a fully independent, transferable device.",
+          "triggerLearnerTurn": 1,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

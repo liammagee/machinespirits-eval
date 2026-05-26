@@ -1,0 +1,31 @@
+STAGE: [A cart diagram is a laminated worksheet showing a small wheeled cart with force arrows drawn around it. The movable cards are labels for those force arrows: push, friction, gravity, and normal. In this activity a force arrow names an interaction on the cart, such as "Earth on cart" or "hand on cart"; it is not a motion arrow showing which way the cart travels.]
+
+STAGE: [The four arrow tiles lie face-up beside the diagram, each label readable; the custodian's chair-stacking is audible but not intrusive.]
+
+TUTOR: [The instructor lifts the four tiles off the pencil arrows and sets them in a row beside the cart, then taps the push tile.]
+
+"Leave the pencil arrows there. These tiles name interactions on the cart. Start with push. What object is acting on the cart there? Place this tile on that arrow."
+
+LEARNER: [reaches toward the arrow pointing in the cart's rolling direction, then stops, hand still extended]
+
+""Push is — the hand."
+
+[redirects, sets the tile on the arrow entering the cart from the left]"
+
+TUTOR: [sets the friction tile beside the diagram, not on an arrow]
+
+"Push names the hand on the cart. Friction tile next. What surface acts on the cart? Point first."
+
+LEARNER: [finger moves to the bottom edge of the cart where the wheels meet the track, then stalls — if friction pushes back against rolling, is that the floor arrow or the rolling-direction arrow]
+
+""The floor. That surface under the wheels."
+
+[sets the tile on the table rather than on any arrow, not yet sure which one]"
+
+TUTOR: [The instructor slides the friction tile to the wheel-track contact and leaves it off the arrows.]
+
+"Floor on cart. Friction names that contact. Point first: which force arrow is the floor’s force on the cart?"
+
+LEARNER: [finger moves to the arrow pointing back, against the rolling direction]
+
+"That one."

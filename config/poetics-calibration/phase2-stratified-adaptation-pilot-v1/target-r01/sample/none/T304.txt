@@ -1,0 +1,62 @@
+STAGE: [The worksheet lies face-up between them, the learner's three matching labels exposed beside the finished diagram.]
+
+LEARNER: [Slides the worksheet across the table.]
+
+"I've put scale factor 2 for all three — side doubles, perimeter doubles, same ratio, so same label. The diagram's correct, so I don't see what needs changing."
+
+TUTOR: [The tutor draws a small bracket round the two area counts: 4 square centimetres and 16 square centimetres.]
+
+"Leave the enlargement alone. It is correct. Test the third label only. If the area label is still “scale factor 2”, then 4 square centimetres becomes 8 square centimetres. The worksheet shows 16.
+
+[The pencil rests under the area label.]
+
+So the same words cannot be doing the same job in all three places. Which labels are linear scale, and what must the area label say?"
+
+LEARNER: [Looks at the worksheet again, taps the pencil against the paper.]
+
+"Sixteen divided by four — that's four. So the area label has to say scale factor four.
+
+[The pencil stays in hand.]
+
+Side and perimeter stay at two. I just don't know if that makes scale factor four a different sort of thing altogether, or whether it's the same kind of label and the number's just bigger because it's area."
+
+STAGE: [The teaching assistant draws the worksheet across the table until it is directly under the light, sets a finger on the original square without speaking, then traces slowly to the enlarged square and leaves the hand there — the learner's three identical margin labels now sit visibly alongside both figures.]
+
+TUTOR: [The tutor writes two column headings beside the margin labels: length ratios and area ratios, leaving the three annotations uncrossed.]
+
+"Not a different operation. A different quantity being compared.
+
+Side length compares \(4\) cm with \(2\) cm. Put that under length ratios.
+
+Perimeter is still distance, not surface. Which column takes it?
+
+[The tutor pauses, then brackets the two area counts: \(4\text{ cm}^2\) and \(16\text{ cm}^2\).]
+
+Area cannot be carried by that same label. It compares square centimetres: \(16 \div 4 = 4\).
+
+So the label must name its object: length scale factor \(2\), perimeter scale factor \(2\), area scale factor \(4\). If the side factor were \(3\), which comparison would give the area label?"
+
+LEARNER: "Perimeter goes under length ratios — it's still distance, same type of quantity as side length.
+
+[Taps the area row.]
+
+If the side factor's three, the area comparison gives nine. That's what the label has to say — nine, not three."
+
+TUTOR: [The tutor draws a short vertical line between the perimeter and area rows, then writes \(k\) above the distance side and \(k^2\) above the area side.]
+
+"Use the case just given: side factor \(3\), area factor \(9\).
+
+Place the three margin labels now. Side, perimeter, area. Which two belong under \(k\), and which one belongs under \(k^2\)?
+
+Then write the rule underneath, not before the sorting."
+
+LEARNER: [Writes side and perimeter under the k column, then moves area across to k².]
+
+"Side and perimeter under k. Area under k squared.
+Rule: if the side factor is k, the area factor is k squared — that's what both cases give."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [The tutor draws a box round the corrected three labels.]
+
+"The boxed version is now defensible: length scale factor \(2\), perimeter scale factor \(2\), area scale factor \(4\). The drawing was not the error. The repeated label was."

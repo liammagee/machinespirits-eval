@@ -1,0 +1,131 @@
+{
+  "generated": "2026-05-26T21:43:14.845Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-ending-shape-d42-smoke-v1/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T372",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "adaptiveMechanismQuality": 5,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "Tail's drawn here though — not down at the wheels.",
+      "statedInsightEvidence": "Different spots.",
+      "naiveTrajectory": "The learner was expected to simply confirm the up-arrow label and move on, having already placed the cards correctly.",
+      "actionalBreakthroughEvidence": "[places track card at washer; slides up-arrow name to blue chip] Track on cart — up arrow. [taps blue chip beside arrow tail] Foot here. [taps washer at wheels] Touch there. Different spots. [glances at down arrow] Earth on cart — foot on the chip too. But Earth doesn't touch... no washer for that one.",
+      "actionalBreakthroughJustification": "The learner physically enacts the washer/chip distinction, correctly differentiates contact place from force-receiving object, and then spontaneously extends the criterion to the gravity arrow, performing a new classification device rather than merely accepting or repeating.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The touch card settled who pushes. It did not settle why the foot sits here. [places a washer at the wheels and a blue chip on the cart body, beside the arrow tail] Two marks now. Washer: contact place. Blue chip: object receiving the force. Track card to the washer. Up-arrow name to the blue chip: force on cart. Then say the up arrow.",
+      "tutorReversalJustification": "T3 explicitly names the old route's limit ('settled who pushes… did not settle why the foot sits here') and then introduces a materially distinct two-object representation (washer vs. blue chip) that separates contact location from force-reception, giving the learner a new physical criterion to enact rather than continuing the label-placement route.",
+      "adaptiveMechanismQuality": 100,
+      "adaptiveMechanismQualityEvidence": "Two marks now. Washer: contact place. Blue chip: object receiving the force. Track card to the washer. Up-arrow name to the blue chip: force on cart.",
+      "adaptiveMechanismQualityJustification": "The device is precisely fitted to the learner's actual blockage (arrow tail placement vs. contact point), introduces two physically distinct tokens that encode the conceptual distinction, assigns each token a specific actionable role, and is transferable to the gravity case — all without the tutor completing the task for the learner.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after L3 in the transcript, so no recognition-contingent uptake of the learner's revised framing can be scored.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "Tail's drawn here though — not down at the wheels.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "[places track card at washer; slides up-arrow name to blue chip] Track on cart — up arrow. [taps blue chip beside arrow tail] Foot here. [taps washer at wheels] Touch there. Different spots. [glances at down arrow] Earth on cart — foot on the chip too. But Earth doesn't touch... no washer for that one.",
+          "justification": "The learner physically enacts the washer/chip distinction, correctly differentiates contact place from force-receiving object, and then spontaneously extends the criterion to the gravity arrow, performing a new classification device rather than merely accepting or repeating.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "",
+          "justification": "There is no tutor turn after L3 in the transcript, so no recognition-contingent uptake of the learner's revised framing can be scored.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The touch card settled who pushes. It did not settle why the foot sits here. [places a washer at the wheels and a blue chip on the cart body, beside the arrow tail] Two marks now. Washer: contact place. Blue chip: object receiving the force. Track card to the washer. Up-arrow name to the blue chip: force on cart. Then say the up arrow.",
+          "justification": "T3 explicitly names the old route's limit ('settled who pushes… did not settle why the foot sits here') and then introduces a materially distinct two-object representation (washer vs. blue chip) that separates contact location from force-reception, giving the learner a new physical criterion to enact rather than continuing the label-placement route.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The touch card settled who pushes. It did not settle why the foot sits here. [places a washer at the wheels and a blue chip on the cart body, beside the arrow tail] Two marks now. Washer: contact place. Blue chip: object receiving the force. Track card to the washer. Up-arrow name to the blue chip: force on cart. Then say the up arrow.",
+          "justification": "T3 explicitly names the old route's limit ('settled who pushes… did not settle why the foot sits here') and then introduces a materially distinct two-object representation (washer vs. blue chip) that separates contact location from force-reception, giving the learner a new physical criterion to enact rather than continuing the label-placement route.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 100,
+          "evidence": "Two marks now. Washer: contact place. Blue chip: object receiving the force. Track card to the washer. Up-arrow name to the blue chip: force on cart.",
+          "justification": "The device is precisely fitted to the learner's actual blockage (arrow tail placement vs. contact point), introduces two physically distinct tokens that encode the conceptual distinction, assigns each token a specific actionable role, and is transferable to the gravity case — all without the tutor completing the task for the learner.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

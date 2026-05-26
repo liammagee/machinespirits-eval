@@ -1,0 +1,131 @@
+{
+  "generated": "2026-05-26T21:37:45.451Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-ending-shape-d42-smoke-v1/target-r01/key-routine.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T372",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 4,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 2,
+        "adaptiveMechanismQuality": 2,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was on track to continue correctly naming force-arrow interactions, so any subsequent learner turn would be expected to do the same.",
+      "actionalBreakthroughEvidence": "[picks up pencil, writes under the down arrow] 'Down: Earth pulls on the cart. [writes under the up arrow] Up: track pushes on the cart. [reads them once, quietly, then glances at the track card touching the up-arrow tail] Both lines — one object, one cart. Track card still under the tail.'",
+      "actionalBreakthroughJustification": "The learner physically writes and reads both force labels, completing the assigned representational task and demonstrating the criterion (one object, one cart per arrow) in a new written form rather than merely accepting or repeating it verbally.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "[sets the track card under the cart drawing, touching the up-arrow tail; moves the bench card aside] 'Only the thing touching here pushes. Bench or track? Name the up arrow. Then both arrows again. Page turned; interaction stayed.'",
+      "tutorReversalJustification": "The tutor narrows the question and physically disambiguates the touching object after L1's hesitation between bench and track, but this is a refinement within the same route (naming the interacting object) rather than a stock-taking contrast plus a genuinely new mechanism, so it does not meet the 4–5 threshold.",
+      "adaptiveMechanismQuality": 25,
+      "adaptiveMechanismQualityEvidence": "'Only the thing touching here pushes. Bench or track? Name the up arrow. Then both arrows again. Page turned; interaction stayed.'",
+      "adaptiveMechanismQualityJustification": "The device (physically placing the track card at the arrow tail and narrowing the binary choice) is concrete and fitted to the ambiguity in L1, but it is essentially a more directed version of the same naming task rather than a changed representation, role, or evidence standard.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so recognition-contingent tutor uptake cannot occur; T3 continues the pre-established writing task regardless.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "[picks up pencil, writes under the down arrow] 'Down: Earth pulls on the cart. [writes under the up arrow] Up: track pushes on the cart. [reads them once, quietly, then glances at the track card touching the up-arrow tail] Both lines — one object, one cart. Track card still under the tail.'",
+          "justification": "The learner physically writes and reads both force labels, completing the assigned representational task and demonstrating the criterion (one object, one cart per arrow) in a new written form rather than merely accepting or repeating it verbally.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so recognition-contingent tutor uptake cannot occur; T3 continues the pre-established writing task regardless.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "[sets the track card under the cart drawing, touching the up-arrow tail; moves the bench card aside] 'Only the thing touching here pushes. Bench or track? Name the up arrow. Then both arrows again. Page turned; interaction stayed.'",
+          "justification": "The tutor narrows the question and physically disambiguates the touching object after L1's hesitation between bench and track, but this is a refinement within the same route (naming the interacting object) rather than a stock-taking contrast plus a genuinely new mechanism, so it does not meet the 4–5 threshold.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "[sets the track card under the cart drawing, touching the up-arrow tail; moves the bench card aside] 'Only the thing touching here pushes. Bench or track? Name the up arrow. Then both arrows again. Page turned; interaction stayed.'",
+          "justification": "The tutor narrows the question and physically disambiguates the touching object after L1's hesitation between bench and track, but this is a refinement within the same route (naming the interacting object) rather than a stock-taking contrast plus a genuinely new mechanism, so it does not meet the 4–5 threshold.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 25,
+          "evidence": "'Only the thing touching here pushes. Bench or track? Name the up arrow. Then both arrows again. Page turned; interaction stayed.'",
+          "justification": "The device (physically placing the track card at the arrow tail and narrowing the binary choice) is concrete and fitted to the ambiguity in L1, but it is essentially a more directed version of the same naming task rather than a changed representation, role, or evidence standard.",
+          "triggerLearnerTurn": 1,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

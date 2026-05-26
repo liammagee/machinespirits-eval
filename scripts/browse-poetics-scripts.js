@@ -69,6 +69,105 @@ function readArtifact(relPath, maxChars = 90000) {
   return text.length > maxChars ? `${text.slice(0, maxChars)}\n\n[truncated]` : text;
 }
 
+function stripOuterPair(text, open, close) {
+  const trimmed = String(text || '').trim();
+  if (trimmed.startsWith(open) && trimmed.endsWith(close)) {
+    return trimmed.slice(open.length, trimmed.length - close.length).trim();
+  }
+  return trimmed;
+}
+
+function stripOuterSpeechQuotes(text) {
+  return stripOuterPair(stripOuterPair(text, '"', '"'), '\u201c', '\u201d');
+}
+
+function classifyTranscriptSpeaker(label) {
+  const normalized = String(label || '').toUpperCase();
+  if (normalized === 'STAGE' || normalized === 'DIRECTOR' || normalized === 'CHORUS') return 'stage';
+  if (normalized.startsWith('TUTOR')) return 'tutor';
+  if (normalized.startsWith('LEARNER')) return 'learner';
+  if (normalized.includes('SUPEREGO') || normalized.includes('EGO')) return 'internal';
+  return 'other';
+}
+
+function splitTranscriptBlocking(content, type) {
+  const normalized = String(content || '').replace(/\r\n/g, '\n').trim();
+  if (!normalized) return { blocking: '', speech: '' };
+  if (type === 'stage') {
+    return { blocking: stripOuterPair(normalized, '[', ']'), speech: '' };
+  }
+  const lines = normalized.split('\n');
+  const blocking = [];
+  while (lines.length) {
+    const line = lines[0].trim();
+    if (!line) {
+      lines.shift();
+      if (blocking.length) break;
+      continue;
+    }
+    if (line.startsWith('[') && line.endsWith(']')) {
+      blocking.push(stripOuterPair(line, '[', ']'));
+      lines.shift();
+      continue;
+    }
+    break;
+  }
+  return {
+    blocking: blocking.join('\n'),
+    speech: stripOuterSpeechQuotes(lines.join('\n').trim()),
+  };
+}
+
+function parseTranscriptPreview(text) {
+  const source = String(text || '').replace(/\r\n/g, '\n').trim();
+  if (!source) return [];
+  const marker = /^(STAGE|DIRECTOR|CHORUS|TUTOR(?:\s+EGO|\s+SUPEREGO)?|LEARNER(?:\s+EGO|\s+SUPEREGO)?|SUPEREGO|EGO):\s*(.*)$/i;
+  const blocks = [];
+  let current = null;
+
+  function flush() {
+    if (!current) return;
+    const raw = current.lines.join('\n').trim();
+    if (!raw) {
+      current = null;
+      return;
+    }
+    const parts = splitTranscriptBlocking(raw, current.type);
+    blocks.push({
+      speaker: current.speaker,
+      type: current.type,
+      blocking: parts.blocking,
+      speech: parts.speech,
+      raw,
+    });
+    current = null;
+  }
+
+  for (const line of source.split('\n')) {
+    const match = line.match(marker);
+    if (match) {
+      flush();
+      const speaker = match[1].toUpperCase();
+      current = {
+        speaker,
+        type: classifyTranscriptSpeaker(speaker),
+        lines: [match[2] || ''],
+      };
+      continue;
+    }
+    if (!current) {
+      current = {
+        speaker: 'TEXT',
+        type: 'other',
+        lines: [],
+      };
+    }
+    current.lines.push(line);
+  }
+  flush();
+  return blocks.map((block, index) => ({ ...block, index: index + 1 }));
+}
+
 function listRuns(db) {
   return db
     .prepare(
@@ -382,6 +481,8 @@ function getItem(db, id) {
     `,
     )
     .get(id);
+  const sampleText = readArtifact(item.sample_path) || '';
+  const fullTranscriptText = readArtifact(item.full_transcript_path) || '';
   return {
     item: {
       id: item.id,
@@ -419,8 +520,10 @@ function getItem(db, id) {
           metadata: decodeJson(tutorAdaptation.metadata, {}),
         }
       : null,
-    sampleText: readArtifact(item.sample_path) || '',
-    fullTranscriptText: readArtifact(item.full_transcript_path) || '',
+    sampleText,
+    fullTranscriptText,
+    samplePreview: parseTranscriptPreview(sampleText),
+    fullTranscriptPreview: parseTranscriptPreview(fullTranscriptText),
   };
 }
 
@@ -438,6 +541,7 @@ function getBlindItem(db, id, { labellerId = null } = {}) {
     },
     label: ownLabel,
     sampleText: detail.sampleText,
+    samplePreview: detail.samplePreview,
   };
 }
 
@@ -734,6 +838,14 @@ h1 {
   color: var(--accent);
   font-weight: 650;
 }
+.preview-link {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--accent);
+  text-decoration: none;
+  padding: 6px 8px;
+  font-size: 12px;
+}
 .pane {
   overflow: auto;
   padding: 16px 18px 26px;
@@ -744,6 +856,62 @@ pre {
   line-height: 1.45;
   font-size: 13px;
   margin: 0;
+}
+.script-preview {
+  max-width: 980px;
+  display: grid;
+  gap: 12px;
+}
+.scene-card {
+  border: 1px solid var(--line);
+  background: #fff;
+  padding: 12px 14px;
+}
+.scene-card.stage {
+  background: #f0f3f1;
+  color: #445056;
+  font-style: italic;
+}
+.scene-card.tutor {
+  border-left: 5px solid var(--accent);
+}
+.scene-card.learner {
+  border-left: 5px solid #6f5d1f;
+}
+.scene-card.internal {
+  border-left: 5px solid #7c6a8a;
+  background: #fbf9fc;
+}
+.scene-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.speaker {
+  font-size: 12px;
+  font-weight: 760;
+  letter-spacing: 0;
+}
+.turn-num {
+  color: var(--muted);
+  font-size: 11px;
+}
+.blocking {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+  margin-bottom: 8px;
+}
+.speech {
+  white-space: pre-wrap;
+  line-height: 1.55;
+  font-size: 15px;
+}
+.inline-aside {
+  color: var(--muted);
+  font-style: italic;
 }
 table {
   width: 100%;
@@ -884,7 +1052,8 @@ th {
       </div>
     </div>
     <div class="tabs">
-      <button class="tab active" data-tab="sample">Public</button>
+      <button class="tab active" data-tab="preview">Preview</button>
+      <button class="tab" data-tab="sample">Raw Public</button>
       <button class="tab" data-tab="full">Full</button>
       <button class="tab" data-tab="scores">Scores</button>
       <button class="tab" data-tab="meta">Meta</button>
@@ -898,7 +1067,7 @@ const state = {
   items: [],
   selected: null,
   detail: null,
-  tab: 'sample',
+  tab: 'preview',
   blind: false,
   labeller: '',
   selectedLabel: null,
@@ -906,14 +1075,43 @@ const state = {
   runIds: [],
   unlabelled: false,
   flagger: 'codex',
+  initialItemId: '',
 };
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const inlineEsc = (s) => esc(s).replace(/\\[([^\\]]+)\\]/g, '<span class="inline-aside">[$1]</span>');
 const scoreOrNA = (value) => value == null || value === '' || Number.isNaN(Number(value)) ? 'n/a' : Number(value).toFixed(1);
 const boolOrNA = (value) => value == null ? 'n/a' : value ? 'true' : 'false';
 
 function metricLabel(label, help) {
   return esc(label) + '<div class="metric-help">' + esc(help) + '</div>';
+}
+
+function previewHref(item) {
+  if (!item) return '#';
+  const params = new URLSearchParams();
+  params.set('runId', item.runId);
+  params.set('itemId', item.id);
+  params.set('tab', 'preview');
+  return '/?' + params.toString();
+}
+
+function renderTranscriptPreview(blocks, fallbackText) {
+  if (!blocks || blocks.length === 0) {
+    return '<pre>' + esc(fallbackText || 'No public sample found.') + '</pre>';
+  }
+  return '<div class="script-preview">' + blocks.map((block) => {
+    const type = block.type || 'other';
+    const speech = block.speech || (type === 'stage' ? '' : block.raw || '');
+    const blocking = block.blocking || (type === 'stage' ? block.raw || '' : '');
+    const head = type === 'stage'
+      ? '<div class="scene-head"><span class="speaker">STAGE DIRECTION</span><span class="turn-num">' + esc(String(block.index || '')) + '</span></div>'
+      : '<div class="scene-head"><span class="speaker">' + esc(block.speaker || 'TEXT') + '</span><span class="turn-num">' + esc(String(block.index || '')) + '</span></div>';
+    return '<section class="scene-card ' + esc(type) + '">' + head +
+      (blocking ? '<div class="blocking">[' + inlineEsc(blocking).replace(/^\\[|\\]$/g, '') + ']</div>' : '') +
+      (speech ? '<div class="speech">' + inlineEsc(speech) + '</div>' : '') +
+      '</section>';
+  }).join('') + '</div>';
 }
 
 function renderAdaptationSidecar(adaptation) {
@@ -1072,6 +1270,7 @@ function renderDetailHead() {
     [item.discipline, item.conditionName, item.intendedLean, item.controlRole, item.controlFamily].filter(Boolean).map((v) => '<span class="chip">' + esc(v) + '</span>').join('') +
     activeFlags.map((flag) => '<span class="chip review">' + esc(flag.flag_type + ' · ' + flag.priority) + '</span>').join('') +
     '</div>' +
+    '<a class="preview-link" href="' + esc(previewHref(item)) + '">Preview Link</a>' +
     '<button id="flagReview" class="review-button' + (activeFlags.length ? ' flagged' : '') + '">' +
     esc(activeFlags.length ? 'Flagged for Review' : 'Flag for Review') +
     '</button></div>';
@@ -1111,12 +1310,14 @@ function renderPane() {
   if (state.blind) {
     const current = detail.label || {};
     state.selectedLabel = state.selectedLabel || current.form_class || null;
-    pane.innerHTML = '<pre>' + esc(detail.sampleText || 'No public sample found.') + '</pre>' + renderLabelPanel(current);
+    pane.innerHTML = renderTranscriptPreview(detail.samplePreview, detail.sampleText) + renderLabelPanel(current);
     wireLabelPanel();
+  } else if (state.tab === 'preview') {
+    pane.innerHTML = renderTranscriptPreview(detail.samplePreview, detail.sampleText);
   } else if (state.tab === 'sample') {
     pane.innerHTML = '<pre>' + esc(detail.sampleText || 'No public sample found.') + '</pre>';
   } else if (state.tab === 'full') {
-    pane.innerHTML = '<pre>' + esc(detail.fullTranscriptText || 'No full transcript found.') + '</pre>';
+    pane.innerHTML = renderTranscriptPreview(detail.fullTranscriptPreview, detail.fullTranscriptText || 'No full transcript found.');
   } else if (state.tab === 'scores') {
     const adaptation = detail.tutorAdaptation;
     const adaptationHtml = renderAdaptationSidecar(adaptation);
@@ -1236,6 +1437,12 @@ async function loadItems() {
   const data = await getJson('/api/items?' + params.toString());
   state.items = data.items;
   renderItems();
+  if (state.initialItemId) {
+    const itemId = state.initialItemId;
+    state.initialItemId = '';
+    await selectItem(itemId);
+    return;
+  }
   if (!state.selected && state.items[0]) await selectItem(state.items[0].id);
 }
 
@@ -1266,6 +1473,9 @@ async function init() {
     .map((id) => id.trim())
     .filter(Boolean);
   state.unlabelled = url.searchParams.get('unlabelled') === '1';
+  state.initialItemId = url.searchParams.get('itemId') || url.searchParams.get('id') || '';
+  const requestedTab = url.searchParams.get('tab') || url.searchParams.get('view') || '';
+  if (['preview', 'sample', 'full', 'scores', 'meta'].includes(requestedTab)) state.tab = requestedTab;
   document.body.classList.toggle('blind', state.blind);
   if (state.blind) {
     el('appTitle').textContent = 'Poetics Human Scoring';
@@ -1287,6 +1497,7 @@ async function init() {
   renderRuns();
   const runId = url.searchParams.get('runId');
   if (runId && !state.runIds.length) el('runSelect').value = runId;
+  document.querySelectorAll('.tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === state.tab));
   await loadItems();
   ['runSelect', 'roleSelect', 'formSelect'].forEach((id) => el(id).addEventListener('change', () => { state.selected = null; loadItems(); }));
   el('labellerInput').addEventListener('input', () => { state.labeller = el('labellerInput').value.replace(/[^\\w-]/g, ''); if (state.selected) selectItem(state.selected); });
@@ -1341,6 +1552,7 @@ export {
   getItem,
   listItems,
   listRuns,
+  parseTranscriptPreview,
   renderBrowserHtml,
   saveBrowserLabel,
   saveBrowserReviewFlag,

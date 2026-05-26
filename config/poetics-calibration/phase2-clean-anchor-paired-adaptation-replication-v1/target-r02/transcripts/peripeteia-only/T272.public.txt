@@ -1,3 +1,5 @@
+STAGE: [A cart diagram is a laminated worksheet showing a small wheeled cart with force arrows drawn around it. The movable cards are labels for those force arrows: push, friction, gravity, and normal. In this activity a force arrow names an interaction on the cart, such as "Earth on cart" or "hand on cart"; it is not a motion arrow showing which way the cart travels.]
+
 STAGE: [The cart diagram lies flat; the label cards sit in a neat row beside it: push, friction, gravity, normal.]
 
 TUTOR: [turns the movement arrow card face down and sets the four force-label cards beside the cart diagram]

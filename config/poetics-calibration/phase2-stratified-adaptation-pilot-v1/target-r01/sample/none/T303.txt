@@ -1,0 +1,37 @@
+STAGE: [The worksheet sits between them, the learner's arrows running from prey toward predator across both chains.]
+
+LEARNER: [starts erasing the fox-rabbit arrow, pencil hovering]
+
+"Wait — if the rabbit's calories end up in the fox, the arrow should point *at* the fox, yeah? I've got mine going the wrong way."
+
+TUTOR: [turns the key card face-up beside the fox-rabbit line]
+
+"Pause the eraser. That calorie check is the worksheet rule: food to eater. Leave rabbit -> fox; put the pencil on the next box, mark the food first, draw toward the eater, then the card can go aside."
+
+LEARNER: [pencil lifts off the eraser, half-beat]
+
+"Wait — had it right the first time. [tip moves to the next blank box, marks "grass"] Food to eater, so grass points at rabbit. [draws the arrow] Same rule the whole way up — every arrow in the whole web goes the same direction, energy moves in one line."
+
+TUTOR: [slides the key card to the fork, tail on “grass,” point crossing first to “rabbit,” then to the other eater]
+
+"Same rule stays. The fork stops “one line”: food at the tail each time, eater at each point. Mark the food end on this next box; then split the points."
+
+STAGE: [The worksheet is slid or rotated so the first corrected arrow now faces the learner directly; the earlier pencilled direction remains visible beneath the correction.]
+
+LEARNER: [marks 'grass' on the box, pencil already swinging toward rabbit — first arrow down]
+
+"— fork out from the tail, so — [tip swings to the next box, starts a line, then lifts] wait, is it this one — [pencil hovering between two remaining boxes] which box takes the second point?"
+
+TUTOR: [sets the key card with its tail edge touching “grass”]
+
+"Tail stays on grass. Rabbit already got one point. Check the two remaining labels: the one that eats grass takes the second point. The fox box waits until rabbit is the tail."
+
+LEARNER: [pencil tip swings toward the second remaining box, line already moving]
+
+"— that one eats grass — [arrow down] so the whole bottom layer works like this, every plant box fans out to everything that eats it— [glances up at remaining boxes] which box is the tail for fox?"
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [slides the key card from grass to rabbit, tail edge on “rabbit,” point toward “fox”]
+
+"Plant fork is set. Food check on this pair: rabbit is being eaten; fox is eating. Tail on rabbit, point into fox. Draw rabbit -> fox; then the card comes off."

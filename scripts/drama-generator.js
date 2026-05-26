@@ -62,7 +62,7 @@ function parseArgs(argv) {
     outRoot: DEFAULT_OUT_ROOT,
     id: null,
     generator: 'codex',
-    model: 'sonnet',
+    model: 'opus',
     maxTurns: 3,
     roleMap: null,
     answersFile: null,
@@ -434,11 +434,15 @@ function buildGeneratorCommand(args, answers, paths) {
     '--director-variation-key',
     path.basename(paths.rootDir),
   ];
-  if (args.generator === 'claude' && args.model) cmd.push('--model', args.model);
   if (args.roleMap) cmd.push('--role-map', args.roleMap);
+  if (args.model && usesClaudeGeneration(args)) cmd.push('--model', args.model);
   if (args.mock) cmd.push('--mock');
   if (args.force) cmd.push('--force');
   return cmd;
+}
+
+function usesClaudeGeneration(args) {
+  return args.generator === 'claude' || /(?:^|,)\s*[^=]+=\s*claude\s*(?:,|$)/.test(String(args.roleMap || ''));
 }
 
 function writePlan({ args, answers, runId, paths, spec, command }) {
@@ -452,6 +456,8 @@ function writePlan({ args, answers, runId, paths, spec, command }) {
         batchId: runId,
         rootDir: path.relative(ROOT, paths.rootDir),
         generator: args.generator,
+        roleMap: args.roleMap || null,
+        claudeModel: usesClaudeGeneration(args) ? args.model : null,
         repeats: 1,
         stressRepeats: 0,
         maxTurns: args.maxTurns,

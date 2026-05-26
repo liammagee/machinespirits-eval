@@ -1,0 +1,38 @@
+STAGE: [One student from the queue has already left; the sheet and the prototype are both on the bench.]
+
+LEARNER: [slides the sheet forward]
+
+"Everything's ticked — all twelve points. The first-year group collects it tomorrow morning, so the form should be ready to sign."
+
+TUTOR: [sets the checklist beside the prototype and glances toward the door]
+
+"The twelve ticks make the form complete. They do not yet make tomorrow’s transfer safe. With two groups still waiting, take the tick most dependent on user action, bench condition, or interpretation. State its hidden assumption, put the prototype under tomorrow’s first-year use condition, and show what evidence answers it. Then the signature has a basis."
+
+LEARNER: [glances at the sheet, then toward the door]
+
+"So — the form being complete isn't the same as... right. [pause] The calibration step, maybe. Or the power-on sequence — a first-year might read that differently from how it was written. Though it's hard to say which one carries the most assumption without — [quieter] — which tick would it be?"
+
+TUTOR: [places the pencil between “calibration” and “power-on sequence”]
+
+"Compare the two ticks by order, first user action, and damage if misread. Calibration can be checked later; power-on can make later calibration evidence useless. So power-on is the working tick. Read that line with the board cold on the bench: what must be visible before power is applied, what sign means stop, and what bench evidence proves the instruction survives a first-year reading?"
+
+STAGE: [The queue moves; the explanation now has to become usable, not longer.]
+[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]
+
+LEARNER: [glances toward the door, then back to the sheet]
+
+"Right — power-on. Steady green before supply voltage, so that's the visible condition. The stop sign is absent green, maybe, though the line reads 'ensure' rather than 'stop if absent'. [quieter] The bench evidence — that's where it goes unclear for this one."
+
+TUTOR: [turns the sign-off sheet over and draws two boxes: RELEASE / HOLD]
+
+"The present line still leaves the writer as the judge; tomorrow’s handover needs the next group to make the stop decision without interpretation. Make this a release gate. Write the exact sentence a first-year sees at 09:00: under RELEASE, the visible state that permits power; under HOLD, the visible state that blocks power. If ‘ensure’ still has to be interpreted, the gate has failed."
+
+LEARNER: [picks up the pencil, writes under RELEASE, then pauses over the HOLD box]
+
+"Under RELEASE — green indicator steady before supply voltage is applied. [writes, then stops over HOLD] Under HOLD — [writes slowly] green indicator absent. [quieter, to self] But flickering isn't absent. [looks up] Does 'absent or flickering' cover it, or does a first-year still have to decide whether a slow pulse counts as one or the other?"
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [slides the RELEASE / HOLD boxes aside and sets a stopwatch beside the board]
+
+"The two-box gate has stopped settling the edge case; it still leaves the next group judging whether a pulse is enough. Use the stopwatch as the judge now: run a ten-second pre-power observation and sort four indications on the tag — steady green throughout, one brief flicker, slow pulsing green, and uncertain visibility. Only the case that can be released without interpretation goes under RELEASE; all others go under HOLD, before the form leaves this bench."

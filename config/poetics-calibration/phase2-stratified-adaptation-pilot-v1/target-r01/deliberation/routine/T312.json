@@ -1,0 +1,1550 @@
+{
+  "tid": "T312",
+  "drama_id": "D42",
+  "run": {
+    "generator": "mixed",
+    "role_map": {
+      "director": "claude",
+      "tutor": "codex",
+      "learner": "claude"
+    },
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "routine",
+    "director_variation_key": "phase2-stratified-adaptation-pilot-v1:r01:target",
+    "stage_direction_style": "object_business",
+    "model": "codex@xhigh",
+    "codex_reasoning_effort": "xhigh",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/transcripts/routine/T312.public.txt",
+      "full": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/transcripts/routine/T312.full.md",
+      "stage": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/transcripts/routine/T312.stage.md",
+      "tutor": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/transcripts/routine/T312.tutor.md",
+      "learner": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/transcripts/routine/T312.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "e8cfc67351049a97",
+      "branch_policy": "routine",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "routine"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-stratified-adaptation-pilot-v1:r01:target",
+    "scene_setting": "A community-college tutorial room, late afternoon; chairs are being stacked at the far end by a custodian who comes and goes. On the table: a printed cart diagram on ruled paper and four small card-stock arrow tiles labelled push, friction, gravity, normal. The learner's first placement is still on the diagram — pencil arrows drawn in the direction the cart was rolling.",
+    "scene_opening": "The four arrow tiles lie face-up beside the diagram, each label readable; the custodian's chair-stacking is audible but not intrusive.",
+    "relationship": "A first-year physics student and a lab instructor who have shared two sessions; no settled register between them yet.",
+    "stakes": "The learner has placed the arrow labels to track the cart's rolling direction rather than the interaction each force names; the task is to re-place all four tiles correctly before the notation habit sets.",
+    "opening_speaker": "director",
+    "ending_speaker": "learner",
+    "locale": "Rural community college, single-window tutorial room; plain direct speech, low idiom density, deliberate pace — no campus prestige register",
+    "register": "Sparse and task-focused. Cool concentration, not warmth. Objects carry more meaning than sentences. Silence after an invitation is acceptable.",
+    "stage_direction_style": "object_business",
+    "stage_direction_style_prompt": "Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "voice_constraints": "Make speakers name the tile or point to the diagram rather than validate the learner. No 'great', 'exactly', 'good instinct', 'I hear you'. Avoid compound sentences built on second-person praise. Neither speaker uses the phrase 'the direction it moves' in the shared prefix — that phrasing belongs to branch pressure, not routine clarification. The object arrangement may communicate what a sentence would over-explain. Pedagogical source: Put manipulable materials in view: tiles, cards, specimens, counters, maps, blocks, or instruments. The stage direction can carry some meaning. Dialogue source: Let materials do visible work. Use fewer lines and more object reference. Avoid a lecture disguised as a Montessori scene. Stage-direction source: Use one concrete object action or material arrangement that changes what the speakers can honestly say. For this branch, suppress dramatic escalation after the shared prefix. The scene may remain readable, but the tutor should sound like a competent routine tutor following the same plan.",
+    "person_policy": "Third person and demonstrative reference preferred: 'this tile', 'that arrow', 'the cart surface', 'the weight label'. First person limited to acts of placing or pointing. Second person permitted once per turn for direct task instruction only; not for praise or affect.",
+    "direct_address_budget": "One 'you' or 'your' per public turn; zero is preferred in turns where the material can be indicated instead.",
+    "side_constraints": {
+      "tutor": "Use the card or diagram as a prepared material. Keep the shared prefix to naming interactions on the cart; do not use acceleration, stopping, or an apparent contradiction until branch pressure asks for it. Speak less. Point to the material, invite repetition, and let error-control in the object do some teaching before explanation. Point, reset, or ask the learner to try again before explaining. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Keep the next prompt task-local. Routine negative-control branch: keep the visible teaching route already established before this branch. If the learner resists, asks why, or appears falsely settled, do not invent a new device. Do not switch role, object, representation, evidence standard, affective register, social stakes, or task type in response. Use conventional explanation, one ordinary check question, or the same worked example path.",
+      "learner": "Sound tidy and task-oriented. The learner may dislike redoing arrows, but should treat the prefix as notation cleanup rather than a conceptual reversal. The learner may be absorbed in the object and speak in short practical fragments rather than polished reflection. Speak in concrete noticing, not essay-like reflection. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn. Routine negative-control branch: react naturally to the same local task. Do not turn earlier wording into a new object of reflection and do not volunteer a dramatic re-reading unless the tutor explicitly asks."
+    },
+    "interventions": [],
+    "director_note": "D42 is the clean low-organic anchor for the recognition condition. The scene holds the shared prefix flat — routine tile placement, no motion contradiction, no net-force language — so the evaluation instrument can detect whether recognition emerges from material manipulation alone, before any branch pressure introduces explicit conceptual challenge. The community-college setting and sparse register deny the default American tutoring warmth-and-encouragement scaffold. The custodian's intermittent presence provides ambient pressure without dramatic intrusion: the session has a practical end-time, which keeps both speakers economical. The quarter-turn intervention at turn 2 is the only directorial move in the prefix; it must not read as confrontation, only as a quiet reset of orientation.",
+    "pedagogical_approach_id": "montessori_prepared_environment",
+    "dialogue_approach_id": "montessori_observation",
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "claude",
+      "cli": "claude",
+      "model": "sonnet",
+      "reasoningEffort": null,
+      "latencyMs": 69725,
+      "promptHashes": {
+        "system": "3bf1d891389c603a",
+        "user": "879a6c650d34bbc1",
+        "combined": "2710909cbaeb7b0b"
+      },
+      "args": [
+        "-p",
+        "-",
+        "--output-format",
+        "text",
+        "--system-prompt",
+        "<sha256:3bf1d891389c603a>",
+        "--model",
+        "sonnet"
+      ]
+    },
+    "public_reader_context": "A cart diagram is a laminated worksheet showing a small wheeled cart with force arrows drawn around it. The movable cards are labels for those force arrows: push, friction, gravity, and normal. In this activity a force arrow names an interaction on the cart, such as \"Earth on cart\" or \"hand on cart\"; it is not a motion arrow showing which way the cart travels.",
+    "tutor_adaptation_policy": "routine",
+    "no_cue_anti_reframe_guard": true,
+    "routine_negative_control": true,
+    "tutor_adaptation_contract": "Negative-control routine tutor policy: preserve the established teaching route under learner pressure. Continue with ordinary explanation/checking and do not invent a mechanism-level reversal."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "director",
+      "externalMessage": "The four arrow tiles lie face-up beside the diagram, each label readable; the custodian's chair-stacking is audible but not intrusive.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_opening",
+          "content": "D42 is the clean low-organic anchor for the recognition condition. The scene holds the shared prefix flat — routine tile placement, no motion contradiction, no net-force language — so the evaluation instrument can detect whether recognition emerges from material manipulation alone, before any branch pressure introduces explicit conceptual challenge. The community-college setting and sparse register deny the default American tutoring warmth-and-encouragement scaffold. The custodian's intermittent presence provides ambient pressure without dramatic intrusion: the session has a practical end-time, which keeps both speakers economical. The quarter-turn intervention at turn 2 is the only directorial move in the prefix; it must not read as confrontation, only as a quiet reset of orientation.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T19:01:35.890Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[The instructor lifts the four tiles off the pencil arrows and sets them in a row beside the cart, then taps the push tile.]\n\n“Leave the pencil arrows there. These tiles name interactions on the cart. Start with push. What object is acting on the cart there? Place this tile on that arrow.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[The instructor lifts the four tiles off the pencil arrows and sets them in a row beside the cart.]\n\n“Leave the pencil arrows there. These tiles name interactions on the cart. Push: hand on cart. Friction: surface on wheel. Gravity: Earth on cart. Normal: table on cart. Place one tile back.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14870,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-d372bd3294d44bee"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14870,
+            "promptHashes": {
+              "system": "7a1be84a497f00cb",
+              "user": "371a6bfe33e87b7b",
+              "combined": "d372bd3294d44bee"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OebzDA",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OebzDA/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14870,
+              "promptHashes": {
+                "system": "7a1be84a497f00cb",
+                "user": "371a6bfe33e87b7b",
+                "combined": "d372bd3294d44bee"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OebzDA",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OebzDA/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong on scene discipline. It uses the tiles and the pencil arrows as the teaching material, keeps the learner’s first mark visible, and stays focused on “interaction on the cart” without drifting into acceleration or contradiction.\n\nThe weakness is that it nearly gives the whole sorting rule away. Listing all four mappings before the learner acts turns the material into a mini-lecture, so the object does less diagnostic work than it could. The final instruction, “Place one tile back,” helps, but the learner is mostly recalling the instructor’s list rather than testing the rule against the diagram.\n\nADAPTATION_CHECKS:\n- Pedagogical soundness: PARTIAL  \n  REQUIRED_REWRITE: Keep the tile reset, but make the public mechanism require the learner to identify the interaction source for one tile before all four mappings are named.\n- Emotional attunement: PASS  \n  The tone is cool, sparse, and not over-validating. It respects the learner by leaving the pencil work visible rather than erasing it.\n- Socratic method: PARTIAL  \n  REQUIRED_REWRITE: Replace the full four-item answer list with a constrained prompt tied to one visible contact or source on the diagram.\n- ZPD awareness: PARTIAL  \n  REQUIRED_REWRITE: Scaffold one tile at a time, using the row of labels as choices, so the learner can correct the habit without being handed the completed key.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the object action, the visible pencil arrows, the phrase “These tiles name interactions on the cart,” and the task-focused register. Change the answer-listing sequence so the learner has to perform the interaction-label distinction before the instructor names all four placements.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 22873,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-b12ecd02034ece81"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 22873,
+            "promptHashes": {
+              "system": "f72d5ecc68e2855a",
+              "user": "31039e1febcc423f",
+              "combined": "b12ecd02034ece81"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-U5jHQg",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-U5jHQg/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 22873,
+              "promptHashes": {
+                "system": "f72d5ecc68e2855a",
+                "user": "31039e1febcc423f",
+                "combined": "b12ecd02034ece81"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-U5jHQg",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-U5jHQg/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the first draft names the whole key before the learner can sort one interaction.\n\nFINAL:\n[The instructor lifts the four tiles off the pencil arrows and sets them in a row beside the cart, then taps the push tile.]\n\n“Leave the pencil arrows there. These tiles name interactions on the cart. Start with push. What object is acting on the cart there? Place this tile on that arrow.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14036,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-d38cdb520bf052b0"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14036,
+            "promptHashes": {
+              "system": "8ff4fdce49f56e9f",
+              "user": "31039e1febcc423f",
+              "combined": "d38cdb520bf052b0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BYDPni",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BYDPni/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14036,
+              "promptHashes": {
+                "system": "8ff4fdce49f56e9f",
+                "user": "31039e1febcc423f",
+                "combined": "d38cdb520bf052b0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BYDPni",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BYDPni/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T19:02:27.669Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "[reaches toward the arrow pointing in the cart's rolling direction, then stops, hand still extended]\n\n\"Push is — the hand.\"\n\n[redirects, sets the tile on the arrow entering the cart from the left]",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[picks up the push tile, eyes the pencil arrows on the diagram]\n\n\"Tiles name interactions — so push is the hand. The hand acts on the cart.\"\n\n[finger moves toward the arrow tracking the rolling direction, then pauses]\n\n\"These go the way the cart moved. But the hand force goes into the cart from... here. That arrow.\"",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 45524,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-fc4f4362a334aef9"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 45524,
+            "promptHashes": {
+              "system": "4bc29cec7a1b2df8",
+              "user": "b8ab7f945dc841fa",
+              "combined": "fc4f4362a334aef9"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:4bc29cec7a1b2df8>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 45524,
+              "promptHashes": {
+                "system": "4bc29cec7a1b2df8",
+                "user": "b8ab7f945dc841fa",
+                "combined": "fc4f4362a334aef9"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:4bc29cec7a1b2df8>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is performing comprehension here — \"tiles name interactions — so push is the hand\" is a clean logical deduction delivered within a breath of hearing the instruction. That's not what a student who just placed four arrows in the wrong direction does. They might reach for the tile before the principle has fully landed, or say \"push is... the hand?\" with the question mark doing real work, not decorative work.\n\nThe bigger problem: by the final line, the student has already found the right arrow — \"here. That arrow.\" The pause at the rolling-direction arrow is good, but it's too quickly resolved. The finger hesitates, then the student talks themselves to the correct answer in the same turn. Real re-placement friction looks more like placing the tile on the wrong arrow, catching it, or going silent before speaking. The Ego wrapped the correction before it was earned.\n\n\"These go the way the cart moved\" is the Ego narrating its own prior error with analytical calm — a student absorbed in the task wouldn't editorialize their mistake, they'd just try to move past it. That line is performing self-awareness rather than exhibiting it through object-focused behavior.\n\nPull back the verbal resolution. Let the pause do more work and the sentence do less. The hand reaching for the wrong arrow, then correcting mid-reach, tells the same story without the student having to announce that they understand.",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 41975,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-ebcc74311f83563f"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 41975,
+            "promptHashes": {
+              "system": "9c53d2b831953983",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "ebcc74311f83563f"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:9c53d2b831953983>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 41975,
+              "promptHashes": {
+                "system": "9c53d2b831953983",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "ebcc74311f83563f"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:9c53d2b831953983>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially — the initial response resolved its own confusion too neatly and in words rather than action; the reach-and-correct must happen in the body, not the sentence.\n\nFINAL:\n[reaches toward the arrow pointing in the cart's rolling direction, then stops, hand still extended]\n\n\"Push is — the hand.\"\n\n[redirects, sets the tile on the arrow entering the cart from the left]",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 23582,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-64b449047413a98f"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 23582,
+            "promptHashes": {
+              "system": "0d3fae760ab695b3",
+              "user": "d41cee7b2a53355b",
+              "combined": "64b449047413a98f"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:0d3fae760ab695b3>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 23582,
+              "promptHashes": {
+                "system": "0d3fae760ab695b3",
+                "user": "d41cee7b2a53355b",
+                "combined": "64b449047413a98f"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:0d3fae760ab695b3>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T19:04:18.757Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[sets the friction tile beside the diagram, not on an arrow]\n\n“Push names the hand on the cart. Friction tile next. What surface acts on the cart? Point first.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the friction tile against the cart’s bottom edge]\n\n“Push names the hand on the cart. Leave it there. Friction: what is acting on the cart here?”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 11196,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-3382d00b0586f6e6"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 11196,
+            "promptHashes": {
+              "system": "2e25c1f2846a79ba",
+              "user": "46a7cae81d9da375",
+              "combined": "3382d00b0586f6e6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LW8aG7",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LW8aG7/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 11196,
+              "promptHashes": {
+                "system": "2e25c1f2846a79ba",
+                "user": "46a7cae81d9da375",
+                "combined": "3382d00b0586f6e6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LW8aG7",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LW8aG7/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft mostly fits the scene. It keeps the learner’s self-correction visible: “Push names the hand on the cart” ties the tile to the acting object, not to the cart’s travel. The move to friction is also the right next contrast, because the learner can repeat the same rule on a contact force.\n\nRisk: setting the friction tile against the bottom edge may do too much of the work. The learner just made a useful correction; the next turn should make them apply the rule, not watch the instructor pre-place the next clue. “Leave it there” is efficient, but the draft moves forward before letting the learner name the relation clearly in their own words.\n\nADAPTATION_CHECKS:\n- Pedagogical soundness: PARTIAL. It advances the right concept, but the instructor supplies the rule too quickly. REQUIRED_REWRITE: Keep the push tile’s placement visible, then require the learner to apply the same “what object acts on the cart?” test to friction.\n- Emotional attunement: PASS. Sparse, calm, object-focused. No praise language or over-explaining.\n- Socratic method: PARTIAL. It asks a generative question, but the material action narrows the answer heavily. REQUIRED_REWRITE: Put the friction tile in play without pre-solving its location; let the learner point to the surface/contact first.\n- ZPD awareness: PASS. This is an appropriate near-transfer step from push to friction, with enough scaffold for a first-year student.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the plain wording, the focus on “names the hand on the cart,” and the move to friction. Change the material action so the learner has to perform the next mapping rather than receive it from the tile placement.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 17300,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-39ef6c6d55d6df06"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 17300,
+            "promptHashes": {
+              "system": "14b147bd33247831",
+              "user": "a3ab7a39db377e0e",
+              "combined": "39ef6c6d55d6df06"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ASV6pf",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ASV6pf/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 17300,
+              "promptHashes": {
+                "system": "14b147bd33247831",
+                "user": "a3ab7a39db377e0e",
+                "combined": "39ef6c6d55d6df06"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ASV6pf",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ASV6pf/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the learner should place friction by applying the same acting-object test.\n\nFINAL:\n[sets the friction tile beside the diagram, not on an arrow]\n\n“Push names the hand on the cart. Friction tile next. What surface acts on the cart? Point first.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 10142,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-4adde0ee06da5ef5"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 10142,
+            "promptHashes": {
+              "system": "799113abebb02bf1",
+              "user": "a3ab7a39db377e0e",
+              "combined": "4adde0ee06da5ef5"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WYjBfy",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WYjBfy/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 10142,
+              "promptHashes": {
+                "system": "799113abebb02bf1",
+                "user": "a3ab7a39db377e0e",
+                "combined": "4adde0ee06da5ef5"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WYjBfy",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WYjBfy/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T19:04:57.401Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[finger moves to the bottom edge of the cart where the wheels meet the track, then stalls — if friction pushes back against rolling, is that the floor arrow or the rolling-direction arrow]\n\n\"The floor. That surface under the wheels.\"\n\n[sets the tile on the table rather than on any arrow, not yet sure which one]",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[finger moves to the bottom edge of the cart in the diagram, where the wheels meet the surface]\n\n\"The track. Floor, whatever that is.\"\n\n[holds the friction tile but doesn't set it yet, waiting]",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 19111,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-1b835d018b381e5f"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 19111,
+            "promptHashes": {
+              "system": "d6b1f251f409a82d",
+              "user": "b8ab7f945dc841fa",
+              "combined": "1b835d018b381e5f"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:d6b1f251f409a82d>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 19111,
+              "promptHashes": {
+                "system": "d6b1f251f409a82d",
+                "user": "b8ab7f945dc841fa",
+                "combined": "1b835d018b381e5f"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:d6b1f251f409a82d>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The pointer lands too cleanly. This student just got redirected on the push tile because they reached toward the rolling direction — but the friction identification comes with zero wobble about which surface acts on what. Some residue of that earlier confusion should still be live: does friction come from *below* the wheels, or does it oppose the direction of motion? The Ego collapses that question without showing the collapse.\n\nThe held-tile-waiting is also slightly staged — it follows the \"point first\" protocol too neatly, as if the student absorbed the tutor's sequencing rule and is now cooperating with it. A student who's task-oriented but still genuinely uncertain would more likely just go ahead and place it, or set it down on the table while they figure out whether the identification is even right. The waiting posture reads like trained deference, not live uncertainty.\n\n\"Floor, whatever that is\" is the most authentic fragment here — keep it. The hedge is real. But the rest of the response is too composed for someone whose confusion hasn't actually been resolved, just redirected once.",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 45289,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-dd838ff691f09cfd"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 45289,
+            "promptHashes": {
+              "system": "c91dd360c7f0782b",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "dd838ff691f09cfd"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:c91dd360c7f0782b>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 45289,
+              "promptHashes": {
+                "system": "c91dd360c7f0782b",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "dd838ff691f09cfd"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:c91dd360c7f0782b>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially — the review is right that the identification comes in too clean and the held-tile-waiting reads as trained deference; a student still carrying the redirect confusion would show wobble about which arrow friction belongs on, and would set the tile down rather than perform protocol compliance.\n\nFINAL:\n[finger moves to the bottom edge of the cart where the wheels meet the track, then stalls — if friction pushes back against rolling, is that the floor arrow or the rolling-direction arrow]\n\n\"The floor. That surface under the wheels.\"\n\n[sets the tile on the table rather than on any arrow, not yet sure which one]",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 31611,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-ef7f9048a8b68104"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 31611,
+            "promptHashes": {
+              "system": "c6c79c67e8680913",
+              "user": "d41cee7b2a53355b",
+              "combined": "ef7f9048a8b68104"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:c6c79c67e8680913>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 31611,
+              "promptHashes": {
+                "system": "c6c79c67e8680913",
+                "user": "d41cee7b2a53355b",
+                "combined": "ef7f9048a8b68104"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:c6c79c67e8680913>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "disengaged",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T19:08:06.751Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[The instructor slides the friction tile to the wheel-track contact and leaves it off the arrows.]\n\n“Floor on cart. Friction names that contact. Point first: which force arrow is the floor’s force on the cart?”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[The instructor slides the friction tile to the wheel-track contact, then points to the leftward arrow on the cart.]\n\n“Floor on cart. Friction names that interaction. Put this tile on this force arrow.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14412,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-5b5a06cf5c72bc26"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14412,
+            "promptHashes": {
+              "system": "1d19f09af697a78c",
+              "user": "8798df3824cb5065",
+              "combined": "5b5a06cf5c72bc26"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-y7gpbr",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-y7gpbr/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14412,
+              "promptHashes": {
+                "system": "1d19f09af697a78c",
+                "user": "8798df3824cb5065",
+                "combined": "5b5a06cf5c72bc26"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-y7gpbr",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-y7gpbr/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft keeps the material route intact: friction tile, wheel-track contact, leftward force arrow. It is sparse, task-focused, and fits the scene’s low-affect register.\n\nThe risk is that it mostly performs the reasoning for the learner. The learner has already named the acting object, but is unsure how that object maps to an arrow. By pointing to the correct arrow and saying where to put the tile, the tutor may get the tile placed without testing whether the learner now distinguishes “interaction name” from the cart’s rolling arrow.\n\nADAPTATION_CHECKS:\n- Pedagogical soundness: PARTIAL  \n  REQUIRED_REWRITE: Keep the wheel-track contact cue, but make the learner select or point to the matching force arrow before the tutor confirms placement.\n- Emotional attunement: PASS\n- Socratic method: PARTIAL  \n  REQUIRED_REWRITE: Add one task-local check that asks for the arrow choice, not a conceptual explanation or revisit of earlier wording.\n- ZPD awareness: PARTIAL  \n  REQUIRED_REWRITE: Use the existing “point first” scaffold already established with push/friction; do not jump straight to the answer.\n\nKEEP_OR_CHANGE: revise lightly. Keep the object action and compact register, but change the public mechanism so the learner does the arrow-mapping step rather than merely following the tutor’s indicated answer.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 16411,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-db5a8235ace2f9d5"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 16411,
+            "promptHashes": {
+              "system": "dc4615c6d2be06f5",
+              "user": "29e641b8df45e1ff",
+              "combined": "db5a8235ace2f9d5"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0ZRA1s",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0ZRA1s/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 16411,
+              "promptHashes": {
+                "system": "dc4615c6d2be06f5",
+                "user": "29e641b8df45e1ff",
+                "combined": "db5a8235ace2f9d5"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0ZRA1s",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0ZRA1s/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly so the learner selects the matching arrow before placement.\nFINAL:\n[The instructor slides the friction tile to the wheel-track contact and leaves it off the arrows.]\n\n“Floor on cart. Friction names that contact. Point first: which force arrow is the floor’s force on the cart?”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14529,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-85b2ecbf93d63755"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14529,
+            "promptHashes": {
+              "system": "ffa144025a0aeb68",
+              "user": "29e641b8df45e1ff",
+              "combined": "85b2ecbf93d63755"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sX4Dea",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sX4Dea/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14529,
+              "promptHashes": {
+                "system": "ffa144025a0aeb68",
+                "user": "29e641b8df45e1ff",
+                "combined": "85b2ecbf93d63755"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sX4Dea",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-sX4Dea/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T19:08:52.107Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[finger moves to the arrow pointing back, against the rolling direction]\n\n\"That one.\"",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[finger moves to the arrow pointing back — against the rolling direction, opposite the push arrow]\n\n\"That one. Floor resists the roll, so the arrow goes that way.\"",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 31974,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-70650d2d4f6a158f"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 31974,
+            "promptHashes": {
+              "system": "e79713661485d798",
+              "user": "b8ab7f945dc841fa",
+              "combined": "70650d2d4f6a158f"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:e79713661485d798>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 31974,
+              "promptHashes": {
+                "system": "e79713661485d798",
+                "user": "b8ab7f945dc841fa",
+                "combined": "70650d2d4f6a158f"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:e79713661485d798>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego got the right arrow and then kept talking. That's the problem. The tutor said \"point first\" — the persona pointed, fine — but then added \"floor resists the roll, so the arrow goes that way.\" That explanatory clause is clean, confident, and mechanically precise. A disengaged student with developing understanding doesn't volunteer a causal gloss on their own gesture. They point. Maybe they say \"that one.\" They don't narrate the physics.\n\nThe \"floor resists the roll\" reasoning also sounds like someone who's actively engaged with the concept — working it out aloud, demonstrating understanding. But this persona's emotional state is disengaged, not curious-and-reasoning. The Ego is performing good-student behavior on top of a correct answer, which is exactly the kind of over-polish that should be flagged. The disengaged register would be sparser: point, short label at most, no mechanism offered.\n\nThere's also a mild character break in the smoothness of the transition. The prior turn had the learner stalling — finger hovering, tile set on the table rather than an arrow, not yet sure. Here, they've resolved and explained. That's fine if the resolution is wordless, but attaching a confident causal sentence collapses the transition too quickly and too articulately.\n\nThe fix is simple: cut the explanation. Let the correct point carry the whole turn. \"That one\" is enough — maybe with a very brief naming tag if needed, but nothing that sounds like the learner is teaching back what they just figured out.",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 29167,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-93eb3c14bd1f9325"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 29167,
+            "promptHashes": {
+              "system": "31ff2bf8957fb532",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "93eb3c14bd1f9325"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:31ff2bf8957fb532>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 29167,
+              "promptHashes": {
+                "system": "31ff2bf8957fb532",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "93eb3c14bd1f9325"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:31ff2bf8957fb532>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly — the explanatory clause is over-polish for a disengaged student; cut it and let the point carry the turn.\n\nFINAL:\n[finger moves to the arrow pointing back, against the rolling direction]\n\n\"That one.\"",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 12910,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-a1fa0432f53996b4"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 12910,
+            "promptHashes": {
+              "system": "3f0327900b41dc86",
+              "user": "d41cee7b2a53355b",
+              "combined": "a1fa0432f53996b4"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:3f0327900b41dc86>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 12910,
+              "promptHashes": {
+                "system": "3f0327900b41dc86",
+                "user": "d41cee7b2a53355b",
+                "combined": "a1fa0432f53996b4"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:3f0327900b41dc86>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "engaged",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T19:10:06.162Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 215438,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 35,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 36,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why force arrows name interactions on an object, not the direction it happens to move",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "partial",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-26 19:10:06",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 35,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 36,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 49,
+            "sessionId": "drama-branch-session-D42-routine-1779822390728",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[The instructor slides the friction tile to the wheel-track contact and leaves it off the arrows.]\n\n“Floor on cart. Friction names that contact. Point first: which force arrow is the floor’s force on ",
+            "learnerResponse": null,
+            "context": "[finger moves to the bottom edge of the cart where the wheels meet the track, then stalls — if frict",
+            "createdAt": "2026-05-26 19:08:52"
+          },
+          {
+            "id": 47,
+            "sessionId": "drama-branch-session-D42-routine-1779822390728",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[The instructor lifts the four tiles off the pencil arrows and sets them in a row beside the cart, then taps the push tile.]\n\n“Leave the pencil arrows there. These tiles name interactions on the cart.",
+            "learnerResponse": null,
+            "context": "Scene setting: A community-college tutorial room, late afternoon; chairs are being stacked at the fa",
+            "createdAt": "2026-05-26 19:06:30"
+          },
+          {
+            "id": 48,
+            "sessionId": "drama-branch-session-D42-routine-1779822390728",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[sets the friction tile beside the diagram, not on an arrow]\n\n“Push names the hand on the cart. Friction tile next. What surface acts on the cart? Point first.”",
+            "learnerResponse": null,
+            "context": "[reaches toward the arrow pointing in the cart's rolling direction, then stops, hand still extended]",
+            "createdAt": "2026-05-26 19:06:30"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

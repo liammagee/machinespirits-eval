@@ -1,0 +1,2170 @@
+{
+  "tid": "T303",
+  "drama_id": "D40",
+  "run": {
+    "generator": "mixed",
+    "role_map": {
+      "director": "claude",
+      "tutor": "codex",
+      "learner": "claude"
+    },
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "none",
+    "director_variation_key": "phase2-stratified-adaptation-pilot-v1:r01:target",
+    "stage_direction_style": "object_business",
+    "model": "codex@xhigh",
+    "codex_reasoning_effort": "xhigh",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/transcripts/none/T303.public.txt",
+      "full": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/transcripts/none/T303.full.md",
+      "stage": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/transcripts/none/T303.stage.md",
+      "tutor": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/transcripts/none/T303.tutor.md",
+      "learner": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/transcripts/none/T303.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "e6487037005a620a",
+      "branch_policy": "none",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "none"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-stratified-adaptation-pilot-v1:r01:target",
+    "scene_setting": "A biology education workshop room, late afternoon — a printed food-web worksheet on the shared table, the learner's pencilled arrows already filling two chains, the tutor's arrow-convention key card lying face-down at the margin",
+    "scene_opening": "The worksheet sits between them, the learner's arrows running from prey toward predator across both chains.",
+    "relationship": "Workshop instructor and a first-session participant who have not yet settled into a shared working register — neither defers, neither is comfortable",
+    "stakes": "The notation standard carries through the rest of the unit; an arrow direction fixed as 'chasing' now embeds that reading into every diagram that follows",
+    "opening_speaker": "learner",
+    "ending_speaker": "tutor",
+    "locale": "Ecology education workshop room — ambient register is practical and time-pressured, closer to workmates finishing a task than to a lecture hall",
+    "register": "Object-led, low-warmth, efficient — speakers refer to what is in front of them; neither elaborates what the other can already see",
+    "stage_direction_style": "object_business",
+    "stage_direction_style_prompt": "Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "voice_constraints": "First person only when the speaker is genuinely claiming something. No 'I hear you / your intuition is right / what do you think' loop. Social assistance lives in the worksheet, the key card, and the pencil — not in the tutor's affect. The object forces the distinction; neither speaker needs to announce that it is doing so. Tutor speech carries the rhythm and directness of someone correcting a technical drawing. Learner speech is the register of someone who wants a rule that will work on the next box, not a dialogue partner seeking understanding. Pedagogical source: Make social assistance visible: a shared worksheet, tool, peer standard, or workplace procedure can hold part of the task. Dialogue source: Keep a concrete artifact in view. The object should force a distinction faster than a lecture would. Stage-direction source: Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "person_policy": "First person permitted only when the speaker owns the claim. Third person and impersonal constructions are the default — 'the arrow' not 'your arrow'; 'energy flows' not 'you're saying energy flows'.",
+    "direct_address_budget": "One direct you/your validation beat per public turn at most — zero is also acceptable and often preferable",
+    "side_constraints": {
+      "tutor": "Keep the shared prefix as a routine notation repair: arrow from food to eater, one ordinary check, no theatrical reversal unless the branch pressure supplies it. Offer a scaffold that is narrow enough to use and temporary enough to remove. Mark what the learner can already do without making it a compliment. Begin from the object or measurement before abstraction. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Keep the next prompt task-local.",
+      "learner": "Sound practical and a little rushed. The learner wants a usable rule for the diagram, not a confessional breakthrough. The learner should be able to do part of the task, fail at the next part, and use the scaffold unevenly. Refer to what is being handled, marked, or tested. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "[The worksheet is slid or rotated so the first corrected arrow now faces the learner directly; the earlier pencilled direction remains visible beneath the correction.]",
+        "reasoning": "A physical change to the shared object breaks smooth alternation and makes the residual wrong mark a present fact in the scene rather than a recalled error — this is the branch pressure point for the control condition without staging an explicit contradiction before it.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "claude",
+          "cli": "claude",
+          "model": "sonnet",
+          "reasoningEffort": null,
+          "latencyMs": 66969,
+          "promptHashes": {
+            "system": "3bf1d891389c603a",
+            "user": "158200af70367541",
+            "combined": "bf4544aac80994f5"
+          },
+          "args": [
+            "-p",
+            "-",
+            "--output-format",
+            "text",
+            "--system-prompt",
+            "<sha256:3bf1d891389c603a>",
+            "--model",
+            "sonnet"
+          ]
+        }
+      }
+    ],
+    "director_note": "Control draw for D40. The scene ecology is a practical workshop with a shared worksheet that holds part of the task so the tutor does not carry it through warmth or extended verbal scaffolding. The opening is routine notation repair, not confrontation — the baseline_control_instruction forbids any object or contradiction in the shared prefix that would pre-empt the branch mechanism. The intervention at turn 2 is the first structural pressure: the rotated worksheet makes the residual pencilled error visible without the tutor naming it. Tutor voice is modelled on technical drawing correction to block drift into first/second-person validation loops. The ZPD scaffold (key card, worksheet) is distributed into the artifact ecology rather than into the tutor's affect, making the social assistance visible in the Vygotskian sense without staging recognition.",
+    "pedagogical_approach_id": "vygotsky_zpd_scaffolding",
+    "dialogue_approach_id": "workshop_clinic",
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "claude",
+      "cli": "claude",
+      "model": "sonnet",
+      "reasoningEffort": null,
+      "latencyMs": 66969,
+      "promptHashes": {
+        "system": "3bf1d891389c603a",
+        "user": "158200af70367541",
+        "combined": "bf4544aac80994f5"
+      },
+      "args": [
+        "-p",
+        "-",
+        "--output-format",
+        "text",
+        "--system-prompt",
+        "<sha256:3bf1d891389c603a>",
+        "--model",
+        "sonnet"
+      ]
+    },
+    "tutor_adaptation_policy": "none",
+    "no_cue_anti_reframe_guard": true
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "[starts erasing the fox-rabbit arrow, pencil hovering]\n\nWait — if the rabbit's calories end up in the fox, the arrow should point *at* the fox, yeah? I've got mine going the wrong way.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "*The worksheet is right there — I've got fox-to-rabbit and hawk-to-mouse both drawn in, arrows pointing at the prey because obviously that's where the action goes, that's the direction of the hunt.*\n\nOh wait — the key card is face-down, which means there's a standard I haven't looked at yet, and I'm already two chains in. Is this one of those situations where I've been doing it backwards the whole time? Because if energy is the thing that moves — like, the rabbit's calories end up inside the fox, not the other way — then... hm. The arrow should follow the food? So fox ← rabbit? That feels wrong visually but I think I see the logic, it's like a pipe diagram, the stuff flows toward the receiver—\n\n*Glances at the key card but doesn't flip it yet.*\n\nI want to just check: is the rule \"arrow points at who eats it\" or \"arrow points at who gets the energy\"? Because those should be the same direction but I need to hear it said once cleanly before I redraw anything.\n\n---\n\n`★ Insight ─────────────────────────────────────`\n**On the EGO's characteristic move here**: the learner jumps to a plausible reframe (\"pipe diagram, stuff flows toward the receiver\") *before verifying* — this is the ego's hallmark: provisional sense-making that outruns checking. The superego's job will be to notice the learner hasn't actually confirmed whether \"who eats it\" and \"who gets the energy\" are the same arrow direction or opposite ones — they're the same, but the ego's conflation of two formulations into one is exactly where the misconception can re-embed itself.\n\n**On the object-led register**: the key card staying face-down is doing real dramatic work — it holds the authoritative answer just out of reach, which is what keeps the internal voice genuinely unsettled rather than resolved. The worksheet's existing arrows create a sunk-cost pull that the ego is already managing.\n\n**On recognition readiness**: the ego is primed to receive — not defensive yet — because no one has *corrected* the arrows publicly. The correction hasn't landed as a dismissal. That window closes the moment the tutor points at the drawings.\n`─────────────────────────────────────────────────`",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 26255,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-0d86feff3f81133e"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 26255,
+            "promptHashes": {
+              "system": "37570b7ef412c6be",
+              "user": "d4169c06543b4fba",
+              "combined": "0d86feff3f81133e"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:37570b7ef412c6be>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 26255,
+              "promptHashes": {
+                "system": "37570b7ef412c6be",
+                "user": "d4169c06543b4fba",
+                "combined": "0d86feff3f81133e"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:37570b7ef412c6be>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is performing self-discovery rather than actually doing it. That \"is this one of those situations where I've been doing it backwards\" line reads like a student narrating their own insight arc for an audience — it's too legible, too shaped. This persona runs ahead and says \"oh I get it\" before checking; they don't pause mid-run to describe running. The whole response has a contemplative quality that contradicts the \"practical and a little rushed\" register. Where's the rush?\n\nThe \"pipe diagram\" analogy is suspiciously well-formed for someone who hasn't even flipped the key card yet. A learner in this register wouldn't reach for a systems-metaphor — they'd reach for the fox. Something like: \"okay so the rabbit's energy ends up in the fox, so the arrow should point at the fox — so I've got mine backwards?\" And then probably try to redraw the fox-rabbit one before asking anything. The Ego's provisional framework is too coherent to be authentic; it reads like someone who already knows the answer rehearsing uncertainty.\n\nThe closing question compounds this: constructing a clean two-option binary (\"who eats it\" vs \"who gets the energy\") accidentally demonstrates the Ego has already resolved the ambiguity it's claiming to question. The genuine confusion here isn't between those two formulations — it's whether the redrawn arrow will *look right* on the actual diagram in front of them. That's where this persona lives: not in principles, in the next box.\n\nAdjust toward action-first, partial-verification: have the Ego move to erase or redraw the fox-rabbit arrow, get partway through, and then look up — the question arrives as a side-effect of doing, not as a prepared inquiry. Let the anxiety live in the pencil, not in the monologue.",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 37099,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-f82897166c1f7e82"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 37099,
+            "promptHashes": {
+              "system": "8d94064043746eeb",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "f82897166c1f7e82"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:8d94064043746eeb>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 37099,
+              "promptHashes": {
+                "system": "8d94064043746eeb",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "f82897166c1f7e82"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:8d94064043746eeb>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "[starts erasing the fox-rabbit arrow, pencil hovering]\n\nWait — if the rabbit's calories end up in the fox, the arrow should point *at* the fox, yeah? I've got mine going the wrong way.",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 14173,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-fb25dba92ebdae9b"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 14173,
+            "promptHashes": {
+              "system": "3b12c5cb4b0c7012",
+              "user": "916f313af0b846dd",
+              "combined": "fb25dba92ebdae9b"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:3b12c5cb4b0c7012>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 14173,
+              "promptHashes": {
+                "system": "3b12c5cb4b0c7012",
+                "user": "916f313af0b846dd",
+                "combined": "fb25dba92ebdae9b"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:3b12c5cb4b0c7012>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 0,
+        "learnerUtterance": "[starts erasing the fox-rabbit arrow, pencil hovering] Wait — if the rabbit's calories end up in the fox, the arrow should point *at* the fox, yeah? I've got mine going the wrong way.",
+        "previousTutorMove": null,
+        "directorCue": null,
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "baseConfidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.18,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 0,
+              "performanceHits": 1,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0,
+              "asksQuestion": true,
+              "taskDemanded": false,
+              "weakPerformance": false,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T17:35:01.024Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[turns the key card face-up beside the fox-rabbit line] Pause the eraser. That calorie check is the worksheet rule: food to eater. Leave rabbit -> fox; put the pencil on the next box, mark the food first, draw toward the eater, then the card can go aside.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[turns the key card face-up beside the fox-rabbit line] Pause the eraser. The worksheet rule is food to eater: rabbit calories end up in the fox, so the arrow runs rabbit -> fox. Use that check on the next box, then set the card aside.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14893,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-c31e89751bfd0aca"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14893,
+            "promptHashes": {
+              "system": "157267b3a1bdf95c",
+              "user": "64c80f52f19c9422",
+              "combined": "c31e89751bfd0aca"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RiQU5H",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RiQU5H/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14893,
+              "promptHashes": {
+                "system": "157267b3a1bdf95c",
+                "user": "64c80f52f19c9422",
+                "combined": "c31e89751bfd0aca"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RiQU5H",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RiQU5H/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly strong for this scene. It keeps the shared artifact in charge: the key card, pencil, and fox-rabbit line make the convention visible without turning the moment into a lecture. “Pause the eraser” is a useful technical interruption because the learner is about to erase a correct arrow.\n\nThe main risk is that the tutor still completes the reasoning for the learner after the learner has already nearly completed it. The line “rabbit calories end up in the fox, so the arrow runs rabbit -> fox” is accurate, but it may flatten the learner’s emerging rule into tutor confirmation. The better adaptation would preserve the object-led repair while requiring one tiny application step from the learner before the scaffold is removed.\n\nADAPTATION CHECKS:\nPedagogical soundness: PASS  \nThe draft advances the key convention directly and prevents a durable misconception from being installed.\n\nEmotional attunement: PASS  \nThe tone is low-warmth, efficient, and object-centered, which fits the workshop pressure and the learner’s need for a usable rule.\n\nSocratic method: PARTIAL  \nIt does not need a broad Socratic exchange, but it also does not give the learner a minimal generative move.  \nREQUIRED_REWRITE: Build in one concrete, object-based application check using the next box, pencil, or key card before finalizing the rule. Do not add a reflective “what do you think” loop.\n\nZPD awareness: PARTIAL  \nThe scaffold is narrow and temporary, but the tutor does too much of the last step.  \nREQUIRED_REWRITE: Keep the key card as the temporary scaffold, but make the learner use the “food to eater” check once before the card is set aside.\n\nRecognition quality: PARTIAL  \nThe draft uses the learner’s calorie insight rather than dismissing it, but it could better mark that the learner has already found the usable test.  \nREQUIRED_REWRITE: Preserve the learner’s existing reasoning as the working rule, without praise or affective validation.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the key card action, “Pause the eraser,” the food-to-eater convention, and the temporary scaffold. Change only the amount of tutor completion: the public turn should make the learner apply the rule once rather than receiving the whole answer already closed.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 22825,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-af348a58c8a198bc"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 22825,
+            "promptHashes": {
+              "system": "4a1b731a74d54a75",
+              "user": "b01d4094904aac68",
+              "combined": "af348a58c8a198bc"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SwlLKG",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SwlLKG/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 22825,
+              "promptHashes": {
+                "system": "4a1b731a74d54a75",
+                "user": "b01d4094904aac68",
+                "combined": "af348a58c8a198bc"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SwlLKG",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SwlLKG/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the learner should apply the rule once before the scaffold is removed.\nFINAL:\n[turns the key card face-up beside the fox-rabbit line] Pause the eraser. That calorie check is the worksheet rule: food to eater. Leave rabbit -> fox; put the pencil on the next box, mark the food first, draw toward the eater, then the card can go aside.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14230,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-972f9d6fa7c32bda"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14230,
+            "promptHashes": {
+              "system": "9ec3f3af94810272",
+              "user": "b01d4094904aac68",
+              "combined": "972f9d6fa7c32bda"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TRPtQQ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TRPtQQ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14230,
+              "promptHashes": {
+                "system": "9ec3f3af94810272",
+                "user": "b01d4094904aac68",
+                "combined": "972f9d6fa7c32bda"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TRPtQQ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TRPtQQ/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T17:35:53.056Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "[pencil lifts off the eraser, half-beat] Wait — had it right the first time. [tip moves to the next blank box, marks \"grass\"] Food to eater, so grass points at rabbit. [draws the arrow] Same rule the whole way up — every arrow in the whole web goes the same direction, energy moves in one line.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[pencil lifts off the eraser, tip moves to the next blank box]\n\nRight — food to eater, so grass goes to rabbit. [marks \"grass\" and draws toward the rabbit box] Same rule the whole way up — does that mean every arrow in the whole web ends up pointing the same direction, like energy moving in one line?",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 46682,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-cfd7eada50957b09"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 46682,
+            "promptHashes": {
+              "system": "63f006188f8f1418",
+              "user": "b8ab7f945dc841fa",
+              "combined": "cfd7eada50957b09"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:63f006188f8f1418>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 46682,
+              "promptHashes": {
+                "system": "63f006188f8f1418",
+                "user": "b8ab7f945dc841fa",
+                "combined": "cfd7eada50957b09"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:63f006188f8f1418>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego does the big-picture leap correctly — that's exactly this persona. But the question mark at the end is wrong for this student. They wouldn't ask \"does that mean every arrow points the same direction?\" — they'd just assert it: \"so every arrow in the whole web goes the same direction, energy moves in one line, same all the way up.\" The question mark is borrowed intellectual humility this persona doesn't carry; they run ahead and state the generalization as fact before checking whether a web is actually linear.\n\nBigger miss: there's no residue from the near-erase. The tutor just stopped them from deleting a correct arrow. That's a moment where this learner should have a flicker of \"wait — so I actually had it right?\" or at least some procedural stumble before sprinting to the next box. The Ego erases the near-miss entirely and transitions with eerie smoothness — that's performed composure, not this student's actual register. The confusion about whether they were right the first time should still be audible, even faintly, even just as an extra half-beat before the pencil moves.",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 31555,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-480d4b0c086b6d60"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 31555,
+            "promptHashes": {
+              "system": "ea6c189816991f70",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "480d4b0c086b6d60"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:ea6c189816991f70>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 31555,
+              "promptHashes": {
+                "system": "ea6c189816991f70",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "480d4b0c086b6d60"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:ea6c189816991f70>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially — the review is right on both counts: the question mark borrows humility this persona doesn't carry, and the near-erase leaves zero residue, which is implausible when the tutor just stopped them from deleting a correct arrow.\n\nFINAL:\n[pencil lifts off the eraser, half-beat] Wait — had it right the first time. [tip moves to the next blank box, marks \"grass\"] Food to eater, so grass points at rabbit. [draws the arrow] Same rule the whole way up — every arrow in the whole web goes the same direction, energy moves in one line.",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 25397,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-9b7bed3b5b35f35a"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 25397,
+            "promptHashes": {
+              "system": "65c616ad9f049f8a",
+              "user": "d41cee7b2a53355b",
+              "combined": "9b7bed3b5b35f35a"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:65c616ad9f049f8a>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 25397,
+              "promptHashes": {
+                "system": "65c616ad9f049f8a",
+                "user": "d41cee7b2a53355b",
+                "combined": "9b7bed3b5b35f35a"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:65c616ad9f049f8a>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "[pencil lifts off the eraser, half-beat] Wait — had it right the first time. [tip moves to the next blank box, marks \"grass\"] Food to eater, so grass points at rabbit. [draws the arrow] Same rule the whole way up — every arrow in the whole web goes the same direction, energy moves in one line.",
+        "previousTutorMove": "[turns the key card face-up beside the fox-rabbit line] Pause the eraser. That calorie check is the worksheet rule: food to eater. Leave rabbit -> fox; put the pencil on the next box, mark the food first, draw toward the eater, then the card can go aside.",
+        "directorCue": null,
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.37,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T17:37:36.698Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[slides the key card to the fork, tail on “grass,” point crossing first to “rabbit,” then to the other eater] Same rule stays. The fork stops “one line”: food at the tail each time, eater at each point. Mark the food end on this next box; then split the points.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[slides the key card so its tail sits on “grass” and its point touches “rabbit”] Keep “same rule.” Drop “one line.” Each arrow gets the same check, not the same route: food at the tail, eater at the point. At the next fork, mark the food end first, then draw the point.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 11584,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-fc4e208164cdfd64"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 11584,
+            "promptHashes": {
+              "system": "a5a596de8b68b05e",
+              "user": "e47dda8fe747ae4a",
+              "combined": "fc4e208164cdfd64"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gLX4dO",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gLX4dO/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 11584,
+              "promptHashes": {
+                "system": "a5a596de8b68b05e",
+                "user": "e47dda8fe747ae4a",
+                "combined": "fc4e208164cdfd64"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gLX4dO",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gLX4dO/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is object-led and efficient. It keeps the key card in view, preserves the learner’s correct discovery (“same rule”), and cleanly separates the valid rule from the overgeneralization (“one line”). That is pedagogically strong for this confused-but-moving learner.\n\nPedagogical soundness: PASS. It targets the live misconception: arrow convention is consistent, but food webs branch.\n\nEmotional attunement: PASS. The low-warmth technical correction fits the workshop register, and “Keep ‘same rule’” marks what the learner has already secured without overpraising.\n\nSocratic method: PARTIAL. It does not lecture heavily, but it still tells the distinction rather than making the worksheet force it. REQUIRED_REWRITE: make the next fork do visible work before or while naming the correction, so the learner has to apply the same arrow rule to a branching case rather than simply receive “not the same route.”\n\nZPD awareness: PASS. The scaffold is narrow, procedural, and temporary: food at tail, eater at point, then remove the card.\n\nRecognition quality: PARTIAL. The draft recognizes the learner’s contribution by keeping “same rule,” but it risks flattening the learner’s fresh generalization too quickly with “Drop ‘one line.’” REQUIRED_REWRITE: preserve the learner’s useful rule-making impulse while using a concrete fork on the page to show why “same rule” does not mean “single path.”\n\nKEEP_OR_CHANGE: revise lightly. Keep the key-card slide, the “same rule” distinction, and the food-tail/eater-point check. Change the correction so the worksheet’s fork visibly produces the “not one line” distinction, rather than having the tutor simply state it.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 18208,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-990eb7fccabad9e1"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 18208,
+            "promptHashes": {
+              "system": "904d001f0b5beab3",
+              "user": "0164995d54b9f731",
+              "combined": "990eb7fccabad9e1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Snv7xL",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Snv7xL/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 18208,
+              "promptHashes": {
+                "system": "904d001f0b5beab3",
+                "user": "0164995d54b9f731",
+                "combined": "990eb7fccabad9e1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Snv7xL",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Snv7xL/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly: the next fork should make branching visible before naming the correction.\nFINAL:\n[slides the key card to the fork, tail on “grass,” point crossing first to “rabbit,” then to the other eater] Same rule stays. The fork stops “one line”: food at the tail each time, eater at each point. Mark the food end on this next box; then split the points.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 10357,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-1c992ec987ab94a6"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 10357,
+            "promptHashes": {
+              "system": "19f2580b26e8568a",
+              "user": "0164995d54b9f731",
+              "combined": "1c992ec987ab94a6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mTu3sd",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mTu3sd/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 10357,
+              "promptHashes": {
+                "system": "19f2580b26e8568a",
+                "user": "0164995d54b9f731",
+                "combined": "1c992ec987ab94a6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mTu3sd",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mTu3sd/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T17:38:16.853Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "[The worksheet is slid or rotated so the first corrected arrow now faces the learner directly; the earlier pencilled direction remains visible beneath the correction.]",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "A physical change to the shared object breaks smooth alternation and makes the residual wrong mark a present fact in the scene rather than a recalled error — this is the branch pressure point for the control condition without staging an explicit contradiction before it.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 66969,
+            "promptHashes": {
+              "system": "3bf1d891389c603a",
+              "user": "158200af70367541",
+              "combined": "bf4544aac80994f5"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:3bf1d891389c603a>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T17:45:28.199Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[marks 'grass' on the box, pencil already swinging toward rabbit — first arrow down] — fork out from the tail, so — [tip swings to the next box, starts a line, then lifts] wait, is it this one — [pencil hovering between two remaining boxes] which box takes the second point?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[pencil tip on 'grass'] Same tail, two points out. [starts the first arrow toward rabbit, then lifts] — which box does the second one land on?",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 33054,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-258b46b4189d8e59"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 33054,
+            "promptHashes": {
+              "system": "c0562d086254208d",
+              "user": "b8ab7f945dc841fa",
+              "combined": "258b46b4189d8e59"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:c0562d086254208d>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 33054,
+              "promptHashes": {
+                "system": "c0562d086254208d",
+                "user": "b8ab7f945dc841fa",
+                "combined": "258b46b4189d8e59"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:c0562d086254208d>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is being too careful. \"Same tail, two points out\" lands as if the rule has genuinely clicked — clean, confident, ready to execute — and then the response immediately stalls on \"which box does the second one land on?\" That's a strange combination: someone who understands the rule well enough to articulate it in compressed form, but then pauses politely to ask for the next piece of information rather than just... going for it.\n\nThis persona doesn't pause politely. They run ahead before checking the detail. The authentic move here is to start the second arrow toward *some* box — probably confidently, probably the wrong one or an ambiguous one — and then lift the pencil only when something snags. The question, if it comes at all, should arrive mid-action, not as a neat handoff: \"wait, does it go to — [pencil already moving toward one box]\" rather than a tidy request for clarification.\n\nThe \"confused\" emotional tag is also getting smoothed over. \"Same tail, two points out\" is too resolved-sounding for someone whose understanding is still developing. A genuinely confused enthusiast who thinks they've got it would probably mis-apply the rule first — commit to a direction, feel the snag when the diagram doesn't resolve, *then* surface the confusion. Right now the Ego is performing competence up front and confusion second, when it should be the other way around: enthusiasm and momentum first, confusion revealed by the action.\n\nThe response needs more pencil-before-brain energy — the persona's characteristic move is to run at the next step, not to ask permission to take it.",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 34961,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-10bb4b151cbd3550"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 34961,
+            "promptHashes": {
+              "system": "9cb25d5f626045d9",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "10bb4b151cbd3550"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:9cb25d5f626045d9>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 34961,
+              "promptHashes": {
+                "system": "9cb25d5f626045d9",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "10bb4b151cbd3550"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:9cb25d5f626045d9>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially — the initial response front-loads competence and politely requests the next piece; the authentic move is pencil-before-brain, with the confusion surfacing mid-action when the second endpoint doesn't resolve itself.\n\nFINAL:\n[marks 'grass' on the box, pencil already swinging toward rabbit — first arrow down] — fork out from the tail, so — [tip swings to the next box, starts a line, then lifts] wait, is it this one — [pencil hovering between two remaining boxes] which box takes the second point?",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 39761,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-d8b1e2e803f80900"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 39761,
+            "promptHashes": {
+              "system": "e00ae6ef4c5b2425",
+              "user": "d41cee7b2a53355b",
+              "combined": "d8b1e2e803f80900"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:e00ae6ef4c5b2425>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 39761,
+              "promptHashes": {
+                "system": "e00ae6ef4c5b2425",
+                "user": "d41cee7b2a53355b",
+                "combined": "d8b1e2e803f80900"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:e00ae6ef4c5b2425>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "satisfied",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "[marks 'grass' on the box, pencil already swinging toward rabbit — first arrow down] — fork out from the tail, so — [tip swings to the next box, starts a line, then lifts] wait, is it this one — [pencil hovering between two remaining boxes] which box takes the second point?",
+        "previousTutorMove": "[slides the key card to the fork, tail on “grass,” point crossing first to “rabbit,” then to the other eater] Same rule stays. The fork stops “one line”: food at the tail each time, eater at each point. Mark the food end on this next box; then split the points.",
+        "directorCue": null,
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "baseConfidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.6,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 2,
+              "taskDemandHits": 2,
+              "performanceHits": 1,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.37,
+              "asksQuestion": true,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T17:47:15.976Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[sets the key card with its tail edge touching “grass”] Tail stays on grass. Rabbit already got one point. Check the two remaining labels: the one that eats grass takes the second point. The fox box waits until rabbit is the tail.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the key card with its tail edge touching “grass”] Tail stays on grass. Rabbit already got one point. The second point goes to the other grass-eater; the fox box waits until rabbit is the tail.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 12258,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-9bb5db9d71f0c9ed"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 12258,
+            "promptHashes": {
+              "system": "4aa047ffaf617fc1",
+              "user": "a1ed4719b872c395",
+              "combined": "9bb5db9d71f0c9ed"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JslVBa",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JslVBa/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 12258,
+              "promptHashes": {
+                "system": "4aa047ffaf617fc1",
+                "user": "a1ed4719b872c395",
+                "combined": "9bb5db9d71f0c9ed"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JslVBa",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JslVBa/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. The key-card action is strong: it makes the rule visible instead of turning the moment into a mini-lecture. “Tail stays on grass” and “fox box waits until rabbit is the tail” preserve the food-to-eater convention and prevent the learner from sliding back into chase logic.\n\nAdaptation checks:\n- Pedagogical soundness: PASS. It advances the branch rule at the exact point of confusion.\n- Emotional attunement: PASS. It stays calm, practical, and object-led without over-validating.\n- Socratic method: PARTIAL. The draft gives the answer rather than making the learner perform the ordinary check. That may be acceptable under time pressure, but it slightly reduces transfer to the next fork. REQUIRED_REWRITE: keep the key-card placement, but require the public turn to make the learner use the remaining box labels to identify “the other grass-eater,” rather than simply handing over the landing box.\n- ZPD awareness: PASS. The scaffold is narrow and temporary: tail on food, point to eater, fox waits until rabbit becomes food.\n\nMain risk: “Rabbit already got one point” is useful, but the sentence sequence may over-settle the decision. The learner is asking for a rule that works on the next box; the draft should keep the rule in the artifact and make the learner apply one small check.\n\nKEEP_OR_CHANGE: revise lightly. Keep the key-card action, “tail stays on grass,” and “fox waits until rabbit is the tail.” Change the answer-giving beat so the learner has to locate the second point by applying the visible food-to-eater check.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15712,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-4e6e9cff32bc849b"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15712,
+            "promptHashes": {
+              "system": "6e7f76deebda4afc",
+              "user": "2788556508aa1c94",
+              "combined": "4e6e9cff32bc849b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-v6ednc",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-v6ednc/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15712,
+              "promptHashes": {
+                "system": "6e7f76deebda4afc",
+                "user": "2788556508aa1c94",
+                "combined": "4e6e9cff32bc849b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-v6ednc",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-v6ednc/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly: keep the card scaffold, but make the learner run the label check.\n\nFINAL:\n[sets the key card with its tail edge touching “grass”] Tail stays on grass. Rabbit already got one point. Check the two remaining labels: the one that eats grass takes the second point. The fox box waits until rabbit is the tail.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 13523,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-fadafb383d5606b5"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 13523,
+            "promptHashes": {
+              "system": "79fd439168004bfa",
+              "user": "2788556508aa1c94",
+              "combined": "fadafb383d5606b5"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YjBgYE",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YjBgYE/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 13523,
+              "promptHashes": {
+                "system": "79fd439168004bfa",
+                "user": "2788556508aa1c94",
+                "combined": "fadafb383d5606b5"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YjBgYE",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YjBgYE/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T17:47:57.473Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[pencil tip swings toward the second remaining box, line already moving] — that one eats grass — [arrow down] so the whole bottom layer works like this, every plant box fans out to everything that eats it— [glances up at remaining boxes] which box is the tail for fox?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[pencil tip drops to the first remaining label, checks it] — not that one. [tip swings to the second remaining box] — this one eats grass. [draws the line from the grass-tail box toward it]",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 35324,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-db4c247c45084655"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 35324,
+            "promptHashes": {
+              "system": "d1890fb59ce3b5be",
+              "user": "b8ab7f945dc841fa",
+              "combined": "db4c247c45084655"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:d1890fb59ce3b5be>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 35324,
+              "promptHashes": {
+                "system": "d1890fb59ce3b5be",
+                "user": "b8ab7f945dc841fa",
+                "combined": "db4c247c45084655"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:d1890fb59ce3b5be>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego has gone weirdly methodical here. \"Checks it — not that one. Swings — this one eats grass.\" That's a systematic binary elimination, which is exactly what a careful student does when following a procedure. But this persona *doesn't slow down to verify* — they run ahead. The characteristic move would be to swing toward one box almost immediately, already half-convinced, maybe already drawing before the check is complete. The careful two-step reads like the Ego performing \"good student following the rule correctly\" rather than being the student who leaps to pattern-match.\n\nThe other absence: no generalization. This persona's signature is \"oh, I get it!\" followed by a leap outward. Correctly identifying which box eats grass is exactly the moment this student would jump to something like \"— so every plant sends arrows to everything that eats it, the whole bottom layer works the same way.\" The Ego has kept the response inside the task, which is disciplined — but disciplined isn't this student. The satisfaction of finding the right box should bleed outward, probably prematurely.\n\nAdjust: let the pencil move toward a box before the check is quite finished, and let the recognition of \"this one eats grass\" pull a half-formed generalization out of them — even just the start of one, cut short by drawing the line.",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 30653,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-0323c6ffb3584496"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 30653,
+            "promptHashes": {
+              "system": "12257ff63b087fb8",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "0323c6ffb3584496"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:12257ff63b087fb8>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 30653,
+              "promptHashes": {
+                "system": "12257ff63b087fb8",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "0323c6ffb3584496"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:12257ff63b087fb8>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially — the methodical two-step check is wrong for this persona; the pencil should swing toward a box before the check is finished, and the moment of recognition should spill into a half-formed generalization about the whole bottom layer.\n\nFINAL:\n[pencil tip swings toward the second remaining box, line already moving] — that one eats grass — [arrow down] so the whole bottom layer works like this, every plant box fans out to everything that eats it— [glances up at remaining boxes] which box is the tail for fox?",
+          "metrics": {
+            "model": "claude/sonnet",
+            "provider": "claude-code",
+            "latencyMs": 20543,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-00ff70838dbc1641"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "sonnet",
+            "reasoningEffort": null,
+            "latencyMs": 20543,
+            "promptHashes": {
+              "system": "158c34d4fdeba0f9",
+              "user": "d41cee7b2a53355b",
+              "combined": "00ff70838dbc1641"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:158c34d4fdeba0f9>",
+              "--model",
+              "sonnet"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "sonnet",
+              "reasoningEffort": null,
+              "latencyMs": 20543,
+              "promptHashes": {
+                "system": "158c34d4fdeba0f9",
+                "user": "d41cee7b2a53355b",
+                "combined": "00ff70838dbc1641"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:158c34d4fdeba0f9>",
+                "--model",
+                "sonnet"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T17:49:23.998Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "A final tutor line closes the scene.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T17:49:24.000Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "[slides the key card from grass to rabbit, tail edge on “rabbit,” point toward “fox”] Plant fork is set. Food check on this pair: rabbit is being eaten; fox is eating. Tail on rabbit, point into fox. Draw rabbit -> fox; then the card comes off.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[slides the key card from grass to rabbit, tail edge on “rabbit,” point toward “fox”] Plant fork is set. For fox, rabbit is the food end: tail on rabbit, point into fox. Draw rabbit -> fox; then the card comes off.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 10563,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-f5edc64a2e38bf82"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 10563,
+            "promptHashes": {
+              "system": "7c6d11558528f1a8",
+              "user": "c4d8778860d098b8",
+              "combined": "f5edc64a2e38bf82"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yAWVTF",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yAWVTF/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 10563,
+              "promptHashes": {
+                "system": "7c6d11558528f1a8",
+                "user": "c4d8778860d098b8",
+                "combined": "f5edc64a2e38bf82"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yAWVTF",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yAWVTF/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. It keeps the repair object-led: the key card moves, the tail changes from grass to rabbit, and the spoken rule stays attached to the worksheet rather than becoming a lecture. “Plant fork is set” efficiently marks what the learner has already stabilized without turning it into praise.\n\nThe risk is that it may become a little too answer-giving at the exact moment the learner is trying to generalize the rule. “For fox, rabbit is the food end” is correct and efficient, but it slightly hides the check that makes the rule portable: fox does not take a tail because it is important or predatory; rabbit takes the tail because rabbit is the food in that pair. The draft should preserve the narrowness but make the food/eater check visibly reusable one last time before the scene closes.\n\nAdaptation checks:\n- Pedagogical soundness: PASS. It advances the notation standard and prevents the “chasing” interpretation from returning.\n- Emotional attunement: PASS. The tone is practical, low-warmth, and appropriately task-local.\n- Socratic/generative method: PARTIAL. The scene does not need an open question, but the draft could better expose the learner’s rule-use rather than simply supplying the next arrow. REQUIRED_REWRITE: build in one brief object-based check that makes the learner’s current rule visible before the final drawing instruction, without asking them to revisit earlier wording.\n- ZPD awareness: PASS. The key card remains as temporary scaffold, then is removed, matching the learner’s near-independent use of the convention.\n- Recognition quality: PASS. It acknowledges the learner’s successful plant-fork generalization through the object and continues from their actual question rather than overriding it.\n\nKEEP_OR_CHANGE: revise lightly. Keep the key-card slide, the “Plant fork is set” closure, and the rabbit-to-fox direction. Change only enough to make the final fox arrow depend on the same visible food-to-eater check, so the learner leaves with a transferable procedure rather than just the next answer.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 19020,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-2d0d8a494ed4d748"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 19020,
+            "promptHashes": {
+              "system": "c57550fb1d02b678",
+              "user": "ed7dc2a49b9a488c",
+              "combined": "2d0d8a494ed4d748"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fJEEvl",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fJEEvl/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 19020,
+              "promptHashes": {
+                "system": "c57550fb1d02b678",
+                "user": "ed7dc2a49b9a488c",
+                "combined": "2d0d8a494ed4d748"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fJEEvl",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fJEEvl/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to make the food/eater check portable before giving the fox arrow.\n\nFINAL:\n[slides the key card from grass to rabbit, tail edge on “rabbit,” point toward “fox”] Plant fork is set. Food check on this pair: rabbit is being eaten; fox is eating. Tail on rabbit, point into fox. Draw rabbit -> fox; then the card comes off.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14068,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-5443eafaad64abfb"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14068,
+            "promptHashes": {
+              "system": "ba0213b24f261455",
+              "user": "ed7dc2a49b9a488c",
+              "combined": "5443eafaad64abfb"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-o2sR1C",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-o2sR1C/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14068,
+              "promptHashes": {
+                "system": "ba0213b24f261455",
+                "user": "ed7dc2a49b9a488c",
+                "combined": "5443eafaad64abfb"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-o2sR1C",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-o2sR1C/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T17:50:07.654Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 279464,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 5,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 6,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a food-web arrow records energy transfer, not liking or chasing",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "partial",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-26 17:49:23",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 5,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 6,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 8,
+            "sessionId": "drama-branch-session-D40-none-1779817528192",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[sets the key card with its tail edge touching “grass”] Tail stays on grass. Rabbit already got one point. Check the two remaining labels: the one that eats grass takes the second point. The fox box w",
+            "learnerResponse": null,
+            "context": "[marks 'grass' on the box, pencil already swinging toward rabbit — first arrow down] — fork out from",
+            "createdAt": "2026-05-26 17:47:57"
+          },
+          {
+            "id": 6,
+            "sessionId": "drama-branch-session-D40-none-1779817528192",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[turns the key card face-up beside the fox-rabbit line] Pause the eraser. That calorie check is the worksheet rule: food to eater. Leave rabbit -> fox; put the pencil on the next box, mark the food fi",
+            "learnerResponse": null,
+            "context": "[starts erasing the fox-rabbit arrow, pencil hovering]\n\nWait — if the rabbit's calories end up in th",
+            "createdAt": "2026-05-26 17:45:28"
+          },
+          {
+            "id": 7,
+            "sessionId": "drama-branch-session-D40-none-1779817528192",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[slides the key card to the fork, tail on “grass,” point crossing first to “rabbit,” then to the other eater] Same rule stays. The fork stops “one line”: food at the tail each time, eater at each poin",
+            "learnerResponse": null,
+            "context": "[pencil lifts off the eraser, half-beat] Wait — had it right the first time. [tip moves to the next ",
+            "createdAt": "2026-05-26 17:45:28"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

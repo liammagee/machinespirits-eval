@@ -1,0 +1,26 @@
+{
+  "batchId": "phase2-d42-readable-projection-v1",
+  "generator": "projection-reclean",
+  "repeats": 1,
+  "maxTurns": 3,
+  "critics": [
+    "anthropic/claude-sonnet-4.6",
+    "qwen/qwen3.7-max",
+    "deepseek/deepseek-v4-pro",
+    "google/gemini-3.5-flash"
+  ],
+  "units": [
+    {
+      "id": "target-r02",
+      "kind": "target",
+      "repeat": "r02",
+      "outDir": "config/poetics-calibration/phase2-d42-readable-projection-v1/target-r02/sample",
+      "transcriptsDir": "config/poetics-calibration/phase2-d42-readable-projection-v1/target-r02/transcripts",
+      "keyPath": "config/poetics-calibration/phase2-d42-readable-projection-v1/target-r02/key.yaml",
+      "pairedPolicies": [
+        "peripeteia-only"
+      ],
+      "spec": "config/poetics-calibration/phase2-classic-drama-adaptation-v1.yaml"
+    }
+  ]
+}

@@ -15,6 +15,11 @@ import {
   structureCriticJobs,
 } from '../scripts/run-poetics-production-batch.js';
 
+function planCommandValue(cmd, flag) {
+  const i = cmd.indexOf(flag);
+  return i === -1 ? null : cmd[i + 1];
+}
+
 describe('run-poetics-production-batch', () => {
   it('builds the pre-specified target/control/stress unit set', () => {
     const args = parseArgs([
@@ -46,7 +51,7 @@ describe('run-poetics-production-batch', () => {
     assert.equal(new Set(plan.units.map((unit) => unit.directorVariationKey)).size, plan.units.length);
   });
 
-  it('defaults to the four-critic panel including Sonnet', () => {
+  it('defaults to the five-critic panel including Sonnet and isolated Codex', () => {
     const args = parseArgs(['--root-dir', '/tmp/phase2-production-v1-test']);
     const plan = buildPlan(args);
 
@@ -56,6 +61,7 @@ describe('run-poetics-production-batch', () => {
       'google/gemini-3.5-flash',
       'deepseek/deepseek-v4-pro',
       'anthropic/claude-sonnet-4.6',
+      'codex',
     ]);
   });
 
@@ -92,6 +98,33 @@ describe('run-poetics-production-batch', () => {
     assert.ok(cmd.includes('misframing-candidate'));
     assert.ok(cmd.includes('--director-variation-key'));
     assert.ok(cmd.includes('phase2-production-v1:r01:target'));
+  });
+
+  it('passes a mixed CLI role map through to generation commands', () => {
+    const args = parseArgs([
+      '--root-dir',
+      '/tmp/phase2-production-v1-test',
+      '--role-map',
+      'director=claude,tutor=codex,learner=claude',
+    ]);
+    const plan = buildPlan(args);
+    const target = plan.units.find((unit) => unit.kind === 'target');
+    const cmd = generationCommand(target, args);
+
+    assert.equal(plan.roleMap, 'director=claude,tutor=codex,learner=claude');
+    assert.equal(plan.claudeModel, 'opus');
+    assert.ok(cmd.includes('--role-map'));
+    assert.ok(cmd.includes('director=claude,tutor=codex,learner=claude'));
+    assert.ok(cmd.includes('--model'));
+    assert.ok(cmd.includes('opus'));
+  });
+
+  it('does not pass a Claude model override for Codex-only generation', () => {
+    const args = parseArgs(['--root-dir', '/tmp/phase2-production-v1-test', '--generator', 'codex']);
+    const target = buildPlan(args).units.find((unit) => unit.kind === 'target');
+    const cmd = generationCommand(target, args);
+
+    assert.equal(planCommandValue(cmd, '--model'), null);
   });
 
   it('can emit the seven-arm tutor-adaptation target design', () => {

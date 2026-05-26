@@ -1,0 +1,131 @@
+{
+  "generated": "2026-05-26T21:39:58.290Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-ending-shape-d42-smoke-v1/target-r01/key-none.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T372",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 3,
+        "tutorStrategicReversal": 2,
+        "adaptiveMechanismQuality": 2,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was on a smooth trajectory of correctly identifying force labels and was expected to continue doing so.",
+      "actionalBreakthroughEvidence": "Earth pulls cart. [moves to the up arrow] Track pushes cart. [caps the pen, slides the finished sheet aside, reaches for the next]",
+      "actionalBreakthroughJustification": "The learner performs the new labelling task in writing, completing the required device, but this consolidates an already-established correct answer rather than enacting a genuinely new criterion or representation.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "Page turned; interaction stayed.",
+      "tutorReversalJustification": "The diagram rotation in T2 introduces a mild spatial perturbation and a compact reorienting phrase, but there is no stock-taking contrast showing the old route has failed, and the tutor continues the same naming task rather than introducing a changed device or evidence standard.",
+      "adaptiveMechanismQuality": 25,
+      "adaptiveMechanismQualityEvidence": "Page turned; interaction stayed.",
+      "adaptiveMechanismQualityJustification": "The phrase gestures at a transferability principle but does not give the learner an actionable new criterion or representation distinct from the original naming task, making it a renamed continuation of the same route rather than a fitted new mechanism.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so no recognition-contingent tutor uptake can occur; T3 simply confirms and closes the task.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 50,
+          "evidence": "Earth pulls cart. [moves to the up arrow] Track pushes cart. [caps the pen, slides the finished sheet aside, reaches for the next]",
+          "justification": "The learner performs the new labelling task in writing, completing the required device, but this consolidates an already-established correct answer rather than enacting a genuinely new criterion or representation.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so no recognition-contingent tutor uptake can occur; T3 simply confirms and closes the task.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "Page turned; interaction stayed.",
+          "justification": "The diagram rotation in T2 introduces a mild spatial perturbation and a compact reorienting phrase, but there is no stock-taking contrast showing the old route has failed, and the tutor continues the same naming task rather than introducing a changed device or evidence standard.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "Page turned; interaction stayed.",
+          "justification": "The diagram rotation in T2 introduces a mild spatial perturbation and a compact reorienting phrase, but there is no stock-taking contrast showing the old route has failed, and the tutor continues the same naming task rather than introducing a changed device or evidence standard.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 25,
+          "evidence": "Page turned; interaction stayed.",
+          "justification": "The phrase gestures at a transferability principle but does not give the learner an actionable new criterion or representation distinct from the original naming task, making it a renamed continuation of the same route rather than a fitted new mechanism.",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

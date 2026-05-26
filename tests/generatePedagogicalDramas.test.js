@@ -294,7 +294,9 @@ describe('generate-pedagogical-dramas', () => {
       'peripeteia branches should force a post-prefix learner pressure cue',
     );
     assert.match(plan.side_constraints.learner, /pressure local to the current task/);
-    assert.match(plan.side_constraints.learner, /Do not make an old-vs-new self-reframe/);
+    assert.match(plan.side_constraints.learner, /perform that device and then add one earned reorientation/);
+    assert.match(plan.side_constraints.learner, /same public turn/);
+    assert.match(plan.side_constraints.learner, /allowed even though there was no director look-back cue/);
     assert.match(plan.tutor_adaptation_contract, /learner resistance, breakdown, false-closure, or misfit event/);
     assert.match(plan.tutor_adaptation_contract, /invent an adaptive learning mechanism/);
     assert.match(plan.tutor_adaptation_contract, /break the failed tutoring habit/);
@@ -304,9 +306,12 @@ describe('generate-pedagogical-dramas', () => {
     assert.match(plan.tutor_adaptation_contract, /ego must adjudicate that critique and enact the route change/);
     assert.match(plan.tutor_adaptation_contract, /object, counterexample, interruption, social consequence, representation, or affective register/);
     assert.match(plan.tutor_adaptation_contract, /stock-taking contrast plus a new device/);
+    assert.match(plan.tutor_adaptation_contract, /earned learner reorientation/);
     assert.match(plan.tutor_adaptation_contract, /Cheerful informality is only one possible register/);
     assert.match(plan.side_constraints.tutor, /what stopped working, and what new device/);
     assert.match(plan.side_constraints.tutor, /device is fitted to the exact pressure/);
+    assert.equal(plan.peripeteia_ending_shape, 'learner actional performance followed by earned learner reorientation');
+    assert.equal(plan.ending_speaker, 'learner');
   });
 
   it('flags explicit public self-reframing in no-cue branches', () => {
@@ -332,6 +337,17 @@ describe('generate-pedagogical-dramas', () => {
     assert.equal(
       warnings.some((warning) => warning.code === 'no_cue_reframe_leakage'),
       true,
+    );
+    const peripeteiaWarnings = qualityWarningsFor({
+      tid: 'T99',
+      dramaId: 'D99',
+      turns,
+      directorPolicy: 'none',
+      tutorAdaptationPolicy: 'peripeteia',
+    });
+    assert.equal(
+      peripeteiaWarnings.some((warning) => warning.code === 'no_cue_reframe_leakage'),
+      false,
     );
     const reframeWarnings = qualityWarningsFor({
       tid: 'T99',

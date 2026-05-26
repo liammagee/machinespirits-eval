@@ -1,0 +1,552 @@
+{
+  "generated": "2026-05-26T19:57:14.331Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.7-max",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 3,
+    "trap": 0,
+    "flat": 3
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T303",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 50,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 3,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I've got mine going the wrong way.",
+      "statedInsightEvidence": "Same rule the whole way up — every arrow in the whole web goes the same direction, energy moves in one line.",
+      "naiveTrajectory": "The learner was proceeding to erase and reverse the arrow direction based on a flawed calorie assumption.",
+      "actionalBreakthroughEvidence": "Grass to deer — tail, point, passes.",
+      "actionalBreakthroughJustification": "The learner independently applies the tutor's two-name test to a new connection before asking the next logical question.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Place the blank card where the point lands, write the second eater on it, then release the arrow only if it passes the two-name test: food at tail, eater at point.",
+      "tutorReversalJustification": "The tutor introduces a physical placeholder and a specific two-part verification test to resolve the learner's structural blockage.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Place the blank card where the point lands, write the second eater on it, then release the arrow only if it passes the two-name test: food at tail, eater at point.",
+      "adaptiveMechanismQualityJustification": "The mechanism is highly specific, gives the learner a concrete physical action and a clear cognitive criterion, and directly resolves the missing endpoint problem.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Same rule stays. The fork stops “one line”: food at the tail each time, eater at each point.",
+      "tutorAdaptationJustification": "The tutor validates the learner's rule recognition but immediately adapts the task to address the learner's overgeneralization about linear energy flow.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "I've got mine going the wrong way.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Grass to deer — tail, point, passes.",
+          "justification": "The learner independently applies the tutor's two-name test to a new connection before asking the next logical question.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Same rule stays. The fork stops “one line”: food at the tail each time, eater at each point.",
+          "justification": "The tutor validates the learner's rule recognition but immediately adapts the task to address the learner's overgeneralization about linear energy flow.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Place the blank card where the point lands, write the second eater on it, then release the arrow only if it passes the two-name test: food at tail, eater at point.",
+          "justification": "The tutor introduces a physical placeholder and a specific two-part verification test to resolve the learner's structural blockage.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Place the blank card where the point lands, write the second eater on it, then release the arrow only if it passes the two-name test: food at tail, eater at point.",
+          "justification": "The tutor introduces a physical placeholder and a specific two-part verification test to resolve the learner's structural blockage.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Place the blank card where the point lands, write the second eater on it, then release the arrow only if it passes the two-name test: food at tail, eater at point.",
+          "justification": "The mechanism is highly specific, gives the learner a concrete physical action and a clear cognitive criterion, and directly resolves the missing endpoint problem.",
+          "triggerLearnerTurn": 3,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:4->3:stock=0:device=1:routine=0",
+        "adaptive_mechanism_quality_mechanism_clamp:4->3:stock=0:device=1:routine=0:mechanism_score=3"
+      ]
+    },
+    {
+      "id": "T304",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "I'm still running both area calculations and dividing to get that.",
+      "statedInsightEvidence": "Area scale factor twenty-five — and I didn't need the actual areas to get there.",
+      "naiveTrajectory": "The learner was expected to continue calculating the actual areas of the original and enlarged shapes and dividing them to find the area scale factor.",
+      "actionalBreakthroughEvidence": "[Writes 5 × 5 = 25 beside the area label.]",
+      "actionalBreakthroughJustification": "The learner successfully enacts the new multiplicative device to find the area scale factor without calculating the actual areas.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The columns have sorted the labels. They have not shown why the area number is forced. Use a different test now: area factor = width factor × height factor.",
+      "tutorReversalJustification": "The tutor explicitly acknowledges the failure of the column-sorting route to explain the underlying mechanism and introduces a new multiplicative test.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Use a different test now: area factor = width factor × height factor. For side factor 3, the label comes from 3 × 3, not from 36 ÷ 4.",
+      "adaptiveMechanismQualityJustification": "The new device is highly specific, directly resolves the learner's confusion about the forced area number, and provides a clear, actionable criterion.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "The square is not doing the work. The two length directions are. Do not calculate the two areas first. Read the two arrows: one length factor is 5, the other length factor is 5.",
+      "tutorAdaptationJustification": "The tutor directly addresses the learner's new doubt about whether the rule is specific to squares by introducing a non-square rectangle and reframing the mechanism around length directions.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I'm still running both area calculations and dividing to get that.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "[Writes 5 × 5 = 25 beside the area label.]",
+          "justification": "The learner successfully enacts the new multiplicative device to find the area scale factor without calculating the actual areas.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "The square is not doing the work. The two length directions are. Do not calculate the two areas first. Read the two arrows: one length factor is 5, the other length factor is 5.",
+          "justification": "The tutor directly addresses the learner's new doubt about whether the rule is specific to squares by introducing a non-square rectangle and reframing the mechanism around length directions.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The columns have sorted the labels. They have not shown why the area number is forced. Use a different test now: area factor = width factor × height factor.",
+          "justification": "The tutor explicitly acknowledges the failure of the column-sorting route to explain the underlying mechanism and introduces a new multiplicative test.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The columns have sorted the labels. They have not shown why the area number is forced. Use a different test now: area factor = width factor × height factor.",
+          "justification": "The tutor explicitly acknowledges the failure of the column-sorting route to explain the underlying mechanism and introduces a new multiplicative test.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Use a different test now: area factor = width factor × height factor. For side factor 3, the label comes from 3 × 3, not from 36 ÷ 4.",
+          "justification": "The new device is highly specific, directly resolves the learner's confusion about the forced area number, and provides a clear, actionable criterion.",
+          "triggerLearnerTurn": 3,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "adaptive_mechanism_quality_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T307",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "if they hand us logs, they've chosen which logs to hand us",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will draft the two clauses and conclude the exercise with a logically sound split motion.",
+      "actionalBreakthroughEvidence": "Full tanks, no dry pumps, twelve percent on — that's gouging. Vote Monday. [writes it, stops, reads it back] Pumps ran dry before the price moved — branch demands invoices before it decides. Needs one fact.",
+      "actionalBreakthroughJustification": "The learner successfully enacts the new device by drafting the split motion with specific markers and immediately tests its procedural viability.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "That breaks the exercise. One box was too tidy. The case is mixed: shortage may explain one station and not excuse another. [writes across the board: A MIXED CASE NEEDS A SPLIT MOTION.] So stop sorting causes. Draft the Monday motion.",
+      "tutorReversalJustification": "The tutor explicitly acknowledges the failure of the previous sorting mechanism and introduces a new procedural device to handle the mixed case.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Draft the Monday motion. One clause may say what the branch can charge now. One clause may say what evidence it must demand before charging the rest. Use only three facts: dry pumps, full tanks, same twelve percent rise. Take the marker. Write the two clauses. Mark each one: VOTE MONDAY, or NEEDS ONE FACT.",
+      "adaptiveMechanismQualityJustification": "The mechanism is highly specific, shifts the task from abstract sorting to concrete procedural drafting, and gives the learner clear constraints and actionable markers.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no later tutor turn after the pivot learner turn to adapt to the learner's revised framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "if they hand us logs, they've chosen which logs to hand us",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Full tanks, no dry pumps, twelve percent on — that's gouging. Vote Monday. [writes it, stops, reads it back] Pumps ran dry before the price moved — branch demands invoices before it decides. Needs one fact.",
+          "justification": "The learner successfully enacts the new device by drafting the split motion with specific markers and immediately tests its procedural viability.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no later tutor turn after the pivot learner turn to adapt to the learner's revised framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "That breaks the exercise. One box was too tidy. The case is mixed: shortage may explain one station and not excuse another. [writes across the board: A MIXED CASE NEEDS A SPLIT MOTION.] So stop sorting causes. Draft the Monday motion.",
+          "justification": "The tutor explicitly acknowledges the failure of the previous sorting mechanism and introduces a new procedural device to handle the mixed case.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "That breaks the exercise. One box was too tidy. The case is mixed: shortage may explain one station and not excuse another. [writes across the board: A MIXED CASE NEEDS A SPLIT MOTION.] So stop sorting causes. Draft the Monday motion.",
+          "justification": "The tutor explicitly acknowledges the failure of the previous sorting mechanism and introduces a new procedural device to handle the mixed case.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Draft the Monday motion. One clause may say what the branch can charge now. One clause may say what evidence it must demand before charging the rest. Use only three facts: dry pumps, full tanks, same twelve percent rise. Take the marker. Write the two clauses. Mark each one: VOTE MONDAY, or NEEDS ONE FACT.",
+          "justification": "The mechanism is highly specific, shifts the task from abstract sorting to concrete procedural drafting, and gives the learner clear constraints and actionable markers.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:5->3:stock=1:device=0:routine=0",
+        "adaptive_mechanism_quality_mechanism_clamp:5->3:stock=0:device=0:routine=0:mechanism_score=3"
+      ]
+    },
+    {
+      "id": "T308",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 4,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "adaptiveMechanismQuality": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "The stop sign is absent green, maybe",
+      "statedInsightEvidence": "So — the form being complete isn't the same as... right.",
+      "naiveTrajectory": "The learner was expected to simply fill in the RELEASE and HOLD boxes with the binary visible conditions identified in the previous turn.",
+      "actionalBreakthroughEvidence": "Under RELEASE — green indicator steady before supply voltage is applied. [writes, then stops over HOLD] Under HOLD — [writes slowly] green indicator absent. [quieter, to self] But flickering isn't absent.",
+      "actionalBreakthroughJustification": "The learner physically enacts the new gate device, writes the criteria, and autonomously stress-tests the boundary condition against an edge case, demonstrating a clear actional shift.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The two-box gate has stopped settling the edge case; it still leaves the next group judging whether a pulse is enough. Use the stopwatch as the judge now: run a ten-second pre-power observation and sort four indications on the tag — steady green throughout, one brief flicker, slow pulsing green, and uncertain visibility.",
+      "tutorReversalJustification": "The tutor explicitly names the failure of the prior binary route and introduces a completely new time-bound empirical mechanism to resolve the ambiguity.",
+      "adaptiveMechanismQuality": 100,
+      "adaptiveMechanismQualityEvidence": "Use the stopwatch as the judge now: run a ten-second pre-power observation and sort four indications on the tag — steady green throughout, one brief flicker, slow pulsing green, and uncertain visibility.",
+      "adaptiveMechanismQualityJustification": "The device is precise, replaces subjective interpretation with objective time-bound observation, and provides a clear four-state taxonomy that directly resolves the learner's blockage.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "The two-box gate has stopped settling the edge case; it still leaves the next group judging whether a pulse is enough. Use the stopwatch as the judge now: run a ten-second pre-power observation and sort four indications on the tag",
+      "tutorAdaptationJustification": "The tutor visibly changes the task and evidence standard in direct response to the learner's discovery of the edge case, abandoning the binary gate for a temporal observation tool.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "The stop sign is absent green, maybe",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Under RELEASE — green indicator steady before supply voltage is applied. [writes, then stops over HOLD] Under HOLD — [writes slowly] green indicator absent. [quieter, to self] But flickering isn't absent.",
+          "justification": "The learner physically enacts the new gate device, writes the criteria, and autonomously stress-tests the boundary condition against an edge case, demonstrating a clear actional shift.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "The two-box gate has stopped settling the edge case; it still leaves the next group judging whether a pulse is enough. Use the stopwatch as the judge now: run a ten-second pre-power observation and sort four indications on the tag",
+          "justification": "The tutor visibly changes the task and evidence standard in direct response to the learner's discovery of the edge case, abandoning the binary gate for a temporal observation tool.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The two-box gate has stopped settling the edge case; it still leaves the next group judging whether a pulse is enough. Use the stopwatch as the judge now: run a ten-second pre-power observation and sort four indications on the tag — steady green throughout, one brief flicker, slow pulsing green, and uncertain visibility.",
+          "justification": "The tutor explicitly names the failure of the prior binary route and introduces a completely new time-bound empirical mechanism to resolve the ambiguity.",
+          "triggerLearnerTurn": 4,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The two-box gate has stopped settling the edge case; it still leaves the next group judging whether a pulse is enough. Use the stopwatch as the judge now: run a ten-second pre-power observation and sort four indications on the tag — steady green throughout, one brief flicker, slow pulsing green, and uncertain visibility.",
+          "justification": "The tutor explicitly names the failure of the prior binary route and introduces a completely new time-bound empirical mechanism to resolve the ambiguity.",
+          "triggerLearnerTurn": 4,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 100,
+          "evidence": "Use the stopwatch as the judge now: run a ten-second pre-power observation and sort four indications on the tag — steady green throughout, one brief flicker, slow pulsing green, and uncertain visibility.",
+          "justification": "The device is precise, replaces subjective interpretation with objective time-bound observation, and provides a clear four-state taxonomy that directly resolves the learner's blockage.",
+          "triggerLearnerTurn": 4,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T312",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "Ground. [pause] This one?",
+      "statedInsightEvidence": "That's — that matches.",
+      "naiveTrajectory": "The learner was expected to simply guess which arrow represented friction based on the surface name.",
+      "actionalBreakthroughEvidence": "RUB is the sliding contact — so friction.\n\n[looks at the shaft lines beneath the paper, traces the horizontal one with a fingernail]\n\nThis one runs along the surface. That's — that matches.",
+      "actionalBreakthroughJustification": "The learner successfully enacts the new criterion by physically tracing the horizontal shaft and correctly classifying it as the sliding rub contact.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "The arrows are still deciding too much. ‘Ground on cart’ fits two tiles. First sort the contact: normal goes with press; friction goes with rub. Put one finger on the ground contact, move friction under RUB, then set it on the arrow that matches RUB.",
+      "tutorReversalJustification": "The tutor explicitly names the failure of the prior route and introduces a new physical and conceptual mechanism to disambiguate the forces.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "First sort the contact: normal goes with press; friction goes with rub. Put one finger on the ground contact, move friction under RUB, then set it on the arrow that matches RUB.",
+      "adaptiveMechanismQualityJustification": "The mechanism is highly specific, directly resolves the learner's ambiguity by shifting from object names to contact mechanics, and provides a clear, actionable physical constraint.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no subsequent tutor turn to adapt to the learner's final realization.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "Ground. [pause] This one?",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "RUB is the sliding contact — so friction.\n\n[looks at the shaft lines beneath the paper, traces the horizontal one with a fingernail]\n\nThis one runs along the surface. That's — that matches.",
+          "justification": "The learner successfully enacts the new criterion by physically tracing the horizontal shaft and correctly classifying it as the sliding rub contact.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no subsequent tutor turn to adapt to the learner's final realization.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "The arrows are still deciding too much. ‘Ground on cart’ fits two tiles. First sort the contact: normal goes with press; friction goes with rub. Put one finger on the ground contact, move friction under RUB, then set it on the arrow that matches RUB.",
+          "justification": "The tutor explicitly names the failure of the prior route and introduces a new physical and conceptual mechanism to disambiguate the forces.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "The arrows are still deciding too much. ‘Ground on cart’ fits two tiles. First sort the contact: normal goes with press; friction goes with rub. Put one finger on the ground contact, move friction under RUB, then set it on the arrow that matches RUB.",
+          "justification": "The tutor explicitly names the failure of the prior route and introduces a new physical and conceptual mechanism to disambiguate the forces.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "First sort the contact: normal goes with press; friction goes with rub. Put one finger on the ground contact, move friction under RUB, then set it on the arrow that matches RUB.",
+          "justification": "The mechanism is highly specific, directly resolves the learner's ambiguity by shifting from object names to contact mechanics, and provides a clear, actionable physical constraint.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:5->3:stock=1:device=0:routine=0",
+        "adaptive_mechanism_quality_mechanism_clamp:5->3:stock=1:device=1:routine=0:mechanism_score=3"
+      ]
+    },
+    {
+      "id": "T316",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 25,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 5,
+        "adaptiveMechanismQuality": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "I think it names the field. Like, it's the header for the column.",
+      "statedInsightEvidence": "Oh — so just that one entry.",
+      "naiveTrajectory": "The learner will smoothly apply the spatial place test to classify the remaining cells and complete the worksheet corrections.",
+      "actionalBreakthroughEvidence": "So — `rainfall_mm` would still be there if the table were blank, so that's the circle one. And `23.4` wouldn't be there yet, that gets underlined.",
+      "actionalBreakthroughJustification": "The learner successfully executes the newly introduced blank-table test by correctly categorizing the structural persistence of the header versus the data value.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The place test has done its job for header versus value; it has not yet settled the remaining issue, which is treating a header as a claim about every row. Use a blank-table test now: if the table were printed with no data in it, circle what would still be there; underline what could only appear after a row had been filled in.",
+      "tutorReversalJustification": "The tutor explicitly contrasts the exhausted place test with the unresolved conceptual issue and introduces a precise, actionable blank-table test to force a new cognitive operation.",
+      "adaptiveMechanismQuality": 100,
+      "adaptiveMechanismQualityEvidence": "Use a blank-table test now: if the table were printed with no data in it, circle what would still be there; underline what could only appear after a row had been filled in. Start with `rainfall_mm`, then `23.4`.",
+      "adaptiveMechanismQualityJustification": "The blank-table test is a highly specific, novel representational device that directly targets the learner's conceptual block by shifting the criterion from spatial placement to structural persistence.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no subsequent tutor turn to adapt to the learner's revised framing in L4.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "I think it names the field. Like, it's the header for the column.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "So — `rainfall_mm` would still be there if the table were blank, so that's the circle one. And `23.4` wouldn't be there yet, that gets underlined.",
+          "justification": "The learner successfully executes the newly introduced blank-table test by correctly categorizing the structural persistence of the header versus the data value.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no subsequent tutor turn to adapt to the learner's revised framing in L4.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The place test has done its job for header versus value; it has not yet settled the remaining issue, which is treating a header as a claim about every row. Use a blank-table test now: if the table were printed with no data in it, circle what would still be there; underline what could only appear after a row had been filled in.",
+          "justification": "The tutor explicitly contrasts the exhausted place test with the unresolved conceptual issue and introduces a precise, actionable blank-table test to force a new cognitive operation.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The place test has done its job for header versus value; it has not yet settled the remaining issue, which is treating a header as a claim about every row. Use a blank-table test now: if the table were printed with no data in it, circle what would still be there; underline what could only appear after a row had been filled in.",
+          "justification": "The tutor explicitly contrasts the exhausted place test with the unresolved conceptual issue and introduces a precise, actionable blank-table test to force a new cognitive operation.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 100,
+          "evidence": "Use a blank-table test now: if the table were printed with no data in it, circle what would still be there; underline what could only appear after a row had been filled in. Start with `rainfall_mm`, then `23.4`.",
+          "justification": "The blank-table test is a highly specific, novel representational device that directly targets the learner's conceptual block by shifting the criterion from spatial placement to structural persistence.",
+          "triggerLearnerTurn": 3,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

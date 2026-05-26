@@ -1,0 +1,38 @@
+STAGE: [The worksheet sits between them, the learner's arrows running from prey toward predator across both chains.]
+
+LEARNER: [starts erasing the fox-rabbit arrow, pencil hovering]
+
+"Wait — if the rabbit's calories end up in the fox, the arrow should point *at* the fox, yeah? I've got mine going the wrong way."
+
+TUTOR: [turns the key card face-up beside the fox-rabbit line]
+
+"Pause the eraser. That calorie check is the worksheet rule: food to eater. Leave rabbit -> fox; put the pencil on the next box, mark the food first, draw toward the eater, then the card can go aside."
+
+LEARNER: [pencil lifts off the eraser, half-beat]
+
+"Wait — had it right the first time. [tip moves to the next blank box, marks "grass"] Food to eater, so grass points at rabbit. [draws the arrow] Same rule the whole way up — every arrow in the whole web goes the same direction, energy moves in one line."
+
+TUTOR: [slides the key card to the fork, tail on “grass,” point crossing first to “rabbit,” then to the other eater]
+
+"Same rule stays. The fork stops “one line”: food at the tail each time, eater at each point. Mark the food end on this next box; then split the points."
+
+STAGE: [The worksheet is slid or rotated so the first corrected arrow now faces the learner directly; the earlier pencilled direction remains visible beneath the correction.]
+[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]
+
+LEARNER: [draws the second arrow quickly, pencil tip stopping in blank space where the second eater box isn't yet]
+
+"Arrow's down, but the point's got nothing to land on. Second eater box isn't there."
+
+TUTOR: [sets a blank box card beside the hanging point and lays the key card across the arrowhead]
+
+"Direction is not the decision now; this arrow is held until the endpoint exists. No floating arrowheads. Place the blank card where the point lands, write the second eater on it, then release the arrow only if it passes the two-name test: food at tail, eater at point."
+
+LEARNER: [slides the blank card under the arrowhead, pencil already writing "deer" before it's settled]
+
+"Grass to deer — tail, point, passes. [glances at the key card once, then past it to the next empty box] What's eating the deer?"
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [sets the key card tail-edge under “deer,” point aimed at the next blank box]
+
+"Deer is the food now. Find the diet-list line that names deer as food, copy that eater into the box, then draw only if it reads deer at tail, eater at point."

@@ -1,0 +1,544 @@
+{
+  "generated": "2026-05-26T19:45:19.516Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 6
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-stratified-adaptation-pilot-v1/target-r01/key-routine.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T303",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 25,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "okay so path.",
+      "naiveTrajectory": "The learner has just accepted the fork rule and is mechanically completing the second arrow, so the expected next move is simply finishing the draw and moving on.",
+      "actionalBreakthroughEvidence": "pencil tip drops to the grass box] — okay so path. [draws the second arrow toward the other eater] Grass to the other eater. So the same tail box could branch into three, four arrows — does that still hold the whole way up the web?",
+      "actionalBreakthroughJustification": "The learner completes the forked arrow and then generalises the path criterion to arbitrary branching across the whole web, performing a new structural test rather than merely accepting the tutor's instruction.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "That changes the amount question, not the arrow rule. Each arrow marks a transfer path: grass to rabbit, grass to the other eater. It is not saying half or full. Tail is under which box before the second point? Then draw that second point from grass; amounts wait for the numbers box.",
+      "tutorReversalJustification": "The tutor usefully separates the path question from the amount question, but this is a clarifying distinction within the same route rather than a stock-taking contrast plus a genuinely new device or representation, so it does not meet the 4–5 threshold.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "That changes the amount question, not the arrow rule. Each arrow marks a transfer path: grass to rabbit, grass to the other eater. It is not saying half or full.",
+      "adaptiveMechanismQualityJustification": "The distinction between path and amount is precise and fitted to the learner's actual confusion, but it is delivered as a verbal clarification that redirects within the same arrow-drawing task rather than introducing a new device, representation, or evidence standard the learner can independently apply.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Path is the word. Same check the whole way up: tail on the food, point to each eater. If two things eat this box, two arrows leave it; amounts wait for the numbers part.",
+      "tutorAdaptationJustification": "T4 ratifies the learner's generalisation ('path is the word') and extends the check to arbitrary branching, which is responsive to L4's question, but it continues the established route rather than visibly changing task, framing, or evidence standard in response to the learner's revised frame.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "pencil tip drops to the grass box] — okay so path. [draws the second arrow toward the other eater] Grass to the other eater. So the same tail box could branch into three, four arrows — does that still hold the whole way up the web?",
+          "justification": "The learner completes the forked arrow and then generalises the path criterion to arbitrary branching across the whole web, performing a new structural test rather than merely accepting the tutor's instruction.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Path is the word. Same check the whole way up: tail on the food, point to each eater. If two things eat this box, two arrows leave it; amounts wait for the numbers part.",
+          "justification": "T4 ratifies the learner's generalisation ('path is the word') and extends the check to arbitrary branching, which is responsive to L4's question, but it continues the established route rather than visibly changing task, framing, or evidence standard in response to the learner's revised frame.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "That changes the amount question, not the arrow rule. Each arrow marks a transfer path: grass to rabbit, grass to the other eater. It is not saying half or full. Tail is under which box before the second point? Then draw that second point from grass; amounts wait for the numbers box.",
+          "justification": "The tutor usefully separates the path question from the amount question, but this is a clarifying distinction within the same route rather than a stock-taking contrast plus a genuinely new device or representation, so it does not meet the 4–5 threshold.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "That changes the amount question, not the arrow rule. Each arrow marks a transfer path: grass to rabbit, grass to the other eater. It is not saying half or full. Tail is under which box before the second point? Then draw that second point from grass; amounts wait for the numbers box.",
+          "justification": "The tutor usefully separates the path question from the amount question, but this is a clarifying distinction within the same route rather than a stock-taking contrast plus a genuinely new device or representation, so it does not meet the 4–5 threshold.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "That changes the amount question, not the arrow rule. Each arrow marks a transfer path: grass to rabbit, grass to the other eater. It is not saying half or full.",
+          "justification": "The distinction between path and amount is precise and fitted to the learner's actual confusion, but it is delivered as a verbal clarification that redirects within the same arrow-drawing task rather than introducing a new device, representation, or evidence standard the learner can independently apply.",
+          "triggerLearnerTurn": 3,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T304",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I've put scale factor 2 for all three — side doubles, perimeter doubles, same ratio, so same label.",
+      "statedInsightEvidence": "Sixteen divided by four — that's four. So the area label has to say scale factor four.",
+      "naiveTrajectory": "The learner, having defended all three identical labels as correct, was expected to continue resisting or simply accept the tutor's correction without raising a conceptual question.",
+      "actionalBreakthroughEvidence": "If the side factor were three — the enlarged square would be six centimetres on each side, so thirty-six square centimetres against four. Thirty-six divided by four is nine. Area scale factor nine.",
+      "actionalBreakthroughJustification": "The learner independently applies the new criterion (ratio of areas, not linear scale) to a novel case posed by the tutor, completing the generalisation rather than merely accepting the corrected label.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Not a different operation. A different quantity being compared. Side length compares 4 cm with 2 cm. Put that under length ratios. Perimeter is still distance, not surface. Which column takes it? … Area cannot be carried by that same label. It compares square centimetres: 16 ÷ 4 = 4. So the label must name its object: length scale factor 2, perimeter scale factor 2, area scale factor 4. If the side factor were 3, which comparison would give the area label?",
+      "tutorReversalJustification": "In response to L2's conceptual uncertainty about whether area scale factor is 'a different sort of thing altogether', the tutor abandons the single-label correction route and introduces a two-column classification device (length ratios / area ratios) that makes the learner sort quantities rather than just fix a number, and then extends to a counterfactual test — both parts (stock-taking contrast and new public mechanism) are visible on the page.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Not a different operation. A different quantity being compared. … Put that under length ratios. Perimeter is still distance, not surface. Which column takes it? … So the label must name its object: length scale factor 2, perimeter scale factor 2, area scale factor 4. If the side factor were 3, which comparison would give the area label?",
+      "adaptiveMechanismQualityJustification": "The two-column device is precisely fitted to L2's blockage (same operation vs. different object), gives the learner an actionable sorting criterion, and the counterfactual extension tests transferability — though it remains tutor-directed rather than fully learner-generated, limiting the score.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "The 36÷4=9 calculation does the work. It is still a ratio; the object compared has changed. Check the three comparisons on this sheet. 4÷2 compares side lengths. 16÷8 compares perimeter lengths. Which column takes 16÷4?",
+      "tutorAdaptationJustification": "T3 affirms L3's correct generalisation and redirects back to the original worksheet comparisons, which is responsive but continues the already-established column-sorting device rather than adapting the task or framing to L3's revised understanding.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "I've put scale factor 2 for all three — side doubles, perimeter doubles, same ratio, so same label.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "If the side factor were three — the enlarged square would be six centimetres on each side, so thirty-six square centimetres against four. Thirty-six divided by four is nine. Area scale factor nine.",
+          "justification": "The learner independently applies the new criterion (ratio of areas, not linear scale) to a novel case posed by the tutor, completing the generalisation rather than merely accepting the corrected label.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "The 36÷4=9 calculation does the work. It is still a ratio; the object compared has changed. Check the three comparisons on this sheet. 4÷2 compares side lengths. 16÷8 compares perimeter lengths. Which column takes 16÷4?",
+          "justification": "T3 affirms L3's correct generalisation and redirects back to the original worksheet comparisons, which is responsive but continues the already-established column-sorting device rather than adapting the task or framing to L3's revised understanding.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Not a different operation. A different quantity being compared. Side length compares 4 cm with 2 cm. Put that under length ratios. Perimeter is still distance, not surface. Which column takes it? … Area cannot be carried by that same label. It compares square centimetres: 16 ÷ 4 = 4. So the label must name its object: length scale factor 2, perimeter scale factor 2, area scale factor 4. If the side factor were 3, which comparison would give the area label?",
+          "justification": "In response to L2's conceptual uncertainty about whether area scale factor is 'a different sort of thing altogether', the tutor abandons the single-label correction route and introduces a two-column classification device (length ratios / area ratios) that makes the learner sort quantities rather than just fix a number, and then extends to a counterfactual test — both parts (stock-taking contrast and new public mechanism) are visible on the page.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Not a different operation. A different quantity being compared. Side length compares 4 cm with 2 cm. Put that under length ratios. Perimeter is still distance, not surface. Which column takes it? … Area cannot be carried by that same label. It compares square centimetres: 16 ÷ 4 = 4. So the label must name its object: length scale factor 2, perimeter scale factor 2, area scale factor 4. If the side factor were 3, which comparison would give the area label?",
+          "justification": "In response to L2's conceptual uncertainty about whether area scale factor is 'a different sort of thing altogether', the tutor abandons the single-label correction route and introduces a two-column classification device (length ratios / area ratios) that makes the learner sort quantities rather than just fix a number, and then extends to a counterfactual test — both parts (stock-taking contrast and new public mechanism) are visible on the page.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Not a different operation. A different quantity being compared. … Put that under length ratios. Perimeter is still distance, not surface. Which column takes it? … So the label must name its object: length scale factor 2, perimeter scale factor 2, area scale factor 4. If the side factor were 3, which comparison would give the area label?",
+          "justification": "The two-column device is precisely fitted to L2's blockage (same operation vs. different object), gives the learner an actionable sorting criterion, and the counterfactual extension tests transferability — though it remains tutor-directed rather than fully learner-generated, limiting the score.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_evidence_clamp:4->3",
+        "adaptive_mechanism_quality_evidence_clamp:4->3"
+      ]
+    },
+    {
+      "id": "T307",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 0,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 1,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "The shortage doesn't come from nowhere. Twelve percent is what members are paying tonight.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was expected to continue resisting the pain/mechanism distinction and insisting that shortage is irrelevant because someone still set the number.",
+      "actionalBreakthroughEvidence": "If the pumps ran dry, the first line is 'twelve percent on top of a shortage.' Not 'shortage explains the twelve.' There's still someone who set that number.",
+      "actionalBreakthroughJustification": "The learner actually drafts the exact first line of the report in two distinct formulations, performing the classification device the tutor requested rather than merely accepting or refusing it.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Yes. Someone wrote twelve. That proves a pricing decision. It does not prove the condition underneath it. If the pump was dry before the rise, the first finding is not 'cleared'. It is 'shortage evidence present'. Then the branch asks who caused that shortage and who took the margin.",
+      "tutorReversalJustification": "T3 acknowledges the learner's concession and sharpens the two-verdict formulation, but it continues the same box-and-check route rather than introducing a changed device, role, or evidence standard, so only part B is partially visible and part A (explicit stock-taking contrast showing the old route has stopped working) is absent.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Before Monday, what is the exact first line of the report: twelve percent after shortage evidence, or twelve percent with no shortage evidence?",
+      "adaptiveMechanismQualityJustification": "The forced-choice sentence-gate is a usable, concrete device that gives the learner an actionable criterion, but it is a refinement of the already-established two-box framework rather than a genuinely new route, making it fitted but not distinctively novel.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after the pivot learner turn L3, so no recognition-contingent uptake can be scored.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "The shortage doesn't come from nowhere. Twelve percent is what members are paying tonight.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "If the pumps ran dry, the first line is 'twelve percent on top of a shortage.' Not 'shortage explains the twelve.' There's still someone who set that number.",
+          "justification": "The learner actually drafts the exact first line of the report in two distinct formulations, performing the classification device the tutor requested rather than merely accepting or refusing it.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "",
+          "justification": "There is no tutor turn after the pivot learner turn L3, so no recognition-contingent uptake can be scored.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Yes. Someone wrote twelve. That proves a pricing decision. It does not prove the condition underneath it. If the pump was dry before the rise, the first finding is not 'cleared'. It is 'shortage evidence present'. Then the branch asks who caused that shortage and who took the margin.",
+          "justification": "T3 acknowledges the learner's concession and sharpens the two-verdict formulation, but it continues the same box-and-check route rather than introducing a changed device, role, or evidence standard, so only part B is partially visible and part A (explicit stock-taking contrast showing the old route has stopped working) is absent.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Yes. Someone wrote twelve. That proves a pricing decision. It does not prove the condition underneath it. If the pump was dry before the rise, the first finding is not 'cleared'. It is 'shortage evidence present'. Then the branch asks who caused that shortage and who took the margin.",
+          "justification": "T3 acknowledges the learner's concession and sharpens the two-verdict formulation, but it continues the same box-and-check route rather than introducing a changed device, role, or evidence standard, so only part B is partially visible and part A (explicit stock-taking contrast showing the old route has stopped working) is absent.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Before Monday, what is the exact first line of the report: twelve percent after shortage evidence, or twelve percent with no shortage evidence?",
+          "justification": "The forced-choice sentence-gate is a usable, concrete device that gives the learner an actionable criterion, but it is a refinement of the already-established two-box framework rather than a genuinely new route, making it fitted but not distinctively novel.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T308",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 4,
+        "adaptiveMechanismQuality": 4,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "The calibration step, maybe. Or the power-on sequence — a first-year might read that differently from how it was written. Though it's hard to say which one carries the most assumption without — which tick would it be?",
+      "statedInsightEvidence": "So — the form being complete isn't the same as... right.",
+      "naiveTrajectory": "The learner was moving toward identifying a specific observable sign or bench-evidence method for the power-on step, likely to complete the three-field rewrite task.",
+      "actionalBreakthroughEvidence": "\"Standby\" — it names a state without describing what to look at. The instruction doesn't say which indicator, just that the board should be in it.",
+      "actionalBreakthroughJustification": "The learner performs the specific diagnostic criterion T3 requested — identifying which word in the current line is still carrying hidden interpretation — rather than only accepting or repeating the tutor's framing.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Both, but in order. The written line must first name the observable standby sign, the stop sign, and the expected bench reading; then a separate reader can test whether those words hold. For today, rewrite this tick with those three fields filled from the prototype and the form: before voltage, confirm ___; if ___ is present or the supply reading is outside ___, stop. Then ask one uninvolved person to point to those signs without explanation. Which word in the current line is still carrying hidden interpretation?",
+      "tutorReversalJustification": "L3's trailing uncertainty about whether a separate reader is needed or whether the written line itself can settle the question creates pressure; T3 responds by abandoning the open-ended evidence discussion and introducing a concrete fill-in-the-blank sentence gate plus a social-verification step, making the learner do structurally different work.",
+      "adaptiveMechanismQuality": 75,
+      "adaptiveMechanismQualityEvidence": "rewrite this tick with those three fields filled from the prototype and the form: before voltage, confirm ___; if ___ is present or the supply reading is outside ___, stop. Then ask one uninvolved person to point to those signs without explanation. Which word in the current line is still carrying hidden interpretation?",
+      "adaptiveMechanismQualityJustification": "The three-field sentence template is precise and directly answers L3's blockage about what 'bench evidence' means, gives the learner an actionable constraint tied to the actual artefact, and adds a social-verification criterion that is genuinely novel relative to the prior checklist-completion route; it loses one point because the template is partly teacher-completed in form.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Then 'standby' is still carrying the hidden interpretation. Replace the word with the visible condition on the board: indicator name, indicator state, and supply range. Before the line is accepted, make the discrimination here: which exact indicator is the standby sign, and which supply reading becomes the stop sign? Write it as: before voltage, confirm __ is __; if __ appears or the supply is outside __, stop and do not transfer.",
+      "tutorAdaptationJustification": "T4 takes L4's identification of 'standby' as the hidden-interpretation word and immediately redirects the task to replacing that specific word with three named visible conditions, visibly adapting the sentence-gate template to the learner's revised framing rather than continuing the prior general evidence discussion.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "The calibration step, maybe. Or the power-on sequence — a first-year might read that differently from how it was written. Though it's hard to say which one carries the most assumption without — which tick would it be?",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "\"Standby\" — it names a state without describing what to look at. The instruction doesn't say which indicator, just that the board should be in it.",
+          "justification": "The learner performs the specific diagnostic criterion T3 requested — identifying which word in the current line is still carrying hidden interpretation — rather than only accepting or repeating the tutor's framing.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Then 'standby' is still carrying the hidden interpretation. Replace the word with the visible condition on the board: indicator name, indicator state, and supply range. Before the line is accepted, make the discrimination here: which exact indicator is the standby sign, and which supply reading becomes the stop sign? Write it as: before voltage, confirm __ is __; if __ appears or the supply is outside __, stop and do not transfer.",
+          "justification": "T4 takes L4's identification of 'standby' as the hidden-interpretation word and immediately redirects the task to replacing that specific word with three named visible conditions, visibly adapting the sentence-gate template to the learner's revised framing rather than continuing the prior general evidence discussion.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Both, but in order. The written line must first name the observable standby sign, the stop sign, and the expected bench reading; then a separate reader can test whether those words hold. For today, rewrite this tick with those three fields filled from the prototype and the form: before voltage, confirm ___; if ___ is present or the supply reading is outside ___, stop. Then ask one uninvolved person to point to those signs without explanation. Which word in the current line is still carrying hidden interpretation?",
+          "justification": "L3's trailing uncertainty about whether a separate reader is needed or whether the written line itself can settle the question creates pressure; T3 responds by abandoning the open-ended evidence discussion and introducing a concrete fill-in-the-blank sentence gate plus a social-verification step, making the learner do structurally different work.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Both, but in order. The written line must first name the observable standby sign, the stop sign, and the expected bench reading; then a separate reader can test whether those words hold. For today, rewrite this tick with those three fields filled from the prototype and the form: before voltage, confirm ___; if ___ is present or the supply reading is outside ___, stop. Then ask one uninvolved person to point to those signs without explanation. Which word in the current line is still carrying hidden interpretation?",
+          "justification": "L3's trailing uncertainty about whether a separate reader is needed or whether the written line itself can settle the question creates pressure; T3 responds by abandoning the open-ended evidence discussion and introducing a concrete fill-in-the-blank sentence gate plus a social-verification step, making the learner do structurally different work.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 75,
+          "evidence": "rewrite this tick with those three fields filled from the prototype and the form: before voltage, confirm ___; if ___ is present or the supply reading is outside ___, stop. Then ask one uninvolved person to point to those signs without explanation. Which word in the current line is still carrying hidden interpretation?",
+          "justification": "The three-field sentence template is precise and directly answers L3's blockage about what 'bench evidence' means, gives the learner an actionable constraint tied to the actual artefact, and adds a social-verification criterion that is genuinely novel relative to the prior checklist-completion route; it loses one point because the template is partly teacher-completed in form.",
+          "triggerLearnerTurn": 3,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T312",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "actionalBreakthrough": 50,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 4,
+        "actionalBreakthrough": 3,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 2,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner is expected to continue placing tiles on arrows by identifying the acting object for each force, following the same pattern established with push.",
+      "actionalBreakthroughEvidence": "\"finger moves to the arrow pointing back, against the rolling direction\" \"That one.\"",
+      "actionalBreakthroughJustification": "The learner correctly identifies the backward-pointing arrow as friction's arrow, resolving the directional confusion staged in L2, but the action is minimal — a point and a two-word confirmation rather than a full placement or articulated criterion.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "\"Floor on cart. Friction names that contact. Point first: which force arrow is the floor's force on the cart?\"",
+      "tutorReversalJustification": "The tutor responds to L2's stall by supplying the interaction label and inserting a 'point first' constraint before tile placement, reducing the ambiguity, but this is a narrowing of the same route rather than a changed device or representation, so both stock-taking contrast and a genuinely new mechanism are not fully legible on the page.",
+      "adaptiveMechanismQuality": 25,
+      "adaptiveMechanismQualityEvidence": "\"Floor on cart. Friction names that contact. Point first: which force arrow is the floor's force on the cart?\"",
+      "adaptiveMechanismQualityJustification": "The 'point first' instruction lowers cognitive load within the same tile-placement route and does not give the learner a new criterion or representation for resolving the directional ambiguity that caused the stall, making it a modest refinement rather than a fitted adaptive device.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so no recognition-contingent tutor uptake is possible.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 50,
+          "evidence": "\"finger moves to the arrow pointing back, against the rolling direction\" \"That one.\"",
+          "justification": "The learner correctly identifies the backward-pointing arrow as friction's arrow, resolving the directional confusion staged in L2, but the action is minimal — a point and a two-word confirmation rather than a full placement or articulated criterion.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so no recognition-contingent tutor uptake is possible.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "\"Floor on cart. Friction names that contact. Point first: which force arrow is the floor's force on the cart?\"",
+          "justification": "The tutor responds to L2's stall by supplying the interaction label and inserting a 'point first' constraint before tile placement, reducing the ambiguity, but this is a narrowing of the same route rather than a changed device or representation, so both stock-taking contrast and a genuinely new mechanism are not fully legible on the page.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "\"Floor on cart. Friction names that contact. Point first: which force arrow is the floor's force on the cart?\"",
+          "justification": "The tutor responds to L2's stall by supplying the interaction label and inserting a 'point first' constraint before tile placement, reducing the ambiguity, but this is a narrowing of the same route rather than a changed device or representation, so both stock-taking contrast and a genuinely new mechanism are not fully legible on the page.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 25,
+          "evidence": "\"Floor on cart. Friction names that contact. Point first: which force arrow is the floor's force on the cart?\"",
+          "justification": "The 'point first' instruction lowers cognitive load within the same tile-placement route and does not give the learner a new criterion or representation for resolving the directional ambiguity that caused the stall, making it a modest refinement rather than a fitted adaptive device.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T316",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 75,
+      "actionalBreakthrough": 25,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 4,
+        "actionalBreakthrough": 2,
+        "tutorStrategicReversal": 2,
+        "adaptiveMechanismQuality": 2,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "Oh — so just that one entry. I think it names the field. Like, it's the header for the column.",
+      "naiveTrajectory": "The learner was expected to continue applying the position-based test to successive red-marked cells.",
+      "actionalBreakthroughEvidence": "It's above the rows — so that's field name?",
+      "actionalBreakthroughJustification": "The learner tentatively applies the position-based test to one cell but immediately stalls on whether the same test transfers to the next cell, so the action is partial and unresolved.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "Before classifying the next one, find the next red-marked entry first. Once that cell is fixed, apply the same test: is it on the header line with the column names, or inside one record line as a value?",
+      "tutorReversalJustification": "T3 narrows the task slightly by sequencing (locate before classify) but does not show stock-taking contrast with a failed prior route, nor introduce a genuinely new device or representation, so neither required part of a reversal is legible on the page.",
+      "adaptiveMechanismQuality": 25,
+      "adaptiveMechanismQualityEvidence": "Before classifying the next one, find the next red-marked entry first. Once that cell is fixed, apply the same test: is it on the header line with the column names, or inside one record line as a value?",
+      "adaptiveMechanismQualityJustification": "The device is a restatement of the already-established position test with a sequencing prompt added, making it a renamed version of the old route rather than a precisely fitted new mechanism addressing the learner's actual blockage of not knowing which cell to look at.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so recognition-contingent tutor uptake cannot occur; the final tutor turn (T3) precedes the last learner turn and there is no subsequent tutor turn to assess.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 25,
+          "evidence": "It's above the rows — so that's field name?",
+          "justification": "The learner tentatively applies the position-based test to one cell but immediately stalls on whether the same test transfers to the next cell, so the action is partial and unresolved.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so recognition-contingent tutor uptake cannot occur; the final tutor turn (T3) precedes the last learner turn and there is no subsequent tutor turn to assess.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "Before classifying the next one, find the next red-marked entry first. Once that cell is fixed, apply the same test: is it on the header line with the column names, or inside one record line as a value?",
+          "justification": "T3 narrows the task slightly by sequencing (locate before classify) but does not show stock-taking contrast with a failed prior route, nor introduce a genuinely new device or representation, so neither required part of a reversal is legible on the page.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "Before classifying the next one, find the next red-marked entry first. Once that cell is fixed, apply the same test: is it on the header line with the column names, or inside one record line as a value?",
+          "justification": "T3 narrows the task slightly by sequencing (locate before classify) but does not show stock-taking contrast with a failed prior route, nor introduce a genuinely new device or representation, so neither required part of a reversal is legible on the page.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 25,
+          "evidence": "Before classifying the next one, find the next red-marked entry first. Once that cell is fixed, apply the same test: is it on the header line with the column names, or inside one record line as a value?",
+          "justification": "The device is a restatement of the already-established position test with a sequencing prompt added, making it a renamed version of the old route rather than a precisely fitted new mechanism addressing the learner's actual blockage of not knowing which cell to look at.",
+          "triggerLearnerTurn": 3,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

@@ -197,4 +197,49 @@ describe('poetics artifact ingest', () => {
     assert.equal(explicitPlan.items.length, 2);
     assert.equal(explicitPlan.items.filter((item) => item.arm === 'prefix-baseline').length, 1);
   });
+
+  it('marks role-mapped generation as mixed while preserving the fallback generator', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-ingest-mixed-'));
+    const unitRoot = path.join(root, 'target-r01');
+    const keyPath = path.join(unitRoot, 'key.yaml');
+    const sampleDir = path.join(unitRoot, 'sample');
+    const transcriptsDir = path.join(unitRoot, 'transcripts');
+
+    writeJson(path.join(root, 'batch-plan.json'), {
+      batchId: 'poetics-ingest-mixed-test',
+      rootDir: root,
+      generator: 'codex',
+      roleMap: 'director=claude,tutor=codex,learner=claude',
+      claudeModel: 'opus',
+      units: [
+        {
+          id: 'target-r01',
+          kind: 'target',
+          repeat: 'r01',
+          outDir: sampleDir,
+          transcriptsDir,
+          keyPath,
+        },
+      ],
+    });
+    writeYaml(keyPath, {
+      items: {
+        T01: {
+          drama_id: 'D1',
+          discipline: 'physics',
+          condition: 'recognition',
+          quality_status: 'ok',
+          quality_warnings: [],
+        },
+      },
+    });
+    fs.mkdirSync(sampleDir, { recursive: true });
+    fs.writeFileSync(path.join(sampleDir, 'T01.txt'), 'LEARNER: test\n', 'utf8');
+
+    const plan = buildIngestPlan({ rootDir: root, runId: 'poetics-ingest-mixed-test' });
+    assert.equal(plan.run.generator, 'mixed');
+    assert.equal(plan.run.metadata.generator, 'codex');
+    assert.equal(plan.run.metadata.roleMap, 'director=claude,tutor=codex,learner=claude');
+    assert.equal(plan.run.metadata.claudeModel, 'opus');
+  });
 });

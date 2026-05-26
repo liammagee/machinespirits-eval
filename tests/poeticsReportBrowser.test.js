@@ -9,6 +9,7 @@ import {
   getItem,
   listItems,
   listRuns,
+  parseTranscriptPreview,
   saveBrowserLabel,
   saveBrowserReviewFlag,
 } from '../scripts/browse-poetics-scripts.js';
@@ -339,6 +340,29 @@ function seed(db) {
 }
 
 describe('poetics sidecar report and browser', () => {
+  it('parses public scripts into theatrical preview blocks', () => {
+    const blocks = parseTranscriptPreview(`STAGE: [A card is turned over.]
+
+TUTOR: [sets two strips beside the diagram]
+
+"Sort the motion sentence away from the force label."
+
+LEARNER: "The arrow names who acts on the cart. [moves the motion strip aside] The rolling sentence is separate."`);
+    assert.equal(blocks.length, 3);
+    assert.deepEqual(
+      blocks.map((block) => [block.speaker, block.type]),
+      [
+        ['STAGE', 'stage'],
+        ['TUTOR', 'tutor'],
+        ['LEARNER', 'learner'],
+      ],
+    );
+    assert.equal(blocks[0].blocking, 'A card is turned over.');
+    assert.equal(blocks[1].blocking, 'sets two strips beside the diagram');
+    assert.match(blocks[1].speech, /Sort the motion sentence/);
+    assert.match(blocks[2].speech, /The arrow names who acts/);
+  });
+
   it('renders target, control, and disagreement summaries from sidecar tables', () =>
     withDb((db) => {
       const report = buildPoeticsReport(db, { runId: 'poetics-test-run' });
