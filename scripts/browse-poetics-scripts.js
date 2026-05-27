@@ -576,7 +576,11 @@ function getItem(db, id) {
       flags: decodeJson(row.flags, []),
       metadata: decodeJson(row.metadata, {}),
     }))
-    .map((row) => ({ ...row, roleScores: roleSymmetricScoresForScore(row) }));
+    .map((row) => ({
+      ...row,
+      roleScores: roleSymmetricScoresForScore(row),
+      recognitionOrigin: row.metadata?.recognition_origin || recognitionOriginForScoreRow(row),
+    }));
   const consensus = classifyPoeticsConsensus(
     scores.map((score) => ({ critic: score.critic_model, form: score.form_class })),
   );
@@ -1681,6 +1685,7 @@ tbody th {
   </main>
 </div>
 <script>
+const ORIGIN_CLASSES = ${JSON.stringify(ORIGIN_CLASSES)};
 const state = {
   runs: [],
   items: [],
@@ -1702,6 +1707,7 @@ const inlineEsc = (s) => esc(s).replace(/\\[([^\\]]+)\\]/g, '<span class="inline
 const scoreOrNA = (value) => value == null || value === '' || Number.isNaN(Number(value)) ? 'n/a' : Number(value).toFixed(1);
 const voteMetric = (count, total) => total ? count + '/' + total : 'n/a';
 const boolOrNA = (value) => value == null ? 'n/a' : value ? 'true' : 'false';
+const scoreOrigin = (score) => score?.metadata?.recognition_origin || score?.recognitionOrigin || { class: 'none' };
 
 function metricLabel(label, help) {
   return esc(label) + '<div class="metric-help">' + esc(help) + '</div>';
@@ -2005,7 +2011,7 @@ function renderPane() {
           role.tutorContingentAdaptationEvidence ? 'tutor: ' + role.tutorContingentAdaptationEvidence : '',
           s.stated_insight_evidence ? 'insight: ' + s.stated_insight_evidence : '',
         ].filter(Boolean).join(' / ');
-        const origin = s.metadata?.recognition_origin || s.recognitionOrigin || recognitionOriginForScoreRow(s);
+        const origin = scoreOrigin(s);
         return '<tr><td>' + esc(s.critic_model) + '</td><td>' + esc(s.form_class) + '</td><td>' +
           esc(origin.class || 'none') + '</td><td>' +
           esc(scoreOrNA(role.learnerSelfReframeScore)) + '</td><td>' +

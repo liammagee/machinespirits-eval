@@ -12,6 +12,7 @@ import {
   listItems,
   listRuns,
   parseTranscriptPreview,
+  renderBrowserHtml,
   saveBrowserLabel,
   saveBrowserReviewFlag,
 } from '../scripts/browse-poetics-scripts.js';
@@ -450,6 +451,7 @@ LEARNER: "The arrow names who acts on the cart. [moves the motion strip aside] T
       assert.equal(qwenScore.roleScores.tutorContingentAdaptationScore, 80);
       assert.equal(qwenScore.roleScores.tutorStrategyReversalScore, 80);
       assert.equal(qwenScore.roleScores.tutorAdaptiveMechanismQualityScore, 85);
+      assert.equal(qwenScore.recognitionOrigin.class, 'peripeteia_induced');
       assert.match(qwenScore.roleScores.tutorContingentAdaptationEvidence, /revised map frame/);
       assert.match(qwenScore.roleScores.tutorAdaptiveMechanismQualityEvidence, /smaller example/);
       assert.equal(adaptiveDetail.tutorAdaptation.metadata.peripeteia.tutor_strategy_reversal, true);
@@ -465,6 +467,16 @@ LEARNER: "The arrow names who acts on the cart. [moves the motion strip aside] T
         ),
       );
     }));
+
+  it('renders browser-side origin helpers without server-only references', () => {
+    const html = renderBrowserHtml();
+    assert.match(
+      html,
+      /const ORIGIN_CLASSES = \["none","organic","peripeteia_induced","false_closure","ambiguous"\];/,
+    );
+    assert.match(html, /const scoreOrigin = /);
+    assert.doesNotMatch(html, /recognitionOriginForScoreRow\(s\)/);
+  });
 
   it('builds ending-shape diagnostics from role-symmetric score rows', () => {
     const diagnostics = endingShapeDiagnosticsForScores([
