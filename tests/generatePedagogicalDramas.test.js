@@ -295,8 +295,9 @@ describe('generate-pedagogical-dramas', () => {
       'peripeteia branches should force a post-prefix learner pressure cue',
     );
     assert.match(plan.side_constraints.learner, /pressure local to the current task/);
-    assert.match(plan.side_constraints.learner, /perform that device and then add one earned reorientation/);
-    assert.match(plan.side_constraints.learner, /same public turn/);
+    assert.match(plan.side_constraints.learner, /three-part public shape/);
+    assert.match(plan.side_constraints.learner, /name the prior pressure or misfit/);
+    assert.match(plan.side_constraints.learner, /state the replacement check/);
     assert.match(plan.side_constraints.learner, /allowed even though there was no director look-back cue/);
     assert.match(plan.tutor_adaptation_contract, /learner resistance, breakdown, false-closure, or misfit event/);
     assert.match(plan.tutor_adaptation_contract, /invent an adaptive learning mechanism/);

@@ -46,6 +46,52 @@ describe('critic-poetics-structure', () => {
     assert.ok(result.violations.includes('public_speech_not_direct_quote'));
   });
 
+  it('rejects peripeteia arms where learner performs the device without earned reorientation', () => {
+    const result = deterministicChecks({
+      id: 'T03',
+      item: {
+        dramatic_shape: 'tile labels -> blind check -> earned reorientation',
+        dialogue_approach: 'workshop_clinic',
+        tutor_adaptation_policy: 'peripeteia',
+      },
+      raw: [
+        'LEARNER: "Atomic number on 6, symbol on C, name on carbon, atomic mass on 12.01."',
+        '',
+        'TUTOR: "Keep using the overlay: place each label card in its visible window and read the tile."',
+        '',
+        'LEARNER: "But this still does not make sense; the two middle windows are not settled by another visible placement."',
+        '',
+        'TUTOR: "The overlay is not working for the middle pair. Switch to a blind check: point to C and name its label, then point to carbon and name its label before flipping each card."',
+        '',
+        'LEARNER: "C is symbol. Carbon is name. Both match; the middle pair is checked."',
+      ].join('\n'),
+    });
+
+    assert.equal(result.pass, false);
+    assert.ok(result.violations.includes('peripeteia_arm_without_earned_reorientation'));
+  });
+
+  it('accepts peripeteia arms when the learner performs and names the changed pressure', () => {
+    const result = deterministicChecks({
+      id: 'T04',
+      item: {
+        dramatic_shape: 'notation boxes -> loose pressure -> outside label',
+        dialogue_approach: 'workshop_clinic',
+        tutor_adaptation_policy: 'peripeteia',
+      },
+      raw: [
+        'LEARNER: "Three quarter-note beats in one bar. The line fits the 3 tile and the quarter-note card, but the speed card at the edge still feels unresolved."',
+        '',
+        'TUTOR: "The row settled the count, but it did not settle the loose speed label. New gate: inside this border only if a card names one bar or one beat unit. Test the speed card against those questions."',
+        '',
+        'LEARNER: "It fails both entries for the border, so it stays outside 3/4. The loose pressure belongs to the outside speed label, not to the lower 4."',
+      ].join('\n'),
+    });
+
+    assert.equal(result.pass, true);
+    assert.ok(!result.violations.includes('peripeteia_arm_without_earned_reorientation'));
+  });
+
   it('runs a mock same-model structural critic over a sample directory', async () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-structure-'));
     const sampleDir = path.join(dir, 'sample');
@@ -56,6 +102,8 @@ describe('critic-poetics-structure', () => {
         'LEARNER: "I still do not buy why the checklist is not enough."',
         '',
         'TUTOR: "Hold on. Put the sheet beside the cracked bracket and test the decision, not the ticks."',
+        '',
+        'LEARNER: "The pressure was treating the ticks as the decision; now the check is whether the cracked bracket can carry the release."',
       ].join('\n'),
       'utf8',
     );

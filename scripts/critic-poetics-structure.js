@@ -100,6 +100,10 @@ const ACTION_PAREN =
   /\((?:[^)]*\b(?:points?|checks?|draws?|holds?|looks?|marks?|nods?|pauses?|reads?|slides?|taps?|turns?|writes?)\b[^)]*)\)/i;
 const STAGE_INTRUSION = /\b(?:the (?:tutor|learner) must|director|scene card|hidden|ego|superego)\b/i;
 const INTERNAL_LEAK = /\b(?:PRIVATE_DECISION|FEEDBACK:|KEEP_OR_CHANGE|UPTAKE_CHECK|PERIPETEIA_CHECK|REGISTER_CHECK|<think>)\b/i;
+const PERIPETEIA_REORIENTATION = [
+  /\b(?:the pressure|the misfit|the old check|the earlier check|what changed|the loose pressure|I was treating|I was using|I was letting|I was reading|I had been treating)\b[\s\S]{0,220}\b(?:now|so|instead|rather|not|does not|cannot|stays?|belongs?|fails?|means|is)\b/i,
+  /\b(?:now the check|now the test|the new check|the replacement check|this gate|this strip|this test)\b[\s\S]{0,160}\b(?:instead|rather|not|carries|shows|keeps|belongs?|stays?)\b/i,
+];
 
 function speechWithoutLeadingAsides(text) {
   let rest = String(text || '').trim();
@@ -120,6 +124,24 @@ function lineEvidence(turns, predicate) {
     .filter(predicate)
     .slice(0, 3)
     .map((turn) => `${turn.role}${turn.turnNumber}: ${turn.text.slice(0, 180)}`);
+}
+
+function learnerTurnsAfterPeripeteiaTutor(turns, peripeteia) {
+  const tutorPostTurn = peripeteia?.tutor_post_turn;
+  const tutorIndex =
+    tutorPostTurn == null
+      ? -1
+      : turns.findIndex((turn) => turn.role === 'TUTOR' && Number(turn.turnNumber) === Number(tutorPostTurn));
+  const candidates = tutorIndex >= 0 ? turns.slice(tutorIndex + 1) : turns;
+  const learners = candidates.filter((turn) => turn.role === 'LEARNER');
+  return learners.length ? learners : turns.filter((turn) => turn.role === 'LEARNER').slice(-1);
+}
+
+function hasPeripeteiaReorientation(turns, peripeteia) {
+  const text = learnerTurnsAfterPeripeteiaTutor(turns, peripeteia)
+    .map((turn) => turn.text)
+    .join('\n');
+  return PERIPETEIA_REORIENTATION.some((pattern) => pattern.test(text));
 }
 
 function deterministicChecks({ id, item, raw }) {
@@ -148,6 +170,9 @@ function deterministicChecks({ id, item, raw }) {
   if (!item?.dialogue_approach) warnings.push('missing_dialogue_approach_in_key');
   if (requiresPeripeteia && !peripeteia.learner_reversal_pressure) warnings.push('peripeteia_arm_without_detected_pressure');
   if (requiresPeripeteia && !peripeteia.tutor_adaptive_mechanism) warnings.push('peripeteia_arm_without_detected_tutor_mechanism');
+  if (requiresPeripeteia && !hasPeripeteiaReorientation(turns, peripeteia)) {
+    violations.push('peripeteia_arm_without_earned_reorientation');
+  }
 
   return {
     pass: violations.length === 0,
@@ -165,6 +190,11 @@ function deterministicChecks({ id, item, raw }) {
       action_parentheses: lineEvidence(publicTurns, (turn) => ACTION_PAREN.test(turn.text)),
       unquoted_public_speech: lineEvidence(publicTurns, (turn) => !isDirectQuotedSpeech(turn.text)),
       intrusive_stage: lineEvidence(stageTurns, (turn) => STAGE_INTRUSION.test(turn.text)),
+      missing_peripeteia_reorientation: requiresPeripeteia
+        ? learnerTurnsAfterPeripeteiaTutor(turns, peripeteia).map(
+            (turn) => `${turn.role}${turn.turnNumber}: ${turn.text.slice(0, 180)}`,
+          )
+        : [],
     },
   };
 }

@@ -80,6 +80,7 @@
     "poetics:report": "node scripts/report-poetics-sidecar.js",
     "poetics:adaptation": "node scripts/analyze-poetics-tutor-adaptation.js",
     "poetics:diagnose-adaptation": "node scripts/diagnose-poetics-adaptation-failures.js",
+    "poetics:adaptation-loop": "node scripts/run-poetics-adaptation-loop.js",
     "poetics:audit-quality": "node scripts/audit-poetics-adaptive-quality.js",
     "poetics:prefix-baseline": "node scripts/extract-poetics-prefix-baselines.js",
     "poetics:structure-critic": "node scripts/critic-poetics-structure.js",
