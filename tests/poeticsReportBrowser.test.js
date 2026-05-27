@@ -415,6 +415,7 @@ LEARNER: "The arrow names who acts on the cart. [moves the motion strip aside] T
       assert.equal(hardTraps.length, 2);
       const d25 = hardTraps.find((item) => item.dramaId === 'D25');
       const d26 = hardTraps.find((item) => item.dramaId === 'D26');
+      assert.match(d25.createdAt, /^\d{4}-\d{2}-\d{2}/);
       assert.equal(d25.criticForms.length, 4);
       assert.equal(d25.consensus.claimStatus, 'negative');
       assert.equal(d25.reviewFlagCount, 1);
@@ -427,6 +428,7 @@ LEARNER: "The arrow names who acts on the cart. [moves the motion strip aside] T
 
       const detail = getItem(db, 'poetics-test-run:control-r01-d25-hard-trap:default:T02');
       assert.equal(detail.item.controlRole, 'hard_trap_control');
+      assert.match(detail.item.createdAt, /^\d{4}-\d{2}-\d{2}/);
       assert.equal(detail.scores.length, 4);
       assert.equal(detail.reviewFlags.length, 1);
 
@@ -470,6 +472,8 @@ LEARNER: "The arrow names who acts on the cart. [moves the motion strip aside] T
 
   it('renders browser-side origin helpers without server-only references', () => {
     const html = renderBrowserHtml();
+    assert.match(html, /const formatTimestamp = /);
+    assert.match(html, /script ' \+ formatTimestamp\(item\.createdAt\)/);
     assert.match(
       html,
       /const ORIGIN_CLASSES = \["none","organic","peripeteia_induced","false_closure","ambiguous"\];/,
@@ -556,6 +560,7 @@ LEARNER: "The arrow names who acts on the cart. [moves the motion strip aside] T
       const blindItems = listItems(db, { runId: 'poetics-test-run', blind: true });
       assert.equal(blindItems.length, 3);
       assert.ok(blindItems[0].blindId);
+      assert.match(blindItems[0].createdAt, /^\d{4}-\d{2}-\d{2}/);
       assert.equal(blindItems[0].criticForms, undefined);
       assert.equal(blindItems[0].tutorAdaptationScore, undefined);
 

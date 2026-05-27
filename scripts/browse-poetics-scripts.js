@@ -251,6 +251,7 @@ function listItems(db, filters = {}) {
         i.control_role AS controlRole,
         i.sample_path AS samplePath,
         i.full_transcript_path AS fullTranscriptPath,
+        i.created_at AS createdAt,
         GROUP_CONCAT(DISTINCT s.critic_model || '=' || COALESCE(s.form_class, '')) AS criticForms,
         MAX(a.learner_self_reframe) AS learnerSelfReframe,
         MAX(a.tutor_contingent_adaptation) AS tutorContingentAdaptation,
@@ -392,6 +393,7 @@ function blindItem(row, index = 0) {
     blindId: `S${String(index + 1).padStart(3, '0')}`,
     runId: row.runId,
     tid: row.tid,
+    createdAt: row.createdAt,
     labelCount: row.labelCount,
     reviewFlagCount: row.reviewFlagCount,
   };
@@ -644,6 +646,7 @@ function getItem(db, id) {
       keyPath: item.key_path,
       sourceRoot: item.source_root,
       batchId: item.batch_id,
+      createdAt: item.created_at,
       qualityStatus: item.quality_status,
       qualityWarnings: decodeJson(item.quality_warnings, []),
       metadata: decodeJson(item.metadata, {}),
@@ -1708,6 +1711,10 @@ const scoreOrNA = (value) => value == null || value === '' || Number.isNaN(Numbe
 const voteMetric = (count, total) => total ? count + '/' + total : 'n/a';
 const boolOrNA = (value) => value == null ? 'n/a' : value ? 'true' : 'false';
 const scoreOrigin = (score) => score?.metadata?.recognition_origin || score?.recognitionOrigin || { class: 'none' };
+const formatTimestamp = (value) => {
+  if (!value) return '';
+  return String(value).replace('T', ' ').replace(/\\.\\d+(Z)?$/, '').replace(/Z$/, '').slice(0, 16);
+};
 
 function metricLabel(label, help) {
   return esc(label) + '<div class="metric-help">' + esc(help) + '</div>';
@@ -1876,7 +1883,7 @@ function renderRuns() {
   const select = el('runSelect');
   select.innerHTML = state.runs.map((run, idx) =>
     '<option value="' + esc(run.id) + '"' + (idx === 0 ? ' selected' : '') + '>' +
-    esc(run.id + ' · ' + run.itemCount + ' items · ' + run.scoreCount + ' scores' + (run.reviewFlagCount ? ' · ' + run.reviewFlagCount + ' flags' : '')) + '</option>'
+    esc(run.id + ' · ' + formatTimestamp(run.createdAt) + ' · ' + run.itemCount + ' items · ' + run.scoreCount + ' scores' + (run.reviewFlagCount ? ' · ' + run.reviewFlagCount + ' flags' : '')) + '</option>'
   ).join('');
   if (state.runIds.length) {
     const label = state.runIds.join(', ');
@@ -1897,14 +1904,14 @@ function renderItems() {
     if (state.blind) {
       return '<button class="item' + active + '" data-id="' + esc(item.id) + '">' +
         '<div class="item-main"><span>' + esc(item.blindId || item.tid || 'script') + '</span><span>' + esc(item.tid || '') + '</span></div>' +
-        '<div class="item-meta"><span>public transcript</span><span>' + esc(item.labelCount ? 'labelled' : 'unlabelled') + '</span>' +
+        '<div class="item-meta"><span>public transcript</span><span>' + esc(formatTimestamp(item.createdAt) || 'no timestamp') + '</span><span>' + esc(item.labelCount ? 'labelled' : 'unlabelled') + '</span>' +
         (item.reviewFlagCount ? '<span>review flagged</span>' : '') + '</div>' +
         '</button>';
     }
     const role = item.controlRole || (item.unitId || '').replace(/-.+$/, '');
     return '<button class="item' + active + '" data-id="' + esc(item.id) + '">' +
       '<div class="item-main"><span>' + esc(item.tid + ' · ' + (item.dramaId || '')) + '</span><span>' + esc(item.arm || '') + '</span></div>' +
-      '<div class="item-meta"><span>' + esc(item.repeat || '') + '</span><span>' + esc(role || '') + '</span><span>' + esc(item.discipline || '') + '</span></div>' +
+      '<div class="item-meta"><span>' + esc(item.repeat || '') + '</span><span>' + esc(role || '') + '</span><span>' + esc(item.discipline || '') + '</span><span>' + esc(formatTimestamp(item.createdAt) || 'no timestamp') + '</span></div>' +
     '<div class="chips">' + item.criticForms.map(formChip).join('') +
       consensusChip(item.consensus) +
       (item.scoreCount ? '<span class="chip recognition">' + esc('action ' + item.actionalBreakthroughCount + '/' + item.scoreCount) + '</span>' : '') +
@@ -1938,7 +1945,7 @@ function renderDetailHead() {
   const activeFlags = (detail.reviewFlags || []).filter((flag) => !flag.resolved_at);
   el('detailHead').innerHTML = '<div class="detail-title"><h2>' +
     esc(item.tid + ' · ' + (item.dramaId || item.unitId)) +
-    '</h2><span class="sub">' + esc([item.runId, item.repeat, item.arm].filter(Boolean).join(' / ')) + '</span></div>' +
+    '</h2><span class="sub">' + esc([item.runId, item.repeat, item.arm, formatTimestamp(item.createdAt) && ('script ' + formatTimestamp(item.createdAt))].filter(Boolean).join(' / ')) + '</span></div>' +
     '<div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">' +
     '<div class="chips" style="margin-top:8px">' +
     consensusChip(detail.consensus) +
