@@ -1,0 +1,468 @@
+{
+  "generated": "2026-05-27T03:53:46.459Z",
+  "phase": 2,
+  "critic": "codex",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 4
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/key-none.yaml",
+    "allowQualityWarnings": true,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T551",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "I keep wanting to put denominator on the 8, but the bottom place is the label place?",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The exchange is moving toward simple positional labeling of TOP, BAR, and BOTTOM followed by reading the fraction.",
+      "actionalBreakthroughEvidence": "Lower tab: denominator. Printed number clear. Top tab next, numerator?",
+      "actionalBreakthroughJustification": "L3 performs the new placement criterion by separating the printed number from the label position and applying the lower-tab rule to the next card.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "The printed 8 pulls the eye.\n\nThe 8 stays a number. The tab names the place.\n\nTouch the tabs: TOP. BAR. BOTTOM.\n\nThen read the card: three eighths.",
+      "tutorReversalJustification": "T2 responds to the learner's confusion by shifting attention from number identity to place naming, but this is a refinement of the same object-task rather than a fully new public mechanism with explicit stock-taking.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "The printed 8 pulls the eye.\n\nThe 8 stays a number. The tab names the place.\n\nTouch the tabs: TOP. BAR. BOTTOM.\n\nThen read the card: three eighths.",
+      "adaptiveMechanismQualityJustification": "The mechanism is fitted and economical because it names the visual lure, separates number from tab, and gives the learner a usable place-sequence criterion.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Next card: lower tab first.\n\nPut DENOMINATOR there. Leave the printed number clear.",
+      "tutorAdaptationJustification": "T3 follows the learner's revised distinction by making the next task start with the lower tab and printed number left clear, but it mostly continues the established routine.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "I keep wanting to put denominator on the 8, but the bottom place is the label place?",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Lower tab: denominator. Printed number clear. Top tab next, numerator?",
+          "justification": "L3 performs the new placement criterion by separating the printed number from the label position and applying the lower-tab rule to the next card.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Next card: lower tab first.\n\nPut DENOMINATOR there. Leave the printed number clear.",
+          "justification": "T3 follows the learner's revised distinction by making the next task start with the lower tab and printed number left clear, but it mostly continues the established routine.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "The printed 8 pulls the eye.\n\nThe 8 stays a number. The tab names the place.\n\nTouch the tabs: TOP. BAR. BOTTOM.\n\nThen read the card: three eighths.",
+          "justification": "T2 responds to the learner's confusion by shifting attention from number identity to place naming, but this is a refinement of the same object-task rather than a fully new public mechanism with explicit stock-taking.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "The printed 8 pulls the eye.\n\nThe 8 stays a number. The tab names the place.\n\nTouch the tabs: TOP. BAR. BOTTOM.\n\nThen read the card: three eighths.",
+          "justification": "T2 responds to the learner's confusion by shifting attention from number identity to place naming, but this is a refinement of the same object-task rather than a fully new public mechanism with explicit stock-taking.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "The printed 8 pulls the eye.\n\nThe 8 stays a number. The tab names the place.\n\nTouch the tabs: TOP. BAR. BOTTOM.\n\nThen read the card: three eighths.",
+          "justification": "The mechanism is fitted and economical because it names the visual lure, separates number from tab, and gives the learner a usable place-sequence criterion.",
+          "triggerLearnerTurn": 1,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "adaptive_mechanism_quality_mechanism_clamp:4->3:stock=0:device=1:routine=0:mechanism_score=3"
+      ],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 50,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "I keep wanting to put denominator on the 8, but the bottom place is the label place?",
+          "learnerAction": "Lower tab: denominator. Printed number clear. Top tab next, numerator?",
+          "tutorAdaptiveMechanism": "The printed 8 pulls the eye.\n\nThe 8 stays a number. The tab names the place.\n\nTouch the tabs: TOP. BAR. BOTTOM.\n\nThen read the card: three eighths.",
+          "adaptiveMechanismQuality": "The printed 8 pulls the eye.\n\nThe 8 stays a number. The tab names the place.\n\nTouch the tabs: TOP. BAR. BOTTOM.\n\nThen read the card: three eighths."
+        }
+      }
+    },
+    {
+      "id": "T552",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner is expected to continue distinguishing the parameter label from the argument value by timing the call bracket.",
+      "actionalBreakthroughEvidence": "This mark belongs under the call bracket only: `name` receives `\"Maya\"` while `greet(\"Maya\")` runs. The definition line keeps `name` marked as parameter label.",
+      "actionalBreakthroughJustification": "The learner uses the bracket device to place the receiving event only during the call and keeps the definition line classified separately.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Use this wording: the call supplies the argument value `\"Maya\"` to the parameter `name`. During that run, `name` receives `\"Maya\"`. “Bound to” means the same receiving step.\n\nTest the timing:\n\nBefore the call: `name` receives `\"Maya\"`.\n\nDuring `greet(\"Maya\")`: `name` receives `\"Maya\"`.\n\nWhich sentence gets the tick?",
+      "tutorReversalJustification": "The tutor responds to the learner's wording pressure with a timing test, but does not fully stage a stock-taking contrast showing the old route has failed.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Test the timing:\n\nBefore the call: `name` receives `\"Maya\"`.\n\nDuring `greet(\"Maya\")`: `name` receives `\"Maya\"`.\n\nWhich sentence gets the tick?",
+      "adaptiveMechanismQualityJustification": "The mechanism is precise and usable because it turns the learner's wording uncertainty into a binary timing criterion the learner can act on.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no recognition pivot, so no later tutor uptake of a revised learner self-framing can be scored.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "This mark belongs under the call bracket only: `name` receives `\"Maya\"` while `greet(\"Maya\")` runs. The definition line keeps `name` marked as parameter label.",
+          "justification": "The learner uses the bracket device to place the receiving event only during the call and keeps the definition line classified separately.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no recognition pivot, so no later tutor uptake of a revised learner self-framing can be scored.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Use this wording: the call supplies the argument value `\"Maya\"` to the parameter `name`. During that run, `name` receives `\"Maya\"`. “Bound to” means the same receiving step.\n\nTest the timing:\n\nBefore the call: `name` receives `\"Maya\"`.\n\nDuring `greet(\"Maya\")`: `name` receives `\"Maya\"`.\n\nWhich sentence gets the tick?",
+          "justification": "The tutor responds to the learner's wording pressure with a timing test, but does not fully stage a stock-taking contrast showing the old route has failed.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Use this wording: the call supplies the argument value `\"Maya\"` to the parameter `name`. During that run, `name` receives `\"Maya\"`. “Bound to” means the same receiving step.\n\nTest the timing:\n\nBefore the call: `name` receives `\"Maya\"`.\n\nDuring `greet(\"Maya\")`: `name` receives `\"Maya\"`.\n\nWhich sentence gets the tick?",
+          "justification": "The tutor responds to the learner's wording pressure with a timing test, but does not fully stage a stock-taking contrast showing the old route has failed.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Test the timing:\n\nBefore the call: `name` receives `\"Maya\"`.\n\nDuring `greet(\"Maya\")`: `name` receives `\"Maya\"`.\n\nWhich sentence gets the tick?",
+          "justification": "The mechanism is precise and usable because it turns the learner's wording uncertainty into a binary timing criterion the learner can act on.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "adaptive_mechanism_quality_mechanism_clamp:4->3:stock=0:device=1:routine=0:mechanism_score=3"
+      ],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 0,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "",
+          "learnerAction": "This mark belongs under the call bracket only: `name` receives `\"Maya\"` while `greet(\"Maya\")` runs. The definition line keeps `name` marked as parameter label.",
+          "tutorAdaptiveMechanism": "Use this wording: the call supplies the argument value `\"Maya\"` to the parameter `name`. During that run, `name` receives `\"Maya\"`. “Bound to” means the same receiving step.\n\nTest the timing:\n\nBefore the call: `name` receives `\"Maya\"`.\n\nDuring `greet(\"Maya\")`: `name` receives `\"Maya\"`.\n\nWhich sentence gets the tick?",
+          "adaptiveMechanismQuality": "Test the timing:\n\nBefore the call: `name` receives `\"Maya\"`.\n\nDuring `greet(\"Maya\")`: `name` receives `\"Maya\"`.\n\nWhich sentence gets the tick?"
+        }
+      }
+    },
+    {
+      "id": "T553",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "The glue label fits",
+      "naiveTrajectory": "The learner is expected to keep separating bracketed action from spoken line while testing harder bracketed delivery notes.",
+      "actionalBreakthroughEvidence": "`MAYA` is the speaker name. `[whispering to Jonah]` gets `perform`; `I found the letter.` gets `say`.",
+      "actionalBreakthroughJustification": "The learner correctly performs the classification on the harder delivery-note example and articulates the operative bracket-first constraint.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "The pressure is that `[whispering]` feels tied to speech. Still use the markup rule: what does the actor do, and what does the actor say?",
+      "tutorReversalJustification": "The tutor notices the learner's pressure point and names it, but mainly continues the same bracket-versus-spoken-line route with a narrower example.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Board rule: `near the line` is not `part of the line`.",
+      "adaptiveMechanismQualityJustification": "The mechanism is usable and fitted to the proximity confusion, but it is a refinement of the existing rule rather than a visibly new public device.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so there is no later tutor uptake of a revised learner frame.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "`MAYA` is the speaker name. `[whispering to Jonah]` gets `perform`; `I found the letter.` gets `say`.",
+          "justification": "The learner correctly performs the classification on the harder delivery-note example and articulates the operative bracket-first constraint.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so there is no later tutor uptake of a revised learner frame.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "The pressure is that `[whispering]` feels tied to speech. Still use the markup rule: what does the actor do, and what does the actor say?",
+          "justification": "The tutor notices the learner's pressure point and names it, but mainly continues the same bracket-versus-spoken-line route with a narrower example.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "The pressure is that `[whispering]` feels tied to speech. Still use the markup rule: what does the actor do, and what does the actor say?",
+          "justification": "The tutor notices the learner's pressure point and names it, but mainly continues the same bracket-versus-spoken-line route with a narrower example.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Board rule: `near the line` is not `part of the line`.",
+          "justification": "The mechanism is usable and fitted to the proximity confusion, but it is a refinement of the existing rule rather than a visibly new public device.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 0,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "",
+          "learnerAction": "`MAYA` is the speaker name. `[whispering to Jonah]` gets `perform`; `I found the letter.` gets `say`.",
+          "tutorAdaptiveMechanism": "The pressure is that `[whispering]` feels tied to speech. Still use the markup rule: what does the actor do, and what does the actor say?",
+          "adaptiveMechanismQuality": "Board rule: `near the line` is not `part of the line`."
+        }
+      }
+    },
+    {
+      "id": "T554",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner is expected to keep separating citation-field placement from later fit/use evaluation while asking for more local criteria.",
+      "actionalBreakthroughEvidence": "Repair edit made: journal name moved from “title” to “container”; article heading stays in “title.”",
+      "actionalBreakthroughJustification": "The learner visibly performs the corrected bibliographic classification, though later turns still ask for fit/use evidence criteria.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "The reopened note “field = source-page detail, not approval” checks only whether each visible part was put in the matching box. It is not a source-use decision.",
+      "tutorReversalJustification": "The tutor responds to the learner's confusion by clarifying the route, but does not fully stage a stock-taking contrast plus a substantially new public mechanism.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Inspect one visible source-page phrase: title phrase, abstract line, heading, or keyword. Compare that phrase with the assignment prompt.",
+      "adaptiveMechanismQualityJustification": "The mechanism is usable and fitted to the fit/use question, but it remains a straightforward checklist refinement rather than a clearly new adaptive route.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no learner recontextualizing pivot, so there is no recognition-contingent tutor uptake to score.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Repair edit made: journal name moved from “title” to “container”; article heading stays in “title.”",
+          "justification": "The learner visibly performs the corrected bibliographic classification, though later turns still ask for fit/use evidence criteria.",
+          "learnerTurn": 2,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no learner recontextualizing pivot, so there is no recognition-contingent tutor uptake to score.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "The reopened note “field = source-page detail, not approval” checks only whether each visible part was put in the matching box. It is not a source-use decision.",
+          "justification": "The tutor responds to the learner's confusion by clarifying the route, but does not fully stage a stock-taking contrast plus a substantially new public mechanism.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "The reopened note “field = source-page detail, not approval” checks only whether each visible part was put in the matching box. It is not a source-use decision.",
+          "justification": "The tutor responds to the learner's confusion by clarifying the route, but does not fully stage a stock-taking contrast plus a substantially new public mechanism.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Inspect one visible source-page phrase: title phrase, abstract line, heading, or keyword. Compare that phrase with the assignment prompt.",
+          "justification": "The mechanism is usable and fitted to the fit/use question, but it remains a straightforward checklist refinement rather than a clearly new adaptive route.",
+          "triggerLearnerTurn": 1,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 0,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "",
+          "learnerAction": "Repair edit made: journal name moved from “title” to “container”; article heading stays in “title.”",
+          "tutorAdaptiveMechanism": "The reopened note “field = source-page detail, not approval” checks only whether each visible part was put in the matching box. It is not a source-use decision.",
+          "adaptiveMechanismQuality": "Inspect one visible source-page phrase: title phrase, abstract line, heading, or keyword. Compare that phrase with the assignment prompt."
+        }
+      }
+    }
+  ],
+  "originPolicy": {
+    "version": "recognition-origin-derived-v1",
+    "source": "derived_from_role_symmetric_critic_axes",
+    "classes": [
+      "none",
+      "organic",
+      "peripeteia_induced",
+      "false_closure",
+      "ambiguous"
+    ]
+  }
+}

@@ -1,0 +1,257 @@
+_comment: HELD OUT — do not read while labelling. Joins to instrument scores +
+  human labels only AFTER both are produced. intended_lean /
+  intended_tutor_character / dramatic_shape are DESIGN HYPOTHESES, never labels.
+generated: 2026-05-27T03:22:39.106Z
+generator: codex
+role_map: null
+mode: real-codex
+model: codex@xhigh
+codex_reasoning_effort: xhigh
+writing_pad:
+  mode: isolated
+  dir: config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/deliberation/.writing-pad
+  learnerDb: config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/deliberation/.writing-pad/learner-writing-pad.db
+  tutorDb: config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/deliberation/.writing-pad/tutor-writing-pad.db
+director_mode: scene
+director_variation_key: null
+director_revisit_cue: false
+director_revisit_policy: none
+director_revisit_anchor: null
+tutor_adaptation_policy: routine
+approach_databases:
+  pedagogical: config/poetics-calibration/pedagogical-approaches.yaml
+  dialogue: config/poetics-calibration/dialogue-approaches.yaml
+transcripts_dir: config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/transcripts/routine
+seed: 20260520
+max_turns: 3
+n: 4
+diagnostic_only: diagnostic / generative read — κ on small n is noise
+  (PHASE2-FINDINGS.md §4); the aim is surprising-element production judged by an
+  external reader, NOT a human-matching classifier
+paired_continuation:
+  mode: fixed_prefix_continuation
+  prefix_through: tutor_turn_2
+  branch_policies:
+    - routine
+    - none
+    - peripeteia-only
+  branches:
+    - key: routine
+      revisitPolicy: none
+      tutorAdaptationPolicy: routine
+    - key: none
+      revisitPolicy: none
+      tutorAdaptationPolicy: none
+    - key: peripeteia-only
+      revisitPolicy: none
+      tutorAdaptationPolicy: peripeteia
+items:
+  T551:
+    drama_id: D57
+    discipline: arithmetic
+    condition: recognition
+    pedagogical_approach: montessori_prepared_environment
+    pedagogical_family: constructivist
+    dialogue_approach: montessori_observation
+    dialogue_family: material_dialogue
+    stage_direction_policy: short
+    stage_direction_style: object_business
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: confused_novice
+    intended_tutor_character: Material-led, patient, keeping the card as a naming
+      surface before any magnitude pressure
+    intended_lean: recognition
+    dramatic_shape: fraction-card labels -> position names -> possible later
+      pressure over why position is not importance
+    evaluation_role: low_organic_anchor_candidate
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: Ordinary-continuity anchor. The shared prefix should
+      label top number, bottom number, fraction bar, and one read-aloud phrase.
+      Avoid comparing fraction sizes, equivalent fractions, or a surprising
+      magnitude reversal before the branch.
+    n_tutor_turns: 3
+    n_learner_turns: 3
+    director_mode: scene
+    director_variation_key: null
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: routine
+    opening_speaker: director
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 9cdba025856bda2c
+      branch_policy: routine
+      director_revisit_policy: none
+      tutor_adaptation_policy: routine
+  T552:
+    drama_id: D55
+    discipline: programming
+    condition: recognition
+    pedagogical_approach: vygotsky_zpd_scaffolding
+    pedagogical_family: sociocultural
+    dialogue_approach: workshop_clinic
+    dialogue_family: practice_dialogue
+    stage_direction_policy: short
+    stage_direction_style: object_business
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: focused_achiever
+    intended_tutor_character: Practical, local, using code labels before any execution-based reversal
+    intended_lean: recognition
+    dramatic_shape: code labels -> placeholder/value sort -> possible later pressure
+      over why definition is not call
+    evaluation_role: low_organic_anchor_candidate
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: Ordinary-continuity anchor. The shared prefix should
+      label function name, parameter name, call site, and argument value. Avoid
+      a runtime failure, variable-shadowing trap, or surprise output before the
+      branch.
+    n_tutor_turns: 4
+    n_learner_turns: 4
+    director_mode: scene
+    director_variation_key: null
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: routine
+    opening_speaker: learner
+    ending_speaker: tutor
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: fc717faf6e31869e
+      branch_policy: routine
+      director_revisit_policy: none
+      tutor_adaptation_policy: routine
+  T553:
+    drama_id: D56
+    discipline: drama
+    condition: recognition
+    pedagogical_approach: brecht_epic_distanciation
+    pedagogical_family: dramatic_pedagogy
+    dialogue_approach: no_stage_plain_transcript
+    dialogue_family: transcript
+    stage_direction_policy: none_except_required_cue
+    stage_direction_style: bare_transcript
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: eager_explorer
+    intended_tutor_character: Theatre-literate, plain-spoken, using script marks
+      before any Brechtian interruption
+    intended_lean: recognition
+    dramatic_shape: script markup -> spoken/action labels -> possible later pressure
+      over why performance is not narration
+    evaluation_role: low_organic_anchor_candidate
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: Ordinary-continuity anchor with theatrical material but
+      low dramatic pressure. The shared prefix should label speaker name, spoken
+      line, and bracketed stage direction. Do not stage a rehearsal failure or
+      meta-theatre reveal before branch pressure.
+    n_tutor_turns: 3
+    n_learner_turns: 4
+    director_mode: scene
+    director_variation_key: null
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: routine
+    opening_speaker: learner
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: d8f227615834fdac
+      branch_policy: routine
+      director_revisit_policy: none
+      tutor_adaptation_policy: routine
+  T554:
+    drama_id: D54
+    discipline: research writing
+    condition: recognition
+    pedagogical_approach: hidden_curriculum
+    pedagogical_family: critical_pedagogy
+    dialogue_approach: online_thread
+    dialogue_family: mediated_dialogue
+    stage_direction_policy: sparse
+    stage_direction_style: thread_metadata
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: confused_novice
+    intended_tutor_character: Threaded, procedural, aware of hidden curriculum
+      without revealing it too early
+    intended_lean: recognition
+    dramatic_shape: citation boxes -> field placement -> possible later pressure
+      over why format is not credibility
+    evaluation_role: low_organic_anchor_candidate
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: "Ordinary-continuity anchor. The shared prefix should be
+      form-filling: author, date, title, container. Do not make the source turn
+      unreliable, expose plagiarism, or produce a hidden-curriculum reveal
+      before branch pressure."
+    n_tutor_turns: 3
+    n_learner_turns: 4
+    director_mode: scene
+    director_variation_key: null
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: routine
+    opening_speaker: learner
+    ending_speaker: learner
+    quality_status: review_before_scoring
+    quality_warnings:
+      - code: no_cue_reframe_leakage
+        severity: warning
+        count: 2
+        failures:
+          - learner_turn_number: 3
+            turn_number: 2
+            matched_pattern: self_quote_of_prior_learner_turn
+            excerpt: "[22:22 learner repair draft] Repair edit entered: article heading
+              stays in “title”; journal name moved to “container.” The reopened
+              marker still makes this box look risky, but this part is placement
+              only. For “fit/use,” should the worksheet"
+          - learner_turn_number: 4
+            turn_number: 3
+            matched_pattern: self_quote_of_prior_learner_turn
+            excerpt: "[22:25 learner repair draft] Fit/use box: copy one short phrase from
+              the title or abstract, then add “This source fits because ___.” I
+              will not put the journal name in this box again; that stays as
+              “container.” The phrase selected is visibl"
+        turn_numbers:
+          - 2
+          - 3
+        recommended_action: regenerate_no_cue_arm_or_move_item_to_boundary_suite_before_scoring
+        tid: T554
+        drama_id: D54
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: d13ea4a60cf10509
+      branch_policy: routine
+      director_revisit_policy: none
+      tutor_adaptation_policy: routine
+quality_warning_count: 1
+quality_blocking_warning_count: 1
+stage_direction_policy_counts:
+  short: 2
+  none_except_required_cue: 1
+  sparse: 1
+stage_direction_style_counts:
+  object_business: 2
+  bare_transcript: 1
+  thread_metadata: 1

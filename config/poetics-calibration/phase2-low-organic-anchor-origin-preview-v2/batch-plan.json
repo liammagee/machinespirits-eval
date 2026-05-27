@@ -1,0 +1,28 @@
+{
+  "batchId": "phase2-low-organic-anchor-origin-preview-v2",
+  "rootDir": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2",
+  "generator": "codex",
+  "repeats": 1,
+  "stressRepeats": 0,
+  "maxTurns": 3,
+  "generationConcurrency": 2,
+  "critics": ["codex"],
+  "previewTargetsOnly": true,
+  "note": "Target-only regenerated preview after stricter no-cue/routine leakage guards; cheap-screen before external panel.",
+  "units": [
+    {
+      "id": "target-r01",
+      "kind": "target",
+      "repeat": "r01",
+      "spec": "config/poetics-calibration/phase2-low-organic-anchor-candidates-v2.yaml",
+      "tidStart": 550,
+      "only": "D54,D55,D56,D57",
+      "pairedPolicies": ["routine", "none", "peripeteia-only"],
+      "pairedAdaptationArms": true,
+      "outDir": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/sample",
+      "delibDir": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/deliberation",
+      "transcriptsDir": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/transcripts",
+      "keyPath": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/key.yaml"
+    }
+  ]
+}

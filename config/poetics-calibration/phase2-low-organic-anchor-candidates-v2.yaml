@@ -49,7 +49,8 @@ dramas:
     learner_voice_constraint: >-
       Sound assignment-focused and mildly anxious about doing the format right.
       In no-cue arms, stay with box placement and do not narrate a new theory of
-      credibility.
+      credibility. Do not say the format proves credibility, "now I see", or
+      "that makes sense" in no-cue arms.
     tutor_voice_constraint: >-
       Keep the shared prefix as field identification: author, date, title,
       container. Do not introduce authority, bias, peer review, or reliability
@@ -86,7 +87,9 @@ dramas:
       label definition-side placeholder and call-side argument.
     learner_voice_constraint: >-
       Sound efficient and code-local. In no-cue arms, ask which token gets which
-      label; do not declare a new model of function calls.
+      label; do not declare a new model of function calls. Do not say "the same
+      slot is the trap" or describe the name as what "pulls my eye" in no-cue
+      arms.
     tutor_voice_constraint: >-
       Keep the shared prefix as code vocabulary: function name, parameter,
       argument, call. Do not run the program, introduce a second call, or stage a
@@ -124,6 +127,8 @@ dramas:
     learner_voice_constraint: >-
       Sound lively and practical, like someone preparing a reading. In no-cue
       arms, stay with the markup task and do not turn it into a theory of theatre.
+      Do not use "Oh, I get it", "the rule is", or performance-theory language
+      in no-cue arms.
     tutor_voice_constraint: >-
       Keep the shared prefix as script markup: speaker, spoken line, bracketed
       action. Do not stage a failed rehearsal, audience confusion, or fourth-wall
@@ -161,6 +166,8 @@ dramas:
     learner_voice_constraint: >-
       Sound tentative and label-focused. In no-cue arms, stay with top/bottom/bar
       placement and do not narrate a discovery about what the denominator does.
+      Do not say "bigger number trap" or turn top/bottom placement into a general
+      rule in no-cue arms.
     tutor_voice_constraint: >-
       Keep the shared prefix as material labeling: top number, bottom number,
       fraction bar, read as "three eighths." Do not introduce fraction-size

@@ -13,6 +13,7 @@ import {
   intrusiveStageDirectionFailures,
   keyItemFor,
   loadApproachDatabases,
+  noCuePrematureClosureFailures,
   noCueReframeLeakageFailures,
   pairedBranchDefinitions,
   qualityWarningsFor,
@@ -400,6 +401,47 @@ describe('generate-pedagogical-dramas', () => {
       assert.equal(failures.length, 1, text);
       assert.match(failures[0].matched_pattern, /thought|earlier|old|new|what I said|treating|using|calling|making/i);
     }
+  });
+
+  it('flags local trap and pull language in no-cue branches', () => {
+    for (const text of [
+      'The same slot is the trap, so name is the parameter and Maya is the argument.',
+      'The bottom number keeps pulling my eye, but denominator is the bottom label.',
+    ]) {
+      const failures = noCueReframeLeakageFailures([
+        { role: 'LEARNER', turnNumber: 1, text: 'The bottom number is bigger, so I called it the numerator.' },
+        { role: 'TUTOR', turnNumber: 2, text: 'Use position labels only.' },
+        { role: 'LEARNER', turnNumber: 2, text: 'The top number is numerator.' },
+        { role: 'TUTOR', turnNumber: 3, text: 'Now label the next card.' },
+        { role: 'LEARNER', turnNumber: 3, text },
+      ]);
+      assert.equal(failures.length, 1, text);
+    }
+  });
+
+  it('flags stock catharsis in no-cue branches', () => {
+    const turns = [
+      { role: 'LEARNER', turnNumber: 1, text: 'The bracketed action is probably read aloud.' },
+      { role: 'TUTOR', turnNumber: 2, text: 'Mark spoken words and performed action separately.' },
+      {
+        role: 'LEARNER',
+        turnNumber: 2,
+        text: 'Oh, I get it. The bracket is action, not speech.',
+      },
+    ];
+    const failures = noCuePrematureClosureFailures(turns);
+    assert.equal(failures.length, 1);
+    const warnings = qualityWarningsFor({
+      tid: 'T99',
+      dramaId: 'D99',
+      turns,
+      directorPolicy: 'none',
+      tutorAdaptationPolicy: 'none',
+    });
+    assert.equal(
+      warnings.some((warning) => warning.code === 'no_cue_premature_closure'),
+      true,
+    );
   });
 
   it('allows local task correction without an old-vs-new learner reframe in no-cue branches', () => {

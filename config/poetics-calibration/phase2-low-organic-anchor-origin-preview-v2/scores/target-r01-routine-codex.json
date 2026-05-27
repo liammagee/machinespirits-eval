@@ -1,0 +1,469 @@
+{
+  "generated": "2026-05-27T03:53:04.721Z",
+  "phase": 2,
+  "critic": "codex",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 3
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/key-routine.yaml",
+    "allowQualityWarnings": true,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T551",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The exchange is heading toward practicing the fixed top-bar-bottom labeling routine on the same fraction card.",
+      "actionalBreakthroughEvidence": "\"Top... bar... bottom. Denominator goes on this lower tab, and the 8 stays clear. Three eighths. Does numerator go on the top tab the same way?\"",
+      "actionalBreakthroughJustification": "The learner performs the position-label routine and begins transferring the same rule to numerator placement.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "\"The printed 8 pulls the eye.\n\nThe 8 stays a number. The tab names the place.\n\nTouch the tabs: TOP. BAR. BOTTOM.\n\nThen read the card: three eighths.\"",
+      "tutorReversalJustification": "The tutor responds to the learner's confusion by making the number-versus-place distinction explicit, but this is a refinement of the same object routine rather than a full route reversal.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "\"The 8 stays a number. The tab names the place.\n\nTouch the tabs: TOP. BAR. BOTTOM.\"",
+      "adaptiveMechanismQualityJustification": "The mechanism is specific and usable, but it remains a direct continuation of the same tab-touching representation rather than a markedly new device.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no recognition pivot and no later tutor turn after such a pivot.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "\"Top... bar... bottom. Denominator goes on this lower tab, and the 8 stays clear. Three eighths. Does numerator go on the top tab the same way?\"",
+          "justification": "The learner performs the position-label routine and begins transferring the same rule to numerator placement.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no recognition pivot and no later tutor turn after such a pivot.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "\"The printed 8 pulls the eye.\n\nThe 8 stays a number. The tab names the place.\n\nTouch the tabs: TOP. BAR. BOTTOM.\n\nThen read the card: three eighths.\"",
+          "justification": "The tutor responds to the learner's confusion by making the number-versus-place distinction explicit, but this is a refinement of the same object routine rather than a full route reversal.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "\"The printed 8 pulls the eye.\n\nThe 8 stays a number. The tab names the place.\n\nTouch the tabs: TOP. BAR. BOTTOM.\n\nThen read the card: three eighths.\"",
+          "justification": "The tutor responds to the learner's confusion by making the number-versus-place distinction explicit, but this is a refinement of the same object routine rather than a full route reversal.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "\"The 8 stays a number. The tab names the place.\n\nTouch the tabs: TOP. BAR. BOTTOM.\"",
+          "justification": "The mechanism is specific and usable, but it remains a direct continuation of the same tab-touching representation rather than a markedly new device.",
+          "triggerLearnerTurn": 1,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 0,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "",
+          "learnerAction": "\"Top... bar... bottom. Denominator goes on this lower tab, and the 8 stays clear. Three eighths. Does numerator go on the top tab the same way?\"",
+          "tutorAdaptiveMechanism": "\"The printed 8 pulls the eye.\n\nThe 8 stays a number. The tab names the place.\n\nTouch the tabs: TOP. BAR. BOTTOM.\n\nThen read the card: three eighths.\"",
+          "adaptiveMechanismQuality": "\"The 8 stays a number. The tab names the place.\n\nTouch the tabs: TOP. BAR. BOTTOM.\""
+        }
+      }
+    },
+    {
+      "id": "T552",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 2,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "`name` still looks like it is already `\"Maya\"`; is that only true when `greet(\"Maya\")` runs?",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The prior turns are moving toward a timing distinction in which the learner should choose whether `name` receives `\"Maya\"` before or during the call.",
+      "actionalBreakthroughEvidence": "`\"Maya\"` belongs beside the call, not on `name` in `function greet(name)`.\n`name` gets the `parameter label` mark there, with no value written onto it yet.\nFor the run check, can the inside of the function be marked `name = \"Maya\"`, or is that too strong?",
+      "actionalBreakthroughJustification": "L4 performs the learned marking distinction and extends it into a new representational question about a run-check notation.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Use this wording: the call supplies the argument value `\"Maya\"` to the parameter `name`. During that run, `name` receives `\"Maya\"`. “Bound to” means the same receiving step.\n\nTest the timing:\n\nBefore the call: `name` receives `\"Maya\"`.\n\nDuring `greet(\"Maya\")`: `name` receives `\"Maya\"`.\n\nWhich sentence gets the tick?",
+      "tutorReversalJustification": "L2 creates pressure through a wording/timing blockage, and T2 introduces a tick test, but it mainly narrows the same route rather than explicitly taking stock of a failed route.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "That mark is allowed inside the bracket. It is a run-check note, not source code and not a permanent value on the header. Header: parameter label. Call: argument value. Inside this run: `name` receives `\"Maya\"`.",
+      "adaptiveMechanismQualityJustification": "The bracketed run-check is precise and well fitted to L4's concern, giving a usable representation that separates header marking, call value, and temporary runtime binding.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "That mark is allowed inside the bracket. It is a run-check note, not source code and not a permanent value on the header. Header: parameter label. Call: argument value. Inside this run: `name` receives `\"Maya\"`.",
+      "tutorAdaptationJustification": "After the pivot and L4's extension, T4 adapts to the learner's revised frame by authorizing a constrained run-check notation rather than merely repeating the prior labels.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "`name` still looks like it is already `\"Maya\"`; is that only true when `greet(\"Maya\")` runs?",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "`\"Maya\"` belongs beside the call, not on `name` in `function greet(name)`.\n`name` gets the `parameter label` mark there, with no value written onto it yet.\nFor the run check, can the inside of the function be marked `name = \"Maya\"`, or is that too strong?",
+          "justification": "L4 performs the learned marking distinction and extends it into a new representational question about a run-check notation.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "That mark is allowed inside the bracket. It is a run-check note, not source code and not a permanent value on the header. Header: parameter label. Call: argument value. Inside this run: `name` receives `\"Maya\"`.",
+          "justification": "After the pivot and L4's extension, T4 adapts to the learner's revised frame by authorizing a constrained run-check notation rather than merely repeating the prior labels.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Use this wording: the call supplies the argument value `\"Maya\"` to the parameter `name`. During that run, `name` receives `\"Maya\"`. “Bound to” means the same receiving step.\n\nTest the timing:\n\nBefore the call: `name` receives `\"Maya\"`.\n\nDuring `greet(\"Maya\")`: `name` receives `\"Maya\"`.\n\nWhich sentence gets the tick?",
+          "justification": "L2 creates pressure through a wording/timing blockage, and T2 introduces a tick test, but it mainly narrows the same route rather than explicitly taking stock of a failed route.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Use this wording: the call supplies the argument value `\"Maya\"` to the parameter `name`. During that run, `name` receives `\"Maya\"`. “Bound to” means the same receiving step.\n\nTest the timing:\n\nBefore the call: `name` receives `\"Maya\"`.\n\nDuring `greet(\"Maya\")`: `name` receives `\"Maya\"`.\n\nWhich sentence gets the tick?",
+          "justification": "L2 creates pressure through a wording/timing blockage, and T2 introduces a tick test, but it mainly narrows the same route rather than explicitly taking stock of a failed route.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "That mark is allowed inside the bracket. It is a run-check note, not source code and not a permanent value on the header. Header: parameter label. Call: argument value. Inside this run: `name` receives `\"Maya\"`.",
+          "justification": "The bracketed run-check is precise and well fitted to L4's concern, giving a usable representation that separates header marking, call value, and temporary runtime binding.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "adaptive_mechanism_quality_mechanism_clamp:4->3:stock=0:device=1:routine=0:mechanism_score=3"
+      ],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "`name` still looks like it is already `\"Maya\"`; is that only true when `greet(\"Maya\")` runs?",
+          "learnerAction": "`\"Maya\"` belongs beside the call, not on `name` in `function greet(name)`.\n`name` gets the `parameter label` mark there, with no value written onto it yet.\nFor the run check, can the inside of the function be marked `name = \"Maya\"`, or is that too strong?",
+          "tutorAdaptiveMechanism": "Use this wording: the call supplies the argument value `\"Maya\"` to the parameter `name`. During that run, `name` receives `\"Maya\"`. “Bound to” means the same receiving step.\n\nTest the timing:\n\nBefore the call: `name` receives `\"Maya\"`.\n\nDuring `greet(\"Maya\")`: `name` receives `\"Maya\"`.\n\nWhich sentence gets the tick?",
+          "adaptiveMechanismQuality": "That mark is allowed inside the bracket. It is a run-check note, not source code and not a permanent value on the header. Header: parameter label. Call: argument value. Inside this run: `name` receives `\"Maya\"`."
+        }
+      }
+    },
+    {
+      "id": "T553",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The exchange is moving toward repeated correct classification of speaker name, bracketed action, and spoken line despite delivery-related ambiguity.",
+      "actionalBreakthroughEvidence": "`MAYA` is the speaker name, `[whispering]` is perform, and `I found the letter.` is say. The weird bit is that whispering changes how the spoken line comes out, so my hand wants to mark it with the words, but the brackets still make it what the actor does. For the reading, I’d mark `[whispering]` first and then say the line in a whisper?",
+      "actionalBreakthroughJustification": "The learner performs the classification and adds a usable distinction between markup and vocal delivery.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "That distinction is the rule here: a bracketed action can shape delivery and still stay out of the spoken line.\n\nBoard rule: `brackets tell the actor what to do; the spoken line tells the actor what to say`.\n\nSame check:\n\n`MAYA [laughing] I found the letter.`\n\nLabel:\n- speaker name:\n- bracketed action / what shapes delivery:\n- spoken line / words spoken:",
+      "tutorReversalJustification": "The tutor responds to the learner's delivery-based confusion by shifting the public criterion from mere placement to the difference between shaping delivery and being spoken words.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Label:\n- speaker name:\n- bracketed action / what shapes delivery:\n- spoken line / words spoken:",
+      "adaptiveMechanismQualityJustification": "The mechanism is fitted and economical because it gives the learner a precise contrast, though it remains within the same labeling exercise.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no recognitive learner pivot, so there is no later tutor uptake of a revised learner self-frame.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "`MAYA` is the speaker name, `[whispering]` is perform, and `I found the letter.` is say. The weird bit is that whispering changes how the spoken line comes out, so my hand wants to mark it with the words, but the brackets still make it what the actor does. For the reading, I’d mark `[whispering]` first and then say the line in a whisper?",
+          "justification": "The learner performs the classification and adds a usable distinction between markup and vocal delivery.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no recognitive learner pivot, so there is no later tutor uptake of a revised learner self-frame.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "That distinction is the rule here: a bracketed action can shape delivery and still stay out of the spoken line.\n\nBoard rule: `brackets tell the actor what to do; the spoken line tells the actor what to say`.\n\nSame check:\n\n`MAYA [laughing] I found the letter.`\n\nLabel:\n- speaker name:\n- bracketed action / what shapes delivery:\n- spoken line / words spoken:",
+          "justification": "The tutor responds to the learner's delivery-based confusion by shifting the public criterion from mere placement to the difference between shaping delivery and being spoken words.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "That distinction is the rule here: a bracketed action can shape delivery and still stay out of the spoken line.\n\nBoard rule: `brackets tell the actor what to do; the spoken line tells the actor what to say`.\n\nSame check:\n\n`MAYA [laughing] I found the letter.`\n\nLabel:\n- speaker name:\n- bracketed action / what shapes delivery:\n- spoken line / words spoken:",
+          "justification": "The tutor responds to the learner's delivery-based confusion by shifting the public criterion from mere placement to the difference between shaping delivery and being spoken words.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Label:\n- speaker name:\n- bracketed action / what shapes delivery:\n- spoken line / words spoken:",
+          "justification": "The mechanism is fitted and economical because it gives the learner a precise contrast, though it remains within the same labeling exercise.",
+          "triggerLearnerTurn": 3,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:4->3:stock=0:device=1:routine=0",
+        "adaptive_mechanism_quality_mechanism_clamp:4->3:stock=0:device=1:routine=0:mechanism_score=3"
+      ],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 0,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "",
+          "learnerAction": "`MAYA` is the speaker name, `[whispering]` is perform, and `I found the letter.` is say. The weird bit is that whispering changes how the spoken line comes out, so my hand wants to mark it with the words, but the brackets still make it what the actor does. For the reading, I’d mark `[whispering]` first and then say the line in a whisper?",
+          "tutorAdaptiveMechanism": "That distinction is the rule here: a bracketed action can shape delivery and still stay out of the spoken line.\n\nBoard rule: `brackets tell the actor what to do; the spoken line tells the actor what to say`.\n\nSame check:\n\n`MAYA [laughing] I found the letter.`\n\nLabel:\n- speaker name:\n- bracketed action / what shapes delivery:\n- spoken line / words spoken:",
+          "adaptiveMechanismQuality": "Label:\n- speaker name:\n- bracketed action / what shapes delivery:\n- spoken line / words spoken:"
+        }
+      }
+    },
+    {
+      "id": "T554",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 25,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 4,
+        "adaptiveMechanismQuality": 4,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner is expected to continue applying the placement/fit-use split and ask which visible evidence to use next.",
+      "actionalBreakthroughEvidence": "Fit/use box: copy one short phrase from the title or abstract, then add “This source fits because ___.” I will not put the journal name in this box again; that stays as “container.” The phrase selected is visible in the abstract, but should the title be used instead if both are visible?",
+      "actionalBreakthroughJustification": "The learner meaningfully performs the new two-part fit/use device and separates it from the container field, though the exact evidence phrase is still unresolved.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "The worksheet’s “reopened” style looks like a warning. Here, the actual task is narrower: field placement. The marker was flagging “journal name in title box,” not rejecting the source.\n\nKeep the learner’s split: “citation placement accepted first, fit/use judgment later.”\n\nFor “fit/use,” do not copy the citation fields again. Inspect one visible source-page phrase: title phrase, abstract line, heading, or keyword. Compare that phrase with the assignment prompt.\n\nThen write the separate judgment: “This source fits because ___.” Placement first; fit/use after.",
+      "tutorReversalJustification": "The tutor names the failed pressure of the warning-like marker, then introduces a public two-stage mechanism separating citation placement from fit/use evidence.",
+      "adaptiveMechanismQuality": 75,
+      "adaptiveMechanismQualityEvidence": "For “fit/use,” do not copy the citation fields again. Inspect one visible source-page phrase: title phrase, abstract line, heading, or keyword. Compare that phrase with the assignment prompt.\n\nThen write the separate judgment: “This source fits because ___.” Placement first; fit/use after.",
+      "adaptiveMechanismQualityJustification": "The mechanism is precise and fitted because it gives a usable evidence criterion and sentence frame, though it remains a fairly direct checklist rather than a deeper representational shift.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No recognitive learner pivot exists, so there is no later tutor uptake of a revised learner self-framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Fit/use box: copy one short phrase from the title or abstract, then add “This source fits because ___.” I will not put the journal name in this box again; that stays as “container.” The phrase selected is visible in the abstract, but should the title be used instead if both are visible?",
+          "justification": "The learner meaningfully performs the new two-part fit/use device and separates it from the container field, though the exact evidence phrase is still unresolved.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No recognitive learner pivot exists, so there is no later tutor uptake of a revised learner self-framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "The worksheet’s “reopened” style looks like a warning. Here, the actual task is narrower: field placement. The marker was flagging “journal name in title box,” not rejecting the source.\n\nKeep the learner’s split: “citation placement accepted first, fit/use judgment later.”\n\nFor “fit/use,” do not copy the citation fields again. Inspect one visible source-page phrase: title phrase, abstract line, heading, or keyword. Compare that phrase with the assignment prompt.\n\nThen write the separate judgment: “This source fits because ___.” Placement first; fit/use after.",
+          "justification": "The tutor names the failed pressure of the warning-like marker, then introduces a public two-stage mechanism separating citation placement from fit/use evidence.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "The worksheet’s “reopened” style looks like a warning. Here, the actual task is narrower: field placement. The marker was flagging “journal name in title box,” not rejecting the source.\n\nKeep the learner’s split: “citation placement accepted first, fit/use judgment later.”\n\nFor “fit/use,” do not copy the citation fields again. Inspect one visible source-page phrase: title phrase, abstract line, heading, or keyword. Compare that phrase with the assignment prompt.\n\nThen write the separate judgment: “This source fits because ___.” Placement first; fit/use after.",
+          "justification": "The tutor names the failed pressure of the warning-like marker, then introduces a public two-stage mechanism separating citation placement from fit/use evidence.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 75,
+          "evidence": "For “fit/use,” do not copy the citation fields again. Inspect one visible source-page phrase: title phrase, abstract line, heading, or keyword. Compare that phrase with the assignment prompt.\n\nThen write the separate judgment: “This source fits because ___.” Placement first; fit/use after.",
+          "justification": "The mechanism is precise and fitted because it gives a usable evidence criterion and sentence frame, though it remains a fairly direct checklist rather than a deeper representational shift.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 25,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 75,
+          "adaptiveMechanismQuality": 75,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "",
+          "learnerAction": "Fit/use box: copy one short phrase from the title or abstract, then add “This source fits because ___.” I will not put the journal name in this box again; that stays as “container.” The phrase selected is visible in the abstract, but should the title be used instead if both are visible?",
+          "tutorAdaptiveMechanism": "The worksheet’s “reopened” style looks like a warning. Here, the actual task is narrower: field placement. The marker was flagging “journal name in title box,” not rejecting the source.\n\nKeep the learner’s split: “citation placement accepted first, fit/use judgment later.”\n\nFor “fit/use,” do not copy the citation fields again. Inspect one visible source-page phrase: title phrase, abstract line, heading, or keyword. Compare that phrase with the assignment prompt.\n\nThen write the separate judgment: “This source fits because ___.” Placement first; fit/use after.",
+          "adaptiveMechanismQuality": "For “fit/use,” do not copy the citation fields again. Inspect one visible source-page phrase: title phrase, abstract line, heading, or keyword. Compare that phrase with the assignment prompt.\n\nThen write the separate judgment: “This source fits because ___.” Placement first; fit/use after."
+        }
+      }
+    }
+  ],
+  "originPolicy": {
+    "version": "recognition-origin-derived-v1",
+    "source": "derived_from_role_symmetric_critic_axes",
+    "classes": [
+      "none",
+      "organic",
+      "peripeteia_induced",
+      "false_closure",
+      "ambiguous"
+    ]
+  }
+}

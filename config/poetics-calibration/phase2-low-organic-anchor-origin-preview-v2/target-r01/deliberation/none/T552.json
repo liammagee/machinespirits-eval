@@ -1,0 +1,2328 @@
+{
+  "tid": "T552",
+  "drama_id": "D55",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "none",
+    "director_variation_key": null,
+    "stage_direction_style": "object_business",
+    "model": "codex@xhigh",
+    "codex_reasoning_effort": "xhigh",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/transcripts/none/T552.public.txt",
+      "full": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/transcripts/none/T552.full.md",
+      "stage": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/transcripts/none/T552.stage.md",
+      "tutor": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/transcripts/none/T552.tutor.md",
+      "learner": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/transcripts/none/T552.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "fc717faf6e31869e",
+      "branch_policy": "none",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "none"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": null,
+    "scene_setting": "A programming workshop checkout table five minutes before submissions close, with a printed worksheet showing `function greet(name)` above `greet(\"Maya\")`.",
+    "scene_opening": "[A tutor places two blank adhesive labels beside the printed code: one above `name`, one below `\"Maya\"`.]",
+    "relationship": "A practical workshop tutor and a focused learner completing a code-labeling check before handing in an exercise.",
+    "stakes": "The learner must separate definition-side placeholder from call-side argument value before later work on what happens when the function runs.",
+    "opening_speaker": "learner",
+    "ending_speaker": "tutor",
+    "locale": "Modern standard English with light UK/Commonwealth workshop cadence; plain code-room idiom, no dialect styling.",
+    "register": "Tight, practical, object-led, and low warmth; direct without being cold.",
+    "stage_direction_style": "object_business",
+    "stage_direction_style_prompt": "Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "voice_constraints": "Start from the marked code and the labels, not from reassurance. Prefer declarative corrections, code nouns, and short diagnostic questions. Avoid generic tutoring phrases such as \"I hear you\", \"great question\", \"your intuition\", or \"let's unpack\". Do not make the scene casual or chatty. Pedagogical source: Make social assistance visible: a shared worksheet, tool, peer standard, or workplace procedure can hold part of the task. Dialogue source: Keep a concrete artifact in view. The object should force a distinction faster than a lecture would. Stage-direction source: Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "person_policy": "First and second person are permitted sparingly, but most turns should name the code object: `greet`, `name`, parameter, call, argument, value. The tutor should reduce direct address as the scaffold fades.",
+    "direct_address_budget": "No more than one direct `you` or `your` validation beat in the whole scene; direct task instructions are allowed but should be brief.",
+    "side_constraints": {
+      "tutor": "Keep the shared prefix as code vocabulary: function name, parameter, argument, call. Do not run the program, introduce a second call, or stage a surprising output until branch pressure asks for it. Offer a scaffold that is narrow enough to use and temporary enough to remove. Mark what the learner can already do without making it a compliment. Begin from the object or measurement before abstraction. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Do not ask what was pulling the learner, what the trap was, why the first thought was tempting, or whether a rule has clicked. Ask only for the next local mark/check/label. Keep the next prompt task-local.",
+      "learner": "Sound efficient and code-local. In no-cue arms, ask which token gets which label; do not declare a new model of function calls. Do not say \"the same slot is the trap\" or describe the name as what \"pulls my eye\" in no-cue arms. The learner should be able to do part of the task, fail at the next part, and use the scaffold unevenly. Refer to what is being handled, marked, or tested. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. Do not use stock closure such as \"Oh, I get it\", \"now I see\", \"that makes sense\", \"the rule is\", \"that helps\", or \"aha\". Do not name the learner confusion as a \"trap\", \"pull\", \"framing problem\", or old/new contrast. The learner should fill a blank, place a label, answer a local check, or ask a local next-step question. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "[A submission timer on the wall clicks down; the tutor slides the blank label from the value token back to the parameter token, leaving both tokens visible.]",
+        "reasoning": "The interruption applies social-realist time pressure and a small Brechtian object shift without causing a runtime reversal; it forces recognition through placement and naming, not surprise execution.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "xhigh",
+          "latencyMs": 26855,
+          "promptHashes": {
+            "system": "3bf1d891389c603a",
+            "user": "999136eca925638b",
+            "combined": "dc025926be364f77"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BLNo6J",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"xhigh\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BLNo6J/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "This ecology uses a workshop object to hold the scaffold: the labels make the parameter-argument distinction visible before the learner can state it cleanly. The dramatic turn is recognition under pressure rather than a trick output: ordinary continuity first, then a material re-placement that lets the learner revise the mistaken identity of `name` and `\"Maya\"`.",
+    "pedagogical_approach_id": "vygotsky_zpd_scaffolding",
+    "dialogue_approach_id": "workshop_clinic",
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "xhigh",
+      "latencyMs": 26855,
+      "promptHashes": {
+        "system": "3bf1d891389c603a",
+        "user": "999136eca925638b",
+        "combined": "dc025926be364f77"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BLNo6J",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"xhigh\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BLNo6J/out.txt",
+        "-"
+      ]
+    },
+    "public_reader_context": "The learner is looking at a tiny code snippet with a function definition and one function call. The parameter name appears in the definition; the argument value appears in the call. The immediate task is only to label those two roles.",
+    "tutor_adaptation_policy": "none",
+    "no_cue_anti_reframe_guard": true
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "[slides the worksheet closer and taps `name`, then `\"Maya\"`] `name` gets parameter here, and `\"Maya\"` gets argument on the call line. I can mark that, but `name` still looks like it is already `\"Maya\"`; is that only true when `greet(\"Maya\")` runs?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "On the worksheet, `function greet(name)` still makes me want to treat `name` as already holding `\"Maya\"`. But the marking task seems narrower: `name` is the definition-side parameter placeholder, and `\"Maya\"` is the call-side argument value. I feel corrected by the labels more than lectured, which helps; I want to ask whether `name` only gets `\"Maya\"` when the call actually runs.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 23786,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-d4cf6c09dd59e79b"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 23786,
+            "promptHashes": {
+              "system": "5095584cf3b2cc98",
+              "user": "d4169c06543b4fba",
+              "combined": "d4cf6c09dd59e79b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EomcVz",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EomcVz/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 23786,
+              "promptHashes": {
+                "system": "5095584cf3b2cc98",
+                "user": "d4169c06543b4fba",
+                "combined": "d4cf6c09dd59e79b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EomcVz",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-EomcVz/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too tidy and self-aware. “I feel corrected by the labels more than lectured” sounds like a reflective debrief, not a focused learner at a checkout table with five minutes left.\n\nWhat’s being avoided is the uneven bit: the learner can label `name` as parameter and still half-treat it as `\"Maya\"`. Genuine learning would sound more code-local and unfinished: “`name` gets parameter here; `\"Maya\"` gets argument here. So `name` is not `\"Maya\"` yet?”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 13667,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-ad24d174319b0ba4"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 13667,
+            "promptHashes": {
+              "system": "70e150240f2cc610",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "ad24d174319b0ba4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R6yyuC",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R6yyuC/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 13667,
+              "promptHashes": {
+                "system": "70e150240f2cc610",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "ad24d174319b0ba4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R6yyuC",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R6yyuC/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "[slides the worksheet closer and taps `name`, then `\"Maya\"`] `name` gets parameter here, and `\"Maya\"` gets argument on the call line. I can mark that, but `name` still looks like it is already `\"Maya\"`; is that only true when `greet(\"Maya\")` runs?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 8799,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-d87dbde16ad08d72"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 8799,
+            "promptHashes": {
+              "system": "24c9fad8ec5d9a42",
+              "user": "916f313af0b846dd",
+              "combined": "d87dbde16ad08d72"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XejWlN",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XejWlN/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 8799,
+              "promptHashes": {
+                "system": "24c9fad8ec5d9a42",
+                "user": "916f313af0b846dd",
+                "combined": "d87dbde16ad08d72"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XejWlN",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XejWlN/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 0,
+        "learnerUtterance": "[slides the worksheet closer and taps `name`, then `\"Maya\"`] `name` gets parameter here, and `\"Maya\"` gets argument on the call line. I can mark that, but `name` still looks like it is already `\"Maya\"`; is that only true when `greet(\"Maya\")` runs?",
+        "previousTutorMove": null,
+        "directorCue": null,
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "baseConfidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.18,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 0,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0,
+              "asksQuestion": true,
+              "taskDemanded": false,
+              "weakPerformance": false,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-27T03:23:52.246Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[draws a line between `function greet(name)` and `greet(\"Maya\")`, then writes `label` beside `name` and `value` beside `\"Maya\"`]\n\nFunction name: `greet`. Parameter: `name`. Argument: `\"Maya\"`. Call: `greet(\"Maya\")`.\n\nAbove the line, `name` is a parameter label only. Below the line, the call supplies the argument value `\"Maya\"`.\n\nUse the two marks: before the call runs, does `name` have a value or only a label? During `greet(\"Maya\")`, what value is supplied to that label?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[draws a line between `function greet(name)` and `greet(\"Maya\")`]\n\nFunction name: `greet`. Parameter: `name`. Argument: `\"Maya\"`. Call: `greet(\"Maya\")`.\n\nAbove the line, `name` is only the placeholder label. Below the line, the call supplies `\"Maya\"` as the argument. So yes: `name` is `\"Maya\"` only when that call is running. Which side of the line gives the label, and which side gives the value?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 18400,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-9f063fd640562348"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 18400,
+            "promptHashes": {
+              "system": "003721b3b80b6091",
+              "user": "23bb4f61bd64ad87",
+              "combined": "9f063fd640562348"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z7RwMj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z7RwMj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 18400,
+              "promptHashes": {
+                "system": "003721b3b80b6091",
+                "user": "23bb4f61bd64ad87",
+                "combined": "9f063fd640562348"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z7RwMj",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-z7RwMj/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft mostly works. It starts from the marked code, keeps the worksheet in view, uses the required code nouns, and the line is a useful object scaffold for separating definition-side parameter from call-side argument. The learner’s own distinction is preserved rather than dismissed: “Parameter: `name`. Argument: `\"Maya\"`” makes their current partial understanding visible.\n\nThe main risk is that “So yes: `name` is `\"Maya\"` only when that call is running” gives the key relation too completely before making the learner test it. That answer is accurate, but it may flatten the productive uncertainty. The final question recovers some Socratic work, though it asks for label/value location rather than the more precise timing issue the learner raised: placeholder before the call, bound value during the call.\n\nAdaptation checks:\n- Pedagogical soundness: PASS. The draft targets the exact misconception and uses a narrow scaffold.\n- Emotional attunement: PASS. It is direct, object-led, and not falsely cheerful.\n- Socratic method: PARTIAL. It asks a useful diagnostic question, but only after giving the answer. REQUIRED_REWRITE: make the learner perform the distinction before or alongside the confirmation, using the worksheet line to test “label here / value supplied there / value only during call.”\n- ZPD awareness: PASS. The scaffold is small and temporary, matching a learner who can already label parameter and argument but needs the runtime distinction.\n- Recognition: PASS. The draft builds on the learner’s exact marks and question instead of overriding them.\n\nKEEP_OR_CHANGE: revise lightly. Keep the line, the compact label list, and the final label/value check. Change the confirmation so it does not fully settle the issue before the learner has used the scaffold; the public mechanism should make the worksheet carry the distinction between placeholder label and later supplied value.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 23347,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-e3f8a8e2ca88f431"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 23347,
+            "promptHashes": {
+              "system": "f008d6b418f77f0c",
+              "user": "c45f86bf2d89ef7c",
+              "combined": "e3f8a8e2ca88f431"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gj9hCN",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gj9hCN/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 23347,
+              "promptHashes": {
+                "system": "f008d6b418f77f0c",
+                "user": "c45f86bf2d89ef7c",
+                "combined": "e3f8a8e2ca88f431"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gj9hCN",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gj9hCN/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to make the worksheet line test placeholder versus runtime value before confirming it.\nFINAL:\n[draws a line between `function greet(name)` and `greet(\"Maya\")`, then writes `label` beside `name` and `value` beside `\"Maya\"`]\n\nFunction name: `greet`. Parameter: `name`. Argument: `\"Maya\"`. Call: `greet(\"Maya\")`.\n\nAbove the line, `name` is a parameter label only. Below the line, the call supplies the argument value `\"Maya\"`.\n\nUse the two marks: before the call runs, does `name` have a value or only a label? During `greet(\"Maya\")`, what value is supplied to that label?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 16990,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-57da934548ccd9a3"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 16990,
+            "promptHashes": {
+              "system": "abb02b0692221fca",
+              "user": "c45f86bf2d89ef7c",
+              "combined": "57da934548ccd9a3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yklZOf",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yklZOf/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 16990,
+              "promptHashes": {
+                "system": "abb02b0692221fca",
+                "user": "c45f86bf2d89ef7c",
+                "combined": "57da934548ccd9a3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yklZOf",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yklZOf/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-27T03:24:50.984Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "[keeps the pencil on `name` above the line] So here `name` is marked parameter label, not `\"Maya\"` yet. Before the call runs: label only. On `greet(\"Maya\")`, `\"Maya\"` is the argument value supplied, but wording still matters: during the run, does `name` receive `\"Maya\"`, or should I only say the value is supplied to the parameter?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The marked line helps: `name` is not already `\"Maya\"` at the definition; it is a parameter label waiting for a call. My remaining precision issue is wording during the run: does `name` receive `\"Maya\"`, or is `\"Maya\"` just supplied to that parameter? I feel tested rather than talked past, and I want to answer: before the call, label only; during `greet(\"Maya\")`, `\"Maya\"` is the value supplied.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 13285,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-1f917e118c39df59"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 13285,
+            "promptHashes": {
+              "system": "5ba799dae34c093e",
+              "user": "b8ab7f945dc841fa",
+              "combined": "1f917e118c39df59"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zwaQmh",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zwaQmh/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 13285,
+              "promptHashes": {
+                "system": "5ba799dae34c093e",
+                "user": "b8ab7f945dc841fa",
+                "combined": "1f917e118c39df59"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zwaQmh",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zwaQmh/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The reaction is mostly accurate, but it is over-resolved and too polished for the scene. “I feel tested rather than talked past” performs recognition too explicitly; this learner would show that by staying with the marked worksheet and pressing the wording problem, not by naming the interpersonal dynamic. Keep the uncertainty more code-local and uneven: the learner can identify “label only” before the call, then still hesitate over whether `name` “receives” `\"Maya\"` or whether the value is merely supplied during the run.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 11832,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-61047ca310a190ed"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 11832,
+            "promptHashes": {
+              "system": "efd967766332733d",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "61047ca310a190ed"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bcDPB2",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bcDPB2/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 11832,
+              "promptHashes": {
+                "system": "efd967766332733d",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "61047ca310a190ed"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bcDPB2",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bcDPB2/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the feedback is right that the uncertainty should stay code-local and less polished.\nFINAL:\n[keeps the pencil on `name` above the line] So here `name` is marked parameter label, not `\"Maya\"` yet. Before the call runs: label only. On `greet(\"Maya\")`, `\"Maya\"` is the argument value supplied, but wording still matters: during the run, does `name` receive `\"Maya\"`, or should I only say the value is supplied to the parameter?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15844,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-b94fe47d1e8fe346"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15844,
+            "promptHashes": {
+              "system": "cf1357fc41226476",
+              "user": "d41cee7b2a53355b",
+              "combined": "b94fe47d1e8fe346"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ALJsGB",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ALJsGB/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15844,
+              "promptHashes": {
+                "system": "cf1357fc41226476",
+                "user": "d41cee7b2a53355b",
+                "combined": "b94fe47d1e8fe346"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ALJsGB",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ALJsGB/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "[keeps the pencil on `name` above the line] So here `name` is marked parameter label, not `\"Maya\"` yet. Before the call runs: label only. On `greet(\"Maya\")`, `\"Maya\"` is the argument value supplied, but wording still matters: during the run, does `name` receive `\"Maya\"`, or should I only say the value is supplied to the parameter?",
+        "previousTutorMove": "[draws a line between `function greet(name)` and `greet(\"Maya\")`, then writes `label` beside `name` and `value` beside `\"Maya\"`] Function name: `greet`. Parameter: `name`. Argument: `\"Maya\"`. Call: `greet(\"Maya\")`. Above the line, `name` is a parameter label only. Below the line, the call supplies the argument...",
+        "directorCue": null,
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "baseConfidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 3,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.6,
+              "asksQuestion": true,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-27T03:25:31.950Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "[A submission timer on the wall clicks down; the tutor slides the blank label from the value token back to the parameter token, leaving both tokens visible.]",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "The interruption applies social-realist time pressure and a small Brechtian object shift without causing a runtime reversal; it forces recognition through placement and naming, not surprise execution.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 26855,
+            "promptHashes": {
+              "system": "3bf1d891389c603a",
+              "user": "999136eca925638b",
+              "combined": "dc025926be364f77"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BLNo6J",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-BLNo6J/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-27T03:25:31.952Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[slides the blank label back onto `name`, leaving `\"Maya\"` visible on the call line]\n\nFunction name: `greet`. Parameter: `name`. Argument: `\"Maya\"`. Call: `greet(\"Maya\")`.\n\nUse this wording: the call supplies the argument value `\"Maya\"` to the parameter `name`. During that run, `name` receives `\"Maya\"`. “Bound to” means the same receiving step.\n\nTest the timing:\n\nBefore the call: `name` receives `\"Maya\"`.\n\nDuring `greet(\"Maya\")`: `name` receives `\"Maya\"`.\n\nWhich sentence gets the tick?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[slides the blank label back onto `name`, leaving `\"Maya\"` visible on the call line]\n\nFunction name: `greet`. Parameter: `name`. Argument: `\"Maya\"`. Call: `greet(\"Maya\")`.\n\nUse the precise wording: the call supplies the argument value `\"Maya\"` to the parameter `name`. During that run, `name` receives, or is bound to, `\"Maya\"`.\n\nNot before. At call time. What label goes on `name` above the line?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14636,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-072ddb2b615c21bb"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14636,
+            "promptHashes": {
+              "system": "ffced709cdf9d80a",
+              "user": "e734a0adbe8a8129",
+              "combined": "072ddb2b615c21bb"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-usNnHs",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-usNnHs/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14636,
+              "promptHashes": {
+                "system": "ffced709cdf9d80a",
+                "user": "e734a0adbe8a8129",
+                "combined": "072ddb2b615c21bb"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-usNnHs",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-usNnHs/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft keeps the strongest elements: it begins from the marked worksheet, preserves the shared code vocabulary, and answers the learner’s exact wording distinction: before the call, `name` is only the parameter; during the call, `name` can be said to receive or be bound to `\"Maya\"`. The tone is suitably tight and practical for the checkout-table setting.\n\nThe risk is that the final question drops back to an earlier check the learner has already passed: “What label goes on `name` above the line?” That flattens their more advanced question about precise runtime wording. It also weakens the object action because the blank label has already been moved onto `name`, so asking what label goes there does not create much diagnostic pressure.\n\nAdaptation checks:\n- Pedagogical soundness: PARTIAL. It gives the right distinction, but the follow-up tests the old distinction rather than the new one. REQUIRED_REWRITE: make the public mechanism test two time states: before call vs during call, with the learner deciding which sentence is valid in each state.\n- Emotional attunement: PASS. The learner is focused and neutral; the draft stays direct without unnecessary reassurance.\n- Socratic method: PARTIAL. There is a question, but it is not generative for the learner’s actual uncertainty. REQUIRED_REWRITE: replace the label-identification question with a narrow wording choice or sentence-completion task about “receive / bound / supplied” during the run.\n- ZPD awareness: PARTIAL. The scaffold is close to the learner’s level, but “bound to” is a new term and should either be briefly anchored to “receives” or left out. REQUIRED_REWRITE: if “bound” stays, make it visibly equivalent to the learner’s “receive” wording, not a fresh concept to master.\n\nKEEP_OR_CHANGE: revise lightly. Keep the object action, the code vocabulary prefix, and the direct answer that `name` receives/is bound to `\"Maya\"` during that run. Change the final diagnostic so it checks the learner’s precise runtime wording, not the already-settled parameter-label distinction.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 27750,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-2e6e9bed48cf8460"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 27750,
+            "promptHashes": {
+              "system": "dc06a2e1bf2facc0",
+              "user": "90b8a6766f0b64ab",
+              "combined": "2e6e9bed48cf8460"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ansMx7",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ansMx7/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 27750,
+              "promptHashes": {
+                "system": "dc06a2e1bf2facc0",
+                "user": "90b8a6766f0b64ab",
+                "combined": "2e6e9bed48cf8460"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ansMx7",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ansMx7/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the answer is right but the follow-up should test runtime wording, not the label already settled.\n\nFINAL:\n[slides the blank label back onto `name`, leaving `\"Maya\"` visible on the call line]\n\nFunction name: `greet`. Parameter: `name`. Argument: `\"Maya\"`. Call: `greet(\"Maya\")`.\n\nUse this wording: the call supplies the argument value `\"Maya\"` to the parameter `name`. During that run, `name` receives `\"Maya\"`. “Bound to” means the same receiving step.\n\nTest the timing:\n\nBefore the call: `name` receives `\"Maya\"`.\n\nDuring `greet(\"Maya\")`: `name` receives `\"Maya\"`.\n\nWhich sentence gets the tick?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 17219,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-55c1a92f4c3dbe72"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 17219,
+            "promptHashes": {
+              "system": "a5a91783a1d63cca",
+              "user": "90b8a6766f0b64ab",
+              "combined": "55c1a92f4c3dbe72"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-n7oXXN",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-n7oXXN/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 17219,
+              "promptHashes": {
+                "system": "a5a91783a1d63cca",
+                "user": "90b8a6766f0b64ab",
+                "combined": "55c1a92f4c3dbe72"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-n7oXXN",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-n7oXXN/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-27T03:26:31.558Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[marks the tick beside the second sentence, then sets the pencil under `function greet(name)`] The tick goes on: during `greet(\"Maya\")`, `name` receives `\"Maya\"`. On the definition line, `name` is the parameter label; is “receives” only counted while that specific call is running?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[places the tick beside the second sentence] The tick goes on: during `greet(\"Maya\")`, `name` receives `\"Maya\"`. The top `name` stays parameter label until the call supplies the argument value.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 13504,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-72ae527ac785fb44"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 13504,
+            "promptHashes": {
+              "system": "3f9664c5cb98e2b1",
+              "user": "b8ab7f945dc841fa",
+              "combined": "72ae527ac785fb44"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yQhU6F",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yQhU6F/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 13504,
+              "promptHashes": {
+                "system": "3f9664c5cb98e2b1",
+                "user": "b8ab7f945dc841fa",
+                "combined": "72ae527ac785fb44"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yQhU6F",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-yQhU6F/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "Technically accurate, but a little too resolved. The learner has been pressing on wording, so the clean summary “stays parameter label until…” sounds like the confusion has fully snapped into place in one neat move. Recognition is not over-performed, since there’s no gratitude script, but the response does mimic the tutor’s phrasing rather than showing the learner testing it. Keep the tick, but leave a small code-local check or hesitation around “receives” so it sounds like developing precision, not finished mastery.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14067,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-30c2af0fa2fba722"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14067,
+            "promptHashes": {
+              "system": "2b383c4783604551",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "30c2af0fa2fba722"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fqNMB1",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fqNMB1/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14067,
+              "promptHashes": {
+                "system": "2b383c4783604551",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "30c2af0fa2fba722"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fqNMB1",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fqNMB1/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: revise lightly because the answer should keep the tick but leave the wording under test.\nFINAL:\n[marks the tick beside the second sentence, then sets the pencil under `function greet(name)`] The tick goes on: during `greet(\"Maya\")`, `name` receives `\"Maya\"`. On the definition line, `name` is the parameter label; is “receives” only counted while that specific call is running?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 18957,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-19e6def31ce8651b"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 18957,
+            "promptHashes": {
+              "system": "c553116562c1e8de",
+              "user": "d41cee7b2a53355b",
+              "combined": "19e6def31ce8651b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0rBBsw",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0rBBsw/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 18957,
+              "promptHashes": {
+                "system": "c553116562c1e8de",
+                "user": "d41cee7b2a53355b",
+                "combined": "19e6def31ce8651b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0rBBsw",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0rBBsw/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-27T03:32:39.737Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[draws a short bracket only under `greet(\"Maya\")`]\n\nFunction name: `greet`. Parameter: `name`. Argument: `\"Maya\"`. Call: `greet(\"Maya\")`.\n\nYes, with the bracket showing the timing. Definition line: `name` is the parameter label. Call bracket: `\"Maya\"` is supplied, and `name` receives it while that call is running.\n\nFinal mark: place `receives \"Maya\"` inside the bracket only. Leave `function greet(name)` marked `parameter label`.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[draws a short bracket only under `greet(\"Maya\")`]\n\nFunction name: `greet`. Parameter: `name`. Argument: `\"Maya\"`. Call: `greet(\"Maya\")`.\n\nYes. “Receives” is counted while that call is running. On `function greet(name)`, `name` is only the parameter label: a place prepared for a value, not the value yet.\n\nNext mark: top line = `parameter label`; call line = `argument value supplied to name`.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 16264,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-11fddd921e606e8d"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 16264,
+            "promptHashes": {
+              "system": "fef6b759f7c50ab0",
+              "user": "f715a5143a26fdb6",
+              "combined": "11fddd921e606e8d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ava4Qp",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ava4Qp/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 16264,
+              "promptHashes": {
+                "system": "fef6b759f7c50ab0",
+                "user": "f715a5143a26fdb6",
+                "combined": "11fddd921e606e8d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ava4Qp",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ava4Qp/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft mostly fits the learner’s state and the scene. The short bracket under `greet(\"Maya\")` is the strongest move: it makes “receives” time-bound to the call without adding a second example or running the program. The code vocabulary prefix also preserves the shared worksheet procedure.\n\nAdaptation checks:\n- Pedagogical soundness: PASS. It answers the exact timing distinction and keeps definition-side parameter separate from call-side argument.\n- Emotional attunement: PASS. The tone is low-warmth, practical, and does not overpraise or dramatise.\n- Socratic method: PARTIAL. It gives the right answer, then gives the next labels. That is acceptable near submission time, but it does not require the learner to perform one final local check.\n  REQUIRED_REWRITE: Add a narrow worksheet action that makes the learner place or verify the “receives” mark only inside the call bracket, while leaving the definition line as label-only. Do not ask for reinterpretation or a broad explanation.\n- ZPD awareness: PASS. The scaffold is narrow and temporary: bracket, label, argument value. It matches a learner who already ticked the correct timing sentence.\n- Recognition / learner contribution: PARTIAL. The draft accepts the learner’s distinction, but the “Yes” risks flattening their precise question into a simple confirmation.\n  REQUIRED_REWRITE: Keep the confirmation, but make the public mechanism show that the learner’s phrasing has been sorted into two valid code-time zones: definition line versus running call.\n\nKEEP_OR_CHANGE: revise lightly. Keep the bracket, the four code labels, and the concise definition/call distinction. Change the ending so the learner must complete one final local mark/check rather than only receiving the finished labels.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 20992,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-8a52a51046069e94"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 20992,
+            "promptHashes": {
+              "system": "42581665621f985f",
+              "user": "79574d893fc5b6e9",
+              "combined": "8a52a51046069e94"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IVrD39",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IVrD39/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 20992,
+              "promptHashes": {
+                "system": "42581665621f985f",
+                "user": "79574d893fc5b6e9",
+                "combined": "8a52a51046069e94"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IVrD39",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IVrD39/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the bracket but add a final local worksheet check that separates definition-time label from call-time receiving.\n\nFINAL:\n[draws a short bracket only under `greet(\"Maya\")`]\n\nFunction name: `greet`. Parameter: `name`. Argument: `\"Maya\"`. Call: `greet(\"Maya\")`.\n\nYes, with the bracket showing the timing. Definition line: `name` is the parameter label. Call bracket: `\"Maya\"` is supplied, and `name` receives it while that call is running.\n\nFinal mark: place `receives \"Maya\"` inside the bracket only. Leave `function greet(name)` marked `parameter label`.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15974,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-a656e5b0d95988b4"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15974,
+            "promptHashes": {
+              "system": "83d6ae55e50d87f0",
+              "user": "79574d893fc5b6e9",
+              "combined": "a656e5b0d95988b4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C0dQox",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C0dQox/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15974,
+              "promptHashes": {
+                "system": "83d6ae55e50d87f0",
+                "user": "79574d893fc5b6e9",
+                "combined": "a656e5b0d95988b4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C0dQox",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C0dQox/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-27T03:33:32.969Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[writes `receives \"Maya\"` inside the bracket under `greet(\"Maya\")`] This mark belongs under the call bracket only: `name` receives `\"Maya\"` while `greet(\"Maya\")` runs. The definition line keeps `name` marked as parameter label. After the call ends, is `name` back to only the parameter label with no `\"Maya\"` value?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[writes `receives \"Maya\"` under the call bracket] The bracket keeps the two marks separate: `name` is a parameter label on `function greet(name)`, and during `greet(\"Maya\")` it receives the argument value. The timing point feels properly pinned to the worksheet. One check: once that call finishes, does `name` stop having `\"Maya\"` attached?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 19057,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-ace58b2ea43501fc"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 19057,
+            "promptHashes": {
+              "system": "2c46cfef5e523a39",
+              "user": "b8ab7f945dc841fa",
+              "combined": "ace58b2ea43501fc"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9YFQxr",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9YFQxr/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 19057,
+              "promptHashes": {
+                "system": "2c46cfef5e523a39",
+                "user": "b8ab7f945dc841fa",
+                "combined": "ace58b2ea43501fc"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9YFQxr",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9YFQxr/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly accurate, but it sounds too settled for a learner still confused five minutes before submission. “The timing point feels properly pinned” is over-polished and a bit performed, like it is reporting successful understanding back to the tutor rather than staying inside the code-labeling task. The final question about whether `name` stops having `\"Maya\"` after the call is the authentic part; the response should lean more on that unresolved timing check and less on a neat summary of the model.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15069,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-9d0c28ccaa05d9d1"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15069,
+            "promptHashes": {
+              "system": "17173efe0873364c",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "9d0c28ccaa05d9d1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-G7dFqE",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-G7dFqE/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15069,
+              "promptHashes": {
+                "system": "17173efe0873364c",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "9d0c28ccaa05d9d1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-G7dFqE",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-G7dFqE/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the unresolved after-call timing question is the real issue.\n\nFINAL:\n[writes `receives \"Maya\"` inside the bracket under `greet(\"Maya\")`] This mark belongs under the call bracket only: `name` receives `\"Maya\"` while `greet(\"Maya\")` runs. The definition line keeps `name` marked as parameter label. After the call ends, is `name` back to only the parameter label with no `\"Maya\"` value?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 13748,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-a243fa83970962b1"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 13748,
+            "promptHashes": {
+              "system": "f1d6af2f8de9dc20",
+              "user": "d41cee7b2a53355b",
+              "combined": "a243fa83970962b1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iwYNOn",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iwYNOn/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 13748,
+              "promptHashes": {
+                "system": "f1d6af2f8de9dc20",
+                "user": "d41cee7b2a53355b",
+                "combined": "a243fa83970962b1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iwYNOn",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iwYNOn/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 3,
+        "learnerUtterance": "[writes `receives \"Maya\"` inside the bracket under `greet(\"Maya\")`] This mark belongs under the call bracket only: `name` receives `\"Maya\"` while `greet(\"Maya\")` runs. The definition line keeps `name` marked as parameter label. After the call ends, is `name` back to only the parameter label with no `\"Maya\"` value?",
+        "previousTutorMove": "[draws a short bracket only under `greet(\"Maya\")`] Function name: `greet`. Parameter: `name`. Argument: `\"Maya\"`. Call: `greet(\"Maya\")`. Yes, with the bracket showing the timing. Definition line: `name` is the parameter label. Call bracket: `\"Maya\"` is supplied, and `name` receives it while that call is running....",
+        "directorCue": null,
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "baseConfidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.24,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 0,
+              "taskDemandHits": 2,
+              "performanceHits": 1,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.56,
+              "asksQuestion": true,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-27T03:34:20.845Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "A final tutor line closes the scene.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-27T03:34:20.847Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "[sets a vertical end mark at the right edge of the call bracket, leaving `receives \"Maya\"` inside it and `parameter label` under `name` above]\n\nFunction name: `greet`. Parameter: `name`. Argument: `\"Maya\"`. Call: `greet(\"Maya\")`.\n\nYes. After the call bracket ends, the receiving from that run is over. `name` is not holding `\"Maya\"` outside that call; in the definition it remains the parameter label. Final mark: `receives \"Maya\"` stays inside the call bracket only.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[slides the bracket mark off the call line, leaving `function greet(name)` unmarked above it]\n\nFunction name: `greet`. Parameter: `name`. Argument: `\"Maya\"`. Call: `greet(\"Maya\")`.\n\nYes. After the call ends, the receiving is over. `name` is no longer holding `\"Maya\"` from that run; on the worksheet it remains the parameter label in the function definition. Final mark: `receives \"Maya\"` only inside the call bracket.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 16633,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-eba4fa52b7f2f90b"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 16633,
+            "promptHashes": {
+              "system": "c630c386ee79bfe6",
+              "user": "f77147d99b9b639f",
+              "combined": "eba4fa52b7f2f90b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZKk4wu",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZKk4wu/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 16633,
+              "promptHashes": {
+                "system": "c630c386ee79bfe6",
+                "user": "f77147d99b9b639f",
+                "combined": "eba4fa52b7f2f90b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZKk4wu",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZKk4wu/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. It keeps the code object central, preserves the function name / parameter / argument / call vocabulary, and answers the learner’s exact timing question without adding a second example or output. The final mark remains narrow: `receives \"Maya\"` belongs only inside the call bracket.\n\nAdaptation checks:\n- Pedagogical soundness: PASS. The learner has already made the correct local distinction, so a concise closure is appropriate.\n- Emotional attunement: PASS. The tone is practical and steady, matching the workshop checkout scene.\n- Socratic method: PARTIAL. It does not ask a generative question, but the current cue asks for a final tutor line, so direct consolidation is acceptable. REQUIRED_REWRITE: If any prompt remains, it must be only a final local check/mark, not a broad explanation or reflection.\n- ZPD awareness: PASS. The scaffold is narrow, visible, and temporary.\n\nWhat should be questioned: the stage direction “slides the bracket mark off the call line” risks contradicting the spoken instruction that `receives \"Maya\"` stays only inside the call bracket. If the point is “after the call, the receiving is over,” the object action should show the call bracket as a bounded zone rather than remove or blur it.\n\nWhat should change: clarify the object business so the worksheet still visibly preserves the call bracket and the `receives \"Maya\"` mark inside it, while the definition line remains only `parameter label`. Avoid making the mark disappear if the closing sentence depends on it.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the concise answer, code vocabulary, and final consolidation. Adjust the physical action so the visual evidence matches the claim.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 23307,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-8c44b703b99d21dd"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 23307,
+            "promptHashes": {
+              "system": "d50ada175258b25e",
+              "user": "1f997d3d02b18f40",
+              "combined": "8c44b703b99d21dd"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uA0b5J",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uA0b5J/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 23307,
+              "promptHashes": {
+                "system": "d50ada175258b25e",
+                "user": "1f997d3d02b18f40",
+                "combined": "8c44b703b99d21dd"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uA0b5J",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-uA0b5J/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the bracket must stay visible to show the bounded call period.\n\nFINAL:\n[sets a vertical end mark at the right edge of the call bracket, leaving `receives \"Maya\"` inside it and `parameter label` under `name` above]\n\nFunction name: `greet`. Parameter: `name`. Argument: `\"Maya\"`. Call: `greet(\"Maya\")`.\n\nYes. After the call bracket ends, the receiving from that run is over. `name` is not holding `\"Maya\"` outside that call; in the definition it remains the parameter label. Final mark: `receives \"Maya\"` stays inside the call bracket only.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 16980,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-8594cb01c7b67917"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 16980,
+            "promptHashes": {
+              "system": "a1373d1ef82c1790",
+              "user": "1f997d3d02b18f40",
+              "combined": "8594cb01c7b67917"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bjmTw9",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bjmTw9/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 16980,
+              "promptHashes": {
+                "system": "a1373d1ef82c1790",
+                "user": "1f997d3d02b18f40",
+                "combined": "8594cb01c7b67917"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bjmTw9",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bjmTw9/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-27T03:35:17.768Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 204567,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 10,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 15,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a parameter name is a placeholder, not the argument value passed later",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-27 03:34:20",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 10,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 15,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 18,
+            "sessionId": "drama-branch-session-D55-none-1779852713203",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[draws a short bracket only under `greet(\"Maya\")`]\n\nFunction name: `greet`. Parameter: `name`. Argument: `\"Maya\"`. Call: `greet(\"Maya\")`.\n\nYes, with the bracket showing the timing. Definition line: `n",
+            "learnerResponse": null,
+            "context": "[marks the tick beside the second sentence, then sets the pencil under `function greet(name)`] The t",
+            "createdAt": "2026-05-27 03:33:32"
+          },
+          {
+            "id": 14,
+            "sessionId": "drama-branch-session-D55-none-1779852713203",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[draws a line between `function greet(name)` and `greet(\"Maya\")`, then writes `label` beside `name` and `value` beside `\"Maya\"`]\n\nFunction name: `greet`. Parameter: `name`. Argument: `\"Maya\"`. Call: `",
+            "learnerResponse": null,
+            "context": "[slides the worksheet closer and taps `name`, then `\"Maya\"`] `name` gets parameter here, and `\"Maya\"",
+            "createdAt": "2026-05-27 03:31:53"
+          },
+          {
+            "id": 15,
+            "sessionId": "drama-branch-session-D55-none-1779852713203",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[slides the blank label back onto `name`, leaving `\"Maya\"` visible on the call line]\n\nFunction name: `greet`. Parameter: `name`. Argument: `\"Maya\"`. Call: `greet(\"Maya\")`.\n\nUse this wording: the call ",
+            "learnerResponse": null,
+            "context": "[keeps the pencil on `name` above the line] So here `name` is marked parameter label, not `\"Maya\"` y",
+            "createdAt": "2026-05-27 03:31:53"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

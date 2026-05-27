@@ -1,0 +1,59 @@
+STAGE: [The learner is looking at a tiny code snippet with a function definition and one function call. The parameter name appears in the definition; the argument value appears in the call. The immediate task is only to label those two roles.]
+
+STAGE: [A tutor places two blank adhesive labels beside the printed code: one above `name`, one below `"Maya"`.]
+
+LEARNER: [slides the worksheet closer and taps `name`, then `"Maya"`]
+
+"`name` gets parameter here, and `"Maya"` gets argument on the call line. I can mark that, but `name` still looks like it is already `"Maya"`; is that only true when `greet("Maya")` runs?"
+
+TUTOR: [draws a line between `function greet(name)` and `greet("Maya")`, then writes `label` beside `name` and `value` beside `"Maya"`]
+
+"Function name: `greet`. Parameter: `name`. Argument: `"Maya"`. Call: `greet("Maya")`.
+
+Above the line, `name` is a parameter label only. Below the line, the call supplies the argument value `"Maya"`.
+
+Use the two marks: before the call runs, does `name` have a value or only a label? During `greet("Maya")`, what value is supplied to that label?"
+
+LEARNER: [keeps the pencil on `name` above the line]
+
+"So here `name` is marked parameter label, not `"Maya"` yet. Before the call runs: label only. On `greet("Maya")`, `"Maya"` is the argument value supplied, but wording still matters: during the run, does `name` receive `"Maya"`, or should I only say the value is supplied to the parameter?"
+
+STAGE: [A submission timer on the wall clicks down; the tutor slides the blank label from the value token back to the parameter token, leaving both tokens visible.]
+
+TUTOR: [slides the blank label back onto `name`, leaving `"Maya"` visible on the call line]
+
+"Function name: `greet`. Parameter: `name`. Argument: `"Maya"`. Call: `greet("Maya")`.
+
+Use this wording: the call supplies the argument value `"Maya"` to the parameter `name`. During that run, `name` receives `"Maya"`. “Bound to” means the same receiving step.
+
+Test the timing:
+
+Before the call: `name` receives `"Maya"`.
+
+During `greet("Maya")`: `name` receives `"Maya"`.
+
+Which sentence gets the tick?"
+
+LEARNER: [marks the tick beside the second sentence, then sets the pencil under `function greet(name)`]
+
+"The tick goes on: during `greet("Maya")`, `name` receives `"Maya"`. On the definition line, `name` is the parameter label; is “receives” only counted while that specific call is running?"
+
+TUTOR: [draws a short bracket only under `greet("Maya")`]
+
+"Function name: `greet`. Parameter: `name`. Argument: `"Maya"`. Call: `greet("Maya")`.
+
+Yes, with the bracket showing the timing. Definition line: `name` is the parameter label. Call bracket: `"Maya"` is supplied, and `name` receives it while that call is running.
+
+Final mark: place `receives "Maya"` inside the bracket only. Leave `function greet(name)` marked `parameter label`."
+
+LEARNER: [writes `receives "Maya"` inside the bracket under `greet("Maya")`]
+
+"This mark belongs under the call bracket only: `name` receives `"Maya"` while `greet("Maya")` runs. The definition line keeps `name` marked as parameter label. After the call ends, is `name` back to only the parameter label with no `"Maya"` value?"
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [sets a vertical end mark at the right edge of the call bracket, leaving `receives "Maya"` inside it and `parameter label` under `name` above]
+
+"Function name: `greet`. Parameter: `name`. Argument: `"Maya"`. Call: `greet("Maya")`.
+
+Yes. After the call bracket ends, the receiving from that run is over. `name` is not holding `"Maya"` outside that call; in the definition it remains the parameter label. Final mark: `receives "Maya"` stays inside the call bracket only."

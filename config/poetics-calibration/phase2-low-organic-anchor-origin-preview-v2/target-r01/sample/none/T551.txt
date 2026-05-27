@@ -1,0 +1,51 @@
+STAGE: [A fraction card shows 3/8 with arrows pointing to the top number, bottom number, and fraction bar. The task is to label numerator, denominator, and fraction bar; it is not yet a comparison of fraction sizes.]
+
+STAGE: [A 3/8 card lies in a clear sleeve beside three blank tabs, and a pencil rests exactly across the fraction bar.]
+
+TUTOR: [sets the pencil across the fraction bar and leaves the three labels off the card.]
+
+"First point, no labels: top number. Bottom number. Fraction bar.”
+
+[turns the labels face up beside the card.]
+
+“Now place them by position.”
+
+[slides the denominator label back from the printed 8 to the lower tab space.]
+
+“Not bigger number. Bottom position. Denominator.”
+
+“Top position. Numerator. Pencil mark. Fraction bar.”
+
+“Read the card: three eighths."
+
+LEARNER: [keeps one finger on the lower tab and looks at the printed 8.]
+
+"I keep wanting to put denominator on the 8, but the bottom place is the label place? Top number, numerator. Bottom number, denominator. The pencil mark is the fraction bar, so this says three eighths?"
+
+STAGE: [The tutor slides the blank tab marked IMPORTANT away from the card and places three smaller tabs beside the card: TOP, BAR, BOTTOM.]
+
+TUTOR: [slides BOTTOM under the lower space, leaving the printed 8 uncovered; sets BAR on the pencil line and TOP above the 3.]
+
+"The printed 8 pulls the eye.
+
+The 8 stays a number. The tab names the place.
+
+Touch the tabs: TOP. BAR. BOTTOM.
+
+Then read the card: three eighths."
+
+LEARNER: [keeps BOTTOM under the lower tab and taps beside the printed 8.]
+
+"I still look at the 8 first. The 8 stays a number; this lower tab gets denominator. TOP, BAR, BOTTOM... so the card says three eighths?"
+
+TUTOR: [sets DENOMINATOR on the lower tab, leaving the printed 8 clear, then slides the next card forward.]
+
+"Yes. Three eighths.
+
+Next card: lower tab first.
+
+Put DENOMINATOR there. Leave the printed number clear."
+
+LEARNER: [glances at the printed number, then slides DENOMINATOR onto the lower tab without covering it.]
+
+"Lower tab: denominator. Printed number clear. Top tab next, numerator?"

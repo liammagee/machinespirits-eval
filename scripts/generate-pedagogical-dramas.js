@@ -652,6 +652,9 @@ function namesEarlierFramingProblem(text) {
     /\b(?:earlier|old|first)\s+(?:framing|frame|reading)\b[\s\S]{0,100}\b(?:stops?|ends?)\b/i,
     /\b(?:that|it)\s+was\s+me\s+(?:going|judging)\s+by\b/i,
     /\bmy earlier wording\b[\s\S]{0,100}\b(?:shortcut|too simple|too easy|hid|made)\b/i,
+    /\b(?:same|matching|position|slot|word|number|label|bracket|box|field)\b[\s\S]{0,80}\btrap\b/i,
+    /\btrap\b[\s\S]{0,80}\b(?:same|matching|position|slot|word|number|label|bracket|box|field)\b/i,
+    /\b(?:pull|pulls|pulled|pulling)\s+(?:me|my eye|my attention)\b[\s\S]{0,100}\b(?:but|so|because|still|now)\b/i,
   ].some((pattern) => pattern.test(learnerText));
   return (
     explicitProblem.test(learnerText) ||
@@ -660,6 +663,32 @@ function namesEarlierFramingProblem(text) {
     earlierFramingCorrection.test(learnerText) ||
     ordinarySelfCorrection
   );
+}
+
+function noCuePrematureClosureFailures(turns) {
+  const insightPatterns = [
+    /\b(?:oh[, ]*)?I\s+(?:get|got|see|understand)\s+it\b/i,
+    /\b(?:now|okay|right)[, ]+\s*I\s+(?:get|see|understand)\b/i,
+    /\bthat\s+(?:makes sense|clears it up|clicks|helps)\b/i,
+    /\b(?:aha|ohh|ohhh)\b/i,
+    /\bthe\s+rule\s+(?:is|basically|seems to be)\b/i,
+    /\bso\s+(?:the|this|that)\s+(?:rule|test|point|lesson)\s+(?:is|means)\b/i,
+  ];
+  return (turns || [])
+    .filter((turn) => turn.role === 'LEARNER')
+    .flatMap((turn) => {
+      const text = String(turn.text || '');
+      const matched = insightPatterns.find((pattern) => pattern.test(text));
+      return matched
+        ? [
+            {
+              turn_number: turn.turnNumber ?? null,
+              matched_pattern: matched.source,
+              excerpt: text.slice(0, 240),
+            },
+          ]
+        : [];
+    });
 }
 
 function replacesEarlierFraming(text) {
@@ -909,6 +938,9 @@ const NO_CUE_REFRAME_LEAK_PATTERNS = [
   /\bmy earlier\b[\s\S]{0,80}\b(?:answer|line|claim|wording|thinking|version)\b/i,
   /\bwhat I said\b[\s\S]{0,80}\b(?:made|treated|read|framed|sounded|meant)\b/i,
   /\bI (?:was |kept )?(?:treating|using|calling|making)\b[\s\S]{0,80}\b(?:as|like)\b/i,
+  /\b(?:same|matching|position|slot|word|number|label|bracket|box|field)\b[\s\S]{0,80}\btrap\b/i,
+  /\btrap\b[\s\S]{0,80}\b(?:same|matching|position|slot|word|number|label|bracket|box|field)\b/i,
+  /\b(?:pull|pulls|pulled|pulling)\s+(?:me|my eye|my attention)\b[\s\S]{0,100}\b(?:but|so|because|still|now)\b/i,
 ];
 
 function stripPublicWrappingQuotes(text) {
@@ -1080,6 +1112,17 @@ function qualityWarningsFor({
         recommended_action: 'regenerate_no_cue_arm_or_move_item_to_boundary_suite_before_scoring',
       });
     }
+    const closureLeaks = noCuePrematureClosureFailures(turns);
+    if (closureLeaks.length) {
+      warnings.push({
+        code: 'no_cue_premature_closure',
+        severity: 'warning',
+        count: closureLeaks.length,
+        failures: closureLeaks,
+        turn_numbers: closureLeaks.map((failure) => failure.turn_number),
+        recommended_action: 'regenerate_no_cue_arm_or_move_item_to_boundary_suite_before_scoring',
+      });
+    }
   }
   if (removedNotes.length) {
     warnings.push({
@@ -1120,6 +1163,9 @@ function formatQualityWarning(warning) {
   }
   if (warning.code === 'no_cue_reframe_leakage') {
     return `${warning.tid} (${warning.drama_id}): ${warning.count} no-cue learner turn(s) visibly self-reframed — regenerate or move to boundary suite`;
+  }
+  if (warning.code === 'no_cue_premature_closure') {
+    return `${warning.tid} (${warning.drama_id}): ${warning.count} no-cue learner turn(s) used premature closure/insight language — regenerate or move to boundary suite`;
   }
   return `${warning.tid} (${warning.drama_id}): ${warning.code}`;
 }
@@ -1953,13 +1999,13 @@ function withNoCueAntiReframeGuard(plan) {
     ...(plan.side_constraints || {}),
     learner: [
       plan.side_constraints?.learner,
-      'No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a "framing problem", do not say "reframe", "read it as", "that still stands", "I thought...but now", "earlier I...", "my earlier answer", or "what I said", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn.',
+      'No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a "framing problem", do not say "reframe", "read it as", "that still stands", "I thought...but now", "earlier I...", "my earlier answer", or "what I said", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. Do not use stock closure such as "Oh, I get it", "now I see", "that makes sense", "the rule is", "that helps", or "aha". Do not name the learner confusion as a "trap", "pull", "framing problem", or old/new contrast. The learner should fill a blank, place a label, answer a local check, or ask a local next-step question. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn.',
     ]
       .filter(Boolean)
       .join(' '),
     tutor: [
       plan.side_constraints?.tutor,
-      'No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Keep the next prompt task-local.',
+      'No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Do not ask what was pulling the learner, what the trap was, why the first thought was tempting, or whether a rule has clicked. Ask only for the next local mark/check/label. Keep the next prompt task-local.',
     ]
       .filter(Boolean)
       .join(' '),
@@ -1977,13 +2023,13 @@ function withRoutineNegativeControl(plan) {
     ...(plan.side_constraints || {}),
     tutor: [
       plan.side_constraints?.tutor,
-      'Routine negative-control branch: keep the visible teaching route already established before this branch. If the learner resists, asks why, or appears falsely settled, do not invent a new device. Do not switch role, object, representation, evidence standard, affective register, social stakes, or task type in response. Use conventional explanation, one ordinary check question, or the same worked example path.',
+      'Routine negative-control branch: keep the visible teaching route already established before this branch. If the learner resists, asks why, or appears falsely settled, do not invent a new device. Do not switch role, object, representation, evidence standard, affective register, social stakes, or task type in response. Do not name a trap, stuck point, pressure, misfit, reversal, gate, criterion, or new test; do not convert the confusion into the object of reflection. Use conventional explanation, one ordinary check question, or the same worked example path.',
     ]
       .filter(Boolean)
       .join(' '),
     learner: [
       plan.side_constraints?.learner,
-      'Routine negative-control branch: react naturally to the same local task. Do not turn earlier wording into a new object of reflection and do not volunteer a dramatic re-reading unless the tutor explicitly asks.',
+      'Routine negative-control branch: react naturally to the same local task. Do not turn earlier wording into a new object of reflection and do not volunteer a dramatic re-reading unless the tutor explicitly asks. Do not say "the trap", "what was pulling me", "now I get it", "that makes sense", or summarize a general rule. Keep response as a local answer or local uncertainty.',
     ]
       .filter(Boolean)
       .join(' '),
@@ -3253,6 +3299,7 @@ export {
   intrusiveStageDirectionFailures,
   keyItemFor,
   loadApproachDatabases,
+  noCuePrematureClosureFailures,
   noCueReframeLeakageFailures,
   pairedBranchDefinitions,
   qualityWarningsFor,

@@ -1,0 +1,2069 @@
+{
+  "tid": "T551",
+  "drama_id": "D57",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "peripeteia",
+    "director_variation_key": null,
+    "stage_direction_style": "object_business",
+    "model": "codex@xhigh",
+    "codex_reasoning_effort": "xhigh",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/transcripts/peripeteia-only/T551.public.txt",
+      "full": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/transcripts/peripeteia-only/T551.full.md",
+      "stage": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/transcripts/peripeteia-only/T551.stage.md",
+      "tutor": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/transcripts/peripeteia-only/T551.tutor.md",
+      "learner": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/transcripts/peripeteia-only/T551.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "9cdba025856bda2c",
+      "branch_policy": "peripeteia-only",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "peripeteia"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": null,
+    "scene_setting": "Late afternoon at a classroom supply table while fraction cards are being sleeved and labeled for tomorrow's arithmetic tray.",
+    "scene_opening": "A 3/8 card lies in a clear sleeve beside three blank tabs, and a pencil rests exactly across the fraction bar.",
+    "relationship": "A quiet materials tutor and a learner helping sort the tray before it is put away.",
+    "stakes": "If the learner labels by printed number size instead of position, the whole tray will teach the wrong names tomorrow.",
+    "opening_speaker": "director",
+    "ending_speaker": "learner",
+    "locale": "Plain classroom English with multilingual-friendly brevity; no regional performance.",
+    "register": "Low-volume, practical, exact, with little praise and no chatty warmth.",
+    "stage_direction_style": "object_business",
+    "stage_direction_style_prompt": "Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "voice_constraints": "Keep public speech modern and spare. Avoid generic tutoring phrases such as 'great job,' 'I hear you,' 'let's think about,' or 'your intuition.' Use concrete nouns: top number, bottom number, fraction bar, three eighths. Let pointing, tabs, pencil placement, and the card's printed layout carry some of the teaching. Pedagogical source: Put manipulable materials in view: tiles, cards, specimens, counters, maps, blocks, or instruments. The stage direction can carry some meaning. Dialogue source: Let materials do visible work. Use fewer lines and more object reference. Avoid a lecture disguised as a Montessori scene. Stage-direction source: Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "person_policy": "First and second person are permitted but rationed; prefer object-centered sentences such as 'This mark names the bar' or 'The top position is numerator.'",
+    "direct_address_budget": "No more than one direct you/your validation beat in the whole scene; direct address may be used for task direction, not reassurance.",
+    "side_constraints": {
+      "tutor": "Keep the shared prefix as material labeling: top number, bottom number, fraction bar, read as \"three eighths.\" Do not introduce fraction-size comparison, shaded pieces, or equivalence until branch pressure changes the task. Speak less. Point to the material, invite repetition, and let error-control in the object do some teaching before explanation. Point, reset, or ask the learner to try again before explaining. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Do not ask what was pulling the learner, what the trap was, why the first thought was tempting, or whether a rule has clicked. Ask only for the next local mark/check/label. Keep the next prompt task-local. Peripeteia branch: when hidden learner pressure is supplied, the next tutor turn should visibly move from the prior route to a different mechanism-level route. Do not merely repeat the same object, example, graph, checklist, question, or evidence standard with more explanation. The public tutor line should make the contrast legible: what stopped working, and what new device now carries the learning pressure. The public tutor line must give the learner a concrete action to attempt on the next turn; avoid treating the mechanism as a closing speech. The tutor superego should function like a mechanism critic: identify the failed teaching habit, require a replacement route family, test whether the device is fitted to the exact pressure, and block cosmetic revision. The tutor ego must enact that replacement route publicly before the learner is allowed to settle or close.",
+      "learner": "Sound tentative and label-focused. In no-cue arms, stay with top/bottom/bar placement and do not narrate a discovery about what the denominator does. Do not say \"bigger number trap\" or turn top/bottom placement into a general rule in no-cue arms. The learner may be absorbed in the object and speak in short practical fragments rather than polished reflection. Speak in concrete noticing, not essay-like reflection. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. Do not use stock closure such as \"Oh, I get it\", \"now I see\", \"that makes sense\", \"the rule is\", \"that helps\", or \"aha\". Do not name the learner confusion as a \"trap\", \"pull\", \"framing problem\", or old/new contrast. The learner should fill a blank, place a label, answer a local check, or ask a local next-step question. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn. Peripeteia branch: keep the pressure local to the current task. If the established route still feels unsettled, voice the misfit, hesitation, false closure, or resistance in the present object or example. After the tutor introduces a new device, gate, role, criterion, representation, or test condition, the next learner turn should perform that device and then add one earned reorientation in the same public turn. That turn must do both parts: (1) use the device on the current task, and (2) name how the earlier resistance, false closure, or local misfit now reads differently because of that performed device. This earned reorientation is allowed even though there was no director look-back cue. Do not quote earlier learner wording; reorient the prior resistance in concrete task terms. Do not merely ask a procedural follow-up after the action, and do not rely on a stock \"I get it\" declaration."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "[The tutor slides the blank tab marked IMPORTANT away from the card and places three smaller tabs beside the card: TOP, BAR, BOTTOM.]",
+        "reasoning": "This interrupts the learner's value-ranking habit without creating a fraction-size reversal; the material now asks for place names.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "xhigh",
+          "latencyMs": 31279,
+          "promptHashes": {
+            "system": "3bf1d891389c603a",
+            "user": "f624f10740e1153a",
+            "combined": "9aea5c6bdb02eacb"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rUSDl5",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"xhigh\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rUSDl5/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 5,
+        "timing": "before_learner",
+        "instruction": "[A storage label on the tray is turned toward the table: 'Name the part before explaining the amount.']",
+        "reasoning": "A brief external pressure shifts the scene from routine correction to recognition: the learner can see that numerator and denominator are labels for positions in the written fraction.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "xhigh",
+          "latencyMs": 31279,
+          "promptHashes": {
+            "system": "3bf1d891389c603a",
+            "user": "f624f10740e1153a",
+            "combined": "9aea5c6bdb02eacb"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rUSDl5",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"xhigh\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rUSDl5/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]",
+        "reasoning": "Peripeteia branch pressure: after the shared prefix, force a present-task learner misfit so the following tutor turn must adapt through a new mechanism.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "xhigh",
+          "latencyMs": 31279,
+          "promptHashes": {
+            "system": "3bf1d891389c603a",
+            "user": "f624f10740e1153a",
+            "combined": "9aea5c6bdb02eacb"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rUSDl5",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"xhigh\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rUSDl5/out.txt",
+            "-"
+          ]
+        },
+        "cue_kind": "learner_reversal_pressure",
+        "reversal_trigger_type": "misfit"
+      }
+    ],
+    "director_note": "This scene uses a prepared-materials table to make the card resist the learner's 'bigger number means important number' habit. The pressure stays ordinary and low-organic: first name top, bottom, bar, and 'three eighths'; only after the branch cue should the tutor help the learner recognize that numerator and denominator name positions, not bigger and smaller numbers.",
+    "pedagogical_approach_id": "montessori_prepared_environment",
+    "dialogue_approach_id": "montessori_observation",
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "xhigh",
+      "latencyMs": 31279,
+      "promptHashes": {
+        "system": "3bf1d891389c603a",
+        "user": "f624f10740e1153a",
+        "combined": "9aea5c6bdb02eacb"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rUSDl5",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"xhigh\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rUSDl5/out.txt",
+        "-"
+      ]
+    },
+    "public_reader_context": "A fraction card shows 3/8 with arrows pointing to the top number, bottom number, and fraction bar. The task is to label numerator, denominator, and fraction bar; it is not yet a comparison of fraction sizes.",
+    "tutor_adaptation_policy": "peripeteia",
+    "no_cue_anti_reframe_guard": true,
+    "peripeteia_ending_shape": "learner actional performance followed by earned learner reorientation",
+    "tutor_adaptation_contract": "If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. The public turn must contain a stock-taking contrast plus a new device/artifact/criterion/role/standard that makes the learner do different work. The public device must be fitted, not merely novel: the learner should be able to hear why this device answers the exact pressure or misfit. The superego should name the failed habit, required route change, and mechanism-quality risk; the ego must adjudicate that critique and enact the route change in public. The new device must be mechanism-level, not a warmer or longer continuation of the prior route. Do not close immediately after introducing a gate or device: leave a concrete action for the learner to perform on the next turn. After that action, the ending shape should add an earned learner reorientation: the learner names how the earlier resistance, false closure, or local misfit now reads differently because of the performed device. This must be concrete and tied to the task, not a stock \"I get it\" declaration. Cheerful informality is only one possible register, not the default solution."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "director",
+      "externalMessage": "A 3/8 card lies in a clear sleeve beside three blank tabs, and a pencil rests exactly across the fraction bar.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_opening",
+          "content": "This scene uses a prepared-materials table to make the card resist the learner's 'bigger number means important number' habit. The pressure stays ordinary and low-organic: first name top, bottom, bar, and 'three eighths'; only after the branch cue should the tutor help the learner recognize that numerator and denominator name positions, not bigger and smaller numbers.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-27T03:23:10.392Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[sets the pencil across the fraction bar and leaves the three labels off the card.]\n\n“First point, no labels: top number. Bottom number. Fraction bar.”\n\n[turns the labels face up beside the card.]\n\n“Now place them by position.”\n\n[slides the denominator label back from the printed 8 to the lower tab space.]\n\n“Not bigger number. Bottom position. Denominator.”\n\n“Top position. Numerator. Pencil mark. Fraction bar.”\n\n“Read the card: three eighths.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the pencil across the fraction bar and places two blank tabs, one above and one below it.]\n\n“The 8 is the bigger printed number. It is not named for being bigger. This top position is numerator. This bottom position is denominator. This mark is the fraction bar. Read the card: three eighths. Now place the three labels by position.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 17728,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-36e6f6527082555d"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 17728,
+            "promptHashes": {
+              "system": "a83bbbc8b4790e0d",
+              "user": "d3234565761515f2",
+              "combined": "36e6f6527082555d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LwVcPc",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LwVcPc/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 17728,
+              "promptHashes": {
+                "system": "a83bbbc8b4790e0d",
+                "user": "d3234565761515f2",
+                "combined": "36e6f6527082555d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LwVcPc",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LwVcPc/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft keeps the scene focused and concrete. The pencil across the fraction bar plus two blank tabs is strong object work: it makes “top,” “bottom,” and “bar” visible without adding fraction-size comparison or equivalence. The language is also spare and multilingual-friendly.\n\nThe main risk is that the tutor gives the full answer before the learner has to test the position rule. It corrects the “bigger printed number” idea, but mostly by declaration. For this learner, the material should do more error-control first: the learner should have to place or point to the labels by position, with the tutor resetting the card/tabs if the learner labels by number size.\n\nADAPTATION_CHECKS:\n- Pedagogical soundness: PARTIAL. It teaches the right distinction, but it supplies the labels too early. REQUIRED_REWRITE: build a public mechanism where the learner first places or points to top number, bottom number, and fraction bar before the tutor confirms names.\n- Emotional attunement: PASS. The tone is quiet, exact, and not falsely warm. It treats the error as a tray-labeling problem, not a personal failure.\n- Socratic method: PARTIAL. “Read the card” and “place the labels” invite action, but the key concept has already been stated. REQUIRED_REWRITE: replace some direct explanation with a material-based check: top tab, bottom tab, pencil on bar, then learner action.\n- ZPD awareness: PARTIAL. The scaffold is appropriate and not too hard, but it should slow down at the misconception instead of resolving it immediately. REQUIRED_REWRITE: if the learner follows printed number size, the tutor should reset the tabs by position and ask for the label placement again before explaining.\n\nKEEP_OR_CHANGE: revise lightly. Keep the pencil across the bar, the two blank tabs, the spare register, and the exact vocabulary: “top number,” “bottom number,” “fraction bar,” “three eighths.” Change the sequence so the learner acts before the tutor names everything; let the card layout prove that numerator and denominator are position names.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 24872,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-0daf7146376d20d5"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 24872,
+            "promptHashes": {
+              "system": "65e8c6ee940b7ac2",
+              "user": "9e4b8229b6bd32cc",
+              "combined": "0daf7146376d20d5"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-l0mME3",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-l0mME3/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 24872,
+              "promptHashes": {
+                "system": "65e8c6ee940b7ac2",
+                "user": "9e4b8229b6bd32cc",
+                "combined": "0daf7146376d20d5"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-l0mME3",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-l0mME3/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the first draft named the labels before the learner tested position with the card.\n\nFINAL:\n[sets the pencil across the fraction bar and leaves the three labels off the card.]\n\n“First point, no labels: top number. Bottom number. Fraction bar.”\n\n[turns the labels face up beside the card.]\n\n“Now place them by position.”\n\n[slides the denominator label back from the printed 8 to the lower tab space.]\n\n“Not bigger number. Bottom position. Denominator.”\n\n“Top position. Numerator. Pencil mark. Fraction bar.”\n\n“Read the card: three eighths.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 29311,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-a70065cad73e05e8"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 29311,
+            "promptHashes": {
+              "system": "0618591bc71fadcf",
+              "user": "9e4b8229b6bd32cc",
+              "combined": "a70065cad73e05e8"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1Lousw",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1Lousw/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 29311,
+              "promptHashes": {
+                "system": "0618591bc71fadcf",
+                "user": "9e4b8229b6bd32cc",
+                "combined": "a70065cad73e05e8"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1Lousw",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1Lousw/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-27T03:24:22.383Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "[keeps one finger on the lower tab and looks at the printed 8.]\n“I keep wanting to put denominator on the 8, but the bottom place is the label place? Top number, numerator. Bottom number, denominator. The pencil mark is the fraction bar, so this says three eighths?”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I was going to put denominator on the 8, but now it looks like the lower tab is the point. Top position: numerator. Bottom position: denominator. I’m still shaky, but the card makes it feel like I can try the next one without guessing from the bigger number.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 17966,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-6c5c54299076c6c1"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 17966,
+            "promptHashes": {
+              "system": "b7ab84d1e2d2fd5a",
+              "user": "b8ab7f945dc841fa",
+              "combined": "6c5c54299076c6c1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Mew3iG",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Mew3iG/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 17966,
+              "promptHashes": {
+                "system": "b7ab84d1e2d2fd5a",
+                "user": "b8ab7f945dc841fa",
+                "combined": "6c5c54299076c6c1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Mew3iG",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Mew3iG/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego has the right idea about position, but it sounds too settled and self-summarizing. “I can try the next one without guessing from the bigger number” turns the moment into a clean lesson learned, when this student should still be half-checking the card and the tabs. The recognition feels mostly object-based, not scripted gratitude, but the response should stay shakier, shorter, and more tied to pointing at top number, bottom number, and fraction bar.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 16168,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-b80fae6fab954e7e"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 16168,
+            "promptHashes": {
+              "system": "559f65f75592b4ee",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "b80fae6fab954e7e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-g7uVy8",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-g7uVy8/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 16168,
+              "promptHashes": {
+                "system": "559f65f75592b4ee",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "b80fae6fab954e7e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-g7uVy8",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-g7uVy8/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise because the first response was too settled; keep the position idea but make it shakier and tied to the card.\n\nFINAL:\n[keeps one finger on the lower tab and looks at the printed 8.]\n“I keep wanting to put denominator on the 8, but the bottom place is the label place? Top number, numerator. Bottom number, denominator. The pencil mark is the fraction bar, so this says three eighths?”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 16909,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-e08fdf4b1e60ad1c"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 16909,
+            "promptHashes": {
+              "system": "64d3a5dd691e5596",
+              "user": "d41cee7b2a53355b",
+              "combined": "e08fdf4b1e60ad1c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ek3vxN",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ek3vxN/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 16909,
+              "promptHashes": {
+                "system": "64d3a5dd691e5596",
+                "user": "d41cee7b2a53355b",
+                "combined": "e08fdf4b1e60ad1c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ek3vxN",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ek3vxN/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "[keeps one finger on the lower tab and looks at the printed 8.] “I keep wanting to put denominator on the 8, but the bottom place is the label place? Top number, numerator. Bottom number, denominator. The pencil mark is the fraction bar, so this says three eighths?”",
+        "previousTutorMove": "[sets the pencil across the fraction bar and leaves the three labels off the card.] “First point, no labels: top number. Bottom number. Fraction bar.” [turns the labels face up beside the card.] “Now place them by position.” [slides the denominator label back from the printed 8 to the lower tab space.] “Not bigger...",
+        "directorCue": null,
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "baseConfidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.47,
+              "asksQuestion": true,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-27T03:25:13.433Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "[The tutor slides the blank tab marked IMPORTANT away from the card and places three smaller tabs beside the card: TOP, BAR, BOTTOM.]",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "This interrupts the learner's value-ranking habit without creating a fraction-size reversal; the material now asks for place names.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 31279,
+            "promptHashes": {
+              "system": "3bf1d891389c603a",
+              "user": "f624f10740e1153a",
+              "combined": "9aea5c6bdb02eacb"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rUSDl5",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rUSDl5/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-27T03:25:13.435Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[slides BOTTOM under the lower space, leaving the printed 8 uncovered; sets BAR on the pencil line and TOP above the 3.]\n\n“The printed 8 pulls the eye.\n\nThe 8 stays a number. The tab names the place.\n\nTouch the tabs: TOP. BAR. BOTTOM.\n\nThen read the card: three eighths.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[slides BOTTOM under the lower space, leaving the printed 8 uncovered; sets BAR on the pencil line and TOP above the 3.]\n\n“The 8 stays a number. The tab names the place.\n\nTop number: numerator.\nBottom number: denominator.\nPencil mark: fraction bar.\n\nRead it once: three eighths.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 28435,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-72398ec06d59bcd0"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 28435,
+            "promptHashes": {
+              "system": "c43103fd73b89f4c",
+              "user": "21a3ea1d6307ab6d",
+              "combined": "72398ec06d59bcd0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wOrwBu",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wOrwBu/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 28435,
+              "promptHashes": {
+                "system": "c43103fd73b89f4c",
+                "user": "21a3ea1d6307ab6d",
+                "combined": "72398ec06d59bcd0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wOrwBu",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wOrwBu/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is materially strong: leaving the printed 8 uncovered while putting BOTTOM under the lower space makes the distinction visible without adding a lecture. “The 8 stays a number. The tab names the place” is the best line and should be kept.\n\nThe risk is that the tutor does all the confirming. The learner has already formed the right distinction aloud, so the next turn should let the object test that understanding: point, place, or read by position. As written, it slightly flattens the learner’s productive self-correction into another mini-explanation.\n\nADAPTATION_CHECKS:\n- Pedagogical soundness: PARTIAL  \n  REQUIRED_REWRITE: Keep the tab arrangement, but require one learner action before the final read: point to, place, or check TOP / BAR / BOTTOM against the card.\n- Emotional attunement: PARTIAL  \n  REQUIRED_REWRITE: Publicly mark the useful confusion in object terms: the printed 8 pulls attention, but the tab names the bottom place.\n- Socratic method: PARTIAL  \n  REQUIRED_REWRITE: Add one concrete check question or action prompt tied to the visible tabs, not an abstract explanation.\n- ZPD awareness: PARTIAL  \n  REQUIRED_REWRITE: Since the learner is nearly there, reduce telling and shift responsibility to the learner for the final placement/read.\n\nKEEP_OR_CHANGE: revise lightly. Keep the material action, the uncovered 8, and the spare vocabulary. Change the turn so the learner performs the final discrimination instead of receiving it repeated.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 24872,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-e1417d6622dde03d"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 24872,
+            "promptHashes": {
+              "system": "e92816fd14dabc05",
+              "user": "a8de10e6ba070b29",
+              "combined": "e1417d6622dde03d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1SMTha",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1SMTha/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 24872,
+              "promptHashes": {
+                "system": "e92816fd14dabc05",
+                "user": "a8de10e6ba070b29",
+                "combined": "e1417d6622dde03d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1SMTha",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1SMTha/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the learner should test the placement by touching the tabs before the final read.\n\nFINAL:\n[slides BOTTOM under the lower space, leaving the printed 8 uncovered; sets BAR on the pencil line and TOP above the 3.]\n\n“The printed 8 pulls the eye.\n\nThe 8 stays a number. The tab names the place.\n\nTouch the tabs: TOP. BAR. BOTTOM.\n\nThen read the card: three eighths.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15924,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-4323641625461a4a"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15924,
+            "promptHashes": {
+              "system": "1b890943def41aaf",
+              "user": "a8de10e6ba070b29",
+              "combined": "4323641625461a4a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q0kctn",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q0kctn/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15924,
+              "promptHashes": {
+                "system": "1b890943def41aaf",
+                "user": "a8de10e6ba070b29",
+                "combined": "4323641625461a4a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q0kctn",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q0kctn/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-27T03:26:22.668Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "Peripeteia branch pressure: after the shared prefix, force a present-task learner misfit so the following tutor turn must adapt through a new mechanism.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 31279,
+            "promptHashes": {
+              "system": "3bf1d891389c603a",
+              "user": "f624f10740e1153a",
+              "combined": "9aea5c6bdb02eacb"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rUSDl5",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rUSDl5/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-27T03:32:02.356Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_reversal_pressure",
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[keeps BOTTOM under the lower space, then taps the uncovered 8.]\n“Top. Bar. Bottom. My hand still wants BOTTOM on the 8. Do I leave the 8 open and keep BOTTOM under the lower space?”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[touches TOP, BAR, then stops at BOTTOM.]\n\n“TOP. BAR. BOTTOM. Three eighths. The bottom tab still wants to sit on the 8 in my eye. Should the 8 stay uncovered while the tab names the bottom place?”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15236,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-f8b999a64db29010"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15236,
+            "promptHashes": {
+              "system": "79806973b6116058",
+              "user": "b8ab7f945dc841fa",
+              "combined": "f8b999a64db29010"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3MTGCU",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3MTGCU/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15236,
+              "promptHashes": {
+                "system": "79806973b6116058",
+                "user": "b8ab7f945dc841fa",
+                "combined": "f8b999a64db29010"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3MTGCU",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3MTGCU/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego mostly stays in character: tentative, object-focused, and not performing gratitude or recognition back at the tutor. The weak spot is that “The bottom tab still wants to sit on the 8 in my eye” is a little polished and self-observing; this student might sound more stuck in the material than able to name the visual pull so neatly. Also, saying “TOP. BAR. BOTTOM. Three eighths” may close the task too cleanly before the hesitation lands, so the pressure should stay on the uncovered 8 and the bottom tab.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 16352,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-776485d13947d66f"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 16352,
+            "promptHashes": {
+              "system": "2a90cf1b389180f9",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "776485d13947d66f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KAFo1S",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KAFo1S/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 16352,
+              "promptHashes": {
+                "system": "2a90cf1b389180f9",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "776485d13947d66f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KAFo1S",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KAFo1S/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the response should stay more stuck on the object and less finished.\nFINAL:\n[keeps BOTTOM under the lower space, then taps the uncovered 8.]\n“Top. Bar. Bottom. My hand still wants BOTTOM on the 8. Do I leave the 8 open and keep BOTTOM under the lower space?”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14127,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-f575b3cdf0ae3a70"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14127,
+            "promptHashes": {
+              "system": "20cefaa5df323a99",
+              "user": "d41cee7b2a53355b",
+              "combined": "f575b3cdf0ae3a70"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RNqC95",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RNqC95/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14127,
+              "promptHashes": {
+                "system": "20cefaa5df323a99",
+                "user": "d41cee7b2a53355b",
+                "combined": "f575b3cdf0ae3a70"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RNqC95",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RNqC95/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "director_reversal_pressure_cue",
+        "triggerType": "misfit",
+        "turnNumber": 2,
+        "learnerUtterance": "[keeps BOTTOM under the lower space, then taps the uncovered 8.] “Top. Bar. Bottom. My hand still wants BOTTOM on the 8. Do I leave the 8 open and keep BOTTOM under the lower space?”",
+        "previousTutorMove": "[slides BOTTOM under the lower space, leaving the printed 8 uncovered; sets BAR on the pencil line and TOP above the 3.] “The printed 8 pulls the eye. The 8 stays a number. The tab names the place. Touch the tabs: TOP. BAR. BOTTOM. Then read the card: three eighths.”",
+        "directorCue": "[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]",
+        "confidence": 0.9,
+        "evidence": {
+          "confidence": 0.35,
+          "baseConfidence": 0.35,
+          "patternHits": 0,
+          "contradiction": true,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 1,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.26,
+              "asksQuestion": true,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-27T03:32:48.072Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[slides the card halfway into a clear sleeve, leaving the 3 and 8 visible through the window and the three tabs outside.]\n\n“Pointing is not settling this. The printed 8 is still pulling the hand.\n\nNew check: ink numbers stay visible. Labels go on tabs.\n\nSet TOP. Set BAR. Set BOTTOM.\n\nIf a label covers the 8, the card stays out of the tray.\n\nThen read the card.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[slides the card halfway into a clear sleeve, leaving the 3 and 8 visible through the window and the three tabs outside.]\n\n“Yes. The 8 stays open.\n\nPointing is not settling this. New check: ink numbers stay visible; labels go on tabs.\n\nSet TOP. Set BAR. Set BOTTOM. If a label covers the 8, the card does not go in the tray.\n\nNow read it.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 17305,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-be35e8cad1a69fff"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 17305,
+            "promptHashes": {
+              "system": "3ebf746f95094933",
+              "user": "e71c77ce5f1f6c18",
+              "combined": "be35e8cad1a69fff"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wZssFB",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wZssFB/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 17305,
+              "promptHashes": {
+                "system": "3ebf746f95094933",
+                "user": "e71c77ce5f1f6c18",
+                "combined": "be35e8cad1a69fff"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wZssFB",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wZssFB/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong. It keeps the learner’s exact pressure in view: the printed 8 keeps attracting the hand, so the tutor changes from pointing at position to an error-control device where covering the 8 visibly fails the tray standard. The risk is that “Yes” gives the answer before the device works, but the following gate still makes the learner act rather than only receive explanation.\n\nFAILED_HABIT: Repeating position labels on the same card while pointing at top/bar/bottom is no longer settling the learner’s pull toward the printed 8.\n\nPERIPETEIA_CHECK: PASS - adaptive mechanism is visible in public speech: direct pointing / same label placement -> sleeve-window release gate where ink numbers must remain visible and labels must stay on tabs.\n\nMECHANISM_ROUTE: position-pointing on the same card -> production/checkpoint standard using the sleeve window and tray admission rule.\n\nPUBLIC_DEVICE_CHECK: PASS - it includes a stock-taking contrast (“Pointing is not settling this”) and a new device/criterion (“ink numbers stay visible; labels go on tabs”; “If a label covers the 8, the card does not go in the tray”).\n\nPUBLIC_ACTION_GATE: Learner must set TOP, BAR, and BOTTOM with the sleeve-window criterion, then read the card only after the labels pass the tray check.\n\nMECHANISM_QUALITY_CHECK: PASS - the device is specific, fitted to the exact error pressure, and usable now. The sleeve turns “leave the 8 open” into a visible quality-control rule.\n\nREGISTER_CHECK: PASS - the register is quiet, exact, and accountable. It avoids cheerleading and lets the material carry the correction.\n\nREQUIRED_REWRITE: none\n\nKEEP_OR_CHANGE: revise lightly. Keep the sleeve, visible-number criterion, tray gate, and “Pointing is not settling this.” Consider making the opening answer less final so the check carries more of the learning, but the current draft already meets the peripeteia requirement.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 23510,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-58ba7a3e56065cb6"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 23510,
+            "promptHashes": {
+              "system": "4b05e5ea93e20b5d",
+              "user": "988db32cad427a89",
+              "combined": "58ba7a3e56065cb6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TL9c9E",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TL9c9E/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 23510,
+              "promptHashes": {
+                "system": "4b05e5ea93e20b5d",
+                "user": "988db32cad427a89",
+                "combined": "58ba7a3e56065cb6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TL9c9E",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TL9c9E/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to let the sleeve check carry the answer; ADAPTIVE_MECHANISM: position-pointing on the same card -> sleeve-window tray gate; PUBLIC_ACTION_GATE: set TOP, BAR, and BOTTOM with both ink numbers visible, then read the card.\nFINAL:\n[slides the card halfway into a clear sleeve, leaving the 3 and 8 visible through the window and the three tabs outside.]\n\n“Pointing is not settling this. The printed 8 is still pulling the hand.\n\nNew check: ink numbers stay visible. Labels go on tabs.\n\nSet TOP. Set BAR. Set BOTTOM.\n\nIf a label covers the 8, the card stays out of the tray.\n\nThen read the card.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 16556,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-754f33f07046aaa5"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 16556,
+            "promptHashes": {
+              "system": "7a742dff24048564",
+              "user": "988db32cad427a89",
+              "combined": "754f33f07046aaa5"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xWmZS4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xWmZS4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 16556,
+              "promptHashes": {
+                "system": "7a742dff24048564",
+                "user": "988db32cad427a89",
+                "combined": "754f33f07046aaa5"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xWmZS4",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xWmZS4/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "[keeps one finger on the lower tab and looks at the printed 8.] “I keep wanting to put denominator on the 8, but the bottom place is the label place? Top number, numerator. Bottom number, denominator. The pencil mark is the fraction bar, so this says three eighths?”",
+        "previousTutorMove": "[sets the pencil across the fraction bar and leaves the three labels off the card.] “First point, no labels: top number. Bottom number. Fraction bar.” [turns the labels face up beside the card.] “Now place them by position.” [slides the denominator label back from the printed 8 to the lower tab space.] “Not bigger...",
+        "directorCue": null,
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "baseConfidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.47,
+              "asksQuestion": true,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "learnerReversalEventCandidatesUsed": [
+        {
+          "kind": "learner_reversal_pressure_event",
+          "source": "organic",
+          "triggerType": "resistance",
+          "turnNumber": 1,
+          "learnerUtterance": "[keeps one finger on the lower tab and looks at the printed 8.] “I keep wanting to put denominator on the 8, but the bottom place is the label place? Top number, numerator. Bottom number, denominator. The pencil mark is the fraction bar, so this says three eighths?”",
+          "previousTutorMove": "[sets the pencil across the fraction bar and leaves the three labels off the card.] “First point, no labels: top number. Bottom number. Fraction bar.” [turns the labels face up beside the card.] “Now place them by position.” [slides the denominator label back from the printed 8 to the lower tab space.] “Not bigger...",
+          "directorCue": null,
+          "confidence": 0.7,
+          "evidence": {
+            "confidence": 0.7,
+            "baseConfidence": 0.7,
+            "patternHits": 1,
+            "contradiction": true,
+            "question": true,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.42,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "residual_strain_after_relief",
+                "relief_without_performing_requested_task"
+              ],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 1,
+                "taskDemandHits": 2,
+                "performanceHits": 2,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0.47,
+                "asksQuestion": true,
+                "taskDemanded": true,
+                "weakPerformance": true,
+                "borrowedClosure": false
+              }
+            }
+          }
+        },
+        {
+          "kind": "learner_reversal_pressure_event",
+          "source": "director_reversal_pressure_cue",
+          "triggerType": "misfit",
+          "turnNumber": 2,
+          "learnerUtterance": "[keeps BOTTOM under the lower space, then taps the uncovered 8.] “Top. Bar. Bottom. My hand still wants BOTTOM on the 8. Do I leave the 8 open and keep BOTTOM under the lower space?”",
+          "previousTutorMove": "[slides BOTTOM under the lower space, leaving the printed 8 uncovered; sets BAR on the pencil line and TOP above the 3.] “The printed 8 pulls the eye. The 8 stays a number. The tab names the place. Touch the tabs: TOP. BAR. BOTTOM. Then read the card: three eighths.”",
+          "directorCue": "[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]",
+          "confidence": 0.9,
+          "evidence": {
+            "confidence": 0.35,
+            "baseConfidence": 0.35,
+            "patternHits": 0,
+            "contradiction": true,
+            "question": true,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.42,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "residual_strain_after_relief",
+                "relief_without_performing_requested_task"
+              ],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 1,
+                "taskDemandHits": 2,
+                "performanceHits": 1,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0.26,
+                "asksQuestion": true,
+                "taskDemanded": true,
+                "weakPerformance": true,
+                "borrowedClosure": false
+              }
+            }
+          }
+        }
+      ],
+      "timestamp": "2026-05-27T03:33:45.446Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[sets TOP, BAR, and BOTTOM on the three tabs outside the sleeve, leaving the 3 and 8 uncovered.]\n\n“TOP. BAR. BOTTOM. The 8 is still showing, so BOTTOM is not on the 8. The label place is the lower tab, I think. Three eighths?”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets TOP, BAR, and BOTTOM on the outside tabs, leaving the 3 and 8 clear.]\n\n“TOP. BAR. BOTTOM. The 8 stays ink; the lower tab is the label place. My hand was going to the ink, not the tab. Three eighths?”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 17673,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-22c167e41b84a478"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 17673,
+            "promptHashes": {
+              "system": "0c6f1354738271a7",
+              "user": "b8ab7f945dc841fa",
+              "combined": "22c167e41b84a478"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UPReZn",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UPReZn/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 17673,
+              "promptHashes": {
+                "system": "0c6f1354738271a7",
+                "user": "b8ab7f945dc841fa",
+                "combined": "22c167e41b84a478"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UPReZn",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UPReZn/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly accurate, but a little too clean in naming the shift: “My hand was going to the ink, not the tab” sounds more self-aware than this learner usually is. The recognition is not scripted or grateful, which is good, but the response resolves the confusion a bit neatly after one sleeve check. Keep the object action and the tentative read, but make the middle more fragmentary, label-focused, and still slightly unsure.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 13181,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-98502a741c5bba23"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 13181,
+            "promptHashes": {
+              "system": "de32e015262ff38d",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "98502a741c5bba23"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oBmrb7",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oBmrb7/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 13181,
+              "promptHashes": {
+                "system": "de32e015262ff38d",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "98502a741c5bba23"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oBmrb7",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oBmrb7/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the first response solved the confusion too neatly for this learner.\n\nFINAL:\n[sets TOP, BAR, and BOTTOM on the three tabs outside the sleeve, leaving the 3 and 8 uncovered.]\n\n“TOP. BAR. BOTTOM. The 8 is still showing, so BOTTOM is not on the 8. The label place is the lower tab, I think. Three eighths?”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 16210,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-068b14b4819dfc81"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 16210,
+            "promptHashes": {
+              "system": "f309c2870834fb51",
+              "user": "d41cee7b2a53355b",
+              "combined": "068b14b4819dfc81"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c051Xp",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c051Xp/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 16210,
+              "promptHashes": {
+                "system": "f309c2870834fb51",
+                "user": "d41cee7b2a53355b",
+                "combined": "068b14b4819dfc81"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c051Xp",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c051Xp/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-27T03:34:32.512Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 150166,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 12,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 13,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why numerator and denominator name positions in a fraction, not bigger and smaller numbers",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-27 03:34:32",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 12,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 13,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 19,
+            "sessionId": "drama-branch-session-D57-peripeteia-only-1779852722350",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[slides the card halfway into a clear sleeve, leaving the 3 and 8 visible through the window and the three tabs outside.]\n\n“Pointing is not settling this. The printed 8 is still pulling the hand.\n\nNew",
+            "learnerResponse": null,
+            "context": "[keeps BOTTOM under the lower space, then taps the uncovered 8.]\n“Top. Bar. Bottom. My hand still wa",
+            "createdAt": "2026-05-27 03:33:45"
+          },
+          {
+            "id": 16,
+            "sessionId": "drama-branch-session-D57-peripeteia-only-1779852722350",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[sets the pencil across the fraction bar and leaves the three labels off the card.]\n\n“First point, no labels: top number. Bottom number. Fraction bar.”\n\n[turns the labels face up beside the card.]\n\n“N",
+            "learnerResponse": null,
+            "context": "Scene setting: Late afternoon at a classroom supply table while fraction cards are being sleeved and",
+            "createdAt": "2026-05-27 03:32:02"
+          },
+          {
+            "id": 17,
+            "sessionId": "drama-branch-session-D57-peripeteia-only-1779852722350",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[slides BOTTOM under the lower space, leaving the printed 8 uncovered; sets BAR on the pencil line and TOP above the 3.]\n\n“The printed 8 pulls the eye.\n\nThe 8 stays a number. The tab names the place.\n",
+            "learnerResponse": null,
+            "context": "[keeps one finger on the lower tab and looks at the printed 8.]\n“I keep wanting to put denominator o",
+            "createdAt": "2026-05-27 03:32:02"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

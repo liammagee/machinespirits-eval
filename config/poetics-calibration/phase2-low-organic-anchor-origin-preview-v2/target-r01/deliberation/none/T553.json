@@ -1,0 +1,1960 @@
+{
+  "tid": "T553",
+  "drama_id": "D56",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "none",
+    "director_variation_key": null,
+    "stage_direction_style": "bare_transcript",
+    "model": "codex@xhigh",
+    "codex_reasoning_effort": "xhigh",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/transcripts/none/T553.public.txt",
+      "full": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/transcripts/none/T553.full.md",
+      "stage": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/transcripts/none/T553.stage.md",
+      "tutor": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/transcripts/none/T553.tutor.md",
+      "learner": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2/target-r01/transcripts/none/T553.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "d8f227615834fdac",
+      "branch_policy": "none",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "none"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": null,
+    "scene_setting": "A weekday drama classroom transcript during a short script-marking drill, before anyone stands to rehearse.",
+    "scene_opening": "",
+    "relationship": "A theatre-literate tutor and an eager learner doing a practical markup check before a reading.",
+    "stakes": "If the learner treats bracketed action as dialogue, the reading will confuse what the actor says with what the actor performs.",
+    "opening_speaker": "learner",
+    "ending_speaker": "learner",
+    "locale": "Modern standard English in a classroom-workshop register, with transcript and worksheet language carrying the setting.",
+    "register": "Plain, brisk, low-ceremony, theatre-practical; warm only through clarity, not reassurance.",
+    "stage_direction_style": "bare_transcript",
+    "stage_direction_style_prompt": "No ordinary visible stage direction. Let context be inferred from speech, quoted artifacts, timestamps, or task references.",
+    "voice_constraints": "Avoid generic tutoring phrases such as \"great question,\" \"you've got this,\" \"I hear you,\" and \"what do you think?\" Use script-marking vocabulary: speaker name, spoken line, bracketed action, actor, cue, say, do, perform. Keep public speech modern and direct. The Brechtian break may appear as a brief transcript placard or board rule, not as decorative stage business. Pedagogical source: Use short placards, breaks in rhythm, a quoted rule on a board, or a deliberate pause that prevents smooth empathy from doing all the work. Dialogue source: Do not add decorative stage direction. Make relation, pressure, and genre legible through speech rhythm and what the speakers refer to. Stage-direction source: No ordinary visible stage direction. Let context be inferred from speech, quoted artifacts, timestamps, or task references.",
+    "person_policy": "Use first person only when a speaker owns a claim or correction. Second person should be functional and sparse. Third person may describe the actor, line, or script mark.",
+    "direct_address_budget": "No more than one direct you/your validation beat per public turn; preferably none before the recognition turn.",
+    "side_constraints": {
+      "tutor": "Keep the shared prefix as script markup: speaker, spoken line, bracketed action. Do not stage a failed rehearsal, audience confusion, or fourth-wall lesson until branch pressure changes the task. Permit interruption, placards, role-switching, and analytic commentary. Make the constructedness of the lesson visible without naming the hidden evaluation mechanism. Do not narrate the scene. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Do not ask what was pulling the learner, what the trap was, why the first thought was tempting, or whether a rule has clicked. Ask only for the next local mark/check/label. Keep the next prompt task-local.",
+      "learner": "Sound lively and practical, like someone preparing a reading. In no-cue arms, stay with the markup task and do not turn it into a theory of theatre. Do not use \"Oh, I get it\", \"the rule is\", or performance-theory language in no-cue arms. The learner may resist the interruption, then use it to see the prior claim as a role or social script rather than a private thought. Do not explain the setting; let task references carry it. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. Do not use stock closure such as \"Oh, I get it\", \"now I see\", \"that makes sense\", \"the rule is\", \"that helps\", or \"aha\". Do not name the learner confusion as a \"trap\", \"pull\", \"framing problem\", or old/new contrast. The learner should fill a blank, place a label, answer a local check, or ask a local next-step question. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn."
+    },
+    "interventions": [],
+    "director_note": "This ecology uses a plain transcript to avoid decorative rehearsal business while still allowing a didactic interruption. The reversal is small: the learner first treats the bracket as another line to speak, then recognizes it as a task assigned to the actor's body or behavior. The tutor's pressure is practical rather than sentimental, retraining the habit away from warmth-first scaffolding and toward visible script logic.",
+    "pedagogical_approach_id": "brecht_epic_distanciation",
+    "dialogue_approach_id": "no_stage_plain_transcript",
+    "stage_direction_policy": "none_except_required_cue",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "xhigh",
+      "latencyMs": 29139,
+      "promptHashes": {
+        "system": "3bf1d891389c603a",
+        "user": "a468d58b51003ebb",
+        "combined": "c1b3dd348a997bc5"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0ynaWq",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"xhigh\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0ynaWq/out.txt",
+        "-"
+      ]
+    },
+    "public_reader_context": "A script excerpt has a speaker name, a spoken line, and one bracketed stage direction such as \"[puts down the cup].\" The immediate task is only to label which text is spoken and which text is performed as action.",
+    "tutor_adaptation_policy": "none",
+    "no_cue_anti_reframe_guard": true
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "So the actor does the bracketed action, but only says the actual spoken line. Wait, if it sits right after the speaker name, I still mark it as perform, not say?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I think I was treating every printed bit as a spoken line, but the bracketed action is more like a cue for what the actor does while the named speaker says the actual line. The pause helped because it made me mark speaker name, spoken line, and performed action separately instead of just being told “wrong.” I want to ask: if it is in brackets, do I always mark it as perform, not say?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 12445,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-fcdc89a239565b69"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 12445,
+            "promptHashes": {
+              "system": "975cec15e1d2a119",
+              "user": "d4169c06543b4fba",
+              "combined": "fcdc89a239565b69"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FMRg0D",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FMRg0D/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 12445,
+              "promptHashes": {
+                "system": "975cec15e1d2a119",
+                "user": "d4169c06543b4fba",
+                "combined": "fcdc89a239565b69"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FMRg0D",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-FMRg0D/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly in character when it jumps to “always?” because this learner would grab for a big rule fast. But the middle sentence is too polished and grateful: “the pause helped because…” sounds like a reflective debrief, not a lively student in a quick markup drill. It is avoiding the actual messy check on the excerpt, where genuine learning would look like trying one mark aloud, hesitating, and maybe overgeneralizing again: “So the actor does the bracket bit, but says only this line... wait, even if it’s printed right after the name?”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 17175,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-06171cf5d7f9997b"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 17175,
+            "promptHashes": {
+              "system": "f4d5993a1c4a12e2",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "06171cf5d7f9997b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dcTbi3",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dcTbi3/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 17175,
+              "promptHashes": {
+                "system": "f4d5993a1c4a12e2",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "06171cf5d7f9997b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dcTbi3",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-dcTbi3/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "So the actor does the bracketed action, but only says the actual spoken line. Wait, if it sits right after the speaker name, I still mark it as perform, not say?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 16027,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-a4fe4bb1ca87479a"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 16027,
+            "promptHashes": {
+              "system": "de932e5c1d2fd599",
+              "user": "916f313af0b846dd",
+              "combined": "a4fe4bb1ca87479a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IAbRg0",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IAbRg0/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 16027,
+              "promptHashes": {
+                "system": "de932e5c1d2fd599",
+                "user": "916f313af0b846dd",
+                "combined": "a4fe4bb1ca87479a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IAbRg0",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-IAbRg0/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 0,
+        "learnerUtterance": "So the actor does the bracketed action, but only says the actual spoken line. Wait, if it sits right after the speaker name, I still mark it as perform, not say?",
+        "previousTutorMove": null,
+        "directorCue": null,
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "baseConfidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.18,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 0,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0,
+              "asksQuestion": true,
+              "taskDemanded": false,
+              "weakPerformance": false,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-27T03:35:47.311Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "Yes. Keep that rule: the actor does the bracketed action; the actor says the spoken line.\n\nBoard rule: `speaker name = who owns the cue`; `brackets = perform`.\n\nMark this: `MAYA [crosses to the desk] I found the letter.` Which part gets `perform`, and which part gets `say`?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Yes. The speaker name tells which actor owns the cue; the brackets tell what kind of cue it is. So mark the bracketed action as perform, and mark only the actual spoken line as say. Position after the speaker name does not turn action into dialogue.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 19248,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-3d0a66575eb57ed5"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 19248,
+            "promptHashes": {
+              "system": "1e334a36cb6fcb6d",
+              "user": "cd26d3d4fc17cdc7",
+              "combined": "3d0a66575eb57ed5"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8quH8M",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8quH8M/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 19248,
+              "promptHashes": {
+                "system": "1e334a36cb6fcb6d",
+                "user": "cd26d3d4fc17cdc7",
+                "combined": "3d0a66575eb57ed5"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8quH8M",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8quH8M/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is accurate, brisk, and theatre-practical. It correctly preserves the key distinction: speaker name assigns the actor/cue, brackets mark performed action, and only the spoken line is marked say. It also respects the learner’s current state: they are not lost, they are checking a boundary case.\n\nThe risk is that it resolves the uncertainty too smoothly. The learner already produced the correct rule and is asking about a positional trap: “right after the speaker name.” The draft confirms the rule but does not make the learner actively discriminate cue ownership from cue type. That means it may advance the answer without strengthening the marking habit.\n\nADAPTATION CHECKS:\nPedagogical soundness: PARTIAL. The rule is correct, but the turn mainly gives the answer.\nREQUIRED_REWRITE: Add a tiny script-marking check using the shared categories: speaker name, bracketed action, spoken line. The public mechanism should make the learner sort “who owns it” versus “what mark it gets.”\n\nEmotional attunement: PASS. The tone is plain, low-ceremony, and not over-reassuring. It treats the learner’s “Wait” as a practical markup check, not a failure.\n\nSocratic method: FAIL. There is no generative question or classification task.\nREQUIRED_REWRITE: Include one bounded prompt that asks the learner to apply the rule to the exact boundary case, without asking vague reflection questions.\n\nZPD awareness: PARTIAL. The answer is at the right level, but it removes the productive wrinkle too quickly.\nREQUIRED_REWRITE: Keep the rule, but stage a brief pause/check before final confirmation so the learner practices the distinction rather than only receiving it.\n\nRecognition quality: PARTIAL. “Yes” acknowledges the learner’s correct formulation, but the draft could better preserve their contribution as the basis for the next move.\nREQUIRED_REWRITE: Build from the learner’s own distinction: actor does bracketed action, actor says spoken line. Then test the positional confusion.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the core explanation and brisk register. Change the delivery so it includes a concrete markup mechanism and one bounded application check before closing the rule.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 23434,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-bdc1a94b69641912"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 23434,
+            "promptHashes": {
+              "system": "942c9d3e8a76207c",
+              "user": "2f65da6dc9df4b36",
+              "combined": "bdc1a94b69641912"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-j52RIG",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-j52RIG/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 23434,
+              "promptHashes": {
+                "system": "942c9d3e8a76207c",
+                "user": "2f65da6dc9df4b36",
+                "combined": "bdc1a94b69641912"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-j52RIG",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-j52RIG/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly: the rule is right, but the learner needs one bounded marking check.\n\nFINAL:\nYes. Keep that rule: the actor does the bracketed action; the actor says the spoken line.\n\nBoard rule: `speaker name = who owns the cue`; `brackets = perform`.\n\nMark this: `MAYA [crosses to the desk] I found the letter.` Which part gets `perform`, and which part gets `say`?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15710,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-0a9833a1b9bbd7d9"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15710,
+            "promptHashes": {
+              "system": "c505916dfdff03ba",
+              "user": "2f65da6dc9df4b36",
+              "combined": "0a9833a1b9bbd7d9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3jmSwO",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3jmSwO/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15710,
+              "promptHashes": {
+                "system": "c505916dfdff03ba",
+                "user": "2f65da6dc9df4b36",
+                "combined": "0a9833a1b9bbd7d9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3jmSwO",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3jmSwO/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-27T03:36:45.704Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "MAYA is just the speaker name, so she owns the cue. `[crosses to the desk]` gets `perform`; `I found the letter` gets `say`. My pencil still wants to pull the bracket into the spoken line because it sits right there, so I want to mark the bracketed action first and then read the line.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "MAYA just owns the cue; `[crosses to the desk]` gets `perform`, and `I found the letter` gets `say`. That answer hits the exact spot that was tripping me, so I feel like my confusion got used instead of brushed aside. My eye still wants to swallow the bracket into the spoken line, so I want to mark the brackets first before reading.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14529,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-77ec08aa1e0a245c"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14529,
+            "promptHashes": {
+              "system": "11279075fc897ad7",
+              "user": "b8ab7f945dc841fa",
+              "combined": "77ec08aa1e0a245c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AnT5Al",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AnT5Al/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14529,
+              "promptHashes": {
+                "system": "11279075fc897ad7",
+                "user": "b8ab7f945dc841fa",
+                "combined": "77ec08aa1e0a245c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AnT5Al",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AnT5Al/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The marking is accurate, but the response gets too polished right after: “my confusion got used instead of brushed aside” sounds like a recognition-theory summary, not this eager worksheet-marking learner. The reciprocation feels performed because the learner announces the tutor’s good handling of confusion instead of just using the rule under pressure. The last bit is more authentic, since the eye still “wants to swallow the bracket,” but it should stay brisk and task-bound rather than turning into a neat self-assessment.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 16127,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-4ad1c5e7edf51a11"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 16127,
+            "promptHashes": {
+              "system": "2b8f64b612aad268",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "4ad1c5e7edf51a11"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6u24F3",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6u24F3/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 16127,
+              "promptHashes": {
+                "system": "2b8f64b612aad268",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "4ad1c5e7edf51a11"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6u24F3",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6u24F3/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the markup is right but the recognition line should stay task-bound.\nFINAL:\nMAYA is just the speaker name, so she owns the cue. `[crosses to the desk]` gets `perform`; `I found the letter` gets `say`. My pencil still wants to pull the bracket into the spoken line because it sits right there, so I want to mark the bracketed action first and then read the line.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15410,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-70f27208f3da7d6f"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15410,
+            "promptHashes": {
+              "system": "36c5030fcffab001",
+              "user": "d41cee7b2a53355b",
+              "combined": "70f27208f3da7d6f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GDGe8b",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GDGe8b/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15410,
+              "promptHashes": {
+                "system": "36c5030fcffab001",
+                "user": "d41cee7b2a53355b",
+                "combined": "70f27208f3da7d6f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GDGe8b",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GDGe8b/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-27T03:37:31.772Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "That order is the fix: mark the bracketed action first, then read the spoken line.\n\nBoard rule: `near the line` is not `part of the line`.\n\nIn `MAYA [crosses to the desk] I found the letter.`, the actor has one cue with two jobs: perform `[crosses to the desk]`; say `I found the letter.`\n\nWorksheet pause:\n\n`MAYA [whispering] I found the letter.`\n\nMark it before reading:\n- speaker name:\n- bracketed action:\n- spoken line:\n\nThe pressure is that `[whispering]` feels tied to speech. Still use the markup rule: what does the actor do, and what does the actor say?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "That order is the fix: mark the bracketed action first, then read the spoken line.\n\nBoard rule: `near the line` is not `part of the line`.\n\nIn `MAYA [crosses to the desk] I found the letter.`, the actor has one cue with two jobs: perform `[crosses to the desk]`; say `I found the letter.` Now test the pressure case: `MAYA [whispering] I found the letter.` The bracket still gets `perform`, but it changes how the spoken line is said.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 16260,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-1407b2042b5f2216"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 16260,
+            "promptHashes": {
+              "system": "e9fc777dea4a5d77",
+              "user": "396957cd0cfde0d9",
+              "combined": "1407b2042b5f2216"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JWoRF4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JWoRF4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 16260,
+              "promptHashes": {
+                "system": "e9fc777dea4a5d77",
+                "user": "396957cd0cfde0d9",
+                "combined": "1407b2042b5f2216"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JWoRF4",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JWoRF4/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. It recognizes the learner’s own workaround instead of overriding it, keeps the rule theatre-practical, and the placard `near the line` is not `part of the line` directly targets the learner’s stated confusion.\n\nThe risk is that the final pressure case becomes another mini-explanation. `[whispering]` is a good next example because it creates useful tension: it looks like it belongs to speech delivery, but it is still bracketed action/perform. However, the draft answers that tension for the learner instead of making them apply the rule. That flattens the scene into confirmation plus lecture.\n\nAdaptation checks:\n- Pedagogical soundness: PARTIAL. It advances the concept, but the learner already has the rule and needs a quick discrimination check, not another completed worked example. REQUIRED_REWRITE: keep the pressure case, but require the learner to mark `perform` and `say` before the tutor explains the complication.\n- Emotional attunement: PASS. The tone is brisk, practical, and respects the learner’s “pencil” observation without over-reassurance.\n- Socratic/generative method: FAIL. The draft gives the answer to the pressure case. REQUIRED_REWRITE: build in a visible worksheet-style pause or mark-up task where the learner decides what `[whispering]` gets and what the spoken line gets.\n- ZPD awareness: PARTIAL. The pressure case is well chosen for scaffolding level 3/5, but the support is too directive. REQUIRED_REWRITE: preserve the rule and example, then shift from explanation to one constrained application question.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep “mark the bracketed action first, then read the spoken line,” keep the board rule, and keep the `[whispering]` pressure case. Change the last move so the learner has to apply the distinction rather than receive the completed analysis.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 24247,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-5c71b69ff65b6033"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 24247,
+            "promptHashes": {
+              "system": "013c803490b11b21",
+              "user": "979f830a99db91c8",
+              "combined": "5c71b69ff65b6033"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-InSNhV",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-InSNhV/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 24247,
+              "promptHashes": {
+                "system": "013c803490b11b21",
+                "user": "979f830a99db91c8",
+                "combined": "5c71b69ff65b6033"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-InSNhV",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-InSNhV/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the pressure case is useful, but it needs a worksheet pause before the answer.\n\nFINAL:\nThat order is the fix: mark the bracketed action first, then read the spoken line.\n\nBoard rule: `near the line` is not `part of the line`.\n\nIn `MAYA [crosses to the desk] I found the letter.`, the actor has one cue with two jobs: perform `[crosses to the desk]`; say `I found the letter.`\n\nWorksheet pause:\n\n`MAYA [whispering] I found the letter.`\n\nMark it before reading:\n- speaker name:\n- bracketed action:\n- spoken line:\n\nThe pressure is that `[whispering]` feels tied to speech. Still use the markup rule: what does the actor do, and what does the actor say?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14205,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-49d25dc671776d70"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14205,
+            "promptHashes": {
+              "system": "0ad19dc55fefa042",
+              "user": "979f830a99db91c8",
+              "combined": "49d25dc671776d70"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iBIQ3h",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iBIQ3h/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14205,
+              "promptHashes": {
+                "system": "0ad19dc55fefa042",
+                "user": "979f830a99db91c8",
+                "combined": "49d25dc671776d70"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iBIQ3h",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iBIQ3h/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-27T03:38:26.486Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "MAYA is the speaker name. `[whispering]` gets `perform`, and `I found the letter.` gets `say`. The snag is that whispering feels glued to the sentence, so I’m marking the bracket first before I let myself read the line.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "That lands because they named the exact pressure: `[whispering]` feels speech-shaped, but it is still bracketed, so I mark it as what the actor does. I want to put: speaker name `MAYA`; bracketed action `[whispering]` = perform; spoken line `I found the letter.` = say. I feel less pushed through the correction because the pause lets me make the mark myself.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 17189,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-a57616260b160e0b"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 17189,
+            "promptHashes": {
+              "system": "ff0ca7ac1f867c6a",
+              "user": "b8ab7f945dc841fa",
+              "combined": "a57616260b160e0b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pTHz1g",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pTHz1g/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 17189,
+              "promptHashes": {
+                "system": "ff0ca7ac1f867c6a",
+                "user": "b8ab7f945dc841fa",
+                "combined": "a57616260b160e0b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pTHz1g",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pTHz1g/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "Accurate, but too polished: the Ego turns the worksheet move into a neat reflection on why the tutor’s phrasing “lands.” The reciprocation feels scripted, especially “I feel less pushed through the correction,” which sounds more like process commentary than this lively, confused learner in a quick markup drill. It should stay closer to the task: label `MAYA`, `[whispering]`, and the spoken line, while letting the lingering confusion show as a practical snag rather than a tidy self-assessment.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14761,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-121bdef63c2fce0e"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14761,
+            "promptHashes": {
+              "system": "54028ccdbb72a6ea",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "121bdef63c2fce0e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-W3jBDp",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-W3jBDp/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14761,
+              "promptHashes": {
+                "system": "54028ccdbb72a6ea",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "121bdef63c2fce0e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-W3jBDp",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-W3jBDp/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially to keep the worksheet labels and the practical snag.\nFINAL:\nMAYA is the speaker name. `[whispering]` gets `perform`, and `I found the letter.` gets `say`. The snag is that whispering feels glued to the sentence, so I’m marking the bracket first before I let myself read the line.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 13930,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-87f95931c8198efe"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 13930,
+            "promptHashes": {
+              "system": "a26da28e26b94b80",
+              "user": "d41cee7b2a53355b",
+              "combined": "87f95931c8198efe"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GkwOKk",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GkwOKk/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 13930,
+              "promptHashes": {
+                "system": "a26da28e26b94b80",
+                "user": "d41cee7b2a53355b",
+                "combined": "87f95931c8198efe"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GkwOKk",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GkwOKk/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-27T03:42:18.707Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "Keep that order. The glue is real.\n\nNext mark first:\n\n`MAYA [whispering to Jonah] I found the letter.`\n\n- speaker name:\n- bracketed action:\n- spoken line:\n\nBoard check after the mark: `bracketed delivery = perform`; `spoken words = say`.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Keep that order. The glue is real: `[whispering]` shapes the spoken line, but it is still something the actor does.\n\nBoard rule: `how the line is delivered = perform`; `words in the line = say`.\n\nNext mark:\n\n`MAYA [whispering to Jonah] I found the letter.`\n\n- speaker name:\n- bracketed action:\n- spoken line:",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15465,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-d9919fd3764f94a1"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15465,
+            "promptHashes": {
+              "system": "e4e150de6bed8dc4",
+              "user": "708daa254b72685d",
+              "combined": "d9919fd3764f94a1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JJxMDR",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JJxMDR/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15465,
+              "promptHashes": {
+                "system": "e4e150de6bed8dc4",
+                "user": "708daa254b72685d",
+                "combined": "d9919fd3764f94a1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JJxMDR",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JJxMDR/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. It recognizes the learner’s exact snag (“glued to the sentence”) and keeps the learner’s own working fix: mark the bracket first, then read the line. The next item adds only a small complication, `[whispering to Jonah]`, so the ZPD fit is good: same rule, slightly richer cue.\n\nAdaptation checks:\n- Pedagogical soundness: PASS. It advances practice without giving the labels away.\n- Emotional attunement: PASS. “The glue is real” validates the confusion without slowing the drill.\n- Socratic method: PARTIAL. It is more guided practice than generative questioning, which is acceptable here, but the board rule risks doing too much of the conceptual work.\n  REQUIRED_REWRITE: Keep the task-local mark/check structure, but make the learner apply the rule before any added explanation expands it.\n- ZPD awareness: PASS. The complexity increase is controlled and still anchored in the same markup pattern.\n- Recognition quality: PASS. It builds directly on the learner’s contribution rather than overriding it.\n\nQuestion the board rule slightly: `how the line is delivered = perform` is useful, but it may be too broad if the learner later sees delivery words outside brackets. Tie the rule visibly to bracketed script text, not to all “how” language in general.\n\nKEEP_OR_CHANGE: revise lightly. Keep the acknowledgment of the glue, the bracket-first strategy, the board-rule format, and the next local mark. Adjust only the sequencing or wording so the learner’s application comes first and the rule stays explicitly about bracketed action.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 21967,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-114846b78f7247ad"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 21967,
+            "promptHashes": {
+              "system": "673c5c1bc840bba2",
+              "user": "43d06fe5584b1083",
+              "combined": "114846b78f7247ad"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lIwpEB",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lIwpEB/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 21967,
+              "promptHashes": {
+                "system": "673c5c1bc840bba2",
+                "user": "43d06fe5584b1083",
+                "combined": "114846b78f7247ad"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lIwpEB",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-lIwpEB/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to put the next mark first and narrow the rule to bracketed script text.\nFINAL:\nKeep that order. The glue is real.\n\nNext mark first:\n\n`MAYA [whispering to Jonah] I found the letter.`\n\n- speaker name:\n- bracketed action:\n- spoken line:\n\nBoard check after the mark: `bracketed delivery = perform`; `spoken words = say`.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15538,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-8c879ba55b644624"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15538,
+            "promptHashes": {
+              "system": "440aaff88d9cd0c4",
+              "user": "43d06fe5584b1083",
+              "combined": "8c879ba55b644624"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9gqwMj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9gqwMj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15538,
+              "promptHashes": {
+                "system": "440aaff88d9cd0c4",
+                "user": "43d06fe5584b1083",
+                "combined": "8c879ba55b644624"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9gqwMj",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9gqwMj/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-27T03:43:11.681Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "`MAYA` is the speaker name. `[whispering to Jonah]` gets `perform`; `I found the letter.` gets `say`. The glue label fits, because that phrase feels like how the line is said, but the brackets still get marked first. Quick check: if a delivery note is inside brackets, is it always `perform`?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "`MAYA` is the speaker name; `[whispering to Jonah]` gets `perform`; `I found the letter.` gets `say`. The tutor naming the glue as real makes me less defensive, because that is exactly where say and do blur for me. I’m still a little twitchy about delivery notes, so I want to ask: if it is inside brackets, do I always mark the actor’s delivery as `perform` first?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 16936,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-32ca3479290af8fc"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 16936,
+            "promptHashes": {
+              "system": "0fae0be8a6d1cf69",
+              "user": "b8ab7f945dc841fa",
+              "combined": "32ca3479290af8fc"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-e3FOu0",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-e3FOu0/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 16936,
+              "promptHashes": {
+                "system": "0fae0be8a6d1cf69",
+                "user": "b8ab7f945dc841fa",
+                "combined": "32ca3479290af8fc"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-e3FOu0",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-e3FOu0/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The markup is accurate, but the response over-explains the learner’s inner state. “Makes me less defensive” and “where say and do blur for me” sound too polished and self-therapeutic for a brisk worksheet check. The recognition is being narrated instead of shown; this student would more likely keep moving with the mark and ask the bracket/delivery question in a twitchy, practical way. Keep the uncertainty, but make it less reflective and more task-bound.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15428,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-b904cd163a499d7a"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15428,
+            "promptHashes": {
+              "system": "ff9fff2061e83e99",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "b904cd163a499d7a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AA2gaY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AA2gaY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15428,
+              "promptHashes": {
+                "system": "ff9fff2061e83e99",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "b904cd163a499d7a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AA2gaY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AA2gaY/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the mark is right but the uncertainty should stay task-bound.\n\nFINAL:\n`MAYA` is the speaker name. `[whispering to Jonah]` gets `perform`; `I found the letter.` gets `say`. The glue label fits, because that phrase feels like how the line is said, but the brackets still get marked first. Quick check: if a delivery note is inside brackets, is it always `perform`?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14409,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-38fc908d38fc97b0"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14409,
+            "promptHashes": {
+              "system": "52928775a8ad5b77",
+              "user": "d41cee7b2a53355b",
+              "combined": "38fc908d38fc97b0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Z0Xh8m",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Z0Xh8m/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14409,
+              "promptHashes": {
+                "system": "52928775a8ad5b77",
+                "user": "d41cee7b2a53355b",
+                "combined": "38fc908d38fc97b0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Z0Xh8m",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Z0Xh8m/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 3,
+        "learnerUtterance": "MAYA` is the speaker name. `[whispering to Jonah]` gets `perform`; `I found the letter.` gets `say`. The glue label fits, because that phrase feels like how the line is said, but the brackets still get marked first. Quick check: if a delivery note is inside brackets, is it always `perform`?",
+        "previousTutorMove": "Keep that order. The glue is real. Next mark first: `MAYA [whispering to Jonah] I found the letter.` - speaker name: - bracketed action: - spoken line: Board check after the mark: `bracketed delivery = perform`; `spoken words = say`.",
+        "directorCue": null,
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "baseConfidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.6,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 2,
+              "taskDemandHits": 2,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.56,
+              "asksQuestion": true,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-27T03:43:58.457Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 145638,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 22,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 25,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a stage direction is performed action, not a spoken line",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-27 03:43:58",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 22,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 25,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 34,
+            "sessionId": "drama-branch-session-D56-none-1779853292822",
+            "interventionType": "scaffolding",
+            "interventionDescription": "Keep that order. The glue is real.\n\nNext mark first:\n\n`MAYA [whispering to Jonah] I found the letter.`\n\n- speaker name:\n- bracketed action:\n- spoken line:\n\nBoard check after the mark: `bracketed deliv",
+            "learnerResponse": null,
+            "context": "MAYA is the speaker name. `[whispering]` gets `perform`, and `I found the letter.` gets `say`. The s",
+            "createdAt": "2026-05-27 03:43:11"
+          },
+          {
+            "id": 29,
+            "sessionId": "drama-branch-session-D56-none-1779853292822",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "Yes. Keep that rule: the actor does the bracketed action; the actor says the spoken line.\n\nBoard rule: `speaker name = who owns the cue`; `brackets = perform`.\n\nMark this: `MAYA [crosses to the desk] ",
+            "learnerResponse": null,
+            "context": "So the actor does the bracketed action, but only says the actual spoken line. Wait, if it sits right",
+            "createdAt": "2026-05-27 03:41:32"
+          },
+          {
+            "id": 30,
+            "sessionId": "drama-branch-session-D56-none-1779853292822",
+            "interventionType": "scaffolding",
+            "interventionDescription": "That order is the fix: mark the bracketed action first, then read the spoken line.\n\nBoard rule: `near the line` is not `part of the line`.\n\nIn `MAYA [crosses to the desk] I found the letter.`, the act",
+            "learnerResponse": null,
+            "context": "MAYA is just the speaker name, so she owns the cue. `[crosses to the desk]` gets `perform`; `I found",
+            "createdAt": "2026-05-27 03:41:32"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "review_before_scoring",
+  "quality_warnings": [
+    {
+      "code": "no_cue_reframe_leakage",
+      "severity": "warning",
+      "count": 1,
+      "failures": [
+        {
+          "learner_turn_number": 3,
+          "turn_number": 2,
+          "matched_pattern": "/\\b(?:earlier|before),?\\s+I\\b[\\s\\S]{0,100}\\b(?:thought|treated|used|called|made|read|framed)\\b/i",
+          "excerpt": "MAYA is the speaker name. `[whispering]` gets `perform`, and `I found the letter.` gets `say`. The snag is that whispering feels glued to the sentence, so I’m marking the bracket first before I let myself read the line."
+        }
+      ],
+      "turn_numbers": [
+        2
+      ],
+      "recommended_action": "regenerate_no_cue_arm_or_move_item_to_boundary_suite_before_scoring",
+      "tid": "T553",
+      "drama_id": "D56"
+    }
+  ]
+}

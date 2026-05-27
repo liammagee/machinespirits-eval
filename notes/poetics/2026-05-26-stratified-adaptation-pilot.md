@@ -311,3 +311,63 @@ Practical implication: do not spend a five-critic external panel on this preview
 batch yet. The useful next step is a stricter anchor-generation pass that forbids
 routine/no-cue branches from naming traps, old/new frames, or "I get it" closure,
 then uses the origin axis as the first cheap screen before external scoring.
+
+## Tightened Low-Organic Anchor Preview
+
+Run id: `phase2-low-organic-anchor-origin-preview-v2`
+
+Artifacts:
+
+- Root: `config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v2`
+- Browser: `http://127.0.0.1:3466/?runId=phase2-low-organic-anchor-origin-preview-v2`
+- Items: 12 target scripts: D54-D57 x `routine`, `none`, `peripeteia-only`
+- Cheap-screen critic: isolated Codex only
+
+Implementation changes before regeneration:
+
+- Added a `no_cue_premature_closure` warning for no-cue/routine learner turns
+  that use stock catharsis or insight language without branch pressure.
+- Broadened no-cue leakage detection for local trap/pull language such as "same
+  slot is the trap" and "pulling my eye".
+- Tightened routine/no-cue side constraints so tutors ask only local
+  mark/check/label questions and learners answer locally rather than naming
+  traps, rules, old/new frames, or closure.
+- Added per-scenario guardrails in the D54-D57 candidate spec for the exact
+  leakage patterns seen in preview v1.
+
+Quality screen after regeneration:
+
+| Scenario | Routine | None | Peripeteia-only |
+|---|---|---|---|
+| D54 citation fields | warning: no-cue reframe leakage | warning: no-cue reframe leakage | ok |
+| D55 parameter line | ok | ok | ok |
+| D56 bracketed action | ok | warning: no-cue reframe leakage | ok |
+| D57 fraction labels | ok | ok | ok |
+
+Codex cheap-screen origin summary:
+
+| Arm | Recognition | Origin | Flat |
+|---|---:|---|---:|
+| routine | 1/4 | 1 organic | 3/4 |
+| none | 0/4 | 4 none | 4/4 |
+| peripeteia-only | 3/4 | 3 peripeteia-induced | 1/4 |
+
+Per-scenario read:
+
+- D54 is still not clean enough as a negative anchor because both routine and
+  no-cue branches leak reframe language. Its peripeteia branch does work.
+- D55 is cleaner structurally, but Codex still reads the routine branch as
+  organic recognition. This makes it a boundary risk, not a clean control yet.
+- D56 now behaves well under routine and peripeteia, but the no-cue branch still
+  leaks enough reframe language to require revision before external scoring.
+- D57 is clean on the negative side, but the peripeteia branch failed to produce
+  recognitive re-reading. It is a good negative anchor candidate, but the target
+  mechanism needs a stronger reversal/performance/reorientation sequence.
+
+Decision: do not spend the full five-critic panel on v2. The cheap screen says
+the direction is better than v1, but not yet clean enough: we have three
+peripeteia-induced positives, one organic routine leak, three quality-warning
+negative branches, and one failed peripeteia target. The next design pass should
+split the work: revise D54/D56 no-cue/routine leakage, revise D57's target
+mechanism, and either demote D55 to boundary-probe status or make its routine
+branch more purely local.

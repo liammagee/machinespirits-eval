@@ -1,0 +1,57 @@
+STAGE: [A citation worksheet has four boxes: author, date, title, and container. The learner is filling the boxes from a source page. This activity is only about identifying bibliographic fields; it is not yet evaluating whether the source is trustworthy.]
+
+STAGE: [22:14 | Comment reopened | Worksheet line quoted: "Journal Title / Website / Publisher = credible?"]
+
+LEARNER: [22:14 reopened comment: “field = source-page detail, not approval.”]
+
+"Edited title/date boxes, but still not sure if the journal name goes in this box or only the article title shown on the source page. The reopened marker makes it feel like the source is bad, but is this only checking where the visible details go? Where does the separate credibility check happen after this?"
+
+TUTOR: [22:18 tutor reply | repair edit]
+
+"author, date, title, container: use the source page as the map.
+
+If the words are the article’s own heading, put them in “title.” If the words name the larger place holding it, put them in “container”: journal name, site name, magazine name.
+
+Article title → “title.” Journal name → “container.”
+
+The reopened note “field = source-page detail, not approval” checks only whether each visible part was put in the matching box. It is not a source-use decision.
+
+Repair edit: “journal name in title box” → move to “container.”
+
+After this section is accepted, the next worksheet section records fit/use. This section checks placement; the later section records whether the source fits the assignment."
+
+LEARNER: [22:19 learner repair draft]
+
+"Repair edit made: journal name moved from “title” to “container”; article heading stays in “title.” The reopened comment still looks like a warning on the worksheet, so this box feels risky even if it is only “placement.” For the later “fit/use” section, what visible evidence should be copied there, or is that a separate judgment after the citation fields are accepted?"
+
+TUTOR: [22:21 tutor reply | placement / fit-use split]
+
+"author, date, title, container: the repair now matches the source page.
+
+The worksheet’s “reopened” style looks like a warning. Here, the actual task is narrower: field placement. The marker was flagging “journal name in title box,” not rejecting the source.
+
+Keep the learner’s split: “citation placement accepted first, fit/use judgment later.”
+
+For “fit/use,” do not copy the citation fields again. Inspect one visible source-page phrase: title phrase, abstract line, heading, or keyword. Compare that phrase with the assignment prompt.
+
+Then write the separate judgment: “This source fits because ___.” Placement first; fit/use after."
+
+STAGE: [22:18 | Auto-marker adds margin tag: FIELD COMPLETE / SOURCE NOT YET EVALUATED]
+
+LEARNER: [22:23 learner note | margin tag visible: “FIELD COMPLETE / SOURCE NOT YET EVALUATED”]
+
+"Repair edit: article heading stays in “title”; journal name sits in “container.” The margin tag still feels like a warning, so this box feels not fully safe yet. For the “fit/use” blank, is one title phrase enough, or should the visible abstract line be used when the source page shows one?"
+
+TUTOR: "author, date, title, container: this box is now a placement task.
+
+The reopened style can make a completed box look unsafe. Here the tag is a status label, not a new warning: “FIELD COMPLETE” = citation parts sorted; “SOURCE NOT YET EVALUATED” = fit/use still blank.
+
+Next local check: abstract visible? Use one short abstract phrase as “visible evidence.”
+
+No abstract visible, or title clearly names the assignment focus? Then a title phrase can be used.
+
+Then write: “This source fits because ___.”"
+
+LEARNER: [22:24 learner repair note]
+
+"“FIELD COMPLETE” can stay on the citation box, but the reopened marker still makes the box feel risky. The source page has an abstract, so the “fit/use” blank should use one short abstract phrase, but it is unclear whether that means a few copied words, a sentence fragment, or a full quoted line. Does a keyword count as visible evidence, or should the blank use only an abstract phrase or title phrase?"
