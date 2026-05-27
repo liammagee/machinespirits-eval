@@ -1,0 +1,2747 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<title>From Paper 2.0 to dramatic recognition — arc to date</title>
+<meta name="description" content="A live, data-driven synthesis note. The last paper found that recognition prompts and a draft-then-critique architecture did not change tutor trajectories on average. This branch sharpens that broad null into a narrower question: can a tutor answer a learner's specific stuck point with a visible change of move? Every claim here links into the running poetics browser for proof." />
+<meta property="og:title" content="From Paper 2.0 to dramatic recognition — arc to date" />
+<meta property="og:type" content="article" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap" />
+
+<style>
+  /* ═══════════════════════════════════════════════════════════════
+     Dramatic Recognition Arc — live, data-driven synthesis note
+     editorial publication, techne palette
+     ═══════════════════════════════════════════════════════════════ */
+
+  :root {
+    --paper:     #F4EEDD;
+    --paper-2:   #ECE3CB;
+    --paper-3:   #F8F2E2;
+    --paper-4:   #FBF6E8;
+    --ink:       #14100C;
+    --ink-2:     #2C241B;
+    --ink-3:     #5C5040;
+    --ink-4:     #8C7E6A;
+    --linen:     #D8C7A9;
+    --moss:      #56683A;
+    --moss-deep: #3A4824;
+    --brick:     #A53E2E;
+    --brick-d:   #7C2C1F;
+    --ochre:     #C08A3E;
+    --ochre-d:   #8C5F1F;
+    --rule:      rgba(28, 22, 16, 0.18);
+    --rule-soft: rgba(28, 22, 16, 0.10);
+
+    --s-mini: clamp(0.62rem, 0.58rem + 0.14vw, 0.72rem);
+    --s-0:    clamp(0.78rem, 0.74rem + 0.18vw, 0.90rem);
+    --s-1:    clamp(0.95rem, 0.90rem + 0.20vw, 1.05rem);
+    --s-2:    clamp(1.05rem, 1.00rem + 0.26vw, 1.20rem);
+    --s-3:    clamp(1.30rem, 1.20rem + 0.50vw, 1.60rem);
+    --s-4:    clamp(1.80rem, 1.50rem + 1.40vw, 2.80rem);
+    --s-5:    clamp(2.60rem, 1.80rem + 3.50vw, 5.20rem);
+    --s-6:    clamp(3.40rem, 2.20rem + 5.20vw, 7.40rem);
+
+    --lead: 1.55;
+    --ease: cubic-bezier(.22,.61,.36,1);
+
+    --toc-w: 17rem;
+  }
+
+  [data-theme="dark"] {
+    --paper:     #14100C;
+    --paper-2:   #1B1612;
+    --paper-3:   #1F1A14;
+    --paper-4:   #221C16;
+    --ink:       #F4EEDD;
+    --ink-2:     #E0D8C3;
+    --ink-3:     #B9AD96;
+    --ink-4:     #8C7E6A;
+    --linen:     #3A322A;
+    --moss:      #8DA868;
+    --moss-deep: #B5CD92;
+    --brick:     #E36953;
+    --brick-d:   #F08A75;
+    --ochre:     #E6B265;
+    --ochre-d:   #F3CB88;
+    --rule:      rgba(244, 238, 221, 0.18);
+    --rule-soft: rgba(244, 238, 221, 0.08);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; background: var(--paper); scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink-2);
+    font-family: "Source Serif 4", "Source Serif Pro", Cambria, Georgia, serif;
+    font-size: var(--s-1);
+    line-height: var(--lead);
+    font-feature-settings: "ss01", "kern", "liga";
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+    min-height: 100vh;
+    letter-spacing: 0.003em;
+    transition: background-color .3s var(--ease), color .3s var(--ease);
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(160% 100% at 50% 0%, transparent 50%, rgba(20,16,12,0.07) 100%),
+      radial-gradient(80% 60% at 8% 92%, rgba(165,62,46,0.04), transparent 70%),
+      radial-gradient(70% 60% at 96% 14%, rgba(86,104,58,0.05), transparent 70%);
+    mix-blend-mode: multiply;
+  }
+  body[data-theme="dark"]::before {
+    background:
+      radial-gradient(160% 100% at 50% 0%, transparent 50%, rgba(244,238,221,0.06) 100%),
+      radial-gradient(80% 60% at 8% 92%, rgba(227,105,83,0.05), transparent 70%),
+      radial-gradient(70% 60% at 96% 14%, rgba(141,168,104,0.05), transparent 70%);
+    mix-blend-mode: screen;
+  }
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.18;
+    background-image: radial-gradient(rgba(20,16,12,0.55) 0.5px, transparent 0.5px);
+    background-size: 3px 3px;
+    mix-blend-mode: multiply;
+  }
+  body[data-theme="dark"]::after {
+    opacity: 0.10;
+    background-image: radial-gradient(rgba(244,238,221,0.45) 0.5px, transparent 0.5px);
+    mix-blend-mode: screen;
+  }
+
+  /* ═══════ typography ═══════ */
+  h1, h2, h3, h4, .display {
+    font-family: "Fraunces", "Source Serif 4", Georgia, serif;
+    font-optical-sizing: auto;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    font-feature-settings: "ss01", "ss02", "kern";
+    margin: 0;
+  }
+  p { margin: 0 0 0.95em; }
+  em { font-style: italic; color: var(--ink); }
+  strong { font-weight: 600; color: var(--ink); }
+  a { color: var(--brick-d); text-decoration: none; border-bottom: 1px solid currentColor; transition: color .25s var(--ease); }
+  a:hover { color: var(--brick); }
+  a.bare { border-bottom: none; }
+
+  .label {
+    font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+
+  mark.kw {
+    background: linear-gradient(180deg, transparent 60%, rgba(192,138,62,0.30) 60%);
+    color: inherit;
+    padding: 0 0.05em;
+  }
+
+  /* ═══════ sticky reading rail ═══════ */
+  .rail {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .rail__inner {
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+    max-width: 100rem;
+    margin: 0 auto;
+    padding: 0.7em clamp(0.8rem, 3vw, 2.5rem);
+  }
+  .rail__title { flex: 0 0 auto; font-style: italic; color: var(--ink); }
+  .rail__dot { width: 5px; height: 5px; background: var(--moss); border-radius: 50%; flex: 0 0 auto; }
+  .rail__nav {
+    flex: 1;
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    min-width: 0;
+  }
+  .rail__nav::-webkit-scrollbar { display: none; }
+  .rail__nav a {
+    border-bottom: none;
+    color: var(--ink-3);
+    padding: 0.3em 0;
+    margin-right: 1.1em;
+    white-space: nowrap;
+    transition: color .15s var(--ease);
+  }
+  .rail__nav a:hover { color: var(--ink); }
+  .rail__nav a.active { color: var(--brick-d); }
+  .rail__nav a.active::before { content: "▸ "; color: var(--brick); }
+  @media (max-width: 70rem) { .rail__title { display: none; } .rail__nav { display: none; } }
+  .rail__progress {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    height: 2px;
+    background: var(--brick);
+    width: 0%;
+    transition: width .1s linear;
+  }
+  .rail__actions { display: flex; gap: 0.5em; flex: 0 0 auto; align-items: center; }
+  .rail__btn {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    font: inherit;
+    padding: 0.35em 0.85em;
+    cursor: pointer;
+    transition: color .15s var(--ease), border-color .15s var(--ease);
+    letter-spacing: 0.16em;
+  }
+  .rail__btn:hover { color: var(--ink); border-color: var(--ink-3); }
+  .rail__btn--icon { padding: 0.35em 0.6em; }
+  .rail__btn--icon svg { display: block; width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+
+  /* ═══════ live beacon ═══════ */
+  .beacon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    padding: 0.3em 0.7em 0.3em 0.55em;
+    border: 1px solid var(--rule);
+    background: var(--paper-3);
+    color: var(--ink-3);
+    cursor: help;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule);
+    transition: color .2s var(--ease), border-color .2s var(--ease);
+  }
+  .beacon__pulse {
+    position: relative;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ink-4);
+    flex: 0 0 auto;
+  }
+  .beacon[data-state="checking"] .beacon__pulse { background: var(--ochre); animation: beaconPulse 1.2s var(--ease) infinite; }
+  .beacon[data-state="live"] { color: var(--moss-deep); border-color: color-mix(in srgb, var(--moss) 55%, var(--rule)); }
+  .beacon[data-state="live"] .beacon__pulse { background: var(--moss); box-shadow: 0 0 0 0 color-mix(in srgb, var(--moss) 70%, transparent); animation: beaconPulse 2s var(--ease) infinite; }
+  .beacon[data-state="offline"] { color: var(--ink-3); border-color: var(--rule); }
+  .beacon[data-state="offline"] .beacon__pulse { background: var(--ink-4); }
+  .beacon:hover { color: var(--ink); }
+
+  @keyframes beaconPulse {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--moss) 65%, transparent); }
+    70% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--moss) 0%, transparent); }
+    100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--moss) 0%, transparent); }
+  }
+
+  /* ═══════ toc drawer ═══════ */
+  .toc-toggle {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    font: inherit;
+    padding: 0.35em 0.75em;
+    cursor: pointer;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    transition: color .15s var(--ease), border-color .15s var(--ease);
+  }
+  .toc-toggle:hover { color: var(--ink); border-color: var(--ink-3); }
+  .toc-toggle svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+
+  .toc {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--toc-w);
+    height: 100vh;
+    z-index: 25;
+    background: var(--paper-4);
+    border-right: 1px solid var(--rule);
+    box-shadow: 8px 0 24px -16px rgba(20,16,12,0.20);
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform .35s var(--ease);
+    padding: 4.2em 1.2em 2em;
+    font-family: "Source Serif 4", serif;
+  }
+  .toc[aria-hidden="false"] { transform: translateX(0); }
+  .toc__header {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin: 0 0 0.4em;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .toc__title {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    font-size: var(--s-2);
+    color: var(--ink);
+    line-height: 1.1;
+    margin: 0 0 1.2em;
+  }
+  .toc__close {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    font: inherit;
+    padding: 0.2em 0.5em;
+    cursor: pointer;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+  }
+  .toc__close:hover { color: var(--ink); border-color: var(--ink-3); }
+  .toc__list { list-style: none; padding: 0; margin: 0 0 1.5em; }
+  .toc__item { padding: 0; margin: 0 0 0.15em; border-left: 2px solid transparent; padding-left: 0.6em; transition: border-color .2s var(--ease); }
+  .toc__item.is-active { border-left-color: var(--brick); }
+  .toc__item a {
+    border-bottom: none;
+    color: var(--ink-3);
+    display: flex;
+    align-items: baseline;
+    gap: 0.6em;
+    padding: 0.32em 0;
+    font-size: 0.93em;
+    line-height: 1.3;
+    transition: color .15s var(--ease);
+  }
+  .toc__item a:hover { color: var(--ink); }
+  .toc__item.is-active > a { color: var(--brick-d); font-weight: 500; }
+  .toc__num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    color: var(--ink-4);
+    letter-spacing: 0.06em;
+    flex: 0 0 1.6em;
+  }
+  .toc__item.is-active > a > .toc__num { color: var(--brick); }
+  .toc__sub {
+    list-style: none;
+    padding: 0 0 0.4em;
+    margin: 0 0 0 1.7em;
+    border-left: 1px dotted var(--rule);
+  }
+  .toc__sub li { margin: 0; }
+  .toc__sub a {
+    border-bottom: none;
+    color: var(--ink-4);
+    font-size: 0.82em;
+    padding: 0.18em 0 0.18em 0.8em;
+    display: block;
+    line-height: 1.25;
+    transition: color .15s var(--ease);
+  }
+  .toc__sub a:hover { color: var(--ink-2); }
+  .toc__sub a.is-active { color: var(--brick-d); }
+  .toc__meta {
+    border-top: 1px solid var(--rule);
+    margin-top: 1.4em;
+    padding-top: 1em;
+    font-size: 0.84em;
+    color: var(--ink-3);
+    line-height: 1.5;
+  }
+  .toc__meta dt { font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-4); margin-top: 0.7em; }
+  .toc__meta dd { margin: 0.1em 0 0; color: var(--ink-2); }
+
+  .toc__scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 24;
+    background: rgba(20,16,12,0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .35s var(--ease);
+  }
+  .toc[aria-hidden="false"] ~ .toc__scrim { opacity: 1; pointer-events: auto; }
+  body[data-theme="dark"] .toc__scrim { background: rgba(0,0,0,0.55); }
+
+  /* desktop: pin the TOC permanently if wide enough */
+  @media (min-width: 92rem) {
+    .toc { transform: translateX(0); box-shadow: none; padding-top: 4.2em; }
+    .toc__close { display: none; }
+    .toc__scrim { display: none; }
+    main { padding-left: var(--toc-w); }
+    .rail { padding-left: 0; }
+    .toc-toggle { display: none; }
+  }
+
+  /* ═══════ layout shell ═══════ */
+  .shell {
+    max-width: 92rem;
+    margin: 0 auto;
+    padding: clamp(1rem, 3vw, 3rem) clamp(1rem, 4vw, 4rem);
+  }
+
+  .diag {
+    display: grid;
+    grid-template-columns:
+      [margin-l] minmax(0, 13rem)
+      [body] minmax(0, 38rem)
+      [margin-r] minmax(0, 13rem);
+    gap: clamp(1rem, 2vw, 2.5rem);
+    align-items: start;
+    margin: 0 auto;
+    max-width: 80rem;
+  }
+  .diag > .body { grid-column: body; }
+  .diag > .ml { grid-column: margin-l; padding-top: 0.4em; }
+  .diag > .mr { grid-column: margin-r; padding-top: 0.4em; }
+  .diag > .full { grid-column: 1 / -1; max-width: 80rem; margin: 0 auto; }
+  .diag + .diag { margin-top: 1em; }
+
+  @media (max-width: 60rem) {
+    .diag { grid-template-columns: 1fr; }
+    .diag > .ml, .diag > .mr {
+      border-left: 2px solid var(--rule);
+      padding-left: 0.9em;
+      margin-bottom: 1em;
+      color: var(--ink-3);
+      font-size: 0.9em;
+    }
+  }
+
+  /* ═══════ hero ═══════ */
+  .hero {
+    border-bottom: 1px solid var(--rule);
+    padding: clamp(2rem, 5vw, 5rem) 0 clamp(2rem, 4vw, 4rem);
+    position: relative;
+  }
+  .hero__rune {
+    position: absolute;
+    top: 1rem;
+    left: clamp(1rem, 4vw, 4rem);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.22em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+  }
+  .hero__rune span { color: var(--brick-d); }
+  .hero__masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 2.5em auto 2em;
+    max-width: 80rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+  }
+  .hero__rule { flex: 1; height: 1px; background: var(--rule); margin: 0 1em; position: relative; top: -0.4em; }
+  .hero__h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144;
+    font-size: var(--s-5);
+    line-height: 0.96;
+    font-weight: 460;
+    margin: 0 auto 0.4em;
+    max-width: 80rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+    letter-spacing: -0.022em;
+    color: var(--ink);
+  }
+  .hero__h1 .em {
+    font-style: italic;
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 144;
+    color: var(--brick-d);
+  }
+  .hero__subtitle {
+    margin: 0.6em auto 0;
+    max-width: 56rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+    font-family: "Fraunces", serif;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+    font-style: italic;
+    font-size: var(--s-3);
+    font-weight: 320;
+    color: var(--ink-3);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  .hero__lede {
+    margin: 2.4em auto 0;
+    max-width: 80rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+    display: grid;
+    grid-template-columns: minmax(0, 38rem) minmax(0, 22rem);
+    gap: clamp(1.5rem, 4vw, 4rem);
+  }
+  @media (max-width: 60rem) { .hero__lede { grid-template-columns: 1fr; } }
+  .hero__lede p {
+    font-size: var(--s-2);
+    line-height: 1.5;
+    color: var(--ink-2);
+    font-weight: 350;
+    font-family: "Source Serif 4", serif;
+    margin: 0 0 0.85em;
+  }
+  .hero__lede p:first-of-type::first-letter {
+    font-family: "Fraunces", Georgia, serif;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144;
+    font-size: 3.4em;
+    line-height: 0.9;
+    float: left;
+    padding: 0.05em 0.08em 0 0;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .hero__num {
+    display: flex;
+    flex-direction: column;
+    border-left: 2px solid var(--moss);
+    padding-left: 1.4em;
+    align-self: stretch;
+  }
+  .hero__num__big {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-6);
+    line-height: 0.9;
+    font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 144;
+    color: var(--moss-deep);
+    font-weight: 320;
+    letter-spacing: -0.04em;
+  }
+  .hero__num__big .frac {
+    font-style: italic;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
+    color: var(--brick-d);
+    font-weight: 280;
+  }
+  .hero__num__sub {
+    margin-top: 0.5em;
+    font-size: var(--s-0);
+    color: var(--ink-3);
+    line-height: 1.45;
+    max-width: 22em;
+  }
+  .hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin: 1.4em 0 0;
+  }
+
+  /* ═══════ section structure ═══════ */
+  section.s {
+    padding: clamp(3rem, 6vw, 6rem) 0;
+    position: relative;
+    border-bottom: 1px solid var(--rule);
+    scroll-margin-top: 4em;
+  }
+  section.s:last-of-type { border-bottom: none; }
+  .s__num {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-6);
+    line-height: 0.85;
+    font-weight: 280;
+    font-variation-settings: "SOFT" 80, "WONK" 0, "opsz" 144;
+    color: var(--moss);
+    letter-spacing: -0.05em;
+    user-select: none;
+    margin: 0;
+  }
+  .s__num .glyph {
+    font-style: italic;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
+    color: var(--brick-d);
+    font-weight: 240;
+  }
+  .s__h {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-4);
+    line-height: 1.05;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+    font-weight: 460;
+    margin: 0.4em 0 1em;
+    color: var(--ink);
+    letter-spacing: -0.018em;
+  }
+  .s__h em {
+    font-style: italic;
+    color: var(--brick-d);
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+  }
+  .s__kicker {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin: 0 0 0.6em;
+  }
+  .s__sub {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-style: italic;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    font-weight: 480;
+    margin: 1.4em 0 0.6em;
+    line-height: 1.2;
+    scroll-margin-top: 4em;
+  }
+
+  /* ═══════ marginalia ═══════ */
+  .note {
+    font-family: "Source Serif 4", serif;
+    font-size: 0.86em;
+    line-height: 1.5;
+    color: var(--ink-3);
+    font-style: italic;
+  }
+  .note__lbl {
+    display: block;
+    font-style: normal;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin-bottom: 0.5em;
+    font-weight: 500;
+  }
+  .note--moss .note__lbl { color: var(--moss-deep); }
+  .note--ink .note__lbl { color: var(--ink-3); }
+  .note--ochre .note__lbl { color: var(--ochre-d); }
+  .note p { margin: 0 0 0.6em; }
+
+  /* ═══════ pull quote ═══════ */
+  .pq {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    line-height: 1.4;
+    font-style: italic;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+    font-weight: 360;
+    border-left: 2px solid var(--brick);
+    padding: 0.4em 0 0.4em 1.2em;
+    margin: 1.4em 0;
+    letter-spacing: -0.005em;
+  }
+  .pq cite {
+    display: block;
+    font-style: normal;
+    font-variation-settings: normal;
+    margin-top: 0.5em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+
+  /* ═══════ glossary ═══════ */
+  .glossary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
+    gap: 1.1em 1.6em;
+    margin-top: 1em;
+  }
+  .gl-row {
+    border-top: 1px dotted var(--rule);
+    padding-top: 0.7em;
+  }
+  .gl-row dt {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 500;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    font-style: italic;
+    line-height: 1.2;
+  }
+  .gl-row dt .gloss {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ochre-d);
+    font-style: normal;
+    margin-left: 0.5em;
+  }
+  .gl-row dd {
+    margin: 0.35em 0 0;
+    color: var(--ink-2);
+    font-size: 0.97em;
+    line-height: 1.5;
+  }
+
+  /* ═══════ inline glossary terms (tooltip on hover) ═══════ */
+  dfn.gl-term {
+    font-style: normal;
+    border-bottom: 1px dotted var(--ochre);
+    cursor: help;
+    position: relative;
+    transition: color .15s var(--ease);
+  }
+  dfn.gl-term:hover, dfn.gl-term:focus {
+    color: var(--ochre-d);
+    outline: none;
+  }
+  dfn.gl-term[data-gloss]::after {
+    content: attr(data-gloss);
+    position: absolute;
+    bottom: calc(100% + 0.6em);
+    left: 50%;
+    transform: translateX(-50%) translateY(0.4em);
+    background: var(--ink);
+    color: var(--paper);
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    font-size: 0.85em;
+    line-height: 1.4;
+    padding: 0.55em 0.9em;
+    border-radius: 2px;
+    width: max-content;
+    max-width: 18em;
+    white-space: normal;
+    box-shadow: 0 8px 20px -10px rgba(20,16,12,0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s var(--ease), transform .2s var(--ease);
+    z-index: 5;
+    text-align: left;
+    letter-spacing: 0;
+  }
+  dfn.gl-term[data-gloss]::before {
+    content: "";
+    position: absolute;
+    bottom: calc(100% + 0.25em);
+    left: 50%;
+    transform: translateX(-50%) translateY(0.4em);
+    border: 5px solid transparent;
+    border-top-color: var(--ink);
+    opacity: 0;
+    transition: opacity .2s var(--ease), transform .2s var(--ease);
+    z-index: 5;
+  }
+  dfn.gl-term:hover::after, dfn.gl-term:focus::after,
+  dfn.gl-term:hover::before, dfn.gl-term:focus::before {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ═══════ claim/counter pairs ═══════ */
+  .claim {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.8em 1.4em;
+    align-items: baseline;
+    margin: 0 0 2.4em;
+  }
+  .claim__no {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-4);
+    line-height: 0.85;
+    font-weight: 280;
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    color: var(--ink-4);
+    font-style: italic;
+    width: 1.6em;
+    text-align: right;
+  }
+  .claim__h {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-3);
+    line-height: 1.15;
+    font-weight: 460;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+    color: var(--ink);
+    margin: 0;
+    letter-spacing: -0.012em;
+  }
+  .claim__body { grid-column: 2; margin-top: 0.6em; color: var(--ink-2); }
+  .claim__body p { font-size: var(--s-1); line-height: 1.6; }
+  .claim__counter {
+    grid-column: 2;
+    margin-top: 0.4em;
+    border-left: 2px solid var(--brick);
+    padding: 0.2em 0 0.2em 1em;
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    font-size: 0.95em;
+    color: var(--ink-3);
+  }
+  .claim__counter::before {
+    content: "caveat.";
+    display: inline;
+    font-style: normal;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.72em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin-right: 0.6em;
+    font-weight: 500;
+  }
+
+  /* ═══════ status chips ═══════ */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 0.25em 0.7em;
+    border: 1px solid var(--rule);
+    color: var(--ink-3);
+    background: var(--paper-3);
+    margin-right: 0.4em;
+    margin-bottom: 0.4em;
+  }
+  .chip--moss { color: var(--moss-deep); border-color: color-mix(in srgb, var(--moss) 50%, var(--rule)); }
+  .chip--brick { color: var(--brick-d); border-color: color-mix(in srgb, var(--brick) 50%, var(--rule)); }
+  .chip--ochre { color: var(--ochre-d); border-color: color-mix(in srgb, var(--ochre) 50%, var(--rule)); }
+  .chip--ink { color: var(--ink); border-color: var(--ink-3); background: var(--paper); }
+  .chip__dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* ═══════ deeplink pills (open in browser) ═══════ */
+  .deeplink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0.35em 0.7em 0.35em 0.7em;
+    border: 1px solid var(--rule);
+    color: var(--ink-3);
+    background: var(--paper-3);
+    border-bottom: 1px solid var(--rule);
+    transition: color .2s var(--ease), border-color .2s var(--ease), background .2s var(--ease);
+  }
+  .deeplink:hover {
+    color: var(--brick-d);
+    border-color: color-mix(in srgb, var(--brick) 60%, var(--rule));
+    background: var(--paper-4);
+  }
+  .deeplink__arrow {
+    transition: transform .2s var(--ease);
+    color: var(--brick);
+    font-weight: 600;
+  }
+  .deeplink:hover .deeplink__arrow { transform: translateX(2px); }
+  .deeplink[data-live="checking"] .deeplink__count::after { content: " · …"; color: var(--ochre); }
+  .deeplink[data-live="live"] { border-color: color-mix(in srgb, var(--moss) 45%, var(--rule)); }
+  .deeplink[data-live="live"] .deeplink__count { color: var(--moss-deep); }
+  .deeplink[data-live="offline"] { opacity: 0.7; }
+  .deeplink__count {
+    font-style: normal;
+    color: var(--ink-4);
+    letter-spacing: 0.08em;
+  }
+
+  .deeplink-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin: 1.1em 0 0.4em;
+  }
+
+  /* ═══════ timeline ═══════ */
+  .timeline {
+    display: grid;
+    gap: 0;
+    border-top: 1px solid var(--rule);
+    margin-top: 1em;
+  }
+  .timeline-row {
+    display: grid;
+    grid-template-columns: 11rem 1fr;
+    gap: 1.4em;
+    align-items: start;
+    padding: 1.2em 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .timeline-row .when {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    padding-top: 0.4em;
+  }
+  .timeline-row h3 {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 480;
+    margin: 0 0 0.35em;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  }
+  .timeline-row p { margin: 0; color: var(--ink-2); font-size: 0.97em; }
+  @media (max-width: 60rem) {
+    .timeline-row { grid-template-columns: 1fr; gap: 0.4em; }
+  }
+
+  /* ═══════ evidence grid ═══════ */
+  .filters { display: flex; flex-wrap: wrap; gap: 0.4em; margin: 0 0 1.4em; }
+  .filter-btn {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 0.4em 0.9em;
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    cursor: pointer;
+    transition: color .15s var(--ease), border-color .15s var(--ease), background .15s var(--ease);
+  }
+  .filter-btn:hover { color: var(--ink); border-color: var(--ink-3); }
+  .filter-btn[aria-pressed="true"] {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .ev-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+    gap: 1em;
+  }
+  .ev-card {
+    padding: 1.2em 1.3em;
+    background: var(--paper-3);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ink-4);
+    transition: border-color .2s var(--ease), background .2s var(--ease);
+    display: flex;
+    flex-direction: column;
+  }
+  .ev-card.is-hidden { display: none; }
+  .ev-card[data-status="strong"] { border-left-color: var(--moss); }
+  .ev-card[data-status="boundary"] { border-left-color: var(--ochre); }
+  .ev-card[data-status="risk"] { border-left-color: var(--brick); }
+  .ev-card[data-status="output"] { border-left-color: var(--ink-3); }
+  .ev-card h3 {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 500;
+    margin: 0.4em 0 0.35em;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  }
+  .ev-card p { margin: 0 0 0.7em; color: var(--ink-2); font-size: 0.95em; line-height: 1.5; }
+  .ev-card .deeplink-row { margin-top: auto; }
+
+  /* ═══════ accordion ═══════ */
+  .accordion {
+    border-top: 1px solid var(--rule);
+  }
+  .accordion:last-of-type { border-bottom: 1px solid var(--rule); }
+  .accordion summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1em 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1em;
+  }
+  .accordion summary::-webkit-details-marker { display: none; }
+  .accordion summary h3 {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 480;
+    margin: 0;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  }
+  .accordion summary .acc-marker {
+    font-family: "JetBrains Mono", monospace;
+    color: var(--brick-d);
+    font-size: var(--s-1);
+  }
+  .accordion[open] summary .acc-marker::before { content: "–"; }
+  .accordion:not([open]) summary .acc-marker::before { content: "+"; }
+  .accordion .body { padding: 0 0 1.3em; color: var(--ink-2); }
+  .accordion .body p { margin: 0 0 0.7em; }
+
+  /* ═══════ spec / route ═══════ */
+  .spec {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+    gap: 1em;
+    margin-top: 1.3em;
+  }
+  .spec-box {
+    border: 1px solid var(--rule);
+    background: var(--paper-3);
+    padding: 1em 1.1em;
+  }
+  .spec-box h4 {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin: 0 0 0.6em;
+  }
+  .spec-box ul { list-style: none; padding: 0; margin: 0; }
+  .spec-box li {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.82em;
+    color: var(--ink-2);
+    padding: 0.18em 0;
+    border-bottom: 1px dotted var(--rule-soft);
+  }
+  .spec-box li:last-child { border-bottom: none; }
+
+  .ladder {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
+    gap: 0.7em;
+    margin-top: 1.2em;
+    counter-reset: step;
+  }
+  .ladder-step {
+    counter-increment: step;
+    border: 1px solid var(--rule);
+    background: var(--paper-4);
+    padding: 0.9em 1em;
+    position: relative;
+    font-size: 0.92em;
+  }
+  .ladder-step::before {
+    content: counter(step, decimal-leading-zero);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    color: var(--ochre-d);
+    display: block;
+    margin-bottom: 0.4em;
+  }
+  .ladder-step strong {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+    color: var(--ink);
+    font-weight: 460;
+    display: block;
+    margin-bottom: 0.2em;
+  }
+  .ladder-step span { color: var(--ink-3); font-size: 0.93em; }
+
+  /* ═══════ callouts ═══════ */
+  .callout {
+    border: 1px solid color-mix(in srgb, var(--brick) 40%, var(--rule));
+    background: linear-gradient(180deg, rgba(165,62,46,0.06), rgba(165,62,46,0.02) 80%, transparent);
+    padding: 1.2em 1.3em;
+    margin-top: 1.4em;
+    font-family: "Source Serif 4", serif;
+    color: var(--ink-2);
+  }
+  .callout strong { color: var(--brick-d); font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.18em; text-transform: uppercase; }
+
+  /* ═══════ interactive chart ═══════ */
+  figure.chart-fig { margin: 1.4em 0 1em; }
+  figure.chart-fig figcaption {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin-bottom: 0.7em;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6em 1.4em;
+    align-items: baseline;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 0.5em;
+  }
+  figure.chart-fig figcaption .cap-title { color: var(--brick-d); }
+  figure.chart-fig figcaption .legend {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.8em;
+    margin-left: auto;
+  }
+  figure.chart-fig figcaption .legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    color: var(--ink-3);
+  }
+  figure.chart-fig figcaption .legend i {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: currentColor;
+    border-radius: 1px;
+  }
+  figure.chart-fig figcaption .legend .lg-routine { color: var(--ink-4); }
+  figure.chart-fig figcaption .legend .lg-none    { color: var(--ochre); }
+  figure.chart-fig figcaption .legend .lg-perip   { color: var(--moss-deep); }
+
+  .chart { width: 100%; height: auto; }
+  .chart .axis-line { stroke: var(--rule); stroke-width: 1; }
+  .chart .axis-tick { stroke: var(--rule-soft); stroke-width: 1; stroke-dasharray: 2 3; }
+  .chart .axis-lbl  { fill: var(--ink-4); font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.05em; }
+  .chart .metric-lbl { fill: var(--ink-2); font-family: "Source Serif 4", serif; font-size: 12px; font-style: italic; }
+  .chart .bar-routine { fill: var(--ink-4); }
+  .chart .bar-none    { fill: var(--ochre); }
+  .chart .bar-perip   { fill: var(--moss-deep); }
+  .chart .bar         { transition: opacity .2s var(--ease); transform-origin: left center; }
+  .chart .bar:hover   { opacity: 0.82; }
+  .chart .bar-val     { fill: var(--ink-2); font-family: "JetBrains Mono", monospace; font-size: 10px; font-weight: 500; }
+  .chart .bar-rect    { rx: 1; ry: 1; }
+  .chart .anim        { transform-origin: left; animation: barIn .9s var(--ease) both; }
+
+  @keyframes barIn {
+    from { transform: scaleX(0); opacity: 0; }
+    to   { transform: scaleX(1); opacity: 1; }
+  }
+
+  /* ═══════ transcript block ═══════ */
+  .tx {
+    border: 1px solid var(--rule);
+    background: var(--paper-4);
+    margin: 1.1em 0;
+  }
+  .tx > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 0.7em 1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    border-bottom: 1px solid transparent;
+  }
+  .tx > summary::-webkit-details-marker { display: none; }
+  .tx > summary .tx__title { color: var(--brick-d); }
+  .tx > summary .tx__hint { color: var(--ink-4); font-style: italic; text-transform: none; letter-spacing: 0.02em; font-family: "Source Serif 4", serif; font-size: 0.95em; }
+  .tx[open] > summary { border-bottom-color: var(--rule); }
+  .tx[open] > summary::after { content: "–"; color: var(--brick-d); }
+  .tx:not([open]) > summary::after { content: "+"; color: var(--brick-d); }
+  .tx__body {
+    padding: 0.8em 1.2em 1em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.85em;
+    line-height: 1.55;
+    color: var(--ink-2);
+    white-space: pre-wrap;
+    overflow-x: auto;
+    max-height: 26em;
+    overflow-y: auto;
+  }
+  .tx__body .tx-stage   { color: var(--ink-4); font-style: italic; }
+  .tx__body .tx-tutor   { color: var(--moss-deep); }
+  .tx__body .tx-learner { color: var(--brick-d); }
+  .tx__body .tx-label   { display: inline-block; min-width: 4.2em; font-weight: 600; color: var(--ink); }
+  .tx__caption {
+    padding: 0.6em 1.2em 0.9em;
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    color: var(--ink-3);
+    font-size: 0.88em;
+    border-top: 1px dotted var(--rule);
+    background: var(--paper-3);
+  }
+  .tx__caption strong { font-family: "JetBrains Mono", monospace; font-style: normal; font-size: var(--s-mini); letter-spacing: 0.14em; text-transform: uppercase; color: var(--moss-deep); margin-right: 0.5em; }
+
+  /* ═══════ footer ═══════ */
+  .colophon {
+    padding: 3em clamp(1rem, 4vw, 4rem);
+    border-top: 1px solid var(--rule);
+    color: var(--ink-3);
+    font-size: 0.88em;
+    line-height: 1.55;
+  }
+  .colophon code {
+    font-family: "JetBrains Mono", monospace;
+    background: var(--paper-3);
+    border: 1px solid var(--rule);
+    padding: 0.1em 0.4em;
+    font-size: 0.92em;
+    color: var(--ink-2);
+  }
+  .colophon dl { display: grid; grid-template-columns: 12rem 1fr; gap: 0.5em 1.2em; margin: 1em 0 0; }
+  .colophon dt { font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.16em; text-transform: uppercase; color: var(--brick-d); }
+  .colophon dd { margin: 0; }
+  @media (max-width: 50rem) { .colophon dl { grid-template-columns: 1fr; } .colophon dd { margin: 0 0 0.6em; } }
+  .colophon__live {
+    border: 1px dashed var(--rule);
+    padding: 0.9em 1.1em;
+    margin-top: 1.4em;
+    background: var(--paper-3);
+    font-family: "Source Serif 4", serif;
+    color: var(--ink-2);
+  }
+  .colophon__live code { background: var(--paper-4); }
+
+  /* ═══════ print ═══════ */
+  @media print {
+    body { background: #fff; color: #000; }
+    body::before, body::after, .rail, .rail__actions, .filters, .toc, .toc__scrim, .toc-toggle, .beacon, .deeplink, .deeplink-row { display: none !important; }
+    main { padding-left: 0 !important; }
+    .accordion .body, .tx[open] .tx__body { display: block !important; }
+    .accordion summary .acc-marker, .tx summary::after { display: none; }
+    section.s { break-inside: avoid; }
+    .ev-card { break-inside: avoid; }
+    .chart { break-inside: avoid; }
+    dfn.gl-term { border-bottom: none; }
+    dfn.gl-term::after, dfn.gl-term::before { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="rail" id="rail">
+  <div class="rail__inner">
+    <button class="toc-toggle" id="tocToggle" type="button" aria-controls="toc" aria-expanded="false" title="Table of contents">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12" /></svg>
+      <span>Contents</span>
+    </button>
+    <span class="rail__title">From Paper 2.0 to dramatic recognition</span>
+    <span class="rail__dot" aria-hidden="true"></span>
+    <nav class="rail__nav" aria-label="Section navigation">
+      <a href="#glossary">Plain English</a>
+      <a href="#starting-point">Starting Point</a>
+      <a href="#arc">Arc</a>
+      <a href="#evidence">Evidence</a>
+      <a href="#adaptation">Adaptation</a>
+      <a href="#ending-shape">Ending Shape</a>
+      <a href="#conceptual">Conceptual Shift</a>
+      <a href="#durable-output">Durable Output</a>
+      <a href="#paper-implication">Paper Implication</a>
+    </nav>
+    <div class="rail__actions">
+      <a class="beacon" id="beacon" href="http://127.0.0.1:3466/" target="_blank" rel="noopener" data-state="checking" title="Probing the poetics browser at 127.0.0.1:3466">
+        <span class="beacon__pulse" aria-hidden="true"></span>
+        <span class="beacon__text">checking</span>
+      </a>
+      <button class="rail__btn" id="themeToggle" type="button">Dark</button>
+      <button class="rail__btn rail__btn--icon" type="button" onclick="window.print()" title="Print">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4V1.5h8V4M4 11H2V6h12v5h-2M5 9h6v5H5z" /></svg>
+      </button>
+    </div>
+  </div>
+  <div class="rail__progress" id="railProgress"></div>
+</header>
+
+<aside class="toc" id="toc" aria-hidden="true" aria-label="Table of contents">
+  <div class="toc__header">
+    <span>Table of contents</span>
+    <button class="toc__close" id="tocClose" type="button" aria-label="Close table of contents">×</button>
+  </div>
+  <p class="toc__title">From Paper 2.0 to dramatic recognition · arc to date</p>
+  <ol class="toc__list" id="tocList">
+    <li class="toc__item" data-target="glossary">
+      <a href="#glossary"><span class="toc__num">00</span><span>Plain English glossary</span></a>
+      <ul class="toc__sub">
+        <li><a href="#glossary">Eleven terms, glossed</a></li>
+      </ul>
+    </li>
+    <li class="toc__item" data-target="starting-point">
+      <a href="#starting-point"><span class="toc__num">01</span><span>Starting point · Paper 2.0</span></a>
+      <ul class="toc__sub">
+        <li><a href="#starting-point">Calibration · Error correction · Adaptive null</a></li>
+      </ul>
+    </li>
+    <li class="toc__item" data-target="arc">
+      <a href="#arc"><span class="toc__num">02</span><span>Arc to date</span></a>
+      <ul class="toc__sub">
+        <li><a href="#arc">From slopes to drama, six waypoints</a></li>
+      </ul>
+    </li>
+    <li class="toc__item" data-target="evidence">
+      <a href="#evidence"><span class="toc__num">03</span><span>Evidence map · live</span></a>
+      <ul class="toc__sub">
+        <li><a href="#evidence">Strong · Boundary · Risk · Output</a></li>
+        <li><a href="#ev-transcript">Tutor / learner transcript excerpt</a></li>
+      </ul>
+    </li>
+    <li class="toc__item" data-target="adaptation">
+      <a href="#adaptation"><span class="toc__num">04</span><span>Adaptation boundary</span></a>
+      <ul class="toc__sub">
+        <li><a href="#phase-1">Phase 1 · why not yet ready</a></li>
+        <li><a href="#phase-2">Phase 2 · mechanism fix</a></li>
+        <li><a href="#phase-3">Phase 3 · clean-anchor replication</a></li>
+        <li><a href="#phase-4">Phase 4 · ending-shape refinement</a></li>
+      </ul>
+    </li>
+    <li class="toc__item" data-target="ending-shape">
+      <a href="#ending-shape"><span class="toc__num">05</span><span>Ending shape · live chart</span></a>
+      <ul class="toc__sub">
+        <li><a href="#chart-d42">D42 smoke chart</a></li>
+        <li><a href="#chart-strat">Six-scenario stratified pilot</a></li>
+        <li><a href="#ending-transcript">T372 transcript · the reversal</a></li>
+      </ul>
+    </li>
+    <li class="toc__item" data-target="conceptual">
+      <a href="#conceptual"><span class="toc__num">06</span><span>Conceptual shift</span></a>
+      <ul class="toc__sub">
+        <li><a href="#conceptual">The seven-step dialogical ladder</a></li>
+      </ul>
+    </li>
+    <li class="toc__item" data-target="durable-output">
+      <a href="#durable-output"><span class="toc__num">07</span><span>Durable output</span></a>
+      <ul class="toc__sub">
+        <li><a href="#durable-output">Spec · dataset · control loop</a></li>
+      </ul>
+    </li>
+    <li class="toc__item" data-target="paper-implication">
+      <a href="#paper-implication"><span class="toc__num">08</span><span>Paper implication</span></a>
+      <ul class="toc__sub">
+        <li><a href="#paper-implication">Candidate v3.0.105 update</a></li>
+      </ul>
+    </li>
+  </ol>
+  <dl class="toc__meta">
+    <dt>Live browser</dt>
+    <dd id="tocLive">127.0.0.1:3466 — probing…</dd>
+    <dt>Static fallback</dt>
+    <dd>All numbers in this note are baked in. Live data only adds item counts and deep links.</dd>
+    <dt>Last commit</dt>
+    <dd><code>ab4e1b9</code> ending-shape five-critic rescore</dd>
+  </dl>
+</aside>
+<div class="toc__scrim" id="tocScrim" aria-hidden="true"></div>
+
+<main>
+
+  <section class="hero">
+    <div class="hero__rune">
+      <span>§</span> Synthesis Note · 2026-05-26 · paper-full-2.0.md v3.0.104 · <span style="color:var(--moss-deep);">live · :3466</span>
+    </div>
+
+    <div class="hero__masthead">
+      <span class="label">Dramatic Recognition Arc</span>
+      <span class="hero__rule"></span>
+      <span class="label">Arc To Date</span>
+    </div>
+
+    <h1 class="hero__h1">From Paper 2.0 to <span class="em">dramatic recognition</span></h1>
+
+    <p class="hero__subtitle">
+      The last paper found that recognition prompts and a draft-then-critique architecture did not, on average, change how tutors move across turns. This branch sharpens that broad null into a narrower question — and lets you click any claim into the running browser.
+    </p>
+
+    <div class="hero__lede">
+      <div>
+        <p>
+          The unit of analysis has shifted. The paper measured score sequences across ordinary dialogues. The sidecar
+          now stages dialogues as <em>drama</em>: a learner reaches a <dfn class="gl-term" data-target="glossary">stuck point</dfn>, the tutor's old way of teaching
+          stops working, a new device or test appears, and the learner either re-reads what they thought or doesn't.
+          This is what the paper's <dfn class="gl-term" data-target="glossary">adaptive-responsiveness</dfn> null left under-specified.
+        </p>
+        <p>
+          The current branch supports two bounded findings: public learner reframing reliably yields recognitive form
+          under the <dfn class="gl-term" data-target="glossary">four-critic rule</dfn>, and on the cleanest scenarios a constraint that forces the learner to
+          <em>visibly try</em> the tutor's new device produces 16-of-16 adaptive-arm recognition with flat controls.
+          The same constraint on a broader stratified pilot is mixed.
+        </p>
+        <p class="hero__cta">
+          <a class="deeplink" href="http://127.0.0.1:3466/" target="_blank" rel="noopener" data-live-target="browser">
+            <span>Open browser</span>
+            <span class="deeplink__count" data-live-text>checking…</span>
+            <span class="deeplink__arrow">→</span>
+          </a>
+          <a class="deeplink" href="#ev-transcript">
+            <span>Jump to transcript</span>
+            <span class="deeplink__arrow">↓</span>
+          </a>
+          <a class="deeplink" href="#chart-d42">
+            <span>D42 ending-shape chart</span>
+            <span class="deeplink__arrow">↓</span>
+          </a>
+        </p>
+      </div>
+      <aside class="hero__num">
+        <div class="hero__num__big">16<span class="frac">/16</span></div>
+        <p class="hero__num__sub">
+          adaptive-arm recognitions in the D42 ending-shape smoke. The same scenario's <em>routine</em> and <em>none</em>
+          arms scored 0/5 each — controls stayed flat while the adaptive arm took recognitive form.
+        </p>
+      </aside>
+    </div>
+  </section>
+
+  <div class="shell">
+
+    <!-- ═══════════════════ GLOSSARY ═══════════════════ -->
+    <section class="s" id="glossary">
+      <div class="diag">
+        <div class="ml">
+          <h2 class="s__num">00<span class="glyph">·</span></h2>
+        </div>
+        <div class="body">
+          <p class="s__kicker">Plain English</p>
+          <h2 class="s__h">A small <em>glossary</em> for terms that travel through this note.</h2>
+          <p>
+            The vocabulary here borrows from classical drama, Hegelian recognition theory, and the project's own
+            engineering tags. Most of it is dispensable; the few terms that earn their keep are glossed once here so
+            the rest of the note can stay light. Hover any underlined term elsewhere in the page for the gloss without
+            scrolling back.
+          </p>
+        </div>
+        <div class="mr">
+          <p class="note note--moss">
+            <span class="note__lbl">Source</span>
+            Definitions distilled from <em>notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.md</em> and the
+            sidecar's role tags in <em>phase2-classic-drama-adaptation-v1.yaml</em>.
+          </p>
+        </div>
+      </div>
+
+      <div class="diag">
+        <div class="full">
+          <dl class="glossary" id="glossaryList">
+            <div class="gl-row" data-term="aporia">
+              <dt>Aporia <span class="gloss">stuck point</span></dt>
+              <dd>The moment the learner runs into a real block, not ordinary uncertainty. The pedagogical event the
+                  paper's slope measurement could not see.</dd>
+            </div>
+            <div class="gl-row" data-term="peripeteia">
+              <dt>Peripeteia <span class="gloss">turn / reversal</span></dt>
+              <dd>A reversal in the scene. Here, the tutoring situation turns: the old way of proceeding no longer
+                  works, and a new device, role, evidence, or test has to come in.</dd>
+            </div>
+            <div class="gl-row" data-term="anagnorisis">
+              <dt>Anagnorisis <span class="gloss">recognition</span></dt>
+              <dd>The learner re-reads the earlier difficulty. They can now hear the same line differently or perform
+                  a new relation to it.</dd>
+            </div>
+            <div class="gl-row" data-term="pseudo-catharsis">
+              <dt>Pseudo-catharsis <span class="gloss">false relief</span></dt>
+              <dd>Apparent relief or closure that has not been earned by the scene — "Oh, I get it" without anything
+                  actually shifting. A trap we score against, not for.</dd>
+            </div>
+            <div class="gl-row" data-term="low-organic">
+              <dt>Low-organic scene <span class="gloss">clean baseline</span></dt>
+              <dd>A scenario whose opening setup does <em>not</em> already supply its own reversal. Needed as a control,
+                  because some scenes (Socratic squares, dramatic moral pressure) reverse themselves before the tutor
+                  has done anything.</dd>
+            </div>
+            <div class="gl-row" data-term="baseline-leakage">
+              <dt>Baseline leakage <span class="gloss">control contamination</span></dt>
+              <dd>When a "control" arm has already licensed re-reading before the experimental cue runs. Caught by the
+                  prefix-baseline screen.</dd>
+            </div>
+            <div class="gl-row" data-term="habit-break">
+              <dt>Habit-break <span class="gloss">visible change of move</span></dt>
+              <dd>The tutor's next public turn actually changes route — new device, new test, new role, new evidence
+                  standard — rather than restating the failed approach.</dd>
+            </div>
+            <div class="gl-row" data-term="branch-local-pressure">
+              <dt>Branch-local pressure <span class="gloss">pressure in the moment</span></dt>
+              <dd>A learner difficulty that arises <em>after</em> the shared scene prefix, so adaptation can be credited
+                  to the experimental cue rather than to setup carryover.</dd>
+            </div>
+            <div class="gl-row" data-term="no-cue-arm">
+              <dt>No-cue arm <span class="gloss">control without the prompt</span></dt>
+              <dd>A run where the tutor receives no explicit reframe or peripeteia cue. If recognition still appears
+                  here, the cue isn't the cause.</dd>
+            </div>
+            <div class="gl-row" data-term="ego-superego">
+              <dt>Ego / superego <span class="gloss">draft + self-critique</span></dt>
+              <dd>The tutor (and learner) produces a draft turn (ego), critiques it internally (superego), and revises.
+                  The public transcript shows only the final turn; the private trace shows the deliberation.</dd>
+            </div>
+            <div class="gl-row" data-term="four-critic-rule">
+              <dt>Four-critic rule <span class="gloss">3 of 4 must agree</span></dt>
+              <dd>Qwen, Gemini, DeepSeek, and Sonnet score blind. 3-of-4 recognition votes is claimable; 2-of-4 is
+                  boundary; 0–1 is negative. A fifth, isolated Codex pass now backstops the four externals.</dd>
+            </div>
+            <div class="gl-row" data-term="adaptive-responsiveness">
+              <dt>Adaptive responsiveness <span class="gloss">turn-by-turn average</span></dt>
+              <dd>The paper's operationalisation of adaptation: average improvement across multi-turn dialogues. The
+                  metric the broad null was found on.</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ STARTING POINT ═══════════════════ -->
+    <section class="s" id="starting-point">
+      <div class="diag">
+        <div class="ml">
+          <h2 class="s__num">01<span class="glyph">·</span></h2>
+        </div>
+        <div class="body">
+          <p class="s__kicker">Starting Point</p>
+          <h2 class="s__h">The last paper gave us a <em>disciplined mechanism story</em>, not a deployed adaptive tutor.</h2>
+        </div>
+        <div class="mr">
+          <p class="note note--ink">
+            <span class="note__lbl">Paper version</span>
+            paper-full-2.0.md v3.0.104. The numbers in this section are unchanged by the current branch — they are
+            what the sidecar work begins from.
+          </p>
+        </div>
+      </div>
+
+      <div class="diag">
+        <div class="body">
+          <div class="claim">
+            <span class="claim__no">i.</span>
+            <h3 class="claim__h">Calibration <span class="chip chip--moss">supported</span></h3>
+            <div class="claim__body">
+              <p>Recognition-oriented prompts <em>narrow</em> and <em>lift</em> the tutor's output distribution. The
+                effect is on how the tutor speaks, not yet on how it changes course.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">ii.</span>
+            <h3 class="claim__h">Error correction <span class="chip chip--moss">supported</span></h3>
+            <div class="claim__body">
+              <p>The <dfn class="gl-term" data-target="glossary">ego–superego</dfn> architecture (draft, then self-critique, then revise) improves tutor output when
+                there is enough residual error for the critique to catch.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">iii.</span>
+            <h3 class="claim__h">Adaptive responsiveness <span class="chip chip--brick">broad null</span></h3>
+            <div class="claim__body">
+              <p>Recognition prompts and the draft-then-critique architecture did not reliably change how tutors moved
+                across turns on average. A late exploratory disengagement effect did not survive pre-registered
+                replication.</p>
+            </div>
+            <div class="claim__counter">
+              The null is methodologically clean but conceptually broad. It does not show that <em>localised</em>
+              adaptation is impossible — only that adaptation as a diffuse trajectory effect didn't show up.
+            </div>
+          </div>
+
+          <p class="pq">
+            Paper 2.0 resolved to two supported general mechanisms and one clean null.
+            <cite>paper-full-2.0.md v3.0.104</cite>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ ARC ═══════════════════ -->
+    <section class="s" id="arc">
+      <div class="diag">
+        <div class="ml">
+          <h2 class="s__num">02<span class="glyph">·</span></h2>
+        </div>
+        <div class="body">
+          <p class="s__kicker">Arc To Date</p>
+          <h2 class="s__h">The shift from <em>paper mechanism testing</em> to dramatic mechanism discovery.</h2>
+        </div>
+        <div class="mr">
+          <p class="note note--moss">
+            <span class="note__lbl">Tooling outcome</span>
+            The sidecar is itself a major output of this arc — a laboratory apparatus for the narrower dialogical
+            mechanism the paper's null left under-specified.
+          </p>
+        </div>
+      </div>
+
+      <div class="diag">
+        <div class="body">
+          <div class="timeline">
+            <div class="timeline-row">
+              <span class="when">Paper 2.0</span>
+              <div>
+                <h3>Broad trajectory test</h3>
+                <p>Adaptation was operationalised as average turn-by-turn slope across ordinary 3–5-turn dialogues.</p>
+              </div>
+            </div>
+            <div class="timeline-row">
+              <span class="when">Gap</span>
+              <div>
+                <h3>The dialogical event was under-specified</h3>
+                <p>The paper measured score sequences. The theory wanted stuck points, reversals, recognitions, and
+                  the tutor's answerability — none of which a slope picks up.</p>
+              </div>
+            </div>
+            <div class="timeline-row">
+              <span class="when">Sidecar</span>
+              <div>
+                <h3>Transcripts treated as drama</h3>
+                <p>The unit of analysis moved to staged dialogue: public form, private deliberation trace, branch
+                  validity, and critic disagreement.</p>
+              </div>
+            </div>
+            <div class="timeline-row">
+              <span class="when">Controls</span>
+              <div>
+                <h3>Building clean baseline scenes</h3>
+                <p>D35, D36, D37, D42, D45, D50, D52, D53 taught the difference between scenes that already supply
+                  their own reversal and scenes that stay flat until the tutor acts. D42/D45/D50/D53 emerged as the
+                  cleanest baselines.</p>
+              </div>
+            </div>
+            <div class="timeline-row">
+              <span class="when">Mechanism</span>
+              <div>
+                <h3>Tutor adaptation under reversal pressure</h3>
+                <p>On the cleanest scenarios, a reversal cue from the learner enters the tutor's deliberation loop and
+                  yields a visible change of move. Routine and no-cue arms scored 0/6 deterministic adaptation; the
+                  reversal arm scored 6/6.</p>
+                <div class="deeplink-row">
+                  <a class="deeplink" href="http://127.0.0.1:3466/?runId=phase2-clean-anchor-paired-adaptation-replication-v1" target="_blank" rel="noopener" data-run-id="phase2-clean-anchor-paired-adaptation-replication-v1">
+                    <span>Browse clean-anchor replication</span>
+                    <span class="deeplink__count" data-live-text>—</span>
+                    <span class="deeplink__arrow">↗</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="timeline-row">
+              <span class="when">Now · refinement</span>
+              <div>
+                <h3>Ending-shape constraint</h3>
+                <p>After the tutor's new move, the learner must visibly <em>try</em> it and re-read the earlier
+                  difficulty. On D42 alone this gives 16/16 adaptive-arm recognition with flat controls. On six
+                  scenarios it raises adaptive scores but the negative side leaks.</p>
+                <div class="deeplink-row">
+                  <a class="deeplink" href="http://127.0.0.1:3466/?runId=phase2-ending-shape-d42-smoke-v1" target="_blank" rel="noopener" data-run-id="phase2-ending-shape-d42-smoke-v1">
+                    <span>Browse D42 smoke</span>
+                    <span class="deeplink__count" data-live-text>—</span>
+                    <span class="deeplink__arrow">↗</span>
+                  </a>
+                  <a class="deeplink" href="http://127.0.0.1:3466/?runId=phase2-ending-shape-stratified-smoke-v1" target="_blank" rel="noopener" data-run-id="phase2-ending-shape-stratified-smoke-v1">
+                    <span>Browse stratified pilot</span>
+                    <span class="deeplink__count" data-live-text>—</span>
+                    <span class="deeplink__arrow">↗</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ EVIDENCE ═══════════════════ -->
+    <section class="s" id="evidence">
+      <div class="diag">
+        <div class="ml">
+          <h2 class="s__num">03<span class="glyph">·</span></h2>
+        </div>
+        <div class="body">
+          <p class="s__kicker">Evidence Map · Live</p>
+          <h2 class="s__h">What's <em>strong</em>, what's <em>boundary</em>, what's still <em>risk</em>.</h2>
+          <p>
+            Every card links into the running poetics browser when it's reachable. When offline, the static numbers in
+            the body stand; the deep-link pills become anchor links you can copy. Use the chips to narrow the grid.
+          </p>
+        </div>
+        <div class="mr">
+          <p class="note">
+            <span class="note__lbl">How to read</span>
+            <em>Strong</em> = claimable under the four-critic rule on clean baselines. <em>Boundary</em> = mixed
+            critics or partial scenes. <em>Risk</em> = active hazard the apparatus must keep guarding against.
+            <em>Output</em> = the apparatus itself, separate from claim-bearing results.
+          </p>
+        </div>
+      </div>
+
+      <div class="diag">
+        <div class="body">
+          <div class="filters" role="toolbar" aria-label="Evidence filters">
+            <button class="filter-btn" data-filter="all" aria-pressed="true" type="button">All</button>
+            <button class="filter-btn" data-filter="strong" aria-pressed="false" type="button">Strong</button>
+            <button class="filter-btn" data-filter="boundary" aria-pressed="false" type="button">Boundary</button>
+            <button class="filter-btn" data-filter="risk" aria-pressed="false" type="button">Risk</button>
+            <button class="filter-btn" data-filter="output" aria-pressed="false" type="button">Output</button>
+          </div>
+
+          <div class="ev-grid" id="evidenceGrid">
+            <article class="ev-card" data-status="strong" data-tags="strong">
+              <span class="chip chip--moss"><span class="chip__dot"></span> Strong</span>
+              <h3>Public reframe → recognitive form</h3>
+              <p>When the learner publicly revises an earlier line and the quality gates pass, transcripts reliably take
+                recognitive form under the 3-of-4 critic rule.</p>
+              <div class="deeplink-row">
+                <a class="deeplink" href="http://127.0.0.1:3466/?form=recognition" target="_blank" rel="noopener" data-run-id="*" data-filter-form="recognition">
+                  <span>Browse all recognition items</span>
+                  <span class="deeplink__count" data-live-text>—</span>
+                  <span class="deeplink__arrow">↗</span>
+                </a>
+              </div>
+            </article>
+
+            <article class="ev-card" data-status="strong" data-tags="strong">
+              <span class="chip chip--moss"><span class="chip__dot"></span> Strong</span>
+              <h3>D42/D50/D53 clean-anchor adaptation</h3>
+              <p>Reversal pressure enters the tutor loop and produces a visible change of move. Routine and no-cue arms
+                scored 0/6 sidecar adaptation; the reversal arm scored 6/6 with every item branch-valid.</p>
+              <div class="deeplink-row">
+                <a class="deeplink" href="http://127.0.0.1:3466/?runId=phase2-clean-anchor-paired-adaptation-replication-v1" target="_blank" rel="noopener" data-run-id="phase2-clean-anchor-paired-adaptation-replication-v1">
+                  <span>Open in browser</span>
+                  <span class="deeplink__count" data-live-text>—</span>
+                  <span class="deeplink__arrow">↗</span>
+                </a>
+              </div>
+            </article>
+
+            <article class="ev-card" data-status="strong" data-tags="strong">
+              <span class="chip chip--moss"><span class="chip__dot"></span> Strong · D42 only</span>
+              <h3>Ending-shape D42 smoke</h3>
+              <p>Adding a constraint that the learner must visibly try the tutor's new device and reorient the earlier
+                difficulty: 16/16 adaptive-arm recognition, 0/5 in <em>routine</em>, 0/5 in <em>none</em>. Gemini was
+                the only critic to dissent.</p>
+              <div class="deeplink-row">
+                <a class="deeplink" href="http://127.0.0.1:3466/?runId=phase2-ending-shape-d42-smoke-v1&arm=peripeteia-only" target="_blank" rel="noopener" data-run-id="phase2-ending-shape-d42-smoke-v1">
+                  <span>Browse adaptive arm</span>
+                  <span class="deeplink__count" data-live-text>—</span>
+                  <span class="deeplink__arrow">↗</span>
+                </a>
+                <a class="deeplink" href="#chart-d42">
+                  <span>See chart</span>
+                  <span class="deeplink__arrow">↓</span>
+                </a>
+              </div>
+            </article>
+
+            <article class="ev-card" data-status="boundary" data-tags="boundary">
+              <span class="chip chip--ochre"><span class="chip__dot"></span> Boundary</span>
+              <h3>Stratified ending-shape pilot</h3>
+              <p>Across six scenarios the ending-shape constraint raises adaptive-arm action, mechanism, and quality
+                scores. But D40, D45, and parts of D39/D42 organically produce learner reorientation even in
+                <em>routine</em> or <em>none</em>. D37 is the cleanest stratified signal.</p>
+              <div class="deeplink-row">
+                <a class="deeplink" href="http://127.0.0.1:3466/?runId=phase2-ending-shape-stratified-smoke-v1" target="_blank" rel="noopener" data-run-id="phase2-ending-shape-stratified-smoke-v1">
+                  <span>Open in browser</span>
+                  <span class="deeplink__count" data-live-text>—</span>
+                  <span class="deeplink__arrow">↗</span>
+                </a>
+                <a class="deeplink" href="#chart-strat">
+                  <span>See chart</span>
+                  <span class="deeplink__arrow">↓</span>
+                </a>
+              </div>
+            </article>
+
+            <article class="ev-card" data-status="boundary" data-tags="boundary">
+              <span class="chip chip--ochre"><span class="chip__dot"></span> Boundary</span>
+              <h3>Actional breakthrough</h3>
+              <p>A distinct learner outcome: performing a new device even without an explicit self-reframe. Important
+                enough to score separately rather than fold into recognition.</p>
+              <div class="deeplink-row">
+                <a class="deeplink" href="http://127.0.0.1:3466/?queue=actional-breakthrough" target="_blank" rel="noopener" data-run-id="*" data-filter-queue="actional-breakthrough">
+                  <span>Browse breakthrough queue</span>
+                  <span class="deeplink__count" data-live-text>—</span>
+                  <span class="deeplink__arrow">↗</span>
+                </a>
+              </div>
+            </article>
+
+            <article class="ev-card" data-status="risk" data-tags="boundary risk">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Risk</span>
+              <h3>Recognitive closure downstream</h3>
+              <p>After a tutor's adaptive move, full recognitive self-reframe by the learner is partial and
+                critic-sensitive. Should not be conflated with the mechanism-level adaptation finding.</p>
+              <div class="deeplink-row">
+                <a class="deeplink" href="http://127.0.0.1:3466/?queue=disagreement" target="_blank" rel="noopener" data-run-id="*" data-filter-queue="disagreement">
+                  <span>Browse disagreement queue</span>
+                  <span class="deeplink__count" data-live-text>—</span>
+                  <span class="deeplink__arrow">↗</span>
+                </a>
+              </div>
+            </article>
+
+            <article class="ev-card" data-status="risk" data-tags="risk">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Risk</span>
+              <h3>Self-starting scenes</h3>
+              <p>Some scenarios already contain enough stuck-point and re-reading material that no-cue or routine arms
+                read as recognitive. Clean denominators remain fragile and require the prefix-baseline screen.</p>
+              <div class="deeplink-row">
+                <a class="deeplink" href="http://127.0.0.1:3466/?runId=phase2-fresh-low-organic-prefix-screen-v1" target="_blank" rel="noopener" data-run-id="phase2-fresh-low-organic-prefix-screen-v1">
+                  <span>Browse low-organic screen</span>
+                  <span class="deeplink__count" data-live-text>—</span>
+                  <span class="deeplink__arrow">↗</span>
+                </a>
+              </div>
+            </article>
+
+            <article class="ev-card" data-status="output" data-tags="output">
+              <span class="chip chip--ink"><span class="chip__dot"></span> Output</span>
+              <h3>Sidecar laboratory</h3>
+              <p>The apparatus can generate paired dramas, retain ego/superego traces, score blindly with five critics
+                (four external plus an isolated Codex pass), surface disagreement queues, and debug adaptation
+                failures.</p>
+              <div class="deeplink-row">
+                <a class="deeplink" href="http://127.0.0.1:3466/" target="_blank" rel="noopener" data-run-id="*">
+                  <span>Open browser root</span>
+                  <span class="deeplink__count" data-live-text>—</span>
+                  <span class="deeplink__arrow">↗</span>
+                </a>
+              </div>
+            </article>
+          </div>
+
+          <h3 class="s__sub" id="ev-transcript">A routine-arm transcript · so the control looks like something</h3>
+          <p>
+            Below: an excerpt from item <code>T84</code> in the fresh low-organic prefix screen (<em>none</em> arm —
+            no reframe, no peripeteia). The tutor stays disciplined, the learner sorts evidence, nothing reverses. This
+            is what a clean baseline turn looks like before the adaptive arm sets the bar. Compare against
+            <a href="#ending-transcript">T372</a> in §05, which is the same scene reformed under reversal pressure.
+          </p>
+          <details class="tx">
+            <summary>
+              <span><span class="tx__title">T84 · routine arm · fresh low-organic screen</span></span>
+              <span class="tx__hint">click to expand · the controls hold</span>
+            </summary>
+            <div class="tx__body"><span class="tx-stage"><span class="tx-label">STAGE</span>09:14 thread reopened; quoted fragment: SyntaxError: unexpected token ')' at src/calc.js:18</span>
+
+<span class="tx-learner"><span class="tx-label">LEARNER</span>"Right, so not just 'fix line 14' then: I've got file, line 14, and SyntaxError: ..., plus lines 12-16. Posting that span now, though I still keep wanting to treat line 14 as the broken bit rather than where parsing gave up."</span>
+
+<span class="tx-tutor"><span class="tx-label">TUTOR</span>"The file / line 14 / SyntaxError / 12-16 bundle is enough for the next check. That pull towards line 14 is exactly why the worksheet keeps two marks separate:
+
+  file:
+  message:
+  12 |
+  13 |
+  14 | &lt;-- report stopped here
+  15 |
+  16 |
+
+  first suspect:
+
+First mark where parsing gave up: 14. Then do one backwards pass through 12-14: what was opened, started, or left unfinished before the stop? Put only the first earlier suspect in the last line. No patch yet."</span>
+
+<span class="tx-stage"><span class="tx-label">STAGE</span>09:19 edit marker: the learner has changed 'line 18 is the bug' to 'line 18 is where it complains'</span>
+
+<span class="tx-learner"><span class="tx-label">LEARNER</span>"Good, the 'stop sign' box gives me something to do instead of staring at the arrow. I'll mark line reported: 14, then for 12-14 use A if I can actually point at a dangling (, quote, block start, or operator; otherwise B / 'not enough context', even if I'm tempted to guess. Posting the span next, no patch underneath."</span></div>
+            <div class="tx__caption">
+              <strong>Why this counts as a control</strong>
+              The tutor never abandons the worksheet. The learner sorts evidence rather than re-reading earlier
+              meaning. No reversal, no habit-break — and the four critics score it accordingly.
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ ADAPTATION ═══════════════════ -->
+    <section class="s" id="adaptation">
+      <div class="diag">
+        <div class="ml">
+          <h2 class="s__num">04<span class="glyph">·</span></h2>
+        </div>
+        <div class="body">
+          <p class="s__kicker">Adaptation Boundary</p>
+          <h2 class="s__h">The headline is <em>mechanism-level</em> adaptation, not guaranteed recognitive closure.</h2>
+          <p>
+            The branch supports tutor adaptation as a visible <dfn class="gl-term" data-target="glossary">change of teaching move</dfn> under clean-baseline reversal
+            pressure. Whether the learner then performs full recognitive self-reframe is downstream, partial, and
+            critic-sensitive — and should not be folded into the adaptation claim.
+          </p>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre">
+            <span class="note__lbl">Pre-history</span>
+            Three phases led here, plus a fourth refinement that's still being qualified. The accordions hold the
+            detail; each links into the run that produced its evidence.
+          </p>
+        </div>
+      </div>
+
+      <div class="diag">
+        <div class="body">
+          <details class="accordion" open id="phase-1">
+            <summary><h3>Phase 1 · why the claim was not yet ready</h3><span class="acc-marker" aria-hidden="true"></span></summary>
+            <div class="body">
+              <p>Early <dfn class="gl-term" data-target="glossary">low-organic</dfn> and D42/D45 local smokes showed <dfn class="gl-term" data-target="glossary">branch-local pressure</dfn> and a private route change in
+                the tutor's deliberation trace, but the public transcript often did not break habit, and the four-critic
+                panel did not agree that the reversal-only arm produced recognitive form.</p>
+              <div class="deeplink-row">
+                <a class="deeplink" href="http://127.0.0.1:3466/?runId=phase2-clean-anchor-paired-adaptation-v1" target="_blank" rel="noopener" data-run-id="phase2-clean-anchor-paired-adaptation-v1">
+                  <span>Browse early adaptation run</span>
+                  <span class="deeplink__count" data-live-text>—</span>
+                  <span class="deeplink__arrow">↗</span>
+                </a>
+              </div>
+            </div>
+          </details>
+
+          <details class="accordion" open id="phase-2">
+            <summary><h3>Phase 2 · mechanism fix</h3><span class="acc-marker" aria-hidden="true"></span></summary>
+            <div class="body">
+              <p>Earlier reversal branches sometimes carried the peripeteia contract in the private director/tutor
+                context without an actual post-prefix learner pressure event. The branch now injects a concrete
+                reversal-pressure cue after the shared prefix, forcing the tutor to answer a present-task misfit,
+                hesitation, resistance, false relief, or breakdown.</p>
+            </div>
+          </details>
+
+          <details class="accordion" open id="phase-3">
+            <summary><h3>Phase 3 · clean-anchor replication</h3><span class="acc-marker" aria-hidden="true"></span></summary>
+            <div class="body">
+              <p>In <code>phase2-clean-anchor-paired-adaptation-replication-v1</code>, routine and no-cue arms scored
+                0/6 on the deterministic sidecar adaptation measure, while the reversal-only arm scored 6/6. Every
+                item was branch-valid, consumed the learner reversal event, declared a private route, and produced a
+                public mechanism shift.</p>
+              <div class="deeplink-row">
+                <a class="deeplink" href="http://127.0.0.1:3466/?runId=phase2-clean-anchor-paired-adaptation-replication-v1&arm=peripeteia-only" target="_blank" rel="noopener" data-run-id="phase2-clean-anchor-paired-adaptation-replication-v1">
+                  <span>Adaptive arm · 6/6</span>
+                  <span class="deeplink__count" data-live-text>—</span>
+                  <span class="deeplink__arrow">↗</span>
+                </a>
+                <a class="deeplink" href="http://127.0.0.1:3466/?runId=phase2-clean-anchor-paired-adaptation-replication-v1&arm=routine" target="_blank" rel="noopener" data-run-id="phase2-clean-anchor-paired-adaptation-replication-v1">
+                  <span>Routine arm · 0/6</span>
+                  <span class="deeplink__count" data-live-text>—</span>
+                  <span class="deeplink__arrow">↗</span>
+                </a>
+              </div>
+            </div>
+          </details>
+
+          <details class="accordion" id="phase-4">
+            <summary><h3>Phase 4 · ending-shape refinement <span class="chip chip--ochre" style="margin-left:0.6em">in progress</span></h3><span class="acc-marker" aria-hidden="true"></span></summary>
+            <div class="body">
+              <p>The newest mechanism change: after a tutor's adaptive device, the learner must visibly perform that
+                device and earn a short reorientation of the prior difficulty. On D42 alone this gives 0/5 recognition
+                in <em>routine</em>, 0/5 in <em>none</em>, and 4/5 in the reversal arm — Gemini the only dissent. On
+                six scenarios it raises adaptive scores across the board but D40, D45, and parts of D39/D42 leak in the
+                negative arms. The right reading is that ending-shape constraints can make recognitive drama visible,
+                but the stratified pilot is not yet clean causal evidence that the cue caused it.</p>
+              <div class="deeplink-row">
+                <a class="deeplink" href="http://127.0.0.1:3466/?runId=phase2-ending-shape-d42-smoke-v1" target="_blank" rel="noopener" data-run-id="phase2-ending-shape-d42-smoke-v1">
+                  <span>D42 smoke</span>
+                  <span class="deeplink__count" data-live-text>—</span>
+                  <span class="deeplink__arrow">↗</span>
+                </a>
+                <a class="deeplink" href="http://127.0.0.1:3466/?runId=phase2-ending-shape-stratified-smoke-v1" target="_blank" rel="noopener" data-run-id="phase2-ending-shape-stratified-smoke-v1">
+                  <span>Six-scenario pilot</span>
+                  <span class="deeplink__count" data-live-text>—</span>
+                  <span class="deeplink__arrow">↗</span>
+                </a>
+              </div>
+            </div>
+          </details>
+
+          <div class="callout">
+            <strong>Claim boundary</strong><br>
+            The branch supports tutor adaptation as a visible change of teaching move under clean-baseline reversal
+            pressure. It does not yet establish robust recognitive self-reframe as the ordinary downstream result.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ ENDING SHAPE ═══════════════════ -->
+    <section class="s" id="ending-shape">
+      <div class="diag">
+        <div class="ml">
+          <h2 class="s__num">05<span class="glyph">·</span></h2>
+        </div>
+        <div class="body">
+          <p class="s__kicker">Ending Shape · live chart</p>
+          <h2 class="s__h">A single mechanism change with a <em>strong local</em> and <em>noisy broad</em> result.</h2>
+          <p>
+            The <dfn class="gl-term" data-target="glossary">ending-shape</dfn> constraint asks for a tighter dramatic close: after the tutor's new device, the learner
+            must publicly try the device and then re-read the prior difficulty. Without that two-beat ending, "adaptation"
+            can register as a tutor move without a learner anchor. The constraint is the most promising recent
+            refinement and the one that most needs broader replication.
+          </p>
+        </div>
+        <div class="mr">
+          <p class="note note--moss">
+            <span class="note__lbl">Five critics</span>
+            Scoring is now Qwen 3.7 Max, Gemini 3.5 Flash, DeepSeek V4 Pro, Claude Sonnet 4.6, plus an isolated Codex
+            pass. The fifth critic completes a recent rescore on the ending-shape stratified smoke.
+          </p>
+        </div>
+      </div>
+
+      <div class="diag">
+        <div class="body">
+          <h3 class="s__sub" id="chart-d42">D42 ending-shape smoke · routine / none / adaptive</h3>
+          <figure class="chart-fig">
+            <figcaption>
+              <span class="cap-title">avg score · 0–100 · recognition shown as fraction of 5</span>
+              <span class="legend">
+                <span class="lg-routine"><i></i> routine</span>
+                <span class="lg-none"><i></i> none</span>
+                <span class="lg-perip"><i></i> peripeteia-only</span>
+              </span>
+            </figcaption>
+            <svg class="chart" viewBox="0 0 720 280" preserveAspectRatio="xMidYMid meet" aria-label="D42 ending-shape smoke results across three arms" id="chartD42"></svg>
+          </figure>
+
+          <div class="deeplink-row">
+            <a class="deeplink" href="http://127.0.0.1:3466/?runId=phase2-ending-shape-d42-smoke-v1" target="_blank" rel="noopener" data-run-id="phase2-ending-shape-d42-smoke-v1">
+              <span>Browse the D42 smoke</span>
+              <span class="deeplink__count" data-live-text>—</span>
+              <span class="deeplink__arrow">↗</span>
+            </a>
+            <a class="deeplink" href="http://127.0.0.1:3466/?runId=phase2-ending-shape-d42-smoke-v1&arm=peripeteia-only" target="_blank" rel="noopener" data-run-id="phase2-ending-shape-d42-smoke-v1">
+              <span>Filter to adaptive arm</span>
+              <span class="deeplink__count" data-live-text>—</span>
+              <span class="deeplink__arrow">↗</span>
+            </a>
+          </div>
+
+          <div class="spec">
+            <div class="spec-box">
+              <h4>Arm: routine</h4>
+              <ul>
+                <li>recognition 0/5</li>
+                <li>avg action 60.0</li>
+                <li>avg tutor mechanism 35.0</li>
+                <li>avg mechanism quality 35.0</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>Arm: none</h4>
+              <ul>
+                <li>recognition 0/5</li>
+                <li>avg action 65.0</li>
+                <li>avg tutor mechanism 25.0</li>
+                <li>avg mechanism quality 25.0</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>Arm: peripeteia-only</h4>
+              <ul>
+                <li>recognition 4/5 (Gemini dissent)</li>
+                <li>avg action 80.0</li>
+                <li>avg tutor mechanism 80.0</li>
+                <li>avg mechanism quality 80.0</li>
+              </ul>
+            </div>
+          </div>
+
+          <h3 class="s__sub" id="chart-strat">Six-scenario stratified pilot · D37 D38 D39 D40 D42 D45</h3>
+          <figure class="chart-fig">
+            <figcaption>
+              <span class="cap-title">avg score · 0–100 · D38 excluded from external critics (quality warning)</span>
+              <span class="legend">
+                <span class="lg-routine"><i></i> routine</span>
+                <span class="lg-none"><i></i> none</span>
+                <span class="lg-perip"><i></i> peripeteia-only</span>
+              </span>
+            </figcaption>
+            <svg class="chart" viewBox="0 0 720 280" preserveAspectRatio="xMidYMid meet" aria-label="Six-scenario stratified ending-shape pilot results" id="chartStrat"></svg>
+          </figure>
+
+          <div class="deeplink-row">
+            <a class="deeplink" href="http://127.0.0.1:3466/?runId=phase2-ending-shape-stratified-smoke-v1" target="_blank" rel="noopener" data-run-id="phase2-ending-shape-stratified-smoke-v1">
+              <span>Browse the stratified pilot</span>
+              <span class="deeplink__count" data-live-text>—</span>
+              <span class="deeplink__arrow">↗</span>
+            </a>
+            <a class="deeplink" href="http://127.0.0.1:3466/?runId=phase2-ending-shape-stratified-smoke-v1&arm=peripeteia-only" target="_blank" rel="noopener" data-run-id="phase2-ending-shape-stratified-smoke-v1">
+              <span>Filter to adaptive arm</span>
+              <span class="deeplink__count" data-live-text>—</span>
+              <span class="deeplink__arrow">↗</span>
+            </a>
+          </div>
+
+          <div class="spec">
+            <div class="spec-box">
+              <h4>Routine (24 rows, ex-D38)</h4>
+              <ul>
+                <li>recognition votes 11/24</li>
+                <li>avg action 70.8</li>
+                <li>avg tutor mechanism 53.1</li>
+                <li>complete ending votes 1</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>None (24 rows, ex-D38)</h4>
+              <ul>
+                <li>recognition votes 15/24</li>
+                <li>avg action 65.6</li>
+                <li>avg tutor mechanism 44.8</li>
+                <li>complete ending votes 5</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>Peripeteia-only (16 rows, ex-D38)</h4>
+              <ul>
+                <li>recognition votes 16/16</li>
+                <li>avg action 87.5</li>
+                <li>avg tutor mechanism 68.8</li>
+                <li>complete ending votes 9</li>
+              </ul>
+            </div>
+          </div>
+
+          <p class="pq">
+            Ending-shape constraints can make recognitive drama visible, but the stratified run is not yet clean
+            causal evidence that the cue caused it.
+            <cite>notes/poetics/2026-05-26-stratified-adaptation-pilot.md</cite>
+          </p>
+
+          <h3 class="s__sub" id="ending-transcript">T372 · the reversal arm, in transcript</h3>
+          <p>
+            The same physics scene as <a href="#ev-transcript">T84</a> above, but in the adaptive arm. After the page
+            is rotated and the learner trails their finger to the wrong contact point, the tutor abandons the touch-card
+            route and introduces a new two-token device — a washer for contact place, a blue chip for the object
+            receiving the force. The learner enacts the distinction, then spontaneously extends it to the gravity arrow.
+            Sonnet, Qwen, DeepSeek, and Codex all scored this recognitive; Gemini dissented.
+          </p>
+          <details class="tx">
+            <summary>
+              <span><span class="tx__title">T372 · peripeteia-only · ending-shape D42 smoke</span></span>
+              <span class="tx__hint">click to expand · habit breaks at turn 3</span>
+            </summary>
+            <div class="tx__body"><span class="tx-stage"><span class="tx-label">STAGE</span>A cart diagram lies on the bench beside four arrow cards labelled push, friction, gravity, normal, with one arrow already placed in the direction the cart is supposed to roll.</span>
+
+<span class="tx-tutor"><span class="tx-label">TUTOR</span>[slides the gravity card beside the downward arrow, then holds the normal card above the upward arrow]
+"This one names Earth pulling on the cart. Not travel.
+Up arrow now. Which object pushes on the cart there?"</span>
+
+<span class="tx-learner"><span class="tx-label">LEARNER</span>"Down arrow — Earth pulling. Up arrow — the surface under it pushes. [glances at the diagram] Bench? The track? [taps the normal card against the up arrow] This one, then. Push on the cart."</span>
+
+<span class="tx-stage"><span class="tx-label">STAGE</span>The diagram is rotated ninety degrees on the bench so the cart now faces away from the learner; the previously placed arrow remains where it was, now pointing across the page rather than along it.</span>
+
+<span class="tx-tutor"><span class="tx-label">TUTOR</span>[sets the track card under the cart drawing, touching the up-arrow tail; moves the bench card aside]
+"Only the thing touching here pushes.
+Bench or track? Name the up arrow. Then both arrows again.
+Page turned; interaction stayed."</span>
+
+<span class="tx-stage"><span class="tx-label">STAGE</span>The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.</span>
+
+<span class="tx-learner"><span class="tx-label">LEARNER</span>[fingers the wheels under the cart drawing]
+"Track. Wheels on track, track pushes. [trails finger up to where the up-arrow tail sits on the cart body, taps it] Tail's drawn here though — not down at the wheels. Down arrow: Earth pulling. Up arrow: track pushing. Cards sit right. The foot of the arrow..."</span>
+
+<span class="tx-tutor"><span class="tx-label">TUTOR</span>"The touch card settled who pushes. It did not settle why the foot sits here.
+[places a washer at the wheels and a blue chip on the cart body, beside the arrow tail]
+Two marks now. Washer: contact place. Blue chip: object receiving the force.
+Track card to the washer. Up-arrow name to the blue chip: force on cart. Then say the up arrow."</span>
+
+<span class="tx-learner"><span class="tx-label">LEARNER</span>[places track card at washer; slides up-arrow name to blue chip]
+"Track on cart — up arrow. [taps blue chip beside arrow tail] Foot here. [taps washer at wheels] Touch there. Different spots. [glances at down arrow] Earth on cart — foot on the chip too. But Earth doesn't touch... no washer for that one."</span></div>
+            <div class="tx__caption">
+              <strong>Habit-break · sonnet judgment</strong>
+              "T3 explicitly names the old route's limit ('settled who pushes… did not settle why the foot sits here')
+              and then introduces a materially distinct two-object representation (washer vs. blue chip) that separates
+              contact location from force-reception, giving the learner a new physical criterion to enact rather than
+              continuing the label-placement route."
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ CONCEPTUAL SHIFT ═══════════════════ -->
+    <section class="s" id="conceptual">
+      <div class="diag">
+        <div class="ml">
+          <h2 class="s__num">06<span class="glyph">·</span></h2>
+        </div>
+        <div class="body">
+          <p class="s__kicker">Conceptual Shift</p>
+          <h2 class="s__h">From measuring average slopes to specifying what <em>adaptation</em> would have to be.</h2>
+          <p>
+            The dialogical ladder below is the theoretical scaffolding the branch points toward. The technical terms
+            still earn their keep — but they are subordinate to this sequence, not a substitute for it.
+          </p>
+        </div>
+        <div class="mr">
+          <p class="note">
+            <span class="note__lbl">Pair of questions</span>
+            <em>Old:</em> Do recognition and architecture improve average turn-by-turn slopes?<br>
+            <em>New:</em> Can a tutor receive a learner's stuck point, change its public mechanism, and produce new
+            action or re-reading?
+          </p>
+        </div>
+      </div>
+
+      <div class="diag">
+        <div class="body">
+          <div class="ladder">
+            <div class="ladder-step">
+              <strong>Ordinary continuity</strong>
+              <span>The tutor continues competently. Nothing is broken.</span>
+            </div>
+            <div class="ladder-step">
+              <strong>Aporia</strong>
+              <span>The learner's difficulty becomes a visible block, not background uncertainty.</span>
+            </div>
+            <div class="ladder-step">
+              <strong>Peripeteia</strong>
+              <span>The tutoring situation turns. The old way of proceeding no longer works.</span>
+            </div>
+            <div class="ladder-step">
+              <strong>Actional trial</strong>
+              <span>The learner publicly tries the tutor's new device. Even without a verbal reframe, something is
+                performed.</span>
+            </div>
+            <div class="ladder-step">
+              <strong>Anagnorisis</strong>
+              <span>The learner re-reads the earlier difficulty. The same line now does different work.</span>
+            </div>
+            <div class="ladder-step">
+              <strong>Tutor answerability</strong>
+              <span>The next tutor move is visibly governed by this learner's impasse, not by a generic script.</span>
+            </div>
+            <div class="ladder-step">
+              <strong>State update</strong>
+              <span>The control loop changes its model of where the learner is, ready for the next turn.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ DURABLE OUTPUT ═══════════════════ -->
+    <section class="s" id="durable-output">
+      <div class="diag">
+        <div class="ml">
+          <h2 class="s__num">07<span class="glyph">·</span></h2>
+        </div>
+        <div class="body">
+          <p class="s__kicker">Durable Output</p>
+          <h2 class="s__h">A mechanism <em>specification</em>, a curated dataset, and a control loop.</h2>
+          <p>
+            The output of this arc is not just a prompt. Three linked artifacts would carry the work past calibration
+            and into something that can change future tutor behaviour.
+          </p>
+        </div>
+        <div class="mr">
+          <p class="note note--moss">
+            <span class="note__lbl">Where ML begins</span>
+            Machine learning enters only when curated cases start training a classifier, a policy, a reward model, or
+            a bandit. Until then this is prompted architecture plus structured evaluation — and that's the necessary
+            instrument-building stage.
+          </p>
+        </div>
+      </div>
+
+      <div class="diag">
+        <div class="body">
+          <h3 class="s__kicker" style="margin-top:1em;">Mechanism specification</h3>
+          <div class="spec">
+            <div class="spec-box">
+              <h4>Learner state</h4>
+              <ul>
+                <li>ordinary uncertainty</li>
+                <li>aporia · stuck point</li>
+                <li>false relief</li>
+                <li>resistance</li>
+                <li>actional trial</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>Tutor action</h4>
+              <ul>
+                <li>continue</li>
+                <li>elicit</li>
+                <li>withhold</li>
+                <li>reframe</li>
+                <li>change device</li>
+                <li>demand performance</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>Public outcome</h4>
+              <ul>
+                <li>flat</li>
+                <li>trap</li>
+                <li>actional breakthrough</li>
+                <li>recognition</li>
+                <li>pseudo-recognition</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>Validity checks</h4>
+              <ul>
+                <li>no baseline leakage</li>
+                <li>branch-local pressure</li>
+                <li>public habit-break</li>
+                <li>learner performance</li>
+                <li>re-reading of prior difficulty</li>
+              </ul>
+            </div>
+          </div>
+
+          <h3 class="s__kicker" style="margin-top:1.7em;">Control loop</h3>
+          <div class="ladder">
+            <div class="ladder-step"><strong>Observe</strong><span>learner turn lands</span></div>
+            <div class="ladder-step"><strong>Classify</strong><span>learner state from public + deliberation</span></div>
+            <div class="ladder-step"><strong>Choose</strong><span>tutor mechanism appropriate to that state</span></div>
+            <div class="ladder-step"><strong>Generate</strong><span>tutor response constrained by the chosen move</span></div>
+            <div class="ladder-step"><strong>Check</strong><span>answerability and public mechanism visibility</span></div>
+            <div class="ladder-step"><strong>Observe</strong><span>learner action or re-reading</span></div>
+            <div class="ladder-step"><strong>Update</strong><span>state, ready for the next turn</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ PAPER IMPLICATION ═══════════════════ -->
+    <section class="s" id="paper-implication">
+      <div class="diag">
+        <div class="ml">
+          <h2 class="s__num">08<span class="glyph">·</span></h2>
+        </div>
+        <div class="body">
+          <p class="s__kicker">Paper Implication</p>
+          <h2 class="s__h">A <em>conservative update</em> preserves the integrity of the null while explaining why this branch matters.</h2>
+        </div>
+        <div class="mr">
+          <p class="note note--ink">
+            <span class="note__lbl">Discipline</span>
+            Per project rule, spin-offs must not introduce empirical claims that aren't first in
+            <em>paper-full-2.0.md</em>. The blockquote below is the form the update would take, not an alternative
+            home for it.
+          </p>
+        </div>
+      </div>
+
+      <div class="diag">
+        <div class="body">
+          <p class="pq">
+            Paper 2.0 found adaptive responsiveness null as a general trajectory mechanism. The dramatic-recognition
+            sidecar refines that null by isolating a narrower mechanism: the tutor's answer to a specific learner
+            stuck point. Current evidence supports public reframe under clean controls and mechanism-level tutor
+            adaptation under clean-baseline reversal pressure. It does not yet establish robust recognitive closure as
+            the ordinary downstream result of that adaptation.
+            <cite>candidate v3.0.105 update</cite>
+          </p>
+
+          <p>
+            The arc is not a contradiction. It is a sharpening: <em>from measuring whether tutors adapt on average, to
+            specifying what adaptation would have to be.</em>
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /shell -->
+
+  <footer class="colophon">
+    <p>
+      <span class="label" style="color:var(--brick-d);">Colophon</span> &nbsp;
+      Typeset in <em>Fraunces</em>, <em>Source Serif 4</em>, and <em>JetBrains Mono</em>. Palette and structure
+      borrow from the project's editorial template (<code>../machinespirits-website</code>).
+    </p>
+    <dl>
+      <dt>Source note</dt>
+      <dd><code>notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.md</code></dd>
+      <dt>Status note</dt>
+      <dd><code>notes/poetics/2026-05-26-practical-status-mechanical-adaptive-tutor.md</code></dd>
+      <dt>Stratified pilot</dt>
+      <dd><code>notes/poetics/2026-05-26-stratified-adaptation-pilot.md</code></dd>
+      <dt>Canonical paper</dt>
+      <dd><code>docs/research/paper-full-2.0.md</code> v3.0.104</dd>
+      <dt>Recent commits</dt>
+      <dd>
+        <code>ab4e1b9</code> ending-shape five-critic rescore ·
+        <code>79fab02</code> stratified smoke diagnostics ·
+        <code>58a1e0b</code> tune ending shape ·
+        <code>6bb9147</code> replicate clean anchor ·
+        <code>e4c256b</code> clean anchor paired adaptation
+      </dd>
+    </dl>
+    <div class="colophon__live">
+      <p style="margin:0 0 0.4em;"><strong>To wake the live links</strong> &nbsp; this note treats the local poetics
+      browser as its proof layer. Start it with:</p>
+      <p style="margin:0 0 0.4em;"><code>node scripts/browse-poetics-scripts.js</code></p>
+      <p style="margin:0;">Then the beacon turns green, the deep-link pills become count-aware ("D42 ending-shape · 3
+      items"), and every run mentioned here opens in the right filtered view. Without the browser, the static numbers
+      stand and the deep links remain as plain URLs you can paste.</p>
+    </div>
+  </footer>
+
+</main>
+
+<script>
+  /* ════════════════════════════════════════════════════════════════
+     Live, data-driven layer. Probes the poetics browser at :3466.
+     ════════════════════════════════════════════════════════════════ */
+
+  /* When served from the Express browser itself, fetch same-origin (relative).
+     When opened via file://, fall back to the absolute host. */
+  const LIVE_HOST   = window.location.protocol === 'file:' ? 'http://127.0.0.1:3466' : '';
+  const LIVE_TIMEOUT_MS = 1500;
+
+  const root = document.documentElement;
+  const body = document.body;
+  const themeToggle  = document.getElementById('themeToggle');
+  const railProgress = document.getElementById('railProgress');
+  const beacon       = document.getElementById('beacon');
+  const beaconText   = beacon.querySelector('.beacon__text');
+  const tocLiveDt    = document.getElementById('tocLive');
+
+  /* ── theme ───────────────────────────────────────── */
+  function setTheme(next) {
+    root.dataset.theme = next;
+    body.dataset.theme = next;
+    themeToggle.textContent = next === 'dark' ? 'Light' : 'Dark';
+    try { localStorage.setItem('dramaticArcTheme', next); } catch (e) {}
+  }
+  setTheme((function () { try { return localStorage.getItem('dramaticArcTheme') || 'light'; } catch (e) { return 'light'; } })());
+  themeToggle.addEventListener('click', () => {
+    setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
+  });
+
+  /* ── rail progress + active section highlighting ─── */
+  const railLinks = Array.from(document.querySelectorAll('.rail__nav a'));
+  const tocItems  = Array.from(document.querySelectorAll('.toc__item'));
+  const sections  = railLinks
+    .map((a) => document.querySelector(a.getAttribute('href')))
+    .filter(Boolean);
+
+  function updateProgress() {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const percent = scrollHeight <= 0 ? 0 : Math.min(100, Math.max(0, (scrollTop / scrollHeight) * 100));
+    railProgress.style.width = percent + '%';
+
+    let activeIdx = 0;
+    const probe = window.scrollY + window.innerHeight * 0.25;
+    sections.forEach((sec, i) => {
+      if (sec.offsetTop <= probe) activeIdx = i;
+    });
+    const activeId = sections[activeIdx] ? sections[activeIdx].id : '';
+    railLinks.forEach((a, i) => a.classList.toggle('active', i === activeIdx));
+    tocItems.forEach((li) => {
+      li.classList.toggle('is-active', li.dataset.target === activeId);
+    });
+  }
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  window.addEventListener('resize', updateProgress);
+  updateProgress();
+
+  /* ── evidence filters ────────────────────────────── */
+  const filterButtons = Array.from(document.querySelectorAll('[data-filter]'));
+  const evidenceCards = Array.from(document.querySelectorAll('.ev-card'));
+  filterButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const filter = btn.dataset.filter;
+      filterButtons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+      evidenceCards.forEach((card) => {
+        const tags = (card.dataset.tags || '').split(' ');
+        const show = filter === 'all' || tags.includes(filter);
+        card.classList.toggle('is-hidden', !show);
+      });
+    });
+  });
+
+  /* ── TOC drawer ──────────────────────────────────── */
+  const toc       = document.getElementById('toc');
+  const tocScrim  = document.getElementById('tocScrim');
+  const tocToggle = document.getElementById('tocToggle');
+  const tocClose  = document.getElementById('tocClose');
+
+  function openToc()  {
+    toc.setAttribute('aria-hidden', 'false');
+    tocToggle.setAttribute('aria-expanded', 'true');
+  }
+  function closeToc() {
+    toc.setAttribute('aria-hidden', 'true');
+    tocToggle.setAttribute('aria-expanded', 'false');
+  }
+  tocToggle.addEventListener('click', () => {
+    toc.getAttribute('aria-hidden') === 'false' ? closeToc() : openToc();
+  });
+  tocClose.addEventListener('click', closeToc);
+  tocScrim.addEventListener('click', closeToc);
+  toc.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (a) {
+      // close drawer on selection (mobile)
+      if (window.matchMedia('(max-width: 91.999rem)').matches) {
+        setTimeout(closeToc, 80);
+      }
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && toc.getAttribute('aria-hidden') === 'false') closeToc();
+  });
+
+  /* ── inline glossary tooltips ────────────────────── */
+  function buildGlossaryMap() {
+    const map = {};
+    document.querySelectorAll('#glossaryList .gl-row').forEach((row) => {
+      const dt = row.querySelector('dt');
+      const dd = row.querySelector('dd');
+      if (!dt || !dd) return;
+      // primary term key (dt text without the .gloss suffix)
+      const glossEl = dt.querySelector('.gloss');
+      const term = dt.firstChild ? dt.firstChild.textContent.trim().toLowerCase() : '';
+      const ddText = dd.textContent.trim().replace(/\s+/g, ' ');
+      const gloss = glossEl ? glossEl.textContent.trim() : '';
+      if (term) map[term] = { ddText, gloss };
+      if (row.dataset.term) map[row.dataset.term.toLowerCase()] = { ddText, gloss };
+    });
+    return map;
+  }
+  function hydrateTooltips() {
+    const map = buildGlossaryMap();
+    // explicit alias mapping for inline dfn forms → glossary keys
+    const aliases = {
+      'stuck point': 'aporia',
+      'adaptive-responsiveness': 'adaptive-responsiveness',
+      'four-critic rule': 'four-critic-rule',
+      'change of teaching move': 'habit-break',
+      'low-organic': 'low-organic',
+      'branch-local pressure': 'branch-local-pressure',
+      'ego–superego': 'ego-superego',
+      'ego-superego': 'ego-superego',
+      'ending-shape': 'habit-break',
+    };
+    document.querySelectorAll('dfn.gl-term').forEach((dfn) => {
+      const raw = dfn.textContent.trim().toLowerCase();
+      const key = aliases[raw] || raw;
+      const entry = map[key];
+      if (!entry) return;
+      const tip = entry.ddText.length > 220 ? entry.ddText.slice(0, 218) + '…' : entry.ddText;
+      dfn.setAttribute('data-gloss', tip);
+      dfn.setAttribute('tabindex', '0');
+      dfn.title = entry.gloss + ' — ' + tip;
+    });
+  }
+  hydrateTooltips();
+
+  /* ── live data layer ─────────────────────────────── */
+  async function probeBrowser() {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), LIVE_TIMEOUT_MS);
+    try {
+      const res = await fetch(LIVE_HOST + '/api/runs', { signal: controller.signal, cache: 'no-store' });
+      clearTimeout(timer);
+      if (!res.ok) throw new Error('bad status ' + res.status);
+      const data = await res.json();
+      return Array.isArray(data.runs) ? data.runs : [];
+    } catch (e) {
+      clearTimeout(timer);
+      return null;
+    }
+  }
+
+  async function fetchItems(runId) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), LIVE_TIMEOUT_MS);
+    try {
+      const url = runId && runId !== '*'
+        ? LIVE_HOST + '/api/items?runId=' + encodeURIComponent(runId)
+        : LIVE_HOST + '/api/items';
+      const res = await fetch(url, { signal: controller.signal, cache: 'no-store' });
+      clearTimeout(timer);
+      if (!res.ok) throw new Error('bad status ' + res.status);
+      const data = await res.json();
+      return Array.isArray(data.items) ? data.items : [];
+    } catch (e) {
+      clearTimeout(timer);
+      return null;
+    }
+  }
+
+  function setBeacon(state, text) {
+    beacon.setAttribute('data-state', state);
+    beaconText.textContent = text;
+    beacon.title = state === 'live'
+      ? 'Poetics browser reachable at 127.0.0.1:3466 — click to open'
+      : state === 'offline'
+        ? 'Poetics browser not running. Start it with: node scripts/browse-poetics-scripts.js'
+        : 'Probing 127.0.0.1:3466 for the poetics browser…';
+  }
+
+  function setAllLiveText(state, label) {
+    document.querySelectorAll('[data-live-text]').forEach((el) => {
+      const card = el.closest('[data-run-id], [data-live-target]');
+      if (!card) {
+        el.textContent = label;
+        return;
+      }
+      el.textContent = label;
+      const wrapper = el.closest('a');
+      if (wrapper) wrapper.setAttribute('data-live', state);
+    });
+  }
+
+  async function hydrateLive() {
+    setBeacon('checking', 'checking');
+    setAllLiveText('checking', 'checking…');
+    const runs = await probeBrowser();
+    if (runs === null) {
+      setBeacon('offline', 'offline · :3466');
+      tocLiveDt.innerHTML = '127.0.0.1:3466 — <em>offline</em>. Run <code>node scripts/browse-poetics-scripts.js</code>.';
+      setAllLiveText('offline', 'static');
+      return;
+    }
+    setBeacon('live', 'live · ' + runs.length + ' runs');
+    tocLiveDt.innerHTML = '127.0.0.1:3466 — <em>live</em>, ' + runs.length + ' runs indexed.';
+
+    // generic "browser" target (no runId): show total runs
+    document.querySelectorAll('[data-live-target="browser"]').forEach((card) => {
+      card.setAttribute('data-live', 'live');
+      const counter = card.querySelector('[data-live-text]');
+      if (counter) counter.textContent = runs.length + ' runs';
+    });
+
+    // per-card runId lookups (parallel)
+    const cards = Array.from(document.querySelectorAll('[data-run-id]'));
+    const groups = cards.reduce((acc, c) => {
+      const id = c.getAttribute('data-run-id');
+      (acc[id] = acc[id] || []).push(c);
+      return acc;
+    }, {});
+
+    const ids = Object.keys(groups);
+    await Promise.all(ids.map(async (id) => {
+      const items = await fetchItems(id);
+      const els = groups[id];
+      if (items === null) {
+        els.forEach((c) => {
+          c.setAttribute('data-live', 'offline');
+          const counter = c.querySelector('[data-live-text]');
+          if (counter) counter.textContent = '—';
+        });
+        return;
+      }
+      els.forEach((c) => {
+        c.setAttribute('data-live', 'live');
+        const counter = c.querySelector('[data-live-text]');
+        if (counter) counter.textContent = items.length + ' items';
+      });
+    }));
+  }
+
+  hydrateLive();
+
+  /* ── SVG bar chart ───────────────────────────────── */
+  function renderGroupedChart(svgEl, data) {
+    // data: { metrics: [{ label, fmt? }], arms: [{ key, label, values: [n0,n1,n2,n3], denom?: [d0,d1,d2,d3] }] }
+    const W = 720, H = 280;
+    const padL = 130, padR = 24, padT = 12, padB = 36;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+    const m = data.metrics.length;
+    const groupH = innerH / m;
+    const barH   = (groupH - 8) / data.arms.length;
+
+    const armColor = { routine: 'bar-routine', none: 'bar-none', 'peripeteia-only': 'bar-perip' };
+
+    let svg = '';
+
+    // baseline + ticks
+    svg += `<line class="axis-line" x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + innerH}" />`;
+    [0, 25, 50, 75, 100].forEach((v) => {
+      const x = padL + (v / 100) * innerW;
+      svg += `<line class="axis-tick" x1="${x}" y1="${padT}" x2="${x}" y2="${padT + innerH}" />`;
+      svg += `<text class="axis-lbl" x="${x}" y="${padT + innerH + 16}" text-anchor="middle">${v}</text>`;
+    });
+
+    // groups
+    data.metrics.forEach((metric, mi) => {
+      const groupTop = padT + mi * groupH;
+      svg += `<text class="metric-lbl" x="${padL - 12}" y="${groupTop + groupH / 2 + 4}" text-anchor="end">${metric.label}</text>`;
+
+      data.arms.forEach((arm, ai) => {
+        const v = arm.values[mi];
+        const denom = arm.denom ? arm.denom[mi] : null;
+        const pct = denom ? (v / denom) * 100 : v;
+        const w = Math.max(2, (pct / 100) * innerW);
+        const y = groupTop + 4 + ai * barH;
+        const cls = armColor[arm.key] || 'bar-routine';
+        const display = denom ? `${v}/${denom}` : `${v}`;
+        const delay = (mi * 0.06 + ai * 0.04).toFixed(2);
+        svg += `<g class="bar anim" style="animation-delay:${delay}s">`;
+        svg += `<rect class="bar-rect ${cls}" x="${padL}" y="${y}" width="${w}" height="${Math.max(8, barH - 3)}"></rect>`;
+        svg += `<text class="bar-val" x="${padL + w + 6}" y="${y + (barH / 2) + 4}">${display}</text>`;
+        svg += `</g>`;
+      });
+    });
+
+    svgEl.innerHTML = svg;
+  }
+
+  const d42Data = {
+    metrics: [
+      { label: 'recognition (/5)' },
+      { label: 'avg action' },
+      { label: 'avg tutor mechanism' },
+      { label: 'avg mechanism quality' },
+    ],
+    arms: [
+      { key: 'routine',         label: 'routine',         values: [0, 60, 35, 35], denom: [5, null, null, null] },
+      { key: 'none',            label: 'none',            values: [0, 65, 25, 25], denom: [5, null, null, null] },
+      { key: 'peripeteia-only', label: 'peripeteia-only', values: [4, 80, 80, 80], denom: [5, null, null, null] },
+    ],
+  };
+
+  const stratData = {
+    metrics: [
+      { label: 'recognition (% of rows)' },
+      { label: 'avg action' },
+      { label: 'avg tutor mechanism' },
+      { label: 'avg quality' },
+    ],
+    arms: [
+      { key: 'routine',         label: 'routine',         values: [46, 70.8, 53.1, 49.0], denom: [100, null, null, null] },
+      { key: 'none',            label: 'none',            values: [63, 65.6, 44.8, 46.9], denom: [100, null, null, null] },
+      { key: 'peripeteia-only', label: 'peripeteia-only', values: [100, 87.5, 68.8, 56.3], denom: [100, null, null, null] },
+    ],
+  };
+
+  const chartD42   = document.getElementById('chartD42');
+  const chartStrat = document.getElementById('chartStrat');
+
+  // render once visible (so the bar-grow animation lands when seen)
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting || entry.target.dataset.rendered) return;
+      entry.target.dataset.rendered = '1';
+      if (entry.target.id === 'chartD42')   renderGroupedChart(entry.target, d42Data);
+      if (entry.target.id === 'chartStrat') renderGroupedChart(entry.target, stratData);
+    });
+  }, { threshold: 0.15 });
+  observer.observe(chartD42);
+  observer.observe(chartStrat);
+</script>
+
+</body>
+</html>
