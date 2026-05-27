@@ -504,6 +504,34 @@
     line-height: 1.25;
     letter-spacing: -0.01em;
   }
+  .hero__latest {
+    margin: 1.5em auto 0;
+    max-width: 80rem;
+    padding: 1em clamp(1rem, 4vw, 4rem);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    background: color-mix(in srgb, var(--paper-3) 72%, transparent);
+    display: grid;
+    grid-template-columns: minmax(0, 0.32fr) minmax(0, 0.68fr);
+    gap: clamp(1rem, 3vw, 2.5rem);
+    align-items: baseline;
+  }
+  @media (max-width: 60rem) { .hero__latest { grid-template-columns: 1fr; } }
+  .hero__latest strong {
+    display: block;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-3);
+    font-weight: 430;
+    line-height: 1.15;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .hero__latest p {
+    margin: 0;
+    font-size: var(--s-1);
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
   .hero__lede {
     margin: 2.4em auto 0;
     max-width: 80rem;
@@ -1367,20 +1395,34 @@
 
   <section class="hero">
     <div class="hero__rune">
-      <span>§</span> Synthesis Note · 2026-05-26 · paper-full-2.0.md v3.0.104 · <span style="color:var(--moss-deep);">live · :3466</span>
+      <span>§</span> Synthesis Note · updated 2026-05-27 · paper-full-2.0.md v3.0.104 · <span style="color:var(--moss-deep);">live · :3466</span>
     </div>
 
     <div class="hero__masthead">
       <span class="label">Dramatic Recognition Arc</span>
       <span class="hero__rule"></span>
-      <span class="label">Arc To Date</span>
+      <span class="label">Latest Landing</span>
     </div>
 
     <h1 class="hero__h1">From Paper 2.0 to <span class="em">dramatic recognition</span></h1>
 
     <p class="hero__subtitle">
-      The last paper found that recognition prompts and a draft-then-critique architecture did not, on average, change how tutors move across turns. This branch sharpens that broad null into a narrower question — and lets you click any claim into the running browser.
+      The latest gated loop produced one fully clean pass, then failed to repeat. That leaves us with a working mechanism-discovery apparatus and a precise next problem: turn tutor adaptation and learner action into stable public recognition.
     </p>
+
+    <div class="hero__latest">
+      <div>
+        <span class="chip chip--ochre"><span class="chip__dot"></span> Latest · 2026-05-27</span>
+      </div>
+      <div>
+        <strong>One pass, no repeat-stable adaptation → recognition proof yet.</strong>
+        <p>
+          Run <code>phase2-adaptation-recognition-loop-20260527T105617Z</code> passed 9/9 items in iteration 1, then
+          failed at 6/9 in iterations 2 and 3. Controls mostly held; branch-valid tutor peripeteia remained visible;
+          recognitive closure was the unstable downstream link.
+        </p>
+      </div>
+    </div>
 
     <div class="hero__lede">
       <div>
@@ -1391,10 +1433,9 @@
           This is what the paper's <dfn class="gl-term" data-target="glossary">adaptive-responsiveness</dfn> null left under-specified.
         </p>
         <p>
-          The current branch supports two bounded findings: public learner reframing reliably yields recognitive form
-          under the <dfn class="gl-term" data-target="glossary">four-critic rule</dfn>, and on the cleanest scenarios a constraint that forces the learner to
-          <em>visibly try</em> the tutor's new device produces 16-of-16 adaptive-arm recognition with flat controls.
-          The same constraint on a broader stratified pilot is mixed.
+          The current branch supports public learner reframing as a recognitive-form mechanism and tutor peripeteia as
+          a real mechanism-level adaptation. It does <em>not</em> yet support the stronger claim that adaptation
+          reliably produces recognition across clean anchors. The newly tightened ending contract is the next test.
         </p>
         <p class="hero__cta">
           <a class="deeplink" href="http://127.0.0.1:3466/" target="_blank" rel="noopener" data-live-target="browser">
@@ -1410,13 +1451,17 @@
             <span>D42 ending-shape chart</span>
             <span class="deeplink__arrow">↓</span>
           </a>
+          <a class="deeplink" href="#landing-update">
+            <span>Latest loop result</span>
+            <span class="deeplink__arrow">↓</span>
+          </a>
         </p>
       </div>
       <aside class="hero__num">
-        <div class="hero__num__big">16<span class="frac">/16</span></div>
+        <div class="hero__num__big">1<span class="frac">/3</span></div>
         <p class="hero__num__sub">
-          adaptive-arm recognitions in the D42 ending-shape smoke. The same scenario's <em>routine</em> and <em>none</em>
-          arms scored 0/5 each — controls stayed flat while the adaptive arm took recognitive form.
+          full-loop passes in the latest D42/D50/D53 gated test. The result is promising but not a termination point:
+          we still need two clean passes before claiming reliable adaptation to recognition.
         </p>
       </aside>
     </div>
@@ -1710,6 +1755,19 @@
           </div>
 
           <div class="ev-grid" id="evidenceGrid">
+            <article class="ev-card" data-status="boundary" data-tags="boundary">
+              <span class="chip chip--ochre"><span class="chip__dot"></span> Current landing</span>
+              <h3>Gated adaptation → recognition loop</h3>
+              <p>D42/D50/D53 produced one fully clean gated iteration, then two failed replicates. Controls mostly
+                held; branch-valid tutor adaptation remained visible; recognitive closure was not repeat-stable.</p>
+              <div class="deeplink-row">
+                <a class="deeplink" href="#landing-update">
+                  <span>Read landing update</span>
+                  <span class="deeplink__arrow">↓</span>
+                </a>
+              </div>
+            </article>
+
             <article class="ev-card" data-status="strong" data-tags="strong">
               <span class="chip chip--moss"><span class="chip__dot"></span> Strong</span>
               <h3>Public reframe → recognitive form</h3>
@@ -1724,11 +1782,12 @@
               </div>
             </article>
 
-            <article class="ev-card" data-status="strong" data-tags="strong">
-              <span class="chip chip--moss"><span class="chip__dot"></span> Strong</span>
+            <article class="ev-card" data-status="boundary" data-tags="strong boundary">
+              <span class="chip chip--ochre"><span class="chip__dot"></span> Strong mechanism · boundary claim</span>
               <h3>D42/D50/D53 clean-anchor adaptation</h3>
               <p>Reversal pressure enters the tutor loop and produces a visible change of move. Routine and no-cue arms
-                scored 0/6 sidecar adaptation; the reversal arm scored 6/6 with every item branch-valid.</p>
+                scored 0/6 sidecar adaptation in the replication run; the reversal arm scored 6/6 with every item
+                branch-valid. The later gated loop shows this is not yet reliable recognitive closure.</p>
               <div class="deeplink-row">
                 <a class="deeplink" href="http://127.0.0.1:3466/?runId=phase2-clean-anchor-paired-adaptation-replication-v1" target="_blank" rel="noopener" data-run-id="phase2-clean-anchor-paired-adaptation-replication-v1">
                   <span>Open in browser</span>
@@ -1752,19 +1811,6 @@
                 </a>
                 <a class="deeplink" href="#chart-d42">
                   <span>See chart</span>
-                  <span class="deeplink__arrow">↓</span>
-                </a>
-              </div>
-            </article>
-
-            <article class="ev-card" data-status="boundary" data-tags="boundary">
-              <span class="chip chip--ochre"><span class="chip__dot"></span> Boundary</span>
-              <h3>Gated adaptation → recognition loop</h3>
-              <p>D42/D50/D53 produced one fully clean gated iteration, then two failed replicates. Controls mostly
-                held; branch-valid tutor adaptation remained visible; recognitive closure was not repeat-stable.</p>
-              <div class="deeplink-row">
-                <a class="deeplink" href="#landing-update">
-                  <span>Read landing update</span>
                   <span class="deeplink__arrow">↓</span>
                 </a>
               </div>
