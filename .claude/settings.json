@@ -10,6 +10,16 @@
     ]
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "loops=$(ps -axo pid,stat,command 2>/dev/null | rg 'run-poetics-adaptation-loop|run-poetics-production-batch|generate-pedagogical-dramas' | rg -v ' rg ' || true); if [ -n \"$loops\" ]; then echo \"WARNING: poetics loops currently running (do not start another):\"; echo \"$loops\"; else echo \"poetics: no loops running\"; fi; latest=$(ls -t exports/*adaptation-recognition-loop*loop-status.md 2>/dev/null | head -1); if [ -n \"$latest\" ]; then echo \"latest loop status: $latest\"; sed -n '1,12p' \"$latest\"; fi; exit 0"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Edit|Write|MultiEdit",
@@ -28,6 +38,10 @@
           {
             "type": "command",
             "command": "DIR=\"${CLAUDE_PROJECT_DIR:-.}\"; f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in *.js) cd \"$DIR\" 2>/dev/null || exit 0; out=$(./node_modules/.bin/eslint --fix \"$f\" 2>&1); rc=$?; ./node_modules/.bin/prettier --write \"$f\" >/dev/null 2>&1; if [ $rc -ne 0 ]; then echo \"Hook ran eslint --fix + prettier on $f, but ESLint errors remain (npm run lint / CI will fail) — fix these now:\" >&2; echo \"$out\" >&2; exit 2; fi ;; esac; exit 0"
+          },
+          {
+            "type": "command",
+            "command": "DIR=\"${CLAUDE_PROJECT_DIR:-.}\"; f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in *paper-full-2.0.md|*paper-short-2.0.md) cd \"$DIR\" 2>/dev/null || exit 0; echo \"Paper edited; running paper:provable-discourse:smoke (warn-only) ...\" >&2; out=$(npm run --silent paper:provable-discourse:smoke 2>&1); rc=$?; if [ $rc -ne 0 ]; then echo \"WARNING: paper:provable-discourse:smoke FAILED -- new/changed claim may be missing from the inventory. Run 'npm run paper:provable-discourse' for the full report.\" >&2; echo \"$out\" | tail -30 >&2; fi ;; esac; exit 0"
           }
         ]
       }

@@ -1,5 +1,9 @@
 # Project Memory for Claude
 
+## This fork
+
+This is `machinespirits-eval-dramatic` — a fork of `machinespirits-eval` specialised for the **Dramatic Recognition / Poetics** arc (sanctioned 2026-05-19). Master plan: `DRAMATIC-RECOGNITION-PLAN.md`. The full eval-factorial machinery below (cells 1–125, ego-superego, adaptive runner, rubrics v2.2) is inherited unchanged; the *active* work lives in the poetics pipeline and lands as a new § of `docs/research/paper-full-2.0.md`. Sibling agent docs at repo root: `AGENTS.md` (Codex), `GEMINI.md`.
+
 ## Core Architecture
 
 ### Bilateral Ego-Superego Architecture
@@ -140,11 +144,11 @@ A cell's architecture is determined by these YAML fields:
 
 **Superego presence summary**: Only cells with `multi_agent_tutor: true` AND an explicit superego block have an active superego agent. These are: 3-4, 7-8, 11-12, 17-18, 22-33, 82-83, 86-89. All other cells (including 34-79, 80-81, 84-85, 90, 95-96, 101-109) have `superego: null`.
 
-**Cell registry (source-of-truth):** the canonical list of registered cell names is the `EVAL_ONLY_PROFILES` array in `services/evaluationRunner.js` (~line 102). When in doubt about whether a name is registered, grep there — not this doc.
+**Cell registry (source-of-truth):** the canonical list of registered cell names is the `EVAL_ONLY_PROFILES` array in `services/evaluationRunner.js` (~line 100). When in doubt about whether a name is registered, grep there — not this doc.
 
 ### Adding New Cells
 
-New eval-repo cells must be registered in the `EVAL_ONLY_PROFILES` array in `services/evaluationRunner.js` (line ~102). Without this, `resolveEvalProfile()` won't remap cell names to tutor-core profiles, and the run will silently fall back to the default profile.
+New eval-repo cells must be registered in the `EVAL_ONLY_PROFILES` array in `services/evaluationRunner.js` (line ~100). Without this, `resolveEvalProfile()` won't remap cell names to tutor-core profiles, and the run will silently fall back to the default profile.
 
 Cell names must include "dialectical" if they use `prompt_type: dialectical_suspicious` (test enforced).
 
@@ -176,6 +180,20 @@ Placebo prompts (`prompts/tutor-ego-placebo.md`, `prompts/tutor-superego-placebo
 - Contain pedagogical best practices
 - Remove all Hegelian theory (mutual recognition, autonomous subject, etc.)
 - Enable 3-way comparison: enhanced vs placebo vs recognition
+
+### Poetics / Dramatic Recognition (active workstream)
+
+Treats the tutoring dialogue as a *drama* and the evaluator as a *literary critic* — scored on dramatic form (peripeteia + anagnorisis) at the **whole-transcript** level, not per-turn. Design doc: `DRAMATIC-RECOGNITION-PLAN.md`. Working notes (live): `notes/poetics/` (dated files).
+
+- **Rubric**: `config/evaluation-rubric-poetics.yaml` (v1.0, Aristotle-derived, 6 dimensions) — independent of v2.2 tutor and charisma rubrics; can be cross-correlated.
+- **Generation**: `npm run drama:generate` (scripts/drama-generator.js)
+- **Ingest & report**: `npm run poetics:ingest`, `npm run poetics:report`, `npm run poetics:browse` (local web UI for transcripts)
+- **Adaptation loop**: `npm run poetics:adaptation-loop`, `poetics:audit-quality`, `poetics:diagnose-adaptation`
+- **Scoring**: `poetics:score-sonnet`, `poetics:structure-critic`, `poetics:flag-review`, `poetics:audit` (cross-critic disagreement)
+- **Packaging**: `npm run poetics:package-run` (archive a run's artifacts for sharing)
+- **Outputs**: `exports/phase2-classic-drama-*` (pilot reports, adaptation failures, tutor-adaptation csvs)
+
+Note: phase-2 transfer of the codex-trained instrument to tutoring transcripts FAILED (weighted κ ≈ 0.04 vs ≥0.60 target) — the instrument classifies dramatic form, NOT mind-reading or real learning. Treat critic divergence as a finding, not a κ-failure.
 
 ## Evaluation Methodology
 
@@ -232,7 +250,7 @@ The script `scripts/analyze-judge-reliability.js` implements this correctly by h
 - **Rubric version columns**: `tutor_rubric_version`, `learner_rubric_version`, `dialogue_rubric_version`, `deliberation_rubric_version` — auto-resolved from YAML `version:` fields at write time. `"1.0"` = original rubric (14 tutor dimensions). `"2.0"` = v2 rubric overhaul (Feb 26). `"2.1"` = public-only output scoring + deliberation rubric (Feb 27). `"2.2"` = literature-informed redesign (Feb 28): consolidates 14 → 8 tutor dimensions using GuideEval P→O→E decomposition, adds `content_accuracy`, removes `learner_growth`. Versioned rubrics live in `config/rubrics/v{X.Y}/`; active rubrics are in `config/`. **Do NOT retroactively score historical data under a newer rubric version** — this creates cross-version contamination that invalidates within-run comparisons.
 - **Charisma rubric** (`config/evaluation-rubric-charisma.yaml` v1.0) is independent of v2.2 — used only by id-director cells (101-109). Stored in `tutor_charisma_*` columns and can be cross-correlated with the v2.2 tutor rubric.
 - **Provenance hashes**: `config_hash`, `dialogue_content_hash`, `prompt_content_hash` enable cross-run reproducibility checks. `services/evalSignature.js` validates consistency (e.g. detects `config_hash_drift` when the same profile+scenario produces rows with different hashes).
-- **Two boards**: `TODO.md` (root) is the long-horizon experimental/infrastructure list (A* experiments, B* code quality, C* maintenance, D* research). `notes/paper-2-0/BOARD.md` is Paper 2.0's working board (WS1-WS5 workstreams). Don't conflate them — `TODO.md` is canonical for "what's next overall"; `BOARD.md` is canonical only for Paper 2.0 work.
+- **Boards**: `TODO.md` (root) is the long-horizon experimental/infrastructure list (A* experiments, B* code quality, C* maintenance, D* research). Paper 2.0 working notes live as dated files under `notes/poetics/` (active arc) and `notes/` more broadly — there is no separate `BOARD.md` in this fork.
 
 ### Test Directory Convention
 
@@ -351,29 +369,12 @@ Full registry: `scripts/ANALYSIS-SCRIPTS.md`. Workflow guide: `docs/analysis-too
 
 ## Paper Authoring Discipline
 
-**Source of truth**: `docs/research/paper-full-2.0.md` is the canonical document for all empirical claims, analyses, numbers, tables, interpretations, and methodology that derive from the project's data. **Spin-off papers, short papers, slides, talk decks, and blog posts must not introduce original claims not first added to `paper-full-2.0.md`.**
+**Source of truth**: `docs/research/paper-full-2.0.md` is canonical for every empirical claim, number, table, and analysis. Spin-offs (short paper, slides, blog posts, talks) must NOT introduce original empirical claims — they inherit from the main paper.
 
-**Why this rule exists**: Sync drift between the main paper and spin-offs creates three failure modes — citation ambiguity (which document is the canonical reference for claim X?), divergent numerical reporting (a correction in one document doesn't propagate to readers of the other), and review burden (each spin-off requires re-validating claims against the data rather than against the main paper). One source-of-truth document prevents all three.
-
-**How to apply when drafting or iterating on a spin-off**:
-1. Copy or reframe content from `paper-full-2.0.md`. Cite section numbers explicitly.
-2. If a new claim feels necessary in the spin-off, **stop and add it to `paper-full-2.0.md` first** (with version bump and revision-history entry). Then the spin-off inherits it.
-3. If a new analysis or new dataset would strengthen the spin-off, the analysis goes into `scripts/`, the report into `exports/`, the interpretive prose into `paper-full-2.0.md` (new section or §-extension), and only then is the spin-off updated.
-
-**Exceptions — genuinely fresh content allowed in spin-offs**:
-- Framing prose (abstract, introduction, related work, conclusion) that does not claim new empirical results.
-- Citation context for spin-off-specific references (e.g., causal-inference textbooks for the methods paper) when those citations do not bear on Paper 2.0's claims.
-- Spin-off-specific methodology framing that re-presents existing data through a different lens (e.g., the methods paper's "Application protocol" framing of paper-full-2.0.md §7.10.1's existing replication data) without introducing new empirical claims.
-
-**What violates the rule**:
-- New analyses, new numbers, new tables, new empirical claims that do not appear in `paper-full-2.0.md`.
-- Re-running a script with different parameters and reporting the result only in a spin-off.
-- Adding a new dataset or external comparison only to the spin-off.
-- Introducing a new figure derived from data only in a spin-off.
-
-**Mechanism for catching violations**: when reviewing a spin-off, search for any numerical claim or empirical assertion and confirm it traces to a specific section of `paper-full-2.0.md`. If it doesn't, the claim either belongs in `paper-full-2.0.md` (add it) or shouldn't be in the spin-off (remove it).
-
-The methods-paper skeleton (`notes/methods-paper-skeleton.md`) operationalises this rule for the methods-paper extraction with a "hard rule" section. The same logic applies to all other spin-offs (short paper, slides, blog posts, conference talks).
+- **New claim?** Add it to `paper-full-2.0.md` first (with version bump + revision-history entry); the spin-off then inherits it.
+- **New analysis?** Script lands in `scripts/`, report in `exports/`, interpretation in `paper-full-2.0.md`, then the spin-off.
+- **Allowed in spin-offs without main-paper changes**: framing prose (abstract, intro, related work), spin-off-specific citations, re-presenting existing data through a different lens.
+- **Review check**: every number in a spin-off must trace to a specific § of `paper-full-2.0.md`. If not, either add it there or remove it from the spin-off.
 
 ## Common Commands
 
@@ -406,6 +407,10 @@ npm test
 
 # Hermetic test run (isolated tmp DB + logs)
 npm run test:hermetic
+
+# Lint
+npm run lint        # check
+npm run lint:fix    # auto-fix
 
 # Adaptive cell smoke (no paid API calls)
 ADAPTIVE_TUTOR_LLM=mock node scripts/run-adaptive-cell-smoke.js
