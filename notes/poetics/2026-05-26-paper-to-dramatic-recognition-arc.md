@@ -243,6 +243,52 @@ transition should be from generation to distillation:
 - remove raw transcript/deliberation/score bulk before merging back;
 - promote only the durable mechanism into the main architecture or paper.
 
+## Landing Update: 2026-05-27
+
+The gated D42/D50/D53 adaptation-recognition loop has now been run as a bounded
+termination test rather than an open-ended search. The most important result is
+mixed but informative:
+
+- one iteration passed all nine item gates;
+- two further iterations failed;
+- controls mostly held;
+- branch-valid tutor adaptation remained visible;
+- recognitive closure downstream of peripeteia did not repeat stably.
+
+The completed loop is:
+
+```text
+phase2-adaptation-recognition-loop-20260527T105617Z
+```
+
+It ended at 1 pass out of 2 required. This is not a collapse of the mechanism.
+It is a sharper localization of the remaining problem. The tutor can break
+habit and introduce a fitted public device; the learner can perform the device;
+but the final learner turn still sometimes reads as procedural success rather
+than explicit re-reading of the prior difficulty.
+
+After that result, the generator and structure critic were tightened. The
+`peripeteia-only` branch now requires the final learner turn to perform the
+device, name the old check or pressure, and state the replacement check. The
+structure critic now rejects peripeteia arms that do not contain both an
+old-check/pressure frame and a replacement-check frame. That means the next loop
+will spend external critic calls only on scripts that already show the public
+action-to-re-reading bridge.
+
+The current landing claim is therefore:
+
+> We have a working mechanism-discovery apparatus and one clean full-loop pass.
+> We do not yet have repeat-stable proof that adaptation reliably produces
+> recognition. The remaining engineering task is to make actional performance
+> reliably become public reorientation.
+
+The generated evidence policy is also settled. Raw transcripts, full traces,
+scores, and per-run keys should not be committed. Completed runs should be
+packaged with `npm run poetics:package-run`; ignored compressed archives live
+under `artifacts/poetics-runs/`, while compact manifests are committed under
+`config/poetics-calibration/runs/`. The archive payloads still need durable
+storage outside Git before a worktree is deleted.
+
 ## What The Durable Output Should Be
 
 The durable output is not just a prompt. It should be three linked artifacts.

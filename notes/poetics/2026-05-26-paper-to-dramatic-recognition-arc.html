@@ -1258,6 +1258,7 @@
       <a href="#evidence">Evidence</a>
       <a href="#adaptation">Adaptation</a>
       <a href="#ending-shape">Ending Shape</a>
+      <a href="#landing-update">Landing Update</a>
       <a href="#conceptual">Conceptual Shift</a>
       <a href="#durable-output">Durable Output</a>
       <a href="#paper-implication">Paper Implication</a>
@@ -1315,6 +1316,7 @@
         <li><a href="#phase-2">Phase 2 · mechanism fix</a></li>
         <li><a href="#phase-3">Phase 3 · clean-anchor replication</a></li>
         <li><a href="#phase-4">Phase 4 · ending-shape refinement</a></li>
+        <li><a href="#phase-5">Phase 5 · gated loop result</a></li>
       </ul>
     </li>
     <li class="toc__item" data-target="ending-shape">
@@ -1325,20 +1327,26 @@
         <li><a href="#ending-transcript">T372 transcript · the reversal</a></li>
       </ul>
     </li>
+    <li class="toc__item" data-target="landing-update">
+      <a href="#landing-update"><span class="toc__num">06</span><span>Landing update</span></a>
+      <ul class="toc__sub">
+        <li><a href="#landing-update">One pass, no repeat-stable proof yet</a></li>
+      </ul>
+    </li>
     <li class="toc__item" data-target="conceptual">
-      <a href="#conceptual"><span class="toc__num">06</span><span>Conceptual shift</span></a>
+      <a href="#conceptual"><span class="toc__num">07</span><span>Conceptual shift</span></a>
       <ul class="toc__sub">
         <li><a href="#conceptual">The seven-step dialogical ladder</a></li>
       </ul>
     </li>
     <li class="toc__item" data-target="durable-output">
-      <a href="#durable-output"><span class="toc__num">07</span><span>Durable output</span></a>
+      <a href="#durable-output"><span class="toc__num">08</span><span>Durable output</span></a>
       <ul class="toc__sub">
         <li><a href="#durable-output">Spec · dataset · control loop</a></li>
       </ul>
     </li>
     <li class="toc__item" data-target="paper-implication">
-      <a href="#paper-implication"><span class="toc__num">08</span><span>Paper implication</span></a>
+      <a href="#paper-implication"><span class="toc__num">09</span><span>Paper implication</span></a>
       <ul class="toc__sub">
         <li><a href="#paper-implication">Candidate v3.0.105 update</a></li>
       </ul>
@@ -1349,8 +1357,8 @@
     <dd id="tocLive">127.0.0.1:3466 — probing…</dd>
     <dt>Static fallback</dt>
     <dd>All numbers in this note are baked in. Live data only adds item counts and deep links.</dd>
-    <dt>Last commit</dt>
-    <dd><code>ab4e1b9</code> ending-shape five-critic rescore</dd>
+    <dt>Current landing</dt>
+    <dd><code>2026-05-27</code> gated loop handoff</dd>
   </dl>
 </aside>
 <div class="toc__scrim" id="tocScrim" aria-hidden="true"></div>
@@ -1751,6 +1759,19 @@
 
             <article class="ev-card" data-status="boundary" data-tags="boundary">
               <span class="chip chip--ochre"><span class="chip__dot"></span> Boundary</span>
+              <h3>Gated adaptation → recognition loop</h3>
+              <p>D42/D50/D53 produced one fully clean gated iteration, then two failed replicates. Controls mostly
+                held; branch-valid tutor adaptation remained visible; recognitive closure was not repeat-stable.</p>
+              <div class="deeplink-row">
+                <a class="deeplink" href="#landing-update">
+                  <span>Read landing update</span>
+                  <span class="deeplink__arrow">↓</span>
+                </a>
+              </div>
+            </article>
+
+            <article class="ev-card" data-status="boundary" data-tags="boundary">
+              <span class="chip chip--ochre"><span class="chip__dot"></span> Boundary</span>
               <h3>Stratified ending-shape pilot</h3>
               <p>Across six scenarios the ending-shape constraint raises adaptive-arm action, mechanism, and quality
                 scores. But D40, D45, and parts of D39/D42 organically produce learner reorientation even in
@@ -1967,6 +1988,26 @@ First mark where parsing gave up: 14. Then do one backwards pass through 12-14: 
             </div>
           </details>
 
+          <details class="accordion" open id="phase-5">
+            <summary><h3>Phase 5 · gated adaptation-recognition loop <span class="chip chip--ochre" style="margin-left:0.6em">handoff</span></h3><span class="acc-marker" aria-hidden="true"></span></summary>
+            <div class="body">
+              <p>The D42/D50/D53 termination loop has now been run as a bounded test rather than an open-ended
+                generation search. Run <code>phase2-adaptation-recognition-loop-20260527T105617Z</code> ended with
+                one pass out of two required: iteration 1 passed all 9 item gates; iterations 2 and 3 each passed 6/9.
+                The failures localized the remaining issue to repeat-stable recognitive closure, not to absence of
+                tutor adaptation.</p>
+              <p>After that result, the generator and rules structural critic were tightened. The final learner turn
+                in a peripeteia arm must now perform the device, name the old check or pressure, and state the
+                replacement check. Procedural success alone no longer passes the cheap structure gate.</p>
+              <div class="deeplink-row">
+                <a class="deeplink" href="#landing-update">
+                  <span>See exact landing</span>
+                  <span class="deeplink__arrow">↓</span>
+                </a>
+              </div>
+            </div>
+          </details>
+
           <div class="callout">
             <strong>Claim boundary</strong><br>
             The branch supports tutor adaptation as a visible change of teaching move under clean-baseline reversal
@@ -2173,11 +2214,86 @@ Track card to the washer. Up-arrow name to the blue chip: force on cart. Then sa
       </div>
     </section>
 
+    <!-- ═══════════════════ LANDING UPDATE ═══════════════════ -->
+    <section class="s" id="landing-update">
+      <div class="diag">
+        <div class="ml">
+          <h2 class="s__num">06<span class="glyph">·</span></h2>
+        </div>
+        <div class="body">
+          <p class="s__kicker">Landing Update · 2026-05-27</p>
+          <h2 class="s__h">One full pass, but not yet repeat-stable <em>adaptation → recognition</em>.</h2>
+          <p>
+            The gated loop <code>phase2-adaptation-recognition-loop-20260527T105617Z</code> tested D42, D50, and D53
+            across <em>routine</em>, <em>none</em>, and <em>peripeteia-only</em>. It required two clean passes within
+            three iterations. It got one. The result is not a negative about tutor adaptation; it is a sharper boundary
+            on the downstream recognition claim.
+          </p>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre">
+            <span class="note__lbl">Current claim</span>
+            Branch-valid tutor peripeteia can produce recognitive reframe in clean anchors, and one full gated
+            iteration passed. We do not yet have repeat-stable proof that adaptation reliably produces recognition.
+          </p>
+        </div>
+      </div>
+
+      <div class="diag">
+        <div class="body">
+          <div class="spec">
+            <div class="spec-box">
+              <h4>Iteration 1</h4>
+              <ul>
+                <li>run: <code>...T105617Z-i01</code></li>
+                <li>pass: yes</li>
+                <li>items: 9/9</li>
+                <li>failures: none</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>Iteration 2</h4>
+              <ul>
+                <li>run: <code>...T105617Z-i02</code></li>
+                <li>pass: no</li>
+                <li>items: 6/9</li>
+                <li>failures: quality warning, scorer coverage, one origin ambiguity</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>Iteration 3</h4>
+              <ul>
+                <li>run: <code>...T105617Z-i03</code></li>
+                <li>pass: no</li>
+                <li>items: 6/9</li>
+                <li>failures: critic splits, origin ambiguity, scorer coverage</li>
+              </ul>
+            </div>
+          </div>
+
+          <p>
+            The mechanism has localized the remaining engineering problem. The tutor can abandon the old route and
+            introduce a fitted public device. The learner can perform the device. The final learner turn must now make
+            the action read as recognition by naming the old check or pressure and the replacement check. That is why
+            the current generator and structural critic were tightened before the next loop.
+          </p>
+
+          <div class="callout">
+            <strong>Archive policy settled</strong><br>
+            Raw transcripts, deliberations, samples, scores, and per-run keys stay out of Git. Package completed runs
+            with <code>npm run poetics:package-run</code>; commit the manifests under
+            <code>config/poetics-calibration/runs/</code>; copy ignored archive payloads from
+            <code>artifacts/poetics-runs/</code> to durable storage before deleting the worktree.
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ═══════════════════ CONCEPTUAL SHIFT ═══════════════════ -->
     <section class="s" id="conceptual">
       <div class="diag">
         <div class="ml">
-          <h2 class="s__num">06<span class="glyph">·</span></h2>
+          <h2 class="s__num">07<span class="glyph">·</span></h2>
         </div>
         <div class="body">
           <p class="s__kicker">Conceptual Shift</p>
@@ -2238,7 +2354,7 @@ Track card to the washer. Up-arrow name to the blue chip: force on cart. Then sa
     <section class="s" id="durable-output">
       <div class="diag">
         <div class="ml">
-          <h2 class="s__num">07<span class="glyph">·</span></h2>
+          <h2 class="s__num">08<span class="glyph">·</span></h2>
         </div>
         <div class="body">
           <p class="s__kicker">Durable Output</p>
@@ -2323,7 +2439,7 @@ Track card to the washer. Up-arrow name to the blue chip: force on cart. Then sa
     <section class="s" id="paper-implication">
       <div class="diag">
         <div class="ml">
-          <h2 class="s__num">08<span class="glyph">·</span></h2>
+          <h2 class="s__num">09<span class="glyph">·</span></h2>
         </div>
         <div class="body">
           <p class="s__kicker">Paper Implication</p>

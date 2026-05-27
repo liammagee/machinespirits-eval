@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "poetics-run-archive-manifest-v1",
+  "runId": "phase2-adaptation-recognition-loop-20260527T105617Z-i02",
+  "packagedAt": "2026-05-27T14:11:16.621Z",
+  "packagingGitCommit": "d3079cd",
+  "source": {
+    "dbPath": "data/evaluations.db",
+    "runCreatedAt": "2026-05-27 12:50:42",
+    "runSourceRoot": "config/poetics-calibration/phase2-adaptation-recognition-loop-20260527T105617Z-i02",
+    "runGitCommit": "d3079cd"
+  },
+  "archive": {
+    "archiveDir": "artifacts/poetics-runs/phase2-adaptation-recognition-loop-20260527T105617Z-i02",
+    "compression": "gzip",
+    "files": {
+      "run": {
+        "path": "artifacts/poetics-runs/phase2-adaptation-recognition-loop-20260527T105617Z-i02/run.jsonl.gz",
+        "records": 1,
+        "bytes": 765,
+        "sha256": "ec3b877246dc72936865ec89518ac39f5492d3f2e3ca8952aa8115163344a12f"
+      },
+      "items": {
+        "path": "artifacts/poetics-runs/phase2-adaptation-recognition-loop-20260527T105617Z-i02/items.jsonl.gz",
+        "records": 9,
+        "bytes": 2798,
+        "sha256": "6da90eb15c84f5043acaa6b5b817004b317341b13754685b262ec806834f4a6f"
+      },
+      "scores": {
+        "path": "artifacts/poetics-runs/phase2-adaptation-recognition-loop-20260527T105617Z-i02/scores.jsonl.gz",
+        "records": 32,
+        "bytes": 14456,
+        "sha256": "7156a57610ca0b591ced60f80d6d83f37fde1e35e85b3bec085cfaea66be8cae"
+      },
+      "labels": {
+        "path": "artifacts/poetics-runs/phase2-adaptation-recognition-loop-20260527T105617Z-i02/labels.jsonl.gz",
+        "records": 0,
+        "bytes": 20,
+        "sha256": "f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837"
+      },
+      "reviewFlags": {
+        "path": "artifacts/poetics-runs/phase2-adaptation-recognition-loop-20260527T105617Z-i02/review-flags.jsonl.gz",
+        "records": 0,
+        "bytes": 20,
+        "sha256": "f1b651238a58fe290baec6c5e32f3bdb1943dd2bd582f02569231f7a757c7837"
+      },
+      "tutorAdaptations": {
+        "path": "artifacts/poetics-runs/phase2-adaptation-recognition-loop-20260527T105617Z-i02/tutor-adaptations.jsonl.gz",
+        "records": 9,
+        "bytes": 2262,
+        "sha256": "7e5f23b621c48301c7f260bd5cacede4fec7dc8b26cec7932b3f2a2914739021"
+      },
+      "artifacts": {
+        "path": "artifacts/poetics-runs/phase2-adaptation-recognition-loop-20260527T105617Z-i02/artifacts.jsonl.gz",
+        "records": 43,
+        "bytes": 208116,
+        "sha256": "1814d023d21b84bcb6170de3b522e4f28eefaf9b61fdeb62bd59ff5afeb2d701"
+      }
+    }
+  },
+  "counts": {
+    "items": 9,
+    "scores": 32,
+    "labels": 0,
+    "reviewFlags": 0,
+    "tutorAdaptations": 9,
+    "artifactRefs": 43,
+    "archivedArtifacts": 43,
+    "missingArtifacts": 0
+  },
+  "artifactKinds": {
+    "score_file": 12,
+    "tutor_trace": 9,
+    "item_key": 2,
+    "run_key": 1,
+    "sample": 9,
+    "full_transcript": 9,
+    "run_spec": 1
+  },
+  "missingArtifacts": []
+}

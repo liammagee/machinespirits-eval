@@ -7,6 +7,13 @@ the explicit handoff from "we have mechanism-level tutor adaptation" to "we have
 a robust architecture where adaptation reliably produces recognitive learner
 form."
 
+Update 2026-05-27: the first full gated loop over D42/D50/D53 produced one pass
+out of two required. The next loop should use the stricter peripeteia ending
+contract now encoded in the generator and rules critic: after performing the
+new device, the learner must name the old check or pressure and state the
+replacement check. Do not return to broad generation unless this focused loop
+diagnostically saturates.
+
 ## Target Claim
 
 The target claim is deliberately narrower than "the tutor is generally
@@ -82,7 +89,9 @@ npm run poetics:adaptation-loop -- \
   --batch-prefix phase2-adaptation-recognition-loop \
   --target-only D42,D50,D53 \
   --target-arms routine,none,peripeteia-only \
-  --max-iterations 3
+  --max-iterations 3 \
+  --required-passes 2 \
+  --skip-existing-scores
 ```
 
 Each iteration should:

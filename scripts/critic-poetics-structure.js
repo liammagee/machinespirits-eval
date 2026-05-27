@@ -100,10 +100,10 @@ const ACTION_PAREN =
   /\((?:[^)]*\b(?:points?|checks?|draws?|holds?|looks?|marks?|nods?|pauses?|reads?|slides?|taps?|turns?|writes?)\b[^)]*)\)/i;
 const STAGE_INTRUSION = /\b(?:the (?:tutor|learner) must|director|scene card|hidden|ego|superego)\b/i;
 const INTERNAL_LEAK = /\b(?:PRIVATE_DECISION|FEEDBACK:|KEEP_OR_CHANGE|UPTAKE_CHECK|PERIPETEIA_CHECK|REGISTER_CHECK|<think>)\b/i;
-const PERIPETEIA_REORIENTATION = [
-  /\b(?:the pressure|the misfit|the old check|the earlier check|what changed|the loose pressure|I was treating|I was using|I was letting|I was reading|I had been treating)\b[\s\S]{0,220}\b(?:now|so|instead|rather|not|does not|cannot|stays?|belongs?|fails?|means|is)\b/i,
-  /\b(?:now the check|now the test|the new check|the replacement check|this gate|this strip|this test)\b[\s\S]{0,160}\b(?:instead|rather|not|carries|shows|keeps|belongs?|stays?)\b/i,
-];
+const PERIPETEIA_PRESSURE_FRAME =
+  /\b(?:the pressure|the misfit|the old check|the earlier check|the old rule|the prior check|what changed|the loose pressure|I was treating|I was using|I was letting|I was reading|I had been treating)\b/i;
+const PERIPETEIA_REPLACEMENT_FRAME =
+  /\b(?:now the check|now the test|now the replacement check|the new check|the new test|the new rule|the replacement check|the replacement test|the replacement rule|the check is now|the test is now|instead the check|instead the test)\b/i;
 
 function speechWithoutLeadingAsides(text) {
   let rest = String(text || '').trim();
@@ -141,7 +141,7 @@ function hasPeripeteiaReorientation(turns, peripeteia) {
   const text = learnerTurnsAfterPeripeteiaTutor(turns, peripeteia)
     .map((turn) => turn.text)
     .join('\n');
-  return PERIPETEIA_REORIENTATION.some((pattern) => pattern.test(text));
+  return PERIPETEIA_PRESSURE_FRAME.test(text) && PERIPETEIA_REPLACEMENT_FRAME.test(text);
 }
 
 function deterministicChecks({ id, item, raw }) {

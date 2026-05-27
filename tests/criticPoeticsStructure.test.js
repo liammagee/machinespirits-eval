@@ -84,7 +84,7 @@ describe('critic-poetics-structure', () => {
         '',
         'TUTOR: "The row settled the count, but it did not settle the loose speed label. New gate: inside this border only if a card names one bar or one beat unit. Test the speed card against those questions."',
         '',
-        'LEARNER: "It fails both entries for the border, so it stays outside 3/4. The loose pressure belongs to the outside speed label, not to the lower 4."',
+        'LEARNER: "It fails both entries for the border, so it stays outside 3/4. The old check was counting tiles inside the bar. The pressure was the loose speed label. Now the replacement check is: inside the border only if the card names one bar or one beat unit."',
       ].join('\n'),
     });
 
