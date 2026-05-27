@@ -62,6 +62,10 @@ results/
 *.csv
 *.xlsx
 
+# Local compressed archives produced by scripts/package-poetics-run.js.
+# Commit the manifest in config/poetics-calibration/runs/, not the bulk bundle.
+artifacts/poetics-runs/
+
 # Poetics sidecar run artifacts. Keep source specs, summaries, notes, scripts,
 # and tests in Git; keep generated transcripts, deliberations, samples, scores,
 # and per-run keys local only.
