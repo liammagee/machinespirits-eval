@@ -88,6 +88,7 @@
     "poetics:audit": "node scripts/audit-poetics-disagreements.js",
     "poetics:flag-review": "node scripts/flag-poetics-review-cases.js",
     "poetics:package-run": "node scripts/package-poetics-run.js",
+    "poetics:publish-run": "node scripts/publish-poetics-run-archive.js",
     "poetics:browse": "node scripts/browse-poetics-scripts.js",
     "audit:message-chain": "node scripts/audit-message-chain.js",
     "audit:message-chain:json": "node scripts/audit-message-chain.js --json",

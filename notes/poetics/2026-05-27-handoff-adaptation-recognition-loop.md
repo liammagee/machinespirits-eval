@@ -179,6 +179,16 @@ Before deleting this worktree, copy the ignored archive dirs to durable storage
 outside Git. The remote repository will preserve only the manifests, not the
 archive payloads.
 
+The GitHub release workflow is documented in
+`notes/poetics/2026-05-27-poetics-run-archive-workflow.md`. Use:
+
+```bash
+npm run poetics:publish-run -- --run-id <RUN_ID> --dry-run
+```
+
+This repository is public, so live uploads of raw transcripts/traces require
+`--allow-public`; otherwise use a private artifact target.
+
 ## Claim Boundary
 
 Do not claim that the mechanical adaptive tutor is complete.
