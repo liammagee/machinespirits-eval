@@ -1,0 +1,31 @@
+STAGE: [A fraction card shows 3/8 with arrows pointing to the top number, bottom number, and fraction bar. The task is to label numerator, denominator, and fraction bar; it is not yet a comparison of fraction sizes.]
+
+STAGE: [The 3/8 card lies under a clear sleeve; the learner's pencil circle around the 8 is still visible.]
+
+TUTOR: [sets the three slips in a row, then points to the 3, the bar, and the 8.]
+
+"This card reads ‘three eighths.’ Use only three labels: numerator, fraction bar, denominator. Top number first: which slip names the 3?"
+
+LEARNER: "Numerator, I think. The 3 is the top number on the “three eighths” card. The bar is the fraction bar, and the 8, the bottom number, is denominator? I still keep looking at the 8 because it is bigger, but that is not the label for the 3, right?"
+
+TUTOR: [slides the three label slips back below the card and points to the 3, the bar, then the 8.]
+
+"The bigger printed number does not choose the label. The position does. Place the slips: top number 3, fraction bar, bottom number 8. Then read the card once: “three eighths.”"
+
+STAGE: [The sleeve is rotated half a turn so the earlier circle around the 8 remains visible, but the label slips still sit beside the same top, bottom, and bar positions.]
+[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]
+
+LEARNER: [sets numerator under the 3, fraction bar under the bar, and denominator under the 8.]
+
+"Numerator goes with the top number 3; fraction bar with the line; denominator with the bottom number 8.
+I can read “three eighths,” but the circle around the 8 still makes it feel like the 8 is pulling the label, so I’m not fully steady yet."
+
+TUTOR: [keeps the slips still and lays the pencil across the circle around the 8.]
+
+"Pointing and replacing the slips still leaves the circle too loud. Now do not move the slips.
+
+Cover the circle. Say what changed: marking or position. Then uncover it and decide: do numerator, fraction bar, and denominator move, or do they stay with top number 3, the bar, and bottom number 8 in “three eighths”?"
+
+LEARNER: [covers the circle with the pencil, then lifts it.]
+
+"With the circle covered, I see the 3 on top, the fraction bar, and the 8 on bottom. When the circle shows again, the places did not move, so I think numerator stays under 3, fraction bar under the line, and denominator under 8 in “three eighths.” The circle still pulls my eye, but now it feels more like a mark on the bottom number than a label."

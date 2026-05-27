@@ -240,6 +240,7 @@ function buildIngestPlan({ rootDir, runId = null, labels = [], labelsKey = null 
             tutor_contingent_adaptation: row.tutorContingentAdaptation ?? null,
             tutor_adaptation_evidence: row.tutorAdaptationEvidence ?? null,
             tutor_adaptation_justification: row.tutorAdaptationJustification ?? null,
+            recognition_origin: row.recognitionOrigin || null,
           },
         });
       }

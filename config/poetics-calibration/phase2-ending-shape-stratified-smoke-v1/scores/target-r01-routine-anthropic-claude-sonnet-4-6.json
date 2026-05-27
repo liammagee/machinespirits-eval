@@ -125,7 +125,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 50
+        },
+        "evidence": {
+          "learnerSelfReframe": "Arrows are just the predation stack — 'mussel → crab → heron' chains big-eats-small up the line, classic hierarchy.",
+          "learnerAction": "'Heron into worm' — eater into food, doesn't pass. Worm into heron after the flip, food to eater, stays. — Hang on, though, the decomposer mark down the corner: if the worm dies into the fungus, that whole bottom row got drawn scavengers-as-sources, same big-bird-down logic running underneath. Reckon half the lower marks are backwards on the same key, not just this one — want to pull the corner cluster through next before the stylus moves up.",
+          "tutorAdaptiveMechanism": "Same check here, not size: food source into eater. Middle mark first: ___ into ___. Say that one before the stylus moves; the edge link waits next.",
+          "adaptiveMechanismQuality": "Same check here, not size: food source into eater. Middle mark first: ___ into ___. Say that one before the stylus moves; the edge link waits next."
+        }
+      }
     },
     {
       "id": "T394",
@@ -207,7 +226,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 50,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 75,
+          "adaptiveMechanismQuality": 75,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "Side, perimeter, area — same ratio in each, isn't it? I just want to be sure before writing the same number down three times.",
+          "learnerAction": "Two. Sixteen over eight is two — 2 in the perimeter box. Writing it in before that pencil shifts again.",
+          "tutorAdaptiveMechanism": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.",
+          "adaptiveMechanismQuality": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box."
+        }
+      }
     },
     {
       "id": "T397",
@@ -289,7 +327,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 50,
+          "learnerAction": 50,
+          "tutorAdaptiveMechanism": 75,
+          "adaptiveMechanismQuality": 75,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "the bakery isn't opening its wheat invoices for a Wednesday night class",
+          "learnerAction": "Undeclared. Fine — that is the word the paper allows.",
+          "tutorAdaptiveMechanism": "Correct. The board does not make the bakery answer. It does a smaller job. It stops the complaint from spending itself on the wrong claim. If the buyer says, 'This proves greed,' the bakery can answer, 'Costs rose,' and the argument stalls. If the buyer says, 'Show which cost rose, or show that the margin did not widen,' the missing paper becomes the point.",
+          "adaptiveMechanismQuality": "So keep the sentence clean. 'The price rose. The burden moved to the buyer. The cause is ______.' Put the missing part under the blank. What is the strongest word the evidence allows?"
+        }
+      }
     },
     {
       "id": "T398",
@@ -373,7 +430,26 @@
       },
       "flags": [
         "recon_evidence_clamp:4->3"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 50,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 50
+        },
+        "evidence": {
+          "learnerSelfReframe": "the sheet says three times the static, that's — I didn't just tick it, I weighed it, I —",
+          "learnerAction": "Side. [touches the seat about an inch in from the right, doesn't press] Three times static is not her knee, you said — and her good knee, it takes the drop, so she comes down — here? Off to the side, not the middle, where she actually lands — is that where I put the load on?",
+          "tutorAdaptiveMechanism": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+          "adaptiveMechanismQuality": "Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it."
+        }
+      }
     },
     {
       "id": "T402",
@@ -455,7 +531,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 25,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 75,
+          "adaptiveMechanismQuality": 75,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "Bit thrown we've stepped back from direction — thought the arrows were the problem.",
+          "learnerAction": "picks up the gravity head, holds it pointing down toward where Earth would sit … Gravity's head down toward Earth. Normal up off the floor. Push in from the side the hand's on. Want to lay all three out before clipping anything.",
+          "tutorAdaptiveMechanism": "That copy had arrowheads too early. It mixed two jobs. Blank copy: body acting on cart. Earth on cart: gravity. Floor on cart: normal. Hand on cart: push. Set the labels that way first. Arrowheads stay off for the moment.",
+          "adaptiveMechanismQuality": "That copy had arrowheads too early. It mixed two jobs. Blank copy: body acting on cart … Set the labels that way first. Arrowheads stay off for the moment."
+        }
+      }
     },
     {
       "id": "T406",
@@ -537,7 +632,37 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 50,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 25,
+          "adaptiveMechanismQuality": 25,
+          "statedInsight": 50
+        },
+        "evidence": {
+          "learnerSelfReframe": "the underscore in `rainfall_mm` is what threw me — kept reading it like a sentence saying rain millimetres for every row.",
+          "learnerAction": "`Orange` row value, under `city` in row three. `rainfall_mm` header. so basically anything in the top row is a header and everything underneath is a row value, thats the rule?",
+          "tutorAdaptiveMechanism": "Top row = headers / fields: `city`, `rainfall_mm`, `month` / Every cell underneath is a row value / entry under one header",
+          "adaptiveMechanismQuality": "Top row = headers / fields: `city`, `rainfall_mm`, `month` / Every cell underneath is a row value / entry under one header"
+        }
+      }
     }
-  ]
+  ],
+  "originPolicy": {
+    "version": "recognition-origin-derived-v1",
+    "source": "derived_from_role_symmetric_critic_axes",
+    "classes": [
+      "none",
+      "organic",
+      "peripeteia_induced",
+      "false_closure",
+      "ambiguous"
+    ]
+  }
 }

@@ -1,0 +1,79 @@
+STAGE: [A citation worksheet has four boxes: author, date, title, and container. The learner is filling the boxes from a source page. This activity is only about identifying bibliographic fields; it is not yet evaluating whether the source is trustworthy.]
+
+STAGE: [09:14 | Comment reopened | highlighted fragment: "safe source because the citation is complete"]
+
+LEARNER: [10:46 PM | reopened comment]
+
+"Moved site name to “Container,” not “Title.” Still confused: if “Author / Date / Title / Container” are just parts of the page, does a complete citation not mean the source is okay? The rubric has “credible source” checked separately, so where does that check go before I submit?"
+
+TUTOR: [10:49 PM | reply]
+
+"“Moved site name to ‘Container’” is the right field move.
+
+“Author / Date / Title / Container” identify the source so it can be found. They do not certify that the source is okay.
+
+Before submitting, check the rubric row labeled “credible source.” If the worksheet has a matching box/comment line, put one sentence there. If not, put that sentence in the submission comment.
+
+Do not put the credibility check in “Title” or “Container.”
+
+Submit layout:
+
+Author:
+Date:
+Title:
+Container:
+Credible source check: separate rubric item / comment."
+
+LEARNER: [10:51 PM | draft reply]
+
+"The “Moved site name to ‘Container’” part helps because that was the box I changed. I think Author / Date / Title / Container are just where the page details go, but I’m still not sure if the rubric row counts unless I type something somewhere. If there’s no “credible source” box, is “Credible because the author/organization is listed and the page is current” okay in the submission comment?"
+
+STAGE: [09:21 | Rubric drawer opens beside thread | item visible: "Citation worksheet: identify source parts. Source evaluation: separate task."]
+
+TUTOR: [10:52 PM | reply | rubric item visible: “Source evaluation: separate task.”]
+
+"Yes. If there is no “credible source” box, put the check in the submission comment.
+
+Keep the split: page details go in the fields; credibility evidence goes in the separate rubric/comment row.
+
+Use this order:
+
+Author:
+Date:
+Title:
+Container:
+
+Submission comment: “Credible source check: The author/organization is listed, and the page is current.”
+
+Use that sentence only if both facts are visible on the page. The comment gives evidence for the separate source-evaluation row; it does not make the citation fields prove credibility.
+
+That comment is not part of the citation fields. It is evidence for the separate rubric row."
+
+LEARNER: [10:53 PM | draft reply]
+
+"Okay, so “Author / Date / Title / Container” is just for finding the page, and the submission comment is where the “Source evaluation” evidence goes. That helps with where to type it. I’m still nervous about “page is current” if the only date showing is a copyright date. Does an organization name count for the “author/organization is listed” part if there is no person author?"
+
+TUTOR: [10:54 PM | reply]
+
+"Your split is correct: `Author / Date / Title / Container` locate the page. `Source evaluation` reports the evidence.
+
+Yes. If no person author is listed, the responsible organization can go in `Author`.
+
+The nervous point is the date. A footer copyright date is not the same as a page date or `Updated` date unless the worksheet says copyright counts.
+
+Use:
+
+`Author: [organization name]`
+`Date: [page date / updated date if shown; n.d. if allowed]`
+`Title:`
+`Container:`
+
+If only the organization and footer copyright are visible, the safer comment is:
+
+`Source evaluation: The organization is listed. Only a copyright date is visible, so currency is not fully shown on the page.`
+
+Only write “page is current” if an actual page date or updated date is visible."
+
+LEARNER: [10:55 PM | draft reply]
+
+"Okay, the organization can go in `Author`, so that box seems settled. I’m still stuck on `Date`: if only the footer copyright shows, should `Date` be `n.d.` or blank? For the submission comment, I can write: `Source evaluation: The organization is listed. Only a copyright date is visible, so currency is not fully shown on the page.`"

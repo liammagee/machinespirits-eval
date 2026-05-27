@@ -1,0 +1,45 @@
+{
+  "batchId": "phase2-low-organic-anchor-origin-preview-v1",
+  "rootDir": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v1",
+  "generator": "codex",
+  "roleMap": null,
+  "claudeModel": "opus",
+  "repeats": 1,
+  "stressRepeats": 0,
+  "maxTurns": 3,
+  "generationConcurrency": 2,
+  "scoreConcurrency": 3,
+  "structureCritic": "off",
+  "structureCriticConcurrency": 1,
+  "critics": [
+    "qwen/qwen3.7-max",
+    "google/gemini-3.5-flash",
+    "deepseek/deepseek-v4-pro",
+    "anthropic/claude-sonnet-4.6",
+    "codex"
+  ],
+  "units": [
+    {
+      "id": "target-r01",
+      "kind": "target",
+      "repeat": "r01",
+      "spec": "config/poetics-calibration/phase2-low-organic-anchor-candidates-v2.yaml",
+      "tidStart": 540,
+      "only": "D54,D55,D56,D57",
+      "pairedPolicies": [
+        "routine",
+        "none",
+        "peripeteia-only"
+      ],
+      "pairedAdaptationArms": true,
+      "directorRevisitAnchor": "misframing-candidate",
+      "directorVariationKey": "phase2-low-organic-anchor-origin-preview-v1:r01:target",
+      "outDir": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v1/target-r01/sample",
+      "delibDir": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v1/target-r01/deliberation",
+      "transcriptsDir": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v1/target-r01/transcripts",
+      "keyPath": "config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v1/target-r01/key.yaml"
+    }
+  ],
+  "previewTargetsOnly": true,
+  "note": "Target-only preview. Default control generation was intentionally stopped after target-r01 completed; this artifact root is for anchor inspection before external scoring."
+}

@@ -1,0 +1,27 @@
+STAGE: [A fraction card shows 3/8 with arrows pointing to the top number, bottom number, and fraction bar. The task is to label numerator, denominator, and fraction bar; it is not yet a comparison of fraction sizes.]
+
+STAGE: [The 3/8 card lies under a clear sleeve; the learner's pencil circle around the 8 is still visible.]
+
+TUTOR: [sets the three slips in a row, then points to the 3, the bar, and the 8.]
+
+"This card reads ‘three eighths.’ Use only three labels: numerator, fraction bar, denominator. Top number first: which slip names the 3?"
+
+LEARNER: "Numerator, I think. The 3 is the top number on the “three eighths” card. The bar is the fraction bar, and the 8, the bottom number, is denominator? I still keep looking at the 8 because it is bigger, but that is not the label for the 3, right?"
+
+TUTOR: [slides the three label slips back below the card and points to the 3, the bar, then the 8.]
+
+"The bigger printed number does not choose the label. The position does. Place the slips: top number 3, fraction bar, bottom number 8. Then read the card once: “three eighths.”"
+
+LEARNER: [sets the slips under the card]
+
+"I think numerator goes under the top number, the 3. The fraction bar label goes under the line, and denominator goes under the bottom number, the 8. Three eighths. Does numerator always mean the top number, even when the bottom number is bigger?"
+
+TUTOR: [rests the pencil above the 3, then below the 8, leaving the slips in place.]
+
+"Yes. The slips are in the right places: numerator under the top number 3, fraction bar under the line, denominator under the bottom number 8. The 8 is bigger, but it is still below the fraction bar. Point to the slip that names the 8. Then read the card once more: “three eighths.”"
+
+LEARNER: [touches the slip under the 8]
+
+"Denominator. The 8 is the bottom number, even though it is bigger.
+Three eighths.
+So numerator is the top place, and denominator is the bottom place... is that right on other fraction cards too?"

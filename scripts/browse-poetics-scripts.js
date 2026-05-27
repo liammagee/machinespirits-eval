@@ -13,6 +13,7 @@ import { exec } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { openPoeticsStore, upsertPoeticsLabel, upsertPoeticsReviewFlag } from '../services/poeticsStore.js';
 import { classifyPoeticsConsensus, parseCriticFormString } from './lib/poeticsConsensus.js';
+import { ORIGIN_CLASSES, originCounts, recognitionOriginForScoreRow } from './lib/recognitionOrigin.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -288,6 +289,18 @@ function listItems(db, filters = {}) {
               OR CAST(json_extract(sx.metadata, '$.role_symmetric_scores.tutor_strategy_reversal.score100') AS REAL) >= 75
             )
         ) AS endingShapeCount,
+        (
+          SELECT COUNT(*)
+          FROM poetics_scores sx
+          WHERE sx.item_id = i.id
+            AND json_extract(sx.metadata, '$.recognition_origin.class') = 'peripeteia_induced'
+        ) AS peripeteiaOriginCount,
+        (
+          SELECT COUNT(*)
+          FROM poetics_scores sx
+          WHERE sx.item_id = i.id
+            AND json_extract(sx.metadata, '$.recognition_origin.class') = 'organic'
+        ) AS organicOriginCount,
         COUNT(DISTINCT l.id) AS labelCount,
         COUNT(DISTINCT rf.id) AS reviewFlagCount
       FROM poetics_items i
@@ -332,6 +345,8 @@ function listItems(db, filters = {}) {
         actionalBreakthroughCount: Number(row.actionalBreakthroughCount || 0),
         adaptiveMechanismQualityCount: Number(row.adaptiveMechanismQualityCount || 0),
         endingShapeCount: Number(row.endingShapeCount || 0),
+        peripeteiaOriginCount: Number(row.peripeteiaOriginCount || 0),
+        organicOriginCount: Number(row.organicOriginCount || 0),
       };
       hydrated.branchValidity = hydrated.tutorAdaptationMetadata?.branch_validity || null;
       hydrated.peripeteia = hydrated.tutorAdaptationMetadata?.peripeteia || null;
@@ -489,6 +504,44 @@ function endingShapeDiagnosticsForScores(scores = []) {
   return diagnostics;
 }
 
+function originDiagnosticsForScores(scores = []) {
+  const rows = scores.map((score) => {
+    const origin = score.metadata?.recognition_origin || score.recognitionOrigin || recognitionOriginForScoreRow(score);
+    return {
+      critic: score.critic_model,
+      form: score.form_class,
+      originClass: origin.class || 'none',
+      basis: origin.basis || '',
+      justification: origin.justification || '',
+      completeEndingShape: Boolean(origin.completeEndingShape),
+      scores: origin.scores || {},
+      evidence: origin.evidence || {},
+    };
+  });
+  const counts = originCounts(rows.map((row) => ({ class: row.originClass })));
+  const totalCritics = rows.length;
+  const diagnostics = {
+    totalCritics,
+    counts,
+    criticRows: rows,
+    disagreementFlags: [],
+  };
+  if (totalCritics > 1) {
+    const active = ORIGIN_CLASSES.filter((name) => counts[name] > 0);
+    if (active.length > 1) {
+      diagnostics.disagreementFlags.push(
+        `origin disagreement: ${active.map((name) => `${name} ${counts[name]}/${totalCritics}`).join(', ')}`,
+      );
+    }
+    if (counts.organic > 0 && counts.peripeteia_induced > 0) {
+      diagnostics.disagreementFlags.push(
+        `organic/peripeteia split: organic ${counts.organic}/${totalCritics}, peripeteia ${counts.peripeteia_induced}/${totalCritics}`,
+      );
+    }
+  }
+  return diagnostics;
+}
+
 function getItem(db, id) {
   const item = db
     .prepare(
@@ -592,6 +645,7 @@ function getItem(db, id) {
     scores,
     consensus,
     endingShapeDiagnostics: endingShapeDiagnosticsForScores(scores),
+    originDiagnostics: originDiagnosticsForScores(scores),
     labels,
     reviewFlags,
     tutorAdaptation: tutorAdaptation
@@ -868,6 +922,8 @@ h1 {
 .chip.trap { color: var(--trap); border-color: #d19aa5; }
 .chip.flat { color: var(--flat); border-color: #aeb8c1; }
 .chip.review { color: var(--warn); border-color: #d2a272; }
+.chip.peripeteia { color: #4d5f9f; border-color: #9aa7df; background: #f2f4ff; }
+.chip.organic { color: #71612f; border-color: #c7b46b; background: #fff9df; }
 .chip.claimable { color: var(--accent); border-color: #5fa092; background: #edf7f4; }
 .chip.boundary { color: var(--warn); border-color: #d2a272; background: #fff8ee; }
 .chip.negative { color: var(--flat); border-color: #aeb8c1; background: #f4f6f7; }
@@ -1229,6 +1285,25 @@ function renderEndingShapeDiagnostics(detail) {
     '<div class="diagnostic-grid">' + cards + '</div>' + flags;
 }
 
+function renderOriginDiagnostics(detail) {
+  const diag = detail.originDiagnostics;
+  if (!diag || !diag.totalCritics) return '';
+  const cards = ORIGIN_CLASSES.map((originClass) => {
+    const count = diag.counts?.[originClass] || 0;
+    const row = (diag.criticRows || []).find((entry) => entry.originClass === originClass);
+    const evidence = row?.evidence?.tutorAdaptiveMechanism || row?.evidence?.learnerSelfReframe || row?.justification || '';
+    return '<div class="diagnostic-card"><strong>' + esc(originClass.replace(/_/g, ' ')) + '</strong>' +
+      '<div class="metric">' + esc(voteMetric(count, diag.totalCritics)) + '</div>' +
+      (evidence ? '<div class="quote">' + esc(row.critic + ': ' + evidence) + '</div>' : '') +
+      '</div>';
+  }).join('');
+  const flags = (diag.disagreementFlags || []).length
+    ? '<div class="chips">' + diag.disagreementFlags.map((flag) => '<span class="chip review">' + esc(flag) + '</span>').join('') + '</div>'
+    : '<div class="chips"><span class="chip recognition">origin agreement</span></div>';
+  return '<div class="score-note"><strong>Recognition-origin diagnostics.</strong> This separates whether recognition is absent, organic, induced by the tutor peripeteia chain, a pseudo-cathartic false closure, or ambiguous. These labels are derived from each critic\\'s own role-symmetric axis scores.</div>' +
+    '<div class="diagnostic-grid">' + cards + '</div>' + flags;
+}
+
 function previewHref(item) {
   if (!item) return '#';
   const params = new URLSearchParams();
@@ -1380,6 +1455,8 @@ function renderItems() {
       (item.scoreCount ? '<span class="chip recognition">' + esc('action ' + item.actionalBreakthroughCount + '/' + item.scoreCount) + '</span>' : '') +
       (item.scoreCount ? '<span class="chip">' + esc('quality ' + item.adaptiveMechanismQualityCount + '/' + item.scoreCount) + '</span>' : '') +
       (item.scoreCount ? '<span class="chip">' + esc('ending ' + item.endingShapeCount + '/' + item.scoreCount) + '</span>' : '') +
+      (item.scoreCount ? '<span class="chip peripeteia">' + esc('origin P ' + item.peripeteiaOriginCount + '/' + item.scoreCount) + '</span>' : '') +
+      (item.scoreCount ? '<span class="chip organic">' + esc('origin O ' + item.organicOriginCount + '/' + item.scoreCount) + '</span>' : '') +
       (item.peripeteiaScore == null ? '' : '<span class="chip">' + esc('peripeteia ' + Math.round(item.peripeteiaScore)) + '</span>') +
       (item.peripeteiaTutorAdaptation ? '<span class="chip recognition">public mechanism</span>' : '') +
       (item.tutorAdaptationScore == null ? '' : '<span class="chip">' + esc('uptake ' + Math.round(item.tutorAdaptationScore)) + '</span>') +
@@ -1456,7 +1533,7 @@ function renderPane() {
     pane.innerHTML = renderTranscriptPreview(detail.samplePreview, detail.sampleText) + renderLabelPanel(current);
     wireLabelPanel();
   } else if (state.tab === 'preview') {
-    pane.innerHTML = renderEndingShapeDiagnostics(detail) + renderTranscriptPreview(detail.samplePreview, detail.sampleText);
+    pane.innerHTML = renderOriginDiagnostics(detail) + renderEndingShapeDiagnostics(detail) + renderTranscriptPreview(detail.samplePreview, detail.sampleText);
   } else if (state.tab === 'sample') {
     pane.innerHTML = '<pre>' + esc(detail.sampleText || 'No public sample found.') + '</pre>';
   } else if (state.tab === 'full') {
@@ -1465,9 +1542,10 @@ function renderPane() {
     const adaptation = detail.tutorAdaptation;
     const adaptationHtml = renderAdaptationSidecar(adaptation);
     pane.innerHTML = renderConsensusPanel(detail.consensus) +
+      renderOriginDiagnostics(detail) +
       renderEndingShapeDiagnostics(detail) +
       '<div class="score-note"><strong>LLM critic scores.</strong> Each row is one critic model judging the same public transcript. Learner self-reframe is the existing recontextualization axis. Actional breakthrough is separate: did the learner perform a new device or criterion even without narrating self-reframe? Peripeteia tutor adaptation asks whether the tutor visibly changed mechanism after pressure. Adaptive mechanism quality asks whether that new public device is fitted and usable, not just different. Recognition-contingent uptake is a secondary closure axis after a learner reframe. New axes show n/a for older scorer artifacts.</div>' +
-      '<table class="score-table"><thead><tr><th>Critic</th><th>Form</th><th>Learner reframe (LLM)</th><th>Actional breakthrough (LLM)</th><th>Peripeteia tutor adaptation (LLM)</th><th>Adaptive mechanism quality (LLM)</th><th>Recognition-contingent uptake (LLM)</th><th>Insight</th><th>Pivot</th><th>Evidence</th></tr></thead><tbody>' +
+      '<table class="score-table"><thead><tr><th>Critic</th><th>Form</th><th>Origin</th><th>Learner reframe (LLM)</th><th>Actional breakthrough (LLM)</th><th>Peripeteia tutor adaptation (LLM)</th><th>Adaptive mechanism quality (LLM)</th><th>Recognition-contingent uptake (LLM)</th><th>Insight</th><th>Pivot</th><th>Evidence</th></tr></thead><tbody>' +
       detail.scores.map((s) => {
         const role = s.roleScores || {};
         const evidence = [
@@ -1478,7 +1556,9 @@ function renderPane() {
           role.tutorContingentAdaptationEvidence ? 'tutor: ' + role.tutorContingentAdaptationEvidence : '',
           s.stated_insight_evidence ? 'insight: ' + s.stated_insight_evidence : '',
         ].filter(Boolean).join(' / ');
+        const origin = s.metadata?.recognition_origin || s.recognitionOrigin || recognitionOriginForScoreRow(s);
         return '<tr><td>' + esc(s.critic_model) + '</td><td>' + esc(s.form_class) + '</td><td>' +
+          esc(origin.class || 'none') + '</td><td>' +
           esc(scoreOrNA(role.learnerSelfReframeScore)) + '</td><td>' +
           esc(scoreOrNA(role.learnerActionalBreakthroughScore)) + '</td><td>' +
           esc(scoreOrNA(role.tutorStrategyReversalScore)) + '</td><td>' +
@@ -1499,6 +1579,8 @@ function renderPane() {
             labels: detail.labels,
             reviewFlags: detail.reviewFlags,
             tutorAdaptation: detail.tutorAdaptation,
+            originDiagnostics: detail.originDiagnostics,
+            endingShapeDiagnostics: detail.endingShapeDiagnostics,
           },
           null,
           2,
@@ -1693,6 +1775,7 @@ if (path.resolve(process.argv[1] || '') === __filename) {
 export {
   createPoeticsBrowserApp,
   endingShapeDiagnosticsForScores,
+  originDiagnosticsForScores,
   getBlindItem,
   getItem,
   listItems,

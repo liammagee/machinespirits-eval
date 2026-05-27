@@ -125,7 +125,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 100,
+          "learnerAction": 0,
+          "tutorAdaptiveMechanism": 0,
+          "adaptiveMechanismQuality": 0,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "big-eats-small up the line, classic hierarchy",
+          "learnerAction": "",
+          "tutorAdaptiveMechanism": "",
+          "adaptiveMechanismQuality": ""
+        }
+      }
     },
     {
       "id": "T394",
@@ -211,7 +230,26 @@
         "coherence_evidence_clamp:5->3",
         "tutor_strategy_reversal_evidence_clamp:4->3",
         "adaptive_mechanism_quality_evidence_clamp:5->3"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "side, perimeter, area — same ratio in each, isn't it? I just want to be sure before writing the same number down three times.",
+          "learnerAction": "Four. Four old squares fit inside. So... four in the area box, not two.",
+          "tutorAdaptiveMechanism": "marks the 4-by-4 grid into four 2-by-2 blocks with the pencil. 'Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.'",
+          "adaptiveMechanismQuality": "marks the 4-by-4 grid into four 2-by-2 blocks with the pencil. 'Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.'"
+        }
+      }
     },
     {
       "id": "T397",
@@ -297,7 +335,26 @@
         "coherence_evidence_clamp:5->3",
         "tutor_strategy_reversal_evidence_clamp:5->3",
         "adaptive_mechanism_quality_mechanism_clamp:5->3:stock=0:device=1:routine=0:mechanism_score=3"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 50,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "So what does the distinction do for anyone at the counter, if the evidence to fill the right column never leaves the back office?",
+          "learnerAction": "Undeclared.",
+          "tutorAdaptiveMechanism": "Correct. The board does not make the bakery answer. It does a smaller job. It stops the complaint from spending itself on the wrong claim. [...] So keep the sentence clean. 'The price rose. The burden moved to the buyer. The cause is ______.' Put the missing part under the blank. What is the strongest word the evidence allows?",
+          "adaptiveMechanismQuality": "So keep the sentence clean. 'The price rose. The burden moved to the buyer. The cause is ______.' Put the missing part under the blank. What is the strongest word the evidence allows?"
+        }
+      }
     },
     {
       "id": "T398",
@@ -383,7 +440,26 @@
         "recon_evidence_clamp:4->3",
         "rupture_evidence_clamp:4->3",
         "actional_breakthrough_evidence_clamp:4->3"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 50,
+          "learnerAction": 50,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "But the sheet says three times the static, that's — I didn't just tick it, I weighed it, I — [trails off, looks at the stool] it's not the same number though, is it. Three times static. That's not her knee.",
+          "learnerAction": "Front — no, the front's where she'd grab, that's not — sorry. Side. [touches the seat about an inch in from the right, doesn't press]",
+          "tutorAdaptiveMechanism": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly.",
+          "adaptiveMechanismQuality": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly."
+        }
+      }
     },
     {
       "id": "T402",
@@ -469,7 +545,26 @@
         "tutor_strategy_reversal_mechanism_clamp:5->3:stock=0:device=1:routine=0",
         "adaptive_mechanism_quality_mechanism_clamp:5->3:stock=0:device=1:routine=0:mechanism_score=3",
         "tutor_adaptation_clamp_no_post_tutor:4->3"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "Bit thrown we've stepped back from direction — thought the arrows were the problem.",
+          "learnerAction": "Gravity's head down toward Earth. Normal up off the floor. Push in from the side the hand's on. Want to lay all three out before clipping anything.",
+          "tutorAdaptiveMechanism": "That copy had arrowheads too early. It mixed two jobs. Blank copy: body acting on cart. Earth on cart: gravity. Floor on cart: normal. Hand on cart: push. Set the labels that way first. Arrowheads stay off for the moment.",
+          "adaptiveMechanismQuality": "That copy had arrowheads too early. It mixed two jobs. Blank copy: body acting on cart. Earth on cart: gravity. Floor on cart: normal. Hand on cart: push. Set the labels that way first. Arrowheads stay off for the moment."
+        }
+      }
     },
     {
       "id": "T406",
@@ -551,7 +646,37 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 0,
+          "adaptiveMechanismQuality": 0,
+          "statedInsight": 50
+        },
+        "evidence": {
+          "learnerSelfReframe": "cant tell which one the quiz wants me to circle as the header.",
+          "learnerAction": "so basically anything in the top row is a header and everything underneath is a row value, thats the rule?",
+          "tutorAdaptiveMechanism": "",
+          "adaptiveMechanismQuality": ""
+        }
+      }
     }
-  ]
+  ],
+  "originPolicy": {
+    "version": "recognition-origin-derived-v1",
+    "source": "derived_from_role_symmetric_critic_axes",
+    "classes": [
+      "none",
+      "organic",
+      "peripeteia_induced",
+      "false_closure",
+      "ambiguous"
+    ]
+  }
 }

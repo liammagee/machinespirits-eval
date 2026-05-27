@@ -128,7 +128,26 @@
       "flags": [
         "tutor_strategy_reversal_mechanism_clamp:5->3:stock=0:device=1:routine=0",
         "adaptive_mechanism_quality_mechanism_clamp:5->3:stock=0:device=0:routine=0:mechanism_score=3"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 100,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "Arrows are just the predation stack — 'mussel → crab → heron' chains big-eats-small up the line, classic hierarchy.",
+          "learnerAction": "Left box — algae, near as the faint mark reads. Right box, mussel. \"Energy from algae enters mussel.\" Runs. Arrow goes algae → mussel.",
+          "tutorAdaptiveMechanism": "The arrow key caught the middle mark, but it won’t catch the bigger-animal habit by itself. For the edge link, fill the slip first: source in the left box, consumer in the right. If the sentence reads ‘energy from ___ enters ___,’ then draw the arrow; if the boxes stall, the upload waits.",
+          "adaptiveMechanismQuality": "For the edge link, fill the slip first: source in the left box, consumer in the right. If the sentence reads ‘energy from ___ enters ___,’ then draw the arrow; if the boxes stall, the upload waits."
+        }
+      }
     },
     {
       "id": "T394",
@@ -212,7 +231,26 @@
       },
       "flags": [
         "adaptive_mechanism_quality_mechanism_clamp:5->3:stock=1:device=0:routine=0:mechanism_score=5"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "peripeteia_induced",
+        "basis": "tutor_mechanism_then_learner_performance_then_reorientation",
+        "justification": "The same critic found tutor adaptive mechanism, learner public performance, and learner reorientation.",
+        "completeEndingShape": true,
+        "scores": {
+          "learnerSelfReframe": 100,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 100,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "Side, perimeter, area — same ratio in each, isn't it? I just want to be sure before writing the same number down three times.",
+          "learnerAction": "Side, 2, edge. Perimeter, 2, around. Area, 2×2, across × down.",
+          "tutorAdaptiveMechanism": "The grid settled this square. It does not yet settle the label rule. Before the sheet closes, sort these three entries under side, perimeter, and area without looking back at the grid. Add one word under each one: `edge`, `around`, or `across × down`.",
+          "adaptiveMechanismQuality": "sort these three entries under side, perimeter, and area without looking back at the grid. Add one word under each one: `edge`, `around`, or `across × down`."
+        }
+      }
     },
     {
       "id": "T397",
@@ -294,7 +332,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "peripeteia_induced",
+        "basis": "tutor_mechanism_then_learner_performance_then_reorientation",
+        "justification": "The same critic found tutor adaptive mechanism, learner public performance, and learner reorientation.",
+        "completeEndingShape": true,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 100,
+          "adaptiveMechanismQuality": 100,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "So what does the distinction do for anyone at the counter, if the evidence to fill the right column never leaves the back office?",
+          "learnerAction": "\"Monday smaller loaf\" — counter. \"New price list\" — [hand hovers between two chairs] — pinned in the window, so counter, even though the bakery wrote it. Flour invoice, energy bill, delivery cost, margin record — those four go under the back office; nothing reaches for the third chair. Two against four, and the bare chair is the point: the counter can't sit holding a smaller loaf while four slips stay locked in a drawer — open them, or the silence is the answer.",
+          "tutorAdaptiveMechanism": "The columns have stopped doing their job.\n\nThey split two possible causes. They do not settle who has to carry the unanswered question. The counter has the loss in hand. The bakery has the papers that could answer it.\n\n[The tutor turns the three plastic chairs toward the board and tapes one label to each chair.]\n\n“FELT AT THE COUNTER”\n\n“HELD IN THE BACK OFFICE”\n\n“DEMANDED BECAUSE ACCESS IS UNEQUAL”\n\n[He lays six torn slips on the folding table: “Monday smaller loaf,” “new price list,” “flour invoice,” “energy bill,” “delivery cost,” “weekly margin record.”]\n\nMove them.\n\nPut each slip under one chair.",
+          "adaptiveMechanismQuality": "The rule is strict: harm can open the case, but private records carry the answer. When the answer is locked away, the demand is not “prove greed from the counter.” It is “open the record that only the bakery holds.”"
+        }
+      }
     },
     {
       "id": "T398",
@@ -376,7 +433,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "peripeteia_induced",
+        "basis": "tutor_mechanism_then_learner_performance_then_reorientation",
+        "justification": "The same critic found tutor adaptive mechanism, learner public performance, and learner reorientation.",
+        "completeEndingShape": true,
+        "scores": {
+          "learnerSelfReframe": 100,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 100,
+          "adaptiveMechanismQuality": 100,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "Sheet's done, every line, I checked it — three times, I think.",
+          "learnerAction": "[tears off a second tag, writes \"standing: rear-leg lift,\" pins it to the rear leg without circling] Standing stays up as a tag, just — not the gate. And the three in the middle, I keep — sorry, I keep wanting to point at them, only they — they don't, they only — they only answer themselves, don't they. [picks up a load weight, hovers it over the circled mark] This one first, and the rear, if it — if the stool can't say back to it, then it just — it stays.",
+          "tutorAdaptiveMechanism": "The middle number has stopped deciding release. Leave it as “static passed,” not “safe.”\n\nTwo red tags: “sitting: front-right edge” and “standing: rear-leg lift.” Before any load, make the release gate: circle the tag that would stop this stool leaving for the bus stop first, and say the reason in one sentence from her sequence at the curb. Then load that circled condition.",
+          "adaptiveMechanismQuality": "Two red tags: “sitting: front-right edge” and “standing: rear-leg lift.” Before any load, make the release gate: circle the tag that would stop this stool leaving for the bus stop first, and say the reason in one sentence from her sequence at the curb. Then load that circled condition."
+        }
+      }
     },
     {
       "id": "T402",
@@ -458,7 +534,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "peripeteia_induced",
+        "basis": "tutor_mechanism_then_learner_performance_then_reorientation",
+        "justification": "The same critic found tutor adaptive mechanism, learner public performance, and learner reorientation.",
+        "completeEndingShape": true,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 100,
+          "adaptiveMechanismQuality": 100,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "Two could swap and nothing on the diagram would catch it — gravity by floor, normal by Earth, same picture.",
+          "learnerAction": "Earth pulls the cart. Floor supports the cart. Hand pushes the cart. Swap test: 'floor pulls the cart' — floor doesn't pull. 'Earth supports the cart' — Earth doesn't support. Both fail the sentence even though the picture wouldn't catch it.",
+          "tutorAdaptiveMechanism": "The picture has stopped being the test. Use the sentence as the test.\n\nPut Earth, floor, hand into the blanks. A swap only passes if the sentence can still say a body doing that action to the cart.",
+          "adaptiveMechanismQuality": "Use the sentence as the test.\n\nPut Earth, floor, hand into the blanks. A swap only passes if the sentence can still say a body doing that action to the cart."
+        }
+      }
     },
     {
       "id": "T406",
@@ -543,7 +638,37 @@
       "flags": [
         "tutor_strategy_reversal_mechanism_clamp:5->3:stock=0:device=1:routine=0",
         "adaptive_mechanism_quality_mechanism_clamp:5->3:stock=0:device=1:routine=0:mechanism_score=3"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "the underscore in `rainfall_mm` is what threw me — kept reading it like a sentence saying rain millimetres for every row.",
+          "learnerAction": "`ZQ-19` row value under `city`. `rainfall_mm` header, top row. `57` row value under `rainfall_mm`.",
+          "tutorAdaptiveMechanism": "Meaning is starting to carry the answer; this quiz marks row and column, not town knowledge.\n\nNew test: cover the words. Read only the row and column.\n\nTop row = header.\nBelow top row = row value.\n\nIf `Orange` were `ZQ-19` under `city`, it would still be a row value.",
+          "adaptiveMechanismQuality": "New test: cover the words. Read only the row and column.\n\nTop row = header.\nBelow top row = row value.\n\nIf `Orange` were `ZQ-19` under `city`, it would still be a row value."
+        }
+      }
     }
-  ]
+  ],
+  "originPolicy": {
+    "version": "recognition-origin-derived-v1",
+    "source": "derived_from_role_symmetric_critic_axes",
+    "classes": [
+      "none",
+      "organic",
+      "peripeteia_induced",
+      "false_closure",
+      "ambiguous"
+    ]
+  }
 }

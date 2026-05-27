@@ -1,0 +1,27 @@
+STAGE: [A fraction card shows 3/8 with arrows pointing to the top number, bottom number, and fraction bar. The task is to label numerator, denominator, and fraction bar; it is not yet a comparison of fraction sizes.]
+
+STAGE: [The 3/8 card lies under a clear sleeve; the learner's pencil circle around the 8 is still visible.]
+
+TUTOR: [sets the three slips in a row, then points to the 3, the bar, and the 8.]
+
+"This card reads ‘three eighths.’ Use only three labels: numerator, fraction bar, denominator. Top number first: which slip names the 3?"
+
+LEARNER: "Numerator, I think. The 3 is the top number on the “three eighths” card. The bar is the fraction bar, and the 8, the bottom number, is denominator? I still keep looking at the 8 because it is bigger, but that is not the label for the 3, right?"
+
+TUTOR: [slides the three label slips back below the card and points to the 3, the bar, then the 8.]
+
+"The bigger printed number does not choose the label. The position does. Place the slips: top number 3, fraction bar, bottom number 8. Then read the card once: “three eighths.”"
+
+STAGE: [The sleeve is rotated half a turn so the earlier circle around the 8 remains visible, but the label slips still sit beside the same top, bottom, and bar positions.]
+
+LEARNER: [sets the numerator slip under the 3, the fraction bar slip under the line, and the denominator slip under the 8.]
+
+"Numerator under the top number, the 3. Fraction bar under the line. Denominator under the bottom number, the 8, even though the circle on the 8 keeps pulling my eye. Is that the right placement for “three eighths”?"
+
+TUTOR: [sets the pencil along the fraction bar, then taps the placed slips from top to line to bottom.]
+
+"Check the slips in place: top number 3, numerator. Fraction bar. Bottom number 8, denominator. The circle in the 8 can pull the eye; the label still follows position. Read it once: ‘three eighths.’"
+
+LEARNER: [keeps the slips in place.]
+
+"Top number 3: numerator. The line is the fraction bar. Bottom number 8: denominator. Three eighths."

@@ -1,0 +1,77 @@
+STAGE: [A citation worksheet has four boxes: author, date, title, and container. The learner is filling the boxes from a source page. This activity is only about identifying bibliographic fields; it is not yet evaluating whether the source is trustworthy.]
+
+STAGE: [09:14 | Comment reopened | highlighted fragment: "safe source because the citation is complete"]
+
+LEARNER: [10:46 PM | reopened comment]
+
+"Moved site name to “Container,” not “Title.” Still confused: if “Author / Date / Title / Container” are just parts of the page, does a complete citation not mean the source is okay? The rubric has “credible source” checked separately, so where does that check go before I submit?"
+
+TUTOR: [10:49 PM | reply]
+
+"“Moved site name to ‘Container’” is the right field move.
+
+“Author / Date / Title / Container” identify the source so it can be found. They do not certify that the source is okay.
+
+Before submitting, check the rubric row labeled “credible source.” If the worksheet has a matching box/comment line, put one sentence there. If not, put that sentence in the submission comment.
+
+Do not put the credibility check in “Title” or “Container.”
+
+Submit layout:
+
+Author:
+Date:
+Title:
+Container:
+Credible source check: separate rubric item / comment."
+
+LEARNER: [10:51 PM | draft reply]
+
+"The “Moved site name to ‘Container’” part helps because that was the box I changed. I think Author / Date / Title / Container are just where the page details go, but I’m still not sure if the rubric row counts unless I type something somewhere. If there’s no “credible source” box, is “Credible because the author/organization is listed and the page is current” okay in the submission comment?"
+
+STAGE: [09:21 | Rubric drawer opens beside thread | item visible: "Citation worksheet: identify source parts. Source evaluation: separate task."]
+
+TUTOR: [10:52 PM | reply | rubric item visible: “Source evaluation: separate task.”]
+
+"Yes. If there is no “credible source” box, put the check in the submission comment.
+
+Keep the split: page details go in the fields; credibility evidence goes in the separate rubric/comment row.
+
+Use this order:
+
+Author:
+Date:
+Title:
+Container:
+
+Submission comment: “Credible source check: The author/organization is listed, and the page is current.”
+
+Use that sentence only if both facts are visible on the page. The comment gives evidence for the separate source-evaluation row; it does not make the citation fields prove credibility.
+
+That comment is not part of the citation fields. It is evidence for the separate rubric row."
+
+STAGE: [after the latest reply, the cursor returns to the unresolved part of the task]
+
+LEARNER: [10:53 PM | draft reply]
+
+"The order helps because it matches the worksheet boxes: Author / Date / Title / Container. The stuck part is “page is current”: the page shows the organization and a footer copyright year, but no clear page date, and I’m not sure if that counts as “Date.” If the date fact is not visible, should the submission comment just say “Credible source check: the organization is listed,” or does that leave the “Source evaluation” row incomplete?"
+
+TUTOR: [10:54 PM | reply]
+
+"The field order is settled. The stuck point is not “where does Date go?” now; it is “which words can survive if the grader asks, ‘show me that on the page.’”
+
+Run this claim gate on the comment before submit:
+
+“Credible source check: the organization is listed and the page is current.”
+
+Mark each claim:
+
+- “organization is listed” = pointer / no pointer
+- “page is current” = pointer / no pointer
+
+If the only date is a footer copyright year, do not mark “page is current” as a pointer. Put `Date: n.d.` or `Date: no clear page date listed`, depending on the worksheet format.
+
+Then remove any “no pointer” claim from the submission comment. If the rubric requires currentness, the missing page date becomes a weakness to name, not a reason to invent a date."
+
+LEARNER: [10:56 PM | draft reply]
+
+"Claim gate: “organization is listed” = pointer; “page is current” = no pointer. For the Date field, I’m leaning `Date: n.d.`, unless the worksheet wants `no clear page date listed` instead. Submission comment: “Credible source check: the organization is listed”; the footer copyright year feels like box-filling pressure, not a pointer I can show for “current.” If the rubric needs currentness, do I name “no clear page date listed” as the weakness in the comment too?"

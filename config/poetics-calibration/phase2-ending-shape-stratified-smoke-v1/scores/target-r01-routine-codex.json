@@ -127,7 +127,26 @@
       },
       "flags": [
         "adaptive_mechanism_quality_mechanism_clamp:4->3:stock=0:device=1:routine=0:mechanism_score=3"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 100,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "Arrows are just the predation stack — 'mussel → crab → heron' chains big-eats-small up the line, classic hierarchy.",
+          "learnerAction": "'Heron into worm' — eater into food, doesn't pass. Worm into heron after the flip, food to eater, stays.",
+          "tutorAdaptiveMechanism": "‘Mussel → crab’ passes: mussel into crab. Same check here, not size: food source into eater. Middle mark first: ___ into ___. Say that one before the stylus moves; the edge link waits next.",
+          "adaptiveMechanismQuality": "Same check here, not size: food source into eater. Middle mark first: ___ into ___. Say that one before the stylus moves; the edge link waits next."
+        }
+      }
     },
     {
       "id": "T394",
@@ -211,7 +230,26 @@
       },
       "flags": [
         "adaptive_mechanism_quality_mechanism_clamp:4->3:stock=1:device=1:routine=0:mechanism_score=3"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "Side, perimeter, area — same ratio in each, isn't it?",
+          "learnerAction": "Four. Four old squares fit inside. So... four in the area box, not two.",
+          "tutorAdaptiveMechanism": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.",
+          "adaptiveMechanismQuality": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box."
+        }
+      }
     },
     {
       "id": "T397",
@@ -295,7 +333,26 @@
       },
       "flags": [
         "adaptive_mechanism_quality_mechanism_clamp:4->3:stock=1:device=0:routine=0:mechanism_score=4"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 0,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 75,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "",
+          "learnerAction": "Undeclared. Fine — that is the word the paper allows.",
+          "tutorAdaptiveMechanism": "It does not lower the price tonight. That has to be said.\n\n[The tutor writes across both columns: “A DISTINCTION DOES NOT PAY THE BILL. IT CHANGES THE DEMAND.” Traffic cuts through the open window. The chalk is set beside the pinned price list.]\n\nTake the chalk. Two lines only.\n\n[On the board:]\n\n“CAN SAY FROM THIS PAPER:”\n\n“MUST ASK BEFORE BLAME LANDS:”",
+          "adaptiveMechanismQuality": "Take the chalk. Two lines only.\n\n[On the board:]\n\n“CAN SAY FROM THIS PAPER:”\n\n“MUST ASK BEFORE BLAME LANDS:”"
+        }
+      }
     },
     {
       "id": "T398",
@@ -377,7 +434,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "peripeteia_induced",
+        "basis": "tutor_mechanism_then_learner_performance_then_reorientation",
+        "justification": "The same critic found tutor adaptive mechanism, learner public performance, and learner reorientation.",
+        "completeEndingShape": true,
+        "scores": {
+          "learnerSelfReframe": 100,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 100,
+          "adaptiveMechanismQuality": 100,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "Sheet's done, every line, I checked it — three times, I think.",
+          "learnerAction": "Far leg — the one across — it'd come up first, wouldn't it... [glances under the seat at the hinge] or the hinge, because it sits centred and she's coming down off to the side, so it'd want to — sorry. Not the seat — the rubber on the foot, that's — no. Far leg. I think. Should I press now, or — do you watch it empty first?",
+          "tutorAdaptiveMechanism": "The checked sheet stays with us; it proves the steps were followed. What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+          "adaptiveMechanismQuality": "Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature."
+        }
+      }
     },
     {
       "id": "T402",
@@ -459,7 +535,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 0,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 75,
+          "adaptiveMechanismQuality": 100,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "",
+          "learnerAction": "Gravity's head down toward Earth. Normal up off the floor. Push in from the side the hand's on. Want to lay all three out before clipping anything.",
+          "tutorAdaptiveMechanism": "That copy had arrowheads too early. It mixed two jobs.\n\nBlank copy: body acting on cart.\n\nEarth on cart: gravity.\nFloor on cart: normal.\nHand on cart: push.\n\nSet the labels that way first. Arrowheads stay off for the moment.",
+          "adaptiveMechanismQuality": "Blank copy: body acting on cart.\n\nEarth on cart: gravity.\nFloor on cart: normal.\nHand on cart: push.\n\nSet the labels that way first. Arrowheads stay off for the moment."
+        }
+      }
     },
     {
       "id": "T406",
@@ -541,7 +636,37 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "is the 57 the rainfall or is the label the rainfall — cant tell which one the quiz wants me to circle as the header.",
+          "learnerAction": "`Orange` row value, under `city` in row three. `rainfall_mm` header. so basically anything in the top row is a header and everything underneath is a row value, thats the rule?",
+          "tutorAdaptiveMechanism": "The underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.",
+          "adaptiveMechanismQuality": "The underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value."
+        }
+      }
     }
-  ]
+  ],
+  "originPolicy": {
+    "version": "recognition-origin-derived-v1",
+    "source": "derived_from_role_symmetric_critic_axes",
+    "classes": [
+      "none",
+      "organic",
+      "peripeteia_induced",
+      "false_closure",
+      "ambiguous"
+    ]
+  }
 }

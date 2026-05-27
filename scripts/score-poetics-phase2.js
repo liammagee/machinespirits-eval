@@ -63,6 +63,7 @@ import { callModel, parseJsonResponse, runWithConcurrency, MODEL_MAP } from './s
 import { evidencePresent, to100 } from './score-poetics-phase1.js';
 import { createProgressReporter } from './progress.js';
 import { quadraticWeightedKappa, cohenKappa } from './compare-poetics-critics.js';
+import { recognitionOriginForScoreRow } from './lib/recognitionOrigin.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -641,7 +642,7 @@ async function scoreItem({ id, text }, modelKey, mock) {
   const g = applyPhase2Gates(parsed, turns, wholeText);
   const formClass = deriveForm(g.recon100, g.statedInsight100);
   const learningSignalClass = deriveLearningSignalClass(formClass, g.actionalBreakthrough100);
-  return {
+  const row = {
     id,
     nLearnerTurns: learnerTurns.length,
     nTutorTurns: tutorTurns,
@@ -674,6 +675,8 @@ async function scoreItem({ id, text }, modelKey, mock) {
     roleSymmetricScores: g.roleSymmetricScores,
     flags: g.flags,
   };
+  row.recognitionOrigin = recognitionOriginForScoreRow(row);
+  return row;
 }
 
 // ── H2: does stated-insight predict recohering? (instrument-internal, no humans) ──
@@ -707,14 +710,15 @@ const num = (x) => (x == null || Number.isNaN(x) ? 'n/a' : x.toFixed(1));
 
 function printScoreReport(scored, h2, counts, critic) {
   console.log(`\n══ Poetics Phase-2 — critic=${critic} (recontextualization = primary; FORM derived) ══\n`);
-  console.log('id   form         recon  s-ins  rupt  coher  actn  mech  qual  pivot  flags');
+  console.log('id   form         origin               recon  s-ins  rupt  coher  actn  mech  qual  pivot  flags');
   for (const s of [...scored].sort((a, b) => a.id.localeCompare(b.id))) {
     if (s.error) {
       console.log(`${s.id.padEnd(4)} ERROR  ${s.error}`);
       continue;
     }
     console.log(
-      `${s.id.padEnd(4)} ${s.formClass.padEnd(12)} ${num(s.recontextualization).padStart(5)} ` +
+      `${s.id.padEnd(4)} ${s.formClass.padEnd(12)} ${String(s.recognitionOrigin?.class || 'none').padEnd(20)} ` +
+        `${num(s.recontextualization).padStart(5)} ` +
         `${num(s.statedInsight).padStart(5)} ${num(s.rupture).padStart(5)} ${num(s.globalCoherence).padStart(5)}  ` +
         `${num(s.actionalBreakthrough).padStart(5)} ${num(s.tutorAdaptiveMechanism).padStart(5)} ` +
         `${num(s.adaptiveMechanismQuality).padStart(5)}  ` +

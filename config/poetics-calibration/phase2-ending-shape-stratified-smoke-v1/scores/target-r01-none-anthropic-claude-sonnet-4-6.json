@@ -127,7 +127,26 @@
       },
       "flags": [
         "adaptive_mechanism_quality_evidence_clamp:4->3"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "peripeteia_induced",
+        "basis": "tutor_mechanism_then_learner_performance_then_reorientation",
+        "justification": "The same critic found tutor adaptive mechanism, learner public performance, and learner reorientation.",
+        "completeEndingShape": true,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 75,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 50
+        },
+        "evidence": {
+          "learnerSelfReframe": "Arrows are just the predation stack — 'mussel → crab → heron' chains big-eats-small up the line, classic hierarchy.",
+          "learnerAction": "Mark it 'source unclear → heron' before it ships — rather flag it now than have the modelers running a phantom periwinkle line by next quarter.",
+          "tutorAdaptiveMechanism": "Notation stays food source → eater; size is off the key. Eater side is settled: heron. Tail label first: read the exposed source, then mark source → heron. If the photo won't say, tag the source as unclear before it goes upstream.",
+          "adaptiveMechanismQuality": "sets the arrow-key card over the heron silhouette, leaving the arrow tail and faint endpoint label exposed. Tail label first: read the exposed source, then mark source → heron. If the photo won't say, tag the source as unclear before it goes upstream."
+        }
+      }
     },
     {
       "id": "T394",
@@ -209,7 +228,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "Side, perimeter, area — same ratio in each, isn't it? I just want to be sure before writing the same number down three times.",
+          "learnerAction": "Two and two and two and two around the small one — eight. Four and four and four and four around the big one — sixteen. [sets the two numbers down beside the still-empty box] Eight and sixteen, side by side, before anything goes in. I'd rather see what they're doing next to each other than guess at the box again.",
+          "tutorAdaptiveMechanism": "Put 2 in the side box. Now test the other two before that pencil slides over: perimeter goes 8 to 16, area goes 4 to 16. The worksheet is asking for those two ratios separately. What does 16 over 8 give, and what does 16 over 4 give?",
+          "adaptiveMechanismQuality": "Put 2 in the side box. Now test the other two before that pencil slides over: perimeter goes 8 to 16, area goes 4 to 16. The worksheet is asking for those two ratios separately. What does 16 over 8 give, and what does 16 over 4 give?"
+        }
+      }
     },
     {
       "id": "T397",
@@ -291,7 +329,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 50,
+          "learnerAction": 50,
+          "tutorAdaptiveMechanism": 75,
+          "adaptiveMechanismQuality": 75,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "So what does the distinction do for anyone at the counter, if the evidence to fill the right column never leaves the back office?",
+          "learnerAction": "Buyers, then. Pressure by many people — which many people?",
+          "tutorAdaptiveMechanism": "At the counter, maybe no one is obliged. [deliberate pause] That is not a small fact. That is the next fact. [The tutor writes three labels across the board:] 'BUYERS' 'OTHER BAKERIES' 'PUBLIC RULE' One chalk mark. Under 'buyers,' the mark means pressure by many people, not one angry purchase. Under 'other bakeries,' the mark means a real alternative: same bread, lower price, available now. Under 'public rule,' the mark means some outside power can demand records: costs, margins, reports.",
+          "adaptiveMechanismQuality": "Put the mark where obligation can actually enter."
+        }
+      }
     },
     {
       "id": "T398",
@@ -375,7 +432,26 @@
       },
       "flags": [
         "recon_evidence_clamp:4->3"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 50,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 75,
+          "adaptiveMechanismQuality": 75,
+          "statedInsight": 50
+        },
+        "evidence": {
+          "learnerSelfReframe": "the sheet says three times the static, that's — I didn't just tick it, I weighed it, I —",
+          "learnerAction": "Can I put a bag on the front lip, off centre, see if a leg lifts? Not heavy, only — I want to see if it goes before I sign.",
+          "tutorAdaptiveMechanism": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+          "adaptiveMechanismQuality": "Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it."
+        }
+      }
     },
     {
       "id": "T402",
@@ -459,7 +535,26 @@
       },
       "flags": [
         "tutor_adaptation_clamp_no_post_tutor:4->3"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 50,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 75,
+          "adaptiveMechanismQuality": 75,
+          "statedInsight": 50
+        },
+        "evidence": {
+          "learnerSelfReframe": "Bit thrown we've stepped back from direction — thought the arrows were the problem.",
+          "learnerAction": "slots Earth onto acting only; floor and hand straddle both",
+          "tutorAdaptiveMechanism": "That copy had arrowheads too early. It mixed two jobs. Blank copy: body acting on cart. Earth on cart: gravity. Floor on cart: normal. Hand on cart: push. Set the labels that way first. Arrowheads stay off for the moment.",
+          "adaptiveMechanismQuality": "That copy had arrowheads too early. It mixed two jobs. Blank copy: body acting on cart… Set the labels that way first. Arrowheads stay off for the moment."
+        }
+      }
     },
     {
       "id": "T406",
@@ -541,7 +636,37 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 50,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 25,
+          "adaptiveMechanismQuality": 25,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "cant tell which one the quiz wants me to circle as the header",
+          "learnerAction": "`Orange` = row value. Down under city, same shape as Tamworth and Bathurst. `rainfall_mm` = header still, up the top. Bit thrown it came up twice — checking I'm not missing a catch.",
+          "tutorAdaptiveMechanism": "Yes. `city` is a header.\n\nTop row:\n`city` / `rainfall_mm` / `month` = headers.\n\nThe underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.\n\nPretest check:\n`Orange` = header or row value?\n`rainfall_mm` = header or row value?",
+          "adaptiveMechanismQuality": "The underscore in `rainfall_mm` keeps the field name in one piece."
+        }
+      }
     }
-  ]
+  ],
+  "originPolicy": {
+    "version": "recognition-origin-derived-v1",
+    "source": "derived_from_role_symmetric_critic_axes",
+    "classes": [
+      "none",
+      "organic",
+      "peripeteia_induced",
+      "false_closure",
+      "ambiguous"
+    ]
+  }
 }

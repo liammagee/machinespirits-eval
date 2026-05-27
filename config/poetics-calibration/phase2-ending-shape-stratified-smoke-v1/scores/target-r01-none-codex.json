@@ -125,7 +125,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "peripeteia_induced",
+        "basis": "tutor_mechanism_then_learner_performance_then_reorientation",
+        "justification": "The same critic found tutor adaptive mechanism, learner public performance, and learner reorientation.",
+        "completeEndingShape": true,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 75,
+          "adaptiveMechanismQuality": 100,
+          "statedInsight": 50
+        },
+        "evidence": {
+          "learnerSelfReframe": "sketch's a bit murky on that side, but the arrow's got to come into heron, because heron's the bigger silhouette on the page.",
+          "learnerAction": "Mark it \"source unclear → heron\" before it ships — rather flag it now than have the modelers running a phantom periwinkle line by next quarter.",
+          "tutorAdaptiveMechanism": "Notation stays food source → eater; size is off the key. Eater side is settled: heron. Tail label first: read the exposed source, then mark source → heron. If the photo won’t say, tag the source as unclear before it goes upstream.",
+          "adaptiveMechanismQuality": "Eater side is settled: heron. Tail label first: read the exposed source, then mark source → heron. If the photo won’t say, tag the source as unclear before it goes upstream."
+        }
+      }
     },
     {
       "id": "T394",
@@ -209,7 +228,26 @@
       },
       "flags": [
         "adaptive_mechanism_quality_mechanism_clamp:4->3:stock=0:device=0:routine=0:mechanism_score=3"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 50
+        },
+        "evidence": {
+          "learnerSelfReframe": "I just want to be sure before writing the same number down three times.",
+          "learnerAction": "Two and two and two and two around the small one — eight. Four and four and four and four around the big one — sixteen. [sets the two numbers down beside the still-empty box] Eight and sixteen, side by side, before anything goes in.",
+          "tutorAdaptiveMechanism": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.",
+          "adaptiveMechanismQuality": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box."
+        }
+      }
     },
     {
       "id": "T397",
@@ -294,7 +332,26 @@
       "flags": [
         "tutor_strategy_reversal_mechanism_clamp:5->3:stock=0:device=1:routine=0",
         "adaptive_mechanism_quality_mechanism_clamp:4->3:stock=0:device=1:routine=0:mechanism_score=3"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 25,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "",
+          "learnerAction": "Buyers, then. Pressure by many people — which many people? Nobody walked home from work tonight knowing each other's names; there's no queue forming on a Wednesday over a small loaf.",
+          "tutorAdaptiveMechanism": "It does not lower the price tonight. That has to be said.\n\n[The tutor writes across both columns: “A DISTINCTION DOES NOT PAY THE BILL. IT CHANGES THE DEMAND.” Traffic cuts through the open window. The chalk is set beside the pinned price list.]\n\nTake the chalk. Two lines only.\n\n[On the board:]\n\n“CAN SAY FROM THIS PAPER:”\n\n“MUST ASK BEFORE BLAME LANDS:”",
+          "adaptiveMechanismQuality": "Take the chalk. Two lines only.\n\n[On the board:]\n\n“CAN SAY FROM THIS PAPER:”\n\n“MUST ASK BEFORE BLAME LANDS:”"
+        }
+      }
     },
     {
       "id": "T398",
@@ -376,7 +433,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "peripeteia_induced",
+        "basis": "tutor_mechanism_then_learner_performance_then_reorientation",
+        "justification": "The same critic found tutor adaptive mechanism, learner public performance, and learner reorientation.",
+        "completeEndingShape": true,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 75,
+          "adaptiveMechanismQuality": 100,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "Sheet's done, every line, I checked it — three times, I think.",
+          "learnerAction": "Can I put a bag on the front lip, off centre, see if a leg lifts? Not heavy, only — I want to see if it goes before I sign.",
+          "tutorAdaptiveMechanism": "The checked sheet stays with us; it proves the steps were followed. What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+          "adaptiveMechanismQuality": "Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature."
+        }
+      }
     },
     {
       "id": "T402",
@@ -458,7 +534,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "peripeteia_induced",
+        "basis": "tutor_mechanism_then_learner_performance_then_reorientation",
+        "justification": "The same critic found tutor adaptive mechanism, learner public performance, and learner reorientation.",
+        "completeEndingShape": true,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 75,
+          "adaptiveMechanismQuality": 75,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "Earth's not touching the cart though; label still sits on it. Parking that.",
+          "learnerAction": "Earth — acting only. Floor and hand on both. Contact's not the test for acting then. Arrows next?",
+          "tutorAdaptiveMechanism": "Earth: not touching. Still marked as acting on the cart.\n\nFloor and hand can sit on both cards.\n\nKeep the force labels on the acting side: Earth on cart, floor on cart, hand on cart.",
+          "adaptiveMechanismQuality": "sets two cards beside the cart: touching cart and acting on cart. Earth stays off the touching card; a thin line runs from Earth to the cart."
+        }
+      }
     },
     {
       "id": "T406",
@@ -540,7 +635,37 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "is the 57 the rainfall or is the label the rainfall — cant tell which one the quiz wants me to circle as the header.",
+          "learnerAction": "`August` = row value. Sits under `month`, third row down, lined up with where `June` and `July` are. Checking against the cell positions to be sure I'm not misreading the column.",
+          "tutorAdaptiveMechanism": "The underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.",
+          "adaptiveMechanismQuality": "The underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value."
+        }
+      }
     }
-  ]
+  ],
+  "originPolicy": {
+    "version": "recognition-origin-derived-v1",
+    "source": "derived_from_role_symmetric_critic_axes",
+    "classes": [
+      "none",
+      "organic",
+      "peripeteia_induced",
+      "false_closure",
+      "ambiguous"
+    ]
+  }
 }

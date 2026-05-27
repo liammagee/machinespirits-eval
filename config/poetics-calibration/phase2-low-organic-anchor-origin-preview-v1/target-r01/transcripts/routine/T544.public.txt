@@ -1,0 +1,86 @@
+STAGE: [A citation worksheet has four boxes: author, date, title, and container. The learner is filling the boxes from a source page. This activity is only about identifying bibliographic fields; it is not yet evaluating whether the source is trustworthy.]
+
+STAGE: [09:14 | Comment reopened | highlighted fragment: "safe source because the citation is complete"]
+
+LEARNER: [10:46 PM | reopened comment]
+
+"Moved site name to “Container,” not “Title.” Still confused: if “Author / Date / Title / Container” are just parts of the page, does a complete citation not mean the source is okay? The rubric has “credible source” checked separately, so where does that check go before I submit?"
+
+TUTOR: [10:49 PM | reply]
+
+"“Moved site name to ‘Container’” is the right field move.
+
+“Author / Date / Title / Container” identify the source so it can be found. They do not certify that the source is okay.
+
+Before submitting, check the rubric row labeled “credible source.” If the worksheet has a matching box/comment line, put one sentence there. If not, put that sentence in the submission comment.
+
+Do not put the credibility check in “Title” or “Container.”
+
+Submit layout:
+
+Author:
+Date:
+Title:
+Container:
+Credible source check: separate rubric item / comment."
+
+LEARNER: [10:51 PM | draft reply]
+
+"The “Moved site name to ‘Container’” part helps because that was the box I changed. I think Author / Date / Title / Container are just where the page details go, but I’m still not sure if the rubric row counts unless I type something somewhere. If there’s no “credible source” box, is “Credible because the author/organization is listed and the page is current” okay in the submission comment?"
+
+STAGE: [09:21 | Rubric drawer opens beside thread | item visible: "Citation worksheet: identify source parts. Source evaluation: separate task."]
+
+TUTOR: [10:52 PM | reply | rubric item visible: “Source evaluation: separate task.”]
+
+"Yes. If there is no “credible source” box, put the check in the submission comment.
+
+Keep the split: page details go in the fields; credibility evidence goes in the separate rubric/comment row.
+
+Use this order:
+
+Author:
+Date:
+Title:
+Container:
+
+Submission comment: “Credible source check: The author/organization is listed, and the page is current.”
+
+Use that sentence only if both facts are visible on the page. The comment gives evidence for the separate source-evaluation row; it does not make the citation fields prove credibility.
+
+That comment is not part of the citation fields. It is evidence for the separate rubric row."
+
+LEARNER: [10:54 PM | draft reply]
+
+"Okay, the “Source evaluation: separate task” line makes the placement clearer: Author / Date / Title / Container stay as page details, and the credibility sentence goes in the submission comment if there is no box. I’m still not sure how obvious “author/organization is listed” and “page is current” need to be, so I’ll check those on the page first. If one is missing, should the comment say that instead of using the sample sentence?"
+
+TUTOR: [10:56 PM | reply]
+
+"Yes. Do not use the sample sentence unless both parts are visible.
+
+Before submitting, check the page once:
+
+Author/organization visible? yes / no
+Current date visible? yes / no
+
+Then make the comment match those answers.
+
+If one is missing:
+
+Submission comment: “Source evaluation: The organization is listed, but I do not see a current date on the page.”
+
+or
+
+Submission comment: “Source evaluation: The page is current, but I do not see a listed author/organization.”
+
+That keeps the citation fields as page details:
+
+Author:
+Date:
+Title:
+Container:
+
+The comment is the separate rubric check. It should report the evidence, not fill in evidence that is not on the page."
+
+LEARNER: [10:57 PM | draft reply]
+
+"The yes/no check helps me know where to put things: “Author / Date / Title / Container” are still just the citation fields, and “Source evaluation” goes in the submission comment. I’m still nervous that if “Current date visible?” is no, the rubric row might count against me, but I won’t use the sample sentence unless both parts are actually on the page. So the comment should say what is visible, even if that makes the source look weaker?"

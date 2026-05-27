@@ -8,6 +8,7 @@ import {
   getBlindItem,
   getItem,
   endingShapeDiagnosticsForScores,
+  originDiagnosticsForScores,
   listItems,
   listRuns,
   parseTranscriptPreview,
@@ -495,6 +496,47 @@ LEARNER: "The arrow names who acts on the cart. [moves the motion strip aside] T
     assert.equal(diagnostics.tutorAdaptiveMoveVotes, 1);
     assert.equal(diagnostics.completeEndingShapeVotes, 1);
     assert.ok(diagnostics.disagreementFlags.some((flag) => flag.includes('learner reorientation')));
+  });
+
+  it('builds recognition-origin diagnostics from role-symmetric score rows', () => {
+    const diagnostics = originDiagnosticsForScores([
+      {
+        critic_model: 'critic-a',
+        form_class: 'recognition',
+        recontextualization: 75,
+        metadata: {
+          role_symmetric_scores: {
+            learner_self_reframe: { score100: 75, evidence: 'I was reading the whole map wrong' },
+            learner_actional_breakthrough: { score100: 75, evidence: 'I test the smaller map first' },
+            tutor_adaptive_mechanism: { score100: 75, evidence: 'Switch route: use a smaller map' },
+          },
+        },
+      },
+      {
+        critic_model: 'critic-b',
+        form_class: 'recognition',
+        recontextualization: 75,
+        metadata: {
+          role_symmetric_scores: {
+            learner_self_reframe: { score100: 75, evidence: 'I was reading the whole map wrong' },
+            learner_actional_breakthrough: { score100: 25 },
+            tutor_adaptive_mechanism: { score100: 25 },
+          },
+        },
+      },
+      {
+        critic_model: 'critic-c',
+        form_class: 'trap',
+        recontextualization: 50,
+        statedInsight: 75,
+        metadata: {},
+      },
+    ]);
+    assert.equal(diagnostics.totalCritics, 3);
+    assert.equal(diagnostics.counts.peripeteia_induced, 1);
+    assert.equal(diagnostics.counts.organic, 1);
+    assert.equal(diagnostics.counts.false_closure, 1);
+    assert.ok(diagnostics.disagreementFlags.some((flag) => flag.includes('origin disagreement')));
   });
 
   it('supports blind browser labels without exposing critic scores', () =>

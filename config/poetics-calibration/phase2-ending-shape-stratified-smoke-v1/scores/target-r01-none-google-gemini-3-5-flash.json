@@ -125,7 +125,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 0,
+          "learnerAction": 0,
+          "tutorAdaptiveMechanism": 0,
+          "adaptiveMechanismQuality": 0,
+          "statedInsight": 50
+        },
+        "evidence": {
+          "learnerSelfReframe": "",
+          "learnerAction": "",
+          "tutorAdaptiveMechanism": "",
+          "adaptiveMechanismQuality": ""
+        }
+      }
     },
     {
       "id": "T394",
@@ -207,7 +226,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 0,
+          "learnerAction": 0,
+          "tutorAdaptiveMechanism": 0,
+          "adaptiveMechanismQuality": 0,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "",
+          "learnerAction": "",
+          "tutorAdaptiveMechanism": "",
+          "adaptiveMechanismQuality": ""
+        }
+      }
     },
     {
       "id": "T397",
@@ -292,7 +330,26 @@
       "flags": [
         "tutor_strategy_reversal_clamp_no_post_tutor:5->3",
         "adaptive_mechanism_quality_clamp_no_post_tutor:5->3"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 0,
+          "learnerAction": 0,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "",
+          "learnerAction": "",
+          "tutorAdaptiveMechanism": "At the counter, maybe no one is obliged.\n\nThat is not a small fact. That is the next fact.\n\n[The tutor writes three labels across the board:]\n\n“BUYERS”\n\n“OTHER BAKERIES”\n\n“PUBLIC RULE”\n\nOne chalk mark.\n\nUnder “buyers,” the mark means pressure by many people, not one angry purchase.\n\nUnder “other bakeries,” the mark means a real alternative: same bread, lower price, available now.\n\nUnder “public rule,” the mark means some outside power can demand records: costs, margins, reports.\n\nMonday’s smaller loaf is already gone. This does not repair it.\n\n[The tutor sets the chalk beside the pinned list.]\n\nPut the mark where obligation can actually enter.",
+          "adaptiveMechanismQuality": "[The tutor writes three labels across the board:]\n\n“BUYERS”\n\n“OTHER BAKERIES”\n\n“PUBLIC RULE”\n\nOne chalk mark.\n\nUnder “buyers,” the mark means pressure by many people, not one angry purchase.\n\nUnder “other bakeries,” the mark means a real alternative: same bread, lower price, available now.\n\nUnder “public rule,” the mark means some outside power can demand records: costs, margins, reports.\n\nMonday’s smaller loaf is already gone. This does not repair it.\n\n[The tutor sets the chalk beside the pinned list.]\n\nPut the mark where obligation can actually enter."
+        }
+      }
     },
     {
       "id": "T398",
@@ -374,7 +431,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 0,
+          "tutorAdaptiveMechanism": 0,
+          "adaptiveMechanismQuality": 0,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "Sheet's done, every line, I checked it — three times, I think.",
+          "learnerAction": "",
+          "tutorAdaptiveMechanism": "",
+          "adaptiveMechanismQuality": ""
+        }
+      }
     },
     {
       "id": "T402",
@@ -459,7 +535,26 @@
       "flags": [
         "tutor_strategy_reversal_mechanism_clamp:5->3:stock=0:device=1:routine=0",
         "adaptive_mechanism_quality_mechanism_clamp:5->3:stock=0:device=1:routine=0:mechanism_score=3"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 0,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 50
+        },
+        "evidence": {
+          "learnerSelfReframe": "",
+          "learnerAction": "[slots Earth onto acting only; floor and hand straddle both]",
+          "tutorAdaptiveMechanism": "[sets two cards beside the cart: touching cart and acting on cart. Earth stays off the touching card; a thin line runs from Earth to the cart.]\n\n\"Earth: not touching. Still marked as acting on the cart.\n\nFloor and hand can sit on both cards.\n\nKeep the force labels on the acting side: Earth on cart, floor on cart, hand on cart.\"",
+          "adaptiveMechanismQuality": "[sets two cards beside the cart: touching cart and acting on cart. Earth stays off the touching card; a thin line runs from Earth to the cart.]"
+        }
+      }
     },
     {
       "id": "T406",
@@ -541,7 +636,37 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 0,
+          "adaptiveMechanismQuality": 0,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "is the 57 the rainfall or is the label the rainfall — cant tell which one the quiz wants me to circle as the header.",
+          "learnerAction": "`Orange` = row value. Down under city, same shape as Tamworth and Bathurst. `rainfall_mm` = header still, up the top.",
+          "tutorAdaptiveMechanism": "",
+          "adaptiveMechanismQuality": ""
+        }
+      }
     }
-  ]
+  ],
+  "originPolicy": {
+    "version": "recognition-origin-derived-v1",
+    "source": "derived_from_role_symmetric_critic_axes",
+    "classes": [
+      "none",
+      "organic",
+      "peripeteia_induced",
+      "false_closure",
+      "ambiguous"
+    ]
+  }
 }

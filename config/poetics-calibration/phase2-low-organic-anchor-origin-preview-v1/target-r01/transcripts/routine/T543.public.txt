@@ -1,0 +1,62 @@
+STAGE: [A script excerpt has a speaker name, a spoken line, and one bracketed stage direction such as "puts down the cup." The immediate task is only to label which text is spoken and which text is performed as action.]
+
+LEARNER: "Right, so the bracketed action, “crosses to the door”, gets labelled “performed action”, not read aloud, and the line to speak is only the words outside it. I still catch myself wanting to read it because it sits in the sequence; is the rule basically “brackets tell the actor what to do, not what to say”?"
+
+TUTOR: "Yes. Tighten the rule like this:
+
+“Brackets tell the actor what to perform, not what to speak.”
+
+The sequence matters, but it only tells when the action happens. In `Mara: “I’m going.” [crosses to the door]`, the spoken line is `I’m going.` The bracketed part is marked `performed action` and stays silent in the reading.
+
+Quick mark-up check:
+
+`Sam: “Leave it there.” [puts the key on the table]`
+
+Spoken line: `Leave it there.`
+Performed action: `puts the key on the table`"
+
+LEARNER: "Oh, I get it — bracketed text is in the running order, but not in the voice. So for Sam, I read only “Leave it there,” and leave “puts the key on the table” as the action mark. Just checking the trap: even mid-sequence, the bracket stays silent and only fixes when the move happens?"
+
+TUTOR: "Correct. “Running order, but not in the voice” is the rule.
+
+Tight form: “Brackets time the action; they do not supply speech.”
+
+`Sam: “Leave it there.” [puts the key on the table]`
+
+Spoken: `Leave it there.`
+Performed action: `puts the key on the table`
+
+Transfer check:
+
+`Nia: “Wait.” [looks at the letter] “Read it again.”`
+
+Mark it:
+Spoken line(s): ___
+Performed action: ___
+
+The bracket still stays silent. It only fixes when the move happens."
+
+LEARNER: "Spoken line(s): “Wait.” / “Read it again.”
+Performed action: looks at the letter.
+The bracket is just the timing mark in the middle, not something to voice. For the reading copy, is that treated as two spoken lines, or one line interrupted by action?"
+
+TUTOR: "Treat it as **one speech turn interrupted by action**.
+
+`Nia: “Wait.” [looks at the letter] “Read it again.”`
+
+Marked reading copy:
+Voice says: `Wait.` / `Read it again.`
+Silent embedded action cue: `[looks at the letter]`
+Mark-up label: `one Nia speech turn, with an embedded action cue`
+
+Rule: “The bracket sits in the sequence; it does not create a new spoken line.”
+
+Check:
+`Nia: “No.” [steps back] “Not yet.”`
+
+Mark it:
+Speech-turn category: ___
+Spoken text: ___
+Silent embedded action cue: ___"
+
+LEARNER: "Oh, I get it: one Nia speech turn, with the action tucked inside as a silent cue. Speech-turn category: `one Nia speech turn, with an embedded action cue`; spoken text: `No.` / `Not yet.`; silent embedded action cue: `[steps back]`. Is the slash just a reading-copy separator for the interruption, not a new line break?"

@@ -125,7 +125,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 100,
+          "learnerAction": 0,
+          "tutorAdaptiveMechanism": 0,
+          "adaptiveMechanismQuality": 0,
+          "statedInsight": 50
+        },
+        "evidence": {
+          "learnerSelfReframe": "Arrows are just the predation stack — 'mussel → crab → heron' chains big-eats-small up the line, classic hierarchy.",
+          "learnerAction": "",
+          "tutorAdaptiveMechanism": "",
+          "adaptiveMechanismQuality": ""
+        }
+      }
     },
     {
       "id": "T394",
@@ -207,7 +226,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 100,
+          "learnerAction": 0,
+          "tutorAdaptiveMechanism": 0,
+          "adaptiveMechanismQuality": 0,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "Side, perimeter, area — same ratio in each, isn't it? I just want to be sure before writing the same number down three times.",
+          "learnerAction": "",
+          "tutorAdaptiveMechanism": "",
+          "adaptiveMechanismQuality": ""
+        }
+      }
     },
     {
       "id": "T397",
@@ -289,7 +327,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 0,
+          "learnerAction": 0,
+          "tutorAdaptiveMechanism": 0,
+          "adaptiveMechanismQuality": 0,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "",
+          "learnerAction": "",
+          "tutorAdaptiveMechanism": "",
+          "adaptiveMechanismQuality": ""
+        }
+      }
     },
     {
       "id": "T398",
@@ -371,7 +428,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 0,
+          "tutorAdaptiveMechanism": 0,
+          "adaptiveMechanismQuality": 0,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "But the sheet says three times the static, that's — I didn't just tick it, I weighed it, I —",
+          "learnerAction": "",
+          "tutorAdaptiveMechanism": "",
+          "adaptiveMechanismQuality": ""
+        }
+      }
     },
     {
       "id": "T402",
@@ -453,7 +529,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 0,
+          "learnerAction": 0,
+          "tutorAdaptiveMechanism": 0,
+          "adaptiveMechanismQuality": 0,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "",
+          "learnerAction": "",
+          "tutorAdaptiveMechanism": "",
+          "adaptiveMechanismQuality": ""
+        }
+      }
     },
     {
       "id": "T406",
@@ -535,7 +630,37 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 0,
+          "tutorAdaptiveMechanism": 0,
+          "adaptiveMechanismQuality": 0,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "the underscore in `rainfall_mm` is what threw me — kept reading it like a sentence saying rain millimetres for every row",
+          "learnerAction": "",
+          "tutorAdaptiveMechanism": "",
+          "adaptiveMechanismQuality": ""
+        }
+      }
     }
-  ]
+  ],
+  "originPolicy": {
+    "version": "recognition-origin-derived-v1",
+    "source": "derived_from_role_symmetric_critic_axes",
+    "classes": [
+      "none",
+      "organic",
+      "peripeteia_induced",
+      "false_closure",
+      "ambiguous"
+    ]
+  }
 }

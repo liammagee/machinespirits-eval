@@ -1,0 +1,171 @@
+# Phase-2 low-organic anchor candidates v2
+#
+# Purpose. Candidate anchors for separating organic recognition from
+# peripeteia-induced tutor adaptation. These are designed as ordinary-continuity
+# scenes: a competent routine tutor can proceed without naturally producing a
+# reversal, while the peripeteia arm still has room to force a visible adaptive
+# mechanism if learner pressure appears.
+
+meta:
+  status: LOW-ORGANIC-ANCHOR-CANDIDATES-V2
+  created: 2026-05-26
+  target_family: low-organic-anchor-origin-calibration
+  approach_databases:
+    pedagogical: config/poetics-calibration/pedagogical-approaches.yaml
+    dialogue: config/poetics-calibration/dialogue-approaches.yaml
+  profiles:
+    base: { tutor: baseline, learner: ego_superego_authentic }
+    recognition: { tutor: recognition, learner: ego_superego_recognition_authentic }
+
+dramas:
+  - id: D54
+    discipline: research writing
+    topic: "Why citation fields name source parts, not source credibility"
+    evaluation_role: low_organic_anchor_candidate
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: >-
+      Ordinary-continuity anchor. The shared prefix should be form-filling:
+      author, date, title, container. Do not make the source turn unreliable,
+      expose plagiarism, or produce a hidden-curriculum reveal before branch
+      pressure.
+    pedagogical_approach: hidden_curriculum
+    dialogue_approach: online_thread
+    persona: confused_novice
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The citation fields"
+    public_reader_context: >-
+      A citation worksheet has four boxes: author, date, title, and container.
+      The learner is filling the boxes from a source page. This activity is only
+      about identifying bibliographic fields; it is not yet evaluating whether
+      the source is trustworthy.
+    learner_start_state: >-
+      The learner has a source page and a citation worksheet. They keep treating
+      a completed citation as proof that the source is academically safe to use,
+      but the opening task is only to place source-page details into the right
+      fields.
+    learner_voice_constraint: >-
+      Sound assignment-focused and mildly anxious about doing the format right.
+      In no-cue arms, stay with box placement and do not narrate a new theory of
+      credibility.
+    tutor_voice_constraint: >-
+      Keep the shared prefix as field identification: author, date, title,
+      container. Do not introduce authority, bias, peer review, or reliability
+      until branch pressure changes the task.
+    intended_tutor_character: "Threaded, procedural, aware of hidden curriculum without revealing it too early"
+    intended_lean: recognition
+    dramatic_shape: "citation boxes -> field placement -> possible later pressure over why format is not credibility"
+
+  - id: D55
+    discipline: programming
+    topic: "Why a parameter name is a placeholder, not the argument value passed later"
+    evaluation_role: low_organic_anchor_candidate
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: >-
+      Ordinary-continuity anchor. The shared prefix should label function name,
+      parameter name, call site, and argument value. Avoid a runtime failure,
+      variable-shadowing trap, or surprise output before the branch.
+    pedagogical_approach: vygotsky_zpd_scaffolding
+    dialogue_approach: workshop_clinic
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The parameter line"
+    public_reader_context: >-
+      The learner is looking at a tiny code snippet with a function definition
+      and one function call. The parameter name appears in the definition; the
+      argument value appears in the call. The immediate task is only to label
+      those two roles.
+    learner_start_state: >-
+      The learner sees `function greet(name)` and `greet("Maya")`. They keep
+      saying the parameter already is "Maya," but the opening task is only to
+      label definition-side placeholder and call-side argument.
+    learner_voice_constraint: >-
+      Sound efficient and code-local. In no-cue arms, ask which token gets which
+      label; do not declare a new model of function calls.
+    tutor_voice_constraint: >-
+      Keep the shared prefix as code vocabulary: function name, parameter,
+      argument, call. Do not run the program, introduce a second call, or stage a
+      surprising output until branch pressure asks for it.
+    intended_tutor_character: "Practical, local, using code labels before any execution-based reversal"
+    intended_lean: recognition
+    dramatic_shape: "code labels -> placeholder/value sort -> possible later pressure over why definition is not call"
+
+  - id: D56
+    discipline: drama
+    topic: "Why a stage direction is performed action, not a spoken line"
+    evaluation_role: low_organic_anchor_candidate
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: >-
+      Ordinary-continuity anchor with theatrical material but low dramatic
+      pressure. The shared prefix should label speaker name, spoken line, and
+      bracketed stage direction. Do not stage a rehearsal failure or meta-theatre
+      reveal before branch pressure.
+    pedagogical_approach: brecht_epic_distanciation
+    dialogue_approach: no_stage_plain_transcript
+    persona: eager_explorer
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The bracketed action"
+    public_reader_context: >-
+      A script excerpt has a speaker name, a spoken line, and one bracketed
+      stage direction such as "[puts down the cup]." The immediate task is only
+      to label which text is spoken and which text is performed as action.
+    learner_start_state: >-
+      The learner has a short script excerpt and keeps reading the bracketed
+      action as if the actor should say it aloud. The opening task is only to
+      mark speaker name, spoken line, and performed action.
+    learner_voice_constraint: >-
+      Sound lively and practical, like someone preparing a reading. In no-cue
+      arms, stay with the markup task and do not turn it into a theory of theatre.
+    tutor_voice_constraint: >-
+      Keep the shared prefix as script markup: speaker, spoken line, bracketed
+      action. Do not stage a failed rehearsal, audience confusion, or fourth-wall
+      lesson until branch pressure changes the task.
+    intended_tutor_character: "Theatre-literate, plain-spoken, using script marks before any Brechtian interruption"
+    intended_lean: recognition
+    dramatic_shape: "script markup -> spoken/action labels -> possible later pressure over why performance is not narration"
+
+  - id: D57
+    discipline: arithmetic
+    topic: "Why numerator and denominator name positions in a fraction, not bigger and smaller numbers"
+    evaluation_role: low_organic_anchor_candidate
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: >-
+      Ordinary-continuity anchor. The shared prefix should label top number,
+      bottom number, fraction bar, and one read-aloud phrase. Avoid comparing
+      fraction sizes, equivalent fractions, or a surprising magnitude reversal
+      before the branch.
+    pedagogical_approach: montessori_prepared_environment
+    dialogue_approach: montessori_observation
+    persona: confused_novice
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The fraction labels"
+    public_reader_context: >-
+      A fraction card shows 3/8 with arrows pointing to the top number, bottom
+      number, and fraction bar. The task is to label numerator, denominator, and
+      fraction bar; it is not yet a comparison of fraction sizes.
+    learner_start_state: >-
+      The learner has a 3/8 fraction card and keeps calling the bigger printed
+      number "the important one." The opening task is only to label numerator,
+      denominator, and fraction bar.
+    learner_voice_constraint: >-
+      Sound tentative and label-focused. In no-cue arms, stay with top/bottom/bar
+      placement and do not narrate a discovery about what the denominator does.
+    tutor_voice_constraint: >-
+      Keep the shared prefix as material labeling: top number, bottom number,
+      fraction bar, read as "three eighths." Do not introduce fraction-size
+      comparison, shaded pieces, or equivalence until branch pressure changes the
+      task.
+    intended_tutor_character: "Material-led, patient, keeping the card as a naming surface before any magnitude pressure"
+    intended_lean: recognition
+    dramatic_shape: "fraction-card labels -> position names -> possible later pressure over why position is not importance"

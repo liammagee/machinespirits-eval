@@ -228,3 +228,86 @@ ending-shape diagnostics panel showing critic votes for tutor adaptive move,
 learner public performance, learner reorientation, and complete ending shape.
 The list view also adds an `ending X/Y` chip. This should make future debugging
 less dependent on reading raw JSON or long transcript files.
+
+## Recognition-Origin Axis and Anchor Preview
+
+After OpenRouter credits were refreshed, the same six-scenario run was rescored
+to completion: 90/90 critic rows, zero errors. The repaired five-critic panel
+strengthened the peripeteia arm but did not solve the control problem.
+
+Final completed score summary:
+
+| Arm | Recognition | Trap | Flat | Avg action | Avg tutor mechanism | Complete ending shape |
+|---|---:|---:|---:|---:|---:|---:|
+| routine | 15/30 | 0 | 15 | 67.5 | 52.5 | 3 |
+| none | 18/30 | 1 | 11 | 65.8 | 50.0 | 7 |
+| peripeteia-only | 27/30 | 1 | 2 | 77.5 | 65.0 | 16 |
+
+To separate "recognition appeared" from "peripeteia caused recognition", the
+scorer and browser now include a derived recognition-origin axis:
+
+- `none`: no recognitive learner self-reframe.
+- `organic`: recognition appears without enough tutor-mechanism evidence.
+- `peripeteia_induced`: the same critic sees tutor mechanism, learner public
+  performance, and learner reorientation.
+- `false_closure`: insight/relief is marked without recontextualization.
+- `ambiguous`: recognition appears with partial mechanism evidence but not the
+  full chain.
+
+This origin axis is deterministic over each critic's own role-symmetric scores,
+not a new LLM judgment. It is meant as a diagnostic bridge: cheap enough to apply
+to existing score artifacts, conservative enough not to relabel organic control
+recognition as mechanism success.
+
+Origin summary for `phase2-ending-shape-stratified-smoke-v1`:
+
+| Arm | Peripeteia-induced | Organic | False closure | Ambiguous | None |
+|---|---:|---:|---:|---:|---:|
+| routine | 3/30 | 12/30 | 0/30 | 0/30 | 15/30 |
+| none | 7/30 | 11/30 | 1/30 | 0/30 | 11/30 |
+| peripeteia-only | 16/30 | 11/30 | 1/30 | 0/30 | 2/30 |
+
+The origin axis makes the problem sharper. Peripeteia-only is better, but it
+still contains a large organic-recognition tail. The controls are not merely
+flat-or-not-flat; they contain different origins. D37 and D42 remain the most
+useful clean anchors in this run. D40 and D45 should be treated as organic
+contamination probes rather than clean controls.
+
+A fresh candidate-anchor spec was added at
+`config/poetics-calibration/phase2-low-organic-anchor-candidates-v2.yaml`.
+It drafts four ordinary-continuity anchors:
+
+- D54 citation fields: source-field labeling, not credibility.
+- D55 parameter line: definition-side parameter, call-side argument.
+- D56 bracketed action: stage direction as performed action, not spoken line.
+- D57 fraction labels: numerator/denominator/fraction-bar placement, not size.
+
+Preview generation was run without external scoring:
+
+- Run id: `phase2-low-organic-anchor-origin-preview-v1`
+- Root: `config/poetics-calibration/phase2-low-organic-anchor-origin-preview-v1`
+- Browser: `http://127.0.0.1:3466/?runId=phase2-low-organic-anchor-origin-preview-v1`
+- Items: 12 target scripts: D54-D57 × `routine`, `none`, `peripeteia-only`
+- Scores: none yet
+
+Generation was stopped after target scripts completed because the batch runner
+then moved to default controls, which were not needed for this preview.
+
+Initial qualitative screen:
+
+- D54 is not usable as a clean anchor in this generated preview. The quality
+  gate flagged no-cue self-reframe leakage in `routine` and `none`, plus one
+  possible truncation in `none`.
+- D55 has a promising peripeteia branch, but the `routine` branch already says
+  "same slot is the trap" and performs a reframe. It needs a flatter routine
+  constraint before scoring.
+- D56 likely leaks pseudo-catharsis in routine form: "Oh, I get it" appears
+  without needing the peripeteia arm. It may be useful as a false-closure probe,
+  not a clean low-organic anchor.
+- D57 is clearer than D54/D56 but still risks routine self-reframe around
+  top/bottom position versus numerical size.
+
+Practical implication: do not spend a five-critic external panel on this preview
+batch yet. The useful next step is a stricter anchor-generation pass that forbids
+routine/no-cue branches from naming traps, old/new frames, or "I get it" closure,
+then uses the origin axis as the first cheap screen before external scoring.

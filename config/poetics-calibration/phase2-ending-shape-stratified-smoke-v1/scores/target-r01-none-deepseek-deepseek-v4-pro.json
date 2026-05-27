@@ -128,7 +128,26 @@
       "flags": [
         "tutor_strategy_reversal_mechanism_clamp:5->3:stock=0:device=1:routine=0",
         "adaptive_mechanism_quality_mechanism_clamp:5->3:stock=0:device=1:routine=0:mechanism_score=3"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 100,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "Should be a quick sign-off before rounds, yeah?",
+          "learnerAction": "Mark it \"source unclear → heron\" before it ships — rather flag it now than have the modelers running a phantom periwinkle line by next quarter.",
+          "tutorAdaptiveMechanism": "If the photo won’t say, tag the source as unclear before it goes upstream.",
+          "adaptiveMechanismQuality": "If the photo won’t say, tag the source as unclear before it goes upstream."
+        }
+      }
     },
     {
       "id": "T394",
@@ -210,7 +229,26 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 100,
+          "learnerAction": 75,
+          "tutorAdaptiveMechanism": 0,
+          "adaptiveMechanismQuality": 0,
+          "statedInsight": 25
+        },
+        "evidence": {
+          "learnerSelfReframe": "Side, perimeter, area — same ratio in each, isn't it?",
+          "learnerAction": "Two and two and two and two around the small one — eight. Four and four and four and four around the big one — sixteen. [sets the two numbers down beside the still-empty box] Eight and sixteen, side by side, before anything goes in. I'd rather see what they're doing next to each other than guess at the box again.",
+          "tutorAdaptiveMechanism": "",
+          "adaptiveMechanismQuality": ""
+        }
+      }
     },
     {
       "id": "T397",
@@ -294,7 +332,26 @@
       },
       "flags": [
         "coherence_evidence_clamp:5->3"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "none",
+        "basis": "no_recognitive_reframe",
+        "justification": "The critic did not find a recognitive learner self-reframe.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 25,
+          "learnerAction": 25,
+          "tutorAdaptiveMechanism": 75,
+          "adaptiveMechanismQuality": 75,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "",
+          "learnerAction": "Buyers, then. Pressure by many people — which many people? Nobody walked home from work tonight knowing each other's names; there's no queue forming on a Wednesday over a small loaf.",
+          "tutorAdaptiveMechanism": "At the counter, maybe no one is obliged. [deliberate pause] That is not a small fact. That is the next fact. [The tutor writes three labels across the board:] “BUYERS” “OTHER BAKERIES” “PUBLIC RULE” One chalk mark. Under “buyers,” the mark means pressure by many people, not one angry purchase. Under “other bakeries,” the mark means a real alternative: same bread, lower price, available now. Under “public rule,” the mark means some outside power can demand records: costs, margins, reports. Monday’s smaller loaf is already gone. This does not repair it.",
+          "adaptiveMechanismQuality": "“BUYERS” “OTHER BAKERIES” “PUBLIC RULE” One chalk mark. Under “buyers,” the mark means pressure by many people, not one angry purchase. Under “other bakeries,” the mark means a real alternative: same bread, lower price, available now. Under “public rule,” the mark means some outside power can demand records: costs, margins, reports."
+        }
+      }
     },
     {
       "id": "T398",
@@ -378,7 +435,26 @@
       },
       "flags": [
         "recon_evidence_clamp:5->3"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "false_closure",
+        "basis": "stated_insight_without_recontextualization",
+        "justification": "The learner marks relief or closure without enough recontextualization of earlier learner turns.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 50,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 100,
+          "adaptiveMechanismQuality": 100,
+          "statedInsight": 75
+        },
+        "evidence": {
+          "learnerSelfReframe": "Standing — no, sorry, sitting. When she — when she comes down onto it, that bit, before — [glances at the clipboard]. But the sheet says three times the static, that's — I didn't just tick it, I weighed it, I — [trails off, looks at the stool] it's not the same number though, is it. Three times static. That's not her knee.",
+          "learnerAction": "Front edge. I think — front. Because her knee, when it — it doesn't fold clean, so she'd be — sorry, she'd be on the lip before — [stops, looks at the stool]. Can I put a bag on the front lip, off centre, see if a leg lifts? Not heavy, only — I want to see if it goes before I sign.",
+          "tutorAdaptiveMechanism": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+          "adaptiveMechanismQuality": "Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it."
+        }
+      }
     },
     {
       "id": "T402",
@@ -463,7 +539,26 @@
       "flags": [
         "tutor_strategy_reversal_evidence_clamp:5->3",
         "adaptive_mechanism_quality_evidence_clamp:5->3"
-      ]
+      ],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 100,
+          "learnerAction": 100,
+          "tutorAdaptiveMechanism": 50,
+          "adaptiveMechanismQuality": 50,
+          "statedInsight": 75
+        },
+        "evidence": {
+          "learnerSelfReframe": "Earth's not touching the cart though; label still sits on it.",
+          "learnerAction": "Earth — acting only. Floor and hand on both.",
+          "tutorAdaptiveMechanism": "sets two cards beside the cart: touching cart and acting on cart. Earth stays off the touching card; a thin line runs from Earth to the cart. 'Earth: not touching. Still marked as acting on the cart. Floor and hand can sit on both cards. Keep the force labels on the acting side: Earth on cart, floor on cart, hand on cart.'",
+          "adaptiveMechanismQuality": "sets two cards beside the cart: touching cart and acting on cart. Earth stays off the touching card; a thin line runs from Earth to the cart. 'Earth: not touching. Still marked as acting on the cart. Floor and hand can sit on both cards. Keep the force labels on the acting side: Earth on cart, floor on cart, hand on cart.'"
+        }
+      }
     },
     {
       "id": "T406",
@@ -545,7 +640,37 @@
           "source": "adaptive_mechanism_quality_axis"
         }
       },
-      "flags": []
+      "flags": [],
+      "recognitionOrigin": {
+        "class": "organic",
+        "basis": "recognition_without_tutor_mechanism_chain",
+        "justification": "The learner reorientation appears without enough evidence that a tutor adaptive mechanism caused it.",
+        "completeEndingShape": false,
+        "scores": {
+          "learnerSelfReframe": 75,
+          "learnerAction": 0,
+          "tutorAdaptiveMechanism": 0,
+          "adaptiveMechanismQuality": 0,
+          "statedInsight": 0
+        },
+        "evidence": {
+          "learnerSelfReframe": "row two has 57 under `rainfall_mm`. is the 57 the rainfall or is the label the rainfall — cant tell which one the quiz wants me to circle as the header.",
+          "learnerAction": "",
+          "tutorAdaptiveMechanism": "",
+          "adaptiveMechanismQuality": ""
+        }
+      }
     }
-  ]
+  ],
+  "originPolicy": {
+    "version": "recognition-origin-derived-v1",
+    "source": "derived_from_role_symmetric_critic_axes",
+    "classes": [
+      "none",
+      "organic",
+      "peripeteia_induced",
+      "false_closure",
+      "ambiguous"
+    ]
+  }
 }
