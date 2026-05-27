@@ -54,7 +54,10 @@ function parsePositiveInt(value, name) {
 }
 
 function compactTimestamp(date = new Date()) {
-  return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+  return date
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d{3}Z$/, 'Z');
 }
 
 function parseArgs(argv) {
@@ -76,6 +79,7 @@ function parseArgs(argv) {
     scoreConcurrency: 3,
     structureCritic: 'rules',
     structureCriticConcurrency: 1,
+    generator: null,
     rootParent: CAL_DIR,
     dbPath: null,
     mock: false,
@@ -100,7 +104,8 @@ function parseArgs(argv) {
     else if (token === '--max-iterations') args.maxIterations = parsePositiveInt(argv[++i], '--max-iterations');
     else if (token === '--required-passes') args.requiredPasses = parsePositiveInt(argv[++i], '--required-passes');
     else if (token === '--min-critics') args.minCritics = parsePositiveInt(argv[++i], '--min-critics');
-    else if (token === '--recognition-vote-cut') args.recognitionVoteCut = parsePositiveInt(argv[++i], '--recognition-vote-cut');
+    else if (token === '--recognition-vote-cut')
+      args.recognitionVoteCut = parsePositiveInt(argv[++i], '--recognition-vote-cut');
     else if (token === '--origin-vote-cut') args.originVoteCut = parsePositiveInt(argv[++i], '--origin-vote-cut');
     else if (token === '--action-vote-cut') args.actionVoteCut = parsePositiveInt(argv[++i], '--action-vote-cut');
     else if (token === '--control-max-recognition-votes') {
@@ -115,7 +120,8 @@ function parseArgs(argv) {
     } else if (token === '--structure-critic') args.structureCritic = argv[++i];
     else if (token === '--structure-critic-concurrency') {
       args.structureCriticConcurrency = parsePositiveInt(argv[++i], '--structure-critic-concurrency');
-    } else if (token === '--root-parent') args.rootParent = path.resolve(argv[++i]);
+    } else if (token === '--generator') args.generator = argv[++i];
+    else if (token === '--root-parent') args.rootParent = path.resolve(argv[++i]);
     else if (token === '--db') args.dbPath = path.resolve(argv[++i]);
     else if (token === '--report-prefix') args.reportPrefix = path.resolve(argv[++i]);
     else if (token === '--mock') args.mock = true;
@@ -138,6 +144,7 @@ Options:
   --critics qwen/qwen3.7-max,google/gemini-3.5-flash,deepseek/deepseek-v4-pro,anthropic/claude-sonnet-4.6
   --max-iterations N                Default: 3
   --required-passes N               Default: 2
+  --generator codex|claude          Override generator (default: production-batch default = codex)
   --dry-run                         Print planned commands only
   --mock                            Use mock generation/scoring
   --skip-existing-scores            Reuse existing scorer JSON where present
@@ -162,6 +169,9 @@ Options:
   }
   if (!['off', 'rules', 'codex', 'claude', 'claude-code'].includes(args.structureCritic)) {
     throw new Error('--structure-critic must be off|rules|codex|claude|claude-code');
+  }
+  if (args.generator !== null && !['codex', 'claude'].includes(args.generator)) {
+    throw new Error('--generator must be codex|claude (unset defers to run-poetics-production-batch.js default)');
   }
   return args;
 }
@@ -220,6 +230,7 @@ function buildIterationPlan(args, iteration) {
     String(args.structureCriticConcurrency),
     '--fail-on-structure-critic',
   ];
+  if (args.generator) production.push('--generator', args.generator);
   if (args.mock) production.push('--mock');
   if (args.dryRun) production.push('--dry-run');
   if (args.force) production.push('--force');
@@ -474,7 +485,10 @@ function summarizeItem(item, args) {
 function evaluateRunGate(db, args) {
   const items = loadGateItems(db, args.runId, args.analyzerVersion || DEFAULT_ANALYZER_VERSION);
   const selected = items.filter(
-    (item) => args.targetOnly.includes(item.dramaId) && args.targetArms.includes(item.arm) && item.unitId?.startsWith('target-'),
+    (item) =>
+      args.targetOnly.includes(item.dramaId) &&
+      args.targetArms.includes(item.arm) &&
+      item.unitId?.startsWith('target-'),
   );
   const expected = new Set();
   for (const dramaId of args.targetOnly) {
@@ -517,7 +531,9 @@ function evaluateRunGate(db, args) {
     passedItems: itemSummaries.filter((item) => item.pass).length,
     failureCounts,
     items: itemSummaries.sort((a, b) =>
-      `${a.dramaId || ''}:${a.arm || ''}:${a.tid || ''}`.localeCompare(`${b.dramaId || ''}:${b.arm || ''}:${b.tid || ''}`),
+      `${a.dramaId || ''}:${a.arm || ''}:${a.tid || ''}`.localeCompare(
+        `${b.dramaId || ''}:${b.arm || ''}:${b.tid || ''}`,
+      ),
     ),
   };
 }
