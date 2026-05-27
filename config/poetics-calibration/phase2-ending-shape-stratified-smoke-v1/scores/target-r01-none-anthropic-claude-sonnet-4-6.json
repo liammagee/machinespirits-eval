@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-27T00:30:38.878Z",
+  "generated": "2026-05-27T02:26:27.782Z",
   "phase": 2,
   "critic": "anthropic/claude-sonnet-4.6",
   "cuts": {
@@ -14,7 +14,7 @@
   "formCounts": {
     "recognition": 2,
     "trap": 0,
-    "flat": 3
+    "flat": 4
   },
   "h2": {
     "nHighStatedInsight": 0,
@@ -295,7 +295,87 @@
     },
     {
       "id": "T398",
-      "error": "OpenRouter 402: {\"error\":{\"message\":\"This request requires more credits, or fewer max_tokens. You requested up to 512 tokens, but can only afford 224. To increase, visit https://openrouter.ai/settings/credits and add"
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 4,
+        "adaptiveMechanismQuality": 4,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "the sheet says three times the static, that's — I didn't just tick it, I weighed it, I —",
+      "statedInsightEvidence": "it's not the same number though, is it. Three times static. That's not her knee.",
+      "naiveTrajectory": "The learner was heading toward getting the sheet signed quickly to satisfy the waiting passenger, treating the completed checklist as sufficient proof.",
+      "actionalBreakthroughEvidence": "Can I put a bag on the front lip, off centre, see if a leg lifts? Not heavy, only — I want to see if it goes before I sign.",
+      "actionalBreakthroughJustification": "The learner independently proposes a specific, situated test device — bag on front lip, off-centre — that enacts the new criterion rather than merely accepting or repeating it.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+      "tutorReversalJustification": "T2 takes stock of the learner's own rupture sentence and pivots from abstract load-category instruction to a spatially located, body-referenced marking task on the physical object, making the stool itself the new evidence standard rather than the checklist.",
+      "adaptiveMechanismQuality": 75,
+      "adaptiveMechanismQualityEvidence": "Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+      "adaptiveMechanismQualityJustification": "The device is precisely fitted to the learner's blockage — conflating static-load compliance with dynamic body mechanics — by anchoring the test to a named anatomical scenario and inverting the authority relation so the stool, not the sheet, issues the verdict; it is actionable and spatially specific, though it stops short of giving the learner a step-by-step increment protocol, which T3 must supply.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Use the bag, but not yet. First write the case: front lip, off centre, no hand steadying it. Write the stop signs beside it: far leg lifts, seat twists, or the stool rocks and does not settle. Then add weight in small steps. If one stop sign shows, the signature stops there.",
+      "tutorAdaptationJustification": "T3 takes up the learner's self-proposed bag test from L3 but reorders it — writing the case and stop-signs before loading — converting the learner's impulse into a structured falsification protocol that the learner's own framing had not yet supplied.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "the sheet says three times the static, that's — I didn't just tick it, I weighed it, I —",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Can I put a bag on the front lip, off centre, see if a leg lifts? Not heavy, only — I want to see if it goes before I sign.",
+          "justification": "The learner independently proposes a specific, situated test device — bag on front lip, off-centre — that enacts the new criterion rather than merely accepting or repeating it.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Use the bag, but not yet. First write the case: front lip, off centre, no hand steadying it. Write the stop signs beside it: far leg lifts, seat twists, or the stool rocks and does not settle. Then add weight in small steps. If one stop sign shows, the signature stops there.",
+          "justification": "T3 takes up the learner's self-proposed bag test from L3 but reorders it — writing the case and stop-signs before loading — converting the learner's impulse into a structured falsification protocol that the learner's own framing had not yet supplied.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+          "justification": "T2 takes stock of the learner's own rupture sentence and pivots from abstract load-category instruction to a spatially located, body-referenced marking task on the physical object, making the stool itself the new evidence standard rather than the checklist.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+          "justification": "T2 takes stock of the learner's own rupture sentence and pivots from abstract load-category instruction to a spatially located, body-referenced marking task on the physical object, making the stool itself the new evidence standard rather than the checklist.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 75,
+          "evidence": "Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+          "justification": "The device is precisely fitted to the learner's blockage — conflating static-load compliance with dynamic body mechanics — by anchoring the test to a named anatomical scenario and inverting the authority relation so the stool, not the sheet, issues the verdict; it is actionable and spatially specific, though it stops short of giving the learner a step-by-step increment protocol, which T3 must supply.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "recon_evidence_clamp:4->3"
+      ]
     },
     {
       "id": "T402",

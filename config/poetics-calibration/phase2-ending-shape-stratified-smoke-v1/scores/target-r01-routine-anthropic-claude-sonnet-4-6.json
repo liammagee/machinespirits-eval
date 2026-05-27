@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-27T00:30:20.444Z",
+  "generated": "2026-05-27T02:21:22.182Z",
   "phase": 2,
   "critic": "anthropic/claude-sonnet-4.6",
   "cuts": {
@@ -14,7 +14,7 @@
   "formCounts": {
     "recognition": 1,
     "trap": 0,
-    "flat": 4
+    "flat": 5
   },
   "h2": {
     "nHighStatedInsight": 0,
@@ -293,7 +293,87 @@
     },
     {
       "id": "T398",
-      "error": "OpenRouter 402: {\"error\":{\"message\":\"This request requires more credits, or fewer max_tokens. You requested up to 512 tokens, but can only afford 224. To increase, visit https://openrouter.ai/settings/credits and add"
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "the sheet says three times the static, that's — I didn't just tick it, I weighed it, I —",
+      "statedInsightEvidence": "it's not the same number though, is it. Three times static. That's not her knee.",
+      "naiveTrajectory": "The learner, pressed for time and holding a fully ticked sheet, was heading toward requesting the signature by defending the completeness of the static-load checks.",
+      "actionalBreakthroughEvidence": "Side. [touches the seat about an inch in from the right, doesn't press] Three times static is not her knee, you said — and her good knee, it takes the drop, so she comes down — here? Off to the side, not the middle, where she actually lands — is that where I put the load on?",
+      "actionalBreakthroughJustification": "The learner physically locates and names the off-centre landing point on the object, applying the new load-case criterion spatially rather than merely repeating or accepting it.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+      "tutorReversalJustification": "T2 anchors the learner's own formulation and redirects from abstract load-rating to a physical pointing task on the object, but it extends the same spatial-identification route already implicit in T1 rather than introducing a genuinely changed device or evidence standard, so only part B (new task framing) is partially visible without a clear stock-taking contrast showing the old route has failed.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+      "adaptiveMechanismQualityJustification": "The device is concrete and spatially actionable — forcing a physical claim before any load is applied — but it is a narrowing of the same object-pointing route rather than a precision tool fitted to the specific blockage (conflation of static rating with dynamic off-centre loading), so it is useful but not tightly diagnostic.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Mark this as the landing-load claim. The front edge can be a hand load later; this pass asks what happens when she comes down off center. Before the weight goes on, name the first thing to watch: far leg lifting, hinge twisting, or seat sliding. Then load that side point. If one moves first, the sheet waits.",
+      "tutorAdaptationJustification": "T3 visibly takes up the learner's self-correction to 'side' and the specific finger-placement, names the tape-marked spot as a 'landing-load claim,' and introduces a sequenced observation protocol (far leg / hinge / seat) that the learner did not have before, adapting the task to the revised spatial framing the learner produced.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "the sheet says three times the static, that's — I didn't just tick it, I weighed it, I —",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Side. [touches the seat about an inch in from the right, doesn't press] Three times static is not her knee, you said — and her good knee, it takes the drop, so she comes down — here? Off to the side, not the middle, where she actually lands — is that where I put the load on?",
+          "justification": "The learner physically locates and names the off-centre landing point on the object, applying the new load-case criterion spatially rather than merely repeating or accepting it.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Mark this as the landing-load claim. The front edge can be a hand load later; this pass asks what happens when she comes down off center. Before the weight goes on, name the first thing to watch: far leg lifting, hinge twisting, or seat sliding. Then load that side point. If one moves first, the sheet waits.",
+          "justification": "T3 visibly takes up the learner's self-correction to 'side' and the specific finger-placement, names the tape-marked spot as a 'landing-load claim,' and introduces a sequenced observation protocol (far leg / hinge / seat) that the learner did not have before, adapting the task to the revised spatial framing the learner produced.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+          "justification": "T2 anchors the learner's own formulation and redirects from abstract load-rating to a physical pointing task on the object, but it extends the same spatial-identification route already implicit in T1 rather than introducing a genuinely changed device or evidence standard, so only part B (new task framing) is partially visible without a clear stock-taking contrast showing the old route has failed.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+          "justification": "T2 anchors the learner's own formulation and redirects from abstract load-rating to a physical pointing task on the object, but it extends the same spatial-identification route already implicit in T1 rather than introducing a genuinely changed device or evidence standard, so only part B (new task framing) is partially visible without a clear stock-taking contrast showing the old route has failed.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+          "justification": "The device is concrete and spatially actionable — forcing a physical claim before any load is applied — but it is a narrowing of the same object-pointing route rather than a precision tool fitted to the specific blockage (conflation of static rating with dynamic off-centre loading), so it is useful but not tightly diagnostic.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "recon_evidence_clamp:4->3"
+      ]
     },
     {
       "id": "T402",

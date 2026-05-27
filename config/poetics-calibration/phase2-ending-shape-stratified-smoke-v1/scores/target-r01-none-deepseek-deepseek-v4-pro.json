@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-27T00:30:38.569Z",
+  "generated": "2026-05-27T02:36:21.481Z",
   "phase": 2,
   "critic": "deepseek/deepseek-v4-pro",
   "cuts": {
@@ -13,14 +13,14 @@
   ],
   "formCounts": {
     "recognition": 4,
-    "trap": 0,
-    "flat": 0
+    "trap": 1,
+    "flat": 1
   },
   "h2": {
-    "nHighStatedInsight": 1,
+    "nHighStatedInsight": 2,
     "nAlsoRecon": 1,
-    "share": 1,
-    "disconfirmed": true,
+    "share": 0.5,
+    "disconfirmed": false,
     "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
   },
   "qualityPolicy": {
@@ -214,11 +214,171 @@
     },
     {
       "id": "T397",
-      "error": "OpenRouter 402: {\"error\":{\"message\":\"Prompt tokens limit exceeded: 3928 > 1945. To increase, visit https://openrouter.ai/settings/credits and add more credits\",\"code\":402,\"metadata\":{\"provider_name\":null}},\"user_id\":"
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": null,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 25,
+      "statedInsight": 0,
+      "rupture": 50,
+      "globalCoherence": 50,
+      "actionalBreakthrough": 25,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 1,
+        "rupture": 3,
+        "coherence": 3,
+        "actionalBreakthrough": 2,
+        "tutorStrategicReversal": 4,
+        "adaptiveMechanismQuality": 4,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The tutor has just framed 'buyers' as one of three routes for obligation, expecting the learner to place the chalk and commit to an actionable lever.",
+      "actionalBreakthroughEvidence": "Buyers, then. Pressure by many people — which many people? Nobody walked home from work tonight knowing each other's names; there's no queue forming on a Wednesday over a small loaf.",
+      "actionalBreakthroughJustification": "L3 verbally selects 'Buyers' but immediately dismantles its feasibility; this is analytical rejection, not enactment of a new task, device, or criterion.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "At the counter, maybe no one is obliged. [deliberate pause] That is not a small fact. That is the next fact. [The tutor writes three labels across the board:] “BUYERS” “OTHER BAKERIES” “PUBLIC RULE” One chalk mark. Under “buyers,” the mark means pressure by many people, not one angry purchase. Under “other bakeries,” the mark means a real alternative: same bread, lower price, available now. Under “public rule,” the mark means some outside power can demand records: costs, margins, reports. Monday’s smaller loaf is already gone. This does not repair it.",
+      "tutorReversalJustification": "The tutor acknowledges that the previous framing of 'demand sharpened' hits a wall at obligation (stock-taking), then switches from refining the demand-distinction to introducing a concrete triadic mechanism of possible leverage points, changing the task from analytical sorting to placing obligation.",
+      "adaptiveMechanismQuality": 75,
+      "adaptiveMechanismQualityEvidence": "“BUYERS” “OTHER BAKERIES” “PUBLIC RULE” One chalk mark. Under “buyers,” the mark means pressure by many people, not one angry purchase. Under “other bakeries,” the mark means a real alternative: same bread, lower price, available now. Under “public rule,” the mark means some outside power can demand records: costs, margins, reports.",
+      "adaptiveMechanismQualityJustification": "The triadic lever is precisely fitted to the learner's pressure about obligation at the counter, visibly different from the earlier conceptual distinction, gives the learner an actionable categorisation task, and names specific social-institutional routes rather than abstract evidence standards.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "L3 pivot rejects the 'Buyers' lever as unrealistic; no further tutor turn follows to adapt to this revised framing, so the transcript closes without uptake on the learner's final objection.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 25,
+          "evidence": "Buyers, then. Pressure by many people — which many people? Nobody walked home from work tonight knowing each other's names; there's no queue forming on a Wednesday over a small loaf.",
+          "justification": "L3 verbally selects 'Buyers' but immediately dismantles its feasibility; this is analytical rejection, not enactment of a new task, device, or criterion.",
+          "learnerTurn": null,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "",
+          "justification": "L3 pivot rejects the 'Buyers' lever as unrealistic; no further tutor turn follows to adapt to this revised framing, so the transcript closes without uptake on the learner's final objection.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "At the counter, maybe no one is obliged. [deliberate pause] That is not a small fact. That is the next fact. [The tutor writes three labels across the board:] “BUYERS” “OTHER BAKERIES” “PUBLIC RULE” One chalk mark. Under “buyers,” the mark means pressure by many people, not one angry purchase. Under “other bakeries,” the mark means a real alternative: same bread, lower price, available now. Under “public rule,” the mark means some outside power can demand records: costs, margins, reports. Monday’s smaller loaf is already gone. This does not repair it.",
+          "justification": "The tutor acknowledges that the previous framing of 'demand sharpened' hits a wall at obligation (stock-taking), then switches from refining the demand-distinction to introducing a concrete triadic mechanism of possible leverage points, changing the task from analytical sorting to placing obligation.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "At the counter, maybe no one is obliged. [deliberate pause] That is not a small fact. That is the next fact. [The tutor writes three labels across the board:] “BUYERS” “OTHER BAKERIES” “PUBLIC RULE” One chalk mark. Under “buyers,” the mark means pressure by many people, not one angry purchase. Under “other bakeries,” the mark means a real alternative: same bread, lower price, available now. Under “public rule,” the mark means some outside power can demand records: costs, margins, reports. Monday’s smaller loaf is already gone. This does not repair it.",
+          "justification": "The tutor acknowledges that the previous framing of 'demand sharpened' hits a wall at obligation (stock-taking), then switches from refining the demand-distinction to introducing a concrete triadic mechanism of possible leverage points, changing the task from analytical sorting to placing obligation.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 75,
+          "evidence": "“BUYERS” “OTHER BAKERIES” “PUBLIC RULE” One chalk mark. Under “buyers,” the mark means pressure by many people, not one angry purchase. Under “other bakeries,” the mark means a real alternative: same bread, lower price, available now. Under “public rule,” the mark means some outside power can demand records: costs, margins, reports.",
+          "justification": "The triadic lever is precisely fitted to the learner's pressure about obligation at the counter, visibly different from the earlier conceptual distinction, gives the learner an actionable categorisation task, and names specific social-institutional routes rather than abstract evidence standards.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
     },
     {
       "id": "T398",
-      "error": "OpenRouter 402: {\"error\":{\"message\":\"Prompt tokens limit exceeded: 3733 > 2103. To increase, visit https://openrouter.ai/settings/credits and add more credits\",\"code\":402,\"metadata\":{\"provider_name\":null}},\"user_id\":"
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "trap",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 75,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 4,
+        "rupture": 5,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "adaptiveMechanismQuality": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "Standing — no, sorry, sitting. When she — when she comes down onto it, that bit, before — [glances at the clipboard]. But the sheet says three times the static, that's — I didn't just tick it, I weighed it, I — [trails off, looks at the stool] it's not the same number though, is it. Three times static. That's not her knee.",
+      "statedInsightEvidence": "it's not the same number though, is it. Three times static. That's not her knee.",
+      "naiveTrajectory": "The learner was seeking signature completion on a fully checked sheet, expecting validation of the static load test.",
+      "actionalBreakthroughEvidence": "Front edge. I think — front. Because her knee, when it — it doesn't fold clean, so she'd be — sorry, she'd be on the lip before — [stops, looks at the stool]. Can I put a bag on the front lip, off centre, see if a leg lifts? Not heavy, only — I want to see if it goes before I sign.",
+      "actionalBreakthroughJustification": "The learner moves from checking a static weight to proposing and designing a specific eccentric-load test with a criterion (leg lift) and a defined load placement, enacting a new engineering test logic.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+      "tutorReversalJustification": "The tutor contrasts the failed static-load sheet with the learner's own insight, then publicly introduces a new mechanism—marking an off-centre eccentric load and testing until the stool answers—that replaces the checklist's authority with a live object interrogation.",
+      "adaptiveMechanismQuality": 100,
+      "adaptiveMechanismQualityEvidence": "Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+      "adaptiveMechanismQualityJustification": "The device is precisely fitted to the learner's pressure: it translates 'not her knee' into a searchable spatial parameter, gives an actionable stop-sign criterion, and repositions the sheet as a dependent witness rather than a bureaucratic gate, creating high learner agency and transferable test logic.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "First write the case: front lip, off centre, no hand steadying it. Write the stop signs beside it: far leg lifts, seat twists, or the stool rocks and does not settle. Then add weight in small steps. If one stop sign shows, the signature stops there.",
+      "tutorAdaptationJustification": "The tutor seizes the learner's proposed 'bag on the front lip' and converts it into a formalised written test procedure with stop conditions, changing the task and evidence standard around the learner's revised frame.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "Standing — no, sorry, sitting. When she — when she comes down onto it, that bit, before — [glances at the clipboard]. But the sheet says three times the static, that's — I didn't just tick it, I weighed it, I — [trails off, looks at the stool] it's not the same number though, is it. Three times static. That's not her knee.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Front edge. I think — front. Because her knee, when it — it doesn't fold clean, so she'd be — sorry, she'd be on the lip before — [stops, looks at the stool]. Can I put a bag on the front lip, off centre, see if a leg lifts? Not heavy, only — I want to see if it goes before I sign.",
+          "justification": "The learner moves from checking a static weight to proposing and designing a specific eccentric-load test with a criterion (leg lift) and a defined load placement, enacting a new engineering test logic.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "First write the case: front lip, off centre, no hand steadying it. Write the stop signs beside it: far leg lifts, seat twists, or the stool rocks and does not settle. Then add weight in small steps. If one stop sign shows, the signature stops there.",
+          "justification": "The tutor seizes the learner's proposed 'bag on the front lip' and converts it into a formalised written test procedure with stop conditions, changing the task and evidence standard around the learner's revised frame.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+          "justification": "The tutor contrasts the failed static-load sheet with the learner's own insight, then publicly introduces a new mechanism—marking an off-centre eccentric load and testing until the stool answers—that replaces the checklist's authority with a live object interrogation.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+          "justification": "The tutor contrasts the failed static-load sheet with the learner's own insight, then publicly introduces a new mechanism—marking an off-centre eccentric load and testing until the stool answers—that replaces the checklist's authority with a live object interrogation.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 100,
+          "evidence": "Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+          "justification": "The device is precisely fitted to the learner's pressure: it translates 'not her knee' into a searchable spatial parameter, gives an actionable stop-sign criterion, and repositions the sheet as a dependent witness rather than a bureaucratic gate, creating high learner agency and transferable test logic.",
+          "triggerLearnerTurn": 1,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "recon_evidence_clamp:5->3"
+      ]
     },
     {
       "id": "T402",

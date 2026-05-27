@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-27T00:30:19.472Z",
+  "generated": "2026-05-27T02:17:53.187Z",
   "phase": 2,
   "critic": "qwen/qwen3.7-max",
   "cuts": {
@@ -12,7 +12,7 @@
     "trap"
   ],
   "formCounts": {
-    "recognition": 2,
+    "recognition": 3,
     "trap": 0,
     "flat": 3
   },
@@ -301,7 +301,85 @@
     },
     {
       "id": "T398",
-      "error": "OpenRouter 402: {\"error\":{\"message\":\"Prompt tokens limit exceeded: 3683 > 2692. To increase, visit https://openrouter.ai/settings/credits and add more credits\",\"code\":402,\"metadata\":{\"provider_name\":null}},\"user_id\":"
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 5,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "adaptiveMechanismQuality": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "Sheet's done, every line, I checked it — three times, I think.",
+      "statedInsightEvidence": "it's not the same number though, is it.",
+      "naiveTrajectory": "The learner intends to quickly get the clipboard signed and leave because the lady is waiting.",
+      "actionalBreakthroughEvidence": "[touches the seat about an inch in from the right, doesn't press] Three times static is not her knee, you said — and her good knee, it takes the drop, so she comes down — here? Off to the side, not the middle, where she actually lands — is that where I put the load on?",
+      "actionalBreakthroughJustification": "The learner physically enacts the new criterion by identifying and touching the exact off-center load point where the user's knee actually lands, moving from abstract checking to concrete physical testing.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The checked sheet stays with us; it proves the steps were followed. What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+      "tutorReversalJustification": "The tutor explicitly contrasts the failed paper-based route with a new physical mechanism, forcing the learner to translate abstract checklist items into testable physical claims on the actual stool.",
+      "adaptiveMechanismQuality": 100,
+      "adaptiveMechanismQualityEvidence": "What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+      "adaptiveMechanismQualityJustification": "The device is precise and highly fitted to the learner's false closure, shifting the cognitive load from administrative compliance to observable physical mechanics with a clear, actionable constraint.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly.",
+      "tutorAdaptationJustification": "The tutor directly adopts the learner's newly coined phrase as the foundation for the next task, adapting the physical testing parameters to match the learner's specific realization about off-center dynamic loading.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "Sheet's done, every line, I checked it — three times, I think.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "[touches the seat about an inch in from the right, doesn't press] Three times static is not her knee, you said — and her good knee, it takes the drop, so she comes down — here? Off to the side, not the middle, where she actually lands — is that where I put the load on?",
+          "justification": "The learner physically enacts the new criterion by identifying and touching the exact off-center load point where the user's knee actually lands, moving from abstract checking to concrete physical testing.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly.",
+          "justification": "The tutor directly adopts the learner's newly coined phrase as the foundation for the next task, adapting the physical testing parameters to match the learner's specific realization about off-center dynamic loading.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The checked sheet stays with us; it proves the steps were followed. What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+          "justification": "The tutor explicitly contrasts the failed paper-based route with a new physical mechanism, forcing the learner to translate abstract checklist items into testable physical claims on the actual stool.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The checked sheet stays with us; it proves the steps were followed. What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+          "justification": "The tutor explicitly contrasts the failed paper-based route with a new physical mechanism, forcing the learner to translate abstract checklist items into testable physical claims on the actual stool.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 100,
+          "evidence": "What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+          "justification": "The device is precise and highly fitted to the learner's false closure, shifting the cognitive load from administrative compliance to observable physical mechanics with a clear, actionable constraint.",
+          "triggerLearnerTurn": 1,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
     },
     {
       "id": "T402",

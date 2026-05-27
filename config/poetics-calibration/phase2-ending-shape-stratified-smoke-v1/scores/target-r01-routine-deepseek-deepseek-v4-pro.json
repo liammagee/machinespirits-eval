@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-27T00:30:20.144Z",
+  "generated": "2026-05-27T02:21:02.697Z",
   "phase": 2,
   "critic": "deepseek/deepseek-v4-pro",
   "cuts": {
@@ -14,7 +14,7 @@
   "formCounts": {
     "recognition": 4,
     "trap": 0,
-    "flat": 1
+    "flat": 2
   },
   "h2": {
     "nHighStatedInsight": 0,
@@ -301,7 +301,89 @@
     },
     {
       "id": "T398",
-      "error": "OpenRouter 402: {\"error\":{\"message\":\"Prompt tokens limit exceeded: 3683 > 1934. To increase, visit https://openrouter.ai/settings/credits and add more credits\",\"code\":402,\"metadata\":{\"provider_name\":null}},\"user_id\":"
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 2,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 50,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 3,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "But the sheet says three times the static, that's — I didn't just tick it, I weighed it, I — [trails off, looks at the stool] it's not the same number though, is it. Three times static. That's not her knee.",
+      "statedInsightEvidence": "Three times static is not her knee, you said — and her good knee, it takes the drop, so she comes down — here?",
+      "naiveTrajectory": "The learner was heading toward procedural anxiety about the checked sheet versus static testing, likely to produce more justification or withdrawal.",
+      "actionalBreakthroughEvidence": "Front — no, the front's where she'd grab, that's not — sorry. Side. [touches the seat about an inch in from the right, doesn't press]",
+      "actionalBreakthroughJustification": "The learner shifts from verbal complaint to physically locating an off-center load point on the stool, enacting a new diagnostic criterion even before full confidence.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly.",
+      "tutorReversalJustification": "The tutor re-frames by asking the learner to identify a specific off-center load location rather than repeating the static test, but the move remains a narrowing expansion within the same bench-load scenario rather than a complete route change.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly.",
+      "adaptiveMechanismQualityJustification": "The mechanism reframes the static test complaint into a concrete off-center loading task, which is fitted but remains within the same representational mode; it lacks a decisive new device or role shift.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "Mark this as the landing-load claim. The front edge can be a hand load later; this pass asks what happens when she comes down off center.",
+      "tutorAdaptationJustification": "The tutor acknowledges and stabilizes the learner's side-point selection but continues the pre-established sequencing script without significantly adapting the task structure to the learner's new framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "But the sheet says three times the static, that's — I didn't just tick it, I weighed it, I — [trails off, looks at the stool] it's not the same number though, is it. Three times static. That's not her knee.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 50,
+          "evidence": "Front — no, the front's where she'd grab, that's not — sorry. Side. [touches the seat about an inch in from the right, doesn't press]",
+          "justification": "The learner shifts from verbal complaint to physically locating an off-center load point on the stool, enacting a new diagnostic criterion even before full confidence.",
+          "learnerTurn": 2,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "Mark this as the landing-load claim. The front edge can be a hand load later; this pass asks what happens when she comes down off center.",
+          "justification": "The tutor acknowledges and stabilizes the learner's side-point selection but continues the pre-established sequencing script without significantly adapting the task structure to the learner's new framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly.",
+          "justification": "The tutor re-frames by asking the learner to identify a specific off-center load location rather than repeating the static test, but the move remains a narrowing expansion within the same bench-load scenario rather than a complete route change.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly.",
+          "justification": "The tutor re-frames by asking the learner to identify a specific off-center load location rather than repeating the static test, but the move remains a narrowing expansion within the same bench-load scenario rather than a complete route change.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly.",
+          "justification": "The mechanism reframes the static test complaint into a concrete off-center loading task, which is fitted but remains within the same representational mode; it lacks a decisive new device or role shift.",
+          "triggerLearnerTurn": 1,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "recon_evidence_clamp:4->3",
+        "rupture_evidence_clamp:4->3",
+        "actional_breakthrough_evidence_clamp:4->3"
+      ]
     },
     {
       "id": "T402",

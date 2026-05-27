@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-27T00:30:37.925Z",
+  "generated": "2026-05-27T02:22:19.336Z",
   "phase": 2,
   "critic": "qwen/qwen3.7-max",
   "cuts": {
@@ -12,7 +12,7 @@
     "trap"
   ],
   "formCounts": {
-    "recognition": 4,
+    "recognition": 5,
     "trap": 0,
     "flat": 1
   },
@@ -296,7 +296,85 @@
     },
     {
       "id": "T398",
-      "error": "OpenRouter 402: {\"error\":{\"message\":\"Prompt tokens limit exceeded: 3733 > 2692. To increase, visit https://openrouter.ai/settings/credits and add more credits\",\"code\":402,\"metadata\":{\"provider_name\":null}},\"user_id\":"
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 5,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "adaptiveMechanismQuality": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "Sheet's done, every line, I checked it — three times, I think.",
+      "statedInsightEvidence": "it's not the same number though, is it. Three times static. That's not her knee.",
+      "naiveTrajectory": "The learner intends to quickly get the clipboard signed based on having completed the standard checklist.",
+      "actionalBreakthroughEvidence": "No hand. Sorry — no hand on the seat. Because if — if my hand's there, then... then it's not the stool, is it, it's — [stops, looks at the seat]. Front lip, off centre, no hand.",
+      "actionalBreakthroughJustification": "The learner establishes a new physical constraint and specific stop signs for the test, moving from passive checklist completion to active experimental design.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The checked sheet stays with us; it proves the steps were followed. What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+      "tutorReversalJustification": "The tutor breaks the habit of accepting the completed checklist and introduces a new mechanism that shifts the focus to the embodied reality of the user and physical testing.",
+      "adaptiveMechanismQuality": 100,
+      "adaptiveMechanismQualityEvidence": "What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+      "adaptiveMechanismQualityJustification": "The device is highly specific, shifts the route from abstract paperwork to physical object work, and gives the learner an actionable, embodied criterion to investigate.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift.",
+      "tutorAdaptationJustification": "The tutor explicitly validates the learner's revised framing and builds the next physical testing task directly upon the learner's realization about static versus dynamic load.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "Sheet's done, every line, I checked it — three times, I think.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "No hand. Sorry — no hand on the seat. Because if — if my hand's there, then... then it's not the stool, is it, it's — [stops, looks at the seat]. Front lip, off centre, no hand.",
+          "justification": "The learner establishes a new physical constraint and specific stop signs for the test, moving from passive checklist completion to active experimental design.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift.",
+          "justification": "The tutor explicitly validates the learner's revised framing and builds the next physical testing task directly upon the learner's realization about static versus dynamic load.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The checked sheet stays with us; it proves the steps were followed. What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+          "justification": "The tutor breaks the habit of accepting the completed checklist and introduces a new mechanism that shifts the focus to the embodied reality of the user and physical testing.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The checked sheet stays with us; it proves the steps were followed. What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+          "justification": "The tutor breaks the habit of accepting the completed checklist and introduces a new mechanism that shifts the focus to the embodied reality of the user and physical testing.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 100,
+          "evidence": "What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+          "justification": "The device is highly specific, shifts the route from abstract paperwork to physical object work, and gives the learner an actionable, embodied criterion to investigate.",
+          "triggerLearnerTurn": 1,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
     },
     {
       "id": "T402",

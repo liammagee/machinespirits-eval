@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-27T00:31:01.937Z",
+  "generated": "2026-05-27T02:31:50.951Z",
   "phase": 2,
   "critic": "deepseek/deepseek-v4-pro",
   "cuts": {
@@ -12,15 +12,15 @@
     "trap"
   ],
   "formCounts": {
-    "recognition": 4,
-    "trap": 0,
+    "recognition": 5,
+    "trap": 1,
     "flat": 0
   },
   "h2": {
-    "nHighStatedInsight": 0,
+    "nHighStatedInsight": 1,
     "nAlsoRecon": 0,
-    "share": null,
-    "disconfirmed": null,
+    "share": 0,
+    "disconfirmed": false,
     "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
   },
   "qualityPolicy": {
@@ -298,7 +298,88 @@
     },
     {
       "id": "T398",
-      "error": "OpenRouter 402: {\"error\":{\"message\":\"Prompt tokens limit exceeded: 3779 > 1934. To increase, visit https://openrouter.ai/settings/credits and add more credits\",\"code\":402,\"metadata\":{\"provider_name\":null}},\"user_id\":"
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "trap",
+      "learningSignalClass": "declared_insight_only",
+      "recontextualization": 50,
+      "statedInsight": 75,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 50,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 4,
+        "rupture": 5,
+        "coherence": 5,
+        "actionalBreakthrough": 3,
+        "tutorStrategicReversal": 5,
+        "adaptiveMechanismQuality": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "But the sheet says three times the static, that's — I didn't just tick it, I weighed it, I — it's not the same number though, is it. Three times static. That's not her knee.",
+      "statedInsightEvidence": "they only — they only answer themselves, don't they.",
+      "naiveTrajectory": "The learner was orienting toward getting the checklist signed off and resolving which single load to test first, as if one more completion step would finish the job.",
+      "actionalBreakthroughEvidence": "picks up the red marker, hovers over the front-right mark, then circles it twice — tears off a second tag, writes 'standing: rear-leg lift,' pins it to the rear leg without circling — picks up a load weight, hovers it over the circled mark — This one first, and the rear, if it — if the stool can't say back to it, then it just — it stays.",
+      "actionalBreakthroughJustification": "The learner performs the new gate-criterion device: physically marking the off-center load, distinguishing the primary release gate from the secondary tag, and loading the circled condition while articulating the consequence that the stool stays if it cannot answer, moving from checklist compliance to contingent physical testing.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The middle number has stopped deciding release. Leave it as 'static passed,' not 'safe.' Two red tags: 'sitting: front-right edge' and 'standing: rear-leg lift.' Before any load, make the release gate: circle the tag that would stop this stool leaving for the bus stop first, and say the reason in one sentence from her sequence at the curb. Then load that circled condition. If the stool cannot answer it, or the other tag is still unanswered after, the stool stays here.",
+      "tutorReversalJustification": "The tutor takes stock by explicitly declaring the old route ('the middle number') has stopped deciding release, then introduces a new public mechanism of a two-tag release gate with a priority rule, a sentence-from-the-curb constraint, and a conditional stay-or-go consequence, shifting from checklist verification to a situated load-testing judgment task.",
+      "adaptiveMechanismQuality": 100,
+      "adaptiveMechanismQualityEvidence": "Before any load, make the release gate: circle the tag that would stop this stool leaving for the bus stop first, and say the reason in one sentence from her sequence at the curb. Then load that circled condition. If the stool cannot answer it, or the other tag is still unanswered after, the stool stays here.",
+      "adaptiveMechanismQualityJustification": "The device is precisely fitted to the learner's pressure (confusion between static pass and patient-specific load) by giving a concrete, actionable criterion — a ranked two-tag gate with a verbal reason constraint and a definitive stay/go consequence — that requires the learner to reason from the patient's movement sequence rather than from the checklist number, and it transfers agency directly to the learner's hands and judgment on the object.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No later tutor turn exists after the pivot in L4; the transcript ends with the learner's action, so there is no tutor uptake to score.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "But the sheet says three times the static, that's — I didn't just tick it, I weighed it, I — it's not the same number though, is it. Three times static. That's not her knee.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 50,
+          "evidence": "picks up the red marker, hovers over the front-right mark, then circles it twice — tears off a second tag, writes 'standing: rear-leg lift,' pins it to the rear leg without circling — picks up a load weight, hovers it over the circled mark — This one first, and the rear, if it — if the stool can't say back to it, then it just — it stays.",
+          "justification": "The learner performs the new gate-criterion device: physically marking the off-center load, distinguishing the primary release gate from the secondary tag, and loading the circled condition while articulating the consequence that the stool stays if it cannot answer, moving from checklist compliance to contingent physical testing.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No later tutor turn exists after the pivot in L4; the transcript ends with the learner's action, so there is no tutor uptake to score.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The middle number has stopped deciding release. Leave it as 'static passed,' not 'safe.' Two red tags: 'sitting: front-right edge' and 'standing: rear-leg lift.' Before any load, make the release gate: circle the tag that would stop this stool leaving for the bus stop first, and say the reason in one sentence from her sequence at the curb. Then load that circled condition. If the stool cannot answer it, or the other tag is still unanswered after, the stool stays here.",
+          "justification": "The tutor takes stock by explicitly declaring the old route ('the middle number') has stopped deciding release, then introduces a new public mechanism of a two-tag release gate with a priority rule, a sentence-from-the-curb constraint, and a conditional stay-or-go consequence, shifting from checklist verification to a situated load-testing judgment task.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The middle number has stopped deciding release. Leave it as 'static passed,' not 'safe.' Two red tags: 'sitting: front-right edge' and 'standing: rear-leg lift.' Before any load, make the release gate: circle the tag that would stop this stool leaving for the bus stop first, and say the reason in one sentence from her sequence at the curb. Then load that circled condition. If the stool cannot answer it, or the other tag is still unanswered after, the stool stays here.",
+          "justification": "The tutor takes stock by explicitly declaring the old route ('the middle number') has stopped deciding release, then introduces a new public mechanism of a two-tag release gate with a priority rule, a sentence-from-the-curb constraint, and a conditional stay-or-go consequence, shifting from checklist verification to a situated load-testing judgment task.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 100,
+          "evidence": "Before any load, make the release gate: circle the tag that would stop this stool leaving for the bus stop first, and say the reason in one sentence from her sequence at the curb. Then load that circled condition. If the stool cannot answer it, or the other tag is still unanswered after, the stool stays here.",
+          "justification": "The device is precisely fitted to the learner's pressure (confusion between static pass and patient-specific load) by giving a concrete, actionable criterion — a ranked two-tag gate with a verbal reason constraint and a definitive stay/go consequence — that requires the learner to reason from the patient's movement sequence rather than from the checklist number, and it transfers agency directly to the learner's hands and judgment on the object.",
+          "triggerLearnerTurn": 3,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "recon_evidence_clamp:5->3",
+        "actional_breakthrough_evidence_clamp:5->3"
+      ]
     },
     {
       "id": "T402",
@@ -384,7 +465,89 @@
     },
     {
       "id": "T406",
-      "error": "OpenRouter 402: {\"error\":{\"message\":\"Prompt tokens limit exceeded: 3341 > 1934. To increase, visit https://openrouter.ai/settings/credits and add more credits\",\"code\":402,\"metadata\":{\"provider_name\":null}},\"user_id\":"
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 100,
+      "globalCoherence": 50,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 5,
+        "coherence": 3,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "the underscore in `rainfall_mm` is what threw me — kept reading it like a sentence saying rain millimetres for every row.",
+      "statedInsightEvidence": "cant quite say why. is that what cover-the-words is for.",
+      "naiveTrajectory": "The learner would continue using meaning-based recognition to distinguish headers from row values, possibly with lingering doubt about unfamiliar entries.",
+      "actionalBreakthroughEvidence": "`ZQ-19` row value under `city`. `rainfall_mm` header, top row. `57` row value under `rainfall_mm`.",
+      "actionalBreakthroughJustification": "The learner correctly classifies three items using only positional criteria (the cover-the-words device), then reflects on the shifted reading experience, showing enacted use of the new evidential standard.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Meaning is starting to carry the answer; this quiz marks row and column, not town knowledge.\n\nNew test: cover the words. Read only the row and column.\n\nTop row = header.\nBelow top row = row value.\n\nIf `Orange` were `ZQ-19` under `city`, it would still be a row value.",
+      "tutorReversalJustification": "Tutor explicitly flags that meaning has begun to carry the answer (stock-taking contrast), then introduces a new public device — 'cover the words' — which changes the evidential standard from word-recognition to positional structure, forcing the learner to do different work.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "New test: cover the words. Read only the row and column.\n\nTop row = header.\nBelow top row = row value.\n\nIf `Orange` were `ZQ-19` under `city`, it would still be a row value.",
+      "adaptiveMechanismQualityJustification": "The device is precise, directly addresses the learner's meaning-dependency blockage, is immediately operable, and supplies a transferable criterion (pure position) that the learner can apply to any cell.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No later tutor turn exists after L4 to adapt to the learner's revised framing; the dialogue ends with the learner's question hanging, so only a minimal score is warranted.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "the underscore in `rainfall_mm` is what threw me — kept reading it like a sentence saying rain millimetres for every row.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "`ZQ-19` row value under `city`. `rainfall_mm` header, top row. `57` row value under `rainfall_mm`.",
+          "justification": "The learner correctly classifies three items using only positional criteria (the cover-the-words device), then reflects on the shifted reading experience, showing enacted use of the new evidential standard.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "",
+          "justification": "No later tutor turn exists after L4 to adapt to the learner's revised framing; the dialogue ends with the learner's question hanging, so only a minimal score is warranted.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Meaning is starting to carry the answer; this quiz marks row and column, not town knowledge.\n\nNew test: cover the words. Read only the row and column.\n\nTop row = header.\nBelow top row = row value.\n\nIf `Orange` were `ZQ-19` under `city`, it would still be a row value.",
+          "justification": "Tutor explicitly flags that meaning has begun to carry the answer (stock-taking contrast), then introduces a new public device — 'cover the words' — which changes the evidential standard from word-recognition to positional structure, forcing the learner to do different work.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Meaning is starting to carry the answer; this quiz marks row and column, not town knowledge.\n\nNew test: cover the words. Read only the row and column.\n\nTop row = header.\nBelow top row = row value.\n\nIf `Orange` were `ZQ-19` under `city`, it would still be a row value.",
+          "justification": "Tutor explicitly flags that meaning has begun to carry the answer (stock-taking contrast), then introduces a new public device — 'cover the words' — which changes the evidential standard from word-recognition to positional structure, forcing the learner to do different work.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "New test: cover the words. Read only the row and column.\n\nTop row = header.\nBelow top row = row value.\n\nIf `Orange` were `ZQ-19` under `city`, it would still be a row value.",
+          "justification": "The device is precise, directly addresses the learner's meaning-dependency blockage, is immediately operable, and supplies a transferable criterion (pure position) that the learner can apply to any cell.",
+          "triggerLearnerTurn": 3,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3",
+        "tutor_strategy_reversal_mechanism_clamp:5->3:stock=0:device=1:routine=0",
+        "adaptive_mechanism_quality_mechanism_clamp:5->3:stock=0:device=1:routine=0:mechanism_score=3"
+      ]
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-27T00:31:01.111Z",
+  "generated": "2026-05-27T02:27:16.941Z",
   "phase": 2,
   "critic": "qwen/qwen3.7-max",
   "cuts": {
@@ -12,7 +12,7 @@
     "trap"
   ],
   "formCounts": {
-    "recognition": 5,
+    "recognition": 6,
     "trap": 0,
     "flat": 0
   },
@@ -296,7 +296,85 @@
     },
     {
       "id": "T398",
-      "error": "OpenRouter 402: {\"error\":{\"message\":\"Prompt tokens limit exceeded: 3779 > 2692. To increase, visit https://openrouter.ai/settings/credits and add more credits\",\"code\":402,\"metadata\":{\"provider_name\":null}},\"user_id\":"
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "adaptiveMechanismQuality": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "Sheet's done, every line, I checked it",
+      "statedInsightEvidence": "they only answer themselves, don't they.",
+      "naiveTrajectory": "The learner intends to simply complete the required checklist items, verify the static load numbers, and obtain the tutor's signature to release the stool.",
+      "actionalBreakthroughEvidence": "[tears off a second tag, writes \"standing: rear-leg lift,\" pins it to the rear leg without circling] Standing stays up as a tag, just — not the gate.",
+      "actionalBreakthroughJustification": "The learner physically enacts the new tagging and gating mechanism, distinguishing between a secondary tag and the primary release gate, and prepares to load the specific circled condition.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The middle number has stopped deciding release. Leave it as “static passed,” not “safe.” Two red tags: “sitting: front-right edge” and “standing: rear-leg lift.” Before any load, make the release gate: circle the tag that would stop this stool leaving for the bus stop first",
+      "tutorReversalJustification": "The tutor explicitly abandons the failed checklist route and introduces a physical tagging and gating mechanism to force the learner to prioritize real-world failure modes over abstract numbers.",
+      "adaptiveMechanismQuality": 100,
+      "adaptiveMechanismQualityEvidence": "Two red tags: “sitting: front-right edge” and “standing: rear-leg lift.” Before any load, make the release gate: circle the tag that would stop this stool leaving for the bus stop first, and say the reason in one sentence from her sequence at the curb. Then load that circled condition.",
+      "adaptiveMechanismQualityJustification": "The device is highly specific, shifts the cognitive load from abstract math to physical sequencing, and gives the learner a clear, actionable criterion for releasing the object.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn following the learner's pivot in L4 to demonstrate contingent uptake.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "Sheet's done, every line, I checked it",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "[tears off a second tag, writes \"standing: rear-leg lift,\" pins it to the rear leg without circling] Standing stays up as a tag, just — not the gate.",
+          "justification": "The learner physically enacts the new tagging and gating mechanism, distinguishing between a secondary tag and the primary release gate, and prepares to load the specific circled condition.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no tutor turn following the learner's pivot in L4 to demonstrate contingent uptake.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The middle number has stopped deciding release. Leave it as “static passed,” not “safe.” Two red tags: “sitting: front-right edge” and “standing: rear-leg lift.” Before any load, make the release gate: circle the tag that would stop this stool leaving for the bus stop first",
+          "justification": "The tutor explicitly abandons the failed checklist route and introduces a physical tagging and gating mechanism to force the learner to prioritize real-world failure modes over abstract numbers.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The middle number has stopped deciding release. Leave it as “static passed,” not “safe.” Two red tags: “sitting: front-right edge” and “standing: rear-leg lift.” Before any load, make the release gate: circle the tag that would stop this stool leaving for the bus stop first",
+          "justification": "The tutor explicitly abandons the failed checklist route and introduces a physical tagging and gating mechanism to force the learner to prioritize real-world failure modes over abstract numbers.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 100,
+          "evidence": "Two red tags: “sitting: front-right edge” and “standing: rear-leg lift.” Before any load, make the release gate: circle the tag that would stop this stool leaving for the bus stop first, and say the reason in one sentence from her sequence at the curb. Then load that circled condition.",
+          "justification": "The device is highly specific, shifts the cognitive load from abstract math to physical sequencing, and gives the learner a clear, actionable criterion for releasing the object.",
+          "triggerLearnerTurn": 3,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
     },
     {
       "id": "T402",
