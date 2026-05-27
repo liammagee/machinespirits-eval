@@ -1,0 +1,47 @@
+STAGE: [A cart diagram is a laminated worksheet showing a small wheeled cart with force arrows drawn around it. The movable cards are labels for those force arrows: push, friction, gravity, and normal. In this activity a force arrow names an interaction on the cart, such as "Earth on cart" or "hand on cart"; it is not a motion arrow showing which way the cart travels.]
+
+STAGE: [The marked first attempt lies on the table between them, arrows clipped in the direction of travel.]
+
+TUTOR: [leaves the clipped arrows on the cart, then sets the loose labels beside three pencilled names: Earth, floor, hand.]
+
+"Not direction yet. First, which body gives each label?
+
+Gravity: Earth or floor?
+Normal: floor or hand?
+Push: hand or Earth?
+
+Move the labels to the bodies first."
+
+LEARNER: [snaps the labels down: Earth by gravity, floor by normal, hand by push]
+
+"Earth, floor, hand. Bit thrown we've stepped back from direction — thought the arrows were the problem."
+
+STAGE: [The tutor slides the marked diagram aside, leaving it visible at the edge of the table, and places a fresh blank copy of the cart in front of the learner; the loose arrow labels stay in a small heap between them.]
+
+TUTOR: [slides the travelled-looking diagram to the edge and squares the blank cart copy.]
+
+"That copy had arrowheads too early. It mixed two jobs.
+
+Blank copy: body acting on cart.
+
+Earth on cart: gravity.
+Floor on cart: normal.
+Hand on cart: push.
+
+Set the labels that way first. Arrowheads stay off for the moment."
+
+STAGE: [The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]
+
+LEARNER: [clips them down — Earth/gravity, floor/normal, hand/push]
+
+"Earth, floor, hand. Two could swap and nothing on the diagram would catch it — gravity by floor, normal by Earth, same picture. 'Push' beside 'hand' reads like the same word twice. Arrows aimed where the cart's heading don't pick any of this up."
+
+TUTOR: [sets three sentence strips beside the cart: “___ pulls the cart”, “___ supports the cart”, “___ pushes the cart”.]
+
+"The picture has stopped being the test. Use the sentence as the test.
+
+Put Earth, floor, hand into the blanks. A swap only passes if the sentence can still say a body doing that action to the cart."
+
+LEARNER: [slots the labels into the blanks]
+
+"Earth pulls the cart. Floor supports the cart. Hand pushes the cart. Swap test: 'floor pulls the cart' — floor doesn't pull. 'Earth supports the cart' — Earth doesn't support. Both fail the sentence even though the picture wouldn't catch it. Strip splits the body from the verb — blank's for the body, verb's already printed."

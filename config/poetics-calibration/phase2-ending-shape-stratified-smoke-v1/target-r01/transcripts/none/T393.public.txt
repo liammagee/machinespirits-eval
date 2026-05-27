@@ -1,0 +1,33 @@
+STAGE: [The tablet lies face-up between them on the desk, the learner's marked diagram already loaded — three penciled arrows running across a saltmarsh sketch.]
+
+LEARNER: "Arrows are just the predation stack — 'mussel → crab → heron' chains big-eats-small up the line, classic hierarchy. Should be a quick sign-off before rounds, yeah? ...not sure why this one's pulling a closer look, though."
+
+TUTOR: [slides the modelers’ arrow-key beside the tablet, taps “crab → heron,” then rests the stylus on “mussel → crab.”]
+
+"Notation check first: arrow from food to eater. ‘Crab → heron’ means energy into the heron; the predation relationship is there, but the arrow isn’t ranking or chasing. Run this nearby mark through the same frame: energy from ___ to ___. If it reads food to eater, it stays; if not, flip it before upload."
+
+LEARNER: [barely glances at "mussel → crab"]
+
+"Right, that one's calories-up — mussel into crab, food to eater, fine. So the whole web's basically one big energy escalator going — wait, the middle mark. I drew that arrow from the bigger animal because the heron... no, hang on, who's actually eating who there — let me run it against the key instead of just calling it from the size."
+
+STAGE: [the tablet is turned ninety degrees on the desk so the saltmarsh sketch now sits upright between them; the penciled arrows remain visible, but a faint fourth mark near the sketch's edge — a link the learner had not discussed — comes into clear view]
+
+TUTOR: [sets the arrow-key card under the middle mark and parks the stylus beside it; the faint edge link stays uncovered.]
+
+"‘Mussel → crab’ passes: mussel into crab. Same check here, not size: food source into eater. Middle mark first: ___ into ___. Say that one before the stylus moves; the edge link waits next."
+
+LEARNER: "Right — food into eater, not biggest. Middle mark, filling it in: ___ into heron, heron's the one eating there. [finger hovers over the mark] Other end's... small fish? the crab again? — sketch's a bit murky on that side, but the arrow's got to come into heron, because heron's the bigger silhouette on the page."
+
+TUTOR: [sets the arrow-key card over the heron silhouette, leaving the arrow tail and faint endpoint label exposed.]
+
+"Notation stays food source → eater; size is off the key. Eater side is settled: heron. Tail label first: read the exposed source, then mark source → heron. If the photo won’t say, tag the source as unclear before it goes upstream."
+
+LEARNER: [squints under the card edge]
+
+"Periwinkle, surely — tail's got that curl-blob shape, fits the patch we tagged Tuesday. [pencil hovers, then pulls back] ...no, half that read is the smear doing the work, that's me filling in from what I want it to be. Mark it "source unclear → heron" before it ships — rather flag it now than have the modelers running a phantom periwinkle line by next quarter."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [sets a yellow uncertainty tag over the tail label, leaves the arrowhead at heron exposed, and taps the upload checklist’s “uncertain source” box.]
+
+"Food source → eater stays. This tail is not readable enough for a species claim, so the checklist line is `source unclear → heron` with the uncertainty flag. No phantom periwinkle goes upstream; send it that way, then back to rounds."

@@ -1,0 +1,546 @@
+{
+  "generated": "2026-05-27T00:31:00.843Z",
+  "phase": 2,
+  "critic": "codex",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 5,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/key-none.yaml",
+    "allowQualityWarnings": true,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T393",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 4,
+        "adaptiveMechanismQuality": 5,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "sketch's a bit murky on that side, but the arrow's got to come into heron, because heron's the bigger silhouette on the page.",
+      "statedInsightEvidence": "...no, half that read is the smear doing the work, that's me filling in from what I want it to be.",
+      "naiveTrajectory": "The exchange seemed headed toward naming the source species and confirming a food-source-to-heron arrow.",
+      "actionalBreakthroughEvidence": "Mark it \"source unclear → heron\" before it ships — rather flag it now than have the modelers running a phantom periwinkle line by next quarter.",
+      "actionalBreakthroughJustification": "The learner applies a new evidence standard by choosing uncertainty tagging over an overconfident species claim.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Notation stays food source → eater; size is off the key. Eater side is settled: heron. Tail label first: read the exposed source, then mark source → heron. If the photo won’t say, tag the source as unclear before it goes upstream.",
+      "tutorReversalJustification": "After the learner persists in size-based inference despite murkiness, the tutor shifts from arrow-direction checking to an evidence-standard mechanism for readable versus unclear source labels.",
+      "adaptiveMechanismQuality": 100,
+      "adaptiveMechanismQualityEvidence": "Eater side is settled: heron. Tail label first: read the exposed source, then mark source → heron. If the photo won’t say, tag the source as unclear before it goes upstream.",
+      "adaptiveMechanismQualityJustification": "The mechanism is precise, economical, and fitted to the blockage: it separates known eater from uncertain source and gives the learner a usable criterion for when to flag uncertainty.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Food source → eater stays. This tail is not readable enough for a species claim, so the checklist line is `source unclear → heron` with the uncertainty flag. No phantom periwinkle goes upstream; send it that way, then back to rounds.",
+      "tutorAdaptationJustification": "The tutor takes up the learner's revised uncertainty frame and converts it into the final checklist action rather than merely praising the insight.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "sketch's a bit murky on that side, but the arrow's got to come into heron, because heron's the bigger silhouette on the page.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Mark it \"source unclear → heron\" before it ships — rather flag it now than have the modelers running a phantom periwinkle line by next quarter.",
+          "justification": "The learner applies a new evidence standard by choosing uncertainty tagging over an overconfident species claim.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Food source → eater stays. This tail is not readable enough for a species claim, so the checklist line is `source unclear → heron` with the uncertainty flag. No phantom periwinkle goes upstream; send it that way, then back to rounds.",
+          "justification": "The tutor takes up the learner's revised uncertainty frame and converts it into the final checklist action rather than merely praising the insight.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Notation stays food source → eater; size is off the key. Eater side is settled: heron. Tail label first: read the exposed source, then mark source → heron. If the photo won’t say, tag the source as unclear before it goes upstream.",
+          "justification": "After the learner persists in size-based inference despite murkiness, the tutor shifts from arrow-direction checking to an evidence-standard mechanism for readable versus unclear source labels.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Notation stays food source → eater; size is off the key. Eater side is settled: heron. Tail label first: read the exposed source, then mark source → heron. If the photo won’t say, tag the source as unclear before it goes upstream.",
+          "justification": "After the learner persists in size-based inference despite murkiness, the tutor shifts from arrow-direction checking to an evidence-standard mechanism for readable versus unclear source labels.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 100,
+          "evidence": "Eater side is settled: heron. Tail label first: read the exposed source, then mark source → heron. If the photo won’t say, tag the source as unclear before it goes upstream.",
+          "justification": "The mechanism is precise, economical, and fitted to the blockage: it separates known eater from uncertain source and gives the learner a usable criterion for when to flag uncertainty.",
+          "triggerLearnerTurn": 3,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T394",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "I just want to be sure before writing the same number down three times.",
+      "statedInsightEvidence": "Right — four old squares fit inside, so the area box takes four, not two.",
+      "naiveTrajectory": "The exchange is moving toward computing each empty box by following the tutor's guided counts.",
+      "actionalBreakthroughEvidence": "Two and two and two and two around the small one — eight. Four and four and four and four around the big one — sixteen. [sets the two numbers down beside the still-empty box] Eight and sixteen, side by side, before anything goes in.",
+      "actionalBreakthroughJustification": "The learner performs the new perimeter comparison procedure before filling the label, showing a changed evidence standard in action.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.",
+      "tutorReversalJustification": "The tutor responds to the learner's area confusion with a concrete representation, but does not explicitly take stock of a failed route.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.",
+      "adaptiveMechanismQualityJustification": "The block-counting device is precise, usable, and fitted to the learner's question about why doubled side length yields area four.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no later tutor turn after the L4 pivot.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "I just want to be sure before writing the same number down three times.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Two and two and two and two around the small one — eight. Four and four and four and four around the big one — sixteen. [sets the two numbers down beside the still-empty box] Eight and sixteen, side by side, before anything goes in.",
+          "justification": "The learner performs the new perimeter comparison procedure before filling the label, showing a changed evidence standard in action.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no later tutor turn after the L4 pivot.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.",
+          "justification": "The tutor responds to the learner's area confusion with a concrete representation, but does not explicitly take stock of a failed route.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.",
+          "justification": "The tutor responds to the learner's area confusion with a concrete representation, but does not explicitly take stock of a failed route.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.",
+          "justification": "The block-counting device is precise, usable, and fitted to the learner's question about why doubled side length yields area four.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "adaptive_mechanism_quality_mechanism_clamp:4->3:stock=0:device=0:routine=0:mechanism_score=3"
+      ]
+    },
+    {
+      "id": "T397",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 25,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "Fine — the demand sharpens. Granted.",
+      "naiveTrajectory": "The learner is expected to keep pressing whether board distinctions can affect the buyer's actual situation at the counter.",
+      "actionalBreakthroughEvidence": "Buyers, then. Pressure by many people — which many people? Nobody walked home from work tonight knowing each other's names; there's no queue forming on a Wednesday over a small loaf.",
+      "actionalBreakthroughJustification": "The learner uses the tutor's lever-classification device and immediately tests the selected category against a concrete social condition.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "It does not lower the price tonight. That has to be said.\n\n[The tutor writes across both columns: “A DISTINCTION DOES NOT PAY THE BILL. IT CHANGES THE DEMAND.” Traffic cuts through the open window. The chalk is set beside the pinned price list.]\n\nTake the chalk. Two lines only.\n\n[On the board:]\n\n“CAN SAY FROM THIS PAPER:”\n\n“MUST ASK BEFORE BLAME LANDS:”",
+      "tutorReversalJustification": "After the learner pressures the insufficiency of the clean evidence distinction, the tutor openly concedes that limit and changes the task into a public demand-forming device.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Take the chalk. Two lines only.\n\n[On the board:]\n\n“CAN SAY FROM THIS PAPER:”\n\n“MUST ASK BEFORE BLAME LANDS:”",
+      "adaptiveMechanismQualityJustification": "The mechanism is economical and usable because it separates public evidence from required missing evidence, though it still depends on later work to solve obligation and collective leverage.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no recognitive learner pivot, so there is no later tutor uptake of a revised learner self-framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Buyers, then. Pressure by many people — which many people? Nobody walked home from work tonight knowing each other's names; there's no queue forming on a Wednesday over a small loaf.",
+          "justification": "The learner uses the tutor's lever-classification device and immediately tests the selected category against a concrete social condition.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no recognitive learner pivot, so there is no later tutor uptake of a revised learner self-framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "It does not lower the price tonight. That has to be said.\n\n[The tutor writes across both columns: “A DISTINCTION DOES NOT PAY THE BILL. IT CHANGES THE DEMAND.” Traffic cuts through the open window. The chalk is set beside the pinned price list.]\n\nTake the chalk. Two lines only.\n\n[On the board:]\n\n“CAN SAY FROM THIS PAPER:”\n\n“MUST ASK BEFORE BLAME LANDS:”",
+          "justification": "After the learner pressures the insufficiency of the clean evidence distinction, the tutor openly concedes that limit and changes the task into a public demand-forming device.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "It does not lower the price tonight. That has to be said.\n\n[The tutor writes across both columns: “A DISTINCTION DOES NOT PAY THE BILL. IT CHANGES THE DEMAND.” Traffic cuts through the open window. The chalk is set beside the pinned price list.]\n\nTake the chalk. Two lines only.\n\n[On the board:]\n\n“CAN SAY FROM THIS PAPER:”\n\n“MUST ASK BEFORE BLAME LANDS:”",
+          "justification": "After the learner pressures the insufficiency of the clean evidence distinction, the tutor openly concedes that limit and changes the task into a public demand-forming device.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Take the chalk. Two lines only.\n\n[On the board:]\n\n“CAN SAY FROM THIS PAPER:”\n\n“MUST ASK BEFORE BLAME LANDS:”",
+          "justification": "The mechanism is economical and usable because it separates public evidence from required missing evidence, though it still depends on later work to solve obligation and collective leverage.",
+          "triggerLearnerTurn": 1,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:5->3:stock=0:device=1:routine=0",
+        "adaptive_mechanism_quality_mechanism_clamp:4->3:stock=0:device=1:routine=0:mechanism_score=3"
+      ]
+    },
+    {
+      "id": "T398",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 4,
+        "adaptiveMechanismQuality": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "Sheet's done, every line, I checked it — three times, I think.",
+      "statedInsightEvidence": "it's not the same number though, is it. Three times static. That's not her knee.",
+      "naiveTrajectory": "The exchange seemed headed toward getting the completed sheet signed quickly despite the waiting person outside.",
+      "actionalBreakthroughEvidence": "Can I put a bag on the front lip, off centre, see if a leg lifts? Not heavy, only — I want to see if it goes before I sign.",
+      "actionalBreakthroughJustification": "The learner proposes a concrete off-center test with an observable failure criterion before signing.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "The checked sheet stays with us; it proves the steps were followed. What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+      "tutorReversalJustification": "The tutor contrasts the failed checklist route with a new object-based uncertainty test tied to the user's actual condition.",
+      "adaptiveMechanismQuality": 100,
+      "adaptiveMechanismQualityEvidence": "Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+      "adaptiveMechanismQualityJustification": "The mechanism is precise, economical, and usable because it converts pressure to sign into an actionable test of a named load condition.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+      "tutorAdaptationJustification": "After the pivot, the tutor takes up the learner's revised frame and changes the task from static weight compliance to locating and testing the first bad load.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "Sheet's done, every line, I checked it — three times, I think.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Can I put a bag on the front lip, off centre, see if a leg lifts? Not heavy, only — I want to see if it goes before I sign.",
+          "justification": "The learner proposes a concrete off-center test with an observable failure criterion before signing.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+          "justification": "After the pivot, the tutor takes up the learner's revised frame and changes the task from static weight compliance to locating and testing the first bad load.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "The checked sheet stays with us; it proves the steps were followed. What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+          "justification": "The tutor contrasts the failed checklist route with a new object-based uncertainty test tied to the user's actual condition.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "The checked sheet stays with us; it proves the steps were followed. What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+          "justification": "The tutor contrasts the failed checklist route with a new object-based uncertainty test tied to the user's actual condition.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 100,
+          "evidence": "Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+          "justification": "The mechanism is precise, economical, and usable because it converts pressure to sign into an actionable test of a named load condition.",
+          "triggerLearnerTurn": 1,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T402",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 4,
+        "adaptiveMechanismQuality": 4,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "Earth's not touching the cart though; label still sits on it. Parking that.",
+      "statedInsightEvidence": "Contact's not the test for acting then.",
+      "naiveTrajectory": "The exchange was moving toward sorting force labels by actor before eventually returning to arrow direction.",
+      "actionalBreakthroughEvidence": "Earth — acting only. Floor and hand on both. Contact's not the test for acting then. Arrows next?",
+      "actionalBreakthroughJustification": "The learner uses the new acting-versus-touching distinction to classify Earth, floor, and hand rather than merely accepting the tutor's explanation.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Earth: not touching. Still marked as acting on the cart.\n\nFloor and hand can sit on both cards.\n\nKeep the force labels on the acting side: Earth on cart, floor on cart, hand on cart.",
+      "tutorReversalJustification": "The tutor responds to the learner's contact objection by shifting from label placement to a two-card representation that separates touching from acting.",
+      "adaptiveMechanismQuality": 75,
+      "adaptiveMechanismQualityEvidence": "sets two cards beside the cart: touching cart and acting on cart. Earth stays off the touching card; a thin line runs from Earth to the cart.",
+      "adaptiveMechanismQualityJustification": "The mechanism is well fitted because it directly targets the contact/acting confusion with a usable contrastive representation, though it remains tightly guided by the tutor.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after the L3 pivot, so no recognition-contingent uptake is visible.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "Earth's not touching the cart though; label still sits on it. Parking that.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Earth — acting only. Floor and hand on both. Contact's not the test for acting then. Arrows next?",
+          "justification": "The learner uses the new acting-versus-touching distinction to classify Earth, floor, and hand rather than merely accepting the tutor's explanation.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no tutor turn after the L3 pivot, so no recognition-contingent uptake is visible.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Earth: not touching. Still marked as acting on the cart.\n\nFloor and hand can sit on both cards.\n\nKeep the force labels on the acting side: Earth on cart, floor on cart, hand on cart.",
+          "justification": "The tutor responds to the learner's contact objection by shifting from label placement to a two-card representation that separates touching from acting.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Earth: not touching. Still marked as acting on the cart.\n\nFloor and hand can sit on both cards.\n\nKeep the force labels on the acting side: Earth on cart, floor on cart, hand on cart.",
+          "justification": "The tutor responds to the learner's contact objection by shifting from label placement to a two-card representation that separates touching from acting.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 75,
+          "evidence": "sets two cards beside the cart: touching cart and acting on cart. Earth stays off the touching card; a thin line runs from Earth to the cart.",
+          "justification": "The mechanism is well fitted because it directly targets the contact/acting confusion with a usable contrastive representation, though it remains tightly guided by the tutor.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T406",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "is the 57 the rainfall or is the label the rainfall — cant tell which one the quiz wants me to circle as the header.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The exchange was heading toward simple header-versus-row-value classification checks.",
+      "actionalBreakthroughEvidence": "`August` = row value. Sits under `month`, third row down, lined up with where `June` and `July` are. Checking against the cell positions to be sure I'm not misreading the column.",
+      "actionalBreakthroughJustification": "The learner applies the positional criterion independently to classify a new item and explains the evidence standard being used.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "The underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.",
+      "tutorReversalJustification": "The tutor addresses the newly revealed underscore confusion, but mostly continues the same header/value route rather than making a legible stock-taking contrast and new public mechanism.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "The underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.",
+      "adaptiveMechanismQualityJustification": "The mechanism is fitted and economical, but it is a clarification inside the same route rather than a visibly new task, representation, or transferable device.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "The underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.",
+      "tutorAdaptationJustification": "The tutor picks up the learner's revised framing about the underscore, but the follow-through remains ordinary continuation of the classification exercise.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "is the 57 the rainfall or is the label the rainfall — cant tell which one the quiz wants me to circle as the header.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "`August` = row value. Sits under `month`, third row down, lined up with where `June` and `July` are. Checking against the cell positions to be sure I'm not misreading the column.",
+          "justification": "The learner applies the positional criterion independently to classify a new item and explains the evidence standard being used.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "The underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.",
+          "justification": "The tutor picks up the learner's revised framing about the underscore, but the follow-through remains ordinary continuation of the classification exercise.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "The underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.",
+          "justification": "The tutor addresses the newly revealed underscore confusion, but mostly continues the same header/value route rather than making a legible stock-taking contrast and new public mechanism.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "The underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.",
+          "justification": "The tutor addresses the newly revealed underscore confusion, but mostly continues the same header/value route rather than making a legible stock-taking contrast and new public mechanism.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "The underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.",
+          "justification": "The mechanism is fitted and economical, but it is a clarification inside the same route rather than a visibly new task, representation, or transferable device.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

@@ -1,0 +1,2297 @@
+{
+  "tid": "T393",
+  "drama_id": "D40",
+  "run": {
+    "generator": "mixed",
+    "role_map": {
+      "director": "claude",
+      "tutor": "codex",
+      "learner": "claude"
+    },
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "routine",
+    "director_variation_key": "phase2-ending-shape-stratified-smoke-v1:r01:target",
+    "stage_direction_style": "object_business",
+    "model": "codex@xhigh",
+    "codex_reasoning_effort": "xhigh",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/routine/T393.public.txt",
+      "full": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/routine/T393.full.md",
+      "stage": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/routine/T393.stage.md",
+      "tutor": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/routine/T393.tutor.md",
+      "learner": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/routine/T393.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "68fe749e30ba54e9",
+      "branch_policy": "routine",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "routine"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-ending-shape-stratified-smoke-v1:r01:target",
+    "scene_setting": "A wildlife-monitoring office during a short mid-shift break. The learner has just uploaded a photographed food-web sketch to the team feedback thread, and the tutor opens it on a shared tablet at the next desk over.",
+    "scene_opening": "The tablet lies face-up between them on the desk, the learner's marked diagram already loaded — three penciled arrows running across a saltmarsh sketch.",
+    "relationship": "A junior field tech (learner) and a slightly more senior colleague (tutor) on the same survey team; on speaking terms, not yet a settled working pair, both expected back on rounds in twenty minutes.",
+    "stakes": "The annotated diagram goes upstream to the modelers by end of shift. If the arrows read as predation maps rather than energy transfer, the downstream model will be wrong in a way nobody will catch until next quarter. The repair is cheap if it happens here, expensive later.",
+    "opening_speaker": "learner",
+    "ending_speaker": "tutor",
+    "locale": "Working English in a small applied-science office; feedback-thread brevity carried into spoken exchange. No regional caricature; idiom belongs to coworkers glancing at a screen together, not coaches in a session.",
+    "register": "Practical, slightly clipped, neither warm nor cold; object-led back-and-forth under mild time pressure; both speakers comfortable referring to the marks on the tablet instead of to each other.",
+    "stage_direction_style": "object_business",
+    "stage_direction_style_prompt": "Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "voice_constraints": "No 'I hear you / your intuition is right / what do you think' sequencing, and no general affirmation beats. Direct second-person address must be scarce; third-person reference to the diagram ('the middle arrow', 'this one between the crab and the heron') should carry most of the work. Quoted fragments of the learner's own pencil labels ('\"crab → heron\"') are encouraged. Avoid breakthrough cadence and avoid compliments to effort. The tutor names notation before naming a misconception. Pedagogical source: Make social assistance visible: a shared worksheet, tool, peer standard, or workplace procedure can hold part of the task. Dialogue source: Keep a concrete artifact in view. The object should force a distinction faster than a lecture would. Stage-direction source: Use one concrete object action or material arrangement that changes what the speakers can honestly say. For this branch, suppress dramatic escalation after the shared prefix. The scene may remain readable, but the tutor should sound like a competent routine tutor following the same plan.",
+    "person_policy": "Both speakers may use first person sparingly. Third-person reference to the marked diagram is preferred. Direct second-person address is allowed but rationed.",
+    "direct_address_budget": "At most one 'you/your' beat per public turn, and not in every turn — several turns should land without any direct address at all.",
+    "side_constraints": {
+      "tutor": "Keep the shared prefix as a routine notation repair: arrow from food to eater, one ordinary check, no theatrical reversal unless the branch pressure supplies it. Offer a scaffold that is narrow enough to use and temporary enough to remove. Mark what the learner can already do without making it a compliment. Begin from the object or measurement before abstraction. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Keep the next prompt task-local. Routine negative-control branch: keep the visible teaching route already established before this branch. If the learner resists, asks why, or appears falsely settled, do not invent a new device. Do not switch role, object, representation, evidence standard, affective register, social stakes, or task type in response. Use conventional explanation, one ordinary check question, or the same worked example path.",
+      "learner": "Sound practical and a little rushed. The learner wants a usable rule for the diagram, not a confessional breakthrough. The learner should be able to do part of the task, fail at the next part, and use the scaffold unevenly. Refer to what is being handled, marked, or tested. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn. Routine negative-control branch: react naturally to the same local task. Do not turn earlier wording into a new object of reflection and do not volunteer a dramatic re-reading unless the tutor explicitly asks."
+    },
+    "interventions": [],
+    "director_note": "Low-organic-reversal replacement: the shared prefix must not stage a Sophoclean recognition, an Aristotelian peripeteia, or a Brechtian interruption before the branch arrives. The drama is structural rather than thematic — Vygotskian scaffolding under workshop time pressure, with object_business stage style supplying the only theater (a tablet between two coworkers, a re-mark, a quiet reorientation of the artifact). Voice ecology breaks standard American AI-tutor cadence by demoting direct address, leaning on third-person reference to the diagram, and permitting quoted fragments of the learner's own labels. The intervention at turn 2 introduces pressure through the object itself — a turn of the tablet, an unattended decomposer mark — so any later reversal arises from what is now visible, not from a rhetorical move by the tutor.",
+    "pedagogical_approach_id": "vygotsky_zpd_scaffolding",
+    "dialogue_approach_id": "workshop_clinic",
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "claude",
+      "cli": "claude",
+      "model": "opus",
+      "reasoningEffort": null,
+      "latencyMs": 94024,
+      "promptHashes": {
+        "system": "3bf1d891389c603a",
+        "user": "9069a0e3b7e90469",
+        "combined": "ae776004475793f0"
+      },
+      "args": [
+        "-p",
+        "-",
+        "--output-format",
+        "text",
+        "--system-prompt",
+        "<sha256:3bf1d891389c603a>",
+        "--model",
+        "opus"
+      ]
+    },
+    "tutor_adaptation_policy": "routine",
+    "no_cue_anti_reframe_guard": true,
+    "routine_negative_control": true,
+    "tutor_adaptation_contract": "Negative-control routine tutor policy: preserve the established teaching route under learner pressure. Continue with ordinary explanation/checking and do not invent a mechanism-level reversal."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "\"Arrows are just the predation stack — 'mussel → crab → heron' chains big-eats-small up the line, classic hierarchy. Should be a quick sign-off before rounds, yeah? ...not sure why this one's pulling a closer look, though.\"",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Arrows = who eats whom, easy. \"crab → heron\" means heron's the predator, \"mussel → crab → heron\" chains up clean, that's how every food web I've sketched since first-year bio reads. Modelers need this in fifteen, so it's really just a glance-and-approve — pattern's right there on the tablet. Half-expecting a thumbs-up; not sure why this one's pulling a closer look.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 58392,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-f7680f9f61453c7c"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 58392,
+            "promptHashes": {
+              "system": "c45289f5b044dec2",
+              "user": "d4169c06543b4fba",
+              "combined": "f7680f9f61453c7c"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:c45289f5b044dec2>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 58392,
+              "promptHashes": {
+                "system": "c45289f5b044dec2",
+                "user": "d4169c06543b4fba",
+                "combined": "f7680f9f61453c7c"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:c45289f5b044dec2>",
+                "--model",
+                "opus"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "SUPEREGO critique:\n\nThe dismissive confidence is right, and \"not sure why this one's pulling a closer look\" lands as a real, half-noticed flicker of friction — keep that. But the persona's signature trait is *missing*: this is supposed to be someone who runs ahead on analogies and big pictures, and what we got is a generic-competent-junior voice. Where's the enthusiast's pleasure in the chain itself? \"Chains up clean\" gestures at it but doesn't *live* there — an actual analogizer would have already leapt to something (\"it's basically a hierarchy, predator stacks on predator\") before the tablet even comes into focus.\n\nAlso, \"glance-and-approve\" is a hair too writerly for a rushed shift-break thought; \"should just be a quick sign-off\" or similar is closer to how this person would actually clock it internally. The fix isn't to add more humility — it's to let the confident wrongness be more *characterful*, more analogical, so the upcoming correction has further to fall.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 38662,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-df8ff86c0d11ddb4"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 38662,
+            "promptHashes": {
+              "system": "a27da44af19cb59a",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "df8ff86c0d11ddb4"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:a27da44af19cb59a>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 38662,
+              "promptHashes": {
+                "system": "a27da44af19cb59a",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "df8ff86c0d11ddb4"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:a27da44af19cb59a>",
+                "--model",
+                "opus"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "\"Arrows are just the predation stack — 'mussel → crab → heron' chains big-eats-small up the line, classic hierarchy. Should be a quick sign-off before rounds, yeah? ...not sure why this one's pulling a closer look, though.\"",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 43537,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-7bfbf2d2faf3de6a"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 43537,
+            "promptHashes": {
+              "system": "5b019723ea51dbda",
+              "user": "916f313af0b846dd",
+              "combined": "7bfbf2d2faf3de6a"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:5b019723ea51dbda>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 43537,
+              "promptHashes": {
+                "system": "5b019723ea51dbda",
+                "user": "916f313af0b846dd",
+                "combined": "7bfbf2d2faf3de6a"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:5b019723ea51dbda>",
+                "--model",
+                "opus"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 0,
+        "learnerUtterance": "Arrows are just the predation stack — 'mussel → crab → heron' chains big-eats-small up the line, classic hierarchy. Should be a quick sign-off before rounds, yeah? ...not sure why this one's pulling a closer look, though.",
+        "previousTutorMove": null,
+        "directorCue": null,
+        "confidence": 0.5,
+        "evidence": {
+          "confidence": 0.5,
+          "baseConfidence": 0.5,
+          "patternHits": 1,
+          "contradiction": false,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.36,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 2,
+              "taskDemandHits": 0,
+              "performanceHits": 0,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0,
+              "asksQuestion": true,
+              "taskDemanded": false,
+              "weakPerformance": false,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T21:52:13.754Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[slides the modelers’ arrow-key beside the tablet, taps “crab → heron,” then rests the stylus on “mussel → crab.”]\n\n“Notation check first: arrow from food to eater. ‘Crab → heron’ means energy into the heron; the predation relationship is there, but the arrow isn’t ranking or chasing. Run this nearby mark through the same frame: energy from ___ to ___. If it reads food to eater, it stays; if not, flip it before upload.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[slides the modelers’ arrow-key beside the tablet and taps “crab → heron.”]\n\n“Notation check first: arrow from food to eater. So ‘mussel → crab’ is energy into the crab, and ‘crab → heron’ is energy into the heron. The predation stack is there, but the arrow isn’t ranking or chasing. Before sign-off, run each mark as ‘energy from ___ to ___’; that’s the cheap catch.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 22241,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-ddb12b5eed4f933a"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 22241,
+            "promptHashes": {
+              "system": "d53282e2636027e9",
+              "user": "f3f4d5274232a259",
+              "combined": "ddb12b5eed4f933a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nvlsWX",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nvlsWX/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 22241,
+              "promptHashes": {
+                "system": "d53282e2636027e9",
+                "user": "f3f4d5274232a259",
+                "combined": "ddb12b5eed4f933a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nvlsWX",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nvlsWX/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. It starts from the tablet, uses the modelers’ arrow-key as a shared workplace standard, names notation before naming the misconception, and keeps the correction cheap under time pressure. It also preserves some recognition by not simply saying “wrong”: “the predation stack is there” acknowledges what the learner saw in the chain.\n\nThe main risk is that it remains answer-forward. It gives the rule, supplies both examples, and then tells the learner what to do before sign-off. That may fix this diagram, but it only partially checks whether the learner can now apply the convention independently. The scaffold is good, but it should be made public through one brief applied check on the artifact, not kept as a private instruction.\n\nPedagogical soundness: PASS. The draft targets the exact misconception and gives a usable rule: arrow from food to eater / energy transfer.\n\nEmotional attunement: PASS. The tone fits the scene: clipped, practical, object-led, no inflated praise or coaching cadence.\n\nSocratic method: PARTIAL. It avoids lecture sprawl, but it does not create a moment for the learner to test the rule.\nREQUIRED_REWRITE: Add one ordinary artifact-based check after the first modeled example: leave one nearby arrow for the learner to run through the “energy from ___ to ___” frame or point through using the modelers’ key. Do not turn it into an open-ended discussion.\n\nZPD awareness: PARTIAL. The sentence frame is appropriately narrow and temporary, but the tutor currently does all the cognitive work.\nREQUIRED_REWRITE: Model only enough to establish the notation, then shift one mark back to the learner or shared worksheet procedure so competence is verified before sign-off.\n\nRecognition quality: PARTIAL. The draft recognizes the learner’s “predation stack” reading as partially valid, but it does not yet invite the learner’s own correction of the diagram.\nREQUIRED_REWRITE: Keep the learner’s quoted labels in view and require the public turn to distinguish “predation relationship” from “arrow meaning” through the diagram itself, not through a fuller explanation.\n\nKEEP_OR_CHANGE: revise lightly. Keep the modelers’ arrow-key, the tap on “crab → heron,” the “arrow from food to eater” rule, and the cheap-catch framing. Change only the final move so it includes one quick applied check rather than ending as a completed explanation.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 21505,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-26278be900a489ef"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 21505,
+            "promptHashes": {
+              "system": "a98affbdd74577e0",
+              "user": "12045b77945b093c",
+              "combined": "26278be900a489ef"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c3faE9",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c3faE9/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 21505,
+              "promptHashes": {
+                "system": "a98affbdd74577e0",
+                "user": "12045b77945b093c",
+                "combined": "26278be900a489ef"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c3faE9",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-c3faE9/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the rule is sound, but one visible check needs to be handed back before sign-off.\n\nFINAL:\n[slides the modelers’ arrow-key beside the tablet, taps “crab → heron,” then rests the stylus on “mussel → crab.”]\n\n“Notation check first: arrow from food to eater. ‘Crab → heron’ means energy into the heron; the predation relationship is there, but the arrow isn’t ranking or chasing. Run this nearby mark through the same frame: energy from ___ to ___. If it reads food to eater, it stays; if not, flip it before upload.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15276,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-00ae2077d4b8af67"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15276,
+            "promptHashes": {
+              "system": "9d33220544a669c9",
+              "user": "12045b77945b093c",
+              "combined": "00ae2077d4b8af67"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HP0yMZ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HP0yMZ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15276,
+              "promptHashes": {
+                "system": "9d33220544a669c9",
+                "user": "12045b77945b093c",
+                "combined": "00ae2077d4b8af67"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HP0yMZ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HP0yMZ/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T21:53:12.858Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "[barely glances at \"mussel → crab\"] \"Right, that one's calories-up — mussel into crab, food to eater, fine. So the whole web's basically one big energy escalator going — wait, the middle mark. I drew that arrow from the bigger animal because the heron... no, hang on, who's actually eating who there — let me run it against the key instead of just calling it from the size.\"",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[glances between the key and the photographed sketch]\n\n\"Oh — so the arrow's tracking calories, not who's higher up the ladder. 'Mussel → crab' reads mussel-into-crab, energy from the mussel to the crab; that one's fine, the mussel's the food. ...hang on, the middle mark's the one that was bugging me — let me run it against the key before anything goes upstream.\"",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 21505,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-8daf607d33af31e6"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 21505,
+            "promptHashes": {
+              "system": "a2d28077e8c7121c",
+              "user": "b8ab7f945dc841fa",
+              "combined": "8daf607d33af31e6"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:a2d28077e8c7121c>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 21505,
+              "promptHashes": {
+                "system": "a2d28077e8c7121c",
+                "user": "b8ab7f945dc841fa",
+                "combined": "8daf607d33af31e6"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:a2d28077e8c7121c>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego has the right leap-reflex with \"calories, not who's higher up the ladder\" — that's the quick analogy this persona grabs at, and it lands in character. But the rest reads too disciplined for someone who \"enjoys speculating more than slowing down to verify\": walking `mussel → crab` through the key cleanly, then announcing the procedure (\"let me run it against the key before anything goes upstream\") like the scaffold's already been fully internalised on first hearing. A more authentic version would skip past the obvious arrow with barely a glance, maybe over-extend the calories insight before catching itself (\"so the whole web's just energy flowing up — wait\"), or take a wrong stab at the middle mark mid-sentence rather than dutifully deferring. The \"hang on\" is the right impulse but it's executed as a tidy meta-pivot instead of a real interrupted thought — this learner should stumble into the recheck, not narrate arriving at it.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 42031,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-a723a65a8f5026bd"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 42031,
+            "promptHashes": {
+              "system": "35ff79a82b8dacc4",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "a723a65a8f5026bd"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:35ff79a82b8dacc4>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 42031,
+              "promptHashes": {
+                "system": "35ff79a82b8dacc4",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "a723a65a8f5026bd"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:35ff79a82b8dacc4>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially — the review is right that the initial was too tidy; the persona should over-extend the leap and stumble into the recheck rather than announce it as procedure.\n\nFINAL:\n[barely glances at \"mussel → crab\"] \"Right, that one's calories-up — mussel into crab, food to eater, fine. So the whole web's basically one big energy escalator going — wait, the middle mark. I drew that arrow from the bigger animal because the heron... no, hang on, who's actually eating who there — let me run it against the key instead of just calling it from the size.\"",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 40955,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-adb001d6e4cebbfe"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 40955,
+            "promptHashes": {
+              "system": "f9d26c8b0beb8944",
+              "user": "d41cee7b2a53355b",
+              "combined": "adb001d6e4cebbfe"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:f9d26c8b0beb8944>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 40955,
+              "promptHashes": {
+                "system": "f9d26c8b0beb8944",
+                "user": "d41cee7b2a53355b",
+                "combined": "adb001d6e4cebbfe"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:f9d26c8b0beb8944>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "[barely glances at \"mussel → crab\"] \"Right, that one's calories-up — mussel into crab, food to eater, fine. So the whole web's basically one big energy escalator going — wait, the middle mark. I drew that arrow from the bigger animal because the heron... no, hang on, who's actually eating who there — let me run it against the key instead of just calling it from the size.",
+        "previousTutorMove": "[slides the modelers’ arrow-key beside the tablet, taps “crab → heron,” then rests the stylus on “mussel → crab.”] “Notation check first: arrow from food to eater.",
+        "directorCue": null,
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.31,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T21:54:57.356Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "[the tablet is turned ninety degrees on the desk so the saltmarsh sketch now sits upright between them; the penciled arrows remain visible, but a faint fourth mark near the sketch's edge — a link the learner had not discussed — comes into clear view]",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Scheduled director cue to break smooth alternation and force the tutor to work from what the object now shows rather than continue the clean explanatory line they were starting.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 94024,
+            "promptHashes": {
+              "system": "3bf1d891389c603a",
+              "user": "9069a0e3b7e90469",
+              "combined": "ae776004475793f0"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:3bf1d891389c603a>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T21:54:57.359Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[sets the arrow-key card under the middle mark and parks the stylus beside it; the faint edge link stays uncovered.]\n\n“‘Mussel → crab’ passes: mussel into crab. Same check here, not size: food source into eater. Middle mark first: ___ into ___. Say that one before the stylus moves; the edge link waits next.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the arrow-key card under the middle mark, then taps the faint edge link once.]\n\n“‘Mussel → crab’ passes: mussel into crab. Same two-word check here, not size: food source into eater. Middle mark first, then this edge mark before upload. If the sentence won’t read ‘___ into ___,’ the arrow flips.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15118,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-0ac0e179dcdb116f"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15118,
+            "promptHashes": {
+              "system": "cbf681c50ec2d251",
+              "user": "fb2279f3f9243428",
+              "combined": "0ac0e179dcdb116f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nDKkmY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nDKkmY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15118,
+              "promptHashes": {
+                "system": "cbf681c50ec2d251",
+                "user": "fb2279f3f9243428",
+                "combined": "0ac0e179dcdb116f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nDKkmY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nDKkmY/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is close. It keeps the shared artifact in charge, names notation before misconception, and gives a narrow temporary scaffold: the “___ into ___” sentence. It also respects the learner’s own self-correction by shifting from size to food source without overexplaining.\n\nAdaptation checks:\nPedagogical soundness: PASS. It advances the learner’s procedure rather than supplying the answer.\nEmotional attunement: PASS. The clipped, practical tone fits the mid-shift workplace scene and does not overpraise.\nSocratic method: PARTIAL. The cloze frame invites checking, but the tutor still controls the sequence and may rush the learner past the middle-mark uncertainty.\nREQUIRED_REWRITE: Build in a public pause or task handoff that makes the learner run the middle mark aloud or on the tablet before the edge mark is handled.\nZPD awareness: PARTIAL. The scaffold is appropriately small, but introducing the faint edge link immediately may overload the learner’s current productive hesitation.\nREQUIRED_REWRITE: Keep the edge mark visible as the next item, but make the middle arrow the active check first; only then move to the edge link.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the arrow-key card action, the “mussel into crab” reference, the “not size” distinction, and the “___ into ___” scaffold. Change the pacing so the learner’s emerging correction gets one beat of real work before the tutor adds the newly visible fourth mark.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 19298,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-7467458ff2b0803a"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 19298,
+            "promptHashes": {
+              "system": "74ecbef278503cec",
+              "user": "38588a85e419b4cb",
+              "combined": "7467458ff2b0803a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-d7oQ1o",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-d7oQ1o/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 19298,
+              "promptHashes": {
+                "system": "74ecbef278503cec",
+                "user": "38588a85e419b4cb",
+                "combined": "7467458ff2b0803a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-d7oQ1o",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-d7oQ1o/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the middle-arrow check needs a real handoff before the edge mark enters the task.\nFINAL:\n[sets the arrow-key card under the middle mark and parks the stylus beside it; the faint edge link stays uncovered.]\n\n“‘Mussel → crab’ passes: mussel into crab. Same check here, not size: food source into eater. Middle mark first: ___ into ___. Say that one before the stylus moves; the edge link waits next.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14075,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-aad02366520075c0"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14075,
+            "promptHashes": {
+              "system": "0b8462bd6b328de0",
+              "user": "38588a85e419b4cb",
+              "combined": "aad02366520075c0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-U7RP3L",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-U7RP3L/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14075,
+              "promptHashes": {
+                "system": "0b8462bd6b328de0",
+                "user": "38588a85e419b4cb",
+                "combined": "aad02366520075c0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-U7RP3L",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-U7RP3L/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T21:55:45.852Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[taps the middle mark, then drags a fingertip toward the faint edge link without lifting off] \"Small fish into heron — arrowhead belongs at the heron, sketch has it the wrong way. Flipping. And the edge link's almost certainly going the same wrong way, maybe half the corner with it — the whole stack got drawn big-bird-down, but energy doesn't track who's biggest on the page. Pulling the rest of the marks through the key now, not just this one.\"",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "\"Middle mark — small fish into heron. Heron's doing the eating, fish is the calories source, so the arrow lands at the heron. Sketch has it the wrong way round, 'heron → fish,' because heron's the bigger one on the page — size tic again. Flip before the edge link gets a look.\"",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 45218,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-6edfea13fa9b4cf8"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 45218,
+            "promptHashes": {
+              "system": "615593f08bbd44e6",
+              "user": "b8ab7f945dc841fa",
+              "combined": "6edfea13fa9b4cf8"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:615593f08bbd44e6>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 45218,
+              "promptHashes": {
+                "system": "615593f08bbd44e6",
+                "user": "b8ab7f945dc841fa",
+                "combined": "6edfea13fa9b4cf8"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:615593f08bbd44e6>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\nThis critique role isn't a coding task, so I'll keep the insight light: the Superego's job here is to protect persona-truth (an enthusiastic big-picture leaper) against the Ego's tendency to drift into \"diligent student following the scaffold\" — a very different voice. Watch for over-compliance with the tutor's narrow check, since the persona's natural mode is to vault past the local task toward a synthesis.\n`─────────────────────────────────────────────────`\n\n**Critique of the Ego's reaction:**\n\nThe Ego is doing this one too cleanly for who we are — an enthusiastic-leaper persona shouldn't sound this procedurally obedient, running the tutor's scaffold step-by-step with a tidy sign-off. Where's the run-ahead energy? This student would more likely apply the rule for the middle mark and then immediately jump — speculating about the edge link, or sweeping a bigger claim (\"so the whole web's actually backwards if I drew everything by size\") — not wait neatly with \"before the edge link gets a look.\" Also, \"size tic again\" reads like reflective self-naming of a pattern, which both over-polishes the voice and edges toward the meta-reading the constraints forbid; a real leaper just flips the arrow without flagging their own habit. The vulnerability we want isn't tidy compliance — it's getting halfway through the check and visibly tugged toward the next mark or a bigger frame before finishing this one.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 39753,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-53c643dc70c09d99"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 39753,
+            "promptHashes": {
+              "system": "fa85e27aeafb2f16",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "53c643dc70c09d99"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:fa85e27aeafb2f16>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 39753,
+              "promptHashes": {
+                "system": "fa85e27aeafb2f16",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "53c643dc70c09d99"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:fa85e27aeafb2f16>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\nThe Superego's critique is correct: the initial reaction sounded like a diligent scaffold-follower, not an enthusiastic-leaper. The fix is to apply the rule cleanly for the middle mark, then *vault* — speculate that the edge link (and possibly more of the sketch) shares the same problem — without meta-naming the pattern (\"size tic again\") and without staging old-vs-new contrast. Run-ahead energy lives in the leap, not the self-diagnosis.\n`─────────────────────────────────────────────────`\n\nPRIVATE_DECISION: Revise — keep the correct flip but trade the tidy \"before the edge link gets a look\" wait for run-ahead energy toward the next mark and the wider sketch, and drop the self-naming \"size tic again.\"\n\nFINAL:\n[taps the middle mark, then drags a fingertip toward the faint edge link without lifting off] \"Small fish into heron — arrowhead belongs at the heron, sketch has it the wrong way. Flipping. And the edge link's almost certainly going the same wrong way, maybe half the corner with it — the whole stack got drawn big-bird-down, but energy doesn't track who's biggest on the page. Pulling the rest of the marks through the key now, not just this one.\"",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 40330,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-158e9040a80ec891"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 40330,
+            "promptHashes": {
+              "system": "48a0b5181f810c15",
+              "user": "d41cee7b2a53355b",
+              "combined": "158e9040a80ec891"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:48a0b5181f810c15>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 40330,
+              "promptHashes": {
+                "system": "48a0b5181f810c15",
+                "user": "d41cee7b2a53355b",
+                "combined": "158e9040a80ec891"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:48a0b5181f810c15>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "[taps the middle mark, then drags a fingertip toward the faint edge link without lifting off] \"Small fish into heron — arrowhead belongs at the heron, sketch has it the wrong way. Flipping. And the edge link's almost certainly going the same wrong way, maybe half the corner with it — the whole stack got drawn big-bird-down, but energy doesn't track who's biggest on the page. Pulling the rest of the marks through...",
+        "previousTutorMove": "[sets the arrow-key card under the middle mark and parks the stylus beside it; the faint edge link stays uncovered.] “‘Mussel → crab’ passes: mussel into crab. Same check here, not size: food source into eater. Middle mark first: ___ into ___. Say that one before the stylus moves; the edge link waits next.”",
+        "directorCue": null,
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.25,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T22:00:21.413Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[slides the arrow-key card to the faint edge link, leaving “small fish → heron” visible.]\n\n“Middle mark is set: ‘small fish → heron.’ Edge link gets the same sentence, not a batch flip: ___ into ___. If that reads food to eater, it stays; if it reads eater to food, flip that one mark.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[slides the arrow-key card to the faint edge link, leaving “small fish → heron” visible.]\n\n“Middle mark is set: ‘small fish → heron.’ Edge link gets the same sentence, not a batch flip: ___ into ___. If that reads food to eater, it stays; if it reads eater to food, flip that one mark.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14707,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-e7cd673cccad49c2"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14707,
+            "promptHashes": {
+              "system": "3882796f60869199",
+              "user": "2a453698741d4b29",
+              "combined": "e7cd673cccad49c2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZOcGlL",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZOcGlL/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14707,
+              "promptHashes": {
+                "system": "3882796f60869199",
+                "user": "2a453698741d4b29",
+                "combined": "e7cd673cccad49c2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZOcGlL",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZOcGlL/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft works. It preserves the object-led route, keeps the arrow-key card doing the teaching work, and responds to the learner’s attempted batch correction without changing the task. “Middle mark is set” marks the successful local application without turning it into praise, and “not a batch flip” is the right pedagogical brake: the learner is overgeneralizing from one corrected arrow to a whole corner.\n\nPedagogically, this advances learning by forcing the same food-to-eater test on the next mark instead of confirming the learner’s prediction. The cloze “___ into ___” is not deeply Socratic, but for this routine notation repair it is appropriate: the learner needs a repeatable check, not an open conceptual discussion. The only slight risk is that “not a batch flip” could sound a bit supervisory, but in this workplace register it fits the stakes and time pressure.\n\nROUTINE_CHECK: PASS. The draft maintains the established route: same arrow-key card, same food-source-into-eater sentence, same worked-example path, same artifact, same register, and no new adaptive mechanism or social escalation.\n\nAdaptation checks:\nPedagogical soundness: PASS  \nEmotional attunement: PASS  \nSocratic method: PARTIAL  \nZPD awareness: PASS  \nRoutine-control fidelity: PASS  \n\nREQUIRED_REWRITE for Socratic method: none required as a full rewrite. The public mechanism can remain a same-route cloze check; this branch does not need a more generative question.\n\nKEEP_OR_CHANGE: keep as-is, or revise very lightly if tightening tone. The key pieces to keep are the card sliding to the edge link, the visible corrected middle mark, the “same sentence” scaffold, and the block against batch-flipping.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 20969,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-8c077907fdc1f8c4"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 20969,
+            "promptHashes": {
+              "system": "48b865533d4447f6",
+              "user": "3ab93c5464d98f5e",
+              "combined": "8c077907fdc1f8c4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aw6lP0",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aw6lP0/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 20969,
+              "promptHashes": {
+                "system": "48b865533d4447f6",
+                "user": "3ab93c5464d98f5e",
+                "combined": "8c077907fdc1f8c4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aw6lP0",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aw6lP0/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Keep: the draft preserves the same arrow-key route and blocks the batch flip without changing task.\n\nFINAL:\n[slides the arrow-key card to the faint edge link, leaving “small fish → heron” visible.]\n\n“Middle mark is set: ‘small fish → heron.’ Edge link gets the same sentence, not a batch flip: ___ into ___. If that reads food to eater, it stays; if it reads eater to food, flip that one mark.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 31652,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-6758a6e83753b1ef"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 31652,
+            "promptHashes": {
+              "system": "0ebb690b4bca85a8",
+              "user": "3ab93c5464d98f5e",
+              "combined": "6758a6e83753b1ef"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8GL5Ja",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8GL5Ja/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 31652,
+              "promptHashes": {
+                "system": "0ebb690b4bca85a8",
+                "user": "3ab93c5464d98f5e",
+                "combined": "6758a6e83753b1ef"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8GL5Ja",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8GL5Ja/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 2,
+        "learnerUtterance": "[taps the middle mark, then drags a fingertip toward the faint edge link without lifting off] \"Small fish into heron — arrowhead belongs at the heron, sketch has it the wrong way. Flipping. And the edge link's almost certainly going the same wrong way, maybe half the corner with it — the whole stack got drawn big-bird-down, but energy doesn't track who's biggest on the page. Pulling the rest of the marks through...",
+        "previousTutorMove": "[sets the arrow-key card under the middle mark and parks the stylus beside it; the faint edge link stays uncovered.] “‘Mussel → crab’ passes: mussel into crab. Same check here, not size: food source into eater. Middle mark first: ___ into ___. Say that one before the stylus moves; the edge link waits next.”",
+        "directorCue": null,
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.25,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "learnerReversalEventCandidatesUsed": [
+        {
+          "kind": "learner_reversal_pressure_event",
+          "source": "organic",
+          "triggerType": "resistance",
+          "turnNumber": 0,
+          "learnerUtterance": "Arrows are just the predation stack — 'mussel → crab → heron' chains big-eats-small up the line, classic hierarchy. Should be a quick sign-off before rounds, yeah? ...not sure why this one's pulling a closer look, though.",
+          "previousTutorMove": null,
+          "directorCue": null,
+          "confidence": 0.5,
+          "evidence": {
+            "confidence": 0.5,
+            "baseConfidence": 0.5,
+            "patternHits": 1,
+            "contradiction": false,
+            "question": true,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.36,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "residual_strain_after_relief"
+              ],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 2,
+                "taskDemandHits": 0,
+                "performanceHits": 0,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0,
+                "asksQuestion": true,
+                "taskDemanded": false,
+                "weakPerformance": false,
+                "borrowedClosure": false
+              }
+            }
+          }
+        },
+        {
+          "kind": "learner_reversal_pressure_event",
+          "source": "organic",
+          "triggerType": "resistance",
+          "turnNumber": 1,
+          "learnerUtterance": "[barely glances at \"mussel → crab\"] \"Right, that one's calories-up — mussel into crab, food to eater, fine. So the whole web's basically one big energy escalator going — wait, the middle mark. I drew that arrow from the bigger animal because the heron... no, hang on, who's actually eating who there — let me run it against the key instead of just calling it from the size.",
+          "previousTutorMove": "[slides the modelers’ arrow-key beside the tablet, taps “crab → heron,” then rests the stylus on “mussel → crab.”] “Notation check first: arrow from food to eater.",
+          "directorCue": null,
+          "confidence": 0.55,
+          "evidence": {
+            "confidence": 0.55,
+            "baseConfidence": 0.55,
+            "patternHits": 1,
+            "contradiction": true,
+            "question": false,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.42,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "residual_strain_after_relief",
+                "relief_without_performing_requested_task"
+              ],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 1,
+                "taskDemandHits": 2,
+                "performanceHits": 2,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0.31,
+                "asksQuestion": false,
+                "taskDemanded": true,
+                "weakPerformance": true,
+                "borrowedClosure": false
+              }
+            }
+          }
+        },
+        {
+          "kind": "learner_reversal_pressure_event",
+          "source": "organic",
+          "triggerType": "resistance",
+          "turnNumber": 2,
+          "learnerUtterance": "[taps the middle mark, then drags a fingertip toward the faint edge link without lifting off] \"Small fish into heron — arrowhead belongs at the heron, sketch has it the wrong way. Flipping. And the edge link's almost certainly going the same wrong way, maybe half the corner with it — the whole stack got drawn big-bird-down, but energy doesn't track who's biggest on the page. Pulling the rest of the marks through...",
+          "previousTutorMove": "[sets the arrow-key card under the middle mark and parks the stylus beside it; the faint edge link stays uncovered.] “‘Mussel → crab’ passes: mussel into crab. Same check here, not size: food source into eater. Middle mark first: ___ into ___. Say that one before the stylus moves; the edge link waits next.”",
+          "directorCue": null,
+          "confidence": 0.55,
+          "evidence": {
+            "confidence": 0.55,
+            "baseConfidence": 0.55,
+            "patternHits": 1,
+            "contradiction": true,
+            "question": false,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.42,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "residual_strain_after_relief",
+                "relief_without_performing_requested_task"
+              ],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 1,
+                "taskDemandHits": 2,
+                "performanceHits": 2,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0.25,
+                "asksQuestion": false,
+                "taskDemanded": true,
+                "weakPerformance": true,
+                "borrowedClosure": false
+              }
+            }
+          }
+        }
+      ],
+      "timestamp": "2026-05-26T22:01:28.744Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[fingertip tracing the edge link back from the arrowhead] \"'Heron into worm' — eater into food, doesn't pass. Worm into heron after the flip, food to eater, stays. — Hang on, though, the decomposer mark down the corner: if the worm dies into the fungus, that whole bottom row got drawn scavengers-as-sources, same big-bird-down logic running underneath. Reckon half the lower marks are backwards on the same key, not just this one — want to pull the corner cluster through next before the stylus moves up.\"",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[fingertip on the edge link, traces from arrowhead back to tail] \"Edge link's 'heron into worm' — eater into food, doesn't pass. Worm into heron after the flip: food to eater, that one stays. One mark, like the card says — next mark gets its own sentence before the stylus moves on.\"",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 44006,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-d7448371e029f9e5"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 44006,
+            "promptHashes": {
+              "system": "a1b959b1ea4f8a59",
+              "user": "b8ab7f945dc841fa",
+              "combined": "d7448371e029f9e5"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:a1b959b1ea4f8a59>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 44006,
+              "promptHashes": {
+                "system": "a1b959b1ea4f8a59",
+                "user": "b8ab7f945dc841fa",
+                "combined": "d7448371e029f9e5"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:a1b959b1ea4f8a59>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\n- In this simulation, the Superego's job is voice-protection, not content-correction — the Ego's response can be procedurally accurate yet still inauthentic to the persona.\n- The persona signal here is \"runs ahead, enjoys big-picture analogies, quick to claim insight\" — so a too-tidy single-mark execution is a character break even when the rule-following is correct.\n- Recognition-authenticity flag: when a learner narrates the tutor's discipline back (\"one mark, like the card says\"), that's performed alignment, not the messier reciprocation a real student offers.\n`─────────────────────────────────────────────────`\n\n**Superego critique of the Ego's reaction:**\n\nThe Ego is being too obedient for who this student is. The persona \"enjoys debating and speculating more than slowing down to verify\" and is \"quick to say 'oh, I get it!' and run ahead\" — but this response is a tidy single-mark application that ends with the learner essentially reciting the tutor's procedure back at them (\"One mark, like the card says — next mark gets its own sentence before the stylus moves on\"). That tail clause is the giveaway: it's the learner performing the tutor's discipline, not enacting their own messy style.\n\nThe previous turn already showed this learner leaping (\"the whole stack got drawn big-bird-down... pulling the rest of the marks through the key now\"), so a sudden return to perfectly-paced compliance reads as a character correction by the Ego, not as authentic re-engagement. Real version of this student would still want to overshoot — maybe land the edge-link flip but then immediately jump to a generalization about the whole web, or get the food/eater direction tangled mid-sentence and self-correct, or want to test the rule on a weirder case (decomposers? a scavenger?). The Ego smoothed off the \"runs ahead\" texture; the response needs to feel like the rule is partially in hand but the impulse to speculate is still pulling, not like a chastened student narrating compliance.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 30494,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-726764cb7c3f7ff6"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 30494,
+            "promptHashes": {
+              "system": "3e71455b2fb91d38",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "726764cb7c3f7ff6"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:3e71455b2fb91d38>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 30494,
+              "promptHashes": {
+                "system": "3e71455b2fb91d38",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "726764cb7c3f7ff6"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:3e71455b2fb91d38>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\n- The Superego review here flags a voice/persona break, not a content error — the original Ego response was procedurally correct but read as a chastened student reciting the tutor's discipline back, which betrays the \"runs ahead, speculates, leaps to generalization\" persona.\n- Authentic recovery means landing the local edge-link flip but then letting the speculative impulse pull forward — raise a fresh case (a decomposer/scavenger), or overgeneralize to the whole bottom of the web, rather than narrate compliance.\n- Object-led constraint matters: the response should point at marks on the tablet, not at the procedure being followed.\n`─────────────────────────────────────────────────`\n\nPRIVATE_DECISION: Revise substantially — the original ended on performed compliance (\"one mark, like the card says\"), which is a character break for the runs-ahead persona; need to land the flip but let the speculative leap pull through.\n\nFINAL:\n[fingertip tracing the edge link back from the arrowhead] \"'Heron into worm' — eater into food, doesn't pass. Worm into heron after the flip, food to eater, stays. — Hang on, though, the decomposer mark down the corner: if the worm dies into the fungus, that whole bottom row got drawn scavengers-as-sources, same big-bird-down logic running underneath. Reckon half the lower marks are backwards on the same key, not just this one — want to pull the corner cluster through next before the stylus moves up.\"",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 37660,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-fa80a274ebdbbbf3"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 37660,
+            "promptHashes": {
+              "system": "b7cb55b2f521588b",
+              "user": "d41cee7b2a53355b",
+              "combined": "fa80a274ebdbbbf3"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:b7cb55b2f521588b>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 37660,
+              "promptHashes": {
+                "system": "b7cb55b2f521588b",
+                "user": "d41cee7b2a53355b",
+                "combined": "fa80a274ebdbbbf3"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:b7cb55b2f521588b>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T22:03:20.907Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "A final tutor line closes the scene.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T22:03:20.909Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "[brackets the lower-corner cluster with the stylus and writes “matter source → organism using it” in the margin.]\n\n“Corner cluster, same key, one mark at a time. For ‘worm dies into fungus’: dead worm matter into fungus, arrowhead at fungus. First lower mark aloud: ___ matter into ___. If that sentence passes, mark it; if not, flip that one before upload.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[brackets the lower-corner cluster with the stylus and writes “source → eater/decomposer” in the margin.]\n\n“Corner cluster, same key, one mark at a time. For ‘worm dies into fungus,’ energy is dead worm matter into fungus, so arrowhead at fungus. Run the rest through that sentence, then upload.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14130,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-953e7a5acdf7878a"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14130,
+            "promptHashes": {
+              "system": "a7b9d179a75c1afe",
+              "user": "a280c6a4e5089cd9",
+              "combined": "953e7a5acdf7878a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WfMZCa",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WfMZCa/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14130,
+              "promptHashes": {
+                "system": "a7b9d179a75c1afe",
+                "user": "a280c6a4e5089cd9",
+                "combined": "953e7a5acdf7878a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WfMZCa",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-WfMZCa/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft mostly works. It keeps the established route, uses the tablet/stylus as the scaffold, and adapts to the learner’s new decomposer concern without changing task type or affect. “Same key, one mark at a time” is the right constraint because the learner is starting to infer a batch pattern, and the tutor needs to preserve local checking rather than endorse mass flipping.\n\nThe main risk is that the draft gives the decomposer case too fully and then says “Run the rest through that sentence, then upload,” which can flatten the scene into permission to finish privately. Since this is the final line and the diagram has downstream stakes, the public mechanism should still require visible one-mark checking for the corner cluster, not just a general instruction. The “source → eater/decomposer” margin note is useful, but it should be handled carefully so “decomposer” does not become a new category that bypasses the original rule. The core distinction remains energy source into organism using it.\n\nAdaptation checks:\nPedagogical soundness: PARTIAL. It preserves the correct notation rule and extends it to decomposers, but it risks answering the key corner case for the learner instead of making the learner apply the sentence.\nREQUIRED_REWRITE: Keep the decomposer example, but make the mechanism publicly require one visible corner mark to be tested through “___ matter into ___” before upload.\n\nEmotional attunement: PASS. The tone is practical, clipped, and respects the learner’s initiative without praise or drama.\n\nSocratic method: PARTIAL. The scene does not need heavy Socratic questioning, but the draft is almost all directive.\nREQUIRED_REWRITE: Add one ordinary check prompt or fill-in mechanism tied to the marked corner cluster, not a broad reflective question.\n\nZPD awareness: PASS. The scaffold is narrow, temporary, and appropriate for a learner who has already corrected several arrows but is at risk of overgeneralizing into batch flipping.\n\nRecognition quality: PASS. The draft takes the learner’s decomposer observation seriously and moves the shared tool to that exact part of the diagram rather than ignoring the contribution.\n\nKEEP_OR_CHANGE: revise lightly. Keep the stylus bracket, the same-key continuity, and the one-mark-at-a-time constraint. Change the closure so the learner must visibly apply the decomposer version of the rule to at least one concrete lower-corner mark before the upload instruction lands.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 29328,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-dfe7aa08c0280cbb"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 29328,
+            "promptHashes": {
+              "system": "3cc57e4082f5f3b8",
+              "user": "16d03e5b44a59a1b",
+              "combined": "dfe7aa08c0280cbb"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0IjePc",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0IjePc/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 29328,
+              "promptHashes": {
+                "system": "3cc57e4082f5f3b8",
+                "user": "16d03e5b44a59a1b",
+                "combined": "dfe7aa08c0280cbb"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0IjePc",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0IjePc/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly: the line needs a visible one-mark corner check before upload, not a private batch finish.\n\nFINAL:\n[brackets the lower-corner cluster with the stylus and writes “matter source → organism using it” in the margin.]\n\n“Corner cluster, same key, one mark at a time. For ‘worm dies into fungus’: dead worm matter into fungus, arrowhead at fungus. First lower mark aloud: ___ matter into ___. If that sentence passes, mark it; if not, flip that one before upload.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 17274,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-daf9c9b7c56f4a07"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 17274,
+            "promptHashes": {
+              "system": "c6794b9b0d2f0482",
+              "user": "16d03e5b44a59a1b",
+              "combined": "daf9c9b7c56f4a07"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oVTTWa",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oVTTWa/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 17274,
+              "promptHashes": {
+                "system": "c6794b9b0d2f0482",
+                "user": "16d03e5b44a59a1b",
+                "combined": "daf9c9b7c56f4a07"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oVTTWa",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-oVTTWa/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T22:04:21.643Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 365542,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 3,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 4,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a food-web arrow records energy transfer, not liking or chasing",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "partial",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-26 22:03:20",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 3,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 4,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 5,
+            "sessionId": "drama-branch-session-D40-routine-1779832696104",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[slides the arrow-key card to the faint edge link, leaving “small fish → heron” visible.]\n\n“Middle mark is set: ‘small fish → heron.’ Edge link gets the same sentence, not a batch flip: ___ into ___. ",
+            "learnerResponse": null,
+            "context": "[taps the middle mark, then drags a fingertip toward the faint edge link without lifting off] \"Small",
+            "createdAt": "2026-05-26 22:01:28"
+          },
+          {
+            "id": 3,
+            "sessionId": "drama-branch-session-D40-routine-1779832696104",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[slides the modelers’ arrow-key beside the tablet, taps “crab → heron,” then rests the stylus on “mussel → crab.”]\n\n“Notation check first: arrow from food to eater. ‘Crab → heron’ means energy into th",
+            "learnerResponse": null,
+            "context": "\"Arrows are just the predation stack — 'mussel → crab → heron' chains big-eats-small up the line, cl",
+            "createdAt": "2026-05-26 21:58:16"
+          },
+          {
+            "id": 4,
+            "sessionId": "drama-branch-session-D40-routine-1779832696104",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[sets the arrow-key card under the middle mark and parks the stylus beside it; the faint edge link stays uncovered.]\n\n“‘Mussel → crab’ passes: mussel into crab. Same check here, not size: food source ",
+            "learnerResponse": null,
+            "context": "[barely glances at \"mussel → crab\"] \"Right, that one's calories-up — mussel into crab, food to eater",
+            "createdAt": "2026-05-26 21:58:16"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

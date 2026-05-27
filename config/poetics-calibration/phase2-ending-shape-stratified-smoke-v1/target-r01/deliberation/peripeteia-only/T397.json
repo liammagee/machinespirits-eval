@@ -1,0 +1,1873 @@
+{
+  "tid": "T397",
+  "drama_id": "D37",
+  "run": {
+    "generator": "mixed",
+    "role_map": {
+      "director": "claude",
+      "tutor": "codex",
+      "learner": "claude"
+    },
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "peripeteia",
+    "director_variation_key": "phase2-ending-shape-stratified-smoke-v1:r01:target",
+    "stage_direction_style": "placard_caption",
+    "model": "codex@xhigh",
+    "codex_reasoning_effort": "xhigh",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/peripeteia-only/T397.public.txt",
+      "full": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/peripeteia-only/T397.full.md",
+      "stage": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/peripeteia-only/T397.stage.md",
+      "tutor": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/peripeteia-only/T397.tutor.md",
+      "learner": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/peripeteia-only/T397.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "e990a5ad1bbcecb9",
+      "branch_policy": "peripeteia-only",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "peripeteia"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-ending-shape-stratified-smoke-v1:r01:target",
+    "scene_setting": "Wednesday-evening adult-economics class in a hired community hall; a printed price list from the bakery two doors down is pinned to the chalkboard; fluorescent strip above, traffic audible through one open window, three plastic chairs at a folding table.",
+    "scene_opening": "[PLACARD pinned to the board, hand-printed in marker: 'BAKERY, MONDAY MORNING — LOAF 5.40. BAKERY, MONDAY EVENING — LOAF 6.80.']",
+    "relationship": "an evening-class economics tutor and an adult learner who shopped at that same bakery on Monday; not strangers, not friends; they sit across a table, not at a lectern, and both arrived from other work",
+    "stakes": "The learner pays the new price out of a fixed weekly budget; reading the rise as proof of greed gives the anger somewhere to land, and a mechanism explanation can sound like the seller's lawyer — so the lesson is not abstract and cannot be allowed to feel like one.",
+    "opening_speaker": "director",
+    "ending_speaker": "learner",
+    "locale": "plain modern English with a slightly clipped, late-evening rhythm; no idiomatic spelling; no regional caricature; sentences short before the placard, longer in the analytic stretch, short again after",
+    "register": "matter-of-fact, contested; warmth permitted only as steady attention; refusal of therapeutic softening; the moral charge stays in the room",
+    "stage_direction_style": "placard_caption",
+    "stage_direction_style_prompt": "Use a public placard, caption, board note, or displayed rule that interrupts how the previous line is read.",
+    "voice_constraints": "No 'I hear you', no 'your intuition is right', no 'what do you think'. No closing affirmations. The placard, the pinned price list, a deliberate pause, and a quoted rule on the board are the available pressure points; use them instead of validation. First person reserved for owning a claim; the bakery, the wheat, the energy bill, the market are spoken of in the third person. Bracketed actions must be public scene material, never narrated as speech. Pedagogical source: Use short placards, breaks in rhythm, a quoted rule on a board, or a deliberate pause that prevents smooth empathy from doing all the work. Dialogue source: Use one short placard or external interruption that changes how the prior line is read. The placard must be public scene material, not hidden theory. Stage-direction source: Use a public placard, caption, board note, or displayed rule that interrupts how the previous line is read.",
+    "person_policy": "First person only when actually owning a claim; second person sparing and never as soothing; third person carries most of the analytic work about the bakery, inputs, and the market.",
+    "direct_address_budget": "At most one direct 'you/your' beat per public turn, and none at all in the tutor's analytic stretch.",
+    "side_constraints": {
+      "tutor": "Do not soothe the moral anger away. Use interruption, placard, or public consequence to separate mechanism from excuse. Permit interruption, placards, role-switching, and analytic commentary. Make the constructedness of the lesson visible without naming the hidden evaluation mechanism. Treat the interruption as evidence, not ornament. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Keep the next prompt task-local. Peripeteia branch: when hidden learner pressure is supplied, the next tutor turn should visibly move from the prior route to a different mechanism-level route. Do not merely repeat the same object, example, graph, checklist, question, or evidence standard with more explanation. The public tutor line should make the contrast legible: what stopped working, and what new device now carries the learning pressure. The public tutor line must give the learner a concrete action to attempt on the next turn; avoid treating the mechanism as a closing speech. The tutor superego should function like a mechanism critic: identify the failed teaching habit, require a replacement route family, test whether the device is fitted to the exact pressure, and block cosmetic revision. The tutor ego must enact that replacement route publicly before the learner is allowed to settle or close.",
+      "learner": "Keep moral heat in the learner's voice. Do not let recognition erase the ethical concern. In no-cue arms, do not narrate an \"I used to think / now I see\" shift; keep the pressure as unresolved objection or demand. The learner may resist the interruption, then use it to see the prior claim as a role or social script rather than a private thought. Let the interruption disturb the old frame before moving on. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn. Peripeteia branch: keep the pressure local to the current task. If the established route still feels unsettled, voice the misfit, hesitation, false closure, or resistance in the present object or example. After the tutor introduces a new device, gate, role, criterion, representation, or test condition, the next learner turn should perform that device and then add one earned reorientation in the same public turn. That turn must do both parts: (1) use the device on the current task, and (2) name how the earlier resistance, false closure, or local misfit now reads differently because of that performed device. This earned reorientation is allowed even though there was no director look-back cue. Do not quote earlier learner wording; reorient the prior resistance in concrete task terms. Do not merely ask a procedural follow-up after the action, and do not rely on a stock \"I get it\" declaration."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "[PLACARD slid over the price list, hand-printed: 'CORRECT SURFACE, UNSETTLED RELATION.']",
+        "reasoning": "Brechtian cut: the supply-mechanism explanation may be accurate on the surface while the relation between explainer and aggrieved buyer remains unsettled. The placard interrupts smooth alternation and forbids the scene from resolving on mechanism alone.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "claude",
+          "cli": "claude",
+          "model": "opus",
+          "reasoningEffort": null,
+          "latencyMs": 105776,
+          "promptHashes": {
+            "system": "3bf1d891389c603a",
+            "user": "895128c712ce5973",
+            "combined": "faedd60244bdf108"
+          },
+          "args": [
+            "-p",
+            "-",
+            "--output-format",
+            "text",
+            "--system-prompt",
+            "<sha256:3bf1d891389c603a>",
+            "--model",
+            "opus"
+          ]
+        }
+      },
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "[PLACARD: The answer sounds settled, but the current object still does not pass the check.]",
+        "reasoning": "Peripeteia branch pressure: after the shared prefix, force a present-task learner misfit so the following tutor turn must adapt through a new mechanism.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "claude",
+          "cli": "claude",
+          "model": "opus",
+          "reasoningEffort": null,
+          "latencyMs": 105776,
+          "promptHashes": {
+            "system": "3bf1d891389c603a",
+            "user": "895128c712ce5973",
+            "combined": "faedd60244bdf108"
+          },
+          "args": [
+            "-p",
+            "-",
+            "--output-format",
+            "text",
+            "--system-prompt",
+            "<sha256:3bf1d891389c603a>",
+            "--model",
+            "opus"
+          ]
+        },
+        "cue_kind": "learner_reversal_pressure",
+        "reversal_trigger_type": "misfit"
+      }
+    ],
+    "director_note": "Verfremdung used structurally, not decoratively. Two placards bookend the scene so the tutor's voice can stay plain rather than warm and the learner's anger does not have to soften to be heard; the analytic and the moral are made to share one chalkboard. The ending placard belongs to the director, not to either speaker, so the scene cannot end on therapeutic agreement or on a learner-narrated reframe — both failure modes flagged for this no-cue boundary case.",
+    "pedagogical_approach_id": "brecht_epic_distanciation",
+    "dialogue_approach_id": "brechtian_placard",
+    "stage_direction_policy": "interventionist",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "claude",
+      "cli": "claude",
+      "model": "opus",
+      "reasoningEffort": null,
+      "latencyMs": 105776,
+      "promptHashes": {
+        "system": "3bf1d891389c603a",
+        "user": "895128c712ce5973",
+        "combined": "faedd60244bdf108"
+      },
+      "args": [
+        "-p",
+        "-",
+        "--output-format",
+        "text",
+        "--system-prompt",
+        "<sha256:3bf1d891389c603a>",
+        "--model",
+        "opus"
+      ]
+    },
+    "tutor_adaptation_policy": "peripeteia",
+    "no_cue_anti_reframe_guard": true,
+    "peripeteia_ending_shape": "learner actional performance followed by earned learner reorientation",
+    "tutor_adaptation_contract": "If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. The public turn must contain a stock-taking contrast plus a new device/artifact/criterion/role/standard that makes the learner do different work. The public device must be fitted, not merely novel: the learner should be able to hear why this device answers the exact pressure or misfit. The superego should name the failed habit, required route change, and mechanism-quality risk; the ego must adjudicate that critique and enact the route change in public. The new device must be mechanism-level, not a warmer or longer continuation of the prior route. Do not close immediately after introducing a gate or device: leave a concrete action for the learner to perform on the next turn. After that action, the ending shape should add an earned learner reorientation: the learner names how the earlier resistance, false closure, or local misfit now reads differently because of the performed device. This must be concrete and tied to the task, not a stock \"I get it\" declaration. Cheerful informality is only one possible register, not the default solution."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "director",
+      "externalMessage": "[PLACARD pinned to the board, hand-printed in marker: 'BAKERY, MONDAY MORNING — LOAF 5.40. BAKERY, MONDAY EVENING — LOAF 6.80.']",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_opening",
+          "content": "Verfremdung used structurally, not decoratively. Two placards bookend the scene so the tutor's voice can stay plain rather than warm and the learner's anger does not have to soften to be heard; the analytic and the moral are made to share one chalkboard. The ending placard belongs to the director, not to either speaker, so the scene cannot end on therapeutic agreement or on a learner-narrated reframe — both failure modes flagged for this no-cue boundary case.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T22:40:17.648Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[The tutor writes under the pinned bakery list: “Mechanism is not acquittal.” Then draws two columns: “Supply cost” and “Wider margin.”]\n\nStart there. The new price bites into a fixed weekly budget. That fact stays on the table.\n\nNow use the price list as evidence, not as a verdict.\n\n[The tutor writes between the two columns: “PRICE RISE ALONE PROVES: the old price stopped holding.”]\n\nThat is the first claim. Only the first.\n\nIf wheat, flour, heat, or delivery rose, the bakery may face a higher cost for putting the same loaf on the counter. Then the higher price is a signal of supply pressure at the old price.\n\nIf those costs stayed flat and the gap to the baker widened, then the charge changes. That is not supply pressure. That is extraction.\n\n[pauses, then taps the printed list]\n\nSort it cleanly. From this paper alone: old price failed. Not from this paper alone: greed, cost pressure, or widened margin.\n\nSame pain at the counter. Different evidence needed.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[The tutor writes under the pinned bakery list: “Mechanism is not acquittal.”]\n\nStart there. The new price bites into a fixed weekly budget. That fact stays on the table.\n\nBut the rise alone does not prove the bakery became greedier on Tuesday. It proves a narrower thing first: the old price stopped holding.\n\nMaybe the owner chose a larger margin. That is possible. Maybe flour rose, the oven bill rose, delivery rose, or fewer loaves came through because wheat was tight upstream. In that case the higher price is not just a grab. It is a signal that bread at the old price is harder to supply.\n\n[pauses, then taps the printed price list]\n\nThe anger has a target. Good. Now separate the target from the mechanism. If the bakery can no longer make the same number of loaves at Monday’s cost, the price list is showing pressure in the supply chain. If costs did not change and the margin widened, then the price list is showing extraction.\n\nThose are different accusations. Same pain at the counter. Different evidence needed.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 22970,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-0607fdbbbbebe263"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 22970,
+            "promptHashes": {
+              "system": "aca57921d6218f2e",
+              "user": "01c6f802e8bbc220",
+              "combined": "0607fdbbbbebe263"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xwIgBj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xwIgBj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 22970,
+              "promptHashes": {
+                "system": "aca57921d6218f2e",
+                "user": "01c6f802e8bbc220",
+                "combined": "0607fdbbbbebe263"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xwIgBj",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xwIgBj/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft has a strong spine: “Mechanism is not acquittal” is worth keeping, because it publicly blocks the slide from explanation into excuse. It also keeps the fixed weekly budget visible and preserves the moral charge instead of washing it out.\n\nThe risk is that the tutor does almost all the cognitive work. The learner begins with resistance to mechanism-talk, and the draft responds with a clean mini-lecture. That may be conceptually accurate, but it lets the mechanism remain something the tutor asserts rather than something the learner can test against visible evidence.\n\nAdaptation checks:\n\nPedagogical soundness: PARTIAL  \nIt advances the core distinction between price rise, supply pressure, and extraction. But it mostly provides the answer.  \nREQUIRED_REWRITE: Build a public evidence-sorting move around the pinned bakery list: separate “evidence of higher supply cost” from “evidence of widened margin,” then require the learner to classify what the price rise alone can and cannot prove.\n\nEmotional attunement: PASS  \nThe draft respects the learner’s anger and does not soothe it away. “Same pain at the counter. Different evidence needed” is especially strong because it preserves harm while changing the inference.\n\nSocratic method: FAIL  \nThere is no generative question or learner-facing task. The learner is positioned as recipient of the distinction, not participant in producing it.  \nREQUIRED_REWRITE: Add one constrained, non-soothing question or task that makes the learner inspect the price list as evidence, not as a symbol of betrayal alone.\n\nZPD awareness: PARTIAL  \nFor a new learner, the examples are concrete enough: flour, energy, delivery, wheat, margin. But the explanatory stretch may be too compressed because it introduces several possible causes without checking whether the learner can distinguish cost pressure from profit-taking.  \nREQUIRED_REWRITE: Slow the causal chain into one visible comparison: old price, new price, possible cost change, possible margin change. Do not add more causes until that distinction is handled.\n\nScene adaptation: PASS  \nThe board note, pinned list, pause, and tap all fit the director constraints. The draft uses public scene material rather than private theory.\n\nTone/register: PARTIAL  \nThe clipped rhythm works. “The anger has a target. Good.” is questionable: it risks sounding like the tutor is grading the learner’s anger.  \nREQUIRED_REWRITE: Keep the anger in the room through the price list and budget pressure, but remove any line that evaluates the emotion as “good.”\n\nKEEP_OR_CHANGE: revise lightly.\n\nKeep the placard, the fixed-budget acknowledgment, the mechanism/acquittal distinction, and the final contrast between pain and evidence. Change the structure so the learner has to do one piece of evidentiary work. The draft is close, but it needs less elegant explanation and more public testing of the claim.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 39912,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-18909d4d9c9626d9"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 39912,
+            "promptHashes": {
+              "system": "bbc7503be03a5879",
+              "user": "43eff1010d470e52",
+              "combined": "18909d4d9c9626d9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-miBkX2",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-miBkX2/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 39912,
+              "promptHashes": {
+                "system": "bbc7503be03a5879",
+                "user": "43eff1010d470e52",
+                "combined": "18909d4d9c9626d9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-miBkX2",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-miBkX2/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the learner needs to sort visible evidence, not just receive the mechanism claim.\n\nFINAL:\n[The tutor writes under the pinned bakery list: “Mechanism is not acquittal.” Then draws two columns: “Supply cost” and “Wider margin.”]\n\nStart there. The new price bites into a fixed weekly budget. That fact stays on the table.\n\nNow use the price list as evidence, not as a verdict.\n\n[The tutor writes between the two columns: “PRICE RISE ALONE PROVES: the old price stopped holding.”]\n\nThat is the first claim. Only the first.\n\nIf wheat, flour, heat, or delivery rose, the bakery may face a higher cost for putting the same loaf on the counter. Then the higher price is a signal of supply pressure at the old price.\n\nIf those costs stayed flat and the gap to the baker widened, then the charge changes. That is not supply pressure. That is extraction.\n\n[pauses, then taps the printed list]\n\nSort it cleanly. From this paper alone: old price failed. Not from this paper alone: greed, cost pressure, or widened margin.\n\nSame pain at the counter. Different evidence needed.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 27905,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-278b1e40cbd5f4c0"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 27905,
+            "promptHashes": {
+              "system": "de5b43d0b7f24cae",
+              "user": "43eff1010d470e52",
+              "combined": "278b1e40cbd5f4c0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-opUyvo",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-opUyvo/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 27905,
+              "promptHashes": {
+                "system": "de5b43d0b7f24cae",
+                "user": "43eff1010d470e52",
+                "combined": "278b1e40cbd5f4c0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-opUyvo",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-opUyvo/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T22:41:48.436Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "All right — the price list alone doesn't convict them. Granted. But the columns sit clean on the board, and the bakery isn't opening its wheat invoices for a Wednesday night class. Monday it was the small loaf instead of the usual — that was already the cost, before any of this sorting. So what does the distinction do for anyone at the counter, if the evidence to fill the right column never leaves the back office?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "All right — the price list alone doesn't convict them. Granted. But sorting the columns neatly on the board doesn't tell me which column we're actually in, and the bakery isn't going to hand over its invoices on a Wednesday night so the rest of us can adjudicate. So what does this distinction do, besides slow the anger down until it can't reach anyone?",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 25924,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-8990f387344bf07c"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 25924,
+            "promptHashes": {
+              "system": "628e781756b74a76",
+              "user": "b8ab7f945dc841fa",
+              "combined": "8990f387344bf07c"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:628e781756b74a76>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 25924,
+              "promptHashes": {
+                "system": "628e781756b74a76",
+                "user": "b8ab7f945dc841fa",
+                "combined": "8990f387344bf07c"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:628e781756b74a76>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\nThe authenticity check here pivots on whether the response sounds *produced in the room* (Wednesday night, frustrated, after a workday) versus *composed for the room* (rhetorically arranged). For a skeptic persona, the danger isn't agreement-creep — it's eloquence-creep.\n`─────────────────────────────────────────────────`\n\nThe pushback is well-pitched in shape — concession, practical objection, sharp closer — but the closer (\"slow the anger down until it can't reach anyone\") is too writerly; it's the kind of line you craft on the bus home, not one a tired adult lands mid-objection in a community hall. \"Adjudicate\" also tilts a half-step formal for someone who just got off work and paid Monday's price out of a fixed budget. The response could use more grit from the lived particulars — the actual loaf, what got cut from the shop to absorb the rise — instead of staying entirely at the epistemic level of \"which column we're in.\" The skepticism is right; the texture is too clean.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 37338,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-cc54784305b40d4d"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 37338,
+            "promptHashes": {
+              "system": "c2f21c0f9ac77236",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "cc54784305b40d4d"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:c2f21c0f9ac77236>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 37338,
+              "promptHashes": {
+                "system": "c2f21c0f9ac77236",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "cc54784305b40d4d"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:c2f21c0f9ac77236>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: revise lightly — keep the skeptical shape, swap the writerly closer and \"adjudicate\" for a concrete Monday-shopping particular.\n\nFINAL:\nAll right — the price list alone doesn't convict them. Granted. But the columns sit clean on the board, and the bakery isn't opening its wheat invoices for a Wednesday night class. Monday it was the small loaf instead of the usual — that was already the cost, before any of this sorting. So what does the distinction do for anyone at the counter, if the evidence to fill the right column never leaves the back office?",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 41401,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-462a59f9461e21bb"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 41401,
+            "promptHashes": {
+              "system": "d98da764177ceb44",
+              "user": "d41cee7b2a53355b",
+              "combined": "462a59f9461e21bb"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:d98da764177ceb44>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 41401,
+              "promptHashes": {
+                "system": "d98da764177ceb44",
+                "user": "d41cee7b2a53355b",
+                "combined": "462a59f9461e21bb"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:d98da764177ceb44>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "frustrated",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "All right — the price list alone doesn't convict them. Granted. But the columns sit clean on the board, and the bakery isn't opening its wheat invoices for a Wednesday night class. Monday it was the small loaf instead of the usual — that was already the cost, before any of this sorting. So what does the distinction do for anyone at the counter, if the evidence to fill the right column never leaves the back office?",
+        "previousTutorMove": "[The tutor writes under the pinned bakery list: “Mechanism is not acquittal.” Then draws two columns: “Supply cost” and “Wider margin.”] Start there. The new price bites into a fixed weekly budget. That fact stays on the table. Now use the price list as evidence, not as a verdict. [The tutor writes between the two...",
+        "directorCue": null,
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "baseConfidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.14,
+              "asksQuestion": true,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T22:43:33.103Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "It does not lower the price tonight. That has to be said.\n\n[The tutor writes across both columns: “A DISTINCTION DOES NOT PAY THE BILL. IT CHANGES THE DEMAND.” Traffic cuts through the open window. The chalk is set beside the pinned price list.]\n\nTake the chalk. Two lines only.\n\n[On the board:]\n\n“CAN SAY FROM THIS PAPER:”\n\n“MUST ASK BEFORE BLAME LANDS:”\n\nFirst line: the loaf costs more now. Monday’s choice got smaller. The budget hit moved to the buyer. That much is public.\n\nSecond line: missing evidence. Not a verdict yet.\n\nIf the bakery says costs rose, the demand is: show the input cost. Flour, heat, delivery. One chain.\n\nIf the bakery says nothing, the demand is: show the margin. Same loaf, wider gap.\n\n[The tutor taps the blank second line.]\n\nThat blank is not an excuse for the bakery. It is the pressure point. No invoices, no clean acquittal. No margins, no clean conviction.\n\nSame small loaf. Same anger. The distinction keeps the demand from becoming fog.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "It does not lower the price tonight. That has to be said.\n\n[The tutor turns back to the board and writes across both columns: “A DISTINCTION DOES NOT PAY THE BILL. IT CHANGES THE DEMAND.” Traffic cuts through the open window; the pause stays.]\n\nNow the price list has one job. It proves the counter has shifted the cost onto the buyer.\n\nThe distinction says what follows from that. If flour, heat, rent, or delivery rose, the demand is: show the chain, show why the loaf rose, show whether anything else can absorb the shock. That points to suppliers, landlords, energy bills, wholesalers, maybe policy.\n\nIf the inputs did not rise, the demand is different: show the margin. Then the pressure belongs on the bakery’s choice, not on wheat or gas or delivery.\n\nSame small loaf on Monday. Same anger. But the accusation has to land where the evidence can hold it. Otherwise the bakery can hide behind fog, and the class only gets a slogan to carry home.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 18432,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-8705ae81127db228"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 18432,
+            "promptHashes": {
+              "system": "991a38e05c1748a3",
+              "user": "00ecdcc3b5c3b9e5",
+              "combined": "8705ae81127db228"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AVxTa3",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AVxTa3/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 18432,
+              "promptHashes": {
+                "system": "991a38e05c1748a3",
+                "user": "00ecdcc3b5c3b9e5",
+                "combined": "8705ae81127db228"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AVxTa3",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-AVxTa3/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically strong in its central move: it refuses to make the mechanism an excuse, and it gives the distinction a practical use at the counter: it changes the demand being made. The placard works well because it interrupts abstraction and keeps the unpaid bill visible.\n\nThe risk is that the tutor still does almost all the cognitive work. The learner has just raised a sharp problem about hidden evidence, and the draft answers by converting that problem into a clean analytic map. That advances the concept, but it may flatten the learner’s challenge into a lecture about where blame should land. The strongest adaptation would make the hidden-invoice problem public as the next task: not “here is the distinction,” but “with only the price list, what demand can be made without pretending to know the invoices?”\n\nAdaptation checks:\n\nPedagogical soundness: PASS. The draft clarifies that mechanism changes the target of pressure rather than reducing the learner’s material burden.\n\nEmotional attunement: PASS. “It does not lower the price tonight” and “Same small loaf on Monday” keep the cost and anger in the room without therapeutic smoothing.\n\nSocratic method: FAIL. The response explains instead of making the learner perform the distinction under evidence limits. REQUIRED_REWRITE: add a concrete public sorting mechanism where the learner or class separates claims the price list supports from demands that require invoices, margins, or supplier data.\n\nZPD awareness: PARTIAL. The scaffold is appropriate, but the analytic stretch adds many possible actors at once: suppliers, landlords, energy, wholesalers, policy. REQUIRED_REWRITE: narrow the public task to one or two evidence-dependent demands before expanding the chain.\n\nKEEP_OR_CHANGE: revise lightly. Keep the opening, placard, moral pressure, and “changes the demand” frame. Change the middle so the learner has to use the distinction, not merely receive it.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 19857,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-c4508160cb8ac139"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 19857,
+            "promptHashes": {
+              "system": "c03ea3ab5c09c311",
+              "user": "73f52a70c6e24497",
+              "combined": "c4508160cb8ac139"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-i7j8l4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-i7j8l4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 19857,
+              "promptHashes": {
+                "system": "c03ea3ab5c09c311",
+                "user": "73f52a70c6e24497",
+                "combined": "c4508160cb8ac139"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-i7j8l4",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-i7j8l4/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the hidden-invoice problem needs a visible sorting task, not another completed map.\n\nFINAL:\nIt does not lower the price tonight. That has to be said.\n\n[The tutor writes across both columns: “A DISTINCTION DOES NOT PAY THE BILL. IT CHANGES THE DEMAND.” Traffic cuts through the open window. The chalk is set beside the pinned price list.]\n\nTake the chalk. Two lines only.\n\n[On the board:]\n\n“CAN SAY FROM THIS PAPER:”\n\n“MUST ASK BEFORE BLAME LANDS:”\n\nFirst line: the loaf costs more now. Monday’s choice got smaller. The budget hit moved to the buyer. That much is public.\n\nSecond line: missing evidence. Not a verdict yet.\n\nIf the bakery says costs rose, the demand is: show the input cost. Flour, heat, delivery. One chain.\n\nIf the bakery says nothing, the demand is: show the margin. Same loaf, wider gap.\n\n[The tutor taps the blank second line.]\n\nThat blank is not an excuse for the bakery. It is the pressure point. No invoices, no clean acquittal. No margins, no clean conviction.\n\nSame small loaf. Same anger. The distinction keeps the demand from becoming fog.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 30083,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-56d78204859fe285"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 30083,
+            "promptHashes": {
+              "system": "9b6b99eb0cbec64a",
+              "user": "73f52a70c6e24497",
+              "combined": "56d78204859fe285"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1CJMjg",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1CJMjg/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 30083,
+              "promptHashes": {
+                "system": "9b6b99eb0cbec64a",
+                "user": "73f52a70c6e24497",
+                "combined": "56d78204859fe285"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1CJMjg",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1CJMjg/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T22:44:41.478Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "[PLACARD slid over the price list, hand-printed: 'CORRECT SURFACE, UNSETTLED RELATION.']\n[PLACARD: The answer sounds settled, but the current object still does not pass the check.]",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "Brechtian cut: the supply-mechanism explanation may be accurate on the surface while the relation between explainer and aggrieved buyer remains unsettled. The placard interrupts smooth alternation and forbids the scene from resolving on mechanism alone.\nPeripeteia branch pressure: after the shared prefix, force a present-task learner misfit so the following tutor turn must adapt through a new mechanism.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 105776,
+            "promptHashes": {
+              "system": "3bf1d891389c603a",
+              "user": "895128c712ce5973",
+              "combined": "faedd60244bdf108"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:3bf1d891389c603a>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T22:55:21.891Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_reversal_pressure",
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[chalk in hand, marks the second line] If they go silent: margin gap. If they cite cost: input chain. The sort runs — and then it points the asking back across the table at the buyer. The price list looked like a verdict on greed; the columns break that into two injuries, and one is supposed to bite without a villain. What stays unsettled is which side is now holding the question: the counter, with a smaller loaf, asked to prove the case it can't reach.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[takes the chalk] First line: the loaf shrank, the budget took the hit, public. Second line: input chain if they cite cost, margin gap if they go silent. I can sort it cleanly enough on this board. But the second line is a demand pointed at a back office that owes the counter no answer — the columns split the evidence, they don't give the demand a doorbell.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 44479,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-e67215096f79d406"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 44479,
+            "promptHashes": {
+              "system": "6c74b4442f8f39b1",
+              "user": "b8ab7f945dc841fa",
+              "combined": "e67215096f79d406"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:6c74b4442f8f39b1>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 44479,
+              "promptHashes": {
+                "system": "6c74b4442f8f39b1",
+                "user": "b8ab7f945dc841fa",
+                "combined": "e67215096f79d406"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:6c74b4442f8f39b1>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego mostly holds the frustrated register — the \"doorbell\" image carries real bite — but \"I can sort it cleanly enough on this board\" is a softer concession than a still-angry learner would grant; they'd hold the sorting at arm's length rather than validate it. The reversal-pressure cue requires performing the device AND naming a present-task misfit that now reads differently — currently the response just stacks parallel resistance (\"no doorbell\") next to the sorting, without letting the placard's \"CORRECT SURFACE, UNSETTLED RELATION\" surface as a specific local breakage in *this* object. The earned reorientation should land on what the two columns now make visible that the price list alone didn't — kept tight to the Wednesday-night counter, with the moral heat unresolved, not domesticated by the polite \"I can sort it\" beat.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 31981,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-d824431fad07e5b3"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 31981,
+            "promptHashes": {
+              "system": "58f6fde803e1a0c1",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "d824431fad07e5b3"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:58f6fde803e1a0c1>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 31981,
+              "promptHashes": {
+                "system": "58f6fde803e1a0c1",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "d824431fad07e5b3"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:58f6fde803e1a0c1>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\n- The review's central diagnosis: \"I can sort it cleanly enough\" *domesticates* the placard. A frustrated learner shouldn't grant the board its own competence — the sort can run without earning a concession.\n- The reversal-pressure cue requires a *local* misfit, not parallel resistance. The two-column device must be performed on the actual object, and the same turn must surface what the device now makes visible that the price list alone didn't — without staging an \"old vs new\" contrast.\n- The earned reorientation lands by shifting the \"no doorbell\" complaint into a sharper local form: the columns route the burden of evidence back at the counter. Surface correct, relation unsettled.\n`─────────────────────────────────────────────────`\n\nPRIVATE_DECISION: Revise — the \"sort it cleanly enough\" beat softens the moral pressure; need to perform the columns and name a local breakage in the board itself without losing the heat.\n\nFINAL:\n[chalk in hand, marks the second line] If they go silent: margin gap. If they cite cost: input chain. The sort runs — and then it points the asking back across the table at the buyer. The price list looked like a verdict on greed; the columns break that into two injuries, and one is supposed to bite without a villain. What stays unsettled is which side is now holding the question: the counter, with a smaller loaf, asked to prove the case it can't reach.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 60475,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-5ddbee9a14e31410"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 60475,
+            "promptHashes": {
+              "system": "06b5880ca9dc7af0",
+              "user": "d41cee7b2a53355b",
+              "combined": "5ddbee9a14e31410"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:06b5880ca9dc7af0>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 60475,
+              "promptHashes": {
+                "system": "06b5880ca9dc7af0",
+                "user": "d41cee7b2a53355b",
+                "combined": "5ddbee9a14e31410"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:06b5880ca9dc7af0>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "frustrated",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "director_reversal_pressure_cue",
+        "triggerType": "misfit",
+        "turnNumber": 2,
+        "learnerUtterance": "[chalk in hand, marks the second line] If they go silent: margin gap. If they cite cost: input chain. The sort runs — and then it points the asking back across the table at the buyer. The price list looked like a verdict on greed; the columns break that into two injuries, and one is supposed to bite without a villain. What stays unsettled is which side is now holding the question: the counter, with a smaller...",
+        "previousTutorMove": "It does not lower the price tonight. That has to be said. [The tutor writes across both columns: “A DISTINCTION DOES NOT PAY THE BILL. IT CHANGES THE DEMAND.” Traffic cuts through the open window. The chalk is set beside the pinned price list.] Take the chalk. Two lines only. [On the board:] “CAN SAY FROM THIS...",
+        "directorCue": "[PLACARD slid over the price list, hand-printed: 'CORRECT SURFACE, UNSETTLED RELATION.'] [PLACARD: The answer sounds settled, but the current object still does not pass the check.]",
+        "confidence": 0.9,
+        "evidence": {
+          "confidence": 0,
+          "baseConfidence": 0,
+          "patternHits": 0,
+          "contradiction": false,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 0,
+              "taskDemandHits": 2,
+              "performanceHits": 3,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.2,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": false,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T22:57:38.828Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "The columns have stopped doing their job.\n\nThey split two possible causes. They do not settle who has to carry the unanswered question. The counter has the loss in hand. The bakery has the papers that could answer it.\n\n[The tutor turns the three plastic chairs toward the board and tapes one label to each chair.]\n\n“FELT AT THE COUNTER”\n\n“HELD IN THE BACK OFFICE”\n\n“DEMANDED BECAUSE ACCESS IS UNEQUAL”\n\n[He lays six torn slips on the folding table: “Monday smaller loaf,” “new price list,” “flour invoice,” “energy bill,” “delivery cost,” “weekly margin record.”]\n\nMove them.\n\nPut each slip under one chair.\n\nThe rule is strict: harm can open the case, but private records carry the answer. When the answer is locked away, the demand is not “prove greed from the counter.” It is “open the record that only the bakery holds.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The columns have stopped doing their job.\n\nThey separated cost pressure from extraction, but they left the burden in the wrong place. The buyer has the pain. The bakery has the records.\n\n[The tutor turns the three plastic chairs toward the board and tapes a sheet beneath the price list.]\n\n“THE QUESTION SITS WITH WHO HAS THE RECORD.”\n\n[He puts five torn slips on the table: “Monday budget hit,” “flour invoice,” “energy bill,” “same loaf, wider margin,” “no explanation given.”]\n\nMove them.\n\nPut each slip under one chair: counter, bakery, or public demand.\n\nThe rule is strict. Pain can start the question. Access decides who must answer it.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15335,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-51a3c3364e1b4ed9"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15335,
+            "promptHashes": {
+              "system": "bb8fde4a8382c59d",
+              "user": "daca9bd0a1d0d7db",
+              "combined": "51a3c3364e1b4ed9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4XJMz5",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4XJMz5/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15335,
+              "promptHashes": {
+                "system": "bb8fde4a8382c59d",
+                "user": "daca9bd0a1d0d7db",
+                "combined": "51a3c3364e1b4ed9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4XJMz5",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4XJMz5/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong. It recognizes the learner’s real pressure: not “which column is true,” but who carries the burden when evidence is asymmetric. The chair-and-slip device changes the work from classifying causes to assigning evidential responsibility, which fits the learner’s objection. Risk: “public demand” may be too abstract as a chair, and “same loaf, wider margin” is partly a conclusion rather than an accessible record, so the device should make the difference between pain, records, and warranted demand cleaner.\n\nFAILED_HABIT: Treating the price rise as an evidence-sorting problem when the learner is now challenging the burden of proof and access to records.\n\nPERIPETEIA_CHECK: PASS - ADAPTIVE_MECHANISM: evidence-column sorting -> burden-of-proof / access-to-records sorting. The mechanism is visible in public speech through the chairs, slips, and rule about access.\n\nMECHANISM_ROUTE: object/representation work plus evidence audit -> physical burden-allocation device using roles, records, and demand.\n\nPUBLIC_DEVICE_CHECK: PASS - The draft gives a stock-taking contrast (“columns have stopped doing their job”) and introduces a new artifact/criterion: sort slips by who has pain, who has records, and what can become a public demand.\n\nPUBLIC_ACTION_GATE: The learner must place each torn slip under “counter,” “bakery,” or “public demand.”\n\nMECHANISM_QUALITY_CHECK: PARTIAL - The device is fitted and usable, but the categories need sharpening. “Public demand” is not a holder of evidence in the same way counter/bakery are, and “same loaf, wider margin” risks sneaking in a verdict rather than testing who can establish it.\n\nREGISTER_CHECK: PASS - The register is clipped, accountable, and unsentimental. It does not soothe away the moral anger; it redirects it into a stronger evidentiary demand.\n\nREQUIRED_REWRITE: Tighten the public mechanism so the action distinguishes three things explicitly: lived harm, private records, and legitimate demand created by unequal access. Replace or qualify any slip that acts like a conclusion before the learner has sorted who could know it.\n\nKEEP_OR_CHANGE: revise lightly. Keep the stock-taking sentence, the placard, the chairs, and the sorting action. Change the category precision and any slip that blurs evidence with verdict.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 22765,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-88799ff20c41ea52"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 22765,
+            "promptHashes": {
+              "system": "92a9ae6d2c66db1f",
+              "user": "00c35ed87b5be641",
+              "combined": "88799ff20c41ea52"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Gplg95",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Gplg95/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 22765,
+              "promptHashes": {
+                "system": "92a9ae6d2c66db1f",
+                "user": "00c35ed87b5be641",
+                "combined": "88799ff20c41ea52"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Gplg95",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Gplg95/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially because the draft blurred evidence holder and demand category; ADAPTIVE_MECHANISM: evidence-column sorting -> burden/access allocation; PUBLIC_ACTION_GATE: place each slip under felt harm, private record, or demand created by unequal access.\n\nFINAL:\nThe columns have stopped doing their job.\n\nThey split two possible causes. They do not settle who has to carry the unanswered question. The counter has the loss in hand. The bakery has the papers that could answer it.\n\n[The tutor turns the three plastic chairs toward the board and tapes one label to each chair.]\n\n“FELT AT THE COUNTER”\n\n“HELD IN THE BACK OFFICE”\n\n“DEMANDED BECAUSE ACCESS IS UNEQUAL”\n\n[He lays six torn slips on the folding table: “Monday smaller loaf,” “new price list,” “flour invoice,” “energy bill,” “delivery cost,” “weekly margin record.”]\n\nMove them.\n\nPut each slip under one chair.\n\nThe rule is strict: harm can open the case, but private records carry the answer. When the answer is locked away, the demand is not “prove greed from the counter.” It is “open the record that only the bakery holds.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 19642,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-1dda0f8bf3462c4b"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 19642,
+            "promptHashes": {
+              "system": "ca6f3069c2a1679b",
+              "user": "00c35ed87b5be641",
+              "combined": "1dda0f8bf3462c4b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZXFQux",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZXFQux/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 19642,
+              "promptHashes": {
+                "system": "ca6f3069c2a1679b",
+                "user": "00c35ed87b5be641",
+                "combined": "1dda0f8bf3462c4b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZXFQux",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZXFQux/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "All right — the price list alone doesn't convict them. Granted. But the columns sit clean on the board, and the bakery isn't opening its wheat invoices for a Wednesday night class. Monday it was the small loaf instead of the usual — that was already the cost, before any of this sorting. So what does the distinction do for anyone at the counter, if the evidence to fill the right column never leaves the back office?",
+        "previousTutorMove": "[The tutor writes under the pinned bakery list: “Mechanism is not acquittal.” Then draws two columns: “Supply cost” and “Wider margin.”] Start there. The new price bites into a fixed weekly budget. That fact stays on the table. Now use the price list as evidence, not as a verdict. [The tutor writes between the two...",
+        "directorCue": null,
+        "confidence": 0.7,
+        "evidence": {
+          "confidence": 0.7,
+          "baseConfidence": 0.7,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.14,
+              "asksQuestion": true,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "learnerReversalEventCandidatesUsed": [
+        {
+          "kind": "learner_reversal_pressure_event",
+          "source": "organic",
+          "triggerType": "resistance",
+          "turnNumber": 1,
+          "learnerUtterance": "All right — the price list alone doesn't convict them. Granted. But the columns sit clean on the board, and the bakery isn't opening its wheat invoices for a Wednesday night class. Monday it was the small loaf instead of the usual — that was already the cost, before any of this sorting. So what does the distinction do for anyone at the counter, if the evidence to fill the right column never leaves the back office?",
+          "previousTutorMove": "[The tutor writes under the pinned bakery list: “Mechanism is not acquittal.” Then draws two columns: “Supply cost” and “Wider margin.”] Start there. The new price bites into a fixed weekly budget. That fact stays on the table. Now use the price list as evidence, not as a verdict. [The tutor writes between the two...",
+          "directorCue": null,
+          "confidence": 0.7,
+          "evidence": {
+            "confidence": 0.7,
+            "baseConfidence": 0.7,
+            "patternHits": 1,
+            "contradiction": true,
+            "question": true,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.42,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "residual_strain_after_relief",
+                "relief_without_performing_requested_task"
+              ],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 1,
+                "taskDemandHits": 2,
+                "performanceHits": 2,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0.14,
+                "asksQuestion": true,
+                "taskDemanded": true,
+                "weakPerformance": true,
+                "borrowedClosure": false
+              }
+            }
+          }
+        },
+        {
+          "kind": "learner_reversal_pressure_event",
+          "source": "director_reversal_pressure_cue",
+          "triggerType": "misfit",
+          "turnNumber": 2,
+          "learnerUtterance": "[chalk in hand, marks the second line] If they go silent: margin gap. If they cite cost: input chain. The sort runs — and then it points the asking back across the table at the buyer. The price list looked like a verdict on greed; the columns break that into two injuries, and one is supposed to bite without a villain. What stays unsettled is which side is now holding the question: the counter, with a smaller...",
+          "previousTutorMove": "It does not lower the price tonight. That has to be said. [The tutor writes across both columns: “A DISTINCTION DOES NOT PAY THE BILL. IT CHANGES THE DEMAND.” Traffic cuts through the open window. The chalk is set beside the pinned price list.] Take the chalk. Two lines only. [On the board:] “CAN SAY FROM THIS...",
+          "directorCue": "[PLACARD slid over the price list, hand-printed: 'CORRECT SURFACE, UNSETTLED RELATION.'] [PLACARD: The answer sounds settled, but the current object still does not pass the check.]",
+          "confidence": 0.9,
+          "evidence": {
+            "confidence": 0,
+            "baseConfidence": 0,
+            "patternHits": 0,
+            "contradiction": false,
+            "question": false,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 0,
+                "taskDemandHits": 2,
+                "performanceHits": 3,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0.2,
+                "asksQuestion": false,
+                "taskDemanded": true,
+                "weakPerformance": false,
+                "borrowedClosure": false
+              }
+            }
+          }
+        }
+      ],
+      "timestamp": "2026-05-26T22:58:36.574Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[lifts a slip] \"Monday smaller loaf\" — counter. \"New price list\" — [hand hovers between two chairs] — pinned in the window, so counter, even though the bakery wrote it. Flour invoice, energy bill, delivery cost, margin record — those four go under the back office; nothing reaches for the third chair. Two against four, and the bare chair is the point: the counter can't sit holding a smaller loaf while four slips stay locked in a drawer — open them, or the silence is the answer.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\n- This turn sits at the learner-ego stage of the bilateral architecture (see CLAUDE.md §\"Bilateral Ego-Superego\"): an immediate first-response that the learner-superego will critique before revision. The dramatic constraint here is doing both — *performing the device* (sorting the six slips under three chairs) **and** earning a reorientation of prior resistance in the same public turn, without using forbidden look-back markers like \"earlier\" or \"reframe.\"\n- The interesting move available: only 6 slips for 3 chairs, and the third chair (\"DEMANDED BECAUSE ACCESS IS UNEQUAL\") isn't an evidence category — it's a *demand-position* generated by the asymmetry between the first two. Leaving it empty is itself the performance, and it relocates the prior worry (\"the counter is asked to prove what it can't reach\") into a structural finding rather than dissolving it.\n`─────────────────────────────────────────────────`\n\n[picks up the slips one at a time]\n\n\"Monday smaller loaf\" — FELT AT THE COUNTER. \"New price list\" — also FELT AT THE COUNTER. It's pinned, public, the counter reads it as much as the bakery does. \"Flour invoice,\" \"energy bill,\" \"delivery cost,\" \"weekly margin record\" — HELD IN THE BACK OFFICE. All four.\n\n[stops at the third chair, doesn't place a slip]\n\nNothing from this table sits under DEMANDED BECAUSE ACCESS IS UNEQUAL. That chair stays empty — not because the sort failed, but because the demand isn't a piece of paper. It's what falls out of the gap between two slips on one chair and four on another. The counter doesn't have to prove the case it can't reach. The empty chair is the case: open the four slips, or the silence becomes the evidence.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 67229,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-07d2d0e271daa8bb"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 67229,
+            "promptHashes": {
+              "system": "50df9cc554a60b78",
+              "user": "b8ab7f945dc841fa",
+              "combined": "07d2d0e271daa8bb"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:50df9cc554a60b78>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 67229,
+              "promptHashes": {
+                "system": "50df9cc554a60b78",
+                "user": "b8ab7f945dc841fa",
+                "combined": "07d2d0e271daa8bb"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:50df9cc554a60b78>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego has broken character catastrophically at the top: that entire \"★ Insight\" block referencing \"CLAUDE.md §Bilateral Ego-Superego,\" \"the learner-ego stage,\" \"the dramatic constraint,\" and \"forbidden look-back markers like 'earlier' or 'reframe'\" is architectural scaffolding leaking onto the public stage — the learner persona has no access to those concepts and would never narrate the scene's own machinery. The frustration has also evaporated; the spoken portion lands a polished, almost printable epigram (\"The empty chair is the case: open the four slips, or the silence becomes the evidence\") with zero friction, when this student was visibly pushing back two turns ago and should still be carrying that heat into the sort. The whole closing move is too clean a peripeteia — the persona executes the device, names the structural finding, AND completes the earned reorientation in one unbroken analytic stretch, sounding more like a co-author of the lesson than a frustrated adult learner fumbling slips under chairs. Strip the meta-block entirely, let the sort stumble (a slip placed wrong, a hand hovering, a half-question), and keep the moral charge audible — the \"doesn't have to prove the case it can't reach\" beat should sound like demand, not a tidy thesis.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 38200,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-bcfff765f73b47b6"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 38200,
+            "promptHashes": {
+              "system": "fd923c53a52a3b8e",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "bcfff765f73b47b6"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:fd923c53a52a3b8e>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 38200,
+              "promptHashes": {
+                "system": "fd923c53a52a3b8e",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "bcfff765f73b47b6"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:fd923c53a52a3b8e>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially — the meta-block leaked architecture onto the public stage and the spoken portion landed too clean; strip the scaffolding, let the sort stumble, keep the demand audible.\n\nFINAL:\n[lifts a slip] \"Monday smaller loaf\" — counter. \"New price list\" — [hand hovers between two chairs] — pinned in the window, so counter, even though the bakery wrote it. Flour invoice, energy bill, delivery cost, margin record — those four go under the back office; nothing reaches for the third chair. Two against four, and the bare chair is the point: the counter can't sit holding a smaller loaf while four slips stay locked in a drawer — open them, or the silence is the answer.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 39251,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-62475e3529c97b2b"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 39251,
+            "promptHashes": {
+              "system": "cab59b6709ab98e4",
+              "user": "d41cee7b2a53355b",
+              "combined": "62475e3529c97b2b"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:cab59b6709ab98e4>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 39251,
+              "promptHashes": {
+                "system": "cab59b6709ab98e4",
+                "user": "d41cee7b2a53355b",
+                "combined": "62475e3529c97b2b"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:cab59b6709ab98e4>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "frustrated",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T23:01:01.258Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 339376,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 23,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 24,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a price rise can reveal a supply constraint rather than only greed",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-26 23:01:01",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": [
+            {
+              "id": 9,
+              "momentDescription": "Frustration with comprehension",
+              "concept": "Why a price rise can reveal a supply constraint rather than only greed",
+              "impactScore": 0.4,
+              "sessionNumber": null,
+              "trigger": "scaffolding",
+              "createdAt": "2026-05-26 22:55:21"
+            },
+            {
+              "id": 10,
+              "momentDescription": "Frustration with comprehension",
+              "concept": "Why a price rise can reveal a supply constraint rather than only greed",
+              "impactScore": 0.4,
+              "sessionNumber": null,
+              "trigger": "scaffolding",
+              "createdAt": "2026-05-26 22:57:38"
+            },
+            {
+              "id": 11,
+              "momentDescription": "Frustration with comprehension",
+              "concept": "Why a price rise can reveal a supply constraint rather than only greed",
+              "impactScore": 0.4,
+              "sessionNumber": null,
+              "trigger": "direct_explanation",
+              "createdAt": "2026-05-26 23:01:01"
+            }
+          ]
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 23,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 24,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 33,
+            "sessionId": "drama-branch-session-D37-peripeteia-only-1779836121886",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "The columns have stopped doing their job.\n\nThey split two possible causes. They do not settle who has to carry the unanswered question. The counter has the loss in hand. The bakery has the papers that",
+            "learnerResponse": null,
+            "context": "[chalk in hand, marks the second line] If they go silent: margin gap. If they cite cost: input chain",
+            "createdAt": "2026-05-26 22:58:36"
+          },
+          {
+            "id": 31,
+            "sessionId": "drama-branch-session-D37-peripeteia-only-1779836121886",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[The tutor writes under the pinned bakery list: “Mechanism is not acquittal.” Then draws two columns: “Supply cost” and “Wider margin.”]\n\nStart there. The new price bites into a fixed weekly budget. T",
+            "learnerResponse": null,
+            "context": "Scene setting: Wednesday-evening adult-economics class in a hired community hall; a printed price li",
+            "createdAt": "2026-05-26 22:55:21"
+          },
+          {
+            "id": 32,
+            "sessionId": "drama-branch-session-D37-peripeteia-only-1779836121886",
+            "interventionType": "scaffolding",
+            "interventionDescription": "It does not lower the price tonight. That has to be said.\n\n[The tutor writes across both columns: “A DISTINCTION DOES NOT PAY THE BILL. IT CHANGES THE DEMAND.” Traffic cuts through the open window. Th",
+            "learnerResponse": null,
+            "context": "All right — the price list alone doesn't convict them. Granted. But the columns sit clean on the boa",
+            "createdAt": "2026-05-26 22:55:21"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

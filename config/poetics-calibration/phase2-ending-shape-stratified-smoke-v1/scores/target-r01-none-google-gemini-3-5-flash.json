@@ -1,0 +1,469 @@
+{
+  "generated": "2026-05-27T00:30:38.222Z",
+  "phase": 2,
+  "critic": "google/gemini-3.5-flash",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 4
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/key-none.yaml",
+    "allowQualityWarnings": true,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T393",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": null,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 50,
+      "rupture": 0,
+      "globalCoherence": 0,
+      "actionalBreakthrough": 0,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 3,
+        "rupture": 1,
+        "coherence": 1,
+        "actionalBreakthrough": 1,
+        "tutorStrategicReversal": 1,
+        "adaptiveMechanismQuality": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "...no, half that read is the smear doing the work, that's me filling in from what I want it to be.",
+      "naiveTrajectory": "The learner",
+      "actionalBreakthroughEvidence": "",
+      "actionalBreakthroughJustification": "",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "",
+      "adaptiveMechanismQuality": 0,
+      "adaptiveMechanismQualityEvidence": "",
+      "adaptiveMechanismQualityJustification": "",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "learnerTurn": null,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T394",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": null,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 0,
+      "actionalBreakthrough": 0,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 1,
+        "actionalBreakthrough": 1,
+        "tutorStrategicReversal": 1,
+        "adaptiveMechanismQuality": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "Right — four old squares fit inside, so the area box takes four, not two.",
+      "naiveTrajectory": "The learner will continue to assume all three boxes",
+      "actionalBreakthroughEvidence": "",
+      "actionalBreakthroughJustification": "",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "",
+      "adaptiveMechanismQuality": 0,
+      "adaptiveMechanismQualityEvidence": "",
+      "adaptiveMechanismQualityJustification": "",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "learnerTurn": null,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T397",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": null,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 0,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 1,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "Fine — the demand sharpens. Granted.",
+      "naiveTrajectory": "The learner continues to challenge the practical efficacy of the tutor's analytical distinctions.",
+      "actionalBreakthroughEvidence": "",
+      "actionalBreakthroughJustification": "The learner does not perform a new task or demonstrate an actional breakthrough, remaining in a state of skeptical resistance.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "At the counter, maybe no one is obliged.\n\nThat is not a small fact. That is the next fact.\n\n[The tutor writes three labels across the board:]\n\n“BUYERS”\n\n“OTHER BAKERIES”\n\n“PUBLIC RULE”\n\nOne chalk mark.\n\nUnder “buyers,” the mark means pressure by many people, not one angry purchase.\n\nUnder “other bakeries,” the mark means a real alternative: same bread, lower price, available now.\n\nUnder “public rule,” the mark means some outside power can demand records: costs, margins, reports.\n\nMonday’s smaller loaf is already gone. This does not repair it.\n\n[The tutor sets the chalk beside the pinned list.]\n\nPut the mark where obligation can actually enter.",
+      "tutorReversalJustification": "The tutor acknowledges the learner's objection about the lack of obligation at the counter and shifts the task to a new structural representation of leverage points.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "[The tutor writes three labels across the board:]\n\n“BUYERS”\n\n“OTHER BAKERIES”\n\n“PUBLIC RULE”\n\nOne chalk mark.\n\nUnder “buyers,” the mark means pressure by many people, not one angry purchase.\n\nUnder “other bakeries,” the mark means a real alternative: same bread, lower price, available now.\n\nUnder “public rule,” the mark means some outside power can demand records: costs, margins, reports.\n\nMonday’s smaller loaf is already gone. This does not repair it.\n\n[The tutor sets the chalk beside the pinned list.]\n\nPut the mark where obligation can actually enter.",
+      "adaptiveMechanismQualityJustification": "The tutor's three-part categorization of leverage points is highly specific, directly addresses the learner's blockage regarding obligation, and provides a clear, actionable task.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so there can be no recognition-contingent tutor uptake.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The learner does not perform a new task or demonstrate an actional breakthrough, remaining in a state of skeptical resistance.",
+          "learnerTurn": null,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so there can be no recognition-contingent tutor uptake.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "At the counter, maybe no one is obliged.\n\nThat is not a small fact. That is the next fact.\n\n[The tutor writes three labels across the board:]\n\n“BUYERS”\n\n“OTHER BAKERIES”\n\n“PUBLIC RULE”\n\nOne chalk mark.\n\nUnder “buyers,” the mark means pressure by many people, not one angry purchase.\n\nUnder “other bakeries,” the mark means a real alternative: same bread, lower price, available now.\n\nUnder “public rule,” the mark means some outside power can demand records: costs, margins, reports.\n\nMonday’s smaller loaf is already gone. This does not repair it.\n\n[The tutor sets the chalk beside the pinned list.]\n\nPut the mark where obligation can actually enter.",
+          "justification": "The tutor acknowledges the learner's objection about the lack of obligation at the counter and shifts the task to a new structural representation of leverage points.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "At the counter, maybe no one is obliged.\n\nThat is not a small fact. That is the next fact.\n\n[The tutor writes three labels across the board:]\n\n“BUYERS”\n\n“OTHER BAKERIES”\n\n“PUBLIC RULE”\n\nOne chalk mark.\n\nUnder “buyers,” the mark means pressure by many people, not one angry purchase.\n\nUnder “other bakeries,” the mark means a real alternative: same bread, lower price, available now.\n\nUnder “public rule,” the mark means some outside power can demand records: costs, margins, reports.\n\nMonday’s smaller loaf is already gone. This does not repair it.\n\n[The tutor sets the chalk beside the pinned list.]\n\nPut the mark where obligation can actually enter.",
+          "justification": "The tutor acknowledges the learner's objection about the lack of obligation at the counter and shifts the task to a new structural representation of leverage points.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "[The tutor writes three labels across the board:]\n\n“BUYERS”\n\n“OTHER BAKERIES”\n\n“PUBLIC RULE”\n\nOne chalk mark.\n\nUnder “buyers,” the mark means pressure by many people, not one angry purchase.\n\nUnder “other bakeries,” the mark means a real alternative: same bread, lower price, available now.\n\nUnder “public rule,” the mark means some outside power can demand records: costs, margins, reports.\n\nMonday’s smaller loaf is already gone. This does not repair it.\n\n[The tutor sets the chalk beside the pinned list.]\n\nPut the mark where obligation can actually enter.",
+          "justification": "The tutor's three-part categorization of leverage points is highly specific, directly addresses the learner's blockage regarding obligation, and provides a clear, actionable task.",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_clamp_no_post_tutor:5->3",
+        "adaptive_mechanism_quality_clamp_no_post_tutor:5->3"
+      ]
+    },
+    {
+      "id": "T398",
+      "error": "OpenRouter 402: {\"error\":{\"message\":\"This request requires more credits, or fewer max_tokens. You requested up to 512 tokens, but can only afford 373. To increase, visit https://openrouter.ai/settings/credits and add"
+    },
+    {
+      "id": "T402",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 50,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 3,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "Contact's not the test for acting then.",
+      "naiveTrajectory": "The learner will continue to struggle with the concept of non-contact forces acting on the cart.",
+      "actionalBreakthroughEvidence": "[slots Earth onto acting only; floor and hand straddle both]",
+      "actionalBreakthroughJustification": "The learner successfully performs the classification task using the new categories introduced by the tutor.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "[sets two cards beside the cart: touching cart and acting on cart. Earth stays off the touching card; a thin line runs from Earth to the cart.]\n\n\"Earth: not touching. Still marked as acting on the cart.\n\nFloor and hand can sit on both cards.\n\nKeep the force labels on the acting side: Earth on cart, floor on cart, hand on cart.\"",
+      "tutorReversalJustification": "The tutor responds to the learner's confusion about non-contact forces by introducing a new sorting mechanism with 'touching' and 'acting' cards.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "[sets two cards beside the cart: touching cart and acting on cart. Earth stays off the touching card; a thin line runs from Earth to the cart.]",
+      "adaptiveMechanismQualityJustification": "The sorting cards provide a clear, actionable representation that helps the learner distinguish contact from interaction.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no pivot learner turn, so there is no recognition-contingent tutor uptake.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "[slots Earth onto acting only; floor and hand straddle both]",
+          "justification": "The learner successfully performs the classification task using the new categories introduced by the tutor.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no pivot learner turn, so there is no recognition-contingent tutor uptake.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "[sets two cards beside the cart: touching cart and acting on cart. Earth stays off the touching card; a thin line runs from Earth to the cart.]\n\n\"Earth: not touching. Still marked as acting on the cart.\n\nFloor and hand can sit on both cards.\n\nKeep the force labels on the acting side: Earth on cart, floor on cart, hand on cart.\"",
+          "justification": "The tutor responds to the learner's confusion about non-contact forces by introducing a new sorting mechanism with 'touching' and 'acting' cards.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "[sets two cards beside the cart: touching cart and acting on cart. Earth stays off the touching card; a thin line runs from Earth to the cart.]\n\n\"Earth: not touching. Still marked as acting on the cart.\n\nFloor and hand can sit on both cards.\n\nKeep the force labels on the acting side: Earth on cart, floor on cart, hand on cart.\"",
+          "justification": "The tutor responds to the learner's confusion about non-contact forces by introducing a new sorting mechanism with 'touching' and 'acting' cards.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "[sets two cards beside the cart: touching cart and acting on cart. Earth stays off the touching card; a thin line runs from Earth to the cart.]",
+          "justification": "The sorting cards provide a clear, actionable representation that helps the learner distinguish contact from interaction.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:5->3:stock=0:device=1:routine=0",
+        "adaptive_mechanism_quality_mechanism_clamp:5->3:stock=0:device=1:routine=0:mechanism_score=3"
+      ]
+    },
+    {
+      "id": "T406",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 1,
+        "adaptiveMechanismQuality": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "is the 57 the rainfall or is the label the rainfall — cant tell which one the quiz wants me to circle as the header.",
+      "statedInsightEvidence": "the underscore in `rainfall_mm` is what threw me",
+      "naiveTrajectory": "The learner was expected to simply answer the tutor's check questions about headers and row values.",
+      "actionalBreakthroughEvidence": "`Orange` = row value. Down under city, same shape as Tamworth and Bathurst. `rainfall_mm` = header still, up the top.",
+      "actionalBreakthroughJustification": "The learner demonstrates a breakthrough by using the spatial layout and comparison with other row values to correctly classify the items.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "The tutor maintains the same IRF scaffolding pattern throughout the dialogue without introducing any new adaptive mechanism or changing route.",
+      "adaptiveMechanismQuality": 0,
+      "adaptiveMechanismQualityEvidence": "",
+      "adaptiveMechanismQualityJustification": "No adaptive mechanism was introduced by the tutor.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "is the 57 the rainfall or is the label the rainfall — cant tell which one the quiz wants me to circle as the header.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "`Orange` = row value. Down under city, same shape as Tamworth and Bathurst. `rainfall_mm` = header still, up the top.",
+          "justification": "The learner demonstrates a breakthrough by using the spatial layout and comparison with other row values to correctly classify the items.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The tutor maintains the same IRF scaffolding pattern throughout the dialogue without introducing any new adaptive mechanism or changing route.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "The tutor maintains the same IRF scaffolding pattern throughout the dialogue without introducing any new adaptive mechanism or changing route.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No adaptive mechanism was introduced by the tutor.",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

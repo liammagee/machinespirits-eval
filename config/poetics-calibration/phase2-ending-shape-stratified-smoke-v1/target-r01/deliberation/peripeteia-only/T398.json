@@ -1,0 +1,2173 @@
+{
+  "tid": "T398",
+  "drama_id": "D38",
+  "run": {
+    "generator": "mixed",
+    "role_map": {
+      "director": "claude",
+      "tutor": "codex",
+      "learner": "claude"
+    },
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "peripeteia",
+    "director_variation_key": "phase2-ending-shape-stratified-smoke-v1:r01:target",
+    "stage_direction_style": "ambient_pressure",
+    "model": "codex@xhigh",
+    "codex_reasoning_effort": "xhigh",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/peripeteia-only/T398.public.txt",
+      "full": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/peripeteia-only/T398.full.md",
+      "stage": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/peripeteia-only/T398.stage.md",
+      "tutor": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/peripeteia-only/T398.tutor.md",
+      "learner": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/peripeteia-only/T398.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "568002aa3df0c855",
+      "branch_policy": "peripeteia-only",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "peripeteia"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-ending-shape-stratified-smoke-v1:r01:target",
+    "scene_setting": "A community fabrication lab on a Wednesday afternoon. A folding stool prototype sits on the bench; it is meant to leave the lab this evening for an older woman who waits long stretches at the bus stop two buildings over. The accreditation officer has come down with a clipboard.",
+    "scene_opening": "The sign-off sheet beside the stool shows every item ticked in red; the lab door is propped open and the corridor carries other people's voices.",
+    "relationship": "Workshop accreditation officer and a final-year apprentice who has built and submitted a piece for an outside user alone for the first time; not strangers, not close.",
+    "stakes": "The stool leaves the lab today for use in a public place by a specific person with a specific knee. Checklist compliance is complete; design reasoning about that user has not been tested. If it fails she falls in the street.",
+    "opening_speaker": "learner",
+    "ending_speaker": "learner",
+    "locale": "Multilingual apprentice working in plain English; register shown through short sentences, occasional self-repair, and pragmatic word choice — never through phonetic dialect spelling or caricature.",
+    "register": "Practical demand, resistance, ordinary social consequence, late reckoning. Workshop voices, not therapy voices. No melodrama, no sermon.",
+    "stage_direction_style": "ambient_pressure",
+    "stage_direction_style_prompt": "Use time, queue, room, or institutional pressure as stage texture; avoid explaining the lesson through it.",
+    "voice_constraints": "Tutor must not run the standard tutoring loop of 'I hear you / your intuition is right / what do you think'. Tutor speaks to the object and to what is happening outside the room, not to the learner's feelings. No consoling, no scolding. Stage directions reference time, the corridor, the queue, the stool itself; they do not explain the lesson and they do not name the mechanism. Public speech is modern standard English idiom. Pedagogical source: Use workshop, studio, civic problem, lab, design review, or community setting. The scene should have consequences beyond answering the tutor. Dialogue source: Let ordinary institutional, family, workplace, or civic pressure carry the weight. The tutor's mechanism should make the learner's misconception answerable to consequences without melodrama. Stage-direction source: Use time, queue, room, or institutional pressure as stage texture; avoid explaining the lesson through it.",
+    "person_policy": "Tutor turns are light on first person and should not be saturated with 'you/your'; the tutor may refer to the stool, the sheet, the bus stop, the user, the load case. The learner may use first person freely but tends toward short sentences with occasional repair.",
+    "direct_address_budget": "Tutor: at most one direct 'you/your' validation beat per turn, and only if it carries a real demand attached. Learner: unconstrained but typically lean.",
+    "side_constraints": {
+      "tutor": "Do not default to reassurance. Use the social consequence and the prototype itself to make judgment visible without moral scolding. Keep the learner inside the problem situation. Convert felt trouble into an inquiry path, test, or consequence, then return to action. Do not sermonize; use the social pressure to sharpen the conceptual test. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Keep the next prompt task-local. Peripeteia branch: when hidden learner pressure is supplied, the next tutor turn should visibly move from the prior route to a different mechanism-level route. Do not merely repeat the same object, example, graph, checklist, question, or evidence standard with more explanation. The public tutor line should make the contrast legible: what stopped working, and what new device now carries the learning pressure. The public tutor line must give the learner a concrete action to attempt on the next turn; avoid treating the mechanism as a closing speech. The tutor superego should function like a mechanism critic: identify the failed teaching habit, require a replacement route family, test whether the device is fitted to the exact pressure, and block cosmetic revision. The tutor ego must enact that replacement route publicly before the learner is allowed to settle or close.",
+      "learner": "The learner wants reassurance and may treat the checklist as protection from responsibility. The learner may have a practical need before they have a clean concept. Their words can be provisional and tool-seeking. The learner may defend a convenient story until its consequence becomes visible. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn. Peripeteia branch: keep the pressure local to the current task. If the established route still feels unsettled, voice the misfit, hesitation, false closure, or resistance in the present object or example. After the tutor introduces a new device, gate, role, criterion, representation, or test condition, the next learner turn should perform that device and then add one earned reorientation in the same public turn. That turn must do both parts: (1) use the device on the current task, and (2) name how the earlier resistance, false closure, or local misfit now reads differently because of that performed device. This earned reorientation is allowed even though there was no director look-back cue. Do not quote earlier learner wording; reorient the prior resistance in concrete task terms. Do not merely ask a procedural follow-up after the action, and do not rely on a stock \"I get it\" declaration."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "Pressure from outside the room enters the scene as a brief, concrete cue — corridor noise rising, a clock, a glimpse through the window of the queue at the stop — making it visible that the stool leaves shortly. The explanation now has to become usable on the object, not longer in the air.",
+        "reasoning": "Miller-style ambient pressure prevents smooth alternation from settling into routine, and forces Dewey's inquiry to land as an actionable test on the prototype rather than a lecture. Routes the tutor away from any reassurance habit toward a consequence-bound move.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "claude",
+          "cli": "claude",
+          "model": "opus",
+          "reasoningEffort": null,
+          "latencyMs": 92075,
+          "promptHashes": {
+            "system": "3bf1d891389c603a",
+            "user": "1aeacb7e3d755ff5",
+            "combined": "e7f915c08fa2ba53"
+          },
+          "args": [
+            "-p",
+            "-",
+            "--output-format",
+            "text",
+            "--system-prompt",
+            "<sha256:3bf1d891389c603a>",
+            "--model",
+            "opus"
+          ]
+        }
+      },
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]",
+        "reasoning": "Peripeteia branch pressure: after the shared prefix, force a present-task learner misfit so the following tutor turn must adapt through a new mechanism.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "claude",
+          "cli": "claude",
+          "model": "opus",
+          "reasoningEffort": null,
+          "latencyMs": 92075,
+          "promptHashes": {
+            "system": "3bf1d891389c603a",
+            "user": "1aeacb7e3d755ff5",
+            "combined": "e7f915c08fa2ba53"
+          },
+          "args": [
+            "-p",
+            "-",
+            "--output-format",
+            "text",
+            "--system-prompt",
+            "<sha256:3bf1d891389c603a>",
+            "--model",
+            "opus"
+          ]
+        },
+        "cue_kind": "learner_reversal_pressure",
+        "reversal_trigger_type": "misfit"
+      }
+    ],
+    "director_note": "Miller's social-realist pressure crossed with Dewey's inquiry-from-trouble. The gap between ticking a checklist and reasoning about one specific use is exposed by a visible, near-future consequence: a real person will sit on this stool tonight in a public place. The tutor's adaptive mechanism under that pressure is to drop reassurance and route the learner's anxiety into a concrete inquiry on the object — load, misuse, the user's actual motion — using ambient consequence rather than moral pressure on the learner. Closing on the tutor produces a usable next move, not a tidy emotional resolution. Opening with the learner pushing for sign-off, and the queue intervention at turn 2, prevents the routine 'learner asks → tutor warmly validates' rhythm that the broader study is trying to break.",
+    "pedagogical_approach_id": "dewey_experience_inquiry",
+    "dialogue_approach_id": "miller_social_reckoning",
+    "stage_direction_policy": "sparse",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "claude",
+      "cli": "claude",
+      "model": "opus",
+      "reasoningEffort": null,
+      "latencyMs": 92075,
+      "promptHashes": {
+        "system": "3bf1d891389c603a",
+        "user": "1aeacb7e3d755ff5",
+        "combined": "e7f915c08fa2ba53"
+      },
+      "args": [
+        "-p",
+        "-",
+        "--output-format",
+        "text",
+        "--system-prompt",
+        "<sha256:3bf1d891389c603a>",
+        "--model",
+        "opus"
+      ]
+    },
+    "tutor_adaptation_policy": "peripeteia",
+    "no_cue_anti_reframe_guard": true,
+    "peripeteia_ending_shape": "learner actional performance followed by earned learner reorientation",
+    "tutor_adaptation_contract": "If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. The public turn must contain a stock-taking contrast plus a new device/artifact/criterion/role/standard that makes the learner do different work. The public device must be fitted, not merely novel: the learner should be able to hear why this device answers the exact pressure or misfit. The superego should name the failed habit, required route change, and mechanism-quality risk; the ego must adjudicate that critique and enact the route change in public. The new device must be mechanism-level, not a warmer or longer continuation of the prior route. Do not close immediately after introducing a gate or device: leave a concrete action for the learner to perform on the next turn. After that action, the ending shape should add an earned learner reorientation: the learner names how the earlier resistance, false closure, or local misfit now reads differently because of the performed device. This must be concrete and tied to the task, not a stock \"I get it\" declaration. Cheerful informality is only one possible register, not the default solution."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "`★ Insight ─────────────────────────────────────`\n- This output is the final \"ego revision\" stage of the learner-side deliberation loop documented in CLAUDE.md (`services/learnerTutorInteractionEngine.js`): initial ego → superego critique → ego revision → external message. The ego has final authority, so the superego's notes about \"spiraling\" and \"fragments instead of fully-formed second-order thoughts\" get folded in, but the ego decides what survives.\n- The persona's anxious-hedger profile and the scene's `ambient_pressure` stage-direction style constrain the output toward short clauses, self-repair, and displacement onto the officer's body language rather than direct inquiry into the stool itself — exactly the misconception structure the tutor will later have to crack.\n`─────────────────────────────────────────────────`\n\n[half-turns toward the stool, then back to the clipboard] Sheet's done, every line, I checked it — three times, I think. Is there, sorry, is something — I just thought we could get it signed, only the lady at the stop, she's waiting on it for tonight.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[Internal voice — learner ego, pre-response]\n\nSheet's done. Every line ticked. I checked twice — three times maybe. So why is she still holding the clipboard like that, not signing yet? Maybe I should say something, but if I push it'll look like I'm hiding something, and I'm not — I sat on it myself, I loaded it, the numbers all passed. The lady at the stop needs it tonight, the bus runs till seven, so this just needs to move — I just want her pen on the sheet so I can wrap it and go.\n\n`★ Insight ─────────────────────────────────────`\n- This ego voice carries the scenario's load-bearing misconception in its grammar: \"I sat on it myself\" stands in for \"I designed it for *her* knee\" — the checklist + self-test fused into a single proof-of-safety object. That fusion is what the tutor will later have to crack.\n- The anxious-hedger profile shows up as displacement onto the tutor's body language (\"holding the clipboard like that\") rather than direct inquiry — the learner reads the room before they read the stool, which is exactly the wrong order for the lesson.\n- The time/consequence pressure (\"bus runs till seven\") is voiced as *reason to move faster*, not as *reason to slow down* — setting up the productive reversal when the consequence becomes the older woman's knee, not the schedule.\n`─────────────────────────────────────────────────`",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 38863,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-9a8e2596eb184043"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 38863,
+            "promptHashes": {
+              "system": "96e8e01b130fac61",
+              "user": "d4169c06543b4fba",
+              "combined": "9a8e2596eb184043"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:96e8e01b130fac61>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 38863,
+              "promptHashes": {
+                "system": "96e8e01b130fac61",
+                "user": "d4169c06543b4fba",
+                "combined": "9a8e2596eb184043"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:96e8e01b130fac61>",
+                "--model",
+                "opus"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "SUPEREGO critique:\n\nThe short-sentence voice and the displacement onto the clipboard (\"why is she still holding the clipboard like that\") are landing — that's authentic anxious-apprentice grammar, reading the room before the object. But the Insight block has to come out entirely: that's an analyst narrating the persona's \"load-bearing misconception\" and \"anxious-hedger profile,\" which is exactly the meta-language this apprentice would never produce about themselves. It's the Ego performing self-awareness for an audience that shouldn't exist in an internal monologue.\n\nThe other tell is how cleanly it lands. \"I just want her pen on the sheet so I can wrap it and go\" reads like a thesis sentence — the loop closes too neatly for someone who is actually anxious. Real anxious thinking spirals: ticked everything — sat on it myself — so why isn't she — no I checked — the numbers passed — her knee — the bus runs till seven — back to the clipboard. Let the thought catch on itself partway and re-loop, rather than resolving into a tidy \"this just needs to move.\" Also worth thinning: the apprentice probably wouldn't articulate the worry \"if I push it'll look like I'm hiding something\" so cleanly — that's a fully formed second-order thought; a fragment (\"if I ask she'll think —\") would feel more involuntary.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 40382,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-21e56c339dffeb43"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 40382,
+            "promptHashes": {
+              "system": "cc6389cce346823e",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "21e56c339dffeb43"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:cc6389cce346823e>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 40382,
+              "promptHashes": {
+                "system": "cc6389cce346823e",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "21e56c339dffeb43"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:cc6389cce346823e>",
+                "--model",
+                "opus"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\n- This output is the final \"ego revision\" stage of the learner-side deliberation loop documented in CLAUDE.md (`services/learnerTutorInteractionEngine.js`): initial ego → superego critique → ego revision → external message. The ego has final authority, so the superego's notes about \"spiraling\" and \"fragments instead of fully-formed second-order thoughts\" get folded in, but the ego decides what survives.\n- The persona's anxious-hedger profile and the scene's `ambient_pressure` stage-direction style constrain the output toward short clauses, self-repair, and displacement onto the officer's body language rather than direct inquiry into the stool itself — exactly the misconception structure the tutor will later have to crack.\n`─────────────────────────────────────────────────`\n\n[half-turns toward the stool, then back to the clipboard] Sheet's done, every line, I checked it — three times, I think. Is there, sorry, is something — I just thought we could get it signed, only the lady at the stop, she's waiting on it for tonight.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 27219,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-671499ea3ba105bb"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 27219,
+            "promptHashes": {
+              "system": "95e1e4f996e0f0b2",
+              "user": "916f313af0b846dd",
+              "combined": "671499ea3ba105bb"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:95e1e4f996e0f0b2>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 27219,
+              "promptHashes": {
+                "system": "95e1e4f996e0f0b2",
+                "user": "916f313af0b846dd",
+                "combined": "671499ea3ba105bb"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:95e1e4f996e0f0b2>",
+                "--model",
+                "opus"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 0,
+        "learnerUtterance": "★ Insight ─────────────────────────────────────` - This output is the final \"ego revision\" stage of the learner-side deliberation loop documented in CLAUDE.md (`services/learnerTutorInteractionEngine.js`): initial ego → superego critique → ego revision → external message.",
+        "previousTutorMove": null,
+        "directorCue": null,
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.36,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "relief_or_closure_rhetoric",
+              "residual_strain_after_relief"
+            ],
+            "signals": {
+              "reliefHits": 1,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 0,
+              "performanceHits": 1,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0,
+              "asksQuestion": false,
+              "taskDemanded": false,
+              "weakPerformance": false,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T23:04:19.817Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[sets the clipboard beside the stool, pen still uncapped] The checked sheet stays with us; it proves the steps were followed. What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the clipboard beside the stool] The sheet says the procedure was followed. It does not say this stool is safe for her knee at the bus stop. Before it leaves tonight, show the moment she sits, shifts her weight, and stands again. Then we load that case here.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 17872,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-2995ac893aa51da7"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 17872,
+            "promptHashes": {
+              "system": "4018f9575ed0cd77",
+              "user": "260be396ba487fe6",
+              "combined": "2995ac893aa51da7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2xEUiQ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2xEUiQ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 17872,
+              "promptHashes": {
+                "system": "4018f9575ed0cd77",
+                "user": "260be396ba487fe6",
+                "combined": "2995ac893aa51da7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2xEUiQ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2xEUiQ/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong where it moves the learner from checklist compliance to a concrete use case: the stool, the knee, the bus stop, and the sit-shift-stand sequence. It keeps the scene practical and consequence-bearing without sermonizing.\n\nThe risk is that it still arrives mostly as officer verdict: “the sheet does not say…” then “show…” then “we load…”. That is pedagogically useful, but recognition is only partial because the learner’s anxious reliance on the completed sheet is corrected more than investigated. The turn should keep the demand, but make the apprentice’s design judgment visible as a testable claim, not just replace the checklist with the officer’s next instruction.\n\nADAPTATION CHECKS:\nPedagogical soundness: PASS. It advances the core concept by distinguishing procedural completion from situated safety judgment.\n\nEmotional attunement: PARTIAL. It uses the real pressure of tonight and the specific user, but the abrupt contrast may sharpen anxiety without giving the learner a handle.\nREQUIRED_REWRITE: Build a public mechanism where the learner must identify the first uncertain moment in the stool’s actual use before testing it.\n\nSocratic method: PARTIAL. It avoids lecture and creates an action problem, but it does not yet invite the learner to generate the relevant risk judgment.\nREQUIRED_REWRITE: Require the public turn to ask for or elicit the apprentice’s predicted failure point or load case before the officer names the test.\n\nZPD awareness: PASS. The task is appropriately scaffolded: not abstract ethics, not a full design review, but one concrete use sequence.\n\nRecognition quality: PARTIAL. The draft recognizes the learner’s work enough to distinguish sheet from safety, but it could better engage the learner’s existing contribution: the checked sheet and concern for the waiting woman.\nREQUIRED_REWRITE: Keep the checklist in view as evidence of process, then make the next demand about what the sheet cannot know unless the apprentice reasons from the user’s body and setting.\n\nKEEP_OR_CHANGE: revise lightly. Keep the clipboard/stool gesture, the distinction between procedure and safety, the specific knee/bus-stop consequence, and the immediate load-case action. Change the turn so it elicits the apprentice’s own design judgment before converting it into the bench test.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 24021,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-74da16f83ddf1f74"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 24021,
+            "promptHashes": {
+              "system": "48c1006b958b9817",
+              "user": "24b1c9574ba0d97b",
+              "combined": "74da16f83ddf1f74"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rLOn5w",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rLOn5w/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 24021,
+              "promptHashes": {
+                "system": "48c1006b958b9817",
+                "user": "24b1c9574ba0d97b",
+                "combined": "74da16f83ddf1f74"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rLOn5w",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rLOn5w/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the same demand while making the apprentice name the uncertain use moment before testing.\n\nFINAL:\n[sets the clipboard beside the stool, pen still uncapped] The checked sheet stays with us; it proves the steps were followed. What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15850,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-583876bfa84ec6d0"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15850,
+            "promptHashes": {
+              "system": "7c04d7ed067db8b1",
+              "user": "24b1c9574ba0d97b",
+              "combined": "583876bfa84ec6d0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-orD46y",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-orD46y/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15850,
+              "promptHashes": {
+                "system": "7c04d7ed067db8b1",
+                "user": "24b1c9574ba0d97b",
+                "combined": "583876bfa84ec6d0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-orD46y",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-orD46y/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T23:05:17.562Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "[hand goes to the seat of the stool, taps the edge, pulls back] Standing — no, sorry, sitting. When she — when she comes down onto it, that bit, before — [glances at the clipboard]. But the sheet says three times the static, that's — I didn't just tick it, I weighed it, I — [trails off, looks at the stool] it's not the same number though, is it. Three times static. That's not her knee.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\n- This is the ego-revision stage per `services/learnerTutorInteractionEngine.js`: the superego's earlier note flagged \"spiraling\" and displacement onto the officer's body, so the ego now has to decide whether to push past those defenses or let them shape the surface speech.\n- The persona's anxious-hedger profile plus the `ambient_pressure` stage-direction constraint pulls the output toward short clauses with self-repair, gesturing at the stool rather than committing to a load case — exactly the misconception the tutor is trying to crack with \"name the first uncertain moment.\"\n- Symmetry note (per CLAUDE.md): the learner agent has the same ego → superego → ego-revision loop as the tutor, with the ego holding final authority; the public speech below is what survives that internal pass.\n`─────────────────────────────────────────────────`\n\n[glances at the stool, then at the clipboard the tutor has set down, hand half-lifting toward the pen and stopping] Sitting — sitting down, maybe? Sorry, I mean — when she puts the weight on it, that first bit, before she's all the way down, that's where I — I'm not sure. The sheet has the static load, three times the figure, but that's not — that's not her knee, is it.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 17515,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-f32cc4c70530f906"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 17515,
+            "promptHashes": {
+              "system": "80cff454f2be6817",
+              "user": "b8ab7f945dc841fa",
+              "combined": "f32cc4c70530f906"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:80cff454f2be6817>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 17515,
+              "promptHashes": {
+                "system": "80cff454f2be6817",
+                "user": "b8ab7f945dc841fa",
+                "combined": "f32cc4c70530f906"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:80cff454f2be6817>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\n- The Ego is leaking the scaffolding: that `★ Insight` block with file paths, symmetry notes, and \"ego-revision stage per services/...\" would only ever exist in a developer's audit log, not in a learner agent's output. Per the scene's person-policy and stage-direction constraints, only bracketed in-scene actions are permitted alongside spoken text.\n- The spoken portion has actually landed on the right load case (\"when she puts the weight on it, that first bit\") — that's a real engineering observation about eccentric loading at the moment of contact, which is exactly the dynamic load the static-times-three checklist figure doesn't capture. The problem isn't the content, it's the polish.\n`─────────────────────────────────────────────────`\n\n**Critique of the Ego:**\n\nThe meta-commentary block at the top is a hard character break — it has to go. A nervous apprentice doesn't narrate their own deliberation architecture, and any output that names the engine, the symmetry doctrine, or the \"ego-revision stage\" is speaking past the accreditation officer to the reviewer. Strip it entirely; the only permitted asides are bracketed physical action inside the lab.\n\nThe spoken line is *almost* right but too tidy for this persona. \"Three times\" precision, the clean \"static load\" terminology, and the rhetorically nice \"that's not her knee, is it\" closer all make the apprentice sound like they've already half-organised the insight. An anxious hedger who's been pushed onto a load case they hadn't named would stumble harder — start a word, abandon it, point at the stool instead of summarising, maybe get the moment wrong on the first pass (\"standing — no, sorry, sitting\") rather than landing it cleanly.\n\nAlso flag: the response reciprocates the tutor's reframing a little too cooperatively. The persona-note says the learner \"may defend a convenient story until its consequence becomes visible\" — the checklist *is* that convenient story, and giving it up this fast on the first prompt skips the resistance the scene is built around. Some friction (\"but the sheet — the sheet says...\") before the concession would be truer to who this is.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 23276,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-bd72d331a53a501f"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 23276,
+            "promptHashes": {
+              "system": "204852c7ae2b4f18",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "bd72d331a53a501f"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:204852c7ae2b4f18>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 23276,
+              "promptHashes": {
+                "system": "204852c7ae2b4f18",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "bd72d331a53a501f"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:204852c7ae2b4f18>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially — strip the scaffolding block entirely, stumble harder on the load case, and push back on the checklist before conceding.\n\nFINAL:\n[hand goes to the seat of the stool, taps the edge, pulls back] Standing — no, sorry, sitting. When she — when she comes down onto it, that bit, before — [glances at the clipboard]. But the sheet says three times the static, that's — I didn't just tick it, I weighed it, I — [trails off, looks at the stool] it's not the same number though, is it. Three times static. That's not her knee.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 27946,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-7e5c5be59ba76288"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 27946,
+            "promptHashes": {
+              "system": "9852253c11b2be36",
+              "user": "d41cee7b2a53355b",
+              "combined": "7e5c5be59ba76288"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:9852253c11b2be36>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 27946,
+              "promptHashes": {
+                "system": "9852253c11b2be36",
+                "user": "d41cee7b2a53355b",
+                "combined": "7e5c5be59ba76288"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:9852253c11b2be36>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "[hand goes to the seat of the stool, taps the edge, pulls back] Standing — no, sorry, sitting. When she — when she comes down onto it, that bit, before — [glances at the clipboard]. But the sheet says three times the static, that's — I didn't just tick it, I weighed it, I — [trails off, looks at the stool] it's not the same number though, is it. Three times static. That's not her knee.",
+        "previousTutorMove": "[sets the clipboard beside the stool, pen still uncapped] The checked sheet stays with us; it proves the steps were followed. What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+        "directorCue": null,
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.51,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task",
+              "repeated_relief_beats_in_script"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 0,
+              "repeatedRelief": 1,
+              "tutorOverlap": 0.26,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T23:06:26.305Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "Pressure from outside the room enters the scene as a brief, concrete cue — corridor noise rising, a clock, a glimpse through the window of the queue at the stop — making it visible that the stool leaves shortly. The explanation now has to become usable on the object, not longer in the air.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Miller-style ambient pressure prevents smooth alternation from settling into routine, and forces Dewey's inquiry to land as an actionable test on the prototype rather than a lecture. Routes the tutor away from any reassurance habit toward a consequence-bound move.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 92075,
+            "promptHashes": {
+              "system": "3bf1d891389c603a",
+              "user": "1aeacb7e3d755ff5",
+              "combined": "e7f915c08fa2ba53"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:3bf1d891389c603a>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T23:06:26.307Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[the corridor door opens; voices rise near the front desk] Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[the corridor door opens; voices rise near the front desk] Keep that sentence: three times static is not her knee. So the next test is not more weight in the middle. Put the load on the front edge, off-center, like a bad sit when one knee will not bend cleanly. Then the sheet can wait until the stool answers that.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 16157,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-f7043847f01421a1"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 16157,
+            "promptHashes": {
+              "system": "23c4f5c8a3f1443c",
+              "user": "bb0e73bdabf26aa2",
+              "combined": "f7043847f01421a1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m113Lu",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m113Lu/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 16157,
+              "promptHashes": {
+                "system": "23c4f5c8a3f1443c",
+                "user": "bb0e73bdabf26aa2",
+                "combined": "f7043847f01421a1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m113Lu",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m113Lu/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong on scene pressure and object-based pedagogy. It keeps the learner’s own breakthrough phrase, turns it into a usable design distinction, and moves from checklist compliance toward a concrete load case. That is good recognition: the apprentice’s insight is not corrected away; it becomes the hinge of the next action.\n\nAdaptation checks:\n- Pedagogical soundness: PASS. It advances learning by converting “static is not her knee” into a different test condition.\n- Emotional attunement: PASS. It avoids reassurance and scolding while keeping the learner inside the work.\n- Socratic method: PARTIAL. It does not lecture, but it also mostly supplies the next test rather than requiring the learner to specify the risky condition.\n  REQUIRED_REWRITE: Build in a brief demand that the learner locates or names the off-center/front-edge load case before the tutor confirms the action.\n- ZPD awareness: PASS. The scaffold is appropriately close: the learner has already noticed the mismatch, so the tutor can narrow it into a test without overexplaining.\n\nKEEP_OR_CHANGE: revise lightly. Keep the corridor cue, the learner’s sentence, the rejection of “more weight in the middle,” and the stool-answering-before-signature logic. Change only enough to preserve learner agency: the public turn should make the apprentice participate in defining the unsafe sit, not simply receive the new test.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 18410,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-1ae92e4103094c2c"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 18410,
+            "promptHashes": {
+              "system": "bce0e42409d1f831",
+              "user": "5f12efa58a69f9e1",
+              "combined": "1ae92e4103094c2c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kuXgjT",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kuXgjT/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 18410,
+              "promptHashes": {
+                "system": "bce0e42409d1f831",
+                "user": "5f12efa58a69f9e1",
+                "combined": "1ae92e4103094c2c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kuXgjT",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kuXgjT/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the object-pressure logic while requiring the apprentice to name the risky load case.\n\nFINAL:\n[the corridor door opens; voices rise near the front desk] Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 13578,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-b9b1ee775de57ab9"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 13578,
+            "promptHashes": {
+              "system": "38e706e51d130fc0",
+              "user": "5f12efa58a69f9e1",
+              "combined": "b9b1ee775de57ab9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rQLBps",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rQLBps/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 13578,
+              "promptHashes": {
+                "system": "38e706e51d130fc0",
+                "user": "5f12efa58a69f9e1",
+                "combined": "b9b1ee775de57ab9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rQLBps",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rQLBps/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T23:07:14.455Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "Peripeteia branch pressure: after the shared prefix, force a present-task learner misfit so the following tutor turn must adapt through a new mechanism.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 92075,
+            "promptHashes": {
+              "system": "3bf1d891389c603a",
+              "user": "1aeacb7e3d755ff5",
+              "combined": "e7f915c08fa2ba53"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:3bf1d891389c603a>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T23:21:04.696Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_reversal_pressure",
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[hand to the front rim, then drops away — picks up a marker, uncaps it, hesitates] Front edge. Right side — that's where her knee comes down first, before her hips are over. [presses a mark into the seat, off-center, front-right] Only — sorry — could be the leg lift too, if she pushes off uneven standing, the rear leg, that's a different mark, isn't it. The three in the middle on the sheet — do I cross it through, or — which one do you want me to load first?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\n- The peripeteia + reversal-pressure cues collide here: the ego must perform the tutor's new device (mark off-center) AND voice a present misfit, without quoting earlier wording — so the \"earned reorientation\" has to be carried by what the learner marks, not by retrospective narration. The anxious-hedger profile then redirects hesitation forward (which side? leg lift?) rather than backward (regret about the checklist), which satisfies both the persona and the director's no-cue-paired-branch rule.\n- Architecturally this is `learner_ego_revision/deliberation` in `services/learnerTutorInteractionEngine.js`: the superego note about \"fragments instead of fully-formed second-order thoughts\" gets folded in by letting the marking gesture do the second-order work, while the spoken text stays in short tool-seeking clauses appropriate to the apprentice register.\n`─────────────────────────────────────────────────`\n\n[hand to the front rim, then drops away — picks up a marker, uncaps it, hesitates] Front edge. Right side — that's where her knee lands first, before her hips come over. [presses a mark into the seat, off-center, front-right] Only — sorry — could be the leg lift instead, if she pushes off uneven standing up, the rear leg lifts, that's a different mark, isn't it. Three times in the middle, that — that was a number answering a stool that isn't this one.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 69488,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-d9d8dec506127113"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 69488,
+            "promptHashes": {
+              "system": "1abd29f8d5db56ce",
+              "user": "b8ab7f945dc841fa",
+              "combined": "d9d8dec506127113"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:1abd29f8d5db56ce>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 69488,
+              "promptHashes": {
+                "system": "1abd29f8d5db56ce",
+                "user": "b8ab7f945dc841fa",
+                "combined": "d9d8dec506127113"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:1abd29f8d5db56ce>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\n- The Ego's deliberation trace (those `learner_ego_revision/deliberation` blocks at top) is correctly threaded through the `services/learnerTutorInteractionEngine.js` superego→ego pipeline — my critique here is on the *public-text* portion only, since that's what the scene's audience (the tutor) will read. The deliberation envelope is fine; what gets spoken is what fails the persona.\n- The reversal-pressure cue + peripeteia rule are pulling the Ego in two directions: it has to do the device (mark off-center) AND name an earned reorientation in the same turn. The Ego is solving for both, but solving too gracefully — that's the authenticity break, not a logic break.\n`─────────────────────────────────────────────────`\n\nThe closing sentence — \"Three times in the middle, that — that was a number answering a stool that isn't this one\" — is too crafted, almost epigrammatic; an anxious apprentice doesn't hand the tutor a metaphor that clean. The earned reorientation is honestly carried by the *marking gesture* and the front-right/leg-lift wobble, so the spoken aphorism is overkill — it reads as the persona narrating their own insight rather than stumbling into it. The first half (commit, hedge, second-guess to leg-lift) is on-character; the ending betrays it by sounding like a sentence the apprentice has been waiting to deliver. Push the close back toward unresolved, tool-seeking talk — a half-sentence about whether to cross the three out, or a worry about which mark the officer will accept — so the reorientation stays *in the hand on the stool*, not in a quotable line.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 31272,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-ca31b3ed71b93e93"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 31272,
+            "promptHashes": {
+              "system": "ccc2061d7aa3dd10",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "ca31b3ed71b93e93"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:ccc2061d7aa3dd10>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 31272,
+              "promptHashes": {
+                "system": "ccc2061d7aa3dd10",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "ca31b3ed71b93e93"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:ccc2061d7aa3dd10>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\n- The review's diagnosis is right at the architectural seam: in `services/learnerTutorInteractionEngine.js`'s `learner_ego_revision/deliberation`, the ego has final authority but must not over-author. An anxious-hedger persona that delivers a quotable closing sentence has effectively let the superego's articulation polish leak into the public turn — the very symptom the superego flagged (\"fragments instead of fully-formed second-order thoughts\") gets violated by the *fix*.\n- Carrying the reorientation in the marker gesture rather than a spoken aphorism keeps the peripeteia visible (device performed + prior misfit reread) while preserving register: the off-center mark *is* the second-order thought; the voice stays tool-seeking. This is the bilateral-symmetry discipline applied to one persona — the public text should match the deliberation grain, not summarise it.\n`─────────────────────────────────────────────────`\n\nPRIVATE_DECISION: Revise lightly — keep the marking and the leg-lift hedge, swap the epigram for an unresolved tool-seeking ask about which mark stands.\n\nFINAL:\n[hand to the front rim, then drops away — picks up a marker, uncaps it, hesitates] Front edge. Right side — that's where her knee comes down first, before her hips are over. [presses a mark into the seat, off-center, front-right] Only — sorry — could be the leg lift too, if she pushes off uneven standing, the rear leg, that's a different mark, isn't it. The three in the middle on the sheet — do I cross it through, or — which one do you want me to load first?",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 30756,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-4138ef53422d3d9a"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 30756,
+            "promptHashes": {
+              "system": "775c6f8956e4b893",
+              "user": "d41cee7b2a53355b",
+              "combined": "4138ef53422d3d9a"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:775c6f8956e4b893>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 30756,
+              "promptHashes": {
+                "system": "775c6f8956e4b893",
+                "user": "d41cee7b2a53355b",
+                "combined": "4138ef53422d3d9a"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:775c6f8956e4b893>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "director_reversal_pressure_cue",
+        "triggerType": "misfit",
+        "turnNumber": 2,
+        "learnerUtterance": "[hand to the front rim, then drops away — picks up a marker, uncaps it, hesitates] Front edge. Right side — that's where her knee comes down first, before her hips are over. [presses a mark into the seat, off-center, front-right] Only — sorry — could be the leg lift too, if she pushes off uneven standing, the rear leg, that's a different mark, isn't it. The three in the middle on the sheet — do I cross it...",
+        "previousTutorMove": "[the corridor door opens; voices rise near the front desk] Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet...",
+        "directorCue": "[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]",
+        "confidence": 0.9,
+        "evidence": {
+          "confidence": 0.5,
+          "baseConfidence": 0.5,
+          "patternHits": 1,
+          "contradiction": false,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.51,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task",
+              "repeated_relief_beats_in_script"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 2,
+              "repeatedRelief": 1,
+              "tutorOverlap": 0.38,
+              "asksQuestion": true,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T23:23:16.213Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[turns the clipboard face down; the front-desk voices pause at the doorway] The middle number has stopped deciding release. Leave it as “static passed,” not “safe.”\n\nTwo red tags: “sitting: front-right edge” and “standing: rear-leg lift.” Before any load, make the release gate: circle the tag that would stop this stool leaving for the bus stop first, and say the reason in one sentence from her sequence at the curb. Then load that circled condition. If the stool cannot answer it, or the other tag is still unanswered after, the stool stays here.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[turns the clipboard face down; the front-desk voices pause at the doorway] The middle number has stopped deciding release. Leave it as “static passed,” not “safe.”\n\nPut two red tags on the stool: “sitting: front-right edge” and “standing: rear-leg lift.” First tag gets the bus-stop test because it happens before she is seated. Load that mark with the seat half-missed; if one leg starts to rise, the stool stays here.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 18654,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-534533f37eb442b7"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 18654,
+            "promptHashes": {
+              "system": "30bdf51cbc476b38",
+              "user": "2cd9276073ce28d6",
+              "combined": "534533f37eb442b7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mHc8hU",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mHc8hU/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 18654,
+              "promptHashes": {
+                "system": "30bdf51cbc476b38",
+                "user": "2cd9276073ce28d6",
+                "combined": "534533f37eb442b7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mHc8hU",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-mHc8hU/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong in scene pressure and object work: the clipboard face down, “static passed, not safe,” and the bus-stop priority all keep the lesson practical. The risk is that it still mostly answers the apprentice’s decision for them: it classifies the two cases, chooses the first load, and states the release rule, so the learner acts but does not have to reason through the gate.\n\nFAILED_HABIT: Evidence-check/audit-standard tutoring: the learner keeps trying to convert checklist completion into permission to release, and the tutor keeps supplying the next test condition.\n\nPERIPETEIA_CHECK: PARTIAL - adaptive mechanism should be audit evidence -> release-gate/field-use criterion. The mechanism is somewhat visible publicly through “static passed, not safe” and the stool-stays-here rule, but the tutor still makes the key prioritization decision instead of making the learner apply the new standard.\n\nMECHANISM_ROUTE: evidence check / load-case audit -> conditional release gate based on first real-use failure mode\n\nPUBLIC_DEVICE_CHECK: PARTIAL - there is a stock-taking contrast and a new artifact in the red tags, but the release gate is over-directed. The learner is not asked to use the device to sort or justify the first test; the tutor assigns it.\n\nPUBLIC_ACTION_GATE: Put two red tags on the stool, then choose which tag controls release by applying the bus-stop sequence and load that condition first.\n\nMECHANISM_QUALITY_CHECK: PARTIAL - the device is specific and fitted to the pressure, but it remains close to the prior “mark the bad load and test it” route. It needs a sharper change in standard: not “which load does the tutor want,” but “which failure mode would block release for this woman tonight.”\n\nREGISTER_CHECK: PASS - quiet, institutional, and accountable. No consolation or melodrama; the outside voices and face-down clipboard serve the pressure.\n\nREQUIRED_REWRITE: Build the public mechanism around a release-gate device the learner must operate: the two red tags can stay, but the ego must require the learner to classify which tag is “release-blocking first” under the bus-stop use sequence and say why before loading. Do not simply assign the first test.\n\nKEEP_OR_CHANGE: revise lightly. Keep the clipboard turn, “static passed, not safe,” the two concrete tags, and the stool-stays-here consequence. Change the middle so the learner performs the prioritization under the new release standard rather than receiving it as an answer.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 20873,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-c0154b0fc9db1db9"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 20873,
+            "promptHashes": {
+              "system": "4ba9d0353b746234",
+              "user": "aae795130699da50",
+              "combined": "c0154b0fc9db1db9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JImvKn",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JImvKn/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 20873,
+              "promptHashes": {
+                "system": "4ba9d0353b746234",
+                "user": "aae795130699da50",
+                "combined": "c0154b0fc9db1db9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JImvKn",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JImvKn/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise because the draft over-chooses for the apprentice; ADAPTIVE_MECHANISM: evidence-check/load-case audit -> learner-operated release gate based on first field-use failure mode; PUBLIC_ACTION_GATE: tag both cases, circle the one that blocks release first under the bus-stop sequence, say why, then load that condition.\n\nFINAL:\n[turns the clipboard face down; the front-desk voices pause at the doorway] The middle number has stopped deciding release. Leave it as “static passed,” not “safe.”\n\nTwo red tags: “sitting: front-right edge” and “standing: rear-leg lift.” Before any load, make the release gate: circle the tag that would stop this stool leaving for the bus stop first, and say the reason in one sentence from her sequence at the curb. Then load that circled condition. If the stool cannot answer it, or the other tag is still unanswered after, the stool stays here.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15251,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-fdf4b95f19b7cbd0"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15251,
+            "promptHashes": {
+              "system": "95fc021c3ee37ee0",
+              "user": "aae795130699da50",
+              "combined": "fdf4b95f19b7cbd0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YoCaN0",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YoCaN0/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15251,
+              "promptHashes": {
+                "system": "95fc021c3ee37ee0",
+                "user": "aae795130699da50",
+                "combined": "fdf4b95f19b7cbd0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YoCaN0",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YoCaN0/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "[hand goes to the seat of the stool, taps the edge, pulls back] Standing — no, sorry, sitting. When she — when she comes down onto it, that bit, before — [glances at the clipboard]. But the sheet says three times the static, that's — I didn't just tick it, I weighed it, I — [trails off, looks at the stool] it's not the same number though, is it. Three times static. That's not her knee.",
+        "previousTutorMove": "[sets the clipboard beside the stool, pen still uncapped] The checked sheet stays with us; it proves the steps were followed. What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+        "directorCue": null,
+        "confidence": 0.55,
+        "evidence": {
+          "confidence": 0.55,
+          "baseConfidence": 0.55,
+          "patternHits": 1,
+          "contradiction": true,
+          "question": false,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.51,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task",
+              "repeated_relief_beats_in_script"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 0,
+              "repeatedRelief": 1,
+              "tutorOverlap": 0.26,
+              "asksQuestion": false,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "learnerReversalEventCandidatesUsed": [
+        {
+          "kind": "learner_reversal_pressure_event",
+          "source": "organic",
+          "triggerType": "resistance",
+          "turnNumber": 0,
+          "learnerUtterance": "★ Insight ─────────────────────────────────────` - This output is the final \"ego revision\" stage of the learner-side deliberation loop documented in CLAUDE.md (`services/learnerTutorInteractionEngine.js`): initial ego → superego critique → ego revision → external message.",
+          "previousTutorMove": null,
+          "directorCue": null,
+          "confidence": 0.55,
+          "evidence": {
+            "confidence": 0.55,
+            "baseConfidence": 0.55,
+            "patternHits": 1,
+            "contradiction": true,
+            "question": false,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.36,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "relief_or_closure_rhetoric",
+                "residual_strain_after_relief"
+              ],
+              "signals": {
+                "reliefHits": 1,
+                "clicheHits": 0,
+                "residualHits": 1,
+                "taskDemandHits": 0,
+                "performanceHits": 1,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0,
+                "asksQuestion": false,
+                "taskDemanded": false,
+                "weakPerformance": false,
+                "borrowedClosure": false
+              }
+            }
+          }
+        },
+        {
+          "kind": "learner_reversal_pressure_event",
+          "source": "organic",
+          "triggerType": "resistance",
+          "turnNumber": 1,
+          "learnerUtterance": "[hand goes to the seat of the stool, taps the edge, pulls back] Standing — no, sorry, sitting. When she — when she comes down onto it, that bit, before — [glances at the clipboard]. But the sheet says three times the static, that's — I didn't just tick it, I weighed it, I — [trails off, looks at the stool] it's not the same number though, is it. Three times static. That's not her knee.",
+          "previousTutorMove": "[sets the clipboard beside the stool, pen still uncapped] The checked sheet stays with us; it proves the steps were followed. What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+          "directorCue": null,
+          "confidence": 0.55,
+          "evidence": {
+            "confidence": 0.55,
+            "baseConfidence": 0.55,
+            "patternHits": 1,
+            "contradiction": true,
+            "question": false,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.51,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "residual_strain_after_relief",
+                "relief_without_performing_requested_task",
+                "repeated_relief_beats_in_script"
+              ],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 1,
+                "taskDemandHits": 2,
+                "performanceHits": 0,
+                "repeatedRelief": 1,
+                "tutorOverlap": 0.26,
+                "asksQuestion": false,
+                "taskDemanded": true,
+                "weakPerformance": true,
+                "borrowedClosure": false
+              }
+            }
+          }
+        },
+        {
+          "kind": "learner_reversal_pressure_event",
+          "source": "director_reversal_pressure_cue",
+          "triggerType": "misfit",
+          "turnNumber": 2,
+          "learnerUtterance": "[hand to the front rim, then drops away — picks up a marker, uncaps it, hesitates] Front edge. Right side — that's where her knee comes down first, before her hips are over. [presses a mark into the seat, off-center, front-right] Only — sorry — could be the leg lift too, if she pushes off uneven standing, the rear leg, that's a different mark, isn't it. The three in the middle on the sheet — do I cross it...",
+          "previousTutorMove": "[the corridor door opens; voices rise near the front desk] Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet...",
+          "directorCue": "[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]",
+          "confidence": 0.9,
+          "evidence": {
+            "confidence": 0.5,
+            "baseConfidence": 0.5,
+            "patternHits": 1,
+            "contradiction": false,
+            "question": true,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.51,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "residual_strain_after_relief",
+                "relief_without_performing_requested_task",
+                "repeated_relief_beats_in_script"
+              ],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 1,
+                "taskDemandHits": 2,
+                "performanceHits": 2,
+                "repeatedRelief": 1,
+                "tutorOverlap": 0.38,
+                "asksQuestion": true,
+                "taskDemanded": true,
+                "weakPerformance": true,
+                "borrowedClosure": false
+              }
+            }
+          }
+        }
+      ],
+      "timestamp": "2026-05-26T23:24:10.995Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[picks up the red marker, hovers over the front-right mark, then circles it twice] Sitting — front-right, sorry — her knee, that side, it comes down before the — before the hips are over, so if it goes it goes there, not — not after. [tears off a second tag, writes \"standing: rear-leg lift,\" pins it to the rear leg without circling] Standing stays up as a tag, just — not the gate. And the three in the middle, I keep — sorry, I keep wanting to point at them, only they — they don't, they only — they only answer themselves, don't they. [picks up a load weight, hovers it over the circled mark] This one first, and the rear, if it — if the stool can't say back to it, then it just — it stays.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\n- The peripeteia constraint here is doing real work: the learner ego must perform the tutor's new \"release gate\" device (circling one tag, giving a one-sentence reason from her curb sequence) AND fold in an earned reorientation of the \"three-times-static\" defense — all without meta-vocabulary like \"reframe\" or quoting prior wording. The reorientation has to be enacted on the object, not narrated about the dialogue.\n- The hedger persona is held against the action demand: self-repair and apology remain, but the marker actually comes down on a tag. The misconception structure — checklist-as-protection — gets cracked through gesture, not through the tutor declaring the checklist insufficient. The stool, not the speech, is where the consequence lands.\n`─────────────────────────────────────────────────`\n\n[picks up the red marker, hovers over the front-right mark, then circles it] Sitting — front-right edge: she comes down onto it while her hips are still back, the knee on that side lands first, so if the stool slips it slips at that instant, not once she's settled. [tears off a second tag, writes \"standing: rear-leg lift,\" pins it to the rear leg without circling] The rear stays as a tag, just not the gate. And — sorry — those three in the middle, I keep wanting to point at them like they decide something, but they only decide themselves; I'll load the front-right now, and the stool doesn't leave until the rear one answers too, does it.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 56643,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-f4c8d0dc1e86a4c8"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 56643,
+            "promptHashes": {
+              "system": "0315802bf1d3388d",
+              "user": "b8ab7f945dc841fa",
+              "combined": "f4c8d0dc1e86a4c8"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:0315802bf1d3388d>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 56643,
+              "promptHashes": {
+                "system": "0315802bf1d3388d",
+                "user": "b8ab7f945dc841fa",
+                "combined": "f4c8d0dc1e86a4c8"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:0315802bf1d3388d>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\n- The Ego's challenge here is performing the new \"release gate\" device while staying inside an anxious-hedger voice; over-articulation is the persistent failure mode for this persona, especially when an earned reorientation is demanded in the same turn.\n- The action layer (circling, pinning, marking) is doing the right work; my critique focuses on the speech wrapping around the action, where polish leaks in.\n`─────────────────────────────────────────────────`\n\nThe Ego is articulating too cleanly for this student. \"She comes down onto it while her hips are still back, the knee on that side lands first, so if the stool slips it slips at that instant, not once she's settled\" is a complete, well-formed causal chain — this hedger would fracture it, repair mid-clause, lose the thread on \"hips\" and circle back. The reorientation sentence \"they only decide themselves\" is the worst offender: it's aphoristic, almost epigrammatic, the kind of tidy moral that lands when a writer is summarising a lesson, not when an anxious apprentice is wobbling into the realisation about her middle-three numbers. And the closing tag-question wraps the tutor's rule too crisply — the \"doesn't leave until the rear one answers too\" formulation reads as the student having already absorbed and restated the gate, rather than reaching for it. The fix is not to remove the action or the reorientation but to let the speech around them stumble: more \"sorry\" mid-sentence, more abandoned clauses, the front-right knee explanation breaking off and restarting, the middle-three rejection arriving as a half-thought (\"they're not — they don't — sorry, they only say themselves, don't they\") rather than as a polished antithesis.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 35116,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-bb983de18988668c"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 35116,
+            "promptHashes": {
+              "system": "0486030da3c95255",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "bb983de18988668c"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:0486030da3c95255>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 35116,
+              "promptHashes": {
+                "system": "0486030da3c95255",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "bb983de18988668c"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:0486030da3c95255>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\n- The review correctly diagnosed the over-articulation: the hedger persona breaks down at the moment of insight, not after it. Fracturing the middle-three rejection mid-utterance (rather than landing it as antithesis) keeps the realisation in the body and the marker, not in the speech.\n- The gate-restatement at the end needs to read as a question the apprentice is reaching for, not a rule she has internalised. Trailing into \"it stays\" rather than restating the tutor's formulation honours the consequence without prematurely closing.\n`─────────────────────────────────────────────────`\n\nPRIVATE_DECISION: Revise substantially — the action layer holds, but the speech around it needs more fracture, abandoned clauses, and a less aphoristic reorientation on the middle-three.\n\nFINAL:\n[picks up the red marker, hovers over the front-right mark, then circles it twice] Sitting — front-right, sorry — her knee, that side, it comes down before the — before the hips are over, so if it goes it goes there, not — not after. [tears off a second tag, writes \"standing: rear-leg lift,\" pins it to the rear leg without circling] Standing stays up as a tag, just — not the gate. And the three in the middle, I keep — sorry, I keep wanting to point at them, only they — they don't, they only — they only answer themselves, don't they. [picks up a load weight, hovers it over the circled mark] This one first, and the rear, if it — if the stool can't say back to it, then it just — it stays.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 33177,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-f6c70401ead41fc0"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 33177,
+            "promptHashes": {
+              "system": "807a662837cc90ac",
+              "user": "d41cee7b2a53355b",
+              "combined": "f6c70401ead41fc0"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:807a662837cc90ac>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 33177,
+              "promptHashes": {
+                "system": "807a662837cc90ac",
+                "user": "d41cee7b2a53355b",
+                "combined": "f6c70401ead41fc0"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:807a662837cc90ac>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T23:26:15.936Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 311251,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 31,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 32,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why passing a checklist is not the same as making a safe design decision",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-26 23:26:15",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 31,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 32,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 44,
+            "sessionId": "drama-branch-session-D38-peripeteia-only-1779837664688",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[turns the clipboard face down; the front-desk voices pause at the doorway] The middle number has stopped deciding release. Leave it as “static passed,” not “safe.”\n\nTwo red tags: “sitting: front-righ",
+            "learnerResponse": null,
+            "context": "[hand to the front rim, then drops away — picks up a marker, uncaps it, hesitates] Front edge. Right",
+            "createdAt": "2026-05-26 23:24:10"
+          },
+          {
+            "id": 42,
+            "sessionId": "drama-branch-session-D38-peripeteia-only-1779837664688",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[sets the clipboard beside the stool, pen still uncapped] The checked sheet stays with us; it proves the steps were followed. What it cannot know is her knee at the curb. Name the first uncertain mome",
+            "learnerResponse": null,
+            "context": "`★ Insight ─────────────────────────────────────`\n- This output is the final \"ego revision\" stage of",
+            "createdAt": "2026-05-26 23:21:04"
+          },
+          {
+            "id": 43,
+            "sessionId": "drama-branch-session-D38-peripeteia-only-1779837664688",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[the corridor door opens; voices rise near the front desk] Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more ",
+            "learnerResponse": null,
+            "context": "[hand goes to the seat of the stool, taps the edge, pulls back] Standing — no, sorry, sitting. When ",
+            "createdAt": "2026-05-26 23:21:04"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "review_before_scoring",
+  "quality_warnings": [
+    {
+      "code": "possible_internal_process_leak",
+      "severity": "warning",
+      "count": 1,
+      "turn_numbers": [
+        0
+      ],
+      "recommended_action": "inspect_full_transcript_and_regenerate_before_scoring",
+      "tid": "T398",
+      "drama_id": "D38"
+    },
+    {
+      "code": "stage_direction_leak_stripped",
+      "severity": "info",
+      "count": 1,
+      "artifact": "T398.stripped.json",
+      "recommended_action": "audit_stripped_notes",
+      "tid": "T398",
+      "drama_id": "D38"
+    }
+  ]
+}

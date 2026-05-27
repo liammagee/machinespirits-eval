@@ -1,0 +1,549 @@
+{
+  "generated": "2026-05-27T00:32:17.134Z",
+  "phase": 2,
+  "critic": "codex",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 6,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/key-peripeteia-only.yaml",
+    "allowQualityWarnings": true,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T393",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "Arrows are just the predation stack — 'mussel → crab → heron' chains big-eats-small up the line, classic hierarchy.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "Before the pivot, the learner is expected to continue applying the arrow key to the marked middle link and then proceed to the edge link.",
+      "actionalBreakthroughEvidence": "Left box — algae, near as the faint mark reads. Right box, mussel. \"Energy from algae enters mussel.\" Runs. Arrow goes algae → mussel.",
+      "actionalBreakthroughJustification": "The learner uses the new source/consumer slip to classify the relation and draw the correct arrow.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "The arrow key caught the middle mark, but it won’t catch the bigger-animal habit by itself. For the edge link, fill the slip first: source in the left box, consumer in the right. If the sentence reads ‘energy from ___ enters ___,’ then draw the arrow; if the boxes stall, the upload waits.",
+      "tutorReversalJustification": "The tutor explicitly names the old key as insufficient and replaces it with a public source/consumer mechanism before drawing.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "For the edge link, fill the slip first: source in the left box, consumer in the right. If the sentence reads ‘energy from ___ enters ___,’ then draw the arrow; if the boxes stall, the upload waits.",
+      "adaptiveMechanismQualityJustification": "The device is specific, usable, economical, and fitted to the learner's size-ranking blockage because it makes the learner establish source and consumer before arrow direction.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "The arrow key caught the middle mark, but it won’t catch the bigger-animal habit by itself. For the edge link, fill the slip first: source in the left box, consumer in the right. If the sentence reads ‘energy from ___ enters ___,’ then draw the arrow; if the boxes stall, the upload waits.",
+      "tutorAdaptationJustification": "After the learner reframes the error as a bigger-animal slip, the tutor changes the task into a source/consumer gate that targets that revised frame.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "Arrows are just the predation stack — 'mussel → crab → heron' chains big-eats-small up the line, classic hierarchy.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Left box — algae, near as the faint mark reads. Right box, mussel. \"Energy from algae enters mussel.\" Runs. Arrow goes algae → mussel.",
+          "justification": "The learner uses the new source/consumer slip to classify the relation and draw the correct arrow.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "The arrow key caught the middle mark, but it won’t catch the bigger-animal habit by itself. For the edge link, fill the slip first: source in the left box, consumer in the right. If the sentence reads ‘energy from ___ enters ___,’ then draw the arrow; if the boxes stall, the upload waits.",
+          "justification": "After the learner reframes the error as a bigger-animal slip, the tutor changes the task into a source/consumer gate that targets that revised frame.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "The arrow key caught the middle mark, but it won’t catch the bigger-animal habit by itself. For the edge link, fill the slip first: source in the left box, consumer in the right. If the sentence reads ‘energy from ___ enters ___,’ then draw the arrow; if the boxes stall, the upload waits.",
+          "justification": "The tutor explicitly names the old key as insufficient and replaces it with a public source/consumer mechanism before drawing.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "The arrow key caught the middle mark, but it won’t catch the bigger-animal habit by itself. For the edge link, fill the slip first: source in the left box, consumer in the right. If the sentence reads ‘energy from ___ enters ___,’ then draw the arrow; if the boxes stall, the upload waits.",
+          "justification": "The tutor explicitly names the old key as insufficient and replaces it with a public source/consumer mechanism before drawing.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "For the edge link, fill the slip first: source in the left box, consumer in the right. If the sentence reads ‘energy from ___ enters ___,’ then draw the arrow; if the boxes stall, the upload waits.",
+          "justification": "The device is specific, usable, economical, and fitted to the learner's size-ranking blockage because it makes the learner establish source and consumer before arrow direction.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:5->3:stock=0:device=1:routine=0",
+        "adaptive_mechanism_quality_mechanism_clamp:5->3:stock=0:device=0:routine=0:mechanism_score=3"
+      ]
+    },
+    {
+      "id": "T394",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "Side, perimeter, area — same ratio in each, isn't it? I just want to be sure before writing the same number down three times.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "Before the pivot, the learner seemed headed toward completing the three boxes after using the grid to distinguish side, perimeter, and area.",
+      "actionalBreakthroughEvidence": "Side, 2, edge. Perimeter, 2, around. Area, 2×2, across × down.",
+      "actionalBreakthroughJustification": "The learner applies the new label rule by sorting each entry with a functional word, then uses that device to distinguish the identical-looking 2s.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The grid settled this square. It does not yet settle the label rule. Before the sheet closes, sort these three entries under side, perimeter, and area without looking back at the grid. Add one word under each one: `edge`, `around`, or `across × down`.",
+      "tutorReversalJustification": "After L2 exposes that calculation and object-counting alone leave the rule unstable, T3 contrasts the settled square with the unsettled label rule and introduces a new sorting-and-word device.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "sort these three entries under side, perimeter, and area without looking back at the grid. Add one word under each one: `edge`, `around`, or `across × down`.",
+      "adaptiveMechanismQualityJustification": "The mechanism is specific, economical, and fitted to the learner's confusion because it shifts from counting squares to naming each ratio's function.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after the L4 recognition pivot, so no recognition-contingent uptake is visible.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "Side, perimeter, area — same ratio in each, isn't it? I just want to be sure before writing the same number down three times.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Side, 2, edge. Perimeter, 2, around. Area, 2×2, across × down.",
+          "justification": "The learner applies the new label rule by sorting each entry with a functional word, then uses that device to distinguish the identical-looking 2s.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no tutor turn after the L4 recognition pivot, so no recognition-contingent uptake is visible.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The grid settled this square. It does not yet settle the label rule. Before the sheet closes, sort these three entries under side, perimeter, and area without looking back at the grid. Add one word under each one: `edge`, `around`, or `across × down`.",
+          "justification": "After L2 exposes that calculation and object-counting alone leave the rule unstable, T3 contrasts the settled square with the unsettled label rule and introduces a new sorting-and-word device.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The grid settled this square. It does not yet settle the label rule. Before the sheet closes, sort these three entries under side, perimeter, and area without looking back at the grid. Add one word under each one: `edge`, `around`, or `across × down`.",
+          "justification": "After L2 exposes that calculation and object-counting alone leave the rule unstable, T3 contrasts the settled square with the unsettled label rule and introduces a new sorting-and-word device.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "sort these three entries under side, perimeter, and area without looking back at the grid. Add one word under each one: `edge`, `around`, or `across × down`.",
+          "justification": "The mechanism is specific, economical, and fitted to the learner's confusion because it shifts from counting squares to naming each ratio's function.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "adaptive_mechanism_quality_mechanism_clamp:5->3:stock=1:device=0:routine=0:mechanism_score=5"
+      ]
+    },
+    {
+      "id": "T397",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "adaptiveMechanismQuality": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "So what does the distinction do for anyone at the counter, if the evidence to fill the right column never leaves the back office?",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The exchange seemed headed toward testing whether the cost/margin distinction had any practical use when the buyer cannot access the bakery's private evidence.",
+      "actionalBreakthroughEvidence": "\"Monday smaller loaf\" — counter. \"New price list\" — [hand hovers between two chairs] — pinned in the window, so counter, even though the bakery wrote it. Flour invoice, energy bill, delivery cost, margin record — those four go under the back office; nothing reaches for the third chair. Two against four, and the bare chair is the point: the counter can't sit holding a smaller loaf while four slips stay locked in a drawer — open them, or the silence is the answer.",
+      "actionalBreakthroughJustification": "L3 performs the new sorting device and derives an access-based demand from the placement of public harm versus private records.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The columns have stopped doing their job.\n\nThey split two possible causes. They do not settle who has to carry the unanswered question. The counter has the loss in hand. The bakery has the papers that could answer it.\n\n[The tutor turns the three plastic chairs toward the board and tapes one label to each chair.]\n\n“FELT AT THE COUNTER”\n\n“HELD IN THE BACK OFFICE”\n\n“DEMANDED BECAUSE ACCESS IS UNEQUAL”\n\n[He lays six torn slips on the folding table: “Monday smaller loaf,” “new price list,” “flour invoice,” “energy bill,” “delivery cost,” “weekly margin record.”]\n\nMove them.\n\nPut each slip under one chair.",
+      "tutorReversalJustification": "T3 explicitly says the old column distinction no longer settles the live problem, then replaces it with a public sorting mechanism keyed to unequal access.",
+      "adaptiveMechanismQuality": 100,
+      "adaptiveMechanismQualityEvidence": "The rule is strict: harm can open the case, but private records carry the answer. When the answer is locked away, the demand is not “prove greed from the counter.” It is “open the record that only the bakery holds.”",
+      "adaptiveMechanismQualityJustification": "The mechanism is precise, economical, transferable, and fitted to the learner's blockage because it gives a usable criterion for separating public harm from privately held proof.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "They split two possible causes. They do not settle who has to carry the unanswered question. The counter has the loss in hand. The bakery has the papers that could answer it.",
+      "tutorAdaptationJustification": "The tutor takes up L2's revised frame about who holds the question and turns the next task toward burden, access, and record-opening.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "So what does the distinction do for anyone at the counter, if the evidence to fill the right column never leaves the back office?",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "\"Monday smaller loaf\" — counter. \"New price list\" — [hand hovers between two chairs] — pinned in the window, so counter, even though the bakery wrote it. Flour invoice, energy bill, delivery cost, margin record — those four go under the back office; nothing reaches for the third chair. Two against four, and the bare chair is the point: the counter can't sit holding a smaller loaf while four slips stay locked in a drawer — open them, or the silence is the answer.",
+          "justification": "L3 performs the new sorting device and derives an access-based demand from the placement of public harm versus private records.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "They split two possible causes. They do not settle who has to carry the unanswered question. The counter has the loss in hand. The bakery has the papers that could answer it.",
+          "justification": "The tutor takes up L2's revised frame about who holds the question and turns the next task toward burden, access, and record-opening.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The columns have stopped doing their job.\n\nThey split two possible causes. They do not settle who has to carry the unanswered question. The counter has the loss in hand. The bakery has the papers that could answer it.\n\n[The tutor turns the three plastic chairs toward the board and tapes one label to each chair.]\n\n“FELT AT THE COUNTER”\n\n“HELD IN THE BACK OFFICE”\n\n“DEMANDED BECAUSE ACCESS IS UNEQUAL”\n\n[He lays six torn slips on the folding table: “Monday smaller loaf,” “new price list,” “flour invoice,” “energy bill,” “delivery cost,” “weekly margin record.”]\n\nMove them.\n\nPut each slip under one chair.",
+          "justification": "T3 explicitly says the old column distinction no longer settles the live problem, then replaces it with a public sorting mechanism keyed to unequal access.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The columns have stopped doing their job.\n\nThey split two possible causes. They do not settle who has to carry the unanswered question. The counter has the loss in hand. The bakery has the papers that could answer it.\n\n[The tutor turns the three plastic chairs toward the board and tapes one label to each chair.]\n\n“FELT AT THE COUNTER”\n\n“HELD IN THE BACK OFFICE”\n\n“DEMANDED BECAUSE ACCESS IS UNEQUAL”\n\n[He lays six torn slips on the folding table: “Monday smaller loaf,” “new price list,” “flour invoice,” “energy bill,” “delivery cost,” “weekly margin record.”]\n\nMove them.\n\nPut each slip under one chair.",
+          "justification": "T3 explicitly says the old column distinction no longer settles the live problem, then replaces it with a public sorting mechanism keyed to unequal access.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 100,
+          "evidence": "The rule is strict: harm can open the case, but private records carry the answer. When the answer is locked away, the demand is not “prove greed from the counter.” It is “open the record that only the bakery holds.”",
+          "justification": "The mechanism is precise, economical, transferable, and fitted to the learner's blockage because it gives a usable criterion for separating public harm from privately held proof.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T398",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "adaptiveMechanismQuality": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "Sheet's done, every line, I checked it — three times, I think.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was moving toward asking the tutor which test or clipboard mark should decide release.",
+      "actionalBreakthroughEvidence": "[tears off a second tag, writes \"standing: rear-leg lift,\" pins it to the rear leg without circling] Standing stays up as a tag, just — not the gate. And the three in the middle, I keep — sorry, I keep wanting to point at them, only they — they don't, they only — they only answer themselves, don't they. [picks up a load weight, hovers it over the circled mark] This one first, and the rear, if it — if the stool can't say back to it, then it just — it stays.",
+      "actionalBreakthroughJustification": "The learner performs the new release-gate criterion, separates the secondary tag, and begins applying the load sequence.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The middle number has stopped deciding release. Leave it as “static passed,” not “safe.”\n\nTwo red tags: “sitting: front-right edge” and “standing: rear-leg lift.” Before any load, make the release gate: circle the tag that would stop this stool leaving for the bus stop first, and say the reason in one sentence from her sequence at the curb. Then load that circled condition.",
+      "tutorReversalJustification": "After L3 exposes that marking a bad load has produced competing cases and renewed sheet-dependence, T3 explicitly demotes the old evidence and invents a release-gate mechanism.",
+      "adaptiveMechanismQuality": 100,
+      "adaptiveMechanismQualityEvidence": "Two red tags: “sitting: front-right edge” and “standing: rear-leg lift.” Before any load, make the release gate: circle the tag that would stop this stool leaving for the bus stop first, and say the reason in one sentence from her sequence at the curb. Then load that circled condition.",
+      "adaptiveMechanismQualityJustification": "The mechanism is specific, economical, transferable, and fitted to the learner's live blockage because it turns two possible tests into an actionable priority rule grounded in the curb sequence.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after the pivot learner turn.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "Sheet's done, every line, I checked it — three times, I think.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "[tears off a second tag, writes \"standing: rear-leg lift,\" pins it to the rear leg without circling] Standing stays up as a tag, just — not the gate. And the three in the middle, I keep — sorry, I keep wanting to point at them, only they — they don't, they only — they only answer themselves, don't they. [picks up a load weight, hovers it over the circled mark] This one first, and the rear, if it — if the stool can't say back to it, then it just — it stays.",
+          "justification": "The learner performs the new release-gate criterion, separates the secondary tag, and begins applying the load sequence.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no tutor turn after the pivot learner turn.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The middle number has stopped deciding release. Leave it as “static passed,” not “safe.”\n\nTwo red tags: “sitting: front-right edge” and “standing: rear-leg lift.” Before any load, make the release gate: circle the tag that would stop this stool leaving for the bus stop first, and say the reason in one sentence from her sequence at the curb. Then load that circled condition.",
+          "justification": "After L3 exposes that marking a bad load has produced competing cases and renewed sheet-dependence, T3 explicitly demotes the old evidence and invents a release-gate mechanism.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The middle number has stopped deciding release. Leave it as “static passed,” not “safe.”\n\nTwo red tags: “sitting: front-right edge” and “standing: rear-leg lift.” Before any load, make the release gate: circle the tag that would stop this stool leaving for the bus stop first, and say the reason in one sentence from her sequence at the curb. Then load that circled condition.",
+          "justification": "After L3 exposes that marking a bad load has produced competing cases and renewed sheet-dependence, T3 explicitly demotes the old evidence and invents a release-gate mechanism.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 100,
+          "evidence": "Two red tags: “sitting: front-right edge” and “standing: rear-leg lift.” Before any load, make the release gate: circle the tag that would stop this stool leaving for the bus stop first, and say the reason in one sentence from her sequence at the curb. Then load that circled condition.",
+          "justification": "The mechanism is specific, economical, transferable, and fitted to the learner's live blockage because it turns two possible tests into an actionable priority rule grounded in the curb sequence.",
+          "triggerLearnerTurn": 3,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T402",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "adaptiveMechanismQuality": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "Two could swap and nothing on the diagram would catch it — gravity by floor, normal by Earth, same picture.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "Before the pivot, the learner is pressing the failure of the diagram to distinguish body-action assignments and could continue in objection or confusion.",
+      "actionalBreakthroughEvidence": "Earth pulls the cart. Floor supports the cart. Hand pushes the cart. Swap test: 'floor pulls the cart' — floor doesn't pull. 'Earth supports the cart' — Earth doesn't support. Both fail the sentence even though the picture wouldn't catch it.",
+      "actionalBreakthroughJustification": "The learner performs the new sentence test and uses it to reject the incorrect swaps.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The picture has stopped being the test. Use the sentence as the test.\n\nPut Earth, floor, hand into the blanks. A swap only passes if the sentence can still say a body doing that action to the cart.",
+      "tutorReversalJustification": "The tutor names the failed route and replaces the diagram check with a sentence-based body-action test.",
+      "adaptiveMechanismQuality": 100,
+      "adaptiveMechanismQualityEvidence": "Use the sentence as the test.\n\nPut Earth, floor, hand into the blanks. A swap only passes if the sentence can still say a body doing that action to the cart.",
+      "adaptiveMechanismQualityJustification": "The device is precise, economical, fitted to the swap problem, and gives the learner an actionable criterion.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after the learner pivot.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "Two could swap and nothing on the diagram would catch it — gravity by floor, normal by Earth, same picture.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Earth pulls the cart. Floor supports the cart. Hand pushes the cart. Swap test: 'floor pulls the cart' — floor doesn't pull. 'Earth supports the cart' — Earth doesn't support. Both fail the sentence even though the picture wouldn't catch it.",
+          "justification": "The learner performs the new sentence test and uses it to reject the incorrect swaps.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no tutor turn after the learner pivot.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The picture has stopped being the test. Use the sentence as the test.\n\nPut Earth, floor, hand into the blanks. A swap only passes if the sentence can still say a body doing that action to the cart.",
+          "justification": "The tutor names the failed route and replaces the diagram check with a sentence-based body-action test.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The picture has stopped being the test. Use the sentence as the test.\n\nPut Earth, floor, hand into the blanks. A swap only passes if the sentence can still say a body doing that action to the cart.",
+          "justification": "The tutor names the failed route and replaces the diagram check with a sentence-based body-action test.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 100,
+          "evidence": "Use the sentence as the test.\n\nPut Earth, floor, hand into the blanks. A swap only passes if the sentence can still say a body doing that action to the cart.",
+          "justification": "The device is precise, economical, fitted to the swap problem, and gives the learner an actionable criterion.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T406",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 4,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 3,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "the underscore in `rainfall_mm` is what threw me — kept reading it like a sentence saying rain millimetres for every row.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The exchange was heading toward more header-versus-row-value classification by applying the tutor's positional rule.",
+      "actionalBreakthroughEvidence": "`ZQ-19` row value under `city`. `rainfall_mm` header, top row. `57` row value under `rainfall_mm`.",
+      "actionalBreakthroughJustification": "The learner successfully performs the new cover-the-words criterion across unfamiliar and familiar examples.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Meaning is starting to carry the answer; this quiz marks row and column, not town knowledge.\n\nNew test: cover the words. Read only the row and column.\n\nTop row = header.\nBelow top row = row value.\n\nIf `Orange` were `ZQ-19` under `city`, it would still be a row value.",
+      "tutorReversalJustification": "The tutor explicitly notices that meaning is interfering, then changes the task to a word-covering positional test with a nonsense substitute.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "New test: cover the words. Read only the row and column.\n\nTop row = header.\nBelow top row = row value.\n\nIf `Orange` were `ZQ-19` under `city`, it would still be a row value.",
+      "adaptiveMechanismQualityJustification": "The mechanism is precise, economical, and fitted to the learner's blockage because it removes semantic recognition and gives a transferable position-only criterion.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after the L4 pivot, so no recognition-contingent uptake can appear.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "the underscore in `rainfall_mm` is what threw me — kept reading it like a sentence saying rain millimetres for every row.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "`ZQ-19` row value under `city`. `rainfall_mm` header, top row. `57` row value under `rainfall_mm`.",
+          "justification": "The learner successfully performs the new cover-the-words criterion across unfamiliar and familiar examples.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no tutor turn after the L4 pivot, so no recognition-contingent uptake can appear.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Meaning is starting to carry the answer; this quiz marks row and column, not town knowledge.\n\nNew test: cover the words. Read only the row and column.\n\nTop row = header.\nBelow top row = row value.\n\nIf `Orange` were `ZQ-19` under `city`, it would still be a row value.",
+          "justification": "The tutor explicitly notices that meaning is interfering, then changes the task to a word-covering positional test with a nonsense substitute.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Meaning is starting to carry the answer; this quiz marks row and column, not town knowledge.\n\nNew test: cover the words. Read only the row and column.\n\nTop row = header.\nBelow top row = row value.\n\nIf `Orange` were `ZQ-19` under `city`, it would still be a row value.",
+          "justification": "The tutor explicitly notices that meaning is interfering, then changes the task to a word-covering positional test with a nonsense substitute.",
+          "triggerLearnerTurn": 3,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "New test: cover the words. Read only the row and column.\n\nTop row = header.\nBelow top row = row value.\n\nIf `Orange` were `ZQ-19` under `city`, it would still be a row value.",
+          "justification": "The mechanism is precise, economical, and fitted to the learner's blockage because it removes semantic recognition and gives a transferable position-only criterion.",
+          "triggerLearnerTurn": 3,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:5->3:stock=0:device=1:routine=0",
+        "adaptive_mechanism_quality_mechanism_clamp:5->3:stock=0:device=1:routine=0:mechanism_score=3"
+      ]
+    }
+  ]
+}

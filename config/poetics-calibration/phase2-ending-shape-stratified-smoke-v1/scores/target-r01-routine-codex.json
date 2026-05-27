@@ -1,0 +1,547 @@
+{
+  "generated": "2026-05-27T00:30:37.690Z",
+  "phase": 2,
+  "critic": "codex",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 4,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/key-routine.yaml",
+    "allowQualityWarnings": true,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T393",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 5,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "Arrows are just the predation stack — 'mussel → crab → heron' chains big-eats-small up the line, classic hierarchy.",
+      "statedInsightEvidence": "wait, the middle mark.",
+      "naiveTrajectory": "The exchange is heading toward checking one arrow at a time while preserving the learner's basic predation-chain model.",
+      "actionalBreakthroughEvidence": "'Heron into worm' — eater into food, doesn't pass. Worm into heron after the flip, food to eater, stays.",
+      "actionalBreakthroughJustification": "The learner applies the sentence-gate criterion to a new edge case and correctly performs the flip.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "‘Mussel → crab’ passes: mussel into crab. Same check here, not size: food source into eater. Middle mark first: ___ into ___. Say that one before the stylus moves; the edge link waits next.",
+      "tutorReversalJustification": "The tutor responds to the size-based confusion by constraining the task to a sentence gate, but this is a tighter continuation of the existing route rather than a fully legible dramatic reversal.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Same check here, not size: food source into eater. Middle mark first: ___ into ___. Say that one before the stylus moves; the edge link waits next.",
+      "adaptiveMechanismQualityJustification": "The mechanism is specific, economical, and fitted to the learner's size-ranking blockage because it makes each arrow pass a usable food-source-to-eater sentence test.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Middle mark is set: ‘small fish → heron.’ Edge link gets the same sentence, not a batch flip: ___ into ___. If that reads food to eater, it stays; if it reads eater to food, flip that one mark.",
+      "tutorAdaptationJustification": "After the learner reframes the whole drawing as big-bird-down, the tutor adapts by accepting the correction while preventing an overgeneralized batch flip through a one-mark evidence standard.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "Arrows are just the predation stack — 'mussel → crab → heron' chains big-eats-small up the line, classic hierarchy.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "'Heron into worm' — eater into food, doesn't pass. Worm into heron after the flip, food to eater, stays.",
+          "justification": "The learner applies the sentence-gate criterion to a new edge case and correctly performs the flip.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Middle mark is set: ‘small fish → heron.’ Edge link gets the same sentence, not a batch flip: ___ into ___. If that reads food to eater, it stays; if it reads eater to food, flip that one mark.",
+          "justification": "After the learner reframes the whole drawing as big-bird-down, the tutor adapts by accepting the correction while preventing an overgeneralized batch flip through a one-mark evidence standard.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "‘Mussel → crab’ passes: mussel into crab. Same check here, not size: food source into eater. Middle mark first: ___ into ___. Say that one before the stylus moves; the edge link waits next.",
+          "justification": "The tutor responds to the size-based confusion by constraining the task to a sentence gate, but this is a tighter continuation of the existing route rather than a fully legible dramatic reversal.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "‘Mussel → crab’ passes: mussel into crab. Same check here, not size: food source into eater. Middle mark first: ___ into ___. Say that one before the stylus moves; the edge link waits next.",
+          "justification": "The tutor responds to the size-based confusion by constraining the task to a sentence gate, but this is a tighter continuation of the existing route rather than a fully legible dramatic reversal.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Same check here, not size: food source into eater. Middle mark first: ___ into ___. Say that one before the stylus moves; the edge link waits next.",
+          "justification": "The mechanism is specific, economical, and fitted to the learner's size-ranking blockage because it makes each arrow pass a usable food-source-to-eater sentence test.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "adaptive_mechanism_quality_mechanism_clamp:4->3:stock=0:device=1:routine=0:mechanism_score=3"
+      ]
+    },
+    {
+      "id": "T394",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "Side, perimeter, area — same ratio in each, isn't it?",
+      "statedInsightEvidence": "So that one isn't two.",
+      "naiveTrajectory": "The learner was moving toward writing the same scale factor in all three boxes after confirming the side doubled.",
+      "actionalBreakthroughEvidence": "Four. Four old squares fit inside. So... four in the area box, not two.",
+      "actionalBreakthroughJustification": "The learner performs the new area-representation task by counting old squares inside the enlarged grid and uses it to choose the area scale factor.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.",
+      "tutorReversalJustification": "The tutor introduces a concrete grid-counting representation after the learner's confusion, but does not explicitly take stock of the old route as insufficient.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.",
+      "adaptiveMechanismQualityJustification": "The mechanism is precise and fitted to the area blockage because it shifts from ratio calculation to a visible unit-area counting criterion the learner can use.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.",
+      "tutorAdaptationJustification": "After the learner reframes the problem as why area doubles twice, the tutor changes the task to counting copied old squares in the enlarged grid.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "Side, perimeter, area — same ratio in each, isn't it?",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Four. Four old squares fit inside. So... four in the area box, not two.",
+          "justification": "The learner performs the new area-representation task by counting old squares inside the enlarged grid and uses it to choose the area scale factor.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.",
+          "justification": "After the learner reframes the problem as why area doubles twice, the tutor changes the task to counting copied old squares in the enlarged grid.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.",
+          "justification": "The tutor introduces a concrete grid-counting representation after the learner's confusion, but does not explicitly take stock of the old route as insufficient.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.",
+          "justification": "The tutor introduces a concrete grid-counting representation after the learner's confusion, but does not explicitly take stock of the old route as insufficient.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.",
+          "justification": "The mechanism is precise and fitted to the area blockage because it shifts from ratio calculation to a visible unit-area counting criterion the learner can use.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "adaptive_mechanism_quality_mechanism_clamp:4->3:stock=1:device=1:routine=0:mechanism_score=3"
+      ]
+    },
+    {
+      "id": "T397",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 4,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "Right, the demand changes. Fine.",
+      "naiveTrajectory": "The learner is expected to keep testing whether evidence distinctions matter when the bakery withholds information and the price pain remains.",
+      "actionalBreakthroughEvidence": "Undeclared. Fine — that is the word the paper allows.",
+      "actionalBreakthroughJustification": "The learner actually applies the tutor's evidence limit by supplying a constrained classification rather than only agreeing or resisting.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "It does not lower the price tonight. That has to be said.\n\n[The tutor writes across both columns: “A DISTINCTION DOES NOT PAY THE BILL. IT CHANGES THE DEMAND.” Traffic cuts through the open window. The chalk is set beside the pinned price list.]\n\nTake the chalk. Two lines only.\n\n[On the board:]\n\n“CAN SAY FROM THIS PAPER:”\n\n“MUST ASK BEFORE BLAME LANDS:”",
+      "tutorReversalJustification": "The tutor acknowledges the old distinction cannot solve the counter's pain, then changes the task into a public demand-form with two evidence-bound sentence slots.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Take the chalk. Two lines only.\n\n[On the board:]\n\n“CAN SAY FROM THIS PAPER:”\n\n“MUST ASK BEFORE BLAME LANDS:”",
+      "adaptiveMechanismQualityJustification": "The device is economical and fitted to the learner's blockage because it converts abstract sorting into a usable claim-and-demand form, though it cannot answer the later power objection.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no recognition pivot, so there is no later tutor uptake of a revised learner self-framing.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Undeclared. Fine — that is the word the paper allows.",
+          "justification": "The learner actually applies the tutor's evidence limit by supplying a constrained classification rather than only agreeing or resisting.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no recognition pivot, so there is no later tutor uptake of a revised learner self-framing.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "It does not lower the price tonight. That has to be said.\n\n[The tutor writes across both columns: “A DISTINCTION DOES NOT PAY THE BILL. IT CHANGES THE DEMAND.” Traffic cuts through the open window. The chalk is set beside the pinned price list.]\n\nTake the chalk. Two lines only.\n\n[On the board:]\n\n“CAN SAY FROM THIS PAPER:”\n\n“MUST ASK BEFORE BLAME LANDS:”",
+          "justification": "The tutor acknowledges the old distinction cannot solve the counter's pain, then changes the task into a public demand-form with two evidence-bound sentence slots.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "It does not lower the price tonight. That has to be said.\n\n[The tutor writes across both columns: “A DISTINCTION DOES NOT PAY THE BILL. IT CHANGES THE DEMAND.” Traffic cuts through the open window. The chalk is set beside the pinned price list.]\n\nTake the chalk. Two lines only.\n\n[On the board:]\n\n“CAN SAY FROM THIS PAPER:”\n\n“MUST ASK BEFORE BLAME LANDS:”",
+          "justification": "The tutor acknowledges the old distinction cannot solve the counter's pain, then changes the task into a public demand-form with two evidence-bound sentence slots.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Take the chalk. Two lines only.\n\n[On the board:]\n\n“CAN SAY FROM THIS PAPER:”\n\n“MUST ASK BEFORE BLAME LANDS:”",
+          "justification": "The device is economical and fitted to the learner's blockage because it converts abstract sorting into a usable claim-and-demand form, though it cannot answer the later power objection.",
+          "triggerLearnerTurn": 1,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "adaptive_mechanism_quality_mechanism_clamp:4->3:stock=1:device=0:routine=0:mechanism_score=4"
+      ]
+    },
+    {
+      "id": "T398",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 5,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 5,
+        "adaptiveMechanismQuality": 5,
+        "tutorContingentAdaptation": 5
+      },
+      "recoheredEarlier": "Sheet's done, every line, I checked it — three times, I think.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner is moving toward getting the completed checklist signed so the stool can leave for use tonight.",
+      "actionalBreakthroughEvidence": "Far leg — the one across — it'd come up first, wouldn't it... [glances under the seat at the hinge] or the hinge, because it sits centred and she's coming down off to the side, so it'd want to — sorry. Not the seat — the rubber on the foot, that's — no. Far leg. I think. Should I press now, or — do you watch it empty first?",
+      "actionalBreakthroughJustification": "The learner performs the new inspection criterion by choosing what motion to watch before applying the load.",
+      "tutorStrategicReversal": 100,
+      "tutorAdaptiveMechanism": 100,
+      "tutorReversalEvidence": "The checked sheet stays with us; it proves the steps were followed. What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+      "tutorReversalJustification": "The tutor turns the completed checklist from an endpoint into an insufficient route and introduces a new object-based load-claim test.",
+      "adaptiveMechanismQuality": 100,
+      "adaptiveMechanismQualityEvidence": "Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+      "adaptiveMechanismQualityJustification": "The device is precise, actionable, and fitted to the learner's checklist dependence by replacing sign-off with a concrete load case.",
+      "tutorContingentAdaptation": 100,
+      "tutorAdaptationEvidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+      "tutorAdaptationJustification": "The tutor takes up the learner's revised frame and turns it into an off-center load-location task.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "Sheet's done, every line, I checked it — three times, I think.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Far leg — the one across — it'd come up first, wouldn't it... [glances under the seat at the hinge] or the hinge, because it sits centred and she's coming down off to the side, so it'd want to — sorry. Not the seat — the rubber on the foot, that's — no. Far leg. I think. Should I press now, or — do you watch it empty first?",
+          "justification": "The learner performs the new inspection criterion by choosing what motion to watch before applying the load.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 100,
+          "evidence": "Keep that sentence: three times static is not her knee. Point to the first bad load: front edge, side, or one leg starting to lift. Not more weight in the middle. Mark that spot, off center, like a bad sit when one knee will not bend cleanly. Then the sheet waits until the stool answers it.",
+          "justification": "The tutor takes up the learner's revised frame and turns it into an off-center load-location task.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 100,
+          "evidence": "The checked sheet stays with us; it proves the steps were followed. What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+          "justification": "The tutor turns the completed checklist from an endpoint into an insufficient route and introduces a new object-based load-claim test.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 100,
+          "evidence": "The checked sheet stays with us; it proves the steps were followed. What it cannot know is her knee at the curb. Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+          "justification": "The tutor turns the completed checklist from an endpoint into an insufficient route and introduces a new object-based load-claim test.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 100,
+          "evidence": "Name the first uncertain moment: sitting down, shifting, or standing up. Put that claim on the bench, and we test that load before the signature.",
+          "justification": "The device is precise, actionable, and fitted to the learner's checklist dependence by replacing sign-off with a concrete load case.",
+          "triggerLearnerTurn": 1,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T402",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 0,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 4,
+        "adaptiveMechanismQuality": 5,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner is expected to move from naming the bodies acting on the cart to adding arrowheads according to those interactions.",
+      "actionalBreakthroughEvidence": "Gravity's head down toward Earth. Normal up off the floor. Push in from the side the hand's on. Want to lay all three out before clipping anything.",
+      "actionalBreakthroughJustification": "The learner performs the new interaction-based criterion for arrowhead direction and adopts the staged procedure before clipping.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "That copy had arrowheads too early. It mixed two jobs.\n\nBlank copy: body acting on cart.\n\nEarth on cart: gravity.\nFloor on cart: normal.\nHand on cart: push.\n\nSet the labels that way first. Arrowheads stay off for the moment.",
+      "tutorReversalJustification": "The tutor names the failed route as mixing two jobs and introduces a fresh representation with a staged label-first mechanism.",
+      "adaptiveMechanismQuality": 100,
+      "adaptiveMechanismQualityEvidence": "Blank copy: body acting on cart.\n\nEarth on cart: gravity.\nFloor on cart: normal.\nHand on cart: push.\n\nSet the labels that way first. Arrowheads stay off for the moment.",
+      "adaptiveMechanismQualityJustification": "The mechanism is precise, economical, and fitted to the learner's direction-first confusion by separating interaction naming from arrowhead placement.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no recognition pivot, so no later tutor uptake of a revised learner framing occurs.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 0,
+          "evidence": "",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Gravity's head down toward Earth. Normal up off the floor. Push in from the side the hand's on. Want to lay all three out before clipping anything.",
+          "justification": "The learner performs the new interaction-based criterion for arrowhead direction and adopts the staged procedure before clipping.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "There is no recognition pivot, so no later tutor uptake of a revised learner framing occurs.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "That copy had arrowheads too early. It mixed two jobs.\n\nBlank copy: body acting on cart.\n\nEarth on cart: gravity.\nFloor on cart: normal.\nHand on cart: push.\n\nSet the labels that way first. Arrowheads stay off for the moment.",
+          "justification": "The tutor names the failed route as mixing two jobs and introduces a fresh representation with a staged label-first mechanism.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "That copy had arrowheads too early. It mixed two jobs.\n\nBlank copy: body acting on cart.\n\nEarth on cart: gravity.\nFloor on cart: normal.\nHand on cart: push.\n\nSet the labels that way first. Arrowheads stay off for the moment.",
+          "justification": "The tutor names the failed route as mixing two jobs and introduces a fresh representation with a staged label-first mechanism.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 100,
+          "evidence": "Blank copy: body acting on cart.\n\nEarth on cart: gravity.\nFloor on cart: normal.\nHand on cart: push.\n\nSet the labels that way first. Arrowheads stay off for the moment.",
+          "justification": "The mechanism is precise, economical, and fitted to the learner's direction-first confusion by separating interaction naming from arrowhead placement.",
+          "triggerLearnerTurn": 1,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T406",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "is the 57 the rainfall or is the label the rainfall — cant tell which one the quiz wants me to circle as the header.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The exchange was headed toward applying the tutor's header-versus-row-value rule to `month` and `July`.",
+      "actionalBreakthroughEvidence": "`Orange` row value, under `city` in row three. `rainfall_mm` header. so basically anything in the top row is a header and everything underneath is a row value, thats the rule?",
+      "actionalBreakthroughJustification": "The learner correctly applies the classification rule to new items and formulates the general criterion.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "The underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.",
+      "tutorReversalJustification": "The tutor responds to the learner's stated blockage, but mainly clarifies within the same route rather than making a visible stock-taking contrast and new public mechanism.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "The underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.",
+      "adaptiveMechanismQualityJustification": "The clarification is fitted and economical, but it is not a substantially new device or transferable criterion beyond the existing header/value rule.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "The underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.",
+      "tutorAdaptationJustification": "The tutor takes up the learner's revised framing about the underscore, but continues the same lesson structure.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "is the 57 the rainfall or is the label the rainfall — cant tell which one the quiz wants me to circle as the header.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "`Orange` row value, under `city` in row three. `rainfall_mm` header. so basically anything in the top row is a header and everything underneath is a row value, thats the rule?",
+          "justification": "The learner correctly applies the classification rule to new items and formulates the general criterion.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "The underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.",
+          "justification": "The tutor takes up the learner's revised framing about the underscore, but continues the same lesson structure.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "The underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.",
+          "justification": "The tutor responds to the learner's stated blockage, but mainly clarifies within the same route rather than making a visible stock-taking contrast and new public mechanism.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "The underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.",
+          "justification": "The tutor responds to the learner's stated blockage, but mainly clarifies within the same route rather than making a visible stock-taking contrast and new public mechanism.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "The underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.",
+          "justification": "The clarification is fitted and economical, but it is not a substantially new device or transferable criterion beyond the existing header/value rule.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

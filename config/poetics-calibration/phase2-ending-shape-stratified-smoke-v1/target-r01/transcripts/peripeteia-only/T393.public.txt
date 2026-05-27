@@ -1,0 +1,29 @@
+STAGE: [The tablet lies face-up between them on the desk, the learner's marked diagram already loaded — three penciled arrows running across a saltmarsh sketch.]
+
+LEARNER: "Arrows are just the predation stack — 'mussel → crab → heron' chains big-eats-small up the line, classic hierarchy. Should be a quick sign-off before rounds, yeah? ...not sure why this one's pulling a closer look, though."
+
+TUTOR: [slides the modelers’ arrow-key beside the tablet, taps “crab → heron,” then rests the stylus on “mussel → crab.”]
+
+"Notation check first: arrow from food to eater. ‘Crab → heron’ means energy into the heron; the predation relationship is there, but the arrow isn’t ranking or chasing. Run this nearby mark through the same frame: energy from ___ to ___. If it reads food to eater, it stays; if not, flip it before upload."
+
+LEARNER: [barely glances at "mussel → crab"]
+
+"Right, that one's calories-up — mussel into crab, food to eater, fine. So the whole web's basically one big energy escalator going — wait, the middle mark. I drew that arrow from the bigger animal because the heron... no, hang on, who's actually eating who there — let me run it against the key instead of just calling it from the size."
+
+STAGE: [the tablet is turned ninety degrees on the desk so the saltmarsh sketch now sits upright between them; the penciled arrows remain visible, but a faint fourth mark near the sketch's edge — a link the learner had not discussed — comes into clear view]
+
+TUTOR: [sets the arrow-key card under the middle mark and parks the stylus beside it; the faint edge link stays uncovered.]
+
+"‘Mussel → crab’ passes: mussel into crab. Same check here, not size: food source into eater. Middle mark first: ___ into ___. Say that one before the stylus moves; the edge link waits next."
+
+STAGE: [The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]
+
+LEARNER: "Crab into heron — heron's the eater, so the arrow lands on heron, not from it. Middle mark's the wrong way; flipping to "crab → heron" now. Went off who's bigger instead of food source — that's the slip. Edge link next, already squinting at it."
+
+TUTOR: [sets a modelers’ upload slip over the tablet margin, with two boxes: “energy source” and “consumer.”]
+
+"The arrow key caught the middle mark, but it won’t catch the bigger-animal habit by itself. For the edge link, fill the slip first: source in the left box, consumer in the right. If the sentence reads ‘energy from ___ enters ___,’ then draw the arrow; if the boxes stall, the upload waits."
+
+LEARNER: [picks up the slip, stylus hovering]
+
+"Left box — algae, near as the faint mark reads. Right box, mussel. "Energy from algae enters mussel." Runs. Arrow goes algae → mussel. [eyes sliding across the web] ...hang on. The little side mark, small fish to the gull — that one I drew gull-to-fish because the gull's the bigger animal again. Slip's not filled on that one yet; the bigger-animal habit was about to ride straight through."

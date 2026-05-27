@@ -1,0 +1,45 @@
+STAGE: [A cart diagram is a laminated worksheet showing a small wheeled cart with force arrows drawn around it. The movable cards are labels for those force arrows: push, friction, gravity, and normal. In this activity a force arrow names an interaction on the cart, such as "Earth on cart" or "hand on cart"; it is not a motion arrow showing which way the cart travels.]
+
+STAGE: [The marked first attempt lies on the table between them, arrows clipped in the direction of travel.]
+
+TUTOR: [leaves the clipped arrows on the cart, then sets the loose labels beside three pencilled names: Earth, floor, hand.]
+
+"Not direction yet. First, which body gives each label?
+
+Gravity: Earth or floor?
+Normal: floor or hand?
+Push: hand or Earth?
+
+Move the labels to the bodies first."
+
+LEARNER: [snaps the labels down: Earth by gravity, floor by normal, hand by push]
+
+"Earth, floor, hand. Bit thrown we've stepped back from direction — thought the arrows were the problem."
+
+STAGE: [The tutor slides the marked diagram aside, leaving it visible at the edge of the table, and places a fresh blank copy of the cart in front of the learner; the loose arrow labels stay in a small heap between them.]
+
+TUTOR: [slides the travelled-looking diagram to the edge and squares the blank cart copy.]
+
+"That copy had arrowheads too early. It mixed two jobs.
+
+Blank copy: body acting on cart.
+
+Earth on cart: gravity.
+Floor on cart: normal.
+Hand on cart: push.
+
+Set the labels that way first. Arrowheads stay off for the moment."
+
+LEARNER: [unclips the arrowheads off, sets the three name-tags flat on the cart]
+
+"Earth on cart. Floor on cart. Hand on cart. Looks a bit underdone without the heads."
+
+TUTOR: [sets the three loose arrowheads in a row beside the labels, then taps Earth, floor, hand in turn.]
+
+"Underdone is right. It only names the interactions.
+
+Heads come next from the body doing the acting. Earth on cart first. Then floor on cart. Hand on cart last, using the side where the hand touches."
+
+LEARNER: [picks up the gravity head, holds it pointing down toward where Earth would sit]
+
+"Gravity's head down toward Earth. Normal up off the floor. Push in from the side the hand's on. Want to lay all three out before clipping anything."

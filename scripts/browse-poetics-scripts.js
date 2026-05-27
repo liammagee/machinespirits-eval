@@ -269,6 +269,25 @@ function listItems(db, filters = {}) {
               OR CAST(json_extract(sx.metadata, '$.role_symmetric_scores.tutor_adaptive_mechanism_quality.score100') AS REAL) >= 75
             )
         ) AS adaptiveMechanismQualityCount,
+        (
+          SELECT COUNT(*)
+          FROM poetics_scores sx
+          WHERE sx.item_id = i.id
+            AND (
+              CAST(json_extract(sx.metadata, '$.actional_breakthrough') AS REAL) >= 75
+              OR CAST(json_extract(sx.metadata, '$.role_symmetric_scores.learner_actional_breakthrough.score100') AS REAL) >= 75
+            )
+            AND (
+              CAST(sx.recontextualization AS REAL) >= 75
+              OR CAST(json_extract(sx.metadata, '$.role_symmetric_scores.learner_self_reframe.score100') AS REAL) >= 75
+            )
+            AND (
+              CAST(json_extract(sx.metadata, '$.tutor_adaptive_mechanism') AS REAL) >= 75
+              OR CAST(json_extract(sx.metadata, '$.tutor_strategic_reversal') AS REAL) >= 75
+              OR CAST(json_extract(sx.metadata, '$.role_symmetric_scores.tutor_adaptive_mechanism.score100') AS REAL) >= 75
+              OR CAST(json_extract(sx.metadata, '$.role_symmetric_scores.tutor_strategy_reversal.score100') AS REAL) >= 75
+            )
+        ) AS endingShapeCount,
         COUNT(DISTINCT l.id) AS labelCount,
         COUNT(DISTINCT rf.id) AS reviewFlagCount
       FROM poetics_items i
@@ -312,6 +331,7 @@ function listItems(db, filters = {}) {
         criticForms: parseCriticForms(row.criticForms),
         actionalBreakthroughCount: Number(row.actionalBreakthroughCount || 0),
         adaptiveMechanismQualityCount: Number(row.adaptiveMechanismQualityCount || 0),
+        endingShapeCount: Number(row.endingShapeCount || 0),
       };
       hydrated.branchValidity = hydrated.tutorAdaptationMetadata?.branch_validity || null;
       hydrated.peripeteia = hydrated.tutorAdaptationMetadata?.peripeteia || null;
@@ -367,6 +387,11 @@ function scoreValue(value) {
   return value == null || value === '' ? null : Number(value);
 }
 
+function scorePasses(value, threshold = 75) {
+  const numeric = scoreValue(value);
+  return numeric != null && Number.isFinite(numeric) && numeric >= threshold;
+}
+
 function roleSymmetricScoresForScore(row) {
   const metadata = row.metadata || {};
   const roleScores = metadata.role_symmetric_scores || {};
@@ -404,6 +429,64 @@ function roleSymmetricScoresForScore(row) {
     tutorAdaptiveMechanismQualitySource:
       quality.source || (metadata.adaptive_mechanism_quality == null ? null : 'metadata'),
   };
+}
+
+function endingShapeDiagnosticsForScores(scores = []) {
+  const rows = scores.map((score) => {
+    const role = score.roleScores || roleSymmetricScoresForScore(score);
+    const tutorAdaptiveMove = scorePasses(role.tutorStrategyReversalScore);
+    const learnerPerformance = scorePasses(role.learnerActionalBreakthroughScore);
+    const learnerReorientation = scorePasses(role.learnerSelfReframeScore);
+    const adaptiveQuality = scorePasses(role.tutorAdaptiveMechanismQualityScore);
+    return {
+      critic: score.critic_model,
+      form: score.form_class,
+      tutorAdaptiveMove,
+      learnerPerformance,
+      learnerReorientation,
+      adaptiveQuality,
+      completeEndingShape: tutorAdaptiveMove && learnerPerformance && learnerReorientation,
+      scores: {
+        tutorAdaptiveMove: role.tutorStrategyReversalScore,
+        learnerPerformance: role.learnerActionalBreakthroughScore,
+        learnerReorientation: role.learnerSelfReframeScore,
+        adaptiveQuality: role.tutorAdaptiveMechanismQualityScore,
+      },
+      evidence: {
+        tutorAdaptiveMove: role.tutorStrategyReversalEvidence,
+        learnerPerformance: role.learnerActionalBreakthroughEvidence,
+        learnerReorientation: role.learnerSelfReframeEvidence,
+        adaptiveQuality: role.tutorAdaptiveMechanismQualityEvidence,
+      },
+    };
+  });
+  const count = (key) => rows.filter((row) => row[key]).length;
+  const totalCritics = rows.length;
+  const diagnostics = {
+    totalCritics,
+    tutorAdaptiveMoveVotes: count('tutorAdaptiveMove'),
+    learnerPerformanceVotes: count('learnerPerformance'),
+    learnerReorientationVotes: count('learnerReorientation'),
+    adaptiveQualityVotes: count('adaptiveQuality'),
+    completeEndingShapeVotes: count('completeEndingShape'),
+    criticRows: rows,
+    disagreementFlags: [],
+  };
+  if (totalCritics > 1) {
+    for (const [key, label] of [
+      ['tutorAdaptiveMove', 'tutor adaptive move'],
+      ['learnerPerformance', 'learner public performance'],
+      ['learnerReorientation', 'learner reorientation'],
+      ['adaptiveQuality', 'adaptive mechanism quality'],
+      ['completeEndingShape', 'complete ending shape'],
+    ]) {
+      const votes = count(key);
+      if (votes > 0 && votes < totalCritics) {
+        diagnostics.disagreementFlags.push(`${label}: ${votes}/${totalCritics}`);
+      }
+    }
+  }
+  return diagnostics;
 }
 
 function getItem(db, id) {
@@ -508,6 +591,7 @@ function getItem(db, id) {
     },
     scores,
     consensus,
+    endingShapeDiagnostics: endingShapeDiagnosticsForScores(scores),
     labels,
     reviewFlags,
     tutorAdaptation: tutorAdaptation
@@ -937,6 +1021,36 @@ th {
   font-size: 12px;
   line-height: 1.45;
 }
+.diagnostic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin: 0 0 16px;
+}
+.diagnostic-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  background: #fff;
+}
+.diagnostic-card strong {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.diagnostic-card .metric {
+  margin-top: 4px;
+  font-size: 22px;
+  font-weight: 700;
+}
+.diagnostic-card .quote {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
 .metric-help {
   color: var(--muted);
   font-size: 11px;
@@ -1081,10 +1195,38 @@ const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const inlineEsc = (s) => esc(s).replace(/\\[([^\\]]+)\\]/g, '<span class="inline-aside">[$1]</span>');
 const scoreOrNA = (value) => value == null || value === '' || Number.isNaN(Number(value)) ? 'n/a' : Number(value).toFixed(1);
+const voteMetric = (count, total) => total ? count + '/' + total : 'n/a';
 const boolOrNA = (value) => value == null ? 'n/a' : value ? 'true' : 'false';
 
 function metricLabel(label, help) {
   return esc(label) + '<div class="metric-help">' + esc(help) + '</div>';
+}
+
+function firstEvidence(rows, key) {
+  const row = (rows || []).find((entry) => entry[key] && entry.evidence?.[key]) ||
+    (rows || []).find((entry) => entry.evidence?.[key]);
+  return row?.evidence?.[key] ? row.critic + ': ' + row.evidence[key] : '';
+}
+
+function renderEndingShapeDiagnostics(detail) {
+  const diag = detail.endingShapeDiagnostics;
+  if (!diag || !diag.totalCritics) return '';
+  const cards = [
+    ['Tutor adaptive move', diag.tutorAdaptiveMoveVotes, firstEvidence(diag.criticRows, 'tutorAdaptiveMove')],
+    ['Learner performance', diag.learnerPerformanceVotes, firstEvidence(diag.criticRows, 'learnerPerformance')],
+    ['Learner reorientation', diag.learnerReorientationVotes, firstEvidence(diag.criticRows, 'learnerReorientation')],
+    ['Complete ending shape', diag.completeEndingShapeVotes, 'Requires tutor move + learner performance + learner reorientation from the same critic.'],
+  ].map(([label, count, evidence]) =>
+    '<div class="diagnostic-card"><strong>' + esc(label) + '</strong>' +
+    '<div class="metric">' + esc(voteMetric(count, diag.totalCritics)) + '</div>' +
+    (evidence ? '<div class="quote">' + esc(evidence) + '</div>' : '') +
+    '</div>'
+  ).join('');
+  const flags = (diag.disagreementFlags || []).length
+    ? '<div class="chips">' + diag.disagreementFlags.map((flag) => '<span class="chip review">' + esc(flag) + '</span>').join('') + '</div>'
+    : '<div class="chips"><span class="chip recognition">no axis disagreement</span></div>';
+  return '<div class="score-note"><strong>Ending-shape diagnostics.</strong> This panel isolates the mechanism we are trying to tune: tutor changes public device after pressure, learner performs that device, then learner visibly reorients the prior difficulty. Counts are critic votes, not deterministic ground truth.</div>' +
+    '<div class="diagnostic-grid">' + cards + '</div>' + flags;
 }
 
 function previewHref(item) {
@@ -1237,6 +1379,7 @@ function renderItems() {
       consensusChip(item.consensus) +
       (item.scoreCount ? '<span class="chip recognition">' + esc('action ' + item.actionalBreakthroughCount + '/' + item.scoreCount) + '</span>' : '') +
       (item.scoreCount ? '<span class="chip">' + esc('quality ' + item.adaptiveMechanismQualityCount + '/' + item.scoreCount) + '</span>' : '') +
+      (item.scoreCount ? '<span class="chip">' + esc('ending ' + item.endingShapeCount + '/' + item.scoreCount) + '</span>' : '') +
       (item.peripeteiaScore == null ? '' : '<span class="chip">' + esc('peripeteia ' + Math.round(item.peripeteiaScore)) + '</span>') +
       (item.peripeteiaTutorAdaptation ? '<span class="chip recognition">public mechanism</span>' : '') +
       (item.tutorAdaptationScore == null ? '' : '<span class="chip">' + esc('uptake ' + Math.round(item.tutorAdaptationScore)) + '</span>') +
@@ -1313,7 +1456,7 @@ function renderPane() {
     pane.innerHTML = renderTranscriptPreview(detail.samplePreview, detail.sampleText) + renderLabelPanel(current);
     wireLabelPanel();
   } else if (state.tab === 'preview') {
-    pane.innerHTML = renderTranscriptPreview(detail.samplePreview, detail.sampleText);
+    pane.innerHTML = renderEndingShapeDiagnostics(detail) + renderTranscriptPreview(detail.samplePreview, detail.sampleText);
   } else if (state.tab === 'sample') {
     pane.innerHTML = '<pre>' + esc(detail.sampleText || 'No public sample found.') + '</pre>';
   } else if (state.tab === 'full') {
@@ -1322,6 +1465,7 @@ function renderPane() {
     const adaptation = detail.tutorAdaptation;
     const adaptationHtml = renderAdaptationSidecar(adaptation);
     pane.innerHTML = renderConsensusPanel(detail.consensus) +
+      renderEndingShapeDiagnostics(detail) +
       '<div class="score-note"><strong>LLM critic scores.</strong> Each row is one critic model judging the same public transcript. Learner self-reframe is the existing recontextualization axis. Actional breakthrough is separate: did the learner perform a new device or criterion even without narrating self-reframe? Peripeteia tutor adaptation asks whether the tutor visibly changed mechanism after pressure. Adaptive mechanism quality asks whether that new public device is fitted and usable, not just different. Recognition-contingent uptake is a secondary closure axis after a learner reframe. New axes show n/a for older scorer artifacts.</div>' +
       '<table class="score-table"><thead><tr><th>Critic</th><th>Form</th><th>Learner reframe (LLM)</th><th>Actional breakthrough (LLM)</th><th>Peripeteia tutor adaptation (LLM)</th><th>Adaptive mechanism quality (LLM)</th><th>Recognition-contingent uptake (LLM)</th><th>Insight</th><th>Pivot</th><th>Evidence</th></tr></thead><tbody>' +
       detail.scores.map((s) => {
@@ -1548,6 +1692,7 @@ if (path.resolve(process.argv[1] || '') === __filename) {
 
 export {
   createPoeticsBrowserApp,
+  endingShapeDiagnosticsForScores,
   getBlindItem,
   getItem,
   listItems,

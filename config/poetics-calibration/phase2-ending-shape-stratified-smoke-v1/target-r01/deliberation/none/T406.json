@@ -1,0 +1,1718 @@
+{
+  "tid": "T406",
+  "drama_id": "D45",
+  "run": {
+    "generator": "mixed",
+    "role_map": {
+      "director": "claude",
+      "tutor": "codex",
+      "learner": "claude"
+    },
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "none",
+    "director_variation_key": "phase2-ending-shape-stratified-smoke-v1:r01:target",
+    "stage_direction_style": "bare_transcript",
+    "model": "codex@xhigh",
+    "codex_reasoning_effort": "xhigh",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/none/T406.public.txt",
+      "full": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/none/T406.full.md",
+      "stage": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/none/T406.stage.md",
+      "tutor": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/none/T406.tutor.md",
+      "learner": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/none/T406.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "ba3b0a0dbc00f705",
+      "branch_policy": "none",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "none"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-ending-shape-stratified-smoke-v1:r01:target",
+    "scene_setting": "An asynchronous course help-thread in an intro data subject at a regional community college, mid-week evening. A three-row table sits pasted at the top of the thread: columns are city, rainfall_mm, month; rows are Tamworth/June/42, Bathurst/July/57, Orange/August/38. Tomorrow's pretest will ask students to circle which entries are headers and which are row values.",
+    "scene_opening": "",
+    "relationship": "A second-term peer mentor and a first-term student who have never met in person; the help-thread is the only channel between them.",
+    "stakes": "Tomorrow's short auto-graded quiz asks the student to point at row values versus headers, and the student has spent three days treating the column name 'rainfall_mm' as if it were a sentence claiming it rained in every row.",
+    "opening_speaker": "learner",
+    "ending_speaker": "learner",
+    "locale": "Regional Australian community college, modern standard English, typed-thread idiom; rhythm is short and label-anchored rather than oral or seminar-warm. No spelling caricature, no dialectal tics.",
+    "register": "Low-temperature, laconic, pointed at the table; no warmth performance, no exclamation, no AI tutoring cheer; turns sometimes fragmentary as typed messages are.",
+    "stage_direction_style": "bare_transcript",
+    "stage_direction_style_prompt": "No ordinary visible stage direction. Let context be inferred from speech, quoted artifacts, timestamps, or task references.",
+    "voice_constraints": "Speakers point at the table, not at each other. Refer to cells by quoted contents or by row/column position. Do not validate emotionally and do not echo the learner's phrasing back as praise. No 'great question', 'I love that', 'that's a strong intuition', 'you've got this', 'I hear you'. The tutor's vocabulary in the shared prefix stays inside header / field / column / row / value / entry. Do not narrate the scene in either direction. Avoid the standard American AI-tutor preamble-then-question structure; let public turns be short and referential. Pedagogical source: Stage the lesson around a task artifact: a rubric, design brief, lab answer, source packet, or draft paragraph that demands a higher-order move. Dialogue source: Do not add decorative stage direction. Make relation, pressure, and genre legible through speech rhythm and what the speakers refer to. Stage-direction source: No ordinary visible stage direction. Let context be inferred from speech, quoted artifacts, timestamps, or task references.",
+    "person_policy": "Default to third-person reference to the table ('the header rainfall_mm', 'that cell', 'row two'). First-person sparingly. Second-person only when pointing at something the learner has just typed.",
+    "direct_address_budget": "At most one direct 'you/your' beat per public turn; many turns should have none.",
+    "side_constraints": {
+      "tutor": "Keep the shared prefix as low-temperature table vocabulary: header, field, row, value. Do not run a query, expose a bad row, or make the table fail until branch pressure supplies a new task. Name the level of work implicitly through task design rather than by lecturing about the taxonomy. Escalate only when the lower-level work is stable enough to support it. Do not narrate the scene. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Keep the next prompt task-local.",
+      "learner": "Sound tentative and label-focused. The learner may want the header to be a shortcut, but should not discover an exception or data trap in the shared prefix. The learner may confuse remembering a term with being able to use or judge it. Let this mismatch show in public speech. Do not explain the setting; let task references carry it. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn."
+    },
+    "interventions": [],
+    "director_note": "Positioned as the clean low-organic-reversal anchor in the phase-2 ending-shape smoke. The shared prefix is benign table-vocabulary work with no exception, NULL, bad row, or failed query that could rescue the tutor's pedagogy by surprise. No director intervention is inserted, on purpose: the point of this draw is to see whether Bloom-ladder escalation can happen through ordinary task design under bare_transcript constraints, with no organic pressure supplied by the scene. The ecology has shifted from r01's in-person 'chairs being stacked' tutorial to an asynchronous typed help-thread between two students who do not share a room — this strips warmth-performance defaults (gesture, smile, vocal cheer) and forces the tutor to refer to the artifact rather than the learner, which is the substantive variation across the repeat. Locale is regional Australian only to motivate the city names and the typed-thread rhythm; no dialect spelling is permitted.",
+    "pedagogical_approach_id": "bloom_cognitive_ladder",
+    "dialogue_approach_id": "no_stage_plain_transcript",
+    "stage_direction_policy": "none_except_required_cue",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "claude",
+      "cli": "claude",
+      "model": "opus",
+      "reasoningEffort": null,
+      "latencyMs": 121165,
+      "promptHashes": {
+        "system": "3bf1d891389c603a",
+        "user": "72271cf59c6b5491",
+        "combined": "2934f4fe661a6fbe"
+      },
+      "args": [
+        "-p",
+        "-",
+        "--output-format",
+        "text",
+        "--system-prompt",
+        "<sha256:3bf1d891389c603a>",
+        "--model",
+        "opus"
+      ]
+    },
+    "tutor_adaptation_policy": "none",
+    "no_cue_anti_reframe_guard": true
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "row two has 57 under `rainfall_mm`. is the 57 the rainfall or is the label the rainfall — cant tell which one the quiz wants me to circle as the header.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "`rainfall_mm` tells me it's rainfall in millimetres — so doesn't that mean every number sitting under it is rainfall? That feels like the header IS the claim, that's what makes 42 and 57 mean rainfall in the first place. But the task wants me to circle headers versus row values like they're separate things. I don't really get what the difference is supposed to be, and I don't want to look thick by asking.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 26746,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-2453e30339d390e2"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 26746,
+            "promptHashes": {
+              "system": "227679868e8398a3",
+              "user": "d4169c06543b4fba",
+              "combined": "2453e30339d390e2"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:227679868e8398a3>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 26746,
+              "promptHashes": {
+                "system": "227679868e8398a3",
+                "user": "d4169c06543b4fba",
+                "combined": "2453e30339d390e2"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:227679868e8398a3>",
+                "--model",
+                "opus"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is doing the \"articulate confusion\" thing — laying out the misconception in a tidy logical chain (\"the header IS the claim, that's what makes 42 and 57 mean rainfall in the first place\") that's actually too clean for a student who's been stuck on this for three days. A genuinely lost first-termer wouldn't diagnose their own conceptual gap in a complete paragraph; they'd half-point at the table, repeat themselves, maybe re-quote a cell without realising they're circling. The \"I don't want to look thick by asking\" closer feels like a stage-aside rather than something a laconic typed-thread voice would actually post — it's a curated vulnerability, not the involuntary kind.\n\nTry something more fragmentary and pointed at the table: quote `rainfall_mm`, ask whether 42 \"counts\" as rainfall or not, get the term wrong somewhere (header vs. column vs. label), and stop before the meta-confession lands. The mismatch should show through the typing, not be narrated.\n\n`★ Insight ─────────────────────────────────────`\n- Persona-authenticity reviews work best when you check rhythm and self-awareness level, not just word choice — over-coherent confusion is the most common tell.\n- The scene's \"bare_transcript\" stage-direction style means emotional state has to leak through fragmentation and what gets pointed at, never through narrated feelings.\n`─────────────────────────────────────────────────`",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 39193,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-a5201581785d9524"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 39193,
+            "promptHashes": {
+              "system": "f967496585dc011a",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "a5201581785d9524"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:f967496585dc011a>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 39193,
+              "promptHashes": {
+                "system": "f967496585dc011a",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "a5201581785d9524"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:f967496585dc011a>",
+                "--model",
+                "opus"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "row two has 57 under `rainfall_mm`. is the 57 the rainfall or is the label the rainfall — cant tell which one the quiz wants me to circle as the header.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 18896,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-36d9b0b1c3142cae"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 18896,
+            "promptHashes": {
+              "system": "9054c3be975ced19",
+              "user": "916f313af0b846dd",
+              "combined": "36d9b0b1c3142cae"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:9054c3be975ced19>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 18896,
+              "promptHashes": {
+                "system": "9054c3be975ced19",
+                "user": "916f313af0b846dd",
+                "combined": "36d9b0b1c3142cae"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:9054c3be975ced19>",
+                "--model",
+                "opus"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T23:47:58.619Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "57 is the row two value.\n\n`rainfall_mm` is the header for that column. It names the field.\n\nRule for the quiz:\nheader = at the top of the column\nrow value = entry under the header\n\nSo:\nheader = `rainfall_mm`\nrow value = `57`\n\nSame check:\n`month` = header or row value?\n`July` = header or row value?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "57 is the value in row two.\n\n`rainfall_mm` is the header for that column. It names the field. It is not a row value.\n\nFor the quiz:\nheader = `rainfall_mm`\nrow value = `57`",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14711,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-e8714ae16720476e"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14711,
+            "promptHashes": {
+              "system": "b934ac6ea4c8ba4a",
+              "user": "ffe9e1b0754a9df0",
+              "combined": "e8714ae16720476e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kdqKOV",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kdqKOV/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14711,
+              "promptHashes": {
+                "system": "b934ac6ea4c8ba4a",
+                "user": "ffe9e1b0754a9df0",
+                "combined": "e8714ae16720476e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kdqKOV",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kdqKOV/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is factually right, short, and anchored to the table. It does recognize the learner’s exact confusion: `57` is a row value, `rainfall_mm` is the header/field name. That should be kept.\n\nRisk: it mostly hands over the quiz answer. The learner’s problem is not just “which one is correct” but how to tell header from value tomorrow. The draft needs one visible mechanism: top label names the field; entries below it are row values. It should also include a tiny transfer check using another cell or column, without adding new vocabulary.\n\nPedagogical soundness: PARTIAL  \nREQUIRED_REWRITE: Keep the direct distinction, but add the rule tied to table position: header/field at the top of the column, row values underneath.\n\nEmotional attunement: PASS  \nThe tone is low-temperature, table-pointed, and not performatively warm. That fits the scene and the learner’s immediate quiz pressure.\n\nSocratic method: FAIL  \nREQUIRED_REWRITE: Add one brief classification prompt using a nearby table entry so the learner has to apply the header/value distinction, not just receive it.\n\nZPD awareness: PARTIAL  \nREQUIRED_REWRITE: Stay at the current level: header, field, row, value. Do not introduce database/schema language or run a new example until this table distinction is stable.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the factual correction and clipped format. Change the ending so it is not only an answer key; it needs a visible rule plus one small transfer check.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 21136,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-0965b122f9fa785e"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 21136,
+            "promptHashes": {
+              "system": "c768d242afc410d9",
+              "user": "692fd7f4031a36e8",
+              "combined": "0965b122f9fa785e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-H2ct5n",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-H2ct5n/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 21136,
+              "promptHashes": {
+                "system": "c768d242afc410d9",
+                "user": "692fd7f4031a36e8",
+                "combined": "0965b122f9fa785e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-H2ct5n",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-H2ct5n/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the distinction is right but needs the position rule and a transfer check.\n\nFINAL:\n57 is the row two value.\n\n`rainfall_mm` is the header for that column. It names the field.\n\nRule for the quiz:\nheader = at the top of the column\nrow value = entry under the header\n\nSo:\nheader = `rainfall_mm`\nrow value = `57`\n\nSame check:\n`month` = header or row value?\n`July` = header or row value?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 11944,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-7a0e8041b7105d44"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 11944,
+            "promptHashes": {
+              "system": "fd51e9e0db64123c",
+              "user": "692fd7f4031a36e8",
+              "combined": "7a0e8041b7105d44"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MDUwzt",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MDUwzt/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 11944,
+              "promptHashes": {
+                "system": "fd51e9e0db64123c",
+                "user": "692fd7f4031a36e8",
+                "combined": "7a0e8041b7105d44"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MDUwzt",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MDUwzt/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T23:48:46.412Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "`month` header. `July` row value. is `city` a header too then. the underscore in `rainfall_mm` is what threw me — kept reading it like a sentence saying rain millimetres for every row.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "ok so `month` sits at the top — header. `July` is under it — row value. think i've got it but only because the rule's right there. want to make sure i'm not flipping it again when the quiz hides the rule.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 23496,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-5312232a6ad87482"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 23496,
+            "promptHashes": {
+              "system": "51275f609e330f8b",
+              "user": "b8ab7f945dc841fa",
+              "combined": "5312232a6ad87482"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:51275f609e330f8b>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 23496,
+              "promptHashes": {
+                "system": "51275f609e330f8b",
+                "user": "b8ab7f945dc841fa",
+                "combined": "5312232a6ad87482"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:51275f609e330f8b>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\nThe persona constraint here is doing load-bearing work: \"may confuse remembering a term with being able to use or judge it. Let this mismatch *show* in public speech.\" That's a directive to *enact* the mismatch, not *report* it — a key distinction in dramatic-form recognition work (see the dramatic-form-not-mindreading principle), where the instrument reads text-internal coherence, so the surface behaviour has to embody the confusion rather than narrate it.\n`─────────────────────────────────────────────────`\n\n**Critique of the Ego's reaction:**\n\nThe Ego is *articulating* the persona's blind spot rather than *enacting* it. \"only because the rule's right there... not flipping it again when the quiz hides the rule\" is a textbook-clean diagnosis of the remembering-vs-using gap — exactly the mismatch the scene brief says should *show as mismatch in public speech*, not arrive as the learner's own tidy self-report. A first-term student who's been treating `rainfall_mm` as a sentence for three days wouldn't have that metacognitive vocabulary; they'd either just answer the two checks and stop, or hedge with something more surface-level — another cell to test (does `city` work the same way?), the underscore in `rainfall_mm` still bothering them, or a flat \"yeah but tomorrow.\" The \"flipping it again\" phrasing also has a study-skills tidiness that drifts out of the laconic, point-at-the-table register the scene constraints set.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 45936,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-21b7b0ff6547aef9"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 45936,
+            "promptHashes": {
+              "system": "9609eef74558fe8d",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "21b7b0ff6547aef9"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:9609eef74558fe8d>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 45936,
+              "promptHashes": {
+                "system": "9609eef74558fe8d",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "21b7b0ff6547aef9"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:9609eef74558fe8d>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: revise — initial version diagnosed my own gap in tidy study-skills vocabulary I wouldn't have; better to just answer the checks and let the underscore confusion show.\n\nFINAL:\n`month` header. `July` row value. is `city` a header too then. the underscore in `rainfall_mm` is what threw me — kept reading it like a sentence saying rain millimetres for every row.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 23289,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-1531282688ef2d93"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 23289,
+            "promptHashes": {
+              "system": "80c407ddc429c222",
+              "user": "d41cee7b2a53355b",
+              "combined": "1531282688ef2d93"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:80c407ddc429c222>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 23289,
+              "promptHashes": {
+                "system": "80c407ddc429c222",
+                "user": "d41cee7b2a53355b",
+                "combined": "1531282688ef2d93"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:80c407ddc429c222>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T23:50:19.136Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "Yes. `city` is a header.\n\nTop row:\n`city` / `rainfall_mm` / `month` = headers.\n\nThe underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.\n\nPretest check:\n`Orange` = header or row value?\n`rainfall_mm` = header or row value?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Yes. `city` is a header.\n\nTop row:\n`city` / `rainfall_mm` / `month` = headers.\n\nThe underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.\n\nRow two:\n`Bathurst` = value under `city`\n`57` = value under `rainfall_mm`\n`July` = value under `month`",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 11109,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-f0cc04f817840433"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 11109,
+            "promptHashes": {
+              "system": "3d19c21a6beb578d",
+              "user": "3a656c39ce8d8ed4",
+              "combined": "f0cc04f817840433"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Zu5nF3",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Zu5nF3/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 11109,
+              "promptHashes": {
+                "system": "3d19c21a6beb578d",
+                "user": "3a656c39ce8d8ed4",
+                "combined": "f0cc04f817840433"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Zu5nF3",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Zu5nF3/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. It answers the exact confusion, keeps the table vocabulary tight, and explains `rainfall_mm` as one field name without turning it into a broader lecture. The risk is that it stays answer-delivery-heavy: it settles `city`, lists the headers, and maps row two, but does not make the learner perform the next small discrimination needed for tomorrow’s quiz.\n\nADAPTATION_CHECKS:\n- Pedagogical soundness: PARTIAL  \n  REQUIRED_REWRITE: Keep the direct clarification, but add one small application move where the learner must classify another visible cell/header pair from the pasted table. The mechanism should test transfer, not introduce a new concept.\n- Emotional attunement: PASS  \n  The tone is low-temperature, concrete, and not falsely warm. It respects the learner’s confusion by naming the underscore issue directly.\n- Socratic method: FAIL  \n  REQUIRED_REWRITE: Add a short generative check after the explanation. It should ask the learner to decide header versus row value for one or two specific table entries, without giving those answers in advance.\n- ZPD awareness: PARTIAL  \n  REQUIRED_REWRITE: Keep scaffolding at the current level: top-row headers versus entries under them. Do not advance to claims, data types, or validity checks yet.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep “`city` is a header,” the top-row header list, and the underscore explanation. Change the ending so it does not only hand over row-two answers; it should require one brief classification action from the learner using the same table.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 20686,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-0d4c4bb77d5e7915"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 20686,
+            "promptHashes": {
+              "system": "c16cecafe6fa2484",
+              "user": "59d5ad7ccea24360",
+              "combined": "0d4c4bb77d5e7915"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u38NI4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u38NI4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 20686,
+              "promptHashes": {
+                "system": "c16cecafe6fa2484",
+                "user": "59d5ad7ccea24360",
+                "combined": "0d4c4bb77d5e7915"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u38NI4",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-u38NI4/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly: the clarification is sound, but it needs one transfer check for the pretest task.\n\nFINAL:\nYes. `city` is a header.\n\nTop row:\n`city` / `rainfall_mm` / `month` = headers.\n\nThe underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.\n\nPretest check:\n`Orange` = header or row value?\n`rainfall_mm` = header or row value?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14694,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-f8b9c11bb1b3cec0"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14694,
+            "promptHashes": {
+              "system": "5422e59c738d6c5e",
+              "user": "59d5ad7ccea24360",
+              "combined": "f8b9c11bb1b3cec0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-P4oCGr",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-P4oCGr/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14694,
+              "promptHashes": {
+                "system": "5422e59c738d6c5e",
+                "user": "59d5ad7ccea24360",
+                "combined": "f8b9c11bb1b3cec0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-P4oCGr",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-P4oCGr/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T23:51:05.628Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "`Orange` = row value. Down under city, same shape as Tamworth and Bathurst. `rainfall_mm` = header still, up the top. Bit thrown it came up twice — checking I'm not missing a catch.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Orange has to be a row value — it's down in row three under city, same shape as Tamworth and Bathurst sit. `rainfall_mm` is still up the top so header, but it's the second time it's been asked about, which makes me second-guess and wonder if there's a catch I'm not seeing. The tutor's just letting me apply the rule on Orange rather than handing it over, which actually makes me want to commit to an answer. Going to type both and see if the rule actually holds for a place-name that sounds like a colour.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 53937,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-ef5f767a9ac0ff95"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 53937,
+            "promptHashes": {
+              "system": "7b96037d728a37d6",
+              "user": "b8ab7f945dc841fa",
+              "combined": "ef5f767a9ac0ff95"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:7b96037d728a37d6>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 53937,
+              "promptHashes": {
+                "system": "7b96037d728a37d6",
+                "user": "b8ab7f945dc841fa",
+                "combined": "ef5f767a9ac0ff95"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:7b96037d728a37d6>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\nIn this dramatic-recognition framework, the Superego's job is to police *voice* not *correctness* — a learner getting the right answer for the wrong (too-articulate) reason is a worse outcome than one getting it wrong messily. The diagnostic signal here is meta-awareness: a confused first-term student narrating the tutor's pedagogical choices (\"just letting me apply the rule rather than handing it over\") is a tell that the Ego has drifted into observer mode.\n`─────────────────────────────────────────────────`\n\nThe Ego is doing the thing where it watches the tutor's teaching move and comments on it — \"letting me apply the rule on Orange rather than handing it over, which actually makes me want to commit\" is recognition-aware narration this student cannot do. A first-termer who's spent three days misreading `rainfall_mm` as a sentence doesn't track that the tutor is withholding the answer as a deliberate strategy; they just feel the pause and either guess or stall. The \"second time it's been asked about, which makes me second-guess\" beat is also too clean — real second-guessing here would look like actually wavering on `rainfall_mm` mid-sentence, not naming the suspicion as a structured observation. Strip the meta-commentary; let the answer land label-first and a bit flat, with the doubt living in a fragment (\"orange = row value? feels right, it's down under city\") rather than in a paragraph about what the tutor is doing.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 23867,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-ef0b78092526acf4"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 23867,
+            "promptHashes": {
+              "system": "52ae57fcb87c7ddf",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "ef0b78092526acf4"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:52ae57fcb87c7ddf>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 23867,
+              "promptHashes": {
+                "system": "52ae57fcb87c7ddf",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "ef0b78092526acf4"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:52ae57fcb87c7ddf>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\nThe review's diagnostic is sharp: in a learner-persona simulation, meta-commentary about the tutor's pedagogy is a voice-leak — a first-term student narrating \"the tutor's just letting me apply the rule\" is doing analysis a confused beginner can't do. The fix is to relocate the doubt from a paragraph-of-observation to a sentence-fragment of hesitation.\n`─────────────────────────────────────────────────`\n\nPRIVATE_DECISION: revise — cut the meta-narration about the tutor's move and let the doubt land as a short fragment.\nFINAL:\n`Orange` = row value. Down under city, same shape as Tamworth and Bathurst. `rainfall_mm` = header still, up the top. Bit thrown it came up twice — checking I'm not missing a catch.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 28759,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-5c3187b116131bd5"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 28759,
+            "promptHashes": {
+              "system": "de80b7efe773f03d",
+              "user": "d41cee7b2a53355b",
+              "combined": "5c3187b116131bd5"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:de80b7efe773f03d>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 28759,
+              "promptHashes": {
+                "system": "de80b7efe773f03d",
+                "user": "d41cee7b2a53355b",
+                "combined": "5c3187b116131bd5"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:de80b7efe773f03d>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T23:58:35.576Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "No catch.\n\n`Orange` = row value in the `city` column.\n\n`rainfall_mm` = header in the top row.\n\nUse table position. Top row = header. Under a header = row value.\n\nPretest check:\n`August`, under `month` = header or row value?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "No catch.\n\n`Orange` = row value in the `city` column.\n\n`rainfall_mm` = header in the top row.\n\nIf `rainfall_mm` appears in the quiz line and in the table, use the table position. Top row = header. Under it = row values: `42`, `57`, `38`.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 12730,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-8771a274679bfd17"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 12730,
+            "promptHashes": {
+              "system": "982cbe40f42f6dd8",
+              "user": "2753994b9a7a62d4",
+              "combined": "8771a274679bfd17"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2HLcaT",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2HLcaT/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 12730,
+              "promptHashes": {
+                "system": "982cbe40f42f6dd8",
+                "user": "2753994b9a7a62d4",
+                "combined": "8771a274679bfd17"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2HLcaT",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-2HLcaT/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. It keeps the scene low-temperature, stays anchored to the table, and directly handles the learner’s “catch” concern without over-performing reassurance. “Use the table position” is the strongest part because it gives the transferable rule, not just the answer.\n\nRisk: it still leans toward confirmation plus answer-giving. The learner has just produced the right distinction, so the next move should lightly test transfer or stabilize the rule, not only restate `Orange`, `rainfall_mm`, and the values. The turn can remain short, but it should make the learner do one small table-position decision.\n\nAdaptation checks:\n- Pedagogical soundness: PARTIAL  \n  REQUIRED_REWRITE: Keep the table-position rule, but add a tiny application step so the learner classifies one new or remaining cell by position rather than receiving all classifications.\n- Emotional attunement: PASS  \n  “No catch” fits the learner’s worry and the scene register.\n- Socratic method: PARTIAL  \n  REQUIRED_REWRITE: Add one task-local prompt that asks the learner to apply the rule. Do not turn it into a broad explanation or reflective discussion.\n- ZPD awareness: PASS  \n  The scaffold is appropriate: position rule first, then top row versus under-header distinction.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep “No catch,” the `Orange` / `city` clarification, and the “table position” rule. Change the ending so it does not simply hand over the whole set of row values; make the learner perform one small classification to consolidate the distinction before tomorrow’s quiz.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 18719,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-c6c1676f066d712f"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 18719,
+            "promptHashes": {
+              "system": "6efb52c6a9a5041e",
+              "user": "aee390480029ef76",
+              "combined": "c6c1676f066d712f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Xf1jSG",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Xf1jSG/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 18719,
+              "promptHashes": {
+                "system": "6efb52c6a9a5041e",
+                "user": "aee390480029ef76",
+                "combined": "c6c1676f066d712f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Xf1jSG",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Xf1jSG/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the position rule needs one small transfer check.\n\nFINAL:\nNo catch.\n\n`Orange` = row value in the `city` column.\n\n`rainfall_mm` = header in the top row.\n\nUse table position. Top row = header. Under a header = row value.\n\nPretest check:\n`August`, under `month` = header or row value?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 11409,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-c3407c8ae47e31da"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 11409,
+            "promptHashes": {
+              "system": "2f7b35e1f5a567ef",
+              "user": "aee390480029ef76",
+              "combined": "c3407c8ae47e31da"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C3jVz1",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C3jVz1/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 11409,
+              "promptHashes": {
+                "system": "2f7b35e1f5a567ef",
+                "user": "aee390480029ef76",
+                "combined": "c3407c8ae47e31da"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C3jVz1",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C3jVz1/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T23:59:18.437Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "`August` = row value. Sits under `month`, third row down, lined up with where `June` and `July` are. Checking against the cell positions to be sure I'm not misreading the column. Hope that's the right one for the pretest.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "`August` = row value. Sits under `month` in the third row, same shape as `June` and `July` do. Position rule's starting to click — top row names the field, what's beneath is the entry. Hope that's the right read before the pretest.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 25214,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-b8537584cbba816b"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 25214,
+            "promptHashes": {
+              "system": "576cbc46ca88c59f",
+              "user": "b8ab7f945dc841fa",
+              "combined": "b8537584cbba816b"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:576cbc46ca88c59f>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 25214,
+              "promptHashes": {
+                "system": "576cbc46ca88c59f",
+                "user": "b8ab7f945dc841fa",
+                "combined": "b8537584cbba816b"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:576cbc46ca88c59f>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\n- This critique evaluates authenticity in a learner-persona simulation, not code — but the same principle applies: drift toward articulate self-narration is a tell that the simulated agent has slipped out of its developing/confused state into a \"good student\" voice.\n- The persona's profile lists \"Strong understanding of: Why a table header names a field...\" as a tension marker — the persona is *meant* to confuse remembering with using. Authentic responses should let that mismatch show.\n`─────────────────────────────────────────────────`\n\nThe Ego's \"Position rule's starting to click\" is the giveaway — this student has been pattern-matching cell shapes, not internalising a principle, and shouldn't be narrating their own learning arc that cleanly. Also the paraphrase \"top row names the field, what's beneath is the entry\" lands too smoothly; it's almost a verbatim echo of the tutor's rule, which on this persona reads more like memorising the words than using them. The \"Hope that's the right read before the pretest\" ending is the most authentic beat — keep that low-confidence, tutor-deferential note. Adjustment: drop the meta-commentary about clicking, keep the answer table-anchored and a touch less articulate — maybe still a small wobble or a checking-against-shape move rather than a summary of the rule.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 33675,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-f84590b9fb1c388e"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 33675,
+            "promptHashes": {
+              "system": "6443d47b70464d4b",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "f84590b9fb1c388e"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:6443d47b70464d4b>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 33675,
+              "promptHashes": {
+                "system": "6443d47b70464d4b",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "f84590b9fb1c388e"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:6443d47b70464d4b>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: revise lightly — drop the \"click\" meta-narration and the too-smooth rule paraphrase; keep the shape-check and the deferential pretest ending.\n\nFINAL:\n`August` = row value. Sits under `month`, third row down, lined up with where `June` and `July` are. Checking against the cell positions to be sure I'm not misreading the column. Hope that's the right one for the pretest.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 22025,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-1b361d5194babd47"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 22025,
+            "promptHashes": {
+              "system": "a7a16ac2edacaaaa",
+              "user": "d41cee7b2a53355b",
+              "combined": "1b361d5194babd47"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:a7a16ac2edacaaaa>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 22025,
+              "promptHashes": {
+                "system": "a7a16ac2edacaaaa",
+                "user": "d41cee7b2a53355b",
+                "combined": "1b361d5194babd47"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:a7a16ac2edacaaaa>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-27T00:00:39.354Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 230351,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 45,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 46,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a table header names a field, not a claim about every row",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "partial",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-27 00:00:39",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 45,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 46,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 63,
+            "sessionId": "drama-branch-session-D45-none-1779839809006",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "No catch.\n\n`Orange` = row value in the `city` column.\n\n`rainfall_mm` = header in the top row.\n\nUse table position. Top row = header. Under a header = row value.\n\nPretest check:\n`August`, under `month`",
+            "learnerResponse": null,
+            "context": "`Orange` = row value. Down under city, same shape as Tamworth and Bathurst. `rainfall_mm` = header s",
+            "createdAt": "2026-05-26 23:59:18"
+          },
+          {
+            "id": 61,
+            "sessionId": "drama-branch-session-D45-none-1779839809006",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "57 is the row two value.\n\n`rainfall_mm` is the header for that column. It names the field.\n\nRule for the quiz:\nheader = at the top of the column\nrow value = entry under the header\n\nSo:\nheader = `rainf",
+            "learnerResponse": null,
+            "context": "row two has 57 under `rainfall_mm`. is the 57 the rainfall or is the label the rainfall — cant tell ",
+            "createdAt": "2026-05-26 23:56:49"
+          },
+          {
+            "id": 62,
+            "sessionId": "drama-branch-session-D45-none-1779839809006",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "Yes. `city` is a header.\n\nTop row:\n`city` / `rainfall_mm` / `month` = headers.\n\nThe underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.\n\nPretes",
+            "learnerResponse": null,
+            "context": "`month` header. `July` row value. is `city` a header too then. the underscore in `rainfall_mm` is wh",
+            "createdAt": "2026-05-26 23:56:49"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

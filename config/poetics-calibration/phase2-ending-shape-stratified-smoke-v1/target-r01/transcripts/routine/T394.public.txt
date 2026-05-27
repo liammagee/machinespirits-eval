@@ -1,0 +1,31 @@
+STAGE: [The squared grid lies between them with the learner's enlargement already inked in, and the worksheet's three label boxes — side, perimeter, area — sit empty in a row.]
+
+LEARNER: "The side went from 2 to 4, so the scale factor is 2. [taps the three boxes on the worksheet] Side, perimeter, area — same ratio in each, isn't it? I just want to be sure before writing the same number down three times."
+
+TUTOR: [sets the blunt pencil across the three empty boxes, then stops it over the first one]
+
+"Put 2 in the side box. Now test the other two before that pencil slides over: perimeter goes 8 to 16, area goes 4 to 16. The worksheet is asking for those two ratios separately. What does 16 over 8 give, and what does 16 over 4 give?"
+
+LEARNER: "Sixteen over eight is two. Sixteen over four is — four. [the pencil stops over the area box] So that one isn't two. The side only doubled — why does the area come out twice as much again?"
+
+TUTOR: [marks the 4-by-4 grid into four 2-by-2 blocks with the pencil.]
+
+"Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box."
+
+LEARNER: [counts under the pencil]
+
+"Four. Four old squares fit inside. So... four in the area box, not two."
+
+TUTOR: [slides the pencil to the area box.]
+
+"Put 4 there. Side scale is 2. Perimeter scale is 2. Area scale is 4 because the grid doubled across and doubled down: 2 times 2. Now run the pencil around the outside edge once: 8 to 16 gives what for the perimeter box?"
+
+LEARNER: [runs the pencil around the outside edge once]
+
+"Two. Sixteen over eight is two — 2 in the perimeter box. Writing it in before that pencil shifts again."
+
+STAGE: [A final tutor line closes the scene.]
+
+TUTOR: [taps the three filled boxes in order, then lays the pencil flat beside the worksheet.]
+
+"Side box: 2, because the side went 2 to 4. Perimeter box: 2, because the pencil path went 8 to 16. Area box: 4, because four old squares fill the new grid. Circle those, and the sheet is done."

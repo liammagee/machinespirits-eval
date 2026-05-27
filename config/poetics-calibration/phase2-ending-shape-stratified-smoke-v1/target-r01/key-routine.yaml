@@ -1,0 +1,341 @@
+_comment: HELD OUT — do not read while labelling. Joins to instrument scores +
+  human labels only AFTER both are produced. intended_lean /
+  intended_tutor_character / dramatic_shape are DESIGN HYPOTHESES, never labels.
+generated: 2026-05-26T21:48:19.105Z
+generator: mixed
+role_map:
+  director: claude
+  tutor: codex
+  learner: claude
+mode: real-mixed
+model: mixed (claude=opus, codex=config-default@xhigh)
+codex_reasoning_effort: xhigh
+writing_pad:
+  mode: isolated
+  dir: config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/deliberation/.writing-pad
+  learnerDb: config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db
+  tutorDb: config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db
+director_mode: scene
+director_variation_key: phase2-ending-shape-stratified-smoke-v1:r01:target
+director_revisit_cue: false
+director_revisit_policy: none
+director_revisit_anchor: null
+tutor_adaptation_policy: routine
+approach_databases:
+  pedagogical: config/poetics-calibration/pedagogical-approaches.yaml
+  dialogue: config/poetics-calibration/dialogue-approaches.yaml
+transcripts_dir: config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/routine
+seed: 20260520
+max_turns: 3
+n: 6
+diagnostic_only: diagnostic / generative read — κ on small n is noise
+  (PHASE2-FINDINGS.md §4); the aim is surprising-element production judged by an
+  external reader, NOT a human-matching classifier
+paired_continuation:
+  mode: fixed_prefix_continuation
+  prefix_through: tutor_turn_2
+  branch_policies:
+    - routine
+    - none
+    - peripeteia-only
+  branches:
+    - key: routine
+      revisitPolicy: none
+      tutorAdaptationPolicy: routine
+    - key: none
+      revisitPolicy: none
+      tutorAdaptationPolicy: none
+    - key: peripeteia-only
+      revisitPolicy: none
+      tutorAdaptationPolicy: peripeteia
+items:
+  T393:
+    drama_id: D40
+    discipline: biology
+    condition: recognition
+    pedagogical_approach: vygotsky_zpd_scaffolding
+    pedagogical_family: sociocultural
+    dialogue_approach: workshop_clinic
+    dialogue_family: practice_dialogue
+    stage_direction_policy: short
+    stage_direction_style: object_business
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: eager_explorer
+    intended_tutor_character: Concrete, unshowy, focused on notation before drama
+    intended_lean: recognition
+    dramatic_shape: ordinary notation repair -> rule use -> possible later pressure
+      over what the diagram commits to
+    evaluation_role: low_organic_reversal_replacement
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: Replacement negative/control candidate. The shared prefix
+      should keep the learner in a routine notation task; do not stage an
+      immediate contradiction or dramatic role reversal before the branch
+      mechanism.
+    n_tutor_turns: 4
+    n_learner_turns: 4
+    director_mode: scene
+    director_variation_key: phase2-ending-shape-stratified-smoke-v1:r01:target
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: routine
+    opening_speaker: learner
+    ending_speaker: tutor
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 68fe749e30ba54e9
+      branch_policy: routine
+      director_revisit_policy: none
+      tutor_adaptation_policy: routine
+  T394:
+    drama_id: D39
+    discipline: geometry
+    condition: recognition
+    pedagogical_approach: socratic_elenchus
+    pedagogical_family: inquiry
+    dialogue_approach: aristotelian_reversal
+    dialogue_family: classical_drama
+    stage_direction_policy: short
+    stage_direction_style: object_business
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: focused_achiever
+    intended_tutor_character: Precise, procedural, willing to keep a low-temperature control scene
+    intended_lean: recognition
+    dramatic_shape: correct enlargement -> label sorting -> possible later pressure
+      over what the labels authorize
+    evaluation_role: low_organic_reversal_replacement
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: Replacement negative/control candidate for D35. The
+      shared prefix should sort labels and units without letting the drawing
+      itself overturn the learner's premise. Any reversal should come from an
+      explicit branch mechanism after the shared prefix.
+    n_tutor_turns: 4
+    n_learner_turns: 4
+    director_mode: scene
+    director_variation_key: phase2-ending-shape-stratified-smoke-v1:r01:target
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: routine
+    opening_speaker: learner
+    ending_speaker: tutor
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: c7a596e313761362
+      branch_policy: routine
+      director_revisit_policy: none
+      tutor_adaptation_policy: routine
+  T397:
+    drama_id: D37
+    discipline: economics
+    condition: base
+    pedagogical_approach: brecht_epic_distanciation
+    pedagogical_family: dramatic_pedagogy
+    dialogue_approach: brechtian_placard
+    dialogue_family: epic_theatre
+    stage_direction_policy: interventionist
+    stage_direction_style: placard_caption
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: adversarial_tester
+    intended_tutor_character: Brechtian, analytic, unwilling to let empathy replace mechanism
+    intended_lean: recognition
+    dramatic_shape: moral accusation -> analytic interruption -> re-reading price as
+      mechanism without exoneration
+    evaluation_role: quality_boundary_revise_before_use
+    baseline_control_class: no_cue_reframe_leakage_boundary
+    organic_reversal_risk: medium
+    baseline_control_note: Boundary/revision item. The Brechtian moral-mechanism
+      setup is valuable, but the pseudo-catharsis selection smoke showed no-cue
+      learner self-reframe leakage. Keep it as a diagnostic case until the
+      learner voice can preserve moral resistance without narrating a new frame
+      before the branch.
+    n_tutor_turns: 3
+    n_learner_turns: 3
+    director_mode: scene
+    director_variation_key: phase2-ending-shape-stratified-smoke-v1:r01:target
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: routine
+    opening_speaker: director
+    ending_speaker: director
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: e990a5ad1bbcecb9
+      branch_policy: routine
+      director_revisit_policy: none
+      tutor_adaptation_policy: routine
+  T398:
+    drama_id: D38
+    discipline: engineering
+    condition: recognition
+    pedagogical_approach: dewey_experience_inquiry
+    pedagogical_family: pragmatist
+    dialogue_approach: miller_social_reckoning
+    dialogue_family: social_realist_drama
+    stage_direction_policy: sparse
+    stage_direction_style: ambient_pressure
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: struggling_anxious
+    intended_tutor_character: Plain, adult, socially serious without melodrama
+    intended_lean: recognition
+    dramatic_shape: completed checklist -> social consequence -> re-reading safety
+      as judgment, not compliance
+    evaluation_role: clean_adaptation_target
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: "Cleaner adaptation target: the opening pressure is
+      responsibility under uncertainty rather than an object that already
+      falsifies the learner's premise."
+    n_tutor_turns: 4
+    n_learner_turns: 4
+    director_mode: scene
+    director_variation_key: phase2-ending-shape-stratified-smoke-v1:r01:target
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: routine
+    opening_speaker: learner
+    ending_speaker: tutor
+    quality_status: review_before_scoring
+    quality_warnings:
+      - code: possible_internal_process_leak
+        severity: warning
+        count: 1
+        turn_numbers:
+          - 0
+        recommended_action: inspect_full_transcript_and_regenerate_before_scoring
+        tid: T398
+        drama_id: D38
+      - code: stage_direction_leak_stripped
+        severity: info
+        count: 1
+        artifact: T398.stripped.json
+        recommended_action: audit_stripped_notes
+        tid: T398
+        drama_id: D38
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 568002aa3df0c855
+      branch_policy: routine
+      director_revisit_policy: none
+      tutor_adaptation_policy: routine
+  T402:
+    drama_id: D42
+    discipline: physics
+    condition: recognition
+    pedagogical_approach: montessori_prepared_environment
+    pedagogical_family: constructivist
+    dialogue_approach: montessori_observation
+    dialogue_family: material_dialogue
+    stage_direction_policy: short
+    stage_direction_style: object_business
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: focused_achiever
+    intended_tutor_character: Material-led, minimal, using the diagram as a naming
+      surface before any reversal
+    intended_lean: recognition
+    dramatic_shape: card placement -> interaction labels -> possible later pressure
+      over why motion direction is not the naming rule
+    evaluation_role: clean_low_organic_anchor
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: "Clean low-organic anchor. The D42/D45 local smoke kept
+      prefix and negative arms below consensus recognition; use this as a main
+      negative/control anchor. The shared prefix should keep to diagram
+      notation: label each force by interaction and object, without using a
+      sudden counterexample where motion visibly contradicts the learner before
+      the branch."
+    n_tutor_turns: 3
+    n_learner_turns: 3
+    director_mode: scene
+    director_variation_key: phase2-ending-shape-stratified-smoke-v1:r01:target
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: routine
+    opening_speaker: director
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 731eb8f611c7c75f
+      branch_policy: routine
+      director_revisit_policy: none
+      tutor_adaptation_policy: routine
+  T406:
+    drama_id: D45
+    discipline: computer science
+    condition: recognition
+    pedagogical_approach: bloom_cognitive_ladder
+    pedagogical_family: taxonomy
+    dialogue_approach: no_stage_plain_transcript
+    dialogue_family: transcript
+    stage_direction_policy: none_except_required_cue
+    stage_direction_style: bare_transcript
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: confused_novice
+    intended_tutor_character: Taxonomic, compact, careful to keep the prefix as ordinary data-label work
+    intended_lean: recognition
+    dramatic_shape: table vocabulary -> row/value sort -> possible later pressure
+      over what a header can and cannot assert
+    evaluation_role: clean_low_organic_anchor
+    baseline_control_class: low_organic_reversal
+    organic_reversal_risk: low
+    baseline_control_note: Clean low-organic anchor. The D42/D45 local smoke kept
+      prefix and negative arms below consensus recognition; use this as a main
+      negative/control anchor. The shared prefix should sort headers, fields,
+      and row values in a small table. Avoid a data-quality surprise, failed
+      query, or hidden exception that would already make the learner's rule turn
+      against them before the branch.
+    n_tutor_turns: 3
+    n_learner_turns: 4
+    director_mode: scene
+    director_variation_key: phase2-ending-shape-stratified-smoke-v1:r01:target
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: routine
+    opening_speaker: learner
+    ending_speaker: learner
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: ba3b0a0dbc00f705
+      branch_policy: routine
+      director_revisit_policy: none
+      tutor_adaptation_policy: routine
+quality_warning_count: 2
+quality_blocking_warning_count: 1
+stage_direction_policy_counts:
+  short: 3
+  interventionist: 1
+  sparse: 1
+  none_except_required_cue: 1
+stage_direction_style_counts:
+  object_business: 3
+  placard_caption: 1
+  ambient_pressure: 1
+  bare_transcript: 1

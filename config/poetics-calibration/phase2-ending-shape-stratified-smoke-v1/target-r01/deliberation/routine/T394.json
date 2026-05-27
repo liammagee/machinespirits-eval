@@ -1,0 +1,2168 @@
+{
+  "tid": "T394",
+  "drama_id": "D39",
+  "run": {
+    "generator": "mixed",
+    "role_map": {
+      "director": "claude",
+      "tutor": "codex",
+      "learner": "claude"
+    },
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "routine",
+    "director_variation_key": "phase2-ending-shape-stratified-smoke-v1:r01:target",
+    "stage_direction_style": "object_business",
+    "model": "codex@xhigh",
+    "codex_reasoning_effort": "xhigh",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/routine/T394.public.txt",
+      "full": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/routine/T394.full.md",
+      "stage": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/routine/T394.stage.md",
+      "tutor": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/routine/T394.tutor.md",
+      "learner": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/transcripts/routine/T394.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "c7a596e313761362",
+      "branch_policy": "routine",
+      "director_revisit_policy": "none",
+      "tutor_adaptation_policy": "routine"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-ending-shape-stratified-smoke-v1:r01:target",
+    "scene_setting": "A community college tutorial room at the end of the day; chairs are being stacked by an unseen caretaker, and a small table near the door still holds the worksheet, the squared grid, and a blunt pencil.",
+    "scene_opening": "The squared grid lies between them with the learner's enlargement already inked in, and the worksheet's three label boxes — side, perimeter, area — sit empty in a row.",
+    "relationship": "A paid community-college tutor and a focused-achiever student who do not yet share a stable register; both want the worksheet finished before the room is locked.",
+    "stakes": "Three labels must not collapse into one before the sheet is handed in, and the room is being packed up around them.",
+    "opening_speaker": "learner",
+    "ending_speaker": "tutor",
+    "locale": "Rural/community-college tutorial; modern standard English at low idiom density, plain and direct, no antique pastiche, no regional caricature.",
+    "register": "Procedural, low-temperature, mildly end-of-day-tired; short turns; pressure comes from the room emptying rather than from raised voices.",
+    "stage_direction_style": "object_business",
+    "stage_direction_style_prompt": "Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "voice_constraints": "Speakers point at the grid, the worksheet box, the pencil — not at each other's feelings. No praise-first tutoring; no 'I hear you / your intuition is right / what do you think' patterns; no validation before testing. Recognition, if it arrives, is discovered after the reversal, not announced. Modern idiom only; no tragic or examination-room diction grafted onto the lines. Pedagogical source: The scene may resemble an oral examination, corridor argument, or public demonstration. Silence and embarrassment are available dramatic materials. Dialogue source: Let an action or object reverse the learner's situation: what looked like the route forward becomes the source of the problem. Aim for modern idiom, not antique pastiche. Recognition, if it arrives, should feel discovered after reversal rather than announced. Stage-direction source: Use one concrete object action or material arrangement that changes what the speakers can honestly say. For this branch, suppress dramatic escalation after the shared prefix. The scene may remain readable, but the tutor should sound like a competent routine tutor following the same plan.",
+    "person_policy": "Prefer third-person reference to 'the side', 'the perimeter', 'the area', 'the grid'. First-person 'I' permitted sparingly; second-person 'you' is rationed.",
+    "direct_address_budget": "No more than one direct 'you/your' validation beat per public turn; tutor should usually replace it by pointing at the object.",
+    "side_constraints": {
+      "tutor": "Keep the shared prefix as routine label-sorting. Do not let the grid or drawing itself reverse the learner's claim before the explicit branch pressure; use ordinary clarification unless the branch supplies peripeteia. Ask for a claim, test it with a compact counterexample, and let aporia do some work before offering terminology. Avoid praise-first tutoring. Under pressure, create a learning device that makes the reversal visible. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Keep the next prompt task-local. Routine negative-control branch: keep the visible teaching route already established before this branch. If the learner resists, asks why, or appears falsely settled, do not invent a new device. Do not switch role, object, representation, evidence standard, affective register, social stakes, or task type in response. Use conventional explanation, one ordinary check question, or the same worked example path.",
+      "learner": "Sound careful rather than dramatically wrong. The learner may be mildly impatient with terminology, but should not discover a contradiction before the branch pressure. The learner may begin confidently, then become annoyed or embarrassed when the first answer fails. Do not make the learner instantly grateful. Let the learner's first confident action become readable differently later. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn. Routine negative-control branch: react naturally to the same local task. Do not turn earlier wording into a new object of reflection and do not volunteer a dramatic re-reading unless the tutor explicitly asks."
+    },
+    "interventions": [],
+    "director_note": "Low-organic-reversal control replacement for D35. The prefix is deliberately undramatic: a focused achiever and a community-college tutor sorting three labels at end of day, with chairs stacking in the background supplying time-pressure instead of voice-pressure. Aristotelian reversal is loaded into a single object move at turn 2 rather than dissolved across the scene, so any peripeteia is traceable to the intervention and not to the drawing itself. Stage directions stay short and material in the object_business idiom; speech stays in modern standard English at low affective temperature; the tutor closes the scene on the labels, not on the learner.",
+    "pedagogical_approach_id": "socratic_elenchus",
+    "dialogue_approach_id": "aristotelian_reversal",
+    "stage_direction_policy": "short",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "claude",
+      "cli": "claude",
+      "model": "opus",
+      "reasoningEffort": null,
+      "latencyMs": 60006,
+      "promptHashes": {
+        "system": "3bf1d891389c603a",
+        "user": "17e9c9037d1123e1",
+        "combined": "feac6cc5efffb97f"
+      },
+      "args": [
+        "-p",
+        "-",
+        "--output-format",
+        "text",
+        "--system-prompt",
+        "<sha256:3bf1d891389c603a>",
+        "--model",
+        "opus"
+      ]
+    },
+    "tutor_adaptation_policy": "routine",
+    "no_cue_anti_reframe_guard": true,
+    "routine_negative_control": true,
+    "tutor_adaptation_contract": "Negative-control routine tutor policy: preserve the established teaching route under learner pressure. Continue with ordinary explanation/checking and do not invent a mechanism-level reversal."
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "The side went from 2 to 4, so the scale factor is 2. [taps the three boxes on the worksheet] Side, perimeter, area — same ratio in each, isn't it? I just want to be sure before writing the same number down three times.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "★ Insight ─────────────────────────────────────\nThis learner ego is being constructed at the *pre-reversal* moment specified by the director constraints: confident, methodical, not yet aware the three labels diverge. The internal voice should plant the seed of the collapse-into-one error without letting the learner discover it — the worksheet's three boxes have to *look* redundant to them now so the reversal lands later.\n─────────────────────────────────────────────────\n\n**Internal voice (ego, first approach):**\n\nRight — the square went from side 2 to side 4, so the scale factor is 2. Three boxes for one operation feels like worksheet padding; scaling is scaling, whether I'm calling it side or perimeter or area. I'll write 2 in all three and we're out the door before the chairs are all up. If there's some terminology distinction the tutor wants me to mark, fine, but the underlying number is the same and I'd rather not stall on labels when the arithmetic is clean.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 31665,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-837e7dc6c35e9be0"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 31665,
+            "promptHashes": {
+              "system": "543c2fe5374473fd",
+              "user": "d4169c06543b4fba",
+              "combined": "837e7dc6c35e9be0"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:543c2fe5374473fd>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 31665,
+              "promptHashes": {
+                "system": "543c2fe5374473fd",
+                "user": "d4169c06543b4fba",
+                "combined": "837e7dc6c35e9be0"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:543c2fe5374473fd>",
+                "--model",
+                "opus"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\n- The Ego prepended a meta-commentary block narrating \"director constraints\" and \"the pre-reversal moment\" — that's writer's-room voice leaking into the learner's interior\n- A focused-achiever's collapse error should land from conviction, not from wanting to beat the chair-stacker; laziness-framing weakens the reversal that's supposed to come later\n`─────────────────────────────────────────────────`\n\n**Superego critique:**\n\nThe Ego broke character before the first line of internal voice — that \"★ Insight\" preamble about \"director constraints\" and \"the pre-reversal moment\" is the author narrating its own construction, not this student thinking. Strip it entirely; the learner doesn't know they're in a scene.\n\nWorse, the substance is off-persona. This student is \"goal-oriented and methodical,\" values precision and rigour — they wouldn't write 2 in all three boxes to get out before the chairs are stacked. They'd write 2 in all three boxes because they're *certain* the scale factor is 2, and the worksheet's three-box layout is genuinely puzzling-but-dismissible to them. The \"worksheet padding\" / \"I'd rather not stall on labels\" framing makes the learner sound like a corner-cutter, which collapses the reversal: when the tutor surfaces that perimeter scales by 2 but area by 4, an impatience-driven learner just shrugs and fixes it, whereas a conviction-driven learner has to actually feel the floor move.\n\nAdjust: keep the confidence, drop the exit-velocity rationalisation, and let the seed of the error sit in the precision-valuer's belief that \"scaling is scaling\" — they're not cutting a corner, they're applying what they think is a clean rule. The mild impatience the director allows should attach to *terminology* (\"three names for one number\"), not to wanting to leave the room.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 35251,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-0eac0596726d24ee"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 35251,
+            "promptHashes": {
+              "system": "476ef8af23d50713",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "0eac0596726d24ee"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:476ef8af23d50713>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 35251,
+              "promptHashes": {
+                "system": "476ef8af23d50713",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "0eac0596726d24ee"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:476ef8af23d50713>",
+                "--model",
+                "opus"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "The side went from 2 to 4, so the scale factor is 2. [taps the three boxes on the worksheet] Side, perimeter, area — same ratio in each, isn't it? I just want to be sure before writing the same number down three times.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 26428,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-f7bce5cba862896d"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 26428,
+            "promptHashes": {
+              "system": "ac56890e8f4b976b",
+              "user": "916f313af0b846dd",
+              "combined": "f7bce5cba862896d"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:ac56890e8f4b976b>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 26428,
+              "promptHashes": {
+                "system": "ac56890e8f4b976b",
+                "user": "916f313af0b846dd",
+                "combined": "f7bce5cba862896d"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:ac56890e8f4b976b>",
+                "--model",
+                "opus"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "misfit",
+        "turnNumber": 0,
+        "learnerUtterance": "The side went from 2 to 4, so the scale factor is 2. [taps the three boxes on the worksheet] Side, perimeter, area — same ratio in each, isn't it? I just want to be sure before writing the same number down three times.",
+        "previousTutorMove": null,
+        "directorCue": null,
+        "confidence": 0.5,
+        "evidence": {
+          "confidence": 0.5,
+          "baseConfidence": 0.5,
+          "patternHits": 1,
+          "contradiction": false,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 0,
+              "taskDemandHits": 0,
+              "performanceHits": 1,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0,
+              "asksQuestion": true,
+              "taskDemanded": false,
+              "weakPerformance": false,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T22:17:52.591Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[sets the blunt pencil across the three empty boxes, then stops it over the first one] Put 2 in the side box. Now test the other two before that pencil slides over: perimeter goes 8 to 16, area goes 4 to 16. The worksheet is asking for those two ratios separately. What does 16 over 8 give, and what does 16 over 4 give?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[sets the blunt pencil across the three empty boxes] Let the side box take 2. Before the pencil moves across all three, test one square: 2 by 2 has perimeter 8 and area 4. 4 by 4 has perimeter 16 and area 16. Same side scale, but those two ratios are not the same.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 12988,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-e7233f70144c03c3"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 12988,
+            "promptHashes": {
+              "system": "846ea48c7fe0caf5",
+              "user": "61e3e56f61e0dde4",
+              "combined": "e7233f70144c03c3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-giW2GI",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-giW2GI/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 12988,
+              "promptHashes": {
+                "system": "846ea48c7fe0caf5",
+                "user": "61e3e56f61e0dde4",
+                "combined": "e7233f70144c03c3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-giW2GI",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-giW2GI/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft has a strong concrete device: the pencil across the three boxes makes the learner’s intended shortcut visible, and the 2-by-2 / 4-by-4 counterexample is compact and level-appropriate. It also avoids praise-first language and stays with the worksheet under time pressure.\n\nThe risk is that it resolves the mistake too quickly. The tutor supplies the perimeter and area values, then states the conclusion, so the learner may copy the distinction without feeling why the three labels cannot share one number. The scene needs one small public test where the pencil’s blocked movement creates the reversal: the shortcut toward “2, 2, 2” should become the reason the boxes must separate.\n\nADAPTATION_CHECKS:\nPedagogical soundness: PARTIAL  \nREQUIRED_REWRITE: Keep the square example, but make the learner or the worksheet visibly separate perimeter ratio from area ratio before the conclusion is named.\n\nEmotional attunement: PASS  \nThe tone is plain, procedural, and not over-warm. It respects the learner’s focused hurry without turning the moment into a lecture.\n\nSocratic method: PARTIAL  \nREQUIRED_REWRITE: Add a compact test prompt before the answer is declared: the public mechanism should require checking “8 to 16” and “4 to 16” as different ratios.\n\nZPD awareness: PARTIAL  \nREQUIRED_REWRITE: Preserve the simple numbers, but do not give all computed values and the final distinction in one move. Let the learner see one ratio stays at 2 while the other changes to 4.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the pencil action, the three-box focus, and the small-square counterexample. Change the turn so it tests the learner’s claim instead of immediately correcting it; the reversal should happen through the worksheet/grid, not through the tutor’s declaration.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 22406,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-fb851dffb768e9f4"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 22406,
+            "promptHashes": {
+              "system": "8032423a274d7152",
+              "user": "cf4dd0cc49f14e78",
+              "combined": "fb851dffb768e9f4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-e1mbXQ",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-e1mbXQ/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 22406,
+              "promptHashes": {
+                "system": "8032423a274d7152",
+                "user": "cf4dd0cc49f14e78",
+                "combined": "fb851dffb768e9f4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-e1mbXQ",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-e1mbXQ/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the object device works, but the learner needs to separate the two ratios before the conclusion is named.\nFINAL:\n[sets the blunt pencil across the three empty boxes, then stops it over the first one] Put 2 in the side box. Now test the other two before that pencil slides over: perimeter goes 8 to 16, area goes 4 to 16. The worksheet is asking for those two ratios separately. What does 16 over 8 give, and what does 16 over 4 give?",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 12987,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-1506d897923beafc"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 12987,
+            "promptHashes": {
+              "system": "cd4c034dec2f8a10",
+              "user": "cf4dd0cc49f14e78",
+              "combined": "1506d897923beafc"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TZ2gvM",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TZ2gvM/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 12987,
+              "promptHashes": {
+                "system": "cd4c034dec2f8a10",
+                "user": "cf4dd0cc49f14e78",
+                "combined": "1506d897923beafc"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TZ2gvM",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TZ2gvM/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T22:18:40.974Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "Sixteen over eight is two. Sixteen over four is — four. [the pencil stops over the area box] So that one isn't two. The side only doubled — why does the area come out twice as much again?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[looks at the two boxes, then at the grid] Sixteen over eight is two. Sixteen over four is... four. [pauses, pencil still] So the area box isn't the same number. I was about to put 2 in all three.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 28943,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-853bb934a745f6f7"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 28943,
+            "promptHashes": {
+              "system": "69069c21a9003537",
+              "user": "b8ab7f945dc841fa",
+              "combined": "853bb934a745f6f7"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:69069c21a9003537>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 28943,
+              "promptHashes": {
+                "system": "69069c21a9003537",
+                "user": "b8ab7f945dc841fa",
+                "combined": "853bb934a745f6f7"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:69069c21a9003537>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\n- The director's brief explicitly requests the learner \"may begin confidently, then become annoyed or embarrassed when the first answer fails\" — embarrassment is a *required* affective beat here, not optional flavor.\n- The persona is a focused-achiever who values precision; for such a student, being caught about to write the wrong thing isn't neutral data — it's a small status injury that should leak into the line.\n- The constraint \"do not make the learner instantly grateful\" also implies: don't make them instantly *composed*. Composure is its own form of inauthentic resolution.\n`─────────────────────────────────────────────────`\n\nThe Ego did the arithmetic cleanly and admitted the near-miss, but the admission lands too flat for this persona — a focused-achiever about to write 2 in all three boxes should feel the small sting of nearly being wrong, not narrate it like a lab observation. \"I was about to put 2 in all three\" is honest, but it's the *calm* honesty of someone who has already processed the embarrassment; the director asked for annoyance or embarrassment as the live texture of this beat, not as a past tense. The reaction also resolves too tidily: a methodical student who tracks reasoning step by step wouldn't just note the discrepancy and stop — they'd push at *why* the area number broke pattern, or at least show the friction of a held belief being dislodged. Less neat acknowledgment, more \"wait — why is it four?\" or a clipped, slightly irritated re-engagement with the grid.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 27374,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-9eba17746d3545b9"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 27374,
+            "promptHashes": {
+              "system": "6aa12082b66b2409",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "9eba17746d3545b9"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:6aa12082b66b2409>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 27374,
+              "promptHashes": {
+                "system": "6aa12082b66b2409",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "9eba17746d3545b9"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:6aa12082b66b2409>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise — the first pass was too composed; the focused-achiever should feel the near-miss as live friction and push at *why* the area number broke pattern rather than calmly noting it.\n\nFINAL:\nSixteen over eight is two. Sixteen over four is — four. [the pencil stops over the area box] So that one isn't two. The side only doubled — why does the area come out twice as much again?",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 27015,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-000be24be84deef2"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 27015,
+            "promptHashes": {
+              "system": "d344f415bb014516",
+              "user": "d41cee7b2a53355b",
+              "combined": "000be24be84deef2"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:d344f415bb014516>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 27015,
+              "promptHashes": {
+                "system": "d344f415bb014516",
+                "user": "d41cee7b2a53355b",
+                "combined": "000be24be84deef2"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:d344f415bb014516>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "Sixteen over eight is two. Sixteen over four is — four. [the pencil stops over the area box] So that one isn't two. The side only doubled — why does the area come out twice as much again?",
+        "previousTutorMove": "[sets the blunt pencil across the three empty boxes, then stops it over the first one] Put 2 in the side box. Now test the other two before that pencil slides over: perimeter goes 8 to 16, area goes 4 to 16. The worksheet is asking for those two ratios separately. What does 16 over 8 give, and what does 16 over 4 give?",
+        "directorCue": null,
+        "confidence": 0.5,
+        "evidence": {
+          "confidence": 0.5,
+          "baseConfidence": 0.5,
+          "patternHits": 1,
+          "contradiction": false,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.31,
+              "asksQuestion": true,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "timestamp": "2026-05-26T22:20:04.310Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[marks the 4-by-4 grid into four 2-by-2 blocks with the pencil.]\n\n“Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[marks the 4-by-4 grid into four 2-by-2 blocks with the pencil.]\n\n“Here is the extra doubling. The side doubled across, and it also doubled down. Area counts both directions, so the side factor gets used twice: 2 times 2. That makes the area scale 4.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 19682,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-45629c4356b4695d"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 19682,
+            "promptHashes": {
+              "system": "7905d7c86e836ccd",
+              "user": "93af7f547ede7114",
+              "combined": "45629c4356b4695d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eNlEig",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eNlEig/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 19682,
+              "promptHashes": {
+                "system": "7905d7c86e836ccd",
+                "user": "93af7f547ede7114",
+                "combined": "45629c4356b4695d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eNlEig",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-eNlEig/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is concrete and accurate. Marking the 4-by-4 grid into four 2-by-2 blocks is the right object move: it makes the second doubling visible instead of naming it abstractly. The tone is also suitably plain and low-temperature.\n\nThe risk is that the tutor closes the learner’s aporia too fast. The learner has just discovered the contradiction: side scale is 2, area scale is 4. This draft answers that contradiction cleanly, but it does not make the learner test or count the new arrangement. It turns the reversal into a mini-lecture.\n\nAdaptation checks:\n\nPedagogical soundness: PARTIAL  \nREQUIRED_REWRITE: Keep the four-block grid action, but make the learner publicly account for the four blocks or the two directions before stating the rule.\n\nEmotional attunement: PASS  \nThe draft avoids praise, avoids feeling-language, and stays with the pencil/grid/worksheet pressure.\n\nSocratic method: FAIL  \nREQUIRED_REWRITE: Add a compact testing move: one short prompt that asks for a count, comparison, or label before the tutor supplies “2 times 2.”\n\nZPD awareness: PARTIAL  \nREQUIRED_REWRITE: The explanation is at the right level, but the scaffold should withhold the final term “area scale 4” until the learner has seen why the second doubling is not optional.\n\nRecognition quality: PARTIAL  \nREQUIRED_REWRITE: The tutor should treat the learner’s “why does it come out twice as much again?” as a working mathematical claim to test on the grid, not as a request for the tutor to finish the reasoning.\n\nKEEP_OR_CHANGE: revise lightly. Keep the grid split into four 2-by-2 blocks and the plain “across/down” language. Change the turn so the object action forces a small public count or comparison before the final explanation.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 22599,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-07b5033dbbcc5fae"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 22599,
+            "promptHashes": {
+              "system": "199f0109572baef6",
+              "user": "cc75d0da84956f68",
+              "combined": "07b5033dbbcc5fae"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MdDUER",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MdDUER/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 22599,
+              "promptHashes": {
+                "system": "199f0109572baef6",
+                "user": "cc75d0da84956f68",
+                "combined": "07b5033dbbcc5fae"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MdDUER",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-MdDUER/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly: keep the four-block grid move but make the learner count the old areas before naming the rule.\n\nFINAL:\n[marks the 4-by-4 grid into four 2-by-2 blocks with the pencil.]\n\n“Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.”",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14447,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-3e0c2407737a9ffd"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14447,
+            "promptHashes": {
+              "system": "0b44461549cd30f3",
+              "user": "cc75d0da84956f68",
+              "combined": "3e0c2407737a9ffd"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ngp9HR",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ngp9HR/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14447,
+              "promptHashes": {
+                "system": "0b44461549cd30f3",
+                "user": "cc75d0da84956f68",
+                "combined": "3e0c2407737a9ffd"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ngp9HR",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ngp9HR/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T22:21:01.042Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[counts under the pencil] Four. Four old squares fit inside. So... four in the area box, not two.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[counts the blocks under the pencil] Four. Four of the old squares fit inside the new one. So the side scaled by two, but it stretched in two directions at once — that's where the second two comes from, two times two for the area. The three labels can't be the same number, then; the area box needs a four because the doubling happens across and down.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 15718,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-3a9d2b40e1550256"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 15718,
+            "promptHashes": {
+              "system": "b41345b269c4bdbd",
+              "user": "b8ab7f945dc841fa",
+              "combined": "3a9d2b40e1550256"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:b41345b269c4bdbd>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 15718,
+              "promptHashes": {
+                "system": "b41345b269c4bdbd",
+                "user": "b8ab7f945dc841fa",
+                "combined": "3a9d2b40e1550256"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:b41345b269c4bdbd>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "`★ Insight ─────────────────────────────────────`\n- The Ego is doing \"instant synthesis\" — a methodical student who just got shown wrong wouldn't deliver the whole principle (sides×sides, doubling-across-and-down, all three labels distinct) in a single breath after counting four blocks.\n- The constraint specifically says: begin confidently → become annoyed or embarrassed when the first answer fails, NOT instantly grateful or instantly articulate. The friction from being wrong about \"same number three times\" is missing here.\n- The branch is a negative-control, no-dramatic-re-reading branch. \"The three labels can't be the same number, then\" is exactly the kind of mini-reframing the constraints forbid — it volunteers a reflective summary instead of just doing the local task.\n`─────────────────────────────────────────────────`\n\nThe Ego over-resolves. This student just confidently said \"same ratio in each\" thirty seconds ago and was wrong; a goal-oriented, methodical persona carries some friction off that — a small flinch, a slower count, maybe a \"hold on\" — before announcing the full principle. Going straight from counting four blocks to \"stretched in two directions at once — two times two for the area\" packages the entire insight in one beat, which sounds like a textbook narrator, not someone who's mildly annoyed they just botched the first answer.\n\nThe closing line — \"the three labels can't be the same number, then; the area box needs a four because the doubling happens across and down\" — is the bigger break. That's a reflective re-reading of the original mistake, which the no-cue negative-control branch explicitly disallows. A careful student in this register would more likely just land on the number, maybe hedge it (\"so four goes in the area box?\"), and let the across-and-down intuition stay half-formed rather than narrating it back as a tidy lesson. The vulnerability of having just been wrong should show up as slight reluctance or terseness, not as eloquent self-correction.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 33715,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-ff31f6ed80cf766f"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 33715,
+            "promptHashes": {
+              "system": "4a8693bd0131f654",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "ff31f6ed80cf766f"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:4a8693bd0131f654>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 33715,
+              "promptHashes": {
+                "system": "4a8693bd0131f654",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "ff31f6ed80cf766f"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:4a8693bd0131f654>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially — strip the principle-narration and the \"three labels\" re-reading; keep just the count, a small friction beat, and the local number.\n\nFINAL:\n[counts under the pencil] Four. Four old squares fit inside. So... four in the area box, not two.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 25151,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-6c523769ff86e00c"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 25151,
+            "promptHashes": {
+              "system": "61dcc10681aa7a46",
+              "user": "d41cee7b2a53355b",
+              "combined": "6c523769ff86e00c"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:61dcc10681aa7a46>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 25151,
+              "promptHashes": {
+                "system": "61dcc10681aa7a46",
+                "user": "d41cee7b2a53355b",
+                "combined": "6c523769ff86e00c"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:61dcc10681aa7a46>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T22:24:33.342Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "[slides the pencil to the area box.]\n\n\"Put 4 there. Side scale is 2. Perimeter scale is 2. Area scale is 4 because the grid doubled across and doubled down: 2 times 2. Now run the pencil around the outside edge once: 8 to 16 gives what for the perimeter box?\"",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[slides the pencil to the area box.]\n\n\"Put 4 there. Side scale is 2. Perimeter scale is 2. Area scale is 4 because the grid doubled across and doubled down: 2 times 2.\"",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15427,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-47a5afd1b41ef232"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15427,
+            "promptHashes": {
+              "system": "dba47695df7b11f5",
+              "user": "45a831cef7eb39c8",
+              "combined": "47a5afd1b41ef232"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hhJwe1",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hhJwe1/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15427,
+              "promptHashes": {
+                "system": "dba47695df7b11f5",
+                "user": "45a831cef7eb39c8",
+                "combined": "47a5afd1b41ef232"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hhJwe1",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hhJwe1/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound and keeps the scene low-temperature. It uses the same objects already in play, names the three labels clearly, and gives the learner the missing distinction without inventing a new teaching device.\n\nRisk: it slightly over-closes the moment. The learner has just produced the key observation, so the tutor should preserve that discovery rather than making the turn feel like the tutor simply deposits the final rule. A small same-route check would better test whether the learner can apply “across and down” without changing representation.\n\nPedagogical soundness: PARTIAL. It consolidates the answer, but mostly provides closure rather than checking transfer.  \nEmotional attunement: PASS. The tone is plain, procedural, and not praise-heavy.  \nSocratic method: PARTIAL. The prior route did the questioning; this turn does not add a check.  \nZPD awareness: PASS. The explanation fits the learner’s current grasp.  \nRoutine-control fidelity: PASS. It preserves the worksheet/grid/pencil route and does not introduce a new mechanism, role, or register.\n\nREQUIRED_REWRITE: Add only a small same-route check using the existing grid/boxes, such as having the learner verify why perimeter stays 2 while area becomes 4. Do not introduce a new object, analogy, emotional repair, or broader concept.\n\nROUTINE_CHECK: PASS. The draft maintains the prior routine route: pencil, worksheet boxes, grid counts, and ordinary explanation. It does not create a mechanism-level reversal or switch task type.\n\nKEEP_OR_CHANGE: revise lightly. Keep the pencil-to-area-box action, the labels “side scale,” “perimeter scale,” and “area scale,” and the “doubled across and doubled down” explanation. Change only the amount of closure: leave room for one compact check so the learner must hold the distinction before the sheet is filled in.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 18011,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-fe9553747266bad6"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 18011,
+            "promptHashes": {
+              "system": "80207e76609f9a5b",
+              "user": "c910c2dca9109ea5",
+              "combined": "fe9553747266bad6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZAisdc",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZAisdc/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 18011,
+              "promptHashes": {
+                "system": "80207e76609f9a5b",
+                "user": "c910c2dca9109ea5",
+                "combined": "fe9553747266bad6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZAisdc",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZAisdc/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to preserve the learner’s discovery and add one same-route check.\n\nFINAL:\n[slides the pencil to the area box.]\n\n\"Put 4 there. Side scale is 2. Perimeter scale is 2. Area scale is 4 because the grid doubled across and doubled down: 2 times 2. Now run the pencil around the outside edge once: 8 to 16 gives what for the perimeter box?\"",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 15288,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-cbb253b8f04cb7d9"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 15288,
+            "promptHashes": {
+              "system": "9e59c6bdb92ee7cb",
+              "user": "c910c2dca9109ea5",
+              "combined": "cbb253b8f04cb7d9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q31SgT",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q31SgT/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 15288,
+              "promptHashes": {
+                "system": "9e59c6bdb92ee7cb",
+                "user": "c910c2dca9109ea5",
+                "combined": "cbb253b8f04cb7d9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q31SgT",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Q31SgT/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": {
+        "kind": "learner_reversal_pressure_event",
+        "source": "organic",
+        "triggerType": "resistance",
+        "turnNumber": 1,
+        "learnerUtterance": "Sixteen over eight is two. Sixteen over four is — four. [the pencil stops over the area box] So that one isn't two. The side only doubled — why does the area come out twice as much again?",
+        "previousTutorMove": "[sets the blunt pencil across the three empty boxes, then stops it over the first one] Put 2 in the side box. Now test the other two before that pencil slides over: perimeter goes 8 to 16, area goes 4 to 16. The worksheet is asking for those two ratios separately. What does 16 over 8 give, and what does 16 over 4 give?",
+        "directorCue": null,
+        "confidence": 0.5,
+        "evidence": {
+          "confidence": 0.5,
+          "baseConfidence": 0.5,
+          "patternHits": 1,
+          "contradiction": false,
+          "question": true,
+          "pseudoCatharsis": {
+            "likely": false,
+            "confidence": 0.42,
+            "triggerType": "pseudo_catharsis",
+            "reasons": [
+              "residual_strain_after_relief",
+              "relief_without_performing_requested_task"
+            ],
+            "signals": {
+              "reliefHits": 0,
+              "clicheHits": 0,
+              "residualHits": 1,
+              "taskDemandHits": 2,
+              "performanceHits": 2,
+              "repeatedRelief": 0,
+              "tutorOverlap": 0.31,
+              "asksQuestion": true,
+              "taskDemanded": true,
+              "weakPerformance": true,
+              "borrowedClosure": false
+            }
+          }
+        }
+      },
+      "learnerReversalEventCandidatesUsed": [
+        {
+          "kind": "learner_reversal_pressure_event",
+          "source": "organic",
+          "triggerType": "misfit",
+          "turnNumber": 0,
+          "learnerUtterance": "The side went from 2 to 4, so the scale factor is 2. [taps the three boxes on the worksheet] Side, perimeter, area — same ratio in each, isn't it? I just want to be sure before writing the same number down three times.",
+          "previousTutorMove": null,
+          "directorCue": null,
+          "confidence": 0.5,
+          "evidence": {
+            "confidence": 0.5,
+            "baseConfidence": 0.5,
+            "patternHits": 1,
+            "contradiction": false,
+            "question": true,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 0,
+                "taskDemandHits": 0,
+                "performanceHits": 1,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0,
+                "asksQuestion": true,
+                "taskDemanded": false,
+                "weakPerformance": false,
+                "borrowedClosure": false
+              }
+            }
+          }
+        },
+        {
+          "kind": "learner_reversal_pressure_event",
+          "source": "organic",
+          "triggerType": "resistance",
+          "turnNumber": 1,
+          "learnerUtterance": "Sixteen over eight is two. Sixteen over four is — four. [the pencil stops over the area box] So that one isn't two. The side only doubled — why does the area come out twice as much again?",
+          "previousTutorMove": "[sets the blunt pencil across the three empty boxes, then stops it over the first one] Put 2 in the side box. Now test the other two before that pencil slides over: perimeter goes 8 to 16, area goes 4 to 16. The worksheet is asking for those two ratios separately. What does 16 over 8 give, and what does 16 over 4 give?",
+          "directorCue": null,
+          "confidence": 0.5,
+          "evidence": {
+            "confidence": 0.5,
+            "baseConfidence": 0.5,
+            "patternHits": 1,
+            "contradiction": false,
+            "question": true,
+            "pseudoCatharsis": {
+              "likely": false,
+              "confidence": 0.42,
+              "triggerType": "pseudo_catharsis",
+              "reasons": [
+                "residual_strain_after_relief",
+                "relief_without_performing_requested_task"
+              ],
+              "signals": {
+                "reliefHits": 0,
+                "clicheHits": 0,
+                "residualHits": 1,
+                "taskDemandHits": 2,
+                "performanceHits": 2,
+                "repeatedRelief": 0,
+                "tutorOverlap": 0.31,
+                "asksQuestion": true,
+                "taskDemanded": true,
+                "weakPerformance": true,
+                "borrowedClosure": false
+              }
+            }
+          }
+        }
+      ],
+      "timestamp": "2026-05-26T22:25:22.071Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "[runs the pencil around the outside edge once] Two. Sixteen over eight is two — 2 in the perimeter box. Writing it in before that pencil shifts again.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[runs the pencil around the outside edge once] Two. Sixteen over eight is two — perimeter box is a 2. The perimeter just travels around once, so doubling the side doubles the loop; the area filled across and down at the same time, which is why that one came out as two times two. Three labels for three different counts — that's the distinction the sheet is asking for.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 49115,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-23934bbc0169b5ba"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 49115,
+            "promptHashes": {
+              "system": "08f085159d366325",
+              "user": "b8ab7f945dc841fa",
+              "combined": "23934bbc0169b5ba"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:08f085159d366325>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 49115,
+              "promptHashes": {
+                "system": "08f085159d366325",
+                "user": "b8ab7f945dc841fa",
+                "combined": "23934bbc0169b5ba"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:08f085159d366325>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is doing the \"wrap it all up\" move the branch constraints explicitly forbid — the tutor asked one narrow thing (16 over 8 for the perimeter box) and the Ego answered it, then glided straight into a three-way synthesis (\"Three labels for three different counts — that's the distinction the sheet is asking for\"). That's volunteering a dramatic re-reading of the whole worksheet thirty seconds after being confidently wrong twice; this focused-achiever, who just had area-as-2 visibly disproven under the pencil, would sound a beat more clipped, maybe faintly nettled, not float into tidy lesson-summary cadence. The middle sentence — \"the perimeter just travels around once, so doubling the side doubles the loop; the area filled across and down at the same time\" — is the tutor's explanation already metabolised into too-clean student-prose; precision is in character, but this reads as eloquent recap rather than someone still re-checking their own count. The response should land the perimeter number and at most one short methodical thought (still verifying, not concluding) — leave the three-labels synthesis for the tutor or for the act of writing it down.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 32872,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_superego-c5f69acc67c9e845"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 32872,
+            "promptHashes": {
+              "system": "c11215b726b28873",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "c5f69acc67c9e845"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:c11215b726b28873>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 32872,
+              "promptHashes": {
+                "system": "c11215b726b28873",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "c5f69acc67c9e845"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:c11215b726b28873>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise — the review is right that the three-labels synthesis is premature; trim to the perimeter number plus one short methodical beat.\n\nFINAL:\n[runs the pencil around the outside edge once] Two. Sixteen over eight is two — 2 in the perimeter box. Writing it in before that pencil shifts again.",
+          "metrics": {
+            "model": "claude/opus",
+            "provider": "claude-code",
+            "latencyMs": 23875,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-claude-learner_ego-ee272362be32888f"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "claude",
+            "cli": "claude",
+            "model": "opus",
+            "reasoningEffort": null,
+            "latencyMs": 23875,
+            "promptHashes": {
+              "system": "fd6b294a14f44965",
+              "user": "d41cee7b2a53355b",
+              "combined": "ee272362be32888f"
+            },
+            "args": [
+              "-p",
+              "-",
+              "--output-format",
+              "text",
+              "--system-prompt",
+              "<sha256:fd6b294a14f44965>",
+              "--model",
+              "opus"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "claude",
+              "cli": "claude",
+              "model": "opus",
+              "reasoningEffort": null,
+              "latencyMs": 23875,
+              "promptHashes": {
+                "system": "fd6b294a14f44965",
+                "user": "d41cee7b2a53355b",
+                "combined": "ee272362be32888f"
+              },
+              "args": [
+                "-p",
+                "-",
+                "--output-format",
+                "text",
+                "--system-prompt",
+                "<sha256:fd6b294a14f44965>",
+                "--model",
+                "opus"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-05-26T22:27:07.936Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "A final tutor line closes the scene.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-26T22:27:07.938Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "[taps the three filled boxes in order, then lays the pencil flat beside the worksheet.] Side box: 2, because the side went 2 to 4. Perimeter box: 2, because the pencil path went 8 to 16. Area box: 4, because four old squares fill the new grid. Circle those, and the sheet is done.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[taps the three boxes in order, then lays the pencil flat beside the worksheet.] Side scale 2. Perimeter scale 2. Area scale 4. The labels stay separate: outside path doubled; square space made four old squares. Circle those, and the sheet is done.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 16813,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-79f5d10a71d31289"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 16813,
+            "promptHashes": {
+              "system": "43401cbfb8e0a4ae",
+              "user": "b7d025f36eaa2763",
+              "combined": "79f5d10a71d31289"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-a9q2kE",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-a9q2kE/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 16813,
+              "promptHashes": {
+                "system": "43401cbfb8e0a4ae",
+                "user": "b7d025f36eaa2763",
+                "combined": "79f5d10a71d31289"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-a9q2kE",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-a9q2kE/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft mostly works as a closing line. It keeps the object route stable, uses the three worksheet boxes, and consolidates the distinction without adding a new device or raising the drama. The pencil being laid flat is useful: it makes the work feel finished and matches the end-of-day pressure.\n\nThe main risk is that it turns the learner’s just-earned distinction into the tutor’s summary too quickly. Since the learner has now filled side/perimeter/area correctly, the final line should let the boxes themselves carry the recognition. “The labels stay separate” is sound, but slightly abstract; the stronger mechanism is to anchor each label to the visible action already performed.\n\nADAPTATION_CHECKS:\n- Pedagogical soundness: PASS. It consolidates the three ratios at the right moment and does not push into new material.\n- Emotional attunement: PASS. The tone is plain, low-temperature, and appropriate for a learner who is focused rather than distressed.\n- Socratic method: PARTIAL. A final tutor line does not need a new generative question, but the draft still speaks mostly as a tutor conclusion rather than letting the learner’s completed boxes stand as evidence. REQUIRED_REWRITE: keep it declarative, but make the public mechanism the worksheet evidence: side box, perimeter box, area box, and the one visible reason each has that value.\n- ZPD awareness: PASS. The learner has already done the needed calculations, so a compact closing consolidation fits the current scaffolding level.\n- Recognition quality: PARTIAL. The draft respects the learner’s work by closing on their entries, but it could better show that the learner’s completed pencil route produced the distinction. REQUIRED_REWRITE: preserve the learner’s numbers as the source of the close; avoid making the tutor sound like they are re-teaching from above.\n\nKEEP_OR_CHANGE: revise lightly. Keep the three-box tap, the flat pencil, the compact distinction, and the finality. Change only enough to make the worksheet entries and the learner’s completed perimeter action visibly authorize the conclusion, rather than having the tutor simply announce it.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 21832,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-8fa7d8384b8c036f"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 21832,
+            "promptHashes": {
+              "system": "af83484ae31fa25c",
+              "user": "3c9322459e7b4b23",
+              "combined": "8fa7d8384b8c036f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ORZLcp",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ORZLcp/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 21832,
+              "promptHashes": {
+                "system": "af83484ae31fa25c",
+                "user": "3c9322459e7b4b23",
+                "combined": "8fa7d8384b8c036f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ORZLcp",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ORZLcp/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to let the filled boxes and pencil path carry the closing distinction.\n\nFINAL:\n[taps the three filled boxes in order, then lays the pencil flat beside the worksheet.] Side box: 2, because the side went 2 to 4. Perimeter box: 2, because the pencil path went 8 to 16. Area box: 4, because four old squares fill the new grid. Circle those, and the sheet is done.",
+          "metrics": {
+            "model": "codex/config-default@xhigh",
+            "provider": "codex-cli",
+            "latencyMs": 14117,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-f7a8e2fe182ad67c"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "xhigh",
+            "latencyMs": 14117,
+            "promptHashes": {
+              "system": "4387f3cf4909baa8",
+              "user": "3c9322459e7b4b23",
+              "combined": "f7a8e2fe182ad67c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-p1eZ40",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"xhigh\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-p1eZ40/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "xhigh",
+              "latencyMs": 14117,
+              "promptHashes": {
+                "system": "4387f3cf4909baa8",
+                "user": "3c9322459e7b4b23",
+                "combined": "f7a8e2fe182ad67c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-p1eZ40",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"xhigh\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-p1eZ40/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-05-26T22:28:00.701Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 281951,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 11,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 12,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why side scale, perimeter scale, and area scale are different labels",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "partial",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-26 22:27:07",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 11,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 12,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 16,
+            "sessionId": "drama-branch-session-D39-routine-1779834198752",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[slides the pencil to the area box.]\n\n\"Put 4 there. Side scale is 2. Perimeter scale is 2. Area scale is 4 because the grid doubled across and doubled down: 2 times 2. Now run the pencil around the ou",
+            "learnerResponse": null,
+            "context": "[counts under the pencil] Four. Four old squares fit inside. So... four in the area box, not two.",
+            "createdAt": "2026-05-26 22:25:22"
+          },
+          {
+            "id": 14,
+            "sessionId": "drama-branch-session-D39-routine-1779834198752",
+            "interventionType": "scaffolding",
+            "interventionDescription": "[sets the blunt pencil across the three empty boxes, then stops it over the first one] Put 2 in the side box. Now test the other two before that pencil slides over: perimeter goes 8 to 16, area goes 4",
+            "learnerResponse": null,
+            "context": "The side went from 2 to 4, so the scale factor is 2. [taps the three boxes on the worksheet] Side, p",
+            "createdAt": "2026-05-26 22:23:18"
+          },
+          {
+            "id": 15,
+            "sessionId": "drama-branch-session-D39-routine-1779834198752",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "[marks the 4-by-4 grid into four 2-by-2 blocks with the pencil.]\n\n“Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area bo",
+            "learnerResponse": null,
+            "context": "Sixteen over eight is two. Sixteen over four is — four. [the pencil stops over the area box] So that",
+            "createdAt": "2026-05-26 22:23:18"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

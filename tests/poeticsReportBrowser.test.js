@@ -7,6 +7,7 @@ import { loadAuditRows } from '../scripts/audit-poetics-disagreements.js';
 import {
   getBlindItem,
   getItem,
+  endingShapeDiagnosticsForScores,
   listItems,
   listRuns,
   parseTranscriptPreview,
@@ -208,7 +209,7 @@ function seed(db) {
           source: 'tutor_contingent_adaptation_axis',
         },
         tutor_strategy_reversal: {
-          score100: 70,
+          score100: 80,
           evidence: 'Let us switch route: test the map claim with a smaller example.',
           justification: 'The tutor changes route after learner resistance.',
           triggerLearnerTurn: 2,
@@ -431,6 +432,7 @@ LEARNER: "The arrow names who acts on the cart. [moves the motion strip aside] T
       assert.equal(adaptiveItems[0].tutorAdaptationScore, 72);
       assert.equal(adaptiveItems[0].actionalBreakthroughCount, 1);
       assert.equal(adaptiveItems[0].adaptiveMechanismQualityCount, 1);
+      assert.equal(adaptiveItems[0].endingShapeCount, 1);
       assert.equal(adaptiveItems[0].peripeteiaTutorAdaptation, true);
       assert.equal(adaptiveItems[0].peripeteiaScore, 68);
       assert.equal(adaptiveItems[0].learnerSelfReframe, true);
@@ -445,13 +447,55 @@ LEARNER: "The arrow names who acts on the cart. [moves the motion strip aside] T
       assert.equal(qwenScore.roleScores.learnerSelfReframeScore, 75);
       assert.equal(qwenScore.roleScores.learnerActionalBreakthroughScore, 90);
       assert.equal(qwenScore.roleScores.tutorContingentAdaptationScore, 80);
-      assert.equal(qwenScore.roleScores.tutorStrategyReversalScore, 70);
+      assert.equal(qwenScore.roleScores.tutorStrategyReversalScore, 80);
       assert.equal(qwenScore.roleScores.tutorAdaptiveMechanismQualityScore, 85);
       assert.match(qwenScore.roleScores.tutorContingentAdaptationEvidence, /revised map frame/);
       assert.match(qwenScore.roleScores.tutorAdaptiveMechanismQualityEvidence, /smaller example/);
       assert.equal(adaptiveDetail.tutorAdaptation.metadata.peripeteia.tutor_strategy_reversal, true);
       assert.equal(adaptiveDetail.tutorAdaptation.metadata.branch_validity.valid, true);
+      assert.equal(adaptiveDetail.endingShapeDiagnostics.totalCritics, 4);
+      assert.equal(adaptiveDetail.endingShapeDiagnostics.tutorAdaptiveMoveVotes, 1);
+      assert.equal(adaptiveDetail.endingShapeDiagnostics.learnerPerformanceVotes, 1);
+      assert.equal(adaptiveDetail.endingShapeDiagnostics.learnerReorientationVotes, 3);
+      assert.equal(adaptiveDetail.endingShapeDiagnostics.completeEndingShapeVotes, 1);
+      assert.ok(
+        adaptiveDetail.endingShapeDiagnostics.disagreementFlags.some((flag) =>
+          flag.includes('complete ending shape'),
+        ),
+      );
     }));
+
+  it('builds ending-shape diagnostics from role-symmetric score rows', () => {
+    const diagnostics = endingShapeDiagnosticsForScores([
+      {
+        critic_model: 'critic-a',
+        form_class: 'recognition',
+        recontextualization: 75,
+        metadata: {
+          actional_breakthrough: 75,
+          tutor_adaptive_mechanism: 75,
+          adaptive_mechanism_quality: 75,
+          actional_breakthrough_evidence: 'learner performs the new test',
+          tutor_reversal_evidence: 'tutor switches device',
+        },
+      },
+      {
+        critic_model: 'critic-b',
+        form_class: 'flat',
+        recontextualization: 0,
+        metadata: {
+          actional_breakthrough: 75,
+          tutor_adaptive_mechanism: 0,
+        },
+      },
+    ]);
+    assert.equal(diagnostics.totalCritics, 2);
+    assert.equal(diagnostics.learnerPerformanceVotes, 2);
+    assert.equal(diagnostics.learnerReorientationVotes, 1);
+    assert.equal(diagnostics.tutorAdaptiveMoveVotes, 1);
+    assert.equal(diagnostics.completeEndingShapeVotes, 1);
+    assert.ok(diagnostics.disagreementFlags.some((flag) => flag.includes('learner reorientation')));
+  });
 
   it('supports blind browser labels without exposing critic scores', () =>
     withDb((db) => {

@@ -1,0 +1,475 @@
+{
+  "generated": "2026-05-27T00:30:20.144Z",
+  "phase": 2,
+  "critic": "deepseek/deepseek-v4-pro",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 4,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/key-routine.yaml",
+    "allowQualityWarnings": true,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T393",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 4,
+      "actionalBreakthroughLearnerTurn": null,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 0,
+      "actionalBreakthrough": 0,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 1,
+        "actionalBreakthrough": 1,
+        "tutorStrategicReversal": 1,
+        "adaptiveMechanismQuality": 1,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "big-eats-small up the line, classic hierarchy",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner will continue to check individual arrows one at a time as directed by the tutor.",
+      "actionalBreakthroughEvidence": "",
+      "actionalBreakthroughJustification": "",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "",
+      "adaptiveMechanismQuality": 0,
+      "adaptiveMechanismQualityEvidence": "",
+      "adaptiveMechanismQualityJustification": "",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 100,
+          "evidence": "big-eats-small up the line, classic hierarchy",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "learnerTurn": null,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T394",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 50,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 3,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "side, perimeter, area — same ratio in each, isn't it? I just want to be sure before writing the same number down three times.",
+      "statedInsightEvidence": "So that one isn't two. The side only doubled — why does the area come out twice as much again?",
+      "naiveTrajectory": "L1 was heading toward writing the same scale factor 2 in all three boxes, expecting confirmation.",
+      "actionalBreakthroughEvidence": "Four. Four old squares fit inside. So... four in the area box, not two.",
+      "actionalBreakthroughJustification": "L3 enacts a new criterion—counting old squares inside the new grid—to determine the area scale factor, completing the worksheet entry with a different number from the naive 2.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "marks the 4-by-4 grid into four 2-by-2 blocks with the pencil. 'Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.'",
+      "tutorReversalJustification": "The tutor visibly stops the numerical ratio route after L2's confusion and introduces a changed representation—physically partitioning the grid into old area units and giving the learner a new counting action—showing both stock-taking of the failed scaling shortcut and a new public mechanism.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "marks the 4-by-4 grid into four 2-by-2 blocks with the pencil. 'Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.'",
+      "adaptiveMechanismQualityJustification": "The grid-partitioning device is precise, visually fitted to L2's confusion about area vs. linear scaling, and gives the learner an actionable counting criterion that transfers the problem from abstract ratios to concrete spatial enumeration.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Put 4 there. Side scale is 2. Perimeter scale is 2. Area scale is 4 because the grid doubled across and doubled down: 2 times 2.",
+      "tutorAdaptationJustification": "T3 acknowledges L3's revised frame by naming the 2×2 mechanism explicitly, but the uptake largely continues the earlier worksheet completion plan rather than introducing a new framing move; it therefore scores competent continuation but not a high-contingency transformation.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "side, perimeter, area — same ratio in each, isn't it? I just want to be sure before writing the same number down three times.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Four. Four old squares fit inside. So... four in the area box, not two.",
+          "justification": "L3 enacts a new criterion—counting old squares inside the new grid—to determine the area scale factor, completing the worksheet entry with a different number from the naive 2.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Put 4 there. Side scale is 2. Perimeter scale is 2. Area scale is 4 because the grid doubled across and doubled down: 2 times 2.",
+          "justification": "T3 acknowledges L3's revised frame by naming the 2×2 mechanism explicitly, but the uptake largely continues the earlier worksheet completion plan rather than introducing a new framing move; it therefore scores competent continuation but not a high-contingency transformation.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "marks the 4-by-4 grid into four 2-by-2 blocks with the pencil. 'Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.'",
+          "justification": "The tutor visibly stops the numerical ratio route after L2's confusion and introduces a changed representation—physically partitioning the grid into old area units and giving the learner a new counting action—showing both stock-taking of the failed scaling shortcut and a new public mechanism.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "marks the 4-by-4 grid into four 2-by-2 blocks with the pencil. 'Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.'",
+          "justification": "The tutor visibly stops the numerical ratio route after L2's confusion and introduces a changed representation—physically partitioning the grid into old area units and giving the learner a new counting action—showing both stock-taking of the failed scaling shortcut and a new public mechanism.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "marks the 4-by-4 grid into four 2-by-2 blocks with the pencil. 'Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.'",
+          "justification": "The grid-partitioning device is precise, visually fitted to L2's confusion about area vs. linear scaling, and gives the learner an actionable counting criterion that transfers the problem from abstract ratios to concrete spatial enumeration.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3",
+        "tutor_strategy_reversal_evidence_clamp:4->3",
+        "adaptive_mechanism_quality_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T397",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 50,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 3,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 1
+      },
+      "recoheredEarlier": "So what does the distinction do for anyone at the counter, if the evidence to fill the right column never leaves the back office?",
+      "statedInsightEvidence": "Right, the demand changes. Fine.",
+      "naiveTrajectory": "The learner would continue to resist and question the practical impact of the distinction.",
+      "actionalBreakthroughEvidence": "Undeclared.",
+      "actionalBreakthroughJustification": "The learner performs the tasked cognitive move by supplying the word that the evidence-based distinction allows, shifting from debate to enactment.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Correct. The board does not make the bakery answer. It does a smaller job. It stops the complaint from spending itself on the wrong claim. [...] So keep the sentence clean. 'The price rose. The burden moved to the buyer. The cause is ______.' Put the missing part under the blank. What is the strongest word the evidence allows?",
+      "tutorReversalJustification": "The tutor acknowledges the limitation of the prior route and introduces a new mechanism (sentence frame with blank) that reframes the task in response to the learner's pressure.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "So keep the sentence clean. 'The price rose. The burden moved to the buyer. The cause is ______.' Put the missing part under the blank. What is the strongest word the evidence allows?",
+      "adaptiveMechanismQualityJustification": "The sentence frame is precise, directly fitted to the learner's concern about the internal blank, and gives an actionable criterion for evidence-based word choice.",
+      "tutorContingentAdaptation": 0,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "No tutor turn follows the pivot learner turn (L3), so there is no uptake.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "So what does the distinction do for anyone at the counter, if the evidence to fill the right column never leaves the back office?",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Undeclared.",
+          "justification": "The learner performs the tasked cognitive move by supplying the word that the evidence-based distinction allows, shifting from debate to enactment.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No tutor turn follows the pivot learner turn (L3), so there is no uptake.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Correct. The board does not make the bakery answer. It does a smaller job. It stops the complaint from spending itself on the wrong claim. [...] So keep the sentence clean. 'The price rose. The burden moved to the buyer. The cause is ______.' Put the missing part under the blank. What is the strongest word the evidence allows?",
+          "justification": "The tutor acknowledges the limitation of the prior route and introduces a new mechanism (sentence frame with blank) that reframes the task in response to the learner's pressure.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Correct. The board does not make the bakery answer. It does a smaller job. It stops the complaint from spending itself on the wrong claim. [...] So keep the sentence clean. 'The price rose. The burden moved to the buyer. The cause is ______.' Put the missing part under the blank. What is the strongest word the evidence allows?",
+          "justification": "The tutor acknowledges the limitation of the prior route and introduces a new mechanism (sentence frame with blank) that reframes the task in response to the learner's pressure.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "So keep the sentence clean. 'The price rose. The burden moved to the buyer. The cause is ______.' Put the missing part under the blank. What is the strongest word the evidence allows?",
+          "justification": "The sentence frame is precise, directly fitted to the learner's concern about the internal blank, and gives an actionable criterion for evidence-based word choice.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "coherence_evidence_clamp:5->3",
+        "tutor_strategy_reversal_evidence_clamp:5->3",
+        "adaptive_mechanism_quality_mechanism_clamp:5->3:stock=0:device=1:routine=0:mechanism_score=3"
+      ]
+    },
+    {
+      "id": "T398",
+      "error": "OpenRouter 402: {\"error\":{\"message\":\"Prompt tokens limit exceeded: 3683 > 1934. To increase, visit https://openrouter.ai/settings/credits and add more credits\",\"code\":402,\"metadata\":{\"provider_name\":null}},\"user_id\":"
+    },
+    {
+      "id": "T402",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "Bit thrown we've stepped back from direction — thought the arrows were the problem.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner would continue to see the separation of labelling and arrowheads as an underdone or frustrating exercise and resist the delay.",
+      "actionalBreakthroughEvidence": "Gravity's head down toward Earth. Normal up off the floor. Push in from the side the hand's on. Want to lay all three out before clipping anything.",
+      "actionalBreakthroughJustification": "L3 enacts the new criterion of orienting all arrowheads by the acting body before clipping, performing the separated layering procedure the tutor introduced rather than merely accepting it.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "That copy had arrowheads too early. It mixed two jobs. Blank copy: body acting on cart. Earth on cart: gravity. Floor on cart: normal. Hand on cart: push. Set the labels that way first. Arrowheads stay off for the moment.",
+      "tutorReversalJustification": "T2 stock-takes L1's confusion by naming the mixing of jobs as the problem, then introduces a new public mechanism: a blank cart copy with a forced separation of labelling bodies from attaching arrowheads, visibly changing the representation and task constraint.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "That copy had arrowheads too early. It mixed two jobs. Blank copy: body acting on cart. Earth on cart: gravity. Floor on cart: normal. Hand on cart: push. Set the labels that way first. Arrowheads stay off for the moment.",
+      "adaptiveMechanismQualityJustification": "The blank-copy mechanism is precise, economically isolates the conflated jobs, gives the learner a tangible and transferable sequencing rule, and directly addresses L1's disorientation about direction by deferring arrowheads until bodies are assigned.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Underdone is right. It only names the interactions. Heads come next from the body doing the acting. Earth on cart first. Then floor on cart. Hand on cart last, using the side where the hand touches.",
+      "tutorAdaptationJustification": "T3 picks up L2's 'underdone' framing and adapts the next move by explicitly sequencing the arrowhead placement according to the acting bodies, validating L2's observation while extending the new layered procedure.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "Bit thrown we've stepped back from direction — thought the arrows were the problem.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "Gravity's head down toward Earth. Normal up off the floor. Push in from the side the hand's on. Want to lay all three out before clipping anything.",
+          "justification": "L3 enacts the new criterion of orienting all arrowheads by the acting body before clipping, performing the separated layering procedure the tutor introduced rather than merely accepting it.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Underdone is right. It only names the interactions. Heads come next from the body doing the acting. Earth on cart first. Then floor on cart. Hand on cart last, using the side where the hand touches.",
+          "justification": "T3 picks up L2's 'underdone' framing and adapts the next move by explicitly sequencing the arrowhead placement according to the acting bodies, validating L2's observation while extending the new layered procedure.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "That copy had arrowheads too early. It mixed two jobs. Blank copy: body acting on cart. Earth on cart: gravity. Floor on cart: normal. Hand on cart: push. Set the labels that way first. Arrowheads stay off for the moment.",
+          "justification": "T2 stock-takes L1's confusion by naming the mixing of jobs as the problem, then introduces a new public mechanism: a blank cart copy with a forced separation of labelling bodies from attaching arrowheads, visibly changing the representation and task constraint.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "That copy had arrowheads too early. It mixed two jobs. Blank copy: body acting on cart. Earth on cart: gravity. Floor on cart: normal. Hand on cart: push. Set the labels that way first. Arrowheads stay off for the moment.",
+          "justification": "T2 stock-takes L1's confusion by naming the mixing of jobs as the problem, then introduces a new public mechanism: a blank cart copy with a forced separation of labelling bodies from attaching arrowheads, visibly changing the representation and task constraint.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "That copy had arrowheads too early. It mixed two jobs. Blank copy: body acting on cart. Earth on cart: gravity. Floor on cart: normal. Hand on cart: push. Set the labels that way first. Arrowheads stay off for the moment.",
+          "justification": "The blank-copy mechanism is precise, economically isolates the conflated jobs, gives the learner a tangible and transferable sequencing rule, and directly addresses L1's disorientation about direction by deferring arrowheads until bodies are assigned.",
+          "triggerLearnerTurn": 1,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": [
+        "tutor_strategy_reversal_mechanism_clamp:5->3:stock=0:device=1:routine=0",
+        "adaptive_mechanism_quality_mechanism_clamp:5->3:stock=0:device=1:routine=0:mechanism_score=3",
+        "tutor_adaptation_clamp_no_post_tutor:4->3"
+      ]
+    },
+    {
+      "id": "T406",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": null,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 1,
+        "adaptiveMechanismQuality": 1,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "cant tell which one the quiz wants me to circle as the header.",
+      "statedInsightEvidence": "so basically anything in the top row is a header and everything underneath is a row value, thats the rule?",
+      "naiveTrajectory": "Learner would simply respond with the correct header/value labels.",
+      "actionalBreakthroughEvidence": "so basically anything in the top row is a header and everything underneath is a row value, thats the rule?",
+      "actionalBreakthroughJustification": "L3 constructs a general rule from the examples, marking a visible shift from confusion to productive criterion formulation.",
+      "tutorStrategicReversal": 0,
+      "tutorAdaptiveMechanism": 0,
+      "tutorReversalEvidence": "",
+      "tutorReversalJustification": "Tutor does not change strategy; continues the same check pattern.",
+      "adaptiveMechanismQuality": 0,
+      "adaptiveMechanismQualityEvidence": "",
+      "adaptiveMechanismQualityJustification": "No adaptive mechanism.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "The underscore in `rainfall_mm` keeps the field name in one piece.",
+      "tutorAdaptationJustification": "Tutor acknowledges the learner's self-explanation but does not alter the task framing or devise a new approach.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "cant tell which one the quiz wants me to circle as the header.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "so basically anything in the top row is a header and everything underneath is a row value, thats the rule?",
+          "justification": "L3 constructs a general rule from the examples, marking a visible shift from confusion to productive criterion formulation.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "The underscore in `rainfall_mm` keeps the field name in one piece.",
+          "justification": "Tutor acknowledges the learner's self-explanation but does not alter the task framing or devise a new approach.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "Tutor does not change strategy; continues the same check pattern.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "Tutor does not change strategy; continues the same check pattern.",
+          "triggerLearnerTurn": null,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 0,
+          "evidence": "",
+          "justification": "No adaptive mechanism.",
+          "triggerLearnerTurn": null,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

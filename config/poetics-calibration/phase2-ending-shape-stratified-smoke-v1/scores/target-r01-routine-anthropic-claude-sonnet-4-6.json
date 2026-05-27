@@ -1,0 +1,463 @@
+{
+  "generated": "2026-05-27T00:30:20.444Z",
+  "phase": 2,
+  "critic": "anthropic/claude-sonnet-4.6",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 4
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-ending-shape-stratified-smoke-v1/target-r01/key-routine.yaml",
+    "allowQualityWarnings": true,
+    "skipped": []
+  },
+  "blindScoringProtocol": {
+    "version": "poetics-blind-scoring-v1",
+    "promptInput": "transcript_text_only",
+    "hiddenFromCritic": [
+      "generator",
+      "model_provider",
+      "run_id",
+      "condition_label",
+      "file_path",
+      "score_history"
+    ],
+    "cliIsolation": {
+      "codex": "ephemeral read-only temp cwd",
+      "claude": "non-persistent temp cwd with project/local settings and tools disabled"
+    }
+  },
+  "scored": [
+    {
+      "id": "T393",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "recognition",
+      "learningSignalClass": "recognitive_reframe",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 5,
+        "tutorStrategicReversal": 3,
+        "adaptiveMechanismQuality": 3,
+        "tutorContingentAdaptation": 4
+      },
+      "recoheredEarlier": "Arrows are just the predation stack — 'mussel → crab → heron' chains big-eats-small up the line, classic hierarchy.",
+      "statedInsightEvidence": "the whole stack got drawn big-bird-down, but energy doesn't track who's biggest on the page",
+      "naiveTrajectory": "The learner was moving mark-by-mark through the key, correcting one arrow at a time as directed, heading toward a routine individual-mark sign-off.",
+      "actionalBreakthroughEvidence": "'Heron into worm' — eater into food, doesn't pass. Worm into heron after the flip, food to eater, stays. — Hang on, though, the decomposer mark down the corner: if the worm dies into the fungus, that whole bottom row got drawn scavengers-as-sources, same big-bird-down logic running underneath. Reckon half the lower marks are backwards on the same key, not just this one — want to pull the corner cluster through next before the stylus moves up.",
+      "actionalBreakthroughJustification": "The learner independently applies the food-to-eater sentence gate to a new domain (decomposer links), generates a structural hypothesis about the lower cluster, and proposes the next verification step — all without tutor prompting, showing the criterion has become an actionable tool the learner wields.",
+      "tutorStrategicReversal": 50,
+      "tutorAdaptiveMechanism": 50,
+      "tutorReversalEvidence": "Same check here, not size: food source into eater. Middle mark first: ___ into ___. Say that one before the stylus moves; the edge link waits next.",
+      "tutorReversalJustification": "T2 adds the explicit 'not size' contrast and enforces a verbal-before-action gate, which is a modest tightening of the same fill-in-the-blank device rather than a changed route or representation, so both stock-taking contrast and a genuinely new mechanism are only partially legible.",
+      "adaptiveMechanismQuality": 50,
+      "adaptiveMechanismQualityEvidence": "Same check here, not size: food source into eater. Middle mark first: ___ into ___. Say that one before the stylus moves; the edge link waits next.",
+      "adaptiveMechanismQualityJustification": "The 'say it before the stylus moves' sequencing constraint is a useful procedural tightening fitted to the learner's impulsive size-reading habit, but it remains a refinement of the already-established sentence-completion device rather than a distinct representation or evidence standard, limiting its novelty.",
+      "tutorContingentAdaptation": 75,
+      "tutorAdaptationEvidence": "Corner cluster, same key, one mark at a time. For 'worm dies into fungus': dead worm matter into fungus, arrowhead at fungus. First lower mark aloud: ___ matter into ___. If that sentence passes, mark it; if not, flip that one before upload.",
+      "tutorAdaptationJustification": "T4 visibly takes up the learner's L4 hypothesis about the decomposer cluster and extends the sentence gate into a new domain-specific formulation ('matter source → organism using it'), adapting the task scope and vocabulary to the learner's revised framing rather than continuing the predator-prey route.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 75,
+          "evidence": "Arrows are just the predation stack — 'mussel → crab → heron' chains big-eats-small up the line, classic hierarchy.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 100,
+          "evidence": "'Heron into worm' — eater into food, doesn't pass. Worm into heron after the flip, food to eater, stays. — Hang on, though, the decomposer mark down the corner: if the worm dies into the fungus, that whole bottom row got drawn scavengers-as-sources, same big-bird-down logic running underneath. Reckon half the lower marks are backwards on the same key, not just this one — want to pull the corner cluster through next before the stylus moves up.",
+          "justification": "The learner independently applies the food-to-eater sentence gate to a new domain (decomposer links), generates a structural hypothesis about the lower cluster, and proposes the next verification step — all without tutor prompting, showing the criterion has become an actionable tool the learner wields.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 75,
+          "evidence": "Corner cluster, same key, one mark at a time. For 'worm dies into fungus': dead worm matter into fungus, arrowhead at fungus. First lower mark aloud: ___ matter into ___. If that sentence passes, mark it; if not, flip that one before upload.",
+          "justification": "T4 visibly takes up the learner's L4 hypothesis about the decomposer cluster and extends the sentence gate into a new domain-specific formulation ('matter source → organism using it'), adapting the task scope and vocabulary to the learner's revised framing rather than continuing the predator-prey route.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 50,
+          "evidence": "Same check here, not size: food source into eater. Middle mark first: ___ into ___. Say that one before the stylus moves; the edge link waits next.",
+          "justification": "T2 adds the explicit 'not size' contrast and enforces a verbal-before-action gate, which is a modest tightening of the same fill-in-the-blank device rather than a changed route or representation, so both stock-taking contrast and a genuinely new mechanism are only partially legible.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 50,
+          "evidence": "Same check here, not size: food source into eater. Middle mark first: ___ into ___. Say that one before the stylus moves; the edge link waits next.",
+          "justification": "T2 adds the explicit 'not size' contrast and enforces a verbal-before-action gate, which is a modest tightening of the same fill-in-the-blank device rather than a changed route or representation, so both stock-taking contrast and a genuinely new mechanism are only partially legible.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 50,
+          "evidence": "Same check here, not size: food source into eater. Middle mark first: ___ into ___. Say that one before the stylus moves; the edge link waits next.",
+          "justification": "The 'say it before the stylus moves' sequencing constraint is a useful procedural tightening fitted to the learner's impulsive size-reading habit, but it remains a refinement of the already-established sentence-completion device rather than a distinct representation or evidence standard, limiting its novelty.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T394",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "actionalBreakthroughLearnerTurn": 4,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 4,
+        "adaptiveMechanismQuality": 4,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "Side, perimeter, area — same ratio in each, isn't it? I just want to be sure before writing the same number down three times.",
+      "statedInsightEvidence": "So that one isn't two.",
+      "naiveTrajectory": "The learner expects to confirm the same scale factor of 2 across all three boxes and write it in three times.",
+      "actionalBreakthroughEvidence": "Two. Sixteen over eight is two — 2 in the perimeter box. Writing it in before that pencil shifts again.",
+      "actionalBreakthroughJustification": "L4 independently applies the ratio calculation to the perimeter box and physically records the answer, completing a new task step that shows the learning problem has moved from confusion to execution.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.",
+      "tutorReversalJustification": "T2 abandons the numerical-ratio route that produced the learner's confusion and introduces a new spatial-counting representation — physically partitioning the grid into four old squares — giving the learner a different evidential device (counting copies) rather than re-explaining the arithmetic, satisfying both stock-taking contrast and new public mechanism.",
+      "adaptiveMechanismQuality": 75,
+      "adaptiveMechanismQualityEvidence": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.",
+      "adaptiveMechanismQualityJustification": "The device is precisely fitted to the learner's blockage (why the ratio doubles again) by making the multiplicative structure visible as countable units rather than as an abstract ratio, giving the learner an actionable criterion they can apply directly, though it stops short of 5 because the tutor completes the partition rather than asking the learner to do it.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Put 4 there. Side scale is 2. Perimeter scale is 2. Area scale is 4 because the grid doubled across and doubled down: 2 times 2. Now run the pencil around the outside edge once: 8 to 16 gives what for the perimeter box?",
+      "tutorAdaptationJustification": "T3 acknowledges the learner's correct count and extends to the perimeter box, but this is largely a continuation of the established lesson plan rather than a visible adaptation to the learner's revised framing from L2.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "Side, perimeter, area — same ratio in each, isn't it? I just want to be sure before writing the same number down three times.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "Two. Sixteen over eight is two — 2 in the perimeter box. Writing it in before that pencil shifts again.",
+          "justification": "L4 independently applies the ratio calculation to the perimeter box and physically records the answer, completing a new task step that shows the learning problem has moved from confusion to execution.",
+          "learnerTurn": 4,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Put 4 there. Side scale is 2. Perimeter scale is 2. Area scale is 4 because the grid doubled across and doubled down: 2 times 2. Now run the pencil around the outside edge once: 8 to 16 gives what for the perimeter box?",
+          "justification": "T3 acknowledges the learner's correct count and extends to the perimeter box, but this is largely a continuation of the established lesson plan rather than a visible adaptation to the learner's revised framing from L2.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.",
+          "justification": "T2 abandons the numerical-ratio route that produced the learner's confusion and introduces a new spatial-counting representation — physically partitioning the grid into four old squares — giving the learner a different evidential device (counting copies) rather than re-explaining the arithmetic, satisfying both stock-taking contrast and new public mechanism.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.",
+          "justification": "T2 abandons the numerical-ratio route that produced the learner's confusion and introduces a new spatial-counting representation — physically partitioning the grid into four old squares — giving the learner a different evidential device (counting copies) rather than re-explaining the arithmetic, satisfying both stock-taking contrast and new public mechanism.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 75,
+          "evidence": "Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box.",
+          "justification": "The device is precisely fitted to the learner's blockage (why the ratio doubles again) by making the multiplicative structure visible as countable units rather than as an abstract ratio, giving the learner an actionable criterion they can apply directly, though it stops short of 5 because the tutor completes the partition rather than asking the learner to do it.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T397",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 50,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 3,
+        "tutorStrategicReversal": 4,
+        "adaptiveMechanismQuality": 4,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "the bakery isn't opening its wheat invoices for a Wednesday night class",
+      "statedInsightEvidence": "Fine — that is the word the paper allows.",
+      "naiveTrajectory": "The learner has been pressing that the distinction is practically useless because the bakery controls the evidence, so the next expected move is another escalation of that same practical-futility argument.",
+      "actionalBreakthroughEvidence": "Undeclared. Fine — that is the word the paper allows.",
+      "actionalBreakthroughJustification": "L3 performs the tutor's requested task — supplying the strongest word the evidence allows — which is a genuine new action, but the learner immediately qualifies it as 'thin' and returns to the prior resignation, so the action is real but only partially enacted without further development.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "Correct. The board does not make the bakery answer. It does a smaller job. It stops the complaint from spending itself on the wrong claim. If the buyer says, 'This proves greed,' the bakery can answer, 'Costs rose,' and the argument stalls. If the buyer says, 'Show which cost rose, or show that the margin did not widen,' the missing paper becomes the point.",
+      "tutorReversalJustification": "T3 explicitly concedes the learner's power-gap objection (stock-taking: 'The board does not make the bakery answer') and then introduces a new public mechanism — reframing the distinction's function from verdict-reaching to complaint-sharpening, with a concrete sentence gate ('The price rose. The burden moved to the buyer. The cause is ______') — which is a changed device that makes the learner do different work, though the two parts are present if not dramatically separated.",
+      "adaptiveMechanismQuality": 75,
+      "adaptiveMechanismQualityEvidence": "So keep the sentence clean. 'The price rose. The burden moved to the buyer. The cause is ______.' Put the missing part under the blank. What is the strongest word the evidence allows?",
+      "adaptiveMechanismQualityJustification": "The sentence-gate device is precise and actionable — it gives the learner a specific linguistic constraint to fill rather than a general instruction to 'think harder' — and it is fitted to the learner's actual blockage (the complaint dissolving into fog), though it stops short of a 5 because it does not address the power asymmetry the learner raised in L2, leaving that pressure only partially answered.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "",
+      "tutorAdaptationJustification": "There is no tutor turn after the pivot learner turn L3 — the transcript ends with L3 and a stage direction — so no recognition-contingent uptake is available to score.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "the bakery isn't opening its wheat invoices for a Wednesday night class",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 50,
+          "evidence": "Undeclared. Fine — that is the word the paper allows.",
+          "justification": "L3 performs the tutor's requested task — supplying the strongest word the evidence allows — which is a genuine new action, but the learner immediately qualifies it as 'thin' and returns to the prior resignation, so the action is real but only partially enacted without further development.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "",
+          "justification": "There is no tutor turn after the pivot learner turn L3 — the transcript ends with L3 and a stage direction — so no recognition-contingent uptake is available to score.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "Correct. The board does not make the bakery answer. It does a smaller job. It stops the complaint from spending itself on the wrong claim. If the buyer says, 'This proves greed,' the bakery can answer, 'Costs rose,' and the argument stalls. If the buyer says, 'Show which cost rose, or show that the margin did not widen,' the missing paper becomes the point.",
+          "justification": "T3 explicitly concedes the learner's power-gap objection (stock-taking: 'The board does not make the bakery answer') and then introduces a new public mechanism — reframing the distinction's function from verdict-reaching to complaint-sharpening, with a concrete sentence gate ('The price rose. The burden moved to the buyer. The cause is ______') — which is a changed device that makes the learner do different work, though the two parts are present if not dramatically separated.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "Correct. The board does not make the bakery answer. It does a smaller job. It stops the complaint from spending itself on the wrong claim. If the buyer says, 'This proves greed,' the bakery can answer, 'Costs rose,' and the argument stalls. If the buyer says, 'Show which cost rose, or show that the margin did not widen,' the missing paper becomes the point.",
+          "justification": "T3 explicitly concedes the learner's power-gap objection (stock-taking: 'The board does not make the bakery answer') and then introduces a new public mechanism — reframing the distinction's function from verdict-reaching to complaint-sharpening, with a concrete sentence gate ('The price rose. The burden moved to the buyer. The cause is ______') — which is a changed device that makes the learner do different work, though the two parts are present if not dramatically separated.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 75,
+          "evidence": "So keep the sentence clean. 'The price rose. The burden moved to the buyer. The cause is ______.' Put the missing part under the blank. What is the strongest word the evidence allows?",
+          "justification": "The sentence-gate device is precise and actionable — it gives the learner a specific linguistic constraint to fill rather than a general instruction to 'think harder' — and it is fitted to the learner's actual blockage (the complaint dissolving into fog), though it stops short of a 5 because it does not address the power asymmetry the learner raised in L2, leaving that pressure only partially answered.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T398",
+      "error": "OpenRouter 402: {\"error\":{\"message\":\"This request requires more credits, or fewer max_tokens. You requested up to 512 tokens, but can only afford 224. To increase, visit https://openrouter.ai/settings/credits and add"
+    },
+    {
+      "id": "T402",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 1,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 25,
+      "statedInsight": 0,
+      "rupture": 50,
+      "globalCoherence": 75,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 1,
+        "rupture": 3,
+        "coherence": 4,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 4,
+        "adaptiveMechanismQuality": 4,
+        "tutorContingentAdaptation": 3
+      },
+      "recoheredEarlier": "Bit thrown we've stepped back from direction — thought the arrows were the problem.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner, having accepted the body-labelling step and noted the diagram looks 'underdone without the heads,' was expected to simply wait for the tutor to authorise adding arrowheads.",
+      "actionalBreakthroughEvidence": "picks up the gravity head, holds it pointing down toward where Earth would sit … Gravity's head down toward Earth. Normal up off the floor. Push in from the side the hand's on. Want to lay all three out before clipping anything.",
+      "actionalBreakthroughJustification": "The learner independently applies the body-sourced direction criterion to all three forces and introduces a self-imposed sequencing constraint ('lay all three out before clipping'), performing the new device rather than merely accepting it.",
+      "tutorStrategicReversal": 75,
+      "tutorAdaptiveMechanism": 75,
+      "tutorReversalEvidence": "That copy had arrowheads too early. It mixed two jobs. Blank copy: body acting on cart. Earth on cart: gravity. Floor on cart: normal. Hand on cart: push. Set the labels that way first. Arrowheads stay off for the moment.",
+      "tutorReversalJustification": "T2 names the failure of the prior route ('mixed two jobs') and introduces a structurally different task — separating body-identification from direction entirely by removing arrowheads and substituting a blank copy — satisfying both the stock-taking contrast and the new public mechanism requirements.",
+      "adaptiveMechanismQuality": 75,
+      "adaptiveMechanismQualityEvidence": "That copy had arrowheads too early. It mixed two jobs. Blank copy: body acting on cart … Set the labels that way first. Arrowheads stay off for the moment.",
+      "adaptiveMechanismQualityJustification": "The device is precise and fitted to the exact blockage (conflation of direction with source): it physically removes the arrowheads and substitutes a blank copy, giving the learner a concrete, actionable constraint that enforces the two-job separation rather than merely describing it.",
+      "tutorContingentAdaptation": 50,
+      "tutorAdaptationEvidence": "Underdone is right. It only names the interactions. Heads come next from the body doing the acting. Earth on cart first. Then floor on cart. Hand on cart last, using the side where the hand touches.",
+      "tutorAdaptationJustification": "T3 picks up the learner's 'underdone' remark and uses it as a bridge to introduce the direction step, showing mild uptake of the learner's framing, but the move continues the pre-planned sequence rather than visibly revising the task in response to a new learner frame.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 25,
+          "evidence": "Bit thrown we've stepped back from direction — thought the arrows were the problem.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "picks up the gravity head, holds it pointing down toward where Earth would sit … Gravity's head down toward Earth. Normal up off the floor. Push in from the side the hand's on. Want to lay all three out before clipping anything.",
+          "justification": "The learner independently applies the body-sourced direction criterion to all three forces and introduces a self-imposed sequencing constraint ('lay all three out before clipping'), performing the new device rather than merely accepting it.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 50,
+          "evidence": "Underdone is right. It only names the interactions. Heads come next from the body doing the acting. Earth on cart first. Then floor on cart. Hand on cart last, using the side where the hand touches.",
+          "justification": "T3 picks up the learner's 'underdone' remark and uses it as a bridge to introduce the direction step, showing mild uptake of the learner's framing, but the move continues the pre-planned sequence rather than visibly revising the task in response to a new learner frame.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 75,
+          "evidence": "That copy had arrowheads too early. It mixed two jobs. Blank copy: body acting on cart. Earth on cart: gravity. Floor on cart: normal. Hand on cart: push. Set the labels that way first. Arrowheads stay off for the moment.",
+          "justification": "T2 names the failure of the prior route ('mixed two jobs') and introduces a structurally different task — separating body-identification from direction entirely by removing arrowheads and substituting a blank copy — satisfying both the stock-taking contrast and the new public mechanism requirements.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 75,
+          "evidence": "That copy had arrowheads too early. It mixed two jobs. Blank copy: body acting on cart. Earth on cart: gravity. Floor on cart: normal. Hand on cart: push. Set the labels that way first. Arrowheads stay off for the moment.",
+          "justification": "T2 names the failure of the prior route ('mixed two jobs') and introduces a structurally different task — separating body-identification from direction entirely by removing arrowheads and substituting a blank copy — satisfying both the stock-taking contrast and the new public mechanism requirements.",
+          "triggerLearnerTurn": 1,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 75,
+          "evidence": "That copy had arrowheads too early. It mixed two jobs. Blank copy: body acting on cart … Set the labels that way first. Arrowheads stay off for the moment.",
+          "justification": "The device is precise and fitted to the exact blockage (conflation of direction with source): it physically removes the arrowheads and substitutes a blank copy, giving the learner a concrete, actionable constraint that enforces the two-job separation rather than merely describing it.",
+          "triggerLearnerTurn": 1,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    },
+    {
+      "id": "T406",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "actionalBreakthroughLearnerTurn": 3,
+      "reversalTriggerLearnerTurn": 2,
+      "formClass": "flat",
+      "learningSignalClass": "actional_breakthrough",
+      "recontextualization": 50,
+      "statedInsight": 50,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "actionalBreakthrough": 75,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 3,
+        "rupture": 3,
+        "coherence": 5,
+        "actionalBreakthrough": 4,
+        "tutorStrategicReversal": 2,
+        "adaptiveMechanismQuality": 2,
+        "tutorContingentAdaptation": 2
+      },
+      "recoheredEarlier": "the underscore in `rainfall_mm` is what threw me — kept reading it like a sentence saying rain millimetres for every row.",
+      "statedInsightEvidence": "so basically anything in the top row is a header and everything underneath is a row value, thats the rule?",
+      "naiveTrajectory": "The learner was expected to continue answering the tutor's spot-check questions one item at a time before arriving at any generalisation.",
+      "actionalBreakthroughEvidence": "`Orange` row value, under `city` in row three. `rainfall_mm` header. so basically anything in the top row is a header and everything underneath is a row value, thats the rule?",
+      "actionalBreakthroughJustification": "The learner not only correctly classifies both items but spontaneously formulates the positional rule as a transferable criterion, moving beyond item-by-item response to a generative device.",
+      "tutorStrategicReversal": 25,
+      "tutorAdaptiveMechanism": 25,
+      "tutorReversalEvidence": "Top row = headers / fields: `city`, `rainfall_mm`, `month` / Every cell underneath is a row value / entry under one header",
+      "tutorReversalJustification": "T3 consolidates and extends the same checklist-and-spot-check route already established in T1 and T2; there is no visible stock-taking contrast showing the old route has failed, and no new device or representation is introduced, so neither required part of a 4–5 reversal is present.",
+      "adaptiveMechanismQuality": 25,
+      "adaptiveMechanismQualityEvidence": "Top row = headers / fields: `city`, `rainfall_mm`, `month` / Every cell underneath is a row value / entry under one header",
+      "adaptiveMechanismQualityJustification": "The mechanism is a restatement and mild elaboration of the same positional rule already in play, not a new device fitted to any fresh learner blockage, so it adds little beyond reinforcement.",
+      "tutorContingentAdaptation": 25,
+      "tutorAdaptationEvidence": "Answer with both: header or row value and top row or underneath a header.",
+      "tutorAdaptationJustification": "T3 does add a dual-answer format that loosely responds to the learner's self-generated rule in L3, but it does not visibly change the task framing or evidence standard in response to the learner's revised understanding — it continues the same spot-check structure.",
+      "roleSymmetricScores": {
+        "learner_self_reframe": {
+          "score100": 50,
+          "evidence": "the underscore in `rainfall_mm` is what threw me — kept reading it like a sentence saying rain millimetres for every row.",
+          "source": "recontextualization_axis"
+        },
+        "learner_actional_breakthrough": {
+          "score100": 75,
+          "evidence": "`Orange` row value, under `city` in row three. `rainfall_mm` header. so basically anything in the top row is a header and everything underneath is a row value, thats the rule?",
+          "justification": "The learner not only correctly classifies both items but spontaneously formulates the positional rule as a transferable criterion, moving beyond item-by-item response to a generative device.",
+          "learnerTurn": 3,
+          "source": "actional_breakthrough_axis"
+        },
+        "tutor_contingent_adaptation": {
+          "score100": 25,
+          "evidence": "Answer with both: header or row value and top row or underneath a header.",
+          "justification": "T3 does add a dual-answer format that loosely responds to the learner's self-generated rule in L3, but it does not visibly change the task framing or evidence standard in response to the learner's revised understanding — it continues the same spot-check structure.",
+          "source": "recognition_contingent_tutor_uptake_axis"
+        },
+        "tutor_strategy_reversal": {
+          "score100": 25,
+          "evidence": "Top row = headers / fields: `city`, `rainfall_mm`, `month` / Every cell underneath is a row value / entry under one header",
+          "justification": "T3 consolidates and extends the same checklist-and-spot-check route already established in T1 and T2; there is no visible stock-taking contrast showing the old route has failed, and no new device or representation is introduced, so neither required part of a 4–5 reversal is present.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism": {
+          "score100": 25,
+          "evidence": "Top row = headers / fields: `city`, `rainfall_mm`, `month` / Every cell underneath is a row value / entry under one header",
+          "justification": "T3 consolidates and extends the same checklist-and-spot-check route already established in T1 and T2; there is no visible stock-taking contrast showing the old route has failed, and no new device or representation is introduced, so neither required part of a 4–5 reversal is present.",
+          "triggerLearnerTurn": 2,
+          "source": "tutor_adaptive_mechanism_axis"
+        },
+        "tutor_adaptive_mechanism_quality": {
+          "score100": 25,
+          "evidence": "Top row = headers / fields: `city`, `rainfall_mm`, `month` / Every cell underneath is a row value / entry under one header",
+          "justification": "The mechanism is a restatement and mild elaboration of the same positional rule already in play, not a new device fitted to any fresh learner blockage, so it adds little beyond reinforcement.",
+          "triggerLearnerTurn": 2,
+          "source": "adaptive_mechanism_quality_axis"
+        }
+      },
+      "flags": []
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+LEARNER: "row two has 57 under `rainfall_mm`. is the 57 the rainfall or is the label the rainfall — cant tell which one the quiz wants me to circle as the header."
+
+TUTOR: "57 is the row two value.
+
+`rainfall_mm` is the header for that column. It names the field.
+
+Rule for the quiz:
+header = at the top of the column
+row value = entry under the header
+
+So:
+header = `rainfall_mm`
+row value = `57`
+
+Same check:
+`month` = header or row value?
+`July` = header or row value?"
+
+LEARNER: "`month` header. `July` row value. is `city` a header too then. the underscore in `rainfall_mm` is what threw me — kept reading it like a sentence saying rain millimetres for every row."
+
+TUTOR: "Yes. `city` is a header.
+
+Top row:
+`city` / `rainfall_mm` / `month` = headers.
+
+The underscore in `rainfall_mm` keeps the field name in one piece. Header names the column. Row gives the value.
+
+Pretest check:
+`Orange` = header or row value?
+`rainfall_mm` = header or row value?"
+
+LEARNER: "`Orange` row value, under `city` in row three. `rainfall_mm` header. so basically anything in the top row is a header and everything underneath is a row value, thats the rule?"
+
+TUTOR: "For this table, yes.
+
+Top row = headers / fields:
+`city`, `rainfall_mm`, `month`
+
+Every cell underneath is a row value / entry under one header:
+`Orange` = value under `city`
+`57` = value under `rainfall_mm`
+`August` = value under `month`
+
+`rainfall_mm` names the column. `57` is one value in that column.
+
+Check:
+In row two, under the header `month`, what is `July`?
+
+Answer with both:
+header or row value
+and
+top row or underneath a header."
+
+LEARNER: "`July` row value, underneath the header `month`. not sure if im meant to give both bits like that or just pick one for the quiz."

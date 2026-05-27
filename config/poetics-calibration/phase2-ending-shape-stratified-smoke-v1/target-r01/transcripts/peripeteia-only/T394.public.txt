@@ -1,0 +1,26 @@
+STAGE: [The squared grid lies between them with the learner's enlargement already inked in, and the worksheet's three label boxes — side, perimeter, area — sit empty in a row.]
+
+LEARNER: "The side went from 2 to 4, so the scale factor is 2. [taps the three boxes on the worksheet] Side, perimeter, area — same ratio in each, isn't it? I just want to be sure before writing the same number down three times."
+
+TUTOR: [sets the blunt pencil across the three empty boxes, then stops it over the first one]
+
+"Put 2 in the side box. Now test the other two before that pencil slides over: perimeter goes 8 to 16, area goes 4 to 16. The worksheet is asking for those two ratios separately. What does 16 over 8 give, and what does 16 over 4 give?"
+
+LEARNER: "Sixteen over eight is two. Sixteen over four is — four. [the pencil stops over the area box] So that one isn't two. The side only doubled — why does the area come out twice as much again?"
+
+TUTOR: [marks the 4-by-4 grid into four 2-by-2 blocks with the pencil.]
+
+"Here is the old 2-by-2 area, copied across and down. Count those old squares inside the new one before the pencil goes in the area box."
+
+STAGE: [the tutor turns the grid ninety degrees and slides the original square out from under the enlargement so the two squares now sit side by side on the table; the earlier pencil marks stay visible on both]
+[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]
+
+LEARNER: [taps each 2×2 block inside the enlargement]
+
+"One, two, three, four. The small one fits inside the big one four times. Side doubled — but to fill the area the doubling has to go across and down, so it's two doublings stacked, not one. Side 2, perimeter 2, area 4. Writing them in."
+
+TUTOR: [slides the squared grid under the worksheet, leaving only the three boxes showing, then writes `2`, `2`, and `2×2` in the margin.]
+
+"The grid settled this square. It does not yet settle the label rule. Before the sheet closes, sort these three entries under side, perimeter, and area without looking back at the grid. Add one word under each one: `edge`, `around`, or `across × down`."
+
+LEARNER: "Side, 2, edge. Perimeter, 2, around. Area, 2×2, across × down. [glances back at the margin] The two `2`s look identical sitting there, but — the perimeter's 2 is just the side's 2 used once on every edge, nothing new happening to it; the area's 2 has to act on the side's 2 again, which is how the 4 turned up. Same digit in two boxes is what made them tempting to collapse."
