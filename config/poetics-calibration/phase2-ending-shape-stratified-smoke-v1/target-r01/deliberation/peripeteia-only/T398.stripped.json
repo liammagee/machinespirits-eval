@@ -1,6 +1,0 @@
-[
-  {
-    "role": "LEARNER",
-    "note": "`★ Insight ─────────────────────────────────────`\n- This output is the final \"ego revision\" stage of the learner-side deliberation loop documented in [model].md (`services/learnerTutorInteractionEngine.js`): initial ego → superego critique → ego revision → external message. The ego has final authority, so the superego's notes about \"spiraling\" and \"fragments instead of fully-formed second-order thoughts\" get folded in, but the ego decides what survives.\n- The persona's anxious-hedger profile and the scene's `ambient_pressure` stage-direction style constrain the output toward short clauses, self-repair, and displacement onto the officer's body language rather than direct inquiry into the stool itself — exactly the misconception structure the tutor will later have to crack.\n`─────────────────────────────────────────────────`"
-  }
-]

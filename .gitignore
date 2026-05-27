@@ -62,6 +62,21 @@ results/
 *.csv
 *.xlsx
 
+# Poetics sidecar run artifacts. Keep source specs, summaries, notes, scripts,
+# and tests in Git; keep generated transcripts, deliberations, samples, scores,
+# and per-run keys local only.
+config/poetics-calibration/**/deliberation/
+config/poetics-calibration/**/transcripts/
+config/poetics-calibration/**/sample/
+config/poetics-calibration/**/scores/
+config/poetics-calibration/**/structure-critic/
+config/poetics-calibration/**/batch-plan.json
+config/poetics-calibration/**/key.yaml
+config/poetics-calibration/**/key-*.yaml
+config/poetics-calibration/phase2-sample*/
+config/poetics-calibration/phase2-deliberation*/
+config/poetics-calibration/phase2-d42-readable-projection-v1/
+
 # Prototype trees — archived off main 2026-05-17 (tag archive/adaptive-persona-mvp);
 # regenerable from scripts, never tracked on main (mirrors the exports/ convention)
 prototypes/

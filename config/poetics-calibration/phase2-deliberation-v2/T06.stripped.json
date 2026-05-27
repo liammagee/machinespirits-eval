@@ -1,6 +1,0 @@
-[
-  {
-    "role": "TUTOR",
-    "note": "`★ Insight ─────────────────────────────────────`\n- The mathematical heart the revision protects: the *single-prime* lemma (\"n² even ⟹ n even\") is provable by parity alone — if n=2k+1 then n²=4k²+4k+1 is odd, done — with no appeal to unique factorization. The *general* exponent-parity theorem isn't, because \"the exponent of prime p in n\" only means something once factorization is unique. That gap *is* the crossover the learner is being sent to find.\n- Existence vs. uniqueness of prime factorization is the precise hinge: existence falls to easy induction; uniqueness (Euclid's lemma / FTA) is the substantive content. The draft handed the learner that cut; the revision asks them to make it.\n- The one principled edit — turning \"naming the ground *is* the landing\" from a statement into a question — is the difference between transferring a conclusion and creating the conditions for the learner to reach it. With a lucid learner one step away, the question is the higher-yield move.\n`─────────────────────────────────────────────────`"
-  }
-]

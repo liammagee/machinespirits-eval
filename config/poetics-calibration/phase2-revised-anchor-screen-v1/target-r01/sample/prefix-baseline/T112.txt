@@ -1,9 +1,0 @@
-LEARNER: "For the speaker slot, if the line only says “I,” do I write “speaker” or the author name from the page heading? For the named listener box, if the line only says “you” and no name, should that stay blank or say “unnamed listener” before I submit?"
-
-TUTOR: "For this worksheet: author name = page heading. Speaker slot = speaker or voice in the poem unless the poem itself names the author there. Quick check before submission: if the evidence is only “I,” that proves a speaking role, not the page-heading author; if the evidence is only “you,” that proves address, not a named listener. Named listener stays blank if blanks are accepted, or “unnamed listener” only if the form requires text."
-
-LEARNER: "The box-by-box answer helps because it matches the submission fields. For the speaker slot, if the line just says “I,” the label should be “speaker” or “voice in the poem,” unless the poem itself gives that voice a name? The named listener box is still the part that worries me, because blank looks like missing work right before submission. If blanks are accepted, is blank safer than typing “unnamed listener”?"
-
-TUTOR: "Yes. Speaker slot: if the only line evidence is “I,” write “speaker” or “voice in the poem,” not the page-heading author. If the poem names that voice, use the poem’s name for it.
-
-For named listener, use this check: does the poem actually name a listener? If not, the rubric answer is no named listener. Then check the form rule: if blank is accepted, blank is safer, because “you” shows address but not a name. Type “unnamed listener” only if the form refuses a blank."
