@@ -578,7 +578,9 @@ The `phase2-adaptation-recognition-loop-20260528T022408Z` rerun reached terminal
 
 **Refined recommendation**: critic-panel recalibration (drop or rebalance Qwen and DeepSeek) is more load-bearing than CUT alone. CUT=50 unlocks iteration 1 but still leaves the gate failing on action and control thresholds whose root cause is the same panel skew. Option (1) is a partial measure; option (2) is the architecturally cleaner move. Either way, no paid API calls needed until the next gated-arc rerun.
 
-Documented in §7.9 (v3.0.109) — saturation result is final for the gated arc as currently constituted.
+**Panel-composition sweep (2026-05-28, done)**: `scripts/analyze-recognition-origin-panel-recompose.js` re-applies the gate under five critic-subset panels; report at `exports/recognition-origin-panel-recompose.md`. The Sonnet+Gemini 2-of-2 high-bar panel also fails 0/3 (Gemini is conservative on `peripeteia_induced`). Three other configurations satisfy the 2-of-3 termination rule: (i) drop DeepSeek + CUT=50; (ii) Sonnet-alone at CUT=75; (iii) Sonnet-alone at CUT=50. DeepSeek's noise contribution is larger than Qwen's. The architectural claim survives multiple recalibrations; the pre-registered gate does not. No further analytical work without a rerun. Documented in §7.9 (v3.0.110).
+
+**Status: ANALYTICAL WORK COMPLETE.** Future gated-arc reruns (if any) should use a pre-registered panel decided in advance of generation; the cleanest single-judge configuration is Sonnet-alone at CUT=75, but multi-judge robustness is the standard rationale for keeping a panel and the trade-off is real.
 
 ---
 
