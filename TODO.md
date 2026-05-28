@@ -553,16 +553,32 @@ The 4-way dispatch in evaluationRunner (progressLogger → JSONL files, streamin
 ~~No tracking of judge response times.~~
 Added `judge_latency_ms` column to `evaluation_results`. Stored by `evaluate` (CLI judge) and `rejudge` (API judge) commands. Parse error rates and success rates not yet tracked (low priority) — would require adding counters to `callJudgeModel()`.
 
-### B7. Split structural-critic peripeteia rule into earned vs named reorientation (DEFERRED — conditional)
+### B7. Split structural-critic peripeteia rule into earned vs named reorientation (DROPPED — surgery 20260528 confirmed co-occurrence)
 The peripeteia rule check `peripeteia_arm_without_earned_reorientation` in `scripts/critic-poetics-structure.js` conflates two separable things into a single violation:
 - **(a) earned**: the learner enacts a semantic shift in action (mechanism-level reorientation present in the post-peripeteia turn)
 - **(b) named**: the learner names the shift with literal `PERIPETEIA_PRESSURE_FRAME` + `PERIPETEIA_REPLACEMENT_FRAME` tokens (`the pressure was`, `the old check was`, `now the check is`, `the new check is`, etc.)
 
-The rule passes only when both co-occur. This is generator-style-sensitive: codex lifts the stems verbatim from the director prompt and passes consistently; Opus paraphrases into image-driven physical reorientation and fails the literal-token regex even when (a) is plainly present (e.g. `phase2-adaptation-recognition-loop-20260527T232739Z` iter-1: 0/3 peripeteia-only items passed; "Band, not the digit" is mechanism-level reorientation that the rule cannot see).
+The rule passes only when both co-occur. This was generator-style-sensitive in `phase2-adaptation-recognition-loop-20260527T232739Z`: codex lifted the stems verbatim and passed consistently; Opus paraphrased into image-driven physical reorientation and failed the literal-token regex even when (a) was plainly present ("Band, not the digit" is mechanism-level reorientation that the rule cannot see; iter-1 failed 0/3 peripeteia-only items).
 
-**Right fix**: split into two flags — `earned_reorientation` (pass gate, semantic shift in action) and `named_reorientation` (separate flag, stem vocabulary present). Surface both in `structure-critic/*-rules.json`; fail-gate on `earned_reorientation` only.
+**Why dropped**: the prompt-side surgery in `phase2-adaptation-recognition-loop-20260528T022408Z` (mandate at least one literal stem from each list with a worked exemplar) demonstrated that (a) and (b) co-occur reliably when the mandate is in the director prompt: the structural critic now passes peripeteia-only items 4/4 against the prior 0/3, and Sonnet 4.6 reads them as `peripeteia_induced` 3/3. The rule split would have been load-bearing only if the surgery had failed; it did not. Filed and dropped — keep the entry for traceability but do not implement.
 
-**Why deferred**: prompt-side surgery (mandate at least one literal stem from each list with a worked exemplar) is the cheapest test of whether (a) and (b) co-occur reliably in well-formed peripeteia dramas. If iter-2 with the patched prompt passes 3/3, this becomes housekeeping (file but defer indefinitely). If iter-2 still fails the same class, the rule split is load-bearing and should be done before another paid run — at which point this entry escalates from DEFERRED to HIGH.
+See B8 for the remaining load-bearing surgery (scorer-side classifier CUT) revealed by the same rerun.
+
+### B8. Lower `recognitionOrigin.js` `tutorAdaptiveMechanism` CUT or recalibrate critic panel (MEDIUM — gated arc terminal blocker)
+The `phase2-adaptation-recognition-loop-20260528T022408Z` rerun reached terminal saturation on `organic_or_ambiguous_recognition` (3 consecutive iterations), but post-hoc subagent diagnosis located the failure at the scoring pipeline, not the generator. Two coupled problems:
+
+- **`recognitionOrigin.js` hard CUT of 75 on `tutorAdaptiveMechanism`**: Qwen and DeepSeek consistently score the same mechanism evidence at 50, with prose that explicitly credits the device (Qwen on T18-peripeteia-only: "*The tutor explicitly contrasts the old representation (floating tiles) with the new one (the fixed diagram) and introduces a new physical action (drawing with a marker) to resolve the learner's specific block*"). The classifier returns `class: 'organic'` with `basis: 'recognition_without_tutor_mechanism_chain'` even though the prose describes the mechanism in full. Sonnet 4.6 scores the same evidence at 75 and reaches `peripeteia_induced`.
+- **Critic panel skew**: Qwen and DeepSeek are the systematic low-bar critics for tutor mechanism scoring. They also produce the `control_leak` votes on Opus's intrinsic soft-reframe register in routine/none arms (where Sonnet and Gemini correctly mark controls flat).
+
+**CUT sweep (2026-05-28, done)**: `scripts/analyze-recognition-origin-cut-sweep.js` re-applies the classifier at CUT ∈ {50, 55, 60, 65, 70, 75} over the existing 528T022408Z score JSONs and rebuilds per-item gate verdicts; report at `exports/recognition-origin-cut-sweep.md`. Three findings collapse the original two-option choice:
+
+1. **CUT=50 is the only useful value**. Iteration 1 lifts from 0/2 peripeteia passes to 2/2; iteration 3's T18 item rescues to a clean PASS (4/4 recognition, 3/4 action, 3/4 peripeteia_induced). CUTs 55/60/65/70 are byte-identical to CUT=75 across all 9 items in all three iterations — the raw 1–5 critic scores are bimodal between Sonnet's 4 (→75) and Qwen/DeepSeek's 3 (→50), so any CUT in [55, 75] is operationally the same.
+2. **At CUT=50 two new bottlenecks become load-bearing**, both from the same two critics: `action_gap` (4/9 items where Qwen and DeepSeek score `actionalBreakthrough` at 50 against a 75 vote threshold) and `control_leak` on Opus's intrinsic soft-reframe register (4 control items where 2–3 critics return `formClass=recognition`).
+3. **`control_leak` is CUT-invariant** (formClass-driven, not classifier-driven). All three failure classes — `organic_or_ambiguous_recognition`, `action_gap`, `control_leak` — trace to the same two systematically-lower-threshold critics.
+
+**Refined recommendation**: critic-panel recalibration (drop or rebalance Qwen and DeepSeek) is more load-bearing than CUT alone. CUT=50 unlocks iteration 1 but still leaves the gate failing on action and control thresholds whose root cause is the same panel skew. Option (1) is a partial measure; option (2) is the architecturally cleaner move. Either way, no paid API calls needed until the next gated-arc rerun.
+
+Documented in §7.9 (v3.0.109) — saturation result is final for the gated arc as currently constituted.
 
 ---
 
