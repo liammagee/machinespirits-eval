@@ -1028,6 +1028,27 @@ button, input, select, textarea {
   flex: 0 0 auto;
 }
 .rail__btn:hover { color: var(--ink); border-color: var(--ink-3); }
+.rail__arc {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  padding: 0.4em 0.95em;
+  background: var(--brick);
+  color: var(--paper);
+  border: 1px solid var(--brick);
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  transition: background .15s var(--ease), border-color .15s var(--ease), transform .15s var(--ease);
+}
+.rail__arc:hover {
+  background: var(--brick-d);
+  border-color: var(--brick-d);
+  transform: translateY(-1px);
+}
+.rail__arc__arrow { font-weight: 400; font-size: 1.15em; line-height: 1; }
 
 /* ═══════ application grid ═══════ */
 .app {
@@ -1635,6 +1656,10 @@ tbody th {
   <div class="rail__inner">
     <span class="rail__brand">poetics</span>
     <span class="rail__sub" id="railSub">sidecar browser · public scripts, full traces, critic scores, labels as perspective</span>
+    <a class="rail__arc" href="/arc" title="Open the dramatic-recognition arc synthesis note">
+      <span>recognition arc</span>
+      <span class="rail__arc__arrow" aria-hidden="true">→</span>
+    </a>
     <span class="rail__beacon" id="railBeacon" data-state="checking" title="Sidecar database connection">
       <span class="rail__dot"></span>
       <span id="railBeaconText">checking</span>
