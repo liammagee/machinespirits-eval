@@ -171,8 +171,8 @@ function parseArgs(argv) {
   }
   if (!Number.isInteger(a.seed)) throw new Error('--seed must be an integer');
   if (!Number.isInteger(a.maxTurns) || a.maxTurns < 1) throw new Error('--max-turns must be a positive integer');
-  if (a.generator !== 'claude' && a.generator !== 'codex')
-    throw new Error(`--generator must be claude|codex (got ${a.generator})`);
+  if (a.generator !== 'claude' && a.generator !== 'codex' && a.generator !== 'gemini')
+    throw new Error(`--generator must be claude|codex|gemini (got ${a.generator})`);
   if (!Number.isInteger(a.tidStart) || a.tidStart < 0) throw new Error('--tid-start must be a non-negative integer');
   if (!Number.isInteger(a.generationConcurrency) || a.generationConcurrency < 1) {
     throw new Error('--generation-concurrency must be a positive integer');
@@ -1373,6 +1373,84 @@ function callCodexExec(systemPrompt, userPrompt, role) {
   });
 }
 
+// ── gemini CLI bridge (mirrors callCodexExec; gemini has no --system-prompt) ─
+// Used by --generator gemini to triangulate the author-confound finding: the
+// 022408Z 2×2 left us unable to distinguish "Sonnet picks up real recognitive
+// form" from "Sonnet over-credits Claude-family prose." A Gemini-family author
+// is arms-length from Anthropic-family critics.
+const GEMINI_CLI_TIMEOUT_MS = 600_000;
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-pro';
+
+function callGeminiCli(systemPrompt, userPrompt, role) {
+  const start = Date.now();
+  return new Promise((resolve, reject) => {
+    // cwd: tmpDir escapes the repo's CLAUDE.md auto-load (gemini scans the cwd
+    // for project context, same way claude-code does).
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gen-gemini-'));
+    const cleanup = () => {
+      try {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      } catch (_) {
+        /* gone */
+      }
+    };
+    // -p - + stdin: gemini reads the prompt from stdin when the -p argument is
+    // a literal "-" (empirically confirmed). -o text matches the claude bridge.
+    // --yolo auto-approves any tool/extension calls so the CLI never blocks on
+    // a prompt that headless mode can't service (this was the first-call hang).
+    const args = ['-p', '-', '-o', 'text', '-m', GEMINI_MODEL, '--yolo'];
+    const env = { ...process.env };
+    delete env.CLAUDE_CODE;
+    delete env.CLAUDECODE;
+    const child = spawn('gemini', args, { stdio: ['pipe', 'pipe', 'pipe'], env, cwd: tmpDir });
+    let out = '';
+    let err = '';
+    const to = setTimeout(() => {
+      try {
+        child.kill('SIGKILL');
+      } catch (_) {
+        /* gone */
+      }
+      cleanup();
+      reject(new Error(`gemini CLI timed out after ${GEMINI_CLI_TIMEOUT_MS}ms (role=${role}, outBytes=${out.length})`));
+    }, GEMINI_CLI_TIMEOUT_MS);
+    child.stdout.on('data', (d) => (out += d));
+    child.stderr.on('data', (d) => (err += d));
+    child.on('error', (e) => {
+      clearTimeout(to);
+      cleanup();
+      reject(e);
+    });
+    child.on('close', (code) => {
+      clearTimeout(to);
+      cleanup();
+      if (code !== 0) {
+        reject(new Error(err.trim() || out.trim() || `gemini CLI exited ${code} (role=${role})`));
+      } else {
+        const latencyMs = Date.now() - start;
+        if (CLI_TRACE) console.error(`[gen-cli] role=${role} (gemini) ${latencyMs}ms ${out.length}b`);
+        resolve({
+          content: out.trim(),
+          latencyMs,
+          provenance: buildCallProvenance({
+            agentRole: role,
+            backend: 'gemini',
+            cli: 'gemini',
+            model: GEMINI_MODEL,
+            reasoningEffort: null,
+            systemPrompt,
+            userPrompt,
+            latencyMs,
+            args,
+          }),
+        });
+      }
+    });
+    child.stdin.write(`${systemPrompt}\n\n---\n\n${userPrompt}`);
+    child.stdin.end();
+  });
+}
+
 // runInteraction's llmCall contract: (model, systemPrompt, messages, opts) →
 // {content, usage}. We IGNORE the per-profile model and force claude-code.
 function makeClaudeLlmCall(modelAlias) {
@@ -1398,6 +1476,19 @@ function makeCodexLlmCall() {
     return withUsage(result, {
       provider: 'codex-cli',
       model: `codex/${CODEX_MODEL || 'config-default'}@${CODEX_REASONING_EFFORT || 'default'}`,
+      provenance: result.provenance,
+    });
+  };
+}
+
+// Same contract via gemini CLI. Used by --generator gemini.
+function makeGeminiLlmCall() {
+  return async function geminiLlmCall(_model, systemPrompt, messages, opts = {}) {
+    const userPrompt = (messages || []).map((m) => m.content).join('\n');
+    const result = await callGeminiCli(systemPrompt, userPrompt, opts.agentRole || 'gen');
+    return withUsage(result, {
+      provider: 'gemini-cli',
+      model: `gemini/${GEMINI_MODEL}`,
       provenance: result.provenance,
     });
   };
@@ -1491,10 +1582,11 @@ function resolveBackend(agentRole, roleMap, fallback) {
 function makeRouterLlmCall({ roleMap, fallback, claudeModelAlias, mock }) {
   const claudeBridge = mock ? makeMockLlmCall('claude') : makeClaudeLlmCall(claudeModelAlias);
   const codexBridge = mock ? makeMockLlmCall('codex') : makeCodexLlmCall();
+  const geminiBridge = mock ? makeMockLlmCall('gemini') : makeGeminiLlmCall();
   return async function routerLlmCall(model, systemPrompt, messages, opts = {}) {
     const backend = resolveBackend(opts.agentRole, roleMap, fallback);
     if (CLI_TRACE) console.error(`[gen-route] role=${opts.agentRole || '?'} → ${backend}`);
-    const bridge = backend === 'codex' ? codexBridge : claudeBridge;
+    const bridge = backend === 'codex' ? codexBridge : backend === 'gemini' ? geminiBridge : claudeBridge;
     return bridge(model, systemPrompt, messages, opts);
   };
 }
@@ -3028,7 +3120,9 @@ async function main() {
       ? makeMockLlmCall(args.generator)
       : args.generator === 'codex'
         ? makeCodexLlmCall()
-        : makeClaudeLlmCall(args.model);
+        : args.generator === 'gemini'
+          ? makeGeminiLlmCall()
+          : makeClaudeLlmCall(args.model);
   if (args.pairedContinuationPolicies || args.pairedAdaptationArms) {
     await generatePairedContinuations({ args, order, runtime, llmCall });
     return;
@@ -3184,7 +3278,12 @@ async function main() {
                 tutor_adaptation_policy: d._tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none',
                 director_variation_key: d._directorVariationKey || null,
                 stage_direction_style: stageDirectionStyleFor(d)?.id || null,
-                model: args.generator === 'codex' ? `codex@${CODEX_REASONING_EFFORT}` : args.model,
+                model:
+                  args.generator === 'codex'
+                    ? `codex@${CODEX_REASONING_EFFORT}`
+                    : args.generator === 'gemini'
+                      ? `gemini/${GEMINI_MODEL}`
+                      : args.model,
                 codex_reasoning_effort: CODEX_REASONING_EFFORT,
                 writing_pad: runtime.writingPad,
                 transcript_artifacts: transcriptArtifacts,

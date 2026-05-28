@@ -161,7 +161,8 @@ function parseArgs(argv) {
   }
 
   if (!/^[a-zA-Z0-9._-]+$/.test(args.batchId)) throw new Error('--batch-id must be path-safe');
-  if (!['codex', 'claude'].includes(args.generator)) throw new Error('--generator must be codex|claude');
+  if (!['codex', 'claude', 'gemini'].includes(args.generator))
+    throw new Error('--generator must be codex|claude|gemini');
   if (!Number.isInteger(args.repeats) || args.repeats < 1) throw new Error('--repeats must be a positive integer');
   if (!Number.isInteger(args.stressRepeats) || args.stressRepeats < 0) {
     throw new Error('--stress-repeats must be a non-negative integer');

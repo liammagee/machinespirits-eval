@@ -170,8 +170,10 @@ Options:
   if (!['off', 'rules', 'codex', 'claude', 'claude-code'].includes(args.structureCritic)) {
     throw new Error('--structure-critic must be off|rules|codex|claude|claude-code');
   }
-  if (args.generator !== null && !['codex', 'claude'].includes(args.generator)) {
-    throw new Error('--generator must be codex|claude (unset defers to run-poetics-production-batch.js default)');
+  if (args.generator !== null && !['codex', 'claude', 'gemini'].includes(args.generator)) {
+    throw new Error(
+      '--generator must be codex|claude|gemini (unset defers to run-poetics-production-batch.js default)',
+    );
   }
   return args;
 }
