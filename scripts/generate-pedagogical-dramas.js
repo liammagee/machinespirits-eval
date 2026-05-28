@@ -1373,20 +1373,27 @@ function callCodexExec(systemPrompt, userPrompt, role) {
   });
 }
 
-// ── gemini CLI bridge (mirrors callCodexExec; gemini has no --system-prompt) ─
+// ── gemini CLI bridge: now routes through `agy` (~/.local/bin/agy) ───────────
 // Used by --generator gemini to triangulate the author-confound finding: the
 // 022408Z 2×2 left us unable to distinguish "Sonnet picks up real recognitive
 // form" from "Sonnet over-credits Claude-family prose." A Gemini-family author
 // is arms-length from Anthropic-family critics.
+//
+// `agy` superseded the upstream `gemini` CLI on 2026-05-28 — same family, higher
+// quota, claude-code-style flag surface (--print / --print-timeout /
+// --dangerously-skip-permissions / --add-dir). The model is bound at the agy
+// install layer (no -m flag); GEMINI_MODEL is therefore a provenance label, not
+// a runtime selector. Confirmed via `echo ... | agy --print` → "gemini-3.5-flash".
 const GEMINI_CLI_TIMEOUT_MS = 600_000;
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-pro';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
+const AGY_BIN = process.env.AGY_BIN || path.join(os.homedir(), '.local/bin/agy');
 
 function callGeminiCli(systemPrompt, userPrompt, role) {
   const start = Date.now();
   return new Promise((resolve, reject) => {
-    // cwd: tmpDir escapes the repo's CLAUDE.md auto-load (gemini scans the cwd
-    // for project context, same way claude-code does).
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gen-gemini-'));
+    // cwd: tmpDir keeps agy from auto-loading the repo's CLAUDE.md or any other
+    // project context — the bridge is meant to produce arm's-length transcripts.
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gen-agy-'));
     const cleanup = () => {
       try {
         fs.rmSync(tmpDir, { recursive: true, force: true });
@@ -1394,21 +1401,18 @@ function callGeminiCli(systemPrompt, userPrompt, role) {
         /* gone */
       }
     };
-    // -p - + stdin: gemini reads the prompt from stdin when the -p argument is
-    // a literal "-" (empirically confirmed). -o text matches the claude bridge.
-    // --yolo auto-approves any tool/extension calls so the CLI never blocks on
-    // a prompt that headless mode can't service (this was the first-call hang).
-    const args = ['-p', '-', '-o', 'text', '-m', GEMINI_MODEL, '--yolo'];
+    // --print + stdin: agy reads the prompt from stdin in --print mode.
+    // --print-timeout 10m matches our wall-clock ceiling so the CLI cannot
+    // declare success before we time out the spawn.
+    // --dangerously-skip-permissions auto-approves any tool gate so a single
+    // background tool prompt cannot stall the batch (same role --yolo played
+    // for the deprecated gemini CLI). The poetics prompts don't invoke tools
+    // in normal operation; this is belt-and-braces against a stalled batch.
+    const args = ['--print', '--print-timeout', '10m', '--dangerously-skip-permissions'];
     const env = { ...process.env };
     delete env.CLAUDE_CODE;
     delete env.CLAUDECODE;
-    // GEMINI_CLI_TRUST_WORKSPACE=true keeps --yolo effective in untrusted dirs.
-    // Gemini CLI 0.44.0 tightened the trust check so --yolo is silently
-    // downgraded to "default" approval mode (which blocks on prompts headless
-    // mode can't service) unless the workspace is explicitly trusted. tmpDir is
-    // not in the user's trusted-dirs list; this env var is the documented bypass.
-    env.GEMINI_CLI_TRUST_WORKSPACE = 'true';
-    const child = spawn('gemini', args, { stdio: ['pipe', 'pipe', 'pipe'], env, cwd: tmpDir });
+    const child = spawn(AGY_BIN, args, { stdio: ['pipe', 'pipe', 'pipe'], env, cwd: tmpDir });
     let out = '';
     let err = '';
     const to = setTimeout(() => {
@@ -1418,7 +1422,7 @@ function callGeminiCli(systemPrompt, userPrompt, role) {
         /* gone */
       }
       cleanup();
-      reject(new Error(`gemini CLI timed out after ${GEMINI_CLI_TIMEOUT_MS}ms (role=${role}, outBytes=${out.length})`));
+      reject(new Error(`agy CLI timed out after ${GEMINI_CLI_TIMEOUT_MS}ms (role=${role}, outBytes=${out.length})`));
     }, GEMINI_CLI_TIMEOUT_MS);
     child.stdout.on('data', (d) => (out += d));
     child.stderr.on('data', (d) => (err += d));
@@ -1431,17 +1435,17 @@ function callGeminiCli(systemPrompt, userPrompt, role) {
       clearTimeout(to);
       cleanup();
       if (code !== 0) {
-        reject(new Error(err.trim() || out.trim() || `gemini CLI exited ${code} (role=${role})`));
+        reject(new Error(err.trim() || out.trim() || `agy CLI exited ${code} (role=${role})`));
       } else {
         const latencyMs = Date.now() - start;
-        if (CLI_TRACE) console.error(`[gen-cli] role=${role} (gemini) ${latencyMs}ms ${out.length}b`);
+        if (CLI_TRACE) console.error(`[gen-cli] role=${role} (agy/${GEMINI_MODEL}) ${latencyMs}ms ${out.length}b`);
         resolve({
           content: out.trim(),
           latencyMs,
           provenance: buildCallProvenance({
             agentRole: role,
             backend: 'gemini',
-            cli: 'gemini',
+            cli: 'agy',
             model: GEMINI_MODEL,
             reasoningEffort: null,
             systemPrompt,
