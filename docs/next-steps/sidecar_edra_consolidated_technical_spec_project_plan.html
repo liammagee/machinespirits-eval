@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sidecar-EDRA Consolidated Technical Specification and Project Plan</title>
+<meta name="description" content="A consolidated engineering specification for extending the dramatic-recognition sidecar into a rigorous event-driven recognition adaptation harness with baseline, testing, evaluation, tracing, metrics, plotting, and milestones." />
+<style>
+:root{
+  --bg:#f7f1e3; --panel:#fffaf0; --panel2:#f0e6d2; --ink:#17120c; --muted:#665b4a; --faint:#9b8f7b;
+  --rule:#d5c5a6; --moss:#52683b; --moss2:#31431f; --brick:#a33c2c; --ochre:#b5772f; --blue:#2e5968;
+  --good:#2f6b3f; --warn:#9a6a13; --bad:#9d322a; --code:#1d1a16; --codebg:#f2e7d0;
+  --shadow:0 20px 60px rgba(41,32,20,.10);
+}
+@media (prefers-color-scheme: dark){:root{--bg:#15110c;--panel:#211a13;--panel2:#2a2117;--ink:#f3ead7;--muted:#cbbfa8;--faint:#968a77;--rule:#44392c;--code:#f2e8d5;--codebg:#100d0a;--shadow:0 20px 60px rgba(0,0,0,.35);--moss:#9abb77;--moss2:#b7d799;--brick:#ef7868;--ochre:#e0ae61;--blue:#8fc1d0;--good:#93cf9f;--warn:#e3b95e;--bad:#ef887d}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(1300px 600px at 20% -10%,rgba(181,119,47,.14),transparent 60%),radial-gradient(900px 600px at 90% 0,rgba(82,104,59,.13),transparent 60%),var(--bg);color:var(--ink);font:16px/1.58 ui-serif,Georgia,Cambria,"Times New Roman",serif}a{color:var(--brick);text-decoration:none;border-bottom:1px solid currentColor}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace}pre{background:var(--codebg);color:var(--code);padding:1rem;border:1px solid var(--rule);overflow:auto;border-radius:12px;font-size:.86rem;line-height:1.45}code{background:rgba(120,90,35,.13);padding:.08rem .25rem;border-radius:4px}.shell{max-width:1220px;margin:0 auto;padding:0 1.25rem}.hero{padding:4.5rem 0 2.5rem;border-bottom:1px solid var(--rule)}.eyebrow{font:700 .78rem/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.15em;text-transform:uppercase;color:var(--moss2);margin:0 0 1rem}.hero h1{font-size:clamp(2.4rem,6vw,5.7rem);line-height:.95;letter-spacing:-.05em;margin:.2rem 0 1.25rem}.subtitle{font-size:clamp(1.1rem,2vw,1.55rem);max-width:900px;color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:1rem}.card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--rule);box-shadow:var(--shadow);border-radius:18px;padding:1.1rem}.hero-cards{margin-top:2rem}.hero-cards .card{grid-column:span 3}.card h3{margin:.1rem 0 .5rem;font-size:1rem;letter-spacing:.01em}.metric{font:800 2.35rem/1 ui-serif,Georgia,serif;color:var(--brick);letter-spacing:-.05em}.metric small{font-size:.85rem;color:var(--muted);font-weight:600}.muted{color:var(--muted)}.toc-wrap{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--rule)}.toc{display:flex;gap:.7rem;align-items:center;overflow:auto;padding:.65rem 0}.toc a{flex:0 0 auto;border:0;color:var(--muted);font:700 .72rem/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.08em;text-transform:uppercase;padding:.5rem .65rem;border-radius:999px}.toc a:hover{background:var(--panel2);color:var(--ink)}section{padding:3rem 0;border-bottom:1px solid var(--rule)}h2{font-size:clamp(1.75rem,3vw,3rem);line-height:1.05;letter-spacing:-.035em;margin:0 0 1rem}h3{font-size:1.35rem;line-height:1.15;margin:1.6rem 0 .6rem}h4{font-size:1.05rem;margin:1.15rem 0 .4rem;color:var(--moss2)}p{margin:.4rem 0 .9rem}.lead{font-size:1.2rem;color:var(--muted);max-width:920px}.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1rem}.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}.four{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem}.span6{grid-column:span 6}.span8{grid-column:span 8}.span4{grid-column:span 4}.span12{grid-column:span 12}.pill{display:inline-flex;align-items:center;gap:.4rem;border:1px solid var(--rule);border-radius:999px;padding:.25rem .6rem;font:700 .72rem/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:rgba(255,255,255,.18)}.pill.good{color:var(--good);border-color:color-mix(in srgb,var(--good) 45%,var(--rule))}.pill.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 45%,var(--rule))}.pill.bad{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 45%,var(--rule))}.callout{border-left:4px solid var(--brick);background:rgba(163,60,44,.09);padding:1rem 1.15rem;border-radius:10px;margin:1rem 0}.callout.good{border-left-color:var(--good);background:rgba(47,107,63,.10)}.callout.warn{border-left-color:var(--warn);background:rgba(154,106,19,.12)}table{width:100%;border-collapse:collapse;margin:1rem 0;background:var(--panel);border:1px solid var(--rule);border-radius:12px;overflow:hidden;display:table}th,td{border-bottom:1px solid var(--rule);padding:.72rem .75rem;text-align:left;vertical-align:top}th{font:800 .73rem/1.2 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);background:var(--panel2)}tr:last-child td{border-bottom:0}ul,ol{padding-left:1.25rem}.tight li{margin:.2rem 0}.architecture{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin:1.25rem 0}.node{background:var(--panel);border:1px solid var(--rule);border-radius:14px;padding:.85rem;min-height:110px;position:relative}.node::after{content:"→";position:absolute;right:-.7rem;top:50%;transform:translateY(-50%);color:var(--faint);font-weight:900}.node:nth-child(4n)::after{display:none}.node strong{display:block;color:var(--moss2);margin-bottom:.3rem}.node small{color:var(--muted)}.svgbox{background:var(--panel);border:1px solid var(--rule);border-radius:18px;padding:1rem;margin:1rem 0}.caption{font-size:.88rem;color:var(--muted);margin-top:.4rem}.kbdline{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;background:var(--codebg);border:1px solid var(--rule);border-radius:12px;padding:.7rem .8rem;margin:.5rem 0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.86rem}.badge{font:800 .7rem/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;text-transform:uppercase;letter-spacing:.08em;border-radius:6px;padding:.2rem .36rem;background:var(--panel2);color:var(--muted);border:1px solid var(--rule)}.timeline{display:grid;gap:.8rem}.milestone{display:grid;grid-template-columns:8rem minmax(0,1fr) 9rem;gap:1rem;align-items:start;background:var(--panel);border:1px solid var(--rule);border-radius:16px;padding:1rem}.milestone .phase{font:900 .9rem/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--brick)}.milestone .gate{text-align:right;color:var(--muted);font:700 .75rem/1.2 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.footer{padding:2rem 0;color:var(--muted);font-size:.9rem}.ref-list li{margin:.55rem 0}.small{font-size:.9rem}.anchor{color:var(--faint);font-weight:400;margin-right:.4rem}.statusbar{display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;margin:1rem 0}.statusbar div{border:1px solid var(--rule);background:var(--panel);border-radius:10px;padding:.7rem}.statusbar strong{display:block;font:900 1.25rem/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--brick)}details{background:var(--panel);border:1px solid var(--rule);border-radius:14px;padding:.85rem 1rem;margin:.8rem 0}summary{cursor:pointer;font-weight:800;color:var(--moss2)}.print-note{display:none}@media(max-width:900px){.hero-cards .card,.span4,.span6,.span8{grid-column:span 12}.two,.three,.four{grid-template-columns:1fr}.architecture{grid-template-columns:1fr}.node::after{display:none}.milestone{grid-template-columns:1fr}.milestone .gate{text-align:left}.statusbar{grid-template-columns:1fr 1fr}.toc{padding-left:.5rem}.shell{padding:0 1rem}}@media print{.toc-wrap{display:none}.card,details,.svgbox,pre{break-inside:avoid}.print-note{display:block}.hero{padding-top:1rem}body{background:#fff;color:#000}a{color:#000;border:0}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="shell">
+    <p class="eyebrow">Consolidated engineering specification · Sidecar-EDRA · v1.0 · 2026-05-27</p>
+    <h1>Rigorous event-driven adaptation, starting from a locked baseline.</h1>
+    <p class="subtitle">This document consolidates the paper, the dramatic-recognition sidecar, and the EDRA bridge into one implementation plan. The goal is not another prompting experiment. The goal is a reproducible evaluation harness that makes every improvement, regression, and within-run trajectory visible down to the transcript, policy decision, critic vote, and aggregate plot.</p>
+    <div class="grid hero-cards">
+      <article class="card"><span class="pill warn">Current boundary</span><div class="metric">1/3</div><p>Latest gated D42/D50/D53 loop: one full pass, two failed repeats. Use this as historical context, not a new effect estimate.</p></article>
+      <article class="card"><span class="pill good">Baseline first</span><div class="metric">B0</div><p>Freeze the current sidecar and reproduce its behavior before any EDRA modules are enabled.</p></article>
+      <article class="card"><span class="pill">Primary unit</span><div class="metric">item</div><p>Every plot must drill from aggregate metric → scenario/arm/draw → transcript → critic rows → trace spans.</p></article>
+      <article class="card"><span class="pill bad">No black boxes</span><div class="metric">0</div><p>No unlogged prompts, hidden scoring context, unlabeled model changes, missing coverage, or positive claims with leaking controls.</p></article>
+    </div>
+  </div>
+</header>
+<nav class="toc-wrap"><div class="shell"><div class="toc">
+  <a href="#contract">Contract</a><a href="#evidence">Evidence</a><a href="#architecture">Architecture</a><a href="#baseline">Baseline</a><a href="#harness">Harness</a><a href="#metrics">Metrics</a><a href="#plots">Plots</a><a href="#tests">Tests</a><a href="#implementation">Pseudo-code</a><a href="#milestones">Milestones</a><a href="#agents">Agent packet</a><a href="#refs">References</a>
+</div></div></nav>
+<main class="shell">
+<section id="contract">
+  <h2><span class="anchor">01</span>Engineering contract</h2>
+  <p class="lead">The next leg must be run as a measurement system, not as a narrative search. EDRA may be added only after the present sidecar has been reproduced under a locked baseline and the harness can show progress and regressions at run, item, turn, and critic levels.</p>
+  <div class="callout">
+    <strong>Core claim to test.</strong> A policy/device/closure layer can improve event-local adaptation-to-recognition by increasing branch-local pressure handling, strategy-family selection, public device use, and old/new check articulation, without increasing no-cue or routine-control leakage.
+  </div>
+  <table>
+    <thead><tr><th>Non-negotiable</th><th>Why it exists</th><th>Implementation rule</th></tr></thead>
+    <tbody>
+      <tr><td>Baseline before intervention</td><td>The latest sidecar already contains meaningful changes; improvements must be measured against that actual system, not an imagined old one.</td><td>Create <code>B0</code> as an immutable run bundle before adding EDRA modules. Every later run must name <code>baseline_id</code>.</td></tr>
+      <tr><td>Controls dominate positives</td><td>A positive adaptive-arm score means little if prefix, routine, or none arms already produce recognition.</td><td>Aggregate scorer must invalidate positive claims when <code>control_leakage_rate</code> exceeds the configured threshold.</td></tr>
+      <tr><td>Branch-local pressure only</td><td>The v4 correction showed inherited prefix pressure can be over-counted.</td><td>All pressure, habit-break, and origin labels must respect <code>paired_continuation.prefix_through</code>.</td></tr>
+      <tr><td>Every module emits structured output</td><td>The architecture must be inspectable and debuggable.</td><td><code>EventReader</code>, <code>PolicySelector</code>, <code>TutorCompiler</code>, <code>ClosureCritic</code>, and <code>MemoryCurator</code> write JSON records with schema validation.</td></tr>
+      <tr><td>Within-run progress is first-class</td><td>The user needs to see whether a loop improves, plateaus, or regresses during the run.</td><td>Emit per-iteration metrics and render control charts, gate waterfalls, item heatmaps, and critic disagreement plots after every batch.</td></tr>
+      <tr><td>Scoring is blind and auditable</td><td>Sidecar scoring already added blind protocol controls; EDRA must not erode them.</td><td>Critics receive transcript text and rubric only. No arm label, generator id, run id, source path, prior score, or score history enters critic context.</td></tr>
+    </tbody>
+  </table>
+</section>
+<section id="evidence">
+  <h2><span class="anchor">02</span>Evidence constraints inherited from the paper and sidecar</h2>
+  <div class="two">
+    <div class="card">
+      <h3>Paper constraint: level effects are supported; slope effects are not.</h3>
+      <p>Paper 2.0 supports calibration and error correction, but its primary adaptive-responsiveness analysis is null: tutors change across turns, yet recognition and architecture do not reliably steepen trajectories. Therefore the new system should not optimize for generic slope improvement alone.</p>
+      <ul class="tight">
+        <li>Keep average trajectory slope as a secondary diagnostic.</li>
+        <li>Promote event-local metrics: trigger detection, strategy shift, habit-break, device use, old/new re-reading.</li>
+        <li>Do not claim a repaired general adaptive-responsiveness mechanism until it survives main-harness tests.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Sidecar constraint: adaptation is visible but closure is unstable.</h3>
+      <p>The sidecar successfully narrows the construct: the target is no longer average score slope but a staged event in which the learner creates pressure, the tutor changes move, and the learner publicly re-reads the earlier difficulty. The latest loop got one full pass and two 6/9 repeats.</p>
+      <ul class="tight">
+        <li>Retain clean anchors D42/D50/D53 as the baseline termination set.</li>
+        <li>Retain D42/D45-style low-organic controls and D25/D26 hard traps for calibration.</li>
+        <li>Treat action-to-re-reading as the primary engineering bottleneck.</li>
+      </ul>
+    </div>
+  </div>
+  <table>
+    <thead><tr><th>Source result</th><th>Engineering interpretation</th><th>Harness requirement</th></tr></thead>
+    <tbody>
+      <tr><td>Recognition narrows output variance and lifts first-turn level.</td><td>Recognition is calibration, not necessarily adaptation.</td><td>Baseline plots must separate level metrics from event-local adaptation metrics.</td></tr>
+      <tr><td>Superego correction is useful mainly where calibration does not pre-empt failures.</td><td>Critics are safety nets and observability layers, not magic adaptation engines.</td><td>Log initial response, critique, revision delta, and final response separately.</td></tr>
+      <tr><td>State-policy variants choose the right move more often; dialogue engine writes better prose.</td><td>Separate policy selection from prose compilation.</td><td>EDRA must compile from a structured <code>MoveContract</code>, not let the writer choose its own strategy silently.</td></tr>
+      <tr><td>v4 branch-local correction reduced false positives.</td><td>Prefix leakage is a measurement bug, not a subtle success.</td><td>All scorer and analyzer functions take <code>prefixThroughTurn</code> as a required argument.</td></tr>
+      <tr><td>Latest loop failures include critic splits, origin ambiguity, insufficient scores, and scorer error.</td><td>Failure localization needs to be encoded, counted, and plotted.</td><td>Every failed item gets a primary <code>failure_code</code> plus secondary contributing codes.</td></tr>
+    </tbody>
+  </table>
+</section>
+<section id="architecture">
+  <h2><span class="anchor">03</span>Target architecture: sidecar first, EDRA as a bridge layer</h2>
+  <p class="lead">Do not replace the sidecar. Insert EDRA as an event-local policy/device/closure layer around the existing generation and scoring path.</p>
+  <div class="architecture">
+    <div class="node"><strong>Scenario loader</strong><small>Loads fixed prefix, arm, scenario metadata, expected traps, and prefix-through boundary.</small></div>
+    <div class="node"><strong>EventReader</strong><small>Extracts branch-local learner pressure and evidence quotes after the prefix.</small></div>
+    <div class="node"><strong>StateLedger</strong><small>Stores evidence-bound learner-state hypotheses and contradiction status.</small></div>
+    <div class="node"><strong>PolicySelector</strong><small>Chooses move family and rejects the default content-elaboration route when necessary.</small></div>
+    <div class="node"><strong>DeviceLibrary</strong><small>Retrieves or proposes a public pedagogical device with a closure test.</small></div>
+    <div class="node"><strong>MoveContract</strong><small>Freezes trigger, old route, new move, device, required learner action, old check, replacement check.</small></div>
+    <div class="node"><strong>TutorCompiler</strong><small>Uses the existing recognition-calibrated dialogue engine to write prose under the contract.</small></div>
+    <div class="node"><strong>ClosureCritic</strong><small>Checks whether the turn creates a public action that can become old/new re-reading.</small></div>
+    <div class="node"><strong>RunScorer</strong><small>Blind external panel scores recognition/trap/flat and quality gates.</small></div>
+    <div class="node"><strong>FailureLocalizer</strong><small>Converts scorer rows and internal traces into failure codes.</small></div>
+    <div class="node"><strong>MetricsBuilder</strong><small>Computes run-level, item-level, scenario-level, critic-level, and within-run metrics.</small></div>
+    <div class="node"><strong>Dashboard</strong><small>Plots progress, deltas, regressions, uncertainty, and drill-down links.</small></div>
+  </div>
+  <h3>Key contract objects</h3>
+  <pre><code>type MoveFamily =
+  | "substantive_engagement"
+  | "diagnostic_probe"
+  | "repair_affective"
+  | "scaffold_load"
+  | "device_refit"
+  | "productive_pause"
+  | "recognition_repair";
+
+interface BranchLocalEvent {
+  scenarioId: string;
+  arm: "prefix_baseline" | "routine" | "none" | "peripeteia_only" | "edra_policy" | "edra_policy_memory";
+  prefixThroughTurn: number;
+  learnerQuote: string;
+  signalType: "present_task_misfit" | "hesitation" | "resistance" | "false_relief" | "breakdown" | "misrecognition" | "no_new_signal";
+  evidenceStrength: number;      // 0..1, must cite public text
+  oldRouteNowFails: string;
+  branchLocal: boolean;          // false if evidence is inherited from prefix
+}
+
+interface MoveContract {
+  contractId: string;
+  event: BranchLocalEvent;
+  selectedFamily: MoveFamily;
+  rejectedDefaultFamily: MoveFamily;
+  reasonDefaultFails: string;
+  deviceId: string;
+  requiredLearnerAction: string;
+  oldCheckToName: string;
+  replacementCheckToName: string;
+  nonLeakageRules: string[];
+  expectedClosure: "action_only" | "old_new_re_reading";
+}
+
+interface ItemGateResult {
+  itemId: string;
+  branchLocalPressure: boolean;
+  privateRoute: boolean;
+  publicHabitBreak: boolean;
+  strictShiftAtTrigger: boolean;
+  devicePerformed: boolean;
+  oldCheckNamed: boolean;
+  replacementCheckNamed: boolean;
+  recognition3of4: boolean;
+  controlLeak: boolean;
+  qualityWarning: boolean;
+  criticSplit: boolean;
+  originAmbiguous: boolean;
+  scoreCoverageOk: boolean;
+  pass: boolean;
+  failureCodes: FailureCode[];
+}</code></pre>
+</section>
+<section id="baseline">
+  <h2><span class="anchor">04</span>Baseline protocol: B0 before any EDRA intervention</h2>
+  <p class="lead">The first engineering milestone is a frozen baseline of the current sidecar. It should reproduce the current boundary as faithfully as possible and become the denominator for every later change.</p>
+  <div class="callout good">
+    <strong>B0 acceptance target.</strong> A baseline is accepted when it produces a complete immutable run bundle, passes schema validation, has blind scoring coverage above threshold, renders all required plots, and can regenerate aggregate metrics from raw transcripts and score rows without manual intervention. It does not need to “succeed” at recognition; it needs to measure the current system honestly.
+  </div>
+  <h3>B0 run matrix</h3>
+  <table>
+    <thead><tr><th>Layer</th><th>Required baseline contents</th><th>Rationale</th></tr></thead>
+    <tbody>
+      <tr><td>Primary scenarios</td><td><code>D42</code>, <code>D50</code>, <code>D53</code></td><td>These are the latest gated-loop anchors and should be used for direct comparability.</td></tr>
+      <tr><td>Calibration controls</td><td><code>D42</code>, <code>D45</code>, plus existing flat/trap brackets such as <code>D4</code>, <code>D25</code>, <code>D26</code>, and optionally <code>D10</code> as boundary trap.</td><td>Separates low-organic flatness, hard traps, and boundary critic sensitivity.</td></tr>
+      <tr><td>Arms</td><td><code>prefix_baseline</code>, <code>routine</code>, <code>none</code>, <code>peripeteia_only</code>; positive-control <code>reframe_only</code> optional but recommended.</td><td>Retains the negative and positive calibration surfaces that made the sidecar useful.</td></tr>
+      <tr><td>Repeats</td><td>Minimum 3 iterations for the D42/D50/D53 termination set; minimum 2 draws for broader controls.</td><td>One pass is not enough; the current observed boundary is repeat stability.</td></tr>
+      <tr><td>Critic panel</td><td>Four blind critics, matching the sidecar panel where possible. Store model names and versions in manifest, not prompt context.</td><td>Preserves 3-of-4 recognition rule and critic-split detection.</td></tr>
+      <tr><td>Termination</td><td>Baseline run terminates after configured repeats, not after success. Do not search for a clean draw.</td><td>Baseline estimates current behavior; it is not a generation loop to rescue the system.</td></tr>
+    </tbody>
+  </table>
+  <h3>B0 command surface to implement</h3>
+  <pre><code># 1. Freeze current code, prompts, scorer prompts, scenario fixtures, and configs.
+npm run sidecar:freeze -- --out artifacts/baselines/B0/manifest.json
+
+# 2. Run current sidecar without EDRA modules.
+npm run sidecar:baseline -- --config config/edra/a19-b0-current-sidecar.yaml
+
+# 3. Score blindly with the configured critic panel.
+npm run sidecar:score -- --run-id B0_current_sidecar --blind --critics qwen,gemini,deepseek,sonnet
+
+# 4. Build item gates, aggregate metrics, and plots from raw artifacts.
+npm run sidecar:metrics -- --run-id B0_current_sidecar --out artifacts/metrics/B0_current_sidecar.json
+npm run sidecar:dashboard -- --metrics artifacts/metrics/B0_current_sidecar.json --out reports/B0_current_sidecar.html
+
+# 5. Lock the baseline. Later runs may compare to it but must not overwrite it.
+npm run sidecar:lock-baseline -- --run-id B0_current_sidecar</code></pre>
+  <h3>Baseline manifest schema</h3>
+  <pre><code>{
+  "baseline_id": "B0_current_sidecar_2026xxxx",
+  "code_commit": "git-sha",
+  "dirty_worktree": false,
+  "scenario_fixture_hash": "sha256",
+  "prompt_hashes": {
+    "generator": "sha256",
+    "rules_structural_critic": "sha256",
+    "external_scorer": "sha256"
+  },
+  "models": {
+    "generator": [{"role":"tutor","provider":"...","model":"...","temperature":0.6}],
+    "critics": [{"critic_id":"sonnet","model":"...","temperature":0.2}]
+  },
+  "arms": ["prefix_baseline","routine","none","peripeteia_only"],
+  "scenarios": ["D42","D50","D53"],
+  "repeat_count": 3,
+  "randomization": {"seed":"recorded-if-supported", "order":"shuffled-by-scenario-arm-draw"},
+  "blind_scoring": true,
+  "artifact_paths": {
+    "transcripts":"artifacts/poetics-runs/.../transcripts.jsonl",
+    "scores":"artifacts/poetics-runs/.../scores.jsonl",
+    "traces":"artifacts/poetics-runs/.../traces.jsonl"
+  }
+}</code></pre>
+</section>
+<section id="harness">
+  <h2><span class="anchor">05</span>Evaluation harness and data pipeline</h2>
+  <p class="lead">The harness must be deterministic where the system allows determinism, explicit where it does not, and fully reconstructable from committed manifests plus archived raw artifacts.</p>
+  <div class="statusbar">
+    <div><strong>01</strong><span>Generate</span></div><div><strong>02</strong><span>Trace</span></div><div><strong>03</strong><span>Score</span></div><div><strong>04</strong><span>Aggregate</span></div><div><strong>05</strong><span>Plot</span></div>
+  </div>
+  <table>
+    <thead><tr><th>Pipeline stage</th><th>Inputs</th><th>Outputs</th><th>Required validation</th></tr></thead>
+    <tbody>
+      <tr><td>Fixture load</td><td>Scenario YAML/JSON, arm config, prefix boundary</td><td><code>ScenarioCase</code></td><td>Schema validation; prefix-through exists; expected trap/control labels present.</td></tr>
+      <tr><td>Generation</td><td><code>ScenarioCase</code>, model config, prompt hashes</td><td><code>TranscriptItem</code>, internal deliberation, EDRA contracts if enabled</td><td>Transcript turn order; no missing branches; no accidental arm-label leakage to learner/tutor unless explicitly intended.</td></tr>
+      <tr><td>Tracing</td><td>Generation events and module outputs</td><td><code>TraceSpan</code> JSONL</td><td>Every LLM call and module output has run_id, item_id, span_id, parent_span_id, model metadata, prompt hash, latency, token usage where available.</td></tr>
+      <tr><td>Blind scoring</td><td>Anonymous transcript and rubric only</td><td><code>ScoreRow</code> for every critic x item</td><td>Score coverage; no scorer context leakage; parseable JSON; retry policy logged.</td></tr>
+      <tr><td>Deterministic analysis</td><td>Transcripts, traces, score rows</td><td><code>ItemGateResult</code>, <code>FailureCode</code></td><td>Branch-local pressure computed after prefix; no inherited pressure; failure codes assigned consistently.</td></tr>
+      <tr><td>Aggregation</td><td>Item gates and score rows</td><td><code>RunMetrics</code>, confidence intervals, baseline deltas</td><td>Recomputable from raw rows; no hand-entered aggregate numbers.</td></tr>
+      <tr><td>Reporting</td><td><code>RunMetrics</code>, manifest, item links</td><td>Static dashboard HTML, CSV/JSON exports</td><td>Every plotted point links back to item-level evidence.</td></tr>
+    </tbody>
+  </table>
+  <h3>Recommended storage layout</h3>
+  <pre><code>artifacts/
+  poetics-runs/
+    &lt;run_id&gt;/
+      manifest.json
+      transcripts.jsonl
+      traces.jsonl
+      module_outputs.jsonl
+      scores.raw.jsonl
+      scores.normalized.jsonl
+      item_gates.jsonl
+      failure_localization.jsonl
+      run_metrics.json
+      plots/
+        gate_waterfall.svg
+        metric_delta_vs_baseline.svg
+        within_run_progress.svg
+        scenario_arm_heatmap.svg
+        critic_agreement.svg
+  baselines/
+    B0_current_sidecar/
+      manifest.json
+      run_metrics.json
+      dashboard.html
+reports/
+  &lt;run_id&gt;.html
+config/
+  poetics-calibration/runs/
+    &lt;run_id&gt;.manifest.json   # committed manifest only
+  edra/
+    a19-b0-current-sidecar.yaml
+    a20-edra-policy-compiler.yaml</code></pre>
+  <h3>Vendor-neutral tracing</h3>
+  <p>The core harness should emit local JSONL first. Optional adapters may export the same spans to OpenTelemetry-compatible systems or evaluation platforms. This prevents lock-in while allowing richer trace comparison and operational dashboards.</p>
+  <pre><code>interface TraceSpan {
+  runId: string;
+  itemId: string;
+  spanId: string;
+  parentSpanId?: string;
+  name: "scenario.load" | "event.read" | "policy.select" | "device.retrieve" | "tutor.compile" | "closure.critic" | "llm.call" | "score.critic" | "metrics.aggregate";
+  startedAt: string;
+  endedAt: string;
+  attributes: Record&lt;string, string | number | boolean&gt;;
+  inputRef?: string;       // path or content hash, not necessarily raw prompt
+  outputRef?: string;      // path or content hash
+  promptHash?: string;
+  model?: { provider: string; name: string; temperature?: number };
+  usage?: { inputTokens?: number; outputTokens?: number; costUsd?: number };
+  error?: { type: string; message: string; retryCount?: number };
+}</code></pre>
+</section>
+<section id="metrics">
+  <h2><span class="anchor">06</span>Metric definitions and regression gates</h2>
+  <p class="lead">The metrics below deliberately separate adaptation, action, recognition, quality, and measurement health. A run can improve one while regressing another; the dashboard must show those tradeoffs rather than flatten them into a single score.</p>
+  <table>
+    <thead><tr><th>Metric</th><th>Definition</th><th>Level</th><th>Gate / use</th></tr></thead>
+    <tbody>
+      <tr><td><code>control_leakage_rate</code></td><td>Share of prefix/routine/none controls classified as recognition or old/new closure.</td><td>Run, scenario, arm, critic</td><td>Hard invalidation if above threshold. Positive-arm improvements do not count while controls leak.</td></tr>
+      <tr><td><code>branch_local_pressure_rate</code></td><td>Share of adaptive-arm items with post-prefix learner pressure, excluding inherited prefix pressure.</td><td>Item, run</td><td>Diagnostic prerequisite for peripeteia claims.</td></tr>
+      <tr><td><code>strict_shift_at_trigger</code></td><td>Policy/prose changes move family at trigger+1 as expected.</td><td>Item, family, run</td><td>Primary adaptation selection metric.</td></tr>
+      <tr><td><code>family_match_rate</code></td><td>Selected move family matches expected scenario trap family, regardless of exact label timing.</td><td>Item, family, run</td><td>Separates broad policy success from exact timing.</td></tr>
+      <tr><td><code>public_habit_break_rate</code></td><td>Transcript visibly stops the failed teaching route and introduces a different public action or device.</td><td>Item, run</td><td>Primary public adaptation metric.</td></tr>
+      <tr><td><code>device_performed_rate</code></td><td>Final learner turn uses the introduced device rather than merely acknowledging it.</td><td>Item, run</td><td>Actional breakthrough metric.</td></tr>
+      <tr><td><code>old_check_named_rate</code></td><td>Learner explicitly names the old pressure, assumption, or check that failed.</td><td>Item, run</td><td>Half of action-to-re-reading bridge.</td></tr>
+      <tr><td><code>replacement_check_named_rate</code></td><td>Learner explicitly names the new check/device that replaces the old one.</td><td>Item, run</td><td>Half of action-to-re-reading bridge.</td></tr>
+      <tr><td><code>recognitive_closure_3of4</code></td><td>At least three of four blind critics classify the transcript as recognition and quality gates pass.</td><td>Item, run</td><td>Primary closure metric.</td></tr>
+      <tr><td><code>critic_split_rate</code></td><td>Items without 3-of-4 agreement or with material critic disagreement on form.</td><td>Item, scenario, run</td><td>Flags boundary cases and scorer instability.</td></tr>
+      <tr><td><code>origin_ambiguity_rate</code></td><td>Recognition appears but cannot be attributed to branch-local tutor adaptation rather than organic/reframe leakage.</td><td>Item, scenario, run</td><td>Prevents causal overclaiming.</td></tr>
+      <tr><td><code>score_coverage_rate</code></td><td>Expected score rows received and parseable after configured retries.</td><td>Run, critic</td><td>Hard measurement-health gate.</td></tr>
+      <tr><td><code>quality_warning_rate</code></td><td>Items with recognitive form but insufficient prose/task quality.</td><td>Item, run</td><td>Protects against gaming closure by mechanical endings.</td></tr>
+      <tr><td><code>trajectory_slope</code></td><td>OLS or robust slope of per-turn tutor/learner quality scores.</td><td>Dialogue, condition</td><td>Secondary only; keep for continuity with Paper 2.0 but do not treat as primary EDRA success.</td></tr>
+      <tr><td><code>cost_per_valid_item</code></td><td>Total token/API cost divided by items passing measurement-health gates.</td><td>Run, condition</td><td>Engineering constraint for scalable iteration.</td></tr>
+    </tbody>
+  </table>
+  <h3>Hard gates</h3>
+  <pre><code>hard_gates:
+  score_coverage_rate_min: 0.95
+  parse_error_rate_max: 0.02
+  control_leakage_rate_max: 0.00       # recommended for primary D42/D50/D53 claims
+  branch_local_pressure_required: true
+  blind_scoring_required: true
+  prefix_through_required: true
+  positive_claim_requires:
+    - control_leakage_rate_at_or_below_threshold
+    - recognitive_closure_3of4_improves_vs_B0
+    - no_quality_warning_on_claimed_items
+    - no_origin_ambiguity_on_claimed_items
+    - score_coverage_rate_at_or_above_threshold</code></pre>
+  <h3>Regression policy</h3>
+  <table>
+    <thead><tr><th>Regression type</th><th>Trigger</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>Measurement regression</td><td>Coverage drops, parser errors rise, blind-scoring leak detected, or manifests incomplete.</td><td>Block all claims; fix harness before interpreting model behavior.</td></tr>
+      <tr><td>Control regression</td><td>Control leakage rises above B0 or above threshold.</td><td>Fail run even if adaptive arm improves.</td></tr>
+      <tr><td>Adaptation regression</td><td>Strict shift, family match, branch-local pressure, or public habit-break drops below B0.</td><td>Localize by scenario/family; inspect policy selector and event reader traces.</td></tr>
+      <tr><td>Closure regression</td><td>Device performance holds but old/replacement check naming or 3-of-4 closure falls.</td><td>Inspect TutorCompiler ending and ClosureCritic; likely action-to-re-reading failure.</td></tr>
+      <tr><td>Quality regression</td><td>Recognitive closure rises but quality warnings also rise.</td><td>Reject mechanical closure. Improve prose compiler and device naturalness.</td></tr>
+      <tr><td>Cost regression</td><td>Cost per valid item increases without metric gain.</td><td>Profile token usage; consider caching, smaller model for deterministic modules, fewer candidates.</td></tr>
+    </tbody>
+  </table>
+</section>
+<section id="plots">
+  <h2><span class="anchor">07</span>Plotting requirements: progress, deltas, and drill-down</h2>
+  <p class="lead">Every experiment should produce a static HTML report with the plots below. The report is not just for presentation; it is the debugging surface for coding agents.</p>
+  <div class="two">
+    <div class="svgbox">
+      <svg viewBox="0 0 640 260" width="100%" height="260" role="img" aria-label="Historical handoff pass-rate chart">
+        <rect x="0" y="0" width="640" height="260" rx="14" fill="transparent" />
+        <line x1="70" y1="210" x2="600" y2="210" stroke="currentColor" opacity=".25"/>
+        <line x1="70" y1="30" x2="70" y2="210" stroke="currentColor" opacity=".25"/>
+        <text x="70" y="235" font-size="13" fill="currentColor" opacity=".75">i01</text><text x="260" y="235" font-size="13" fill="currentColor" opacity=".75">i02</text><text x="450" y="235" font-size="13" fill="currentColor" opacity=".75">i03</text>
+        <text x="22" y="214" font-size="12" fill="currentColor" opacity=".65">0%</text><text x="22" y="124" font-size="12" fill="currentColor" opacity=".65">50%</text><text x="18" y="34" font-size="12" fill="currentColor" opacity=".65">100%</text>
+        <polyline points="85,30 275,90 465,90" fill="none" stroke="#a33c2c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="85" cy="30" r="7" fill="#a33c2c"/><circle cx="275" cy="90" r="7" fill="#a33c2c"/><circle cx="465" cy="90" r="7" fill="#a33c2c"/>
+        <text x="105" y="34" font-size="14" fill="currentColor">9/9</text><text x="295" y="94" font-size="14" fill="currentColor">6/9</text><text x="485" y="94" font-size="14" fill="currentColor">6/9</text>
+        <text x="70" y="18" font-size="14" fill="currentColor" opacity=".8">Historical handoff item-gate pass rate; replace with B0 reproduction on first run</text>
+      </svg>
+      <p class="caption">The dashboard should show this kind of within-run progression for every loop, plus confidence intervals and failure-code overlays where applicable.</p>
+    </div>
+    <div class="card">
+      <h3>Required dashboard panels</h3>
+      <ol class="tight">
+        <li><strong>Run header:</strong> run id, baseline id, code commit, prompt hashes, model versions, cost, coverage.</li>
+        <li><strong>Gate waterfall:</strong> generated → scored → branch-local pressure → habit-break → device performed → old check → replacement check → 3-of-4 closure.</li>
+        <li><strong>Delta vs B0:</strong> each metric with absolute delta, relative delta, bootstrap or Wilson interval, and pass/fail status.</li>
+        <li><strong>Within-run progress:</strong> iteration-by-iteration item-gate rate, control leakage, closure, critic splits, and cost.</li>
+        <li><strong>Scenario-arm heatmap:</strong> rows scenarios, columns arms, cells metric values and failure codes.</li>
+        <li><strong>Critic agreement matrix:</strong> pairwise agreement and per-critic permissiveness.</li>
+        <li><strong>Failure ledger:</strong> sortable table of item failures with transcript links and trace links.</li>
+      </ol>
+    </div>
+  </div>
+  <h3>Metrics JSON for plotting</h3>
+  <pre><code>interface RunMetrics {
+  runId: string;
+  baselineId?: string;
+  runStartedAt: string;
+  manifestHash: string;
+  measurementHealth: {
+    expectedScoreRows: number;
+    observedScoreRows: number;
+    scoreCoverageRate: number;
+    parseErrorRate: number;
+    scorerErrorCount: number;
+  };
+  aggregate: Record&lt;MetricName, MetricSummary&gt;;
+  byIteration: Array&lt;{ iteration: number; metrics: Record&lt;MetricName, MetricSummary&gt; }&gt;;
+  byScenarioArm: Array&lt;{ scenarioId: string; arm: string; metrics: Record&lt;MetricName, MetricSummary&gt; }&gt;;
+  byCritic: Array&lt;{ criticId: string; permissiveness: number; agreement: Record&lt;string, number&gt; }&gt;;
+  deltasVsBaseline?: Record&lt;MetricName, DeltaSummary&gt;;
+  itemGateRows: string;      // path to item_gates.jsonl
+  plotDataRows: string;      // path to normalized long-form CSV/JSONL
+}
+
+interface MetricSummary {
+  numerator?: number;
+  denominator?: number;
+  value: number;
+  ciLow?: number;
+  ciHigh?: number;
+  method: "exact" | "wilson" | "bootstrap" | "mean" | "slope";
+}</code></pre>
+  <h3>Plot generation command</h3>
+  <pre><code>npm run sidecar:plots -- \
+  --metrics artifacts/poetics-runs/&lt;run_id&gt;/run_metrics.json \
+  --baseline artifacts/baselines/B0_current_sidecar/run_metrics.json \
+  --out artifacts/poetics-runs/&lt;run_id&gt;/plots \
+  --html reports/&lt;run_id&gt;.html \
+  --link-mode relative</code></pre>
+</section>
+<section id="tests">
+  <h2><span class="anchor">08</span>Testing strategy</h2>
+  <p class="lead">Treat the sidecar like a scientific instrument. Unit tests keep the instrument honest; integration tests protect the causal design; regression tests prevent progress from being bought by leakage or scorer instability.</p>
+  <h3>Test pyramid</h3>
+  <table>
+    <thead><tr><th>Test layer</th><th>Examples</th><th>Pass condition</th></tr></thead>
+    <tbody>
+      <tr><td>Schema/unit tests</td><td>Validate <code>MoveContract</code>, <code>TraceSpan</code>, <code>ScoreRow</code>, <code>ItemGateResult</code>, manifest, metrics.</td><td>Invalid objects fail fast with precise path and error message.</td></tr>
+      <tr><td>Analyzer unit tests</td><td>Branch-local pressure with prefix-through boundaries; old/new check regex/symbolic detection; failure-code priority.</td><td>Golden fixtures pass; adversarial off-by-one fixtures fail.</td></tr>
+      <tr><td>Prompt contract tests</td><td>Policy selector must return exactly one move family and quote evidence; compiler must not silently override family; closure critic must flag generic “Do you understand?” endings.</td><td>Structured outputs parse and satisfy invariants.</td></tr>
+      <tr><td>Mini integration smoke</td><td>One scenario x three arms x one critic with stub model or cached transcript.</td><td>Pipeline writes all artifacts and dashboard without external scoring failures.</td></tr>
+      <tr><td>B0 reproduction</td><td>Current sidecar D42/D50/D53 matrix with configured critics.</td><td>Complete baseline bundle, measurement-health gates pass, report produced.</td></tr>
+      <tr><td>EDRA A/B integration</td><td>B0 versus EDRA policy compiler on same fixture set.</td><td>Control leakage no worse; at least one primary adaptation/closure metric improves or failure localizes clearly.</td></tr>
+      <tr><td>Held-out generalization</td><td>D45 and other low-organic anchors not used during prompt edits.</td><td>No regression in controls; positive gains do not vanish outside D42/D50/D53.</td></tr>
+      <tr><td>CI regression</td><td>Cached/golden tests on every PR; scheduled live baseline drift run.</td><td>PR blocks on schema/analyzer/dashboard failures; live drift opens report, not silent merge.</td></tr>
+    </tbody>
+  </table>
+  <h3>Specific unit tests to implement first</h3>
+  <pre><code>describe("prefix-through branch-local accounting", () =&gt; {
+  it("does not count learner pressure that appears before prefixThroughTurn", ...);
+  it("counts present-task misfit only after prefixThroughTurn", ...);
+  it("marks origin_ambiguous when old/new reframe appears in routine control", ...);
+});
+
+describe("closure bridge detector", () =&gt; {
+  it("passes when final learner performs device, names old check, names replacement check", ...);
+  it("fails action_only when learner merely says thanks", ...);
+  it("fails old_check_named when learner uses new device but does not re-read prior error", ...);
+  it("fails quality gate when closure is mechanical and task-irrelevant", ...);
+});
+
+describe("policy/prose separation", () =&gt; {
+  it("forces compiler to preserve selected move family", ...);
+  it("flags family drift when prose reverts to substantive elaboration", ...);
+  it("requires rejectedDefaultFamily and reasonDefaultFails", ...);
+});
+
+describe("dashboard reconstruction", () =&gt; {
+  it("recomputes aggregate metrics from item_gates.jsonl exactly", ...);
+  it("fails when a plotted value has no item-level source rows", ...);
+});</code></pre>
+  <h3>CI gates</h3>
+  <pre><code>pull_request:
+  required:
+    - npm run lint
+    - npm run test:schemas
+    - npm run test:analyzers
+    - npm run test:dashboard-fixtures
+    - npm run sidecar:smoke -- --stub-model --stub-critics
+  optional_live:
+    - npm run sidecar:mini-live -- --budget low
+
+nightly:
+  required:
+    - npm run sidecar:drift-check -- --baseline B0_current_sidecar --sample controls
+    - npm run sidecar:report-index -- --out reports/index.html</code></pre>
+</section>
+<section id="implementation">
+  <h2><span class="anchor">09</span>Implementation pseudo-code</h2>
+  <p class="lead">The pseudo-code below is intentionally explicit. Coding agents should implement the skeleton first with stubs and cached fixtures, then swap in real model calls and scorer calls once artifacts are validated.</p>
+  <h3>Baseline runner</h3>
+  <pre><code>async function runBaseline(configPath: string): Promise&lt;RunMetrics&gt; {
+  const config = loadAndValidateConfig(configPath);
+  assert(config.mode === "baseline");
+  assert(config.edra.enabled === false);
+
+  const manifest = await freezeManifest(config);
+  const cases = expandScenarioMatrix(config.scenarios, config.arms, config.repeats);
+  const shuffled = deterministicShuffle(cases, config.randomization.seed);
+
+  const transcriptWriter = jsonlWriter(pathFor(manifest.runId, "transcripts.jsonl"));
+  const traceWriter = jsonlWriter(pathFor(manifest.runId, "traces.jsonl"));
+
+  for (const scenarioCase of shuffled) {
+    validatePrefixThrough(scenarioCase);
+    const trace = new TraceRecorder(manifest.runId, scenarioCase.itemId, traceWriter);
+
+    const transcript = await trace.span("generation.current_sidecar", async () =&gt; {
+      return currentSidecarGenerate(scenarioCase, config.generator);
+    });
+
+    transcriptWriter.write({
+      runId: manifest.runId,
+      itemId: scenarioCase.itemId,
+      scenarioId: scenarioCase.scenarioId,
+      arm: scenarioCase.arm,
+      prefixThroughTurn: scenarioCase.prefixThroughTurn,
+      transcript,
+      manifestHash: manifest.hash
+    });
+  }
+
+  const scoreRows = await blindScoreRun(manifest.runId, config.critics);
+  const itemGates = await analyzeItemGates({ manifest, scoreRows, prefixStrict: true });
+  const metrics = computeRunMetrics({ manifest, scoreRows, itemGates, baseline: undefined });
+  await renderDashboard(metrics, { baseline: undefined });
+  await lockBaseline(manifest, metrics);
+  return metrics;
+}</code></pre>
+  <h3>EDRA adaptive turn runner</h3>
+  <pre><code>async function runEdraItem(scenarioCase: ScenarioCase, config: EdraConfig): Promise&lt;TranscriptItem&gt; {
+  const trace = new TraceRecorder(config.runId, scenarioCase.itemId);
+
+  const event = await trace.span("event.read", () =&gt;
+    EventReader.read({
+      transcript: scenarioCase.prefixTranscript,
+      latestLearnerTurn: scenarioCase.branchLearnerTurn,
+      prefixThroughTurn: scenarioCase.prefixThroughTurn,
+      scenarioMetadata: scenarioCase.metadata
+    })
+  );
+
+  const ledger = await trace.span("state.update", () =&gt;
+    StateLedger.update(config.memoryStore, event)
+  );
+
+  const policy = await trace.span("policy.select", () =&gt;
+    PolicySelector.select({ event, ledger, allowedFamilies: config.allowedMoveFamilies })
+  );
+
+  const device = await trace.span("device.retrieve", () =&gt;
+    DeviceLibrary.retrieveOrGenerate({ event, policy, scenarioCase })
+  );
+
+  const contract = MoveContractBuilder.build({ event, policy, device });
+  validateMoveContract(contract);
+
+  const tutorDraft = await trace.span("tutor.compile", () =&gt;
+    TutorCompiler.write({
+      transcript: scenarioCase.prefixTranscript,
+      contract,
+      recognitionPrompt: config.prompts.recognitionCompiler
+    })
+  );
+
+  const closureCheck = await trace.span("closure.critic", () =&gt;
+    ClosureContractCritic.check({ contract, tutorDraft, scenarioCase })
+  );
+
+  const tutorTurn = closureCheck.pass
+    ? tutorDraft
+    : await trace.span("tutor.repair_compile", () =&gt;
+        TutorCompiler.rewriteWithClosureFailures({ tutorDraft, contract, failures: closureCheck.failures })
+      );
+
+  const learnerFinal = await scenarioCase.learner.respondTo(tutorTurn);
+
+  await trace.span("memory.curate", () =&gt;
+    EpisodeMemoryCurator.record({ event, contract, tutorTurn, learnerFinal, closureCheck })
+  );
+
+  return assembleTranscriptItem({ scenarioCase, event, contract, tutorTurn, learnerFinal, traces: trace.flush() });
+}</code></pre>
+  <h3>Metrics and comparison</h3>
+  <pre><code>function computeRunMetrics(input: {
+  manifest: RunManifest;
+  scoreRows: ScoreRow[];
+  itemGates: ItemGateResult[];
+  baseline?: RunMetrics;
+}): RunMetrics {
+  const health = computeMeasurementHealth(input.scoreRows, input.manifest.expectedScoreRows);
+  const aggregate = summarizeMetrics(input.itemGates, input.scoreRows);
+  const byIteration = groupSummaries(input.itemGates, "iteration");
+  const byScenarioArm = groupSummaries(input.itemGates, ["scenarioId", "arm"]);
+  const byCritic = computeCriticAgreement(input.scoreRows);
+
+  const deltasVsBaseline = input.baseline
+    ? compareAgainstBaseline({ current: aggregate, baseline: input.baseline.aggregate, pairing: "scenario-arm-draw" })
+    : undefined;
+
+  const hardGateStatus = evaluateHardGates({ health, aggregate, deltasVsBaseline });
+
+  return {
+    runId: input.manifest.runId,
+    baselineId: input.baseline?.runId,
+    runStartedAt: input.manifest.runStartedAt,
+    manifestHash: input.manifest.hash,
+    measurementHealth: health,
+    aggregate,
+    byIteration,
+    byScenarioArm,
+    byCritic,
+    deltasVsBaseline,
+    hardGateStatus,
+    itemGateRows: pathFor(input.manifest.runId, "item_gates.jsonl"),
+    plotDataRows: pathFor(input.manifest.runId, "plot_data.long.jsonl")
+  };
+}</code></pre>
+  <h3>A19/A20 config seeds</h3>
+  <pre><code># config/edra/a19-b0-current-sidecar.yaml
+experiment_id: A19
+mode: baseline
+edra:
+  enabled: false
+baseline:
+  lock_as: B0_current_sidecar
+scenarios:
+  primary: [D42, D50, D53]
+  controls: [D4, D25, D26, D45]
+arms: [prefix_baseline, routine, none, peripeteia_only]
+repeats:
+  primary: 3
+  controls: 2
+critics: [qwen, gemini, deepseek, sonnet]
+scoring:
+  blind: true
+  recognition_rule: three_of_four
+  require_quality_gate: true
+analysis:
+  prefix_through_required: true
+  control_leakage_rate_max: 0.0
+  score_coverage_rate_min: 0.95
+outputs:
+  write_traces: true
+  write_dashboard: true
+
+# config/edra/a20-edra-policy-compiler.yaml
+experiment_id: A20
+mode: intervention
+baseline_id: B0_current_sidecar
+edra:
+  enabled: true
+  modules: [event_reader, state_ledger, policy_selector, device_library, move_contract, tutor_compiler, closure_critic]
+  memory:
+    enabled: false
+scenarios:
+  primary: [D42, D50, D53]
+  held_out: [D45]
+arms: [routine, none, peripeteia_only, edra_policy]
+repeats:
+  primary: 3
+  held_out: 2
+comparison:
+  paired_to_baseline: true
+  primary_metrics:
+    - control_leakage_rate
+    - strict_shift_at_trigger
+    - public_habit_break_rate
+    - device_performed_rate
+    - old_check_named_rate
+    - replacement_check_named_rate
+    - recognitive_closure_3of4</code></pre>
+</section>
+<section id="milestones">
+  <h2><span class="anchor">10</span>Project plan and milestones</h2>
+  <p class="lead">The milestones are ordered so that engineering rigor precedes architectural ambition. Each milestone produces an artifact that later coding agents can verify.</p>
+  <div class="timeline">
+    <div class="milestone"><div class="phase">M0</div><div><h3>Repo and artifact hygiene</h3><p>Create canonical directories, schemas, config names, manifest writer, and dashboard output location. Ensure raw transcripts stay out of Git while committed manifests are sufficient to locate archived payloads.</p><ul class="tight"><li>Deliverables: schema files, manifest writer, artifact README.</li><li>Tests: schema validation and archive-path tests.</li></ul></div><div class="gate">Gate: local smoke passes</div></div>
+    <div class="milestone"><div class="phase">M1</div><div><h3>B0 current-sidecar baseline</h3><p>Run and lock the current sidecar on D42/D50/D53 plus control brackets before EDRA is enabled.</p><ul class="tight"><li>Deliverables: <code>B0_current_sidecar</code> manifest, raw archive, metrics JSON, static dashboard.</li><li>Tests: score coverage, blind scoring, prefix-through accounting, reproducible metrics.</li></ul></div><div class="gate">Gate: baseline locked</div></div>
+    <div class="milestone"><div class="phase">M2</div><div><h3>Instrumentation and plot harness</h3><p>Add traces for model calls, module calls, scorer calls, metrics aggregation, and plot generation. Every plot point must link to item rows.</p><ul class="tight"><li>Deliverables: trace schema, long-form plot data, dashboard drill-down.</li><li>Tests: no aggregate without source rows; dashboard fixture tests.</li></ul></div><div class="gate">Gate: no black boxes</div></div>
+    <div class="milestone"><div class="phase">M3</div><div><h3>Analyzer hardening</h3><p>Make branch-local pressure, origin ambiguity, old/new check naming, and failure-code priority deterministic and unit-tested.</p><ul class="tight"><li>Deliverables: analyzer package, golden fixtures, mutation tests.</li><li>Tests: off-by-one prefix fixtures; control-leakage fixtures.</li></ul></div><div class="gate">Gate: analyzer stable</div></div>
+    <div class="milestone"><div class="phase">M4</div><div><h3>A20 EDRA policy compiler without memory</h3><p>Insert EventReader → PolicySelector → DeviceLibrary → MoveContract → TutorCompiler → ClosureCritic, but keep memory off.</p><ul class="tight"><li>Deliverables: module outputs, contract logs, comparison dashboard versus B0.</li><li>Success: strict shift and public habit-break improve without control leakage.</li></ul></div><div class="gate">Gate: policy/prose split tested</div></div>
+    <div class="milestone"><div class="phase">M5</div><div><h3>Closure bridge repair loop</h3><p>Use the closure critic to repair tutor turns before learner final response when the device/action/old-new contract is underspecified.</p><ul class="tight"><li>Deliverables: repair traces and before/after compiler deltas.</li><li>Success: old-check and replacement-check rates improve without quality-warning inflation.</li></ul></div><div class="gate">Gate: action-to-re-reading lift</div></div>
+    <div class="milestone"><div class="phase">M6</div><div><h3>Device skill library</h3><p>Persist reusable devices with trigger conditions, contraindications, closure tests, success examples, and failure examples.</p><ul class="tight"><li>Deliverables: <code>skills/pedagogical_devices/*.yaml</code>, retrieval tests.</li><li>Success: similar triggers retrieve consistent devices and improve held-out anchors.</li></ul></div><div class="gate">Gate: reusable devices</div></div>
+    <div class="milestone"><div class="phase">M7</div><div><h3>Episode memory and cross-run learning</h3><p>Add outcome-indexed memory only after non-memory EDRA is measured. Memory stores trigger → move → device → closure outcome, not vague learner personality.</p><ul class="tight"><li>Deliverables: memory store, curation policy, forgetting/retirement rules.</li><li>Success: held-out generalization improves; stale hypothesis rate remains low.</li></ul></div><div class="gate">Gate: memory earns keep</div></div>
+    <div class="milestone"><div class="phase">M8</div><div><h3>Regression CI and release discipline</h3><p>Wire cached eval tests into PRs and scheduled live drift tests into nightly jobs. Prevent prompt/model/scorer updates from merging without comparison dashboard.</p><ul class="tight"><li>Deliverables: CI workflow, release checklist, report index.</li><li>Success: any regression produces a visible report before merge.</li></ul></div><div class="gate">Gate: engineering loop closed</div></div>
+  </div>
+</section>
+<section id="agents">
+  <h2><span class="anchor">11</span>Coding-agent task packet</h2>
+  <p class="lead">This section is written as direct implementation guidance for coding agents.</p>
+  <div class="callout warn">
+    <strong>Start here.</strong> Do not implement EDRA modules first. Implement manifest/schema/tests, then reproduce B0. Only after B0 is locked should you add policy/compiler/closure modules.
+  </div>
+  <h3>Task queue</h3>
+  <ol>
+    <li><strong>Create schema package:</strong> implement TypeScript or JSON Schema for <code>RunManifest</code>, <code>ScenarioCase</code>, <code>TraceSpan</code>, <code>ScoreRow</code>, <code>MoveContract</code>, <code>ItemGateResult</code>, <code>RunMetrics</code>.</li>
+    <li><strong>Add manifest freezer:</strong> hash scenario fixtures, prompts, scorer prompts, code commit, model configs, and analysis config.</li>
+    <li><strong>Implement B0 config:</strong> <code>config/edra/a19-b0-current-sidecar.yaml</code> using current sidecar code path with EDRA disabled.</li>
+    <li><strong>Implement trace writer:</strong> JSONL first; optional OpenTelemetry adapter second.</li>
+    <li><strong>Implement blind scorer normalization:</strong> every critic row parsed into the same schema; retries logged; failures counted.</li>
+    <li><strong>Implement item-gate analyzer:</strong> branch-local pressure after prefix-through, public habit-break, device performed, old check named, replacement check named, recognition 3-of-4, failure codes.</li>
+    <li><strong>Implement metrics builder:</strong> aggregate, by iteration, by scenario-arm, by critic, deltas versus B0.</li>
+    <li><strong>Implement static dashboard:</strong> plots plus sortable failure ledger with links to item artifacts.</li>
+    <li><strong>Run and lock B0.</strong></li>
+    <li><strong>Only then implement EDRA modules:</strong> EventReader, PolicySelector, DeviceLibrary, MoveContractBuilder, TutorCompiler, ClosureContractCritic, FailureLocalizer, MemoryCurator.</li>
+  </ol>
+  <h3>Failure-code enum</h3>
+  <pre><code>type FailureCode =
+  | "MEASUREMENT_SCORE_COVERAGE"
+  | "MEASUREMENT_PARSE_ERROR"
+  | "CONTROL_PREFIX_LEAKAGE"
+  | "CONTROL_ROUTINE_LEAKAGE"
+  | "CONTROL_NONE_LEAKAGE"
+  | "PRESSURE_NOT_BRANCH_LOCAL"
+  | "NO_PRIVATE_ROUTE"
+  | "NO_STRICT_SHIFT"
+  | "NO_PUBLIC_HABIT_BREAK"
+  | "DEVICE_NOT_PERFORMED"
+  | "OLD_CHECK_NOT_NAMED"
+  | "REPLACEMENT_CHECK_NOT_NAMED"
+  | "CRITIC_SPLIT"
+  | "ORIGIN_AMBIGUOUS"
+  | "QUALITY_WARNING"
+  | "SCORER_ERROR"
+  | "COST_REGRESSION";</code></pre>
+  <h3>Embedded machine-readable contract</h3>
+  <pre id="sidecar-edra-consolidated-spec-json"><code>{
+  "spec": "sidecar-edra-consolidated-technical-spec",
+  "version": "1.0",
+  "date": "2026-05-27",
+  "baseline_first": true,
+  "baseline_id": "B0_current_sidecar",
+  "primary_scenarios": ["D42", "D50", "D53"],
+  "control_scenarios": ["D4", "D25", "D26", "D45"],
+  "arms_baseline": ["prefix_baseline", "routine", "none", "peripeteia_only"],
+  "arms_intervention": ["routine", "none", "peripeteia_only", "edra_policy", "edra_policy_memory"],
+  "hard_gates": {
+    "blind_scoring_required": true,
+    "prefix_through_required": true,
+    "score_coverage_rate_min": 0.95,
+    "control_leakage_rate_max": 0.0,
+    "positive_claim_requires_quality_gate": true,
+    "positive_claim_requires_no_origin_ambiguity": true
+  },
+  "primary_metrics": [
+    "control_leakage_rate",
+    "branch_local_pressure_rate",
+    "strict_shift_at_trigger",
+    "family_match_rate",
+    "public_habit_break_rate",
+    "device_performed_rate",
+    "old_check_named_rate",
+    "replacement_check_named_rate",
+    "recognitive_closure_3of4",
+    "critic_split_rate",
+    "origin_ambiguity_rate",
+    "score_coverage_rate",
+    "quality_warning_rate"
+  ],
+  "secondary_metrics": ["trajectory_slope", "adapt_delta", "cost_per_valid_item"],
+  "edra_modules": [
+    "EventReader",
+    "StateLedger",
+    "PolicySelector",
+    "DeviceLibrary",
+    "MoveContractBuilder",
+    "TutorCompiler",
+    "ClosureContractCritic",
+    "FailureLocalizer",
+    "EpisodeMemoryCurator"
+  ],
+  "milestones": ["M0_hygiene", "M1_B0_baseline", "M2_tracing_and_plots", "M3_analyzer_hardening", "M4_policy_compiler", "M5_closure_bridge", "M6_device_library", "M7_episode_memory", "M8_regression_ci"]
+}</code></pre>
+</section>
+<section id="refs">
+  <h2><span class="anchor">12</span>Reference map</h2>
+  <p class="lead">These sources motivate the architecture and harness. Use them as design justification, not as substitutes for sidecar-specific evidence.</p>
+  <ol class="ref-list">
+    <li><strong>Paper 2.0 v3.0.106.</strong> Mechanism results: calibration and error correction supported; adaptive responsiveness null; sidecar contribution boundary added.</li>
+    <li><strong>Dramatic recognition sidecar arc, 2026-05-26/27.</strong> Clean anchors, gated loop, current action-to-re-reading boundary, archive policy.</li>
+    <li><strong>CoALA.</strong> Decomposes language agents into memory, action space, and decision-making; supports EDRA modularization. https://arxiv.org/abs/2309.02427</li>
+    <li><strong>Voyager.</strong> Skill library, feedback, and self-verification; supports reusable pedagogical-device library. https://arxiv.org/abs/2305.16291</li>
+    <li><strong>Generative Agents.</strong> Observation, memory, reflection, retrieval, and planning for social simulation; supports episode memory and social-extension path. https://arxiv.org/abs/2304.03442</li>
+    <li><strong>Reflexion.</strong> Verbal feedback and episodic memory without weight updates; supports outcome-indexed memory but warns that reflection must be tied to feedback. https://proceedings.neurips.cc/paper_files/paper/2023/hash/1b44b878bb782e6954cd888628510e90-Abstract-Conference.html</li>
+    <li><strong>OpenTelemetry GenAI semantic conventions.</strong> Useful optional export target for model spans, agent spans, metrics, and events; current status should be checked before relying on stability. https://opentelemetry.io/docs/specs/semconv/gen-ai/</li>
+    <li><strong>LangSmith evaluation docs.</strong> Useful comparison model for datasets, evaluators, experiments, regression testing, and online monitoring. https://docs.langchain.com/langsmith/evaluation</li>
+    <li><strong>Langfuse datasets and prompt management docs.</strong> Useful reference for dataset schemas, prompt versioning, trace-to-dataset workflows, and experiment runs. https://langfuse.com/docs/evaluation/experiments/datasets and https://langfuse.com/docs/prompt-management/overview</li>
+    <li><strong>MLflow LLMs & Agents docs.</strong> Useful reference for LLM/agent observability, prompt management, evaluation, and experiment tracking. https://mlflow.org/docs/latest/</li>
+    <li><strong>Promptfoo CI/CD docs.</strong> Useful reference for PR-time eval gating, quality thresholds, and cost/security checks. https://www.promptfoo.dev/docs/integrations/ci-cd/</li>
+  </ol>
+</section>
+</main>
+<footer class="footer"><div class="shell"><p>Generated as a consolidated technical specification and project plan for coding agents. Single-file static HTML; no external dependencies. Store this beside the sidecar implementation docs and treat <code>B0_current_sidecar</code> as the next required engineering step.</p></div></footer>
+</body>
+</html>
