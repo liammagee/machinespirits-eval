@@ -1402,6 +1402,12 @@ function callGeminiCli(systemPrompt, userPrompt, role) {
     const env = { ...process.env };
     delete env.CLAUDE_CODE;
     delete env.CLAUDECODE;
+    // GEMINI_CLI_TRUST_WORKSPACE=true keeps --yolo effective in untrusted dirs.
+    // Gemini CLI 0.44.0 tightened the trust check so --yolo is silently
+    // downgraded to "default" approval mode (which blocks on prompts headless
+    // mode can't service) unless the workspace is explicitly trusted. tmpDir is
+    // not in the user's trusted-dirs list; this env var is the documented bypass.
+    env.GEMINI_CLI_TRUST_WORKSPACE = 'true';
     const child = spawn('gemini', args, { stdio: ['pipe', 'pipe', 'pipe'], env, cwd: tmpDir });
     let out = '';
     let err = '';
