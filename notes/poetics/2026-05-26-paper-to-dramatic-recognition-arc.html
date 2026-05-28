@@ -2362,9 +2362,11 @@ Track card to the washer. Up-arrow name to the blue chip: force on cart. Then sa
           <p class="note note--ochre">
             <span class="note__lbl">Standing claim</span>
             Branch-valid tutor peripeteia can produce recognitive reframe in clean anchors — we have seen it.
-            One full gated iteration passed May 27. None passed May 28. The cross-author trail came back partial:
-            D42 holds; D50 and D53 collapse under Gemini at n=1. <strong>Repeat-stability and author-independence
-            both stay on the open-cases pile.</strong>
+            One full gated iteration passed May 27. None passed May 28. The extended cross-author trail came back
+            partial: D42 holds the Sonnet-CUT=75 gate 2/2 reps under Gemini 3.5 Flash; D50 and D53 collapse at n=2.
+            The arm contrast still reads — peripeteia 2/6 PASS, routine 0/6, none 0/6 — but it's an
+            <em>anchor-shaped</em> signal, not a design-shaped one. <strong>Repeat-stability on anchors other than
+            D42 and author-independence both stay on the open-cases pile.</strong>
           </p>
         </div>
       </div>
@@ -2529,8 +2531,99 @@ Track card to the washer. Up-arrow name to the blue chip: force on cart. Then sa
             </div>
             <div class="claim__counter">
               One witness per anchor on one arm. Don't take it to court yet. Extension run
-              <code>phase2-gemini-author-probe-20260528-ext</code> — 3 anchors × 3 arms × 2 reps, 18 transcripts
-              including routine and none controls — is still out in the field. Don't pre-write the report.
+              <code>phase2-gemini-author-probe-20260528-ext</code> — 3 anchors × 3 arms × 2 reps — landed next.
+              See case file 4.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="diag">
+        <div class="body">
+          <h3 class="s__sub">Case file 4 · the witness on the stand a second time</h3>
+          <p>
+            Same three suspects. Same Sonnet-only critic. This time the full lineup: peripeteia-only, no-cue,
+            routine — two reps of each. Eighteen transcripts on the docket. Generator: <code>agy</code> (Gemini 3.5
+            Flash, the on-disk session-state confirmed atomic at one fresh conversation per call). The question on
+            the docket narrowed: does D42's first showing hold up across two reps, and does the arm contrast survive
+            when no-cue and routine controls take the same stand?
+          </p>
+          <div class="spec">
+            <div class="spec-box">
+              <h4>D42 · peripeteia-only</h4>
+              <ul>
+                <li>r01: recognition · peripeteia-induced · 75 / 100 / 75 — <strong>PASS</strong></li>
+                <li>r02: recognition · peripeteia-induced · 75 / 75 / 100 — <strong>PASS</strong></li>
+                <li>repeat-stable on the anchor</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>D50 · peripeteia-only</h4>
+              <ul>
+                <li>r01: flat · 50 / 75 / 100 — FAIL (recon below cut)</li>
+                <li>r02: recognition · <em>organic</em> · 75 / 100 / 50 — FAIL (origin)</li>
+                <li>recognition surfaces but not branch-attributable</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>D53 · peripeteia-only</h4>
+              <ul>
+                <li>r01: flat · 50 / 75 / 75</li>
+                <li>r02: flat · 50 / 75 / 100</li>
+                <li>no recognition under any rep</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="spec">
+            <div class="spec-box">
+              <h4>peripeteia-only</h4>
+              <ul>
+                <li>PASS: 2 / 6</li>
+                <li>recognition-class: 3 / 6</li>
+                <li>both PASS = D42 (r01, r02); third recognition is D50 r02 (organic)</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>routine</h4>
+              <ul>
+                <li>PASS: 0 / 6</li>
+                <li>recognition-class: 1 / 6</li>
+                <li>D42 r01 leaked a recognition (organic, mech=0) — contamination flag, not a gate-passing event</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>no-cue</h4>
+              <ul>
+                <li>PASS: 0 / 6</li>
+                <li>recognition-class: 0 / 6</li>
+                <li>clean null — no recognition under any anchor/rep</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">iv.</span>
+            <h3 class="claim__h">D42 cross-author replication holds at n=2; D50 / D53 do not <span class="chip chip--moss">directional · n=2</span></h3>
+            <div class="claim__body">
+              <p>
+                D42 cleared the Sonnet-CUT=75 + peripeteia-induced gate on both reps under a stranger's pen. The
+                arm contrast survived too — recognition-class verdicts read 3 / 1 / 0 across peripeteia / routine /
+                none — but the only repeat-stable PASS-anchor is D42. D50 produces recognition without
+                peripeteia-attribution; D53 produces no recognition at all. The shape we're chasing is still
+                D42-shaped, not Gemini-shaped, not design-shaped.
+              </p>
+            </div>
+            <div class="claim__counter">
+              <strong>The r02 controls.</strong> The four no-cue / routine control anchors at rep 2
+              (<code>d4</code>, <code>d10-emphatic</code>, <code>d25-hard-trap</code>, <code>d26-hard-trap</code>)
+              didn't make it to the scoring pipeline. Quality gate caught
+              <code>too_few_learner_turns</code> on every drama — downstream of agy returning output the
+              <code>extractTutorMessage()</code> parser couldn't read, which fired the engine's hardcoded stock
+              fallback ("I see what you're saying…") three times per drama with zero learner turns. The target arm
+              was unaffected (those did parse). We took the r01 controls as sufficient evidence and didn't
+              re-run, but the parser-failure mode is now a first-class quality warning
+              (<code>tutor_stock_fallback</code>) so the next batch can't ship the same blind spot.
             </div>
           </div>
 

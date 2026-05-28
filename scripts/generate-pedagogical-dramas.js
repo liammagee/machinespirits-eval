@@ -1009,6 +1009,25 @@ function noCueReframeLeakageFailures(turns) {
   });
 }
 
+// Hardcoded stock-fallback the interaction engine emits when
+// extractTutorMessage() cannot parse a visible message out of the model output
+// (services/learnerTutorInteractionEngine.js ~line 1744). Detecting it lets us
+// flag silent parser-failure → fallback chains as a quality warning instead of
+// letting them sail through scoring as if they were real tutor turns. Match is
+// trimmed-equality so trailing whitespace doesn't hide it.
+const TUTOR_STOCK_FALLBACK_TEXT =
+  "I see what you're saying. Let me think about that for a moment. Could you tell me more about what's confusing you?";
+
+function tutorStockFallbackFailures(turns) {
+  return turns
+    .map((t, idx) => ({ ...t, ordinal: idx + 1 }))
+    .filter((t) => t.role === 'TUTOR' && String(t.text || '').trim() === TUTOR_STOCK_FALLBACK_TEXT)
+    .map((t) => ({
+      turn_number: t.turnNumber ?? t.ordinal,
+      excerpt: String(t.text || '').slice(0, 240),
+    }));
+}
+
 function qualityWarningsFor({
   tid,
   dramaId,
@@ -1063,6 +1082,17 @@ function qualityWarningsFor({
       severity: 'warning',
       count: nLearner,
       minimum: 2,
+      recommended_action: 'regenerate_or_exclude_before_scoring',
+    });
+  }
+  const stockFallbackTutorTurns = tutorStockFallbackFailures(turns);
+  if (stockFallbackTutorTurns.length) {
+    warnings.push({
+      code: 'tutor_stock_fallback',
+      severity: 'warning',
+      count: stockFallbackTutorTurns.length,
+      failures: stockFallbackTutorTurns,
+      turn_numbers: stockFallbackTutorTurns.map((failure) => failure.turn_number),
       recommended_action: 'regenerate_or_exclude_before_scoring',
     });
   }
@@ -1165,6 +1195,9 @@ function formatQualityWarning(warning) {
   }
   if (warning.code === 'no_cue_premature_closure') {
     return `${warning.tid} (${warning.drama_id}): ${warning.count} no-cue learner turn(s) used premature closure/insight language — regenerate or move to boundary suite`;
+  }
+  if (warning.code === 'tutor_stock_fallback') {
+    return `${warning.tid} (${warning.drama_id}): ${warning.count} tutor turn(s) used the empty-response stock fallback — parser failed to extract a visible message; regenerate or exclude before scoring`;
   }
   return `${warning.tid} (${warning.drama_id}): ${warning.code}`;
 }
