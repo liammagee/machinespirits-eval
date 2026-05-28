@@ -344,7 +344,7 @@ function bracketAsideText(text) {
   const chunks = String(text || '')
     .trim()
     .split(/\n+/)
-    .map((chunk) => chunk.replace(/[\[\]]/g, '').trim())
+    .map((chunk) => chunk.replace(/[[\]]/g, '').trim())
     .filter(Boolean);
   return chunks.map((chunk) => `[${chunk}]`).join('\n');
 }
@@ -537,8 +537,7 @@ function isReframeCueText(text) {
   return (
     /The learner must revoice that wording first,\s*name the earlier framing problem/i.test(cueText) ||
     (isAnchoredRevisitCueText(cueText) &&
-      (/\bold frame\b[\s\S]{0,120}\breplacement frame\b/i.test(cueText) ||
-        /three-slot reframe card/i.test(cueText)))
+      (/\bold frame\b[\s\S]{0,120}\breplacement frame\b/i.test(cueText) || /three-slot reframe card/i.test(cueText)))
   );
 }
 
@@ -1951,7 +1950,7 @@ function peripeteiaPressureCue(plan) {
       ? '[PLACARD: The answer sounds settled, but the current object still does not pass the check.]'
       : style === 'thread_metadata'
         ? '[after the latest reply, the cursor returns to the unresolved part of the task]'
-      : style === 'choric_margin'
+        : style === 'choric_margin'
           ? '[Margin note: the scene has a correct-looking answer before it has a working test.]'
           : '[The latest object-check does not settle cleanly; the marked answer and the remaining task now sit under visible pressure.]';
   return {
@@ -2084,7 +2083,7 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
   if (String(policy).includes('peripeteia')) {
     sideConstraints.learner = [
       sideConstraints.learner,
-      'Peripeteia branch: keep the pressure local to the current task. If the established route still feels unsettled, voice the misfit, hesitation, false closure, or resistance in the present object or example. After the tutor introduces a new device, gate, role, criterion, representation, or test condition, the next learner turn must use a three-part public shape in one turn: first perform the device on the current task; then name the prior pressure or misfit as a task object; then state the replacement check now carried by the device. Use explicit sentence stems close to this shape: The old check was ...; The pressure was ...; Now the replacement check is .... This earned reorientation is allowed even though there was no director look-back cue. Do not quote earlier learner wording; reorient the prior resistance in concrete task terms. Do not merely perform the action, do not merely ask a procedural follow-up after the action, and do not rely on a stock "I get it" declaration.',
+      'Peripeteia branch: keep the pressure local to the current task. If the established route still feels unsettled, voice the misfit, hesitation, false closure, or resistance in the present object or example. After the tutor introduces a new device, gate, role, criterion, representation, or test condition, the next learner turn must use a three-part public shape in one turn: first perform the device on the current task; then name the prior pressure or misfit as a task object; then state the replacement check now carried by the device. The naming step and the replacement step must each contain at least one literal phrase from the lists below — exact wording, not paraphrase, not image-substitution. PRESSURE phrases (use at least one verbatim in the naming step): "the pressure", "the misfit", "the old check", "the earlier check", "the old rule", "the prior check", "what changed", "the loose pressure", "I was treating", "I was using", "I was letting", "I was reading", "I had been treating". REPLACEMENT phrases (use at least one verbatim in the replacement step): "now the check", "now the test", "now the replacement check", "the new check", "the new test", "the new rule", "the replacement check", "the replacement test", "the replacement rule", "the check is now", "the test is now", "instead the check", "instead the test". Image-driven device language is welcome and should sit alongside these literal stems, not replace them. Worked exemplar (chemistry analogue, illustrative — adapt to the actual task): "I am reading the colour band rather than the digit on the meter — I was treating the digit as the anchor, and that was the pressure. Now the check is whether the band sits inside the green zone before I record." Here "the band" and "the green zone" carry the image-driven device language while "I was treating" and "now the check" satisfy the literal-stem requirement. This earned reorientation is allowed even though there was no director look-back cue. Do not quote earlier learner wording; reorient the prior resistance in concrete task terms. Do not merely perform the action, do not merely ask a procedural follow-up after the action, and do not rely on a stock "I get it" declaration.',
     ]
       .filter(Boolean)
       .join(' ');
@@ -2455,9 +2454,7 @@ function renderHeldOutTranscript(trace, { tid, dramaId, mode }) {
     }
     if (turn.phase === 'tutor' || turn.phase === 'learner') {
       lines.push(`### ${turn.phase === 'tutor' ? 'Tutor Public Output' : 'Learner Public Output'}`);
-      lines.push(
-        formatPublicTurnText(turn.phase === 'tutor' ? 'TUTOR' : 'LEARNER', turn.externalMessage) || '(empty)',
-      );
+      lines.push(formatPublicTurnText(turn.phase === 'tutor' ? 'TUTOR' : 'LEARNER', turn.externalMessage) || '(empty)');
       lines.push('');
     } else if (turn.phase === 'director') {
       lines.push('### Director Cue');
@@ -2546,7 +2543,7 @@ function writeGeneratedDramaArtifacts({
   trace,
   directorPlan,
   runtime,
-  publicTranscript,
+  publicTranscript: _publicTranscript,
   qualityWarnings,
   transcriptArtifacts,
   pairedContinuation = null,
@@ -3222,7 +3219,7 @@ async function main() {
   progress.finish('generation complete');
 
   // Held-out key (merge with any prior key on resume so skipped dramas survive).
-  let keyObj = baseKeyObject({
+  const keyObj = baseKeyObject({
     args,
     runtime,
     directorPolicy: revisitSummary.policy,

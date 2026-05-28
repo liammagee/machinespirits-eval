@@ -553,6 +553,17 @@ The 4-way dispatch in evaluationRunner (progressLogger → JSONL files, streamin
 ~~No tracking of judge response times.~~
 Added `judge_latency_ms` column to `evaluation_results`. Stored by `evaluate` (CLI judge) and `rejudge` (API judge) commands. Parse error rates and success rates not yet tracked (low priority) — would require adding counters to `callJudgeModel()`.
 
+### B7. Split structural-critic peripeteia rule into earned vs named reorientation (DEFERRED — conditional)
+The peripeteia rule check `peripeteia_arm_without_earned_reorientation` in `scripts/critic-poetics-structure.js` conflates two separable things into a single violation:
+- **(a) earned**: the learner enacts a semantic shift in action (mechanism-level reorientation present in the post-peripeteia turn)
+- **(b) named**: the learner names the shift with literal `PERIPETEIA_PRESSURE_FRAME` + `PERIPETEIA_REPLACEMENT_FRAME` tokens (`the pressure was`, `the old check was`, `now the check is`, `the new check is`, etc.)
+
+The rule passes only when both co-occur. This is generator-style-sensitive: codex lifts the stems verbatim from the director prompt and passes consistently; Opus paraphrases into image-driven physical reorientation and fails the literal-token regex even when (a) is plainly present (e.g. `phase2-adaptation-recognition-loop-20260527T232739Z` iter-1: 0/3 peripeteia-only items passed; "Band, not the digit" is mechanism-level reorientation that the rule cannot see).
+
+**Right fix**: split into two flags — `earned_reorientation` (pass gate, semantic shift in action) and `named_reorientation` (separate flag, stem vocabulary present). Surface both in `structure-critic/*-rules.json`; fail-gate on `earned_reorientation` only.
+
+**Why deferred**: prompt-side surgery (mandate at least one literal stem from each list with a worked exemplar) is the cheapest test of whether (a) and (b) co-occur reliably in well-formed peripeteia dramas. If iter-2 with the patched prompt passes 3/3, this becomes housekeeping (file but defer indefinitely). If iter-2 still fails the same class, the rule split is load-bearing and should be done before another paid run — at which point this entry escalates from DEFERRED to HIGH.
+
 ---
 
 ## C. Cleanup & Maintenance
