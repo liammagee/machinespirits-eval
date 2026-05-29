@@ -31,7 +31,10 @@ const PERSONAS = new Set([
 const CONDITIONS = new Set(['base', 'recognition']);
 const REVISIT_POLICIES = new Set(['none', 'anchor', 'revoice', 'reconsider', 'reframe']);
 const SPEAKERS = new Set(['learner', 'tutor', 'director']);
-const GENERATORS = new Set(['codex', 'claude']);
+const GENERATORS = new Set(['codex', 'claude', 'gemini']);
+// claude CLI reasoning tiers (passed through to generate-pedagogical-dramas.js
+// --effort; claude backend only).
+const EFFORT_LEVELS = new Set(['low', 'medium', 'high', 'xhigh', 'max']);
 
 const DEFAULT_ANSWERS = {
   title: 'Resistance In The Room',
@@ -63,6 +66,7 @@ function parseArgs(argv) {
     id: null,
     generator: 'codex',
     model: 'opus',
+    effort: null,
     maxTurns: 3,
     roleMap: null,
     answersFile: null,
@@ -106,6 +110,8 @@ function parseArgs(argv) {
       args.generator = argv[++i];
     } else if (token === '--model') {
       args.model = argv[++i];
+    } else if (token === '--effort') {
+      args.effort = argv[++i];
     } else if (token === '--max-turns') {
       args.maxTurns = Number.parseInt(argv[++i], 10);
     } else if (token === '--role-map') {
@@ -165,7 +171,8 @@ function parseArgs(argv) {
 }
 
 function validateArgs(args) {
-  if (!GENERATORS.has(args.generator)) throw new Error('--generator must be codex|claude');
+  if (!GENERATORS.has(args.generator)) throw new Error('--generator must be codex|claude|gemini');
+  if (args.effort && !EFFORT_LEVELS.has(args.effort)) throw new Error('--effort must be low|medium|high|xhigh|max');
   if (!Number.isInteger(args.maxTurns) || args.maxTurns < 1) throw new Error('--max-turns must be a positive integer');
   if (args.answers.condition && !CONDITIONS.has(args.answers.condition)) {
     throw new Error('--condition must be base|recognition');
@@ -191,6 +198,10 @@ function helpText() {
   node scripts/drama-generator.js --write-template exports/drama-generator/answers.yaml
   node scripts/drama-generator.js --answers answers.yaml --generator codex --force
   node scripts/drama-generator.js --generator codex --revisit-policy reframe --max-turns 3
+  node scripts/drama-generator.js --generator claude --model claude-opus-4-8 --effort xhigh --non-interactive --force
+
+Generators: codex (CODEX_REASONING_EFFORT, default xhigh) · claude (--model / --effort
+low|medium|high|xhigh|max) · gemini (agy/gemini-3.5-flash; no model/effort selector).
 
 Questions collected: discipline, learner level, topic/scenario, learner start state,
 misframing, desired reframe, tutor personality, learner personality, director
@@ -436,6 +447,7 @@ function buildGeneratorCommand(args, answers, paths) {
   ];
   if (args.roleMap) cmd.push('--role-map', args.roleMap);
   if (args.model && usesClaudeGeneration(args)) cmd.push('--model', args.model);
+  if (args.effort && usesClaudeGeneration(args)) cmd.push('--effort', args.effort);
   if (args.mock) cmd.push('--mock');
   if (args.force) cmd.push('--force');
   return cmd;
@@ -458,6 +470,7 @@ function writePlan({ args, answers, runId, paths, spec, command }) {
         generator: args.generator,
         roleMap: args.roleMap || null,
         claudeModel: usesClaudeGeneration(args) ? args.model : null,
+        claudeEffort: usesClaudeGeneration(args) ? args.effort : null,
         repeats: 1,
         stressRepeats: 0,
         maxTurns: args.maxTurns,

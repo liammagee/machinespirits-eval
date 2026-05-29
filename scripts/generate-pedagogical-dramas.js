@@ -22,7 +22,10 @@
  * `--system-prompt` flag REPLACES the default system prompt, which suppresses the
  * explanatory output-style "★ Insight" additions that would otherwise leak into
  * generated turns; the child-env unsets ANTHROPIC_API_KEY so the CLI uses the
- * subscription window instead of billing per call. The codex bridge runs at an
+ * subscription window instead of billing per call. A --effort <low|medium|high|
+ * xhigh|max> is passed through to the claude CLI's reasoning tier and recorded in
+ * provenance (e.g. claude-opus-4-8 @xhigh); left unset, the CLI default applies, so
+ * the original default-effort claude arm is unchanged. The codex bridge runs at an
  * explicit reasoning tier (CODEX_REASONING_EFFORT, default xhigh) so the setting
  * is recorded by the run, not silently inherited from ~/.codex/config.toml.
  *
@@ -56,9 +59,11 @@
  *   node scripts/generate-pedagogical-dramas.js --force          # overwrite existing sample dir
  *
  * Flags: --seed N (T-id shuffle, default 20260520) · --max-turns N (default 6)
- *        --model <alias> (claude CLI --model, default opus) · --out-dir / --key
- *        --delib-dir / --transcripts-dir / --writing-pad-dir
- *        --generator claude|codex · --role-map "tutor=codex,learner=claude" (mixed)
+ *        --model <alias> (claude CLI --model, default opus; e.g. claude-opus-4-8)
+ *        --effort low|medium|high|xhigh|max (claude CLI reasoning tier; claude
+ *          backend only — codex uses CODEX_REASONING_EFFORT, agy has no effort knob)
+ *        --out-dir / --key · --delib-dir / --transcripts-dir / --writing-pad-dir
+ *        --generator claude|codex|gemini · --role-map "tutor=codex,learner=claude" (mixed)
  *        --director-revisit-cue (anchor shorthand) · --director-revisit-policy none|anchor|revoice|reconsider|reframe
  *        --director-revisit-anchor latest|opening|misframing-candidate
  *        --director-variation-key <repeat-or-batch-id>
@@ -89,6 +94,10 @@ const DIALOGUE_APPROACHES_DB = path.join(CAL_DIR, 'dialogue-approaches.yaml');
 const DIRECTOR_REVISIT_POLICIES = new Set(['none', 'anchor', 'revoice', 'reconsider', 'reframe']);
 const DIRECTOR_REVISIT_ANCHORS = new Set(['latest', 'opening', 'misframing-candidate']);
 const TUTOR_ADAPTATION_POLICIES = new Set(['none', 'routine', 'uptake', 'peripeteia', 'uptake+peripeteia']);
+// claude CLI reasoning tiers (`claude --effort <level>`). codex tops out at xhigh;
+// the claude CLI adds a `max` tier above it. Used by the claude backend only —
+// agy exposes no effort flag, and codex reads CODEX_REASONING_EFFORT (env).
+const CLAUDE_EFFORT_LEVELS = new Set(['low', 'medium', 'high', 'xhigh', 'max']);
 const PAIRED_ADAPTATION_ARMS = {
   routine: { revisitPolicy: 'none', tutorAdaptationPolicy: 'routine' },
   none: { revisitPolicy: 'none', tutorAdaptationPolicy: 'none' },
@@ -106,6 +115,7 @@ function parseArgs(argv) {
     seed: 20260520,
     maxTurns: 6,
     model: 'opus',
+    effort: null,
     generator: 'claude',
     spec: null,
     pedagogyDb: PEDAGOGICAL_APPROACHES_DB,
@@ -139,6 +149,7 @@ function parseArgs(argv) {
     else if (t === '--seed') a.seed = parseInt(argv[++i], 10);
     else if (t === '--max-turns') a.maxTurns = parseInt(argv[++i], 10);
     else if (t === '--model') a.model = argv[++i];
+    else if (t === '--effort') a.effort = argv[++i];
     else if (t === '--generator') a.generator = argv[++i];
     else if (t === '--spec') a.spec = path.resolve(argv[++i]);
     else if (t === '--pedagogy-db') a.pedagogyDb = path.resolve(argv[++i]);
@@ -173,6 +184,8 @@ function parseArgs(argv) {
   if (!Number.isInteger(a.maxTurns) || a.maxTurns < 1) throw new Error('--max-turns must be a positive integer');
   if (a.generator !== 'claude' && a.generator !== 'codex' && a.generator !== 'gemini')
     throw new Error(`--generator must be claude|codex|gemini (got ${a.generator})`);
+  if (a.effort && !CLAUDE_EFFORT_LEVELS.has(a.effort))
+    throw new Error(`--effort must be low|medium|high|xhigh|max (got ${a.effort})`);
   if (!Number.isInteger(a.tidStart) || a.tidStart < 0) throw new Error('--tid-start must be a non-negative integer');
   if (!Number.isInteger(a.generationConcurrency) || a.generationConcurrency < 1) {
     throw new Error('--generation-concurrency must be a positive integer');
@@ -208,17 +221,37 @@ function parseArgs(argv) {
   }
   a.spec = a.spec || DRAMAS_SPEC;
   // Default output locations are GENERATOR-AWARE so the arms never collide:
-  //   claude → phase2-sample-v2 (the running Arm-A set); codex → phase2-sample-codex;
+  //   claude (default effort) → phase2-sample-v2 (the running Arm-A set);
+  //   claude --effort <lvl>   → phase2-sample-claude-<lvl> (its own arm, e.g. the
+  //     `claude-opus-4-8 @xhigh` set, so a pinned-reasoning run never overwrites Arm-A);
+  //   codex → phase2-sample-codex; gemini → phase2-sample-gemini;
   //   a --role-map → phase2-sample-mixed (distinct maps share it — pass --out-dir to
   //   separate them). mock adds a -mock suffix so a wiring smoke never clobbers a
-  //   real labelling set.
-  const base = a.roleMap ? 'mixed' : a.generator === 'codex' ? 'codex' : 'v2';
+  //   real labelling set. Real comparison runs usually pass explicit --out-dir anyway.
+  const base = a.roleMap
+    ? 'mixed'
+    : a.generator === 'codex'
+      ? 'codex'
+      : a.generator === 'gemini'
+        ? 'gemini'
+        : a.effort
+          ? `claude-${a.effort}`
+          : 'v2';
   const suffix = a.mock ? '-mock' : '';
   a.outDir = a.outDir || path.join(CAL_DIR, `phase2-sample-${base}${suffix}`);
   a.delibDir = a.delibDir || path.join(CAL_DIR, `phase2-deliberation-${base}${suffix}`);
   a.transcriptsDir = a.transcriptsDir || path.join(CAL_DIR, `phase2-transcripts-${base}${suffix}`);
   a.keyPath = a.keyPath || path.join(CAL_DIR, `phase2-key-${base}${suffix}.yaml`);
   a.writingPadDir = a.writingPadDir || path.join(a.delibDir, '.writing-pad');
+  // --effort drives the claude backend only. Warn (don't throw) if it can't reach
+  // claude: a pure codex/gemini run, or a --role-map that routes no role to claude.
+  const claudeReachable = a.generator === 'claude' || (a.roleMap && Object.values(a.roleMap).includes('claude'));
+  if (a.effort && !claudeReachable) {
+    console.warn(
+      `[warn] --effort ${a.effort} only affects the claude backend; generator=${a.generator} ignores it ` +
+        `(codex reads CODEX_REASONING_EFFORT, agy exposes no effort flag)`,
+    );
+  }
   return a;
 }
 
@@ -1251,19 +1284,32 @@ function withUsage(result, { provider, model, provenance }) {
 
 // ── claude-code CLI bridge (lifted from realLLM.js:callClaudeCli) ────────────
 
-const CLAUDE_CLI_TIMEOUT_MS = 360_000;
+// High reasoning tiers (xhigh/max) on heavy prompts (e.g. the director's scene
+// card) can take ~100s+ per call; GEN_DRAMAS_CLAUDE_TIMEOUT_MS raises the per-call
+// ceiling for those runs without changing the default.
+const CLAUDE_CLI_TIMEOUT_MS = Number(process.env.GEN_DRAMAS_CLAUDE_TIMEOUT_MS) || 360_000;
 const CLI_TRACE = process.env.GEN_DRAMAS_CLI_TRACE === '1';
 
-function callClaudeCli(systemPrompt, userPrompt, model, role) {
+function callClaudeCli(systemPrompt, userPrompt, model, effort, role) {
   const start = Date.now();
   return new Promise((resolve, reject) => {
     // --system-prompt REPLACES the default system prompt → suppresses ambient
     // output-style additions (the "★ Insight" block) that would pollute turns.
     const args = ['-p', '-', '--output-format', 'text', '--system-prompt', systemPrompt];
     if (model) args.push('--model', model);
+    // --effort <low|medium|high|xhigh|max>: claude CLI reasoning tier. Unset → CLI
+    // default (preserves the original default-effort claude arm); pinned → recorded
+    // in provenance below so the run carries its own reasoning setting.
+    if (effort) args.push('--effort', effort);
     const env = { ...process.env };
     delete env.CLAUDE_CODE;
     delete env.CLAUDECODE;
+    // The run's --effort flag is the single source of truth for the reasoning tier.
+    // A parent session may export CLAUDE_CODE_EFFORT_LEVEL (e.g. =max); left in the
+    // child env it silently overrides --effort, so the run *records* xhigh but
+    // *executes* max — both a latency surprise and a provenance lie. Strip it so
+    // behaviour and provenance agree.
+    delete env.CLAUDE_CODE_EFFORT_LEVEL;
     delete env.ANTHROPIC_API_KEY; // force subscription window, not metered API
     delete env.ANTHROPIC_AUTH_TOKEN;
     const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env });
@@ -1298,7 +1344,7 @@ function callClaudeCli(systemPrompt, userPrompt, model, role) {
             backend: 'claude',
             cli: 'claude',
             model: model || 'default',
-            reasoningEffort: null,
+            reasoningEffort: effort || null,
             systemPrompt,
             userPrompt,
             latencyMs,
@@ -1310,6 +1356,7 @@ function callClaudeCli(systemPrompt, userPrompt, model, role) {
               '--system-prompt',
               `<sha256:${sha256Short(systemPrompt)}>`,
               ...(model ? ['--model', model] : []),
+              ...(effort ? ['--effort', effort] : []),
             ],
           }),
         });
@@ -1496,13 +1543,13 @@ function callGeminiCli(systemPrompt, userPrompt, role) {
 
 // runInteraction's llmCall contract: (model, systemPrompt, messages, opts) →
 // {content, usage}. We IGNORE the per-profile model and force claude-code.
-function makeClaudeLlmCall(modelAlias) {
+function makeClaudeLlmCall(modelAlias, effort) {
   return async function claudeLlmCall(_model, systemPrompt, messages, opts = {}) {
     const userPrompt = (messages || []).map((m) => m.content).join('\n');
-    const result = await callClaudeCli(systemPrompt, userPrompt, modelAlias, opts.agentRole || 'gen');
+    const result = await callClaudeCli(systemPrompt, userPrompt, modelAlias, effort, opts.agentRole || 'gen');
     return withUsage(result, {
       provider: 'claude-code',
-      model: `claude/${modelAlias || 'default'}`,
+      model: `claude/${modelAlias || 'default'}${effort ? `@${effort}` : ''}`,
       provenance: result.provenance,
     });
   };
@@ -1622,8 +1669,8 @@ function resolveBackend(agentRole, roleMap, fallback) {
 // Router llmCall: dispatch each role to its resolved backend. Under --mock both
 // backends are the same stub, but the route decision is still computed + logged
 // (GEN_DRAMAS_CLI_TRACE=1) so routing can be smoke-tested for free.
-function makeRouterLlmCall({ roleMap, fallback, claudeModelAlias, mock }) {
-  const claudeBridge = mock ? makeMockLlmCall('claude') : makeClaudeLlmCall(claudeModelAlias);
+function makeRouterLlmCall({ roleMap, fallback, claudeModelAlias, claudeEffort, mock }) {
+  const claudeBridge = mock ? makeMockLlmCall('claude') : makeClaudeLlmCall(claudeModelAlias, claudeEffort);
   const codexBridge = mock ? makeMockLlmCall('codex') : makeCodexLlmCall();
   const geminiBridge = mock ? makeMockLlmCall('gemini') : makeGeminiLlmCall();
   return async function routerLlmCall(model, systemPrompt, messages, opts = {}) {
@@ -2498,6 +2545,15 @@ function formatProvenance(entry) {
   return parts.join(' | ');
 }
 
+// Generator/model/effort label for run-summary + held-out trace JSON, single-
+// generator path: codex@<effort>, gemini/<model>, or claude <model>[@<effort>].
+// (The key object handles mock→null and role-map→"mixed (…)" separately, inline.)
+function generatorModelLabel(args) {
+  if (args.generator === 'codex') return `codex@${CODEX_REASONING_EFFORT}`;
+  if (args.generator === 'gemini') return `gemini/${GEMINI_MODEL}`;
+  return `${args.model}${args.effort ? `@${args.effort}` : ''}`;
+}
+
 function formatHeldOutEntryContent(entry) {
   const raw = String(entry?.content || '').trim();
   if (!raw) return raw;
@@ -2699,7 +2755,7 @@ function writeGeneratedDramaArtifacts({
           tutor_adaptation_policy: d._tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none',
           director_variation_key: d._directorVariationKey || null,
           stage_direction_style: stageDirectionStyleFor(d)?.id || null,
-          model: args.generator === 'codex' ? `codex@${CODEX_REASONING_EFFORT}` : args.model,
+          model: generatorModelLabel(args),
           codex_reasoning_effort: CODEX_REASONING_EFFORT,
           writing_pad: runtime.writingPad,
           transcript_artifacts: transcriptArtifacts,
@@ -2745,10 +2801,8 @@ function baseKeyObject({
     model: args.mock
       ? null
       : args.roleMap
-        ? `mixed (claude=${args.model}, codex=config-default@${CODEX_REASONING_EFFORT})`
-        : args.generator === 'codex'
-          ? `codex@${CODEX_REASONING_EFFORT}`
-          : args.model,
+        ? `mixed (claude=${args.model}${args.effort ? `@${args.effort}` : ''}, codex=config-default@${CODEX_REASONING_EFFORT})`
+        : generatorModelLabel(args),
     codex_reasoning_effort: CODEX_REASONING_EFFORT,
     writing_pad: runtime.writingPad,
     director_mode: args.directorMode,
@@ -3111,7 +3165,9 @@ async function main() {
       ? `REAL (mixed: ${roleMapLabel}; fallback=${args.generator})`
       : args.generator === 'codex'
         ? 'REAL (codex exec)'
-        : `REAL (claude --model ${args.model})`;
+        : args.generator === 'gemini'
+          ? `REAL (agy/${GEMINI_MODEL})`
+          : `REAL (claude --model ${args.model}${args.effort ? ` --effort ${args.effort}` : ''})`;
   console.log(`\n══ Phase-2 de-confound generator — ${genLabel} ══`);
   console.log(
     `  generator: ${args.roleMap ? 'mixed' : args.generator} · dramas: ${order.length} · maxTurns: ${args.maxTurns} · ` +
@@ -3157,6 +3213,7 @@ async function main() {
         roleMap: args.roleMap,
         fallback: args.generator,
         claudeModelAlias: args.model,
+        claudeEffort: args.effort,
         mock: args.mock,
       })
     : args.mock
@@ -3165,7 +3222,7 @@ async function main() {
         ? makeCodexLlmCall()
         : args.generator === 'gemini'
           ? makeGeminiLlmCall()
-          : makeClaudeLlmCall(args.model);
+          : makeClaudeLlmCall(args.model, args.effort);
   if (args.pairedContinuationPolicies || args.pairedAdaptationArms) {
     await generatePairedContinuations({ args, order, runtime, llmCall });
     return;
@@ -3321,12 +3378,7 @@ async function main() {
                 tutor_adaptation_policy: d._tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none',
                 director_variation_key: d._directorVariationKey || null,
                 stage_direction_style: stageDirectionStyleFor(d)?.id || null,
-                model:
-                  args.generator === 'codex'
-                    ? `codex@${CODEX_REASONING_EFFORT}`
-                    : args.generator === 'gemini'
-                      ? `gemini/${GEMINI_MODEL}`
-                      : args.model,
+                model: generatorModelLabel(args),
                 codex_reasoning_effort: CODEX_REASONING_EFFORT,
                 writing_pad: runtime.writingPad,
                 transcript_artifacts: transcriptArtifacts,
