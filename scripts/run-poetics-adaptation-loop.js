@@ -90,6 +90,7 @@ function parseArgs(argv) {
     skipExistingScores: false,
     allowQualityWarnings: false,
     failOnGate: true,
+    originHardGate: false,
     reportPrefix: null,
   };
 
@@ -107,6 +108,7 @@ function parseArgs(argv) {
     else if (token === '--recognition-vote-cut')
       args.recognitionVoteCut = parsePositiveInt(argv[++i], '--recognition-vote-cut');
     else if (token === '--origin-vote-cut') args.originVoteCut = parsePositiveInt(argv[++i], '--origin-vote-cut');
+    else if (token === '--origin-hard-gate') args.originHardGate = true;
     else if (token === '--action-vote-cut') args.actionVoteCut = parsePositiveInt(argv[++i], '--action-vote-cut');
     else if (token === '--control-max-recognition-votes') {
       args.controlMaxRecognitionVotes = Number(argv[++i]);
@@ -421,6 +423,9 @@ function summarizeItem(item, args) {
     description: 'Adaptation loop gate',
   });
   const origins = originCounts(item.scores);
+  const originInducedVotes = origins.peripeteia_induced || 0;
+  // Reported secondary diagnostic, NOT a pass-gate by default (see D1 below).
+  const originAmbiguous = originInducedVotes < args.originVoteCut;
   const actionalVotes = item.scores.filter((score) => scoreActionalValue(score) >= 75).length;
   const tutorMechanismVotes = item.scores.filter((score) => scoreTutorMechanismValue(score) >= 75).length;
   const branchValidity = item.adaptation?.metadata?.branch_validity || {};
@@ -452,7 +457,13 @@ function summarizeItem(item, args) {
     if (consensus.recognitionVotes < args.recognitionVoteCut || consensus.claimStatus !== 'claimable') {
       failures.push(consensus.claimStatus === 'boundary' ? 'critic_split' : 'recognition_not_produced');
     }
-    if ((origins.peripeteia_induced || 0) < args.originVoteCut) {
+    // D1: origin attribution (peripeteia_induced vs organic) is a REPORTED secondary
+    // diagnostic, not a pass-gate, unless --origin-hard-gate is set. peripeteia_induced
+    // is derived from a brittle, author-family-dependent mechanism gate and is
+    // critic-unreachable as a 3/4 cross-family consensus, so gating on it fails items
+    // whose drama is sound (notes/poetics/2026-05-28-edra-m3-surgery-spec.md D1).
+    // originAmbiguous is always recorded for origin_ambiguity_rate reporting.
+    if (args.originHardGate && originAmbiguous) {
       failures.push('organic_or_ambiguous_recognition');
     }
     if (actionalVotes < args.actionVoteCut) failures.push('action_gap');
@@ -476,6 +487,8 @@ function summarizeItem(item, args) {
     scoreCount: item.scores.length,
     consensus,
     origins,
+    originInducedVotes,
+    originAmbiguous,
     actionalVotes,
     tutorMechanismVotes,
     adaptationGate,
@@ -554,7 +567,12 @@ function renderMarkdown(summary) {
   lines.push(`- Arms: ${summary.config.targetArms.join(', ')}`);
   lines.push(`- Critics: ${summary.config.critics.join(', ')}`);
   lines.push(
-    `- Required: controls <= ${summary.config.controlMaxRecognitionVotes} recognition vote(s); peripeteia recognition/action/origin votes >= ${summary.config.recognitionVoteCut}/${summary.config.actionVoteCut}/${summary.config.originVoteCut}`,
+    `- Required: controls <= ${summary.config.controlMaxRecognitionVotes} recognition vote(s); peripeteia recognition/action votes >= ${summary.config.recognitionVoteCut}/${summary.config.actionVoteCut}`,
+    `- Origin: peripeteia_induced >= ${summary.config.originVoteCut} ${
+      summary.config.originHardGate
+        ? '(HARD GATE)'
+        : '(reported diagnostic — not gated; pass --origin-hard-gate to enforce)'
+    }`,
   );
   lines.push('');
   lines.push(`## Iterations`);
@@ -632,6 +650,7 @@ function runLoop(args) {
       minCritics: args.minCritics,
       recognitionVoteCut: args.recognitionVoteCut,
       originVoteCut: args.originVoteCut,
+      originHardGate: args.originHardGate,
       actionVoteCut: args.actionVoteCut,
       controlMaxRecognitionVotes: args.controlMaxRecognitionVotes,
       dryRun: args.dryRun,

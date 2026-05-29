@@ -221,4 +221,42 @@ describe('run-poetics-adaptation-loop', () => {
       db.close();
     }
   });
+
+  it('reports origin ambiguity as a diagnostic without gating, unless --origin-hard-gate (D1)', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-loop-origin-'));
+    const db = openPoeticsStore(path.join(root, 'poetics.db'));
+    try {
+      const runId = 'loop-origin';
+      seedRun(db, runId);
+      // Recognition still holds 4/4, but the origin is ORGANIC (peripeteia_induced = 0
+      // < cut): the critic-unreachable case the old origin gate failed on. Everything
+      // else (recognition, actional, mechanism, branch) stays passing, so origin is
+      // the only thing under test.
+      const peripeteiaId = `${runId}:target-r01:peripeteia-only:T01`;
+      for (const critic of DEFAULT_CRITICS) {
+        addScore(db, peripeteiaId, critic, {
+          formClass: 'recognition',
+          origin: 'organic',
+          actional: 75,
+          mechanism: 75,
+        });
+      }
+
+      // Default: origin is a reported diagnostic, not a gate -> the run still passes.
+      const gate = evaluateRunGate(db, gateArgs(runId));
+      const peri = gate.items.find((item) => item.arm === 'peripeteia-only');
+      assert.equal(peri.originInducedVotes, 0);
+      assert.equal(peri.originAmbiguous, true);
+      assert.ok(!peri.failures.includes('organic_or_ambiguous_recognition'));
+      assert.equal(gate.pass, true);
+
+      // Opt-in --origin-hard-gate restores the old strict behavior.
+      const strict = evaluateRunGate(db, { ...gateArgs(runId), originHardGate: true });
+      const periStrict = strict.items.find((item) => item.arm === 'peripeteia-only');
+      assert.ok(periStrict.failures.includes('organic_or_ambiguous_recognition'));
+      assert.equal(strict.pass, false);
+    } finally {
+      db.close();
+    }
+  });
 });
