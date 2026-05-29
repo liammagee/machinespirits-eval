@@ -6,6 +6,28 @@ dimensions each adversarially verified, 1 synthesis). This note is the durable
 artifact; the raw run is in the session task output. Code claims below were
 spot-checked against the live source (anchors cited inline).
 
+## Status (2026-05-28, branch `effort-arm-edra-plan`)
+
+- **DONE — FIX 1** (mechanism detector de-alias + public-route disjunct): `5075ee7`.
+  Validated offline: 4 D42/D50 peripeteia items flip false→true (49→67–80), 0 control
+  leak across all 3 iterations. +2 golden fixtures.
+- **DONE — D1** (origin demotion to reported diagnostic; `--origin-hard-gate` opt-in):
+  `526dbb6`. +1 test.
+- **DONE — FIX 3** (quality-gate text parity; quoted-truncation refinement): `409de52`.
+  +2 golden fixtures.
+- **DONE — FIX 4 (retry core)** (`withScorerRetry`, transient-only, retryCount): `3338fd5`.
+  +4 unit tests. Full suite 2637 green after all four.
+- **DEFERRED — FIX 4 (gate decoupling + 3-of-4 quorum fallback)**: contingent on a
+  DeepSeek reliability probe (N~20). If structural, swap the critic, don't retry into a
+  slow null.
+- **TODO — FIX 2** (second mechanism lexicon): lower priority — FIX 1 already routes
+  D42/D50 around it; matters for non-instrumented dramas + score magnitude.
+- **TODO — FIX 5** (emit `item_gates.jsonl` + paired-increment aggregator): the
+  positive-claim backbone.
+- **TODO — paper §**: amend `positive_claim_requires_no_origin_ambiguity` with the
+  per-critic rationale (pre-register before the next run); honest current verdict is
+  null/weak-positive.
+
 ## The reframe (this overturns the "saturation" premise)
 
 The adaptation-recognition loop's `organic_recognition` failure is **not** critic
