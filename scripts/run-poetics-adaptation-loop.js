@@ -80,6 +80,7 @@ function parseArgs(argv) {
     structureCritic: 'rules',
     structureCriticConcurrency: 1,
     generator: null,
+    effort: null,
     rootParent: CAL_DIR,
     dbPath: null,
     mock: false,
@@ -123,6 +124,7 @@ function parseArgs(argv) {
     else if (token === '--structure-critic-concurrency') {
       args.structureCriticConcurrency = parsePositiveInt(argv[++i], '--structure-critic-concurrency');
     } else if (token === '--generator') args.generator = argv[++i];
+    else if (token === '--effort') args.effort = argv[++i];
     else if (token === '--root-parent') args.rootParent = path.resolve(argv[++i]);
     else if (token === '--db') args.dbPath = path.resolve(argv[++i]);
     else if (token === '--report-prefix') args.reportPrefix = path.resolve(argv[++i]);
@@ -235,6 +237,7 @@ function buildIterationPlan(args, iteration) {
     '--fail-on-structure-critic',
   ];
   if (args.generator) production.push('--generator', args.generator);
+  if (args.effort) production.push('--claude-effort', args.effort);
   if (args.mock) production.push('--mock');
   if (args.dryRun) production.push('--dry-run');
   if (args.force) production.push('--force');

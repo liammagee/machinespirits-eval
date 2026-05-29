@@ -169,6 +169,32 @@ describe('run-poetics-adaptation-loop', () => {
     assert.ok(plan.commands.production.includes('rules'));
   });
 
+  it('forwards --effort to the production batch as --claude-effort', () => {
+    const args = parseArgs([
+      '--batch-prefix',
+      'loop-test',
+      '--run-stamp',
+      '20260529T120000Z',
+      '--generator',
+      'claude',
+      '--effort',
+      'medium',
+      '--generation-concurrency',
+      '4',
+      '--max-iterations',
+      '1',
+      '--required-passes',
+      '1',
+      '--dry-run',
+    ]);
+    const plan = buildIterationPlan(args, 1);
+    const idx = plan.commands.production.indexOf('--claude-effort');
+    assert.ok(idx >= 0, '--claude-effort present in the production command');
+    assert.equal(plan.commands.production[idx + 1], 'medium');
+    const ci = plan.commands.production.indexOf('--generation-concurrency');
+    assert.equal(plan.commands.production[ci + 1], '4');
+  });
+
   it('passes when controls stay negative and peripeteia induces branch-valid recognition', () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-loop-pass-'));
     const db = openPoeticsStore(path.join(root, 'poetics.db'));

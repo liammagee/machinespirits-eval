@@ -96,6 +96,7 @@ function parseArgs(argv) {
     generator: 'codex',
     roleMap: null,
     claudeModel: 'opus',
+    claudeEffort: null,
     repeats: 3,
     stressRepeats: 1,
     critics: DEFAULT_CRITICS,
@@ -131,6 +132,7 @@ function parseArgs(argv) {
     else if (t === '--generator') args.generator = argv[++i];
     else if (t === '--role-map') args.roleMap = argv[++i];
     else if (t === '--claude-model') args.claudeModel = argv[++i];
+    else if (t === '--claude-effort') args.claudeEffort = argv[++i];
     else if (t === '--repeats') args.repeats = parseInt(argv[++i], 10);
     else if (t === '--stress-repeats') args.stressRepeats = parseInt(argv[++i], 10);
     else if (t === '--critics') args.critics = splitCsv(argv[++i]);
@@ -304,6 +306,7 @@ function buildPlan(rawArgs = {}) {
     generator: args.generator,
     roleMap: args.roleMap,
     claudeModel: args.claudeModel,
+    claudeEffort: args.claudeEffort,
     repeats: args.repeats,
     stressRepeats: args.stressRepeats,
     maxTurns: args.maxTurns,
@@ -352,6 +355,7 @@ function generationCommand(unit, args) {
   if (unit.directorVariationKey) cmd.push('--director-variation-key', unit.directorVariationKey);
   if (args.roleMap) cmd.push('--role-map', args.roleMap);
   if (args.claudeModel && usesClaudeGeneration(args)) cmd.push('--model', args.claudeModel);
+  if (args.claudeEffort && usesClaudeGeneration(args)) cmd.push('--effort', args.claudeEffort);
   if (args.mock) cmd.push('--mock');
   if (args.force) cmd.push('--force');
   return cmd;
