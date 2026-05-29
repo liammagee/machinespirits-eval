@@ -210,6 +210,49 @@ function parseJsonResponse(content) {
   }
 }
 
+// EDRA FIX 4: bounded retry for a critic call+parse. A single transient OpenRouter
+// failure (DeepSeek 'No content', 429/5xx, an aborted/timed-out request) or a
+// garbled/truncated body that fails to parse drops a critic below the loop's
+// 4-critic quorum and discards an otherwise-unanimous item as insufficient_scores.
+// Default-fail-fast: only explicitly transient classes retry; deterministic errors
+// (missing key, unknown model, 4xx auth/bad-request) throw immediately. NOTE: if
+// DeepSeek's empty/truncated rate is STRUCTURAL rather than transient, retry buys a
+// slow null — probe its reliability (N~20) and swap the critic instead.
+function isTransientScorerError(err) {
+  const m = String(err?.message || err || '');
+  return /No content|produced no output|Failed to parse JSON|Unexpected end of JSON|\babort(?:ed)?\b|timed?[ _]?out|ECONNRESET|ETIMEDOUT|EAI_AGAIN|fetch failed|socket hang up|network error|OpenRouter (?:408|429|5\d\d)\b/i.test(
+    m,
+  );
+}
+
+const SCORER_MAX_ATTEMPTS = Math.max(1, Number(process.env.POETICS_SCORER_ATTEMPTS) || 3);
+const SCORER_BACKOFF_MS = Number.isFinite(Number(process.env.POETICS_SCORER_BACKOFF_MS))
+  ? Number(process.env.POETICS_SCORER_BACKOFF_MS)
+  : 600;
+const sleep = (ms) => (ms > 0 ? new Promise((resolve) => setTimeout(resolve, ms)) : Promise.resolve());
+
+// Runs an async thunk with bounded retry on transient failures. Returns
+// { value, retryCount }. On the final failure (attempts exhausted or a
+// non-transient error) rethrows with err.retryCount attached. The thunk is
+// injectable so the retry policy is unit-testable without a network call.
+async function withScorerRetry(fn, { attempts = SCORER_MAX_ATTEMPTS, backoffMs = SCORER_BACKOFF_MS } = {}) {
+  let lastErr;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      const value = await fn();
+      return { value, retryCount: attempt - 1 };
+    } catch (err) {
+      lastErr = err;
+      if (attempt >= attempts || !isTransientScorerError(err)) {
+        if (lastErr && typeof lastErr === 'object') lastErr.retryCount = attempt - 1;
+        throw lastErr;
+      }
+      await sleep(backoffMs * 2 ** (attempt - 1));
+    }
+  }
+  throw lastErr;
+}
+
 async function runWithConcurrency(tasks, concurrency) {
   const results = [];
   let index = 0;
@@ -356,17 +399,18 @@ function mockResponse(dims) {
 
 async function scoreItem({ id, text }, dims, modelKey, mock) {
   const prompt = buildCriticPrompt(dims, text);
-  let raw;
-  try {
-    raw = mock ? mockResponse(dims) : await callModel(prompt, modelKey);
-  } catch (err) {
-    return { id, error: err.message };
-  }
   let parsed;
+  let retryCount = 0;
   try {
-    parsed = parseJsonResponse(raw);
+    if (mock) {
+      parsed = parseJsonResponse(mockResponse(dims));
+    } else {
+      ({ value: parsed, retryCount } = await withScorerRetry(async () =>
+        parseJsonResponse(await callModel(prompt, modelKey)),
+      ));
+    }
   } catch (err) {
-    return { id, error: `parse: ${err.message}` };
+    return { id, error: err.message, retryCount: err.retryCount ?? retryCount };
   }
   const dimScores = {};
   const allFlags = [];
@@ -378,7 +422,7 @@ async function scoreItem({ id, text }, dims, modelKey, mock) {
     evidence[d.key] = dr.evidence || '';
     for (const f of flags) allFlags.push(`${d.key}:${f}`);
   }
-  return { id, overall: computeOverall(dims, dimScores), dimScores, evidence, flags: allFlags };
+  return { id, overall: computeOverall(dims, dimScores), dimScores, evidence, flags: allFlags, retryCount };
 }
 
 // ── Gate evaluation ───────────────────────────────────────────────────────────
@@ -595,4 +639,4 @@ if (invokedDirectly) {
 export { evaluateGate, normalizeForMatch, applyEvidenceGate, computeOverall, loadRubric, buildCriticPrompt };
 // Shared, behaviour-neutral plumbing reused by the Phase-1 scorer (no scoring
 // logic — exporting these does not change any Phase-0 computed value).
-export { callModel, parseJsonResponse, runWithConcurrency, MODEL_MAP };
+export { callModel, parseJsonResponse, runWithConcurrency, MODEL_MAP, withScorerRetry, isTransientScorerError };

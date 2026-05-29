@@ -59,7 +59,13 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import yaml from 'yaml';
-import { callModel, parseJsonResponse, runWithConcurrency, MODEL_MAP } from './score-poetics-calibration.js';
+import {
+  callModel,
+  parseJsonResponse,
+  runWithConcurrency,
+  MODEL_MAP,
+  withScorerRetry,
+} from './score-poetics-calibration.js';
 import { evidencePresent, to100 } from './score-poetics-phase1.js';
 import { createProgressReporter } from './progress.js';
 import { quadraticWeightedKappa, cohenKappa } from './compare-poetics-critics.js';
@@ -70,7 +76,6 @@ const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
 const CALIB_DIR = path.join(ROOT, 'config/poetics-calibration');
 const SAMPLE_DIR_DEFAULT = path.join(CALIB_DIR, 'phase2-sample');
-const KEY_PATH = path.join(CALIB_DIR, 'phase2-key.yaml');
 const EXPORTS_DIR = path.join(ROOT, 'exports');
 
 // Pre-registered cuts (§4.3). Score→0-100 map is {1:0,2:25,3:50,4:75,5:100}; the
@@ -344,8 +349,14 @@ function hasPeripeteiaMechanismShift(evidence, justification = '') {
   const likelyRoutineNarrowing =
     /\b(?:keep the test narrow|check one thing first|put a pencil under|one ordinary check|same worked example|same route|continue)\b/.test(
       text,
-    ) && !/\b(?:old route|new route|no longer|stops?|has done its job|cannot|go to print|release gate|blank)\b/.test(text);
-  return { stockTaking, publicMechanism, likelyRoutineNarrowing, passes: stockTaking && publicMechanism && !likelyRoutineNarrowing };
+    ) &&
+    !/\b(?:old route|new route|no longer|stops?|has done its job|cannot|go to print|release gate|blank)\b/.test(text);
+  return {
+    stockTaking,
+    publicMechanism,
+    likelyRoutineNarrowing,
+    passes: stockTaking && publicMechanism && !likelyRoutineNarrowing,
+  };
 }
 
 function applyPhase2Gates(parsed, turns, wholeText) {
@@ -506,8 +517,7 @@ function applyPhase2Gates(parsed, turns, wholeText) {
   const tutorReversalEvidence = typeof tsr.evidence === 'string' ? tsr.evidence : '';
   const tutorReversalJustification = typeof tsr.justification === 'string' ? tsr.justification : '';
   const adaptiveMechanismQualityEvidence = typeof amq.evidence === 'string' ? amq.evidence : '';
-  const adaptiveMechanismQualityJustification =
-    typeof amq.justification === 'string' ? amq.justification : '';
+  const adaptiveMechanismQualityJustification = typeof amq.justification === 'string' ? amq.justification : '';
   const tutorAdaptationEvidence = typeof tca.evidence === 'string' ? tca.evidence : '';
   const tutorAdaptationJustification = typeof tca.justification === 'string' ? tca.justification : '';
 
@@ -627,17 +637,18 @@ async function scoreItem({ id, text }, modelKey, mock) {
   const tutorTurns = turns.filter((t) => t.role === 'TUTOR').length;
   const wholeText = turns.map((t) => t.text).join('\n');
   const prompt = buildPhase2Prompt(turns);
-  let raw;
-  try {
-    raw = mock ? mockResponse(learnerTurns.length) : await callModel(prompt, modelKey);
-  } catch (err) {
-    return { id, error: err.message };
-  }
   let parsed;
+  let retryCount = 0;
   try {
-    parsed = parseJsonResponse(raw);
+    if (mock) {
+      parsed = parseJsonResponse(mockResponse(learnerTurns.length));
+    } else {
+      ({ value: parsed, retryCount } = await withScorerRetry(async () =>
+        parseJsonResponse(await callModel(prompt, modelKey)),
+      ));
+    }
   } catch (err) {
-    return { id, error: `parse: ${err.message}` };
+    return { id, error: err.message, retryCount: err.retryCount ?? retryCount };
   }
   const g = applyPhase2Gates(parsed, turns, wholeText);
   const formClass = deriveForm(g.recon100, g.statedInsight100);
@@ -1062,7 +1073,9 @@ async function mainScore(o) {
   }
   if (!sample.length) throw new Error('no scoreable transcripts after quality filtering');
   if (!sampleToScore.length && existingSuccessful.size) {
-    console.log(`All ${sample.length} scoreable transcripts already have successful rows in ${path.relative(ROOT, outPath)}`);
+    console.log(
+      `All ${sample.length} scoreable transcripts already have successful rows in ${path.relative(ROOT, outPath)}`,
+    );
   }
   console.log(
     `Scoring ${sampleToScore.length} transcript${sampleToScore.length === 1 ? '' : 's'} with ${o.mock ? 'MOCK' : o.model} ` +
