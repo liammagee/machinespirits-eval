@@ -22,11 +22,42 @@ spot-checked against the live source (anchors cited inline).
   slow null.
 - **TODO — FIX 2** (second mechanism lexicon): lower priority — FIX 1 already routes
   D42/D50 around it; matters for non-instrumented dramas + score magnitude.
-- **TODO — FIX 5** (emit `item_gates.jsonl` + paired-increment aggregator): the
-  positive-claim backbone.
+- **DONE — FIX 5** (`scripts/aggregate-poetics-paired-increment.js` + 8 tests):
+  emits `item_gates.jsonl`, pairs peri↔control per drama, computes
+  `recognitive_closure_lift` with a Wilson interval. `8addb14`.
 - **TODO — paper §**: amend `positive_claim_requires_no_origin_ambiguity` with the
-  per-critic rationale (pre-register before the next run); honest current verdict is
-  null/weak-positive.
+  per-critic rationale (pre-register before the next run).
+
+## Verdict (022408Z data, FIX 1 + D1 applied; FIX 3/4 NOT re-run)
+
+Computed reproducibly by the FIX 5 aggregator on a FIX-1-re-derived snapshot.
+**CAVEAT:** FIX 3 (quality text-parity) and FIX 4 (scorer retry) change
+generation-/scoring-time behaviour, so they are NOT reflected in this already-
+generated/scored data — the coverage invalidations below are partly the bugs
+FIX 3/4 fix, and will shrink on a fresh run.
+
+| | result |
+|---|---|
+| valid pairs | 3 — **1 positive** (D42 i01), **2 null** (D50 i02/i03) |
+| invalidated | 5 coverage (mostly D53 never scoring), 1 control-leak (D42 i03) |
+| `recognitive_closure_lift` | 0.333, Wilson95 [0.061, 0.792] |
+| `origin_ambiguity_rate` | 1.000 (confirms origin is critic-unreachable — why D1) |
+| **verdict** | **weak-positive / maybe** |
+
+**The bottleneck has moved.** With the mechanism/origin measurement bugs cleared,
+peri arms recohere with high recognition (3–4/4) AND the public mechanism is now
+credited (FIX 1) — the binding failure on the interpretable pairs is **`action_gap`**
+(D50 i02/i03: recog 4/4, mech true, actional 2/4 < 3): the *learner's public
+performance of the new device* (the action-to-re-reading bridge), not the tutor's
+adaptation and no longer the scorer. D42 leaks in controls (scenario content →
+demote). D53 is pure coverage noise (→ FIX 3).
+
+**Forward steps:** (1) fresh loop run with FIX 3 + FIX 4 + D42 demoted + a screened
+clean third anchor → clean denominator (this is the gate to a real verdict; an
+attended paid run). (2) If `action_gap` persists under clean coverage → that is the
+substantive target: **M5 closure-bridge repair** / strengthen the learner's
+performance of the new device. (3) Honest expectation: likely a *weak positive at
+best* — dramatic form is inducible; reliable learner re-reading is the frontier.
 
 ## The reframe (this overturns the "saturation" premise)
 
