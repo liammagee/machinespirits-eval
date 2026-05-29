@@ -53,15 +53,62 @@ describe('generate-pedagogical-dramas', () => {
       formatPublicTurnText('TUTOR', '(points at the graph) Try line two.'),
       '[points at the graph]\n\n"Try line two."',
     );
-    assert.equal(
-      formatPublicTurnText('LEARNER', 'I think (x + 1) still matters.'),
-      '"I think (x + 1) still matters."',
-    );
+    assert.equal(formatPublicTurnText('LEARNER', 'I think (x + 1) still matters.'), '"I think (x + 1) still matters."');
     assert.equal(
       formatPublicTurnText('LEARNER', '"Now I see the header is a field."'),
       '"Now I see the header is a field."',
     );
     assert.equal(formatPublicTurnText('STAGE', 'A timer clicks.'), '[A timer clicks.]');
+  });
+
+  it('does not flag internal-process leak for text stripped before the public transcript (FIX 3)', () => {
+    // The ★ Insight block is stripped by renderTranscript before the public transcript,
+    // so its 'Superego' mention must NOT count as a public leak.
+    const stripped = qualityWarningsFor({
+      tid: 'T01',
+      dramaId: 'D01',
+      turns: [
+        {
+          role: 'TUTOR',
+          turnNumber: 1,
+          text: 'Mark where the arrow starts, then draw the push.\n\n`★ Insight ────────`\nThe Superego pushed the ego to revise here.\n`────────`',
+        },
+        { role: 'LEARNER', turnNumber: 1, text: 'Okay — the arrow is the push, not the path.' },
+      ],
+    });
+    assert.ok(
+      !stripped.some((w) => w.code === 'possible_internal_process_leak'),
+      'a stripped ★ Insight block is not a public leak',
+    );
+    // ...but the same language left in actual public speech still flags.
+    const leaked = qualityWarningsFor({
+      tid: 'T01',
+      dramaId: 'D01',
+      turns: [
+        { role: 'TUTOR', turnNumber: 1, text: 'My Superego told me to change the device, so do this instead.' },
+        { role: 'LEARNER', turnNumber: 1, text: 'Okay, I will try that.' },
+      ],
+    });
+    assert.ok(
+      leaked.some((w) => w.code === 'possible_internal_process_leak'),
+      'a genuine in-speech leak still flags',
+    );
+  });
+
+  it('flags a quote-wrapped learner turn truncated mid-thought (FIX 3 refinement)', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T01',
+      dramaId: 'D01',
+      turns: [
+        { role: 'TUTOR', turnNumber: 1, text: 'What happens once the tile spins?' },
+        { role: 'LEARNER', turnNumber: 1, text: 'I think it keeps its mark.' },
+        { role: 'LEARNER', turnNumber: 2, text: '"...once the tile spins, or —"' },
+      ],
+    });
+    const truncated = warnings.find((w) => w.code === 'possibly_truncated_learner_turn');
+    assert.ok(truncated, 'mid-thought clip is caught even when wrapped in quotes');
+    assert.ok(truncated.turn_numbers.includes(2), 'the quote-wrapped truncated turn (2) is flagged');
+    assert.ok(!truncated.turn_numbers.includes(1), 'the complete turn (1) is not flagged');
   });
 
   it('resolves genre approach databases for the genre calibration spec', () => {
@@ -288,9 +335,7 @@ describe('generate-pedagogical-dramas', () => {
     assert.ok(
       plan.interventions.some(
         (cue) =>
-          cue.cue_kind === 'learner_reversal_pressure' &&
-          cue.timing === 'before_learner' &&
-          cue.after_turn === 2,
+          cue.cue_kind === 'learner_reversal_pressure' && cue.timing === 'before_learner' && cue.after_turn === 2,
       ),
       'peripeteia branches should force a post-prefix learner pressure cue',
     );
@@ -306,7 +351,10 @@ describe('generate-pedagogical-dramas', () => {
     assert.match(plan.tutor_adaptation_contract, /superego should name the failed habit/);
     assert.match(plan.tutor_adaptation_contract, /mechanism-quality risk/);
     assert.match(plan.tutor_adaptation_contract, /ego must adjudicate that critique and enact the route change/);
-    assert.match(plan.tutor_adaptation_contract, /object, counterexample, interruption, social consequence, representation, or affective register/);
+    assert.match(
+      plan.tutor_adaptation_contract,
+      /object, counterexample, interruption, social consequence, representation, or affective register/,
+    );
     assert.match(plan.tutor_adaptation_contract, /stock-taking contrast plus a new device/);
     assert.match(plan.tutor_adaptation_contract, /earned learner reorientation/);
     assert.match(plan.tutor_adaptation_contract, /Cheerful informality is only one possible register/);
@@ -393,7 +441,11 @@ describe('generate-pedagogical-dramas', () => {
       'What I said sounded like the rabbit wanted grass, but this label is about energy moving to the rabbit.',
     ]) {
       const failures = noCueReframeLeakageFailures([
-        { role: 'LEARNER', turnNumber: 1, text: 'The arrow points from rabbit to grass because the rabbit goes after it.' },
+        {
+          role: 'LEARNER',
+          turnNumber: 1,
+          text: 'The arrow points from rabbit to grass because the rabbit goes after it.',
+        },
         { role: 'TUTOR', turnNumber: 2, text: 'Use the food-web key.' },
         { role: 'LEARNER', turnNumber: 2, text: 'Grass to rabbit, because the rabbit gets energy from grass.' },
         { role: 'TUTOR', turnNumber: 3, text: 'Now label the fox line.' },
@@ -447,11 +499,19 @@ describe('generate-pedagogical-dramas', () => {
 
   it('allows local task correction without an old-vs-new learner reframe in no-cue branches', () => {
     const failures = noCueReframeLeakageFailures([
-      { role: 'LEARNER', turnNumber: 1, text: 'The arrow points from rabbit to grass because the rabbit goes after it.' },
+      {
+        role: 'LEARNER',
+        turnNumber: 1,
+        text: 'The arrow points from rabbit to grass because the rabbit goes after it.',
+      },
       { role: 'TUTOR', turnNumber: 2, text: 'Use the food-web key.' },
       { role: 'LEARNER', turnNumber: 2, text: 'Grass to rabbit, because the rabbit gets energy from grass.' },
       { role: 'TUTOR', turnNumber: 3, text: 'Now label the fox line.' },
-      { role: 'LEARNER', turnNumber: 3, text: 'Rabbit to fox, because energy moves into the fox when it eats the rabbit.' },
+      {
+        role: 'LEARNER',
+        turnNumber: 3,
+        text: 'Rabbit to fox, because energy moves into the fox when it eats the rabbit.',
+      },
     ]);
     assert.equal(failures.length, 0);
   });
@@ -473,8 +533,7 @@ describe('generate-pedagogical-dramas', () => {
       {
         role: 'LEARNER',
         turnNumber: 3,
-        text:
-          '“I might be sorting this wrong, but I think the stop has to show the bracket stops moving before the slip path reaches the hand-foot zone.”',
+        text: '“I might be sorting this wrong, but I think the stop has to show the bracket stops moving before the slip path reaches the hand-foot zone.”',
       },
     ]);
     assert.equal(failures.length, 0);

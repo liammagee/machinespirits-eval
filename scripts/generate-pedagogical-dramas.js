@@ -1071,9 +1071,15 @@ function qualityWarningsFor({
   tutorAdaptationPolicy = null,
 }) {
   const warnings = [];
+  // Inspect the PUBLIC text (post stage-direction strip + neutralize), matching what
+  // renderTranscript emits: internal-process language that is stripped before the
+  // public transcript must not false-flag as a leak, and a wrapping quote must not
+  // hide genuine mid-thought truncation. (EDRA FIX 3 — text parity with the rendered
+  // public transcript; see notes/poetics/2026-05-28-edra-m3-surgery-spec.md FIX 3.)
+  const publicTurns = (turns || []).map((t) => ({ ...t, text: stripStageDirections(neutralize(t.text)).text }));
   const internalLeakPattern =
     /\b(?:Superego|same Ego|the Ego|Director Scene Card|scene card|review process|internal review)\b/i;
-  const leakedTurns = turns
+  const leakedTurns = publicTurns
     .map((t, idx) => ({ ...t, ordinal: idx + 1 }))
     .filter((t) => internalLeakPattern.test(t.text));
   if (leakedTurns.length) {
@@ -1096,9 +1102,14 @@ function qualityWarningsFor({
       recommended_action: 'regenerate_with_public_scene_material_not_role_instruction',
     });
   }
-  const truncatedLearnerTurns = turns
+  const truncatedLearnerTurns = publicTurns
     .map((t, idx) => ({ ...t, ordinal: idx + 1 }))
-    .filter((t, idx) => t.role === 'LEARNER' && isTruncated(t.text) && !previousStageAllowsFragment(turns, idx));
+    .filter(
+      (t, idx) =>
+        t.role === 'LEARNER' &&
+        isTruncated(stripWrappingSpeechQuotes(t.text)) &&
+        !previousStageAllowsFragment(publicTurns, idx),
+    );
   if (truncatedLearnerTurns.length) {
     warnings.push({
       code: 'possibly_truncated_learner_turn',
