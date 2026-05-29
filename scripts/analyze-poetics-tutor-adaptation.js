@@ -533,13 +533,13 @@ const MECHANISM_SHIFT_PATTERNS = [
   },
   {
     id: 'route_reset',
-    patterns: [
-      /\b(?:let['’]?s back up|start over|different route|new route|switch route|not working|rather than)\b/i,
-    ],
+    patterns: [/\b(?:let['’]?s back up|start over|different route|new route|switch route|not working|rather than)\b/i],
   },
   {
     id: 'changed_task_or_question',
-    patterns: [/\b(?:change the question|change the task|new task|new question|instead,?\s+(?:write|draw|test|choose))\b/i],
+    patterns: [
+      /\b(?:change the question|change the task|new task|new question|instead,?\s+(?:write|draw|test|choose))\b/i,
+    ],
   },
   {
     id: 'evidence_standard',
@@ -549,9 +549,7 @@ const MECHANISM_SHIFT_PATTERNS = [
   },
   {
     id: 'representation_or_object',
-    patterns: [
-      /\b(?:draw|diagram|map|model|object|card|graph|table|line|sheet|cart|string|square|placard)\b/i,
-    ],
+    patterns: [/\b(?:draw|diagram|map|model|object|card|graph|table|line|sheet|cart|string|square|placard)\b/i],
   },
   {
     id: 'role_or_interruption',
@@ -600,7 +598,12 @@ function learnerResistanceScore(text, context = {}) {
   const contradiction = /\b(?:but|no|wait|still|unless|except)\b/i.test(learnerText) ? 1 : 0;
   const question = /\?/.test(learnerText) ? 1 : 0;
   const pseudoCatharsis = analyzePseudoCatharsis({ learnerText, ...context });
-  return round(Math.max(Math.min(1, hits * 0.35 + contradiction * 0.2 + question * 0.15), pseudoCatharsis.likely ? pseudoCatharsis.confidence : 0));
+  return round(
+    Math.max(
+      Math.min(1, hits * 0.35 + contradiction * 0.2 + question * 0.15),
+      pseudoCatharsis.likely ? pseudoCatharsis.confidence : 0,
+    ),
+  );
 }
 
 function mechanismHits(text) {
@@ -619,8 +622,7 @@ function classifyResistance(text, context = {}) {
   const pseudoCatharsis = analyzePseudoCatharsis({ learnerText, ...context });
   if (pseudoCatharsis.likely) return 'pseudo_catharsis';
   if (/\b(?:just tell me|give me the answer|so it is just)\b/i.test(learnerText)) return 'closure_pressure';
-  if (/\b(?:I don['’]?t|I can['’]?t|stuck|lost|confusing|doesn.t make sense)\b/i.test(learnerText))
-    return 'breakdown';
+  if (/\b(?:I don['’]?t|I can['’]?t|stuck|lost|confusing|doesn.t make sense)\b/i.test(learnerText)) return 'breakdown';
   if (/\b(?:no|not buying|that seems wrong|but|wait|why)\b/i.test(learnerText)) return 'resistance';
   return 'misfit';
 }
@@ -664,27 +666,18 @@ function findReversalPressure(turns, { minTurnNumber = null } = {}) {
 
 function findInstrumentedReversalUse(turns, traceTurns = [], { minPressureTurnNumber = null } = {}) {
   const tutorTrace = (traceTurns || []).find(
-    (turn) =>
-      turn?.phase === 'tutor' &&
-      turn.learnerReversalEventUsed &&
-      isAtOrAfterTurn(turn, minPressureTurnNumber),
+    (turn) => turn?.phase === 'tutor' && turn.learnerReversalEventUsed && isAtOrAfterTurn(turn, minPressureTurnNumber),
   );
   if (!tutorTrace) return null;
   const event = tutorTrace.learnerReversalEventUsed;
   const eventBranchLocal = isAtOrAfterTurn({ turnNumber: event.turnNumber }, minPressureTurnNumber);
   const eventCarriedFromPrefix = Boolean(
-    minPressureTurnNumber != null &&
-      !eventBranchLocal &&
-      isAtOrAfterTurn(tutorTrace, minPressureTurnNumber),
+    minPressureTurnNumber != null && !eventBranchLocal && isAtOrAfterTurn(tutorTrace, minPressureTurnNumber),
   );
   const pressureTurn =
-    turns.find(
-      (turn) => turn.phase === 'learner' && Number(turn.turnNumber) === Number(event.turnNumber),
-    ) || null;
+    turns.find((turn) => turn.phase === 'learner' && Number(turn.turnNumber) === Number(event.turnNumber)) || null;
   const tutorTurn =
-    turns.find(
-      (turn) => turn.phase === 'tutor' && Number(turn.turnNumber) === Number(tutorTrace.turnNumber),
-    ) || null;
+    turns.find((turn) => turn.phase === 'tutor' && Number(turn.turnNumber) === Number(tutorTrace.turnNumber)) || null;
   const internalText = (tutorTrace.internalDeliberation || [])
     .map((entry) => String(entry.content || ''))
     .filter(Boolean)
@@ -695,8 +688,8 @@ function findInstrumentedReversalUse(turns, traceTurns = [], { minPressureTurnNu
     null;
   const declaredRouteChange = Boolean(
     privateMechanismRoute &&
-      /->/.test(privateMechanismRoute) &&
-      !/\b(?:no real|same route|unchanged|none)\b/i.test(privateMechanismRoute),
+    /->/.test(privateMechanismRoute) &&
+    !/\b(?:no real|same route|unchanged|none)\b/i.test(privateMechanismRoute),
   );
   return {
     tutorTrace,
@@ -734,8 +727,7 @@ function branchValidityForTrace(trace, turns, { tutorAdaptationPolicy = null, mi
     ? findInstrumentedReframeUse(trace?.turns || [], { minTurnNumber: minPressureTurnNumber })
     : null;
   const valid =
-    (!requiresLearnerReversalEvent || Boolean(reversalUse)) &&
-    (!requiresLearnerReframeEvent || Boolean(reframeUse));
+    (!requiresLearnerReversalEvent || Boolean(reversalUse)) && (!requiresLearnerReframeEvent || Boolean(reframeUse));
   return {
     tutor_adaptation_policy: tutorAdaptationPolicy || 'none',
     requires_learner_reversal_event: requiresLearnerReversalEvent,
@@ -751,9 +743,7 @@ function branchValidityForTrace(trace, turns, { tutorAdaptationPolicy = null, mi
           : 'unscoped'
       : null,
     learner_reversal_event_branch_local: reversalUse?.eventBranchLocal ?? null,
-    learner_reversal_candidate_trigger_types: (
-      reversalUse?.tutorTrace?.learnerReversalEventCandidatesUsed || []
-    )
+    learner_reversal_candidate_trigger_types: (reversalUse?.tutorTrace?.learnerReversalEventCandidatesUsed || [])
       .map((event) => event?.triggerType)
       .filter(Boolean)
       .join(', '),
@@ -794,9 +784,7 @@ function analyzePeripeteia(
   const beforeStrategy = preTutor ? strategyFor(preTutor.text) : null;
   const afterStrategy = postTutor ? strategyFor(postTutor.text) : null;
   const strategyShift = Boolean(beforeStrategy && afterStrategy && beforeStrategy !== afterStrategy);
-  const explicitReversal = postTutor
-    ? TUTOR_REVERSAL_PATTERNS.some((pattern) => pattern.test(postTutor.text))
-    : false;
+  const explicitReversal = postTutor ? TUTOR_REVERSAL_PATTERNS.some((pattern) => pattern.test(postTutor.text)) : false;
   const pressureTerms = pressureTurn ? termSet(pressureTurn.text) : new Set();
   const postOverlap = postTutor ? overlapRatio(pressureTerms, postTutor.text) : 0;
   const mechanismNovelty = novelMechanismHits(preTutor, postTutor);
@@ -805,16 +793,35 @@ function analyzePeripeteia(
   const strongPressure = Boolean(instrumented || pressureScore >= 0.65);
   const tutorStrategyReversal = Boolean(
     strongPressure &&
-      postTutor &&
-      (explicitReversal ||
-        mechanismDepth >= 2 ||
-        (strategyShift && mechanismDepth >= 1 && postOverlap >= 0.15) ||
-        (instrumented?.declaredRouteChange && mechanismDepth >= 1 && postOverlap >= 0.1)),
+    postTutor &&
+    (explicitReversal ||
+      mechanismDepth >= 2 ||
+      (strategyShift && mechanismDepth >= 1 && postOverlap >= 0.15) ||
+      (instrumented?.declaredRouteChange && mechanismDepth >= 1 && postOverlap >= 0.1)),
   );
+  // A real public route change can occur without our scenario-bound mechanism
+  // lexicon firing: novelMechanismHits matches a keyword list that misses
+  // representation swaps (e.g. tile -> marker-on-diagram), so mechanismDepth reads 0
+  // even when the tutor visibly changes the public device. Credit it when an
+  // INSTRUMENTED private route change (declaredRouteChange — peripeteia arms only,
+  // controls have instrumented=null so this path cannot fire for them) surfaces
+  // publicly as BOTH a categorical strategy shift AND re-use of the pressured
+  // material, WITHOUT requiring mechanismDepth. strategyShift + postOverlap are the
+  // load-bearing PUBLIC predicates; strongPressure + declaredRouteChange are
+  // private-trace confirmatory, so a private self-report alone cannot satisfy it.
+  // (notes/poetics/2026-05-28-edra-m3-surgery-spec.md FIX 1.)
+  const publicRouteChange = Boolean(
+    strongPressure && postTutor && strategyShift && instrumented?.declaredRouteChange && postOverlap >= 0.1,
+  );
+  // tutor_strategy_reversal stays the strict lexical/explicit signal;
+  // tutor_adaptive_mechanism is the broader public-route-change signal. These were
+  // aliased to one var, which under-credited fitted terse devices (score pinned at
+  // 49) and forced false private_only_adaptation gate failures.
+  const tutorAdaptiveMechanism = tutorStrategyReversal || publicRouteChange;
   const tutorPeripeteiaScore = pressureTurn
     ? round(
         Math.min(
-          tutorStrategyReversal ? 100 : 49,
+          tutorAdaptiveMechanism ? 100 : 49,
           10 +
             Math.min(25, pressureScore * 25) +
             Math.min(15, postOverlap * 100) +
@@ -841,7 +848,7 @@ function analyzePeripeteia(
     explicit_reversal: explicitReversal,
     novel_mechanism_hits: mechanismNovelty,
     tutor_strategy_reversal: tutorStrategyReversal,
-    tutor_adaptive_mechanism: tutorStrategyReversal,
+    tutor_adaptive_mechanism: tutorAdaptiveMechanism,
     private_mechanism_route: instrumented?.privateMechanismRoute || null,
     private_mechanism_declared: Boolean(instrumented?.declaredRouteChange),
     tutor_peripeteia_score: tutorPeripeteiaScore,
@@ -868,7 +875,8 @@ function pairedPrefixPressureMinTurn(trace) {
 function analyzeTraceForTutorAdaptation({ itemId, trace, sourceTracePath }) {
   const turns = publicTurns(trace);
   const { minPressureTurnNumber, pairedPrefixThrough } = pairedPrefixPressureMinTurn(trace);
-  const tutorAdaptationPolicy = trace?.run?.tutor_adaptation_policy || trace?.directorPlan?.tutor_adaptation_policy || null;
+  const tutorAdaptationPolicy =
+    trace?.run?.tutor_adaptation_policy || trace?.directorPlan?.tutor_adaptation_policy || null;
   const peripeteia = analyzePeripeteia(turns, trace?.turns || [], {
     tutorAdaptationPolicy,
     minPressureTurnNumber,

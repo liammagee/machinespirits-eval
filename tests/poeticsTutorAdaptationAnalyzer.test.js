@@ -8,7 +8,11 @@ describe('poetics tutor adaptation analyzer', () => {
       { phase: 'learner', turnNumber: 0, text: 'I think loose means no gravity.' },
       { phase: 'tutor', turnNumber: 1, text: 'Check the list and write the force name.' },
       { phase: 'learner', turnNumber: 1, text: "But that still doesn't make sense; loose should mean it floats away." },
-      { phase: 'tutor', turnNumber: 2, text: 'Let us back up and try a different route: draw the string first, then test which force stays.' },
+      {
+        phase: 'tutor',
+        turnNumber: 2,
+        text: 'Let us back up and try a different route: draw the string first, then test which force stays.',
+      },
       {
         phase: 'learner',
         turnNumber: 2,
@@ -58,8 +62,7 @@ describe('poetics tutor adaptation analyzer', () => {
       {
         phase: 'tutor',
         turnNumber: 2,
-        text:
-          'The graph is too soft as the test. Switch to an audit standard: record replacement cost, missing units, rationing attempts, and held-back stock before the price claim can stand.',
+        text: 'The graph is too soft as the test. Switch to an audit standard: record replacement cost, missing units, rationing attempts, and held-back stock before the price claim can stand.',
       },
     ];
     const traceTurns = [
@@ -101,14 +104,12 @@ describe('poetics tutor adaptation analyzer', () => {
       {
         phase: 'learner',
         turnNumber: 1,
-        text:
-          'But the volunteer is waiting at the door and I am still not sure whether to hold the sheet or let the trial start.',
+        text: 'But the volunteer is waiting at the door and I am still not sure whether to hold the sheet or let the trial start.',
       },
       {
         phase: 'tutor',
         turnNumber: 2,
-        text:
-          'The weak point has moved. The ramp test matters, but the release instruction has to hold when the room gets busy. Write three lines where the signature would go: held item, person notified, and reopen condition. If the volunteer cannot wait, the trial is canceled, not improvised.',
+        text: 'The weak point has moved. The ramp test matters, but the release instruction has to hold when the room gets busy. Write three lines where the signature would go: held item, person notified, and reopen condition. If the volunteer cannot wait, the trial is canceled, not improvised.',
       },
     ];
     const traceTurns = [
@@ -140,6 +141,88 @@ describe('poetics tutor adaptation analyzer', () => {
     assert.equal(result.private_mechanism_declared, true);
     assert.equal(result.tutor_adaptive_mechanism, true);
     assert.ok(result.novel_mechanism_hits.includes('authorization_gate'));
+  });
+
+  it('credits a public route change whose device is outside the mechanism lexicon (FIX 1: depth=0)', () => {
+    // D42-class regression: the tutor visibly changes the public device (read the
+    // arrow as a path -> mark the contact point and draw from it), but that swap is
+    // not in novelMechanismHits' keyword list, so mechanismDepth=0 and the strict
+    // tutor_strategy_reversal path cannot fire. The instrumented private route change
+    // surfaces publicly as a strategy shift + reuse of the pressured terms, so
+    // tutor_adaptive_mechanism must still be credited and the score must clear the 49 cap.
+    const turns = [
+      { phase: 'learner', turnNumber: 0, text: 'I keep reading the arrow as the path the cart travels along.' },
+      { phase: 'tutor', turnNumber: 1, text: 'Look again at where the arrow begins on the cart.' },
+      {
+        phase: 'learner',
+        turnNumber: 1,
+        text: 'But the arrow and the path still look like the same thing to me, I am stuck on which is which.',
+      },
+      {
+        phase: 'tutor',
+        turnNumber: 2,
+        text: 'The arrow is not the path. Mark the spot where the arrow starts on the diagram, then draw the push out from that mark.',
+      },
+    ];
+    const traceTurns = [
+      ...turns,
+      {
+        phase: 'tutor',
+        turnNumber: 2,
+        learnerReversalEventUsed: { turnNumber: 1, triggerType: 'resistance', confidence: 0.7 },
+        internalDeliberation: [
+          { role: 'superego', content: 'MECHANISM_ROUTE: read arrow as path -> mark contact point and draw from it' },
+          {
+            role: 'ego',
+            content:
+              'PRIVATE_DECISION: revise. ADAPTIVE_MECHANISM: read arrow as path -> mark contact point and draw from it',
+          },
+        ],
+      },
+    ];
+    const result = analyzePeripeteia(turns, traceTurns, { tutorAdaptationPolicy: 'peripeteia' });
+    assert.equal(result.novel_mechanism_hits.length, 0, 'device is outside the mechanism lexicon (depth=0)');
+    assert.equal(result.tutor_strategy_shift, true);
+    assert.equal(result.private_mechanism_declared, true);
+    assert.equal(result.tutor_strategy_reversal, false, 'strict lexical path does not fire at depth=0');
+    assert.equal(result.tutor_adaptive_mechanism, true, 'public route change credited without mechanismDepth');
+    assert.ok(result.tutor_peripeteia_score > 49, 'score is not pinned at the 49 cap');
+  });
+
+  it('does not credit a private route declaration without a public strategy shift (FIX 1 guard)', () => {
+    // Pins the load-bearing public predicate: same instrumented declaration, but the
+    // public post-tutor turn keeps the same strategy (no shift), so a private
+    // self-report alone cannot satisfy the gate.
+    const turns = [
+      { phase: 'learner', turnNumber: 0, text: 'I keep reading the arrow as the path the cart travels along.' },
+      { phase: 'tutor', turnNumber: 1, text: 'Look again at where the arrow begins on the cart.' },
+      {
+        phase: 'learner',
+        turnNumber: 1,
+        text: 'But the arrow and the path still look like the same thing to me, I am stuck on which is which.',
+      },
+      { phase: 'tutor', turnNumber: 2, text: 'Look again, more carefully, at where the arrow begins on the cart.' },
+    ];
+    const traceTurns = [
+      ...turns,
+      {
+        phase: 'tutor',
+        turnNumber: 2,
+        learnerReversalEventUsed: { turnNumber: 1, triggerType: 'resistance', confidence: 0.7 },
+        internalDeliberation: [
+          { role: 'superego', content: 'MECHANISM_ROUTE: read arrow as path -> mark contact point and draw from it' },
+          {
+            role: 'ego',
+            content:
+              'PRIVATE_DECISION: revise. ADAPTIVE_MECHANISM: read arrow as path -> mark contact point and draw from it',
+          },
+        ],
+      },
+    ];
+    const result = analyzePeripeteia(turns, traceTurns, { tutorAdaptationPolicy: 'peripeteia' });
+    assert.equal(result.private_mechanism_declared, true);
+    assert.equal(result.tutor_strategy_shift, false);
+    assert.equal(result.tutor_adaptive_mechanism, false, 'private declaration alone is not credited');
   });
 
   it('does not collapse criterion gates and surface keys into generic application tasks', () => {
@@ -218,14 +301,12 @@ describe('poetics tutor adaptation analyzer', () => {
       {
         phase: 'learner',
         turnNumber: 2,
-        text:
-          'But if the top number is 6, I keep wanting to use it as the mass too. The tile has two number spots and that is what is tripping me.',
+        text: 'But if the top number is 6, I keep wanting to use it as the mass too. The tile has two number spots and that is what is tripping me.',
       },
       {
         phase: 'tutor',
         turnNumber: 3,
-        text:
-          'The part labels no longer settle the two-number problem. Use this element tile gate: cover the bottom decimal and mark top whole number as atomic number/proton count. Then uncover the decimal and mark only that bottom number as atomic mass.',
+        text: 'The part labels no longer settle the two-number problem. Use this element tile gate: cover the bottom decimal and mark top whole number as atomic number/proton count. Then uncover the decimal and mark only that bottom number as atomic mass.',
       },
     ];
     const traceTurns = [
@@ -271,14 +352,12 @@ describe('poetics tutor adaptation analyzer', () => {
       {
         phase: 'tutor',
         turnNumber: 3,
-        text:
-          'The tray line stopped settling this; it made a false row. Now it is only a parking place. One card comes off the tray at a time: place it on one printed part, name that match, then move it to the copy side. No card copies until it passes alone.',
+        text: 'The tray line stopped settling this; it made a false row. Now it is only a parking place. One card comes off the tray at a time: place it on one printed part, name that match, then move it to the copy side. No card copies until it passes alone.',
       },
       {
         phase: 'learner',
         turnNumber: 3,
-        text:
-          'Parking place only; this card has to pass alone. Atomic number points to the top 6 only, so it can move to the copy side.',
+        text: 'Parking place only; this card has to pass alone. Atomic number points to the top 6 only, so it can move to the copy side.',
       },
     ];
     const traceTurns = [
@@ -298,8 +377,7 @@ describe('poetics tutor adaptation analyzer', () => {
           },
           {
             role: 'ego',
-            content:
-              'ADAPTIVE_MECHANISM: visual tray-line audit -> sequential copy gate / one-card release test',
+            content: 'ADAPTIVE_MECHANISM: visual tray-line audit -> sequential copy gate / one-card release test',
           },
         ],
       },
@@ -332,8 +410,7 @@ describe('poetics tutor adaptation analyzer', () => {
       {
         phase: 'tutor',
         turnNumber: 3,
-        text:
-          'The key has fixed the bottom number, but the face-up tempo card is still asking for a box. Sort four pieces under BAR STRUCTURE or PERFORMANCE DIRECTION. Only BAR STRUCTURE may touch the boxes or bar line.',
+        text: 'The key has fixed the bottom number, but the face-up tempo card is still asking for a box. Sort four pieces under BAR STRUCTURE or PERFORMANCE DIRECTION. Only BAR STRUCTURE may touch the boxes or bar line.',
       },
     ];
     const traceTurns = [
@@ -369,20 +446,17 @@ describe('poetics tutor adaptation analyzer', () => {
       {
         phase: 'tutor',
         turnNumber: 2,
-        text:
-          'Use that line as the check. Top number: arrow to the three slots in one bar. Bottom number: arrow to one quarter-note beat unit. The blank card stays outside.',
+        text: 'Use that line as the check. Top number: arrow to the three slots in one bar. Bottom number: arrow to one quarter-note beat unit. The blank card stays outside.',
       },
       {
         phase: 'learner',
         turnNumber: 2,
-        text:
-          'The arrows fit the 3 and the 4, but this speed card is still sitting there like an unfinished label. Where does the speed label go if it stays outside the time signature?',
+        text: 'The arrows fit the 3 and the 4, but this speed card is still sitting there like an unfinished label. Where does the speed label go if it stays outside the time signature?',
       },
       {
         phase: 'tutor',
         turnNumber: 3,
-        text:
-          'The arrows settled the two boxes; they did not decide the loose speed card. Use one test now: only a label that can complete one bar = ___ ___ beats enters the time signature. Sort top number, bottom number, and speed card into the two zones.',
+        text: 'The arrows settled the two boxes; they did not decide the loose speed card. Use one test now: only a label that can complete one bar = ___ ___ beats enters the time signature. Sort top number, bottom number, and speed card into the two zones.',
       },
     ];
     const traceTurns = [
@@ -420,20 +494,17 @@ describe('poetics tutor adaptation analyzer', () => {
       {
         phase: 'tutor',
         turnNumber: 2,
-        text:
-          'Draw one short line: 3 to the three tiles, 4 to the quarter-note card. Which mark proves the count is full?',
+        text: 'Draw one short line: 3 to the three tiles, 4 to the quarter-note card. Which mark proves the count is full?',
       },
       {
         phase: 'learner',
         turnNumber: 2,
-        text:
-          'The short line helps, but I would not call it the proof mark yet. The bar line after the third beat proves the count is full.',
+        text: 'The short line helps, but I would not call it the proof mark yet. The bar line after the third beat proves the count is full.',
       },
       {
         phase: 'tutor',
         turnNumber: 3,
-        text:
-          'The short lines no longer settle proof; they label what the numbers mean. With the numbers covered, sort the marks for a rehearsal reader: LABEL on the two number-lines, BAR-PROOF on the mark that tells where this bar ends.',
+        text: 'The short lines no longer settle proof; they label what the numbers mean. With the numbers covered, sort the marks for a rehearsal reader: LABEL on the two number-lines, BAR-PROOF on the mark that tells where this bar ends.',
       },
     ];
     const traceTurns = [
