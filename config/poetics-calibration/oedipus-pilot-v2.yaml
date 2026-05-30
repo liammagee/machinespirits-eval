@@ -39,6 +39,11 @@ dramas:
     condition: recognition
     tutor_profile: recognition
     learner_profile: ego_superego_recognition_authentic
+    # Close on the learner's anagnorisis: the omniscient critic requires the
+    # LEARNER to publicly STATE S, but the default tutor-ending appends a tutor
+    # coda that cut off the recognition turn (first paid smoke -> null). Hard-
+    # overridden in applySpecDirectorOverrides, so it beats the LLM director.
+    ending_speaker: learner
     scenario_name: "The number that would not come back"
     learner_start_state: >-
       A research student building on a published finding cannot reproduce its
@@ -78,6 +83,11 @@ dramas:
     condition: recognition
     tutor_profile: recognition
     learner_profile: ego_superego_recognition_authentic
+    # Close on the learner's anagnorisis: the omniscient critic requires the
+    # LEARNER to publicly STATE S, but the default tutor-ending appends a tutor
+    # coda that cut off the recognition turn (first paid smoke -> null). Hard-
+    # overridden in applySpecDirectorOverrides, so it beats the LLM director.
+    ending_speaker: learner
     scenario_name: "The citation that turned"
     learner_start_state: >-
       A student is certain a key source backs their central claim and is indignant
