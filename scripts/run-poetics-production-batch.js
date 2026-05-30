@@ -19,7 +19,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { createProgressReporter } from './progress.js';
 
@@ -102,6 +102,7 @@ function parseArgs(argv) {
     critics: DEFAULT_CRITICS,
     generationConcurrency: 1,
     scoreConcurrency: 3,
+    scoreJobConcurrency: 4,
     structureCritic: 'off',
     structureCriticConcurrency: 1,
     failOnStructureCritic: false,
@@ -138,6 +139,7 @@ function parseArgs(argv) {
     else if (t === '--critics') args.critics = splitCsv(argv[++i]);
     else if (t === '--generation-concurrency') args.generationConcurrency = parseInt(argv[++i], 10);
     else if (t === '--score-concurrency') args.scoreConcurrency = parseInt(argv[++i], 10);
+    else if (t === '--score-job-concurrency') args.scoreJobConcurrency = parseInt(argv[++i], 10);
     else if (t === '--structure-critic') args.structureCritic = argv[++i];
     else if (t === '--structure-critic-concurrency') args.structureCriticConcurrency = parseInt(argv[++i], 10);
     else if (t === '--fail-on-structure-critic') args.failOnStructureCritic = true;
@@ -192,6 +194,9 @@ function parseArgs(argv) {
   }
   if (!Number.isInteger(args.scoreConcurrency) || args.scoreConcurrency < 1) {
     throw new Error('--score-concurrency must be a positive integer');
+  }
+  if (!Number.isInteger(args.scoreJobConcurrency) || args.scoreJobConcurrency < 1) {
+    throw new Error('--score-job-concurrency must be a positive integer');
   }
   if (!['off', 'rules', 'codex', 'claude', 'claude-code'].includes(args.structureCritic)) {
     throw new Error('--structure-critic must be off|rules|codex|claude|claude-code');
@@ -469,6 +474,70 @@ function runCommand(cmd, args) {
   }
 }
 
+// Async sibling of runCommand: spawn the child without blocking so a pool can run
+// several score jobs concurrently. stderr is captured and surfaced on failure;
+// stdout is discarded (each scorer writes its result to --out, so its stdout is
+// only progress noise that would interleave illegibly under concurrency).
+function runCommandAsync(cmd, args) {
+  return new Promise((resolve, reject) => {
+    if (args.dryRun) {
+      console.log(`  ${printableCommand(cmd)}`);
+      resolve();
+      return;
+    }
+    fs.mkdirSync(path.dirname(outputPathFromCommand(cmd)), { recursive: true });
+    const child = spawn(cmd[0], cmd.slice(1), {
+      cwd: ROOT,
+      stdio: ['ignore', 'ignore', 'pipe'],
+      env: { ...process.env },
+    });
+    let errBuf = '';
+    child.stderr.on('data', (d) => {
+      errBuf += d.toString();
+    });
+    child.on('error', reject);
+    child.on('close', (code) => {
+      if (code === 0) resolve();
+      else
+        reject(
+          new Error(`command failed (${code}): ${printableCommand(cmd)}${errBuf ? `\n${errBuf.slice(-2000)}` : ''}`),
+        );
+    });
+  });
+}
+
+// Bounded-concurrency runner for the score stage. Critics are metered API calls
+// (qwen/gemini/deepseek/gpt via OpenRouter), so the (arm × critic) jobs are
+// independent and safe to run in parallel — bounded only by provider rate limits,
+// not a flat CLI/Max-plan quota window. Failures are collected and thrown together
+// after all jobs settle, so one bad critic no longer aborts the rest of the panel.
+async function runScoreJobsPooled(jobs, args, progress, makeCmd = scoreCommand) {
+  const concurrency = Math.max(1, args.scoreJobConcurrency || 1);
+  let next = 0;
+  const failures = [];
+  async function worker() {
+    while (next < jobs.length) {
+      const job = jobs[next++];
+      if (args.skipExistingScores && fs.existsSync(job.outPath)) {
+        progress.step(`${job.id} · ${job.critic} skipped`);
+        continue;
+      }
+      progress.note(`${job.id} · ${job.critic} starting`);
+      try {
+        await runCommandAsync(makeCmd(job, args), args);
+        progress.step(`${job.id} · ${job.critic} complete`);
+      } catch (err) {
+        failures.push(err);
+        progress.step(`${job.id} · ${job.critic} FAILED`);
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(concurrency, jobs.length || 1) }, () => worker()));
+  if (failures.length) {
+    throw new Error(`${failures.length} score job(s) failed:\n${failures.map((f) => f.message).join('\n\n')}`);
+  }
+}
+
 function outputPathFromCommand(cmd) {
   const outIndex = cmd.indexOf('--out');
   if (outIndex !== -1) return cmd[outIndex + 1];
@@ -514,7 +583,7 @@ function summarizePlan(plan, args) {
   console.log(`  critics: ${plan.critics.join(', ')}`);
 }
 
-function runPlan(args) {
+async function runPlan(args) {
   const plan = buildPlan(args);
   if (args.json) {
     console.log(JSON.stringify(plan, null, 2));
@@ -568,18 +637,8 @@ function runPlan(args) {
       total: jobs.length,
       enabled: !args.dryRun,
     });
-    scoringProgress.start(`${jobs.length} scorer job(s)`);
-    for (const job of jobs) {
-      if (args.skipExistingScores && fs.existsSync(job.outPath)) {
-        console.log(`\n# ${job.id} · ${job.critic} (skip existing)`);
-        scoringProgress.step(`${job.id} · ${job.critic} skipped`);
-        continue;
-      }
-      console.log(`\n# ${job.id} · ${job.critic}`);
-      scoringProgress.note(`${job.id} · ${job.critic} starting`);
-      runCommand(scoreCommand(job, args), args);
-      scoringProgress.step(`${job.id} · ${job.critic} complete`);
-    }
+    scoringProgress.start(`${jobs.length} scorer job(s) · concurrency ${args.scoreJobConcurrency}`);
+    await runScoreJobsPooled(jobs, args, scoringProgress);
     scoringProgress.finish('scoring stage complete');
   }
 
@@ -590,12 +649,12 @@ function runPlan(args) {
 }
 
 if (path.resolve(process.argv[1] || '') === __filename) {
-  try {
-    runPlan(parseArgs(process.argv.slice(2)));
-  } catch (err) {
-    console.error(err?.stack || String(err));
-    process.exit(1);
-  }
+  Promise.resolve()
+    .then(() => runPlan(parseArgs(process.argv.slice(2))))
+    .catch((err) => {
+      console.error(err?.stack || String(err));
+      process.exit(1);
+    });
 }
 
 export {
@@ -605,6 +664,8 @@ export {
   generationCommand,
   modelSlug,
   parseArgs,
+  runCommandAsync,
+  runScoreJobsPooled,
   scoreCommand,
   scoreJobs,
   structureCriticCommand,

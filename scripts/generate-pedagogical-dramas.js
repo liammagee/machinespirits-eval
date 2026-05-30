@@ -117,6 +117,7 @@ function parseArgs(argv) {
     model: 'opus',
     effort: null,
     generator: 'claude',
+    apiModel: 'sonnet',
     spec: null,
     pedagogyDb: PEDAGOGICAL_APPROACHES_DB,
     dialogueDb: DIALOGUE_APPROACHES_DB,
@@ -149,6 +150,7 @@ function parseArgs(argv) {
     else if (t === '--seed') a.seed = parseInt(argv[++i], 10);
     else if (t === '--max-turns') a.maxTurns = parseInt(argv[++i], 10);
     else if (t === '--model') a.model = argv[++i];
+    else if (t === '--api-model') a.apiModel = argv[++i];
     else if (t === '--effort') a.effort = argv[++i];
     else if (t === '--generator') a.generator = argv[++i];
     else if (t === '--spec') a.spec = path.resolve(argv[++i]);
@@ -182,8 +184,8 @@ function parseArgs(argv) {
   }
   if (!Number.isInteger(a.seed)) throw new Error('--seed must be an integer');
   if (!Number.isInteger(a.maxTurns) || a.maxTurns < 1) throw new Error('--max-turns must be a positive integer');
-  if (a.generator !== 'claude' && a.generator !== 'codex' && a.generator !== 'gemini')
-    throw new Error(`--generator must be claude|codex|gemini (got ${a.generator})`);
+  if (!['claude', 'codex', 'gemini', 'api'].includes(a.generator))
+    throw new Error(`--generator must be claude|codex|gemini|api (got ${a.generator})`);
   if (a.effort && !CLAUDE_EFFORT_LEVELS.has(a.effort))
     throw new Error(`--effort must be low|medium|high|xhigh|max (got ${a.effort})`);
   if (!Number.isInteger(a.tidStart) || a.tidStart < 0) throw new Error('--tid-start must be a non-negative integer');
@@ -234,9 +236,11 @@ function parseArgs(argv) {
       ? 'codex'
       : a.generator === 'gemini'
         ? 'gemini'
-        : a.effort
-          ? `claude-${a.effort}`
-          : 'v2';
+        : a.generator === 'api'
+          ? 'api'
+          : a.effort
+            ? `claude-${a.effort}`
+            : 'v2';
   const suffix = a.mock ? '-mock' : '';
   a.outDir = a.outDir || path.join(CAL_DIR, `phase2-sample-${base}${suffix}`);
   a.delibDir = a.delibDir || path.join(CAL_DIR, `phase2-deliberation-${base}${suffix}`);
@@ -1552,6 +1556,82 @@ function callGeminiCli(systemPrompt, userPrompt, role) {
   });
 }
 
+// ── metered-API generation backend (--generator api) ────────────────────────
+// Unlike the claude/codex/gemini CLI bridges, this routes generation through the
+// same OpenRouter metered API the critics use: no CLI hang (outBytes=0), safe
+// high concurrency (no flat Max-plan quota window), and reliable. The Oedipus arc
+// is a fresh arc not bound to Opus-via-CLI for comparability, so it can author
+// faster + in parallel via a strong API model (default Sonnet).
+const GEN_API_MODELS = {
+  sonnet: 'anthropic/claude-sonnet-4.6',
+  haiku: 'anthropic/claude-haiku-4.5',
+  opus: 'anthropic/claude-opus-4.6',
+  gpt: 'openai/gpt-5.2',
+  'gemini-3.5-flash': 'google/gemini-3.5-flash',
+};
+const GEN_API_TEMPERATURE = Number(process.env.GEN_API_TEMPERATURE ?? 1.0);
+const GEN_API_MAX_TOKENS = Number(process.env.GEN_API_MAX_TOKENS || 8192);
+const GEN_API_TIMEOUT_MS = Number(process.env.GEN_API_TIMEOUT_MS || 300000);
+
+function resolveApiModel(modelKey) {
+  return GEN_API_MODELS[modelKey] || (String(modelKey).includes('/') ? modelKey : null);
+}
+
+async function callApiModel(systemPrompt, userPrompt, modelKey, role) {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) throw new Error('OPENROUTER_API_KEY not set (required for --generator api)');
+  const model = resolveApiModel(modelKey);
+  if (!model)
+    throw new Error(
+      `Unknown --api-model "${modelKey}" (pass an OpenRouter slug, or one of: ${Object.keys(GEN_API_MODELS).join(', ')})`,
+    );
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), GEN_API_TIMEOUT_MS);
+  const started = Date.now();
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model,
+        max_tokens: GEN_API_MAX_TOKENS,
+        temperature: GEN_API_TEMPERATURE,
+        include_reasoning: false,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+      }),
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`OpenRouter ${res.status} (role=${role}): ${body.slice(0, 200)}`);
+    }
+    const data = await res.json();
+    const content = data.choices?.[0]?.message?.content;
+    if (!content) throw new Error(`OpenRouter returned no content (role=${role})`);
+    const latencyMs = Date.now() - started;
+    return {
+      content,
+      latencyMs,
+      provenance: buildCallProvenance({
+        agentRole: role,
+        backend: 'api',
+        cli: 'openrouter',
+        model,
+        reasoningEffort: null,
+        systemPrompt,
+        userPrompt,
+        latencyMs,
+        args: [model],
+      }),
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 // runInteraction's llmCall contract: (model, systemPrompt, messages, opts) →
 // {content, usage}. We IGNORE the per-profile model and force claude-code.
 function makeClaudeLlmCall(modelAlias, effort) {
@@ -1590,6 +1670,21 @@ function makeGeminiLlmCall() {
     return withUsage(result, {
       provider: 'gemini-cli',
       model: `gemini/${GEMINI_MODEL}`,
+      provenance: result.provenance,
+    });
+  };
+}
+
+// Same contract via the metered OpenRouter API (--generator api). The api-model
+// key (default 'sonnet') selects the authoring model; opts.agentRole still tags
+// every call so a --role-map could mix api with the other backends.
+function makeApiLlmCall(modelKey) {
+  return async function apiLlmCall(_model, systemPrompt, messages, opts = {}) {
+    const userPrompt = (messages || []).map((m) => m.content).join('\n');
+    const result = await callApiModel(systemPrompt, userPrompt, modelKey, opts.agentRole || 'gen');
+    return withUsage(result, {
+      provider: 'openrouter',
+      model: `api/${modelKey}`,
       provenance: result.provenance,
     });
   };
@@ -1680,14 +1775,22 @@ function resolveBackend(agentRole, roleMap, fallback) {
 // Router llmCall: dispatch each role to its resolved backend. Under --mock both
 // backends are the same stub, but the route decision is still computed + logged
 // (GEN_DRAMAS_CLI_TRACE=1) so routing can be smoke-tested for free.
-function makeRouterLlmCall({ roleMap, fallback, claudeModelAlias, claudeEffort, mock }) {
+function makeRouterLlmCall({ roleMap, fallback, claudeModelAlias, claudeEffort, apiModelKey, mock }) {
   const claudeBridge = mock ? makeMockLlmCall('claude') : makeClaudeLlmCall(claudeModelAlias, claudeEffort);
   const codexBridge = mock ? makeMockLlmCall('codex') : makeCodexLlmCall();
   const geminiBridge = mock ? makeMockLlmCall('gemini') : makeGeminiLlmCall();
+  const apiBridge = mock ? makeMockLlmCall('api') : makeApiLlmCall(apiModelKey);
   return async function routerLlmCall(model, systemPrompt, messages, opts = {}) {
     const backend = resolveBackend(opts.agentRole, roleMap, fallback);
     if (CLI_TRACE) console.error(`[gen-route] role=${opts.agentRole || '?'} → ${backend}`);
-    const bridge = backend === 'codex' ? codexBridge : backend === 'gemini' ? geminiBridge : claudeBridge;
+    const bridge =
+      backend === 'codex'
+        ? codexBridge
+        : backend === 'gemini'
+          ? geminiBridge
+          : backend === 'api'
+            ? apiBridge
+            : claudeBridge;
     return bridge(model, systemPrompt, messages, opts);
   };
 }
@@ -2343,6 +2446,14 @@ Return exactly one JSON object with:
 }`;
 }
 
+// Attach the per-scenario secret (Oedipus guided-discovery) to the director plan
+// so the tutor (runTutorTurn) can read directorPlan._secret and meter it; the
+// learner-side context never receives it (buildDirectorContext side='learner').
+function attachSecret(plan, d) {
+  if (plan && d?.secret) plan._secret = d.secret;
+  return plan;
+}
+
 async function buildDirectorPlan(d, llmCall, args) {
   if (args.directorMode === 'off') return null;
   const revisitPolicy = d._directorRevisitPolicy ?? args.directorRevisitPolicy;
@@ -2367,6 +2478,10 @@ async function buildDirectorPlan(d, llmCall, args) {
           : null,
     scenario_name: d.scenario_name,
     learner_start_state: d.learner_start_state,
+    secret: d.secret || null,
+    secret_instruction: d.secret
+      ? 'GUIDED-DISCOVERY (Oedipus): `secret.fact` (S) is a withheld truth only the tutor knows; the learner must be led to discover it by the tutor metering `secret.premise_ledger` as clues/questions. Build the scene so S is discoverable through dialogue but NOT derivable from the learner-visible setup, and never place S or its premises in any learner-visible material.'
+      : null,
     trap_demarcation: d.trap_demarcation || d.trap_signal_style || null,
     trap_instruction:
       d.trap_demarcation || d.trap_signal_style
@@ -2416,14 +2531,17 @@ async function buildDirectorPlan(d, llmCall, args) {
       parse_status: 'ok',
       provenance: response.provenance || response.apiPayload?.provenance || null,
     });
-    return withDirectorCueProvenance(
-      applyApproachDirectorOverrides(
-        d,
-        withTutorAdaptationPolicy(
-          withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
-          d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+    return attachSecret(
+      withDirectorCueProvenance(
+        applyApproachDirectorOverrides(
+          d,
+          withTutorAdaptationPolicy(
+            withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
+            d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+          ),
         ),
       ),
+      d,
     );
   } catch (error) {
     const merged = applySpecDirectorOverrides(d, {
@@ -2431,14 +2549,17 @@ async function buildDirectorPlan(d, llmCall, args) {
       raw_director_response: String(response.content || '').slice(0, 2000),
       provenance: response.provenance || response.apiPayload?.provenance || null,
     });
-    return withDirectorCueProvenance(
-      applyApproachDirectorOverrides(
-        d,
-        withTutorAdaptationPolicy(
-          withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
-          d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+    return attachSecret(
+      withDirectorCueProvenance(
+        applyApproachDirectorOverrides(
+          d,
+          withTutorAdaptationPolicy(
+            withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
+            d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+          ),
         ),
       ),
+      d,
     );
   }
 }
@@ -3225,6 +3346,7 @@ async function main() {
         fallback: args.generator,
         claudeModelAlias: args.model,
         claudeEffort: args.effort,
+        apiModelKey: args.apiModel,
         mock: args.mock,
       })
     : args.mock
@@ -3233,7 +3355,9 @@ async function main() {
         ? makeCodexLlmCall()
         : args.generator === 'gemini'
           ? makeGeminiLlmCall()
-          : makeClaudeLlmCall(args.model, args.effort);
+          : args.generator === 'api'
+            ? makeApiLlmCall(args.apiModel)
+            : makeClaudeLlmCall(args.model, args.effort);
   if (args.pairedContinuationPolicies || args.pairedAdaptationArms) {
     await generatePairedContinuations({ args, order, runtime, llmCall });
     return;
@@ -3501,12 +3625,15 @@ export {
   intrusiveStageDirectionFailures,
   keyItemFor,
   loadApproachDatabases,
+  makeRouterLlmCall,
   noCuePrematureClosureFailures,
   noCueReframeLeakageFailures,
   pairedBranchDefinitions,
+  parseArgs,
   qualityWarningsFor,
   reframeComplianceFailures,
   reframeMatchStats,
+  resolveApiModel,
   revoiceComplianceFailures,
   revoiceMatchStats,
   stageDirectionStyleFor,

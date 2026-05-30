@@ -141,6 +141,73 @@ function buildDirectorContext(plan, cue = null, side = null) {
   return lines.join('\n');
 }
 
+// ── Oedipus / guided-discovery information asymmetry ─────────────────────────
+// A per-scenario `secret` ({ fact, premise_ledger }) — a withheld truth S plus
+// the ordered premises that entail it — is visible to the DIRECTOR and TUTOR but
+// must NEVER reach the LEARNER's system prompt; the learner may only come to know
+// S through what the tutor SAYS (the legitimate dialogue channel). Both helpers
+// are inert when no secret is set, so every existing scenario is unaffected.
+function buildSecretContext(secret) {
+  if (!secret || !secret.fact) return '';
+  const lines = [
+    'DRAMATIC IRONY — DIRECTOR/TUTOR PRIVATE (the learner does NOT know this and cannot see it):',
+    `- Withheld truth (S) the learner must be led to discover: ${secret.fact}`,
+  ];
+  const premises = Array.isArray(secret.premise_ledger) ? secret.premise_ledger : [];
+  if (premises.length) {
+    lines.push('- Premises you hold (meter them as clues/questions; do NOT state S outright):');
+    premises.forEach((p, i) => lines.push(`  ${i + 1}. ${p}`));
+  }
+  lines.push(
+    '- Lead the learner to reason toward S via questions and metered premises (Socratic). Never bald-reveal S unless the arm explicitly directs it; the learner must perform the inference for it to count.',
+  );
+  return lines.join('\n');
+}
+
+function secretDistinctiveTokens(text) {
+  return [
+    ...new Set(
+      String(text || '')
+        .toLowerCase()
+        .split(/[^a-z0-9]+/)
+        .filter((w) => w.length > 5),
+    ),
+  ];
+}
+
+// Runtime guard: throw if a rendered learner SYSTEM PROMPT contains the secret —
+// verbatim (a normalized substring of S or a premise) or as a paraphrase (a large
+// fraction of one item's distinctive tokens co-occurring). It checks the system
+// prompt only, NOT the dialogue messages: the tutor's public speech is the
+// intended revelation channel (and the `reveal` arm states S openly). This is a
+// belt-and-suspenders net on top of the structural isolation in buildDirectorContext.
+function assertSecretAbsent(secret, systemPrompt, callSite = 'learner') {
+  if (!secret || !secret.fact) return;
+  const corpus = String(systemPrompt || '').toLowerCase();
+  const collapsed = corpus.replace(/\s+/g, ' ');
+  const items = [secret.fact, ...(Array.isArray(secret.premise_ledger) ? secret.premise_ledger : [])];
+  for (const item of items) {
+    const normItem = String(item || '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+    if (normItem.length >= 12 && collapsed.includes(normItem)) {
+      throw new Error(
+        `SECRET LEAK at ${callSite}: learner system prompt contains the secret verbatim: "${normItem.slice(0, 60)}…"`,
+      );
+    }
+    const tokens = secretDistinctiveTokens(item);
+    if (tokens.length >= 4) {
+      const present = tokens.filter((t) => corpus.includes(t));
+      if (present.length >= Math.max(4, Math.ceil(tokens.length * 0.7))) {
+        throw new Error(
+          `SECRET LEAK at ${callSite}: learner system prompt contains ${present.length}/${tokens.length} distinctive secret tokens (${present.slice(0, 6).join(', ')})`,
+        );
+      }
+    }
+  }
+}
+
 function clipDirectorAnchor(text, maxLength = 180) {
   const normalized = String(text || '')
     .replace(/\s+/g, ' ')
@@ -452,7 +519,12 @@ function cueKindIncludes(cue, kind) {
     .includes(kind);
 }
 
-function buildLearnerReversalEvent({ learnerMessage, conversationHistory = [], directorCue = null, turnNumber = null } = {}) {
+function buildLearnerReversalEvent({
+  learnerMessage,
+  conversationHistory = [],
+  directorCue = null,
+  turnNumber = null,
+} = {}) {
   const text = extractExternalSection(learnerMessage || '');
   if (!text) return null;
   const previousTutor = [...(conversationHistory || [])]
@@ -522,9 +594,7 @@ function learnerReversalEventPriority(event) {
 }
 
 function selectLearnerReversalEvent(events = []) {
-  const candidates = dedupeLearnerReversalEvents(events).filter(
-    (event) => Number(event?.confidence || 0) >= 0.5,
-  );
+  const candidates = dedupeLearnerReversalEvents(events).filter((event) => Number(event?.confidence || 0) >= 0.5);
   if (!candidates.length) return null;
   return [...candidates].sort((a, b) => {
     const priorityDelta = learnerReversalEventPriority(b) - learnerReversalEventPriority(a);
@@ -634,7 +704,11 @@ function buildTutorReversalEventContext(event, policy = 'none') {
     .join('\n');
 }
 
-function buildTutorAdaptationContext({ learnerReframeEvent = null, learnerReversalEvent = null, policy = 'none' } = {}) {
+function buildTutorAdaptationContext({
+  learnerReframeEvent = null,
+  learnerReversalEvent = null,
+  policy = 'none',
+} = {}) {
   return [
     buildTutorReframeEventContext(learnerReframeEvent, policyIncludes(policy, 'uptake') ? 'uptake' : 'none'),
     buildTutorReversalEventContext(learnerReversalEvent, policy),
@@ -1520,18 +1594,20 @@ async function runTutorTurn(
     .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
     .join('\n\n');
   const directorContext = buildDirectorContext(directorPlan, directorCue, 'tutor');
+  const secretContext = buildSecretContext(directorPlan?._secret);
   const tutorAdaptationPolicy =
     tutorPrivateState?.tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none';
   const routineControl = policyIncludes(tutorAdaptationPolicy, 'routine');
   const peripeteiaControl = policyIncludes(tutorAdaptationPolicy, 'peripeteia');
-  const learnerReframeEvent =
-    policyIncludes(tutorAdaptationPolicy, 'uptake') ? tutorPrivateState?.learnerReframeEvent || null : null;
-  const learnerReversalEvent = routineControl || peripeteiaControl
-    ? tutorPrivateState?.learnerReversalEvent || null
+  const learnerReframeEvent = policyIncludes(tutorAdaptationPolicy, 'uptake')
+    ? tutorPrivateState?.learnerReframeEvent || null
     : null;
-  const learnerReversalEventCandidates = routineControl || peripeteiaControl
-    ? tutorPrivateState?.learnerReversalEventCandidates || (learnerReversalEvent ? [learnerReversalEvent] : [])
-    : [];
+  const learnerReversalEvent =
+    routineControl || peripeteiaControl ? tutorPrivateState?.learnerReversalEvent || null : null;
+  const learnerReversalEventCandidates =
+    routineControl || peripeteiaControl
+      ? tutorPrivateState?.learnerReversalEventCandidates || (learnerReversalEvent ? [learnerReversalEvent] : [])
+      : [];
   const tutorAdaptationContext = buildTutorAdaptationContext({
     learnerReframeEvent,
     learnerReversalEvent,
@@ -1553,7 +1629,7 @@ Recent conversation:
 ${conversationContext}
 
 ${directorContext ? `${directorContext}\n` : ''}
-${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}
+${secretContext ? `${secretContext}\n` : ''}${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}
 
 The learner just said:
 "${learnerMessage}"
@@ -1606,7 +1682,7 @@ Recent conversation:
 ${conversationContext}
 
 ${directorContext ? `${directorContext}\n` : ''}
-${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}
+${secretContext ? `${secretContext}\n` : ''}${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}
 
 The learner said:
 "${learnerMessage}"
@@ -1680,7 +1756,7 @@ Recent conversation:
 ${conversationContext}
 
 ${directorContext ? `${directorContext}\n` : ''}
-${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}
+${secretContext ? `${secretContext}\n` : ''}${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}
 
 The learner just said:
 "${learnerMessage}"
@@ -2414,6 +2490,8 @@ export {
   INTERACTION_OUTCOMES,
   getRequiredTemperature,
   getRequiredMaxTokens,
+  buildSecretContext,
+  assertSecretAbsent,
 };
 
 export default {

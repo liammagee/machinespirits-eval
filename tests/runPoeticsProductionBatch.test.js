@@ -9,6 +9,7 @@ import {
   DEFAULT_CRITICS,
   modelSlug,
   parseArgs,
+  runScoreJobsPooled,
   scoreCommand,
   scoreJobs,
   structureCriticCommand,
@@ -190,10 +191,7 @@ describe('run-poetics-production-batch', () => {
 
     const jobs = scoreJobs(target, args);
     assert.equal(jobs.length, 4);
-    assert.deepEqual(
-      [...new Set(jobs.map((job) => job.id))].sort(),
-      ['target-r01-none', 'target-r01-routine'],
-    );
+    assert.deepEqual([...new Set(jobs.map((job) => job.id))].sort(), ['target-r01-none', 'target-r01-routine']);
   });
 
   it('can add a pre-scoring structural critic stage', () => {
@@ -308,10 +306,11 @@ describe('run-poetics-production-batch', () => {
 
     const jobs = scoreJobs(target, args);
 
-    assert.deepEqual(
-      jobs.map((job) => job.id).sort(),
-      ['target-r01-none', 'target-r01-prefix-baseline', 'target-r01-routine'],
-    );
+    assert.deepEqual(jobs.map((job) => job.id).sort(), [
+      'target-r01-none',
+      'target-r01-prefix-baseline',
+      'target-r01-routine',
+    ]);
   });
 
   it('normalizes model names into stable artifact slugs', () => {
@@ -322,5 +321,50 @@ describe('run-poetics-production-batch', () => {
 
   it('can resume scoring without overwriting existing score artifacts', () => {
     assert.equal(parseArgs(['--skip-existing-scores']).skipExistingScores, true);
+  });
+});
+
+describe('runScoreJobsPooled (critic-parallel score pool)', () => {
+  it('runs jobs concurrently, skips existing, and aggregates failures', async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'pool-test-'));
+    const jobs = [1, 2, 3, 4, 5].map((i) => ({
+      id: `j${i}`,
+      critic: 'qwen',
+      outPath: path.join(tmp, `j${i}.json`),
+      _fail: i === 5,
+    }));
+    fs.writeFileSync(jobs[1].outPath, 'pre'); // j2 pre-exists → should be skipped
+    const steps = [];
+    const progress = { step: (s) => steps.push(s), note: () => {}, start: () => {}, finish: () => {} };
+    const makeCmd = (job) =>
+      job._fail
+        ? ['node', '-e', 'process.exit(3)']
+        : ['node', '-e', 'require("fs").writeFileSync(process.argv[1], "{}")', job.outPath];
+    const args = { scoreJobConcurrency: 4, skipExistingScores: true, dryRun: false };
+
+    await assert.rejects(() => runScoreJobsPooled(jobs, args, progress, makeCmd), /1 score job\(s\) failed/);
+
+    assert.equal(fs.readFileSync(jobs[0].outPath, 'utf8'), '{}'); // j1 ran
+    assert.equal(fs.readFileSync(jobs[1].outPath, 'utf8'), 'pre'); // j2 skipped (untouched)
+    assert.equal(fs.readFileSync(jobs[2].outPath, 'utf8'), '{}'); // j3 ran
+    assert.equal(fs.readFileSync(jobs[3].outPath, 'utf8'), '{}'); // j4 ran
+    assert.equal(fs.existsSync(jobs[4].outPath), false); // j5 failed → no output
+    assert.ok(steps.some((s) => s.includes('skipped')));
+    assert.ok(steps.some((s) => s.includes('FAILED')));
+    fs.rmSync(tmp, { recursive: true, force: true });
+  });
+
+  it('preserves correct behavior at concurrency 1 (sequential)', async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'pool-seq-'));
+    const jobs = [1, 2, 3].map((i) => ({
+      id: `s${i}`,
+      critic: 'qwen',
+      outPath: path.join(tmp, `s${i}.json`),
+    }));
+    const progress = { step: () => {}, note: () => {}, start: () => {}, finish: () => {} };
+    const makeCmd = (job) => ['node', '-e', 'require("fs").writeFileSync(process.argv[1], "{}")', job.outPath];
+    await runScoreJobsPooled(jobs, { scoreJobConcurrency: 1, dryRun: false }, progress, makeCmd);
+    assert.ok(jobs.every((j) => fs.existsSync(j.outPath)));
+    fs.rmSync(tmp, { recursive: true, force: true });
   });
 });
