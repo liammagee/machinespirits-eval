@@ -7,7 +7,10 @@
  */
 
 import * as learnerConfig from './learnerConfigLoader.js';
-import { tutorConfigLoader as tutorConfig, tutorDialogueEngine } from '@machinespirits/tutor-core';
+// tutorConfig is the eval-local wrapper: identical config logic to tutor-core's
+// tutorConfigLoader, but prompts resolve from this repo's prompts/ (eval-first).
+import * as tutorConfig from './tutorConfigLocal.js';
+import { tutorDialogueEngine } from '../tutor-core/index.js';
 const { callAI } = tutorDialogueEngine;
 
 import * as learnerWritingPad from './memory/learnerWritingPad.js';

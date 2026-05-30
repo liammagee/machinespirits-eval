@@ -11,9 +11,10 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import yaml from 'yaml';
-import { configLoaderBase, modelResolver } from '@machinespirits/tutor-core';
+import { configLoaderBase, modelResolver } from '../tutor-core/index.js';
 import { loadProviders as loadEvalProviders } from './evalConfigLoader.js';
-const { createConfigLoader, createPromptLoader } = configLoaderBase;
+import { createLocalPromptLoader } from './localPromptLoader.js';
+const { createConfigLoader } = configLoaderBase;
 const { createBoundResolver } = modelResolver;
 
 // Local eval-repo config directory (for learner-agents.yaml override)
@@ -167,7 +168,9 @@ function loadLocalConfig(forceReload = false) {
 }
 
 const coreConfigLoader = createConfigLoader('learner-agents.yaml', getDefaultConfig);
-const promptLoader = createPromptLoader(getDefaultPrompt);
+// Local-first: resolves eval-repo prompts/ before tutor-core's bundled copies, so
+// edits to learner prompts in this repo actually take effect (see localPromptLoader.js).
+const promptLoader = createLocalPromptLoader(getDefaultPrompt);
 
 // loadConfig: prefer local eval-repo config, fall back to tutor-core / defaults
 export function loadConfig(forceReload = false) {
@@ -189,11 +192,7 @@ export function getProviderConfig(providerName) {
   // — same special case as evalConfigLoader.getProviderConfig (kept in sync).
   const needsApiKey = Boolean(provider.api_key_env);
   const isConfigured =
-    providerName === 'claude-code'
-      ? true
-      : needsApiKey
-        ? Boolean(apiKey)
-        : Boolean(provider.base_url);
+    providerName === 'claude-code' ? true : needsApiKey ? Boolean(apiKey) : Boolean(provider.base_url);
   return { ...provider, apiKey, isConfigured };
 }
 
