@@ -55,13 +55,17 @@ describe('Oedipus secret guard', () => {
       assert.equal(buildSecretContext({ premise_ledger: ['x'] }), ''); // no fact → inert
     });
 
-    it('renders the fact, premises, and the no-bald-reveal instruction', () => {
-      const ctx = buildSecretContext(secret);
-      assert.match(ctx, /DRAMATIC IRONY/);
-      assert.ok(ctx.includes(secret.fact));
-      assert.ok(ctx.includes(secret.premise_ledger[0]));
-      assert.ok(ctx.includes(secret.premise_ledger[1]));
-      assert.match(ctx, /Never bald-reveal/);
+    it('always exposes S + premises to the tutor, and switches instruction by arm', () => {
+      for (const policy of ['socratic_discovery', 'reveal_secret', 'none']) {
+        const ctx = buildSecretContext(secret, policy);
+        assert.match(ctx, /DRAMATIC IRONY/);
+        assert.ok(ctx.includes(secret.fact));
+        assert.ok(ctx.includes(secret.premise_ledger[0]));
+        assert.ok(ctx.includes(secret.premise_ledger[1]));
+      }
+      assert.match(buildSecretContext(secret, 'socratic_discovery'), /Never state S outright/);
+      assert.match(buildSecretContext(secret, 'reveal_secret'), /state S to the learner plainly/);
+      assert.match(buildSecretContext(secret, 'none'), /must NOT lead the learner toward it/);
     });
   });
 });

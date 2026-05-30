@@ -106,6 +106,12 @@ const PAIRED_ADAPTATION_ARMS = {
   'reframe+tutor-uptake': { revisitPolicy: 'reframe', tutorAdaptationPolicy: 'uptake' },
   'peripeteia-only': { revisitPolicy: 'none', tutorAdaptationPolicy: 'peripeteia' },
   'reframe+peripeteia': { revisitPolicy: 'reframe', tutorAdaptationPolicy: 'uptake+peripeteia' },
+  // Oedipus guided-discovery arms (require a scenario `secret`; behaviour is driven
+  // by the arm-aware buildSecretContext in the engine, not the reframe/peripeteia
+  // machinery). socratic = meter premises so the learner infers S; reveal = state S
+  // outright (ceiling); the `none` arm above doubles as the withhold control.
+  socratic: { revisitPolicy: 'none', tutorAdaptationPolicy: 'socratic_discovery' },
+  reveal: { revisitPolicy: 'none', tutorAdaptationPolicy: 'reveal_secret' },
 };
 
 // ── args ─────────────────────────────────────────────────────────────────────
@@ -213,7 +219,7 @@ function parseArgs(argv) {
     for (const arm of a.pairedAdaptationArms) {
       if (!PAIRED_ADAPTATION_ARMS[arm]) {
         throw new Error(
-          '--paired-adaptation-arms must use routine,none,reframe-only,tutor-uptake-only,reframe+tutor-uptake,peripeteia-only,reframe+peripeteia',
+          '--paired-adaptation-arms must use routine,none,reframe-only,tutor-uptake-only,reframe+tutor-uptake,peripeteia-only,reframe+peripeteia,socratic,reveal',
         );
       }
     }

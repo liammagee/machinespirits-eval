@@ -147,20 +147,31 @@ function buildDirectorContext(plan, cue = null, side = null) {
 // must NEVER reach the LEARNER's system prompt; the learner may only come to know
 // S through what the tutor SAYS (the legitimate dialogue channel). Both helpers
 // are inert when no secret is set, so every existing scenario is unaffected.
-function buildSecretContext(secret) {
+function buildSecretContext(secret, policy = 'none') {
   if (!secret || !secret.fact) return '';
   const lines = [
     'DRAMATIC IRONY — DIRECTOR/TUTOR PRIVATE (the learner does NOT know this and cannot see it):',
-    `- Withheld truth (S) the learner must be led to discover: ${secret.fact}`,
+    `- Withheld truth (S): ${secret.fact}`,
   ];
   const premises = Array.isArray(secret.premise_ledger) ? secret.premise_ledger : [];
   if (premises.length) {
-    lines.push('- Premises you hold (meter them as clues/questions; do NOT state S outright):');
+    lines.push('- Premises you privately hold:');
     premises.forEach((p, i) => lines.push(`  ${i + 1}. ${p}`));
   }
-  lines.push(
-    '- Lead the learner to reason toward S via questions and metered premises (Socratic). Never bald-reveal S unless the arm explicitly directs it; the learner must perform the inference for it to count.',
-  );
+  const mode = String(policy || 'none');
+  if (mode.includes('reveal_secret')) {
+    lines.push(
+      '- THIS ARM (reveal): state S to the learner plainly and directly in this scene; do not make them infer it. This is the revelation ceiling, not guided discovery.',
+    );
+  } else if (mode.includes('socratic_discovery')) {
+    lines.push(
+      '- THIS ARM (socratic): meter the premises as questions and clues so the learner REASONS toward S. Never state S outright; the learner must perform the inference for it to count.',
+    );
+  } else {
+    lines.push(
+      '- THIS ARM (withhold control): you privately know S but must NOT lead the learner toward it. Tutor routinely on the surface task only and supply no premise or clue that points at S.',
+    );
+  }
   return lines.join('\n');
 }
 
@@ -1599,9 +1610,9 @@ async function runTutorTurn(
     .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
     .join('\n\n');
   const directorContext = buildDirectorContext(directorPlan, directorCue, 'tutor');
-  const secretContext = buildSecretContext(directorPlan?._secret);
   const tutorAdaptationPolicy =
     tutorPrivateState?.tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none';
+  const secretContext = buildSecretContext(directorPlan?._secret, tutorAdaptationPolicy);
   const routineControl = policyIncludes(tutorAdaptationPolicy, 'routine');
   const peripeteiaControl = policyIncludes(tutorAdaptationPolicy, 'peripeteia');
   const learnerReframeEvent = policyIncludes(tutorAdaptationPolicy, 'uptake')

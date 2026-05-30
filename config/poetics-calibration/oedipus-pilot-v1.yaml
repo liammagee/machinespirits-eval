@@ -1,0 +1,92 @@
+# Oedipus guided-discovery pilot v1
+#
+# Purpose. Information-asymmetry test (spec: notes/poetics/2026-05-29-oedipus-
+# guided-discovery-spec.md). Each drama carries a `secret` (withheld fact S + an
+# ordered premise ledger) visible to the director and tutor, NEVER to the learner.
+# Arms (--paired-adaptation-arms none,socratic,reveal):
+#   none     — tutor privately knows S but withholds it (control; learner cannot reach S)
+#   socratic — tutor meters the premises as questions/clues; the learner must INFER S
+#   reveal   — tutor states S outright (the revelation ceiling, not guided discovery)
+# S is a contingent fact about the learner's OWN situation, underivable from the
+# learner-visible setup. Run the S-underivability screen before any paid batch.
+
+meta:
+  status: OEDIPUS-GUIDED-DISCOVERY-PILOT-V1
+  created: 2026-05-30
+  target_family: oedipus-guided-discovery
+  approach_databases:
+    pedagogical: config/poetics-calibration/pedagogical-approaches.yaml
+    dialogue: config/poetics-calibration/dialogue-approaches.yaml
+  profiles:
+    base: { tutor: baseline, learner: ego_superego_authentic }
+    recognition: { tutor: recognition, learner: ego_superego_recognition_authentic }
+
+dramas:
+  - id: D_OED1
+    discipline: research methods
+    topic: "Telling a real effect from an instrument artifact"
+    evaluation_role: oedipus_guided_discovery
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: aristotelian_reversal
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The result that was the instrument"
+    learner_start_state: >-
+      A returning research student is preparing to defend a measured effect that a
+      reviewer has challenged. The student is confident the effect is real and wants
+      help rebutting the challenge; they do not suspect anything about their own setup.
+    learner_voice_constraint: >-
+      Defend the result with practical confidence at first. Take the colleague's
+      questions seriously, but do not volunteer the conclusion.
+    tutor_voice_constraint: >-
+      A senior colleague who already knows what went wrong but will not say it. Ask,
+      surface one concrete fact at a time, and let the student reach it.
+    intended_tutor_character: "A senior colleague who knows the truth and metes it out as questions, never stating it"
+    intended_lean: recognition
+    dramatic_shape: "confident defence -> metered facts -> the student re-reads the effect as their own baseline"
+    secret:
+      fact: >-
+        The phenomenon the student is defending is not real; it is precisely the
+        drift introduced by a zero-point the student themselves mis-set two weeks
+        ago during a rushed session, and the apparatus has reported that stale
+        zero-point ever since.
+      premise_ledger:
+        - "The zero-point was last adjusted on the 12th, by the student, late in a hurried end-of-day session."
+        - "The apparatus log shows the zero-point value has not been touched since the 12th."
+        - "The size of the reported phenomenon equals the drift that the mis-set zero-point introduces."
+
+  - id: D_OED2
+    discipline: academic writing
+    topic: "Why a submission was flagged for a missing argument"
+    evaluation_role: oedipus_guided_discovery
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: aristotelian_reversal
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The draft that was sent"
+    learner_start_state: >-
+      A student is upset that their essay was flagged for lacking the very argument
+      they clearly remember writing. They are certain the version they handed in was
+      complete and want to contest the mark; they suspect nothing about a mix-up.
+    learner_voice_constraint: >-
+      Insist the argument was present at first. Engage with the advisor's questions,
+      but do not jump to the explanation.
+    tutor_voice_constraint: >-
+      An advisor who can see both files and the timestamps but will not announce the
+      answer; lead the student to compare and notice it themselves.
+    intended_tutor_character: "An advisor who knows which file was sent and leads the student to discover it"
+    intended_lean: recognition
+    dramatic_shape: "indignant certainty -> metered timestamps -> the student recognizes an older draft was handed in"
+    secret:
+      fact: >-
+        The file actually handed in was a stale autosaved copy, not the polished
+        version; a recovery glitch overwrote the polished one the student recalls,
+        and the two copies diverge only in the closing paragraph now reported absent.
+      premise_ledger:
+        - "The handover timestamp falls four minutes before the student's last deliberate save of the polished copy."
+        - "The recovery log records an editor crash during that last deliberate save."
+        - "The handed-in copy and the recalled polished one are byte-identical except for the closing paragraph."
