@@ -571,6 +571,56 @@ profiles:
       rapid_nav_window_ms: 30000
       retry_frustration_count: 3
 
+  # A10/A10b prompt-density controls — ported from tutor-core 0.5.3 to unblock eval
+  # cells 95/96 after in-housing (see TUTOR-CORE-INHOUSING.md). Length-/specificity-matched
+  # to recognition, zero recognition content; single-agent, no dialogue. Prompts live in
+  # tutor-core/prompts/tutor-ego-matched-{pedagogical,behaviorist}.md.
+  matched_pedagogical:
+    description: "A10 density control - matched-specificity pedagogical prompt, no recognition content, no superego"
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-matched-pedagogical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego: null
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: true
+      high_intensity_extra_rounds: false
+
+  matched_behaviorist:
+    description: "A10b density control - matched-specificity behaviorist prompt, genuinely orthogonal to recognition family, no superego"
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-matched-behaviorist.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego: null
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: true
+      high_intensity_extra_rounds: false
+
   # Memory-only: Base prompts with memory integration, no recognition theory (eval repo cell 19)
   memory:
     description: "Memory isolation - base + memory integration, no recognition theory"
