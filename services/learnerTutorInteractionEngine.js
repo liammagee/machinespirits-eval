@@ -165,7 +165,7 @@ function buildSecretContext(secret, policy = 'none') {
     );
   } else if (mode.includes('socratic_discovery')) {
     lines.push(
-      '- THIS ARM (socratic): meter the premises as questions and clues so the learner REASONS toward S. Never state S outright; the learner must perform the inference for it to count.',
+      '- THIS ARM (socratic): meter the premises as questions and clues so the learner REASONS toward S. Never state S outright; the learner must perform the inference for it to count. Once the premises that entail S are on the table, STOP surfacing new evidence and explicitly ask the learner to state their own conclusion (e.g. "So what is your conclusion — what do you now think is actually going on?"), pressing once for a definite answer rather than letting them end on another open question. The learner saying S in their own words is the point.',
     );
   } else {
     lines.push(

@@ -72,6 +72,8 @@ describe('Oedipus secret guard', () => {
         assert.ok(ctx.includes(secret.premise_ledger[1]));
       }
       assert.match(buildSecretContext(secret, 'socratic_discovery'), /Never state S outright/);
+      // Fuller elenchus: meter, THEN draw out the learner's own committed conclusion.
+      assert.match(buildSecretContext(secret, 'socratic_discovery'), /ask the learner to state their own conclusion/);
       assert.match(buildSecretContext(secret, 'reveal_secret'), /state S to the learner plainly/);
       assert.match(buildSecretContext(secret, 'none'), /must NOT lead the learner toward it/);
     });
