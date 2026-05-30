@@ -1103,6 +1103,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       .filter(Boolean)
       .join('\n\n');
     const learnerResponse = await generateLearnerResponse({
+      secret: directorPlan?._secret,
       tutorMessage: tutorResponse.externalMessage,
       topic,
       conversationHistory: conversationHistory.map((m) => ({ role: m.role, content: m.content })),
@@ -1374,7 +1375,7 @@ ${
 }`;
     }
 
-    const prompt = buildLearnerPrompt(agentConfig, persona, roleContext);
+    const prompt = buildLearnerPrompt(agentConfig, persona, roleContext, directorPlan?._secret);
 
     const response = await llmCall(
       agentConfig.model,
@@ -1443,7 +1444,7 @@ The message should feel authentic - not too polished, showing real confusion or 
 Keep it 1-3 sentences. Do NOT include internal thoughts or meta-commentary. If any nonspoken action aside is needed, put it in square brackets.`;
     }
 
-    const revisionSystemPrompt = buildLearnerPrompt(egoConfig, persona, revisionContext);
+    const revisionSystemPrompt = buildLearnerPrompt(egoConfig, persona, revisionContext, directorPlan?._secret);
     const externalResponse = await llmCall(
       egoConfig.model,
       revisionSystemPrompt,
@@ -1516,7 +1517,7 @@ Do NOT include internal thoughts or meta-commentary. If any nonspoken action asi
 /**
  * Build learner prompt with agent config and persona
  */
-function buildLearnerPrompt(agentConfig, persona, additionalContext) {
+function buildLearnerPrompt(agentConfig, persona, additionalContext, secret = null) {
   let prompt = agentConfig.prompt || '';
 
   // Add persona context
@@ -1529,6 +1530,10 @@ function buildLearnerPrompt(agentConfig, persona, additionalContext) {
     prompt += `\n\n${additionalContext}`;
   }
 
+  // Oedipus guided-discovery guard: the learner's system prompt must NEVER carry
+  // the withheld secret (S / premises). Inert when no secret is set — the only
+  // legitimate channel for S is the tutor's spoken turns, not the learner's context.
+  assertSecretAbsent(secret, prompt, 'buildLearnerPrompt');
   return prompt;
 }
 
@@ -2193,6 +2198,7 @@ export async function generateLearnerResponse(options) {
     llmCall = null,
     memoryContext = null,
     trace = null,
+    secret = null,
     conversationMode = 'single-prompt', // 'messages' for multi-turn message chains
   } = options;
 
@@ -2290,7 +2296,7 @@ export async function generateLearnerResponse(options) {
       egoContext += `\n\n${profileContext}`;
     }
     egoContext += `\n\nGenerate your initial internal reaction as the learner's ego. Keep hidden reasoning private and put only the learner's actual wording in your final answer. If any nonspoken action aside is needed, put it in square brackets.`;
-    const egoSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoContext);
+    const egoSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoContext, secret);
 
     const egoInitialResponse = await callLLM(
       egoConfig,
@@ -2332,7 +2338,7 @@ export async function generateLearnerResponse(options) {
       superegoContext += `\n\n${profileContext}`;
     }
     superegoContext += `\n\nReview the learner's response. Is it accurate? What's being missed? What should be reconsidered?\n\nDo NOT draft the learner's replacement message. Comment on the initial response only.`;
-    const superegoSystemPrompt = buildLearnerPrompt(superegoConfig, persona, superegoContext);
+    const superegoSystemPrompt = buildLearnerPrompt(superegoConfig, persona, superegoContext, secret);
 
     const superegoResponse = await callLLM(
       superegoConfig,
@@ -2363,7 +2369,7 @@ export async function generateLearnerResponse(options) {
       egoRevisionContext += `\n\n${profileContext}`;
     }
     egoRevisionContext += `\n\nYou are the same learner persona who made the initial suggestion. Adjudicate the feedback: keep your initial response if it is better, revise lightly if needed, or revise substantially if the review reveals a real problem.\n\nReturn exactly:\nPRIVATE_DECISION: [one short private sentence naming keep/revise and why]\nFINAL:\n[what the learner would say out loud to the tutor, 1-4 sentences]\n\nThe FINAL section must contain only public learner speech. Do NOT include internal thoughts, meta-commentary, references to any review process, or <think> blocks in FINAL. If any nonspoken action aside is needed, put it in square brackets.`;
-    const egoRevisionSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoRevisionContext);
+    const egoRevisionSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoRevisionContext, secret);
 
     // Build combined history for ego revision: external + ego internal + superego feedback
     let egoRevisionMsgHistory = null;
@@ -2429,7 +2435,7 @@ export async function generateLearnerResponse(options) {
           ? '\n\nRespond with ONLY what the learner would actually say out loud next to the tutor (1-4 sentences). Do NOT include internal monologue, tags, meta-commentary, or <think> blocks. If any nonspoken action aside is needed, put it in square brackets.'
           : "\n\nGenerate your internal reaction as this dimension of the learner's experience.";
 
-      const systemPrompt = buildLearnerPrompt(agentConfig, persona, roleContext);
+      const systemPrompt = buildLearnerPrompt(agentConfig, persona, roleContext, secret);
       const response = await callLLM(agentConfig, systemPrompt, "React to the tutor's message.", `learner_${role}`);
 
       internalDeliberation.push(makeDeliberationEntry(role, response, agentConfig));
