@@ -74,6 +74,14 @@ describe('Oedipus secret guard', () => {
       assert.match(buildSecretContext(secret, 'socratic_discovery'), /Never state S outright/);
       // Fuller elenchus: meter, THEN draw out the learner's own committed conclusion.
       assert.match(buildSecretContext(secret, 'socratic_discovery'), /ask the learner to state their own conclusion/);
+      // P1 fix: the tutor must be licensed to meter the DISTINGUISHING premise (the
+      // one separating S from its near-miss). Withholding it — the tutor superego
+      // mislabelling P1 as "secret" — produced the §7.9 over-determined null.
+      assert.match(buildSecretContext(secret, 'socratic_discovery'), /DISTINGUISHES S from the nearest/);
+      assert.match(
+        buildSecretContext(secret, 'socratic_discovery'),
+        /stating or pointing at a premise is legitimate metering/i,
+      );
       assert.match(buildSecretContext(secret, 'reveal_secret'), /state S to the learner plainly/);
       assert.match(buildSecretContext(secret, 'none'), /must NOT lead the learner toward it/);
     });
