@@ -128,6 +128,30 @@ Per scenario, a **positive claim** requires ALL of:
 5. Trace manipulation-check analyzer (ignorance@t0, clue-tied acquisition trajectory).
 6. Reuse `scripts/aggregate-poetics-paired-increment.js` for the lift.
 
+### Build status (2026-05-30)
+
+- **1 — DONE.** Secret routed to director + tutor only (arm-aware `buildSecretContext`), never the
+  learner; runtime guard `assertSecretAbsent` at every learner-prompt site. Mock smoke proved the
+  asymmetry end-to-end (S in all hidden transcripts, none of the public; guard clean). Commit `075b899`.
+- **2 — DONE.** `none` / `socratic` / `reveal` registered in `PAIRED_ADAPTATION_ARMS`; pilot scenario
+  `config/poetics-calibration/oedipus-pilot-v1.yaml` (D_OED1, D_OED2).
+- **3 — DONE.** `scripts/screen-s-underivability.js` (`npm run poetics:screen-underivability`): K_L
+  (learner-visible only) → strong model blind-discovers S → match-judge + deterministic token cross-check;
+  `derivable → REJECT`. Reports genre-guess diagnostic. `--mock` for plumbing.
+- **4 — DONE.** `scripts/critic-poetics-omniscient.js` (`npm run poetics:critic-omniscient`): panel given S,
+  arm-blind → discovery + by-reasoning + deterministic reveal-detector (fact-only) ∨ panel reveal votes;
+  `discoveryPass = discovered ∧ by_reasoning ∧ ¬revealed`; ships its OWN paired `socratic − none` lift
+  (Wilson), `none`-reaches-S ⇒ `invalid_control_leak`, `reveal` as ceiling. So step 6's lift is covered for
+  the standalone path; the DB-backed aggregator reuse is only needed if these scores are ingested.
+- Shared: `scripts/lib/secret-tokens.js` (overlap helpers mirroring the guard). Tests:
+  `services/__tests__/secretTokens.test.js`, `tests/screenSUnderivability.test.js`,
+  `tests/criticPoeticsOmniscient.test.js` (+ existing `oedipusSecretGuard`).
+- **5 — REMAINING.** Trace manipulation-check analyzer (ignorance@t0, clue-tied acquisition). Corroborating,
+  not blocking the first paid smoke (reads the hidden delib trace `directorPlan._secret` + per-turn
+  `internalDeliberation`).
+- **Next:** a paid `--generator api` smoke of D_OED1 × {none, socratic, reveal}, scored by 3+4, to see the
+  real discovery behaviour before investing in a screened multi-scenario run.
+
 Pilot: 3–5 Oedipus-shaped scenarios × {none, socratic, reveal} × few iterations. Attended/paid (Opus
 generation); same quota discipline as the EDRA runs (concurrency 2, 15-min CLI ceiling, human-gated).
 
