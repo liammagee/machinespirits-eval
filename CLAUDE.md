@@ -6,11 +6,15 @@ This is `machinespirits-eval-dramatic` — a fork of `machinespirits-eval` speci
 
 ## Core Architecture
 
+### Tutor-core (in-housed)
+
+The Ego/Superego dialogue engine, AI-provider abstraction, and base config/prompts were vendored from the `@machinespirits/tutor-core` npm package into the in-repo `tutor-core/` module (2026-05-30 — see `TUTOR-CORE-INHOUSING.md` for the migration plan + re-externalization note). Import it via **relative paths** (`../tutor-core/index.js`, `../tutor-core/services/<x>.js`), NOT the old `@machinespirits/tutor-core` specifier; there is no longer a peerDependency. tutor-core resolves its *own* bundled `tutor-core/config` + `tutor-core/prompts` (base profiles); the eval layer remaps cells 1–125 onto those via `resolveEvalProfile`, and `services/localPromptLoader.js` makes the eval repo's `prompts/` authoritative for eval-side callers. Keep the seam clean: `tutor-core/**` must never import back into the eval repo (one-way dependency), so it stays re-extractable. `tutor-core/` is excluded from the eval repo's eslint/prettier (it carries its own upstream style).
+
 ### Bilateral Ego-Superego Architecture
 
 Both tutor AND learner have dynamic LLM-powered ego-superego architectures:
 
-**Tutor (services in @machinespirits/tutor-core):**
+**Tutor (services in the in-housed `tutor-core/` module — see "Tutor-core (in-housed)" above):**
 - Ego generates initial response
 - Superego critiques for pedagogical soundness
 - Ego revises based on feedback (final authority)

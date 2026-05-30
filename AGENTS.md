@@ -6,7 +6,7 @@
 
 Both tutor AND learner have dynamic LLM-powered ego-superego architectures:
 
-**Tutor (services in @machinespirits/tutor-core):**
+**Tutor (services in the in-housed `tutor-core/` module — formerly the `@machinespirits/tutor-core` package; import via relative paths, see `TUTOR-CORE-INHOUSING.md`):**
 - Ego generates initial response
 - Superego critiques for pedagogical soundness
 - Ego revises based on feedback (final authority)
