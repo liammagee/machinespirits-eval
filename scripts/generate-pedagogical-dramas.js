@@ -2484,9 +2484,13 @@ async function buildDirectorPlan(d, llmCall, args) {
           : null,
     scenario_name: d.scenario_name,
     learner_start_state: d.learner_start_state,
-    secret: d.secret || null,
+    // Withhold the premise ledger from the DIRECTOR: it only needs S (the fact) to
+    // shape the arc; the TUTOR receives the premises separately (buildSecretContext).
+    // This shrinks the director's leak surface — it cannot write record details it
+    // never sees into a learner-visible scene field.
+    secret: d.secret ? { fact: d.secret.fact } : null,
     secret_instruction: d.secret
-      ? 'GUIDED-DISCOVERY (Oedipus): `secret.fact` (S) is a withheld truth only the tutor knows; the learner must be led to discover it by the tutor metering `secret.premise_ledger` as clues/questions. Build the scene so S is discoverable through dialogue but NOT derivable from the learner-visible setup, and never place S or its premises in any learner-visible material.'
+      ? "GUIDED-DISCOVERY (Oedipus): `secret.fact` (S) is the withheld CONCLUSION; only the tutor knows it and the tutor privately holds the ordered premises that entail it (you are NOT given them — do not invent or imply specific records). Build the scene so S is discoverable through the tutor questioning the learner, but NOT derivable from the learner-visible setup. NEVER place S, or any specific evidence pointing at it, in `scene_setting`, `stakes`, `relationship`, `voice_constraints`, or any other learner-visible field — those reach the learner. S must surface ONLY through the tutor's spoken turns."
       : null,
     trap_demarcation: d.trap_demarcation || d.trap_signal_style || null,
     trap_instruction:

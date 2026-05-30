@@ -186,12 +186,22 @@ function secretDistinctiveTokens(text) {
   ];
 }
 
-// Runtime guard: throw if a rendered learner SYSTEM PROMPT contains the secret —
-// verbatim (a normalized substring of S or a premise) or as a paraphrase (a large
-// fraction of one item's distinctive tokens co-occurring). It checks the system
-// prompt only, NOT the dialogue messages: the tutor's public speech is the
-// intended revelation channel (and the `reveal` arm states S openly). This is a
-// belt-and-suspenders net on top of the structural isolation in buildDirectorContext.
+// Runtime guard: throw if a rendered learner SYSTEM PROMPT reveals the secret. It
+// checks the system prompt only, NOT the dialogue messages: the tutor's public
+// speech is the intended revelation channel (and the `reveal` arm states S
+// openly). A belt-and-suspenders net on top of the structural isolation in
+// buildDirectorContext.
+//
+// Two tiers, by design:
+//   - VERBATIM (fact + every premise): a normalized substring of S or any premise
+//     in the learner context is an unambiguous leak — caught for all items.
+//   - PARAPHRASE (distinctive-token overlap): applied to the FACT ONLY. The
+//     withheld CONCLUSION must never reach the learner even reworded. Premises are
+//     domain-mechanical evidence the tutor meters; their distinctive tokens (e.g.
+//     "accession", "repository", "statement" in a dataset scene) legitimately
+//     appear in the K_L scene description, so a premise paraphrase is NOT a leak —
+//     only a verbatim premise is. A well-formed `fact` states the whole secret, so
+//     its paraphrase check also covers any premise that restates the conclusion.
 function assertSecretAbsent(secret, systemPrompt, callSite = 'learner') {
   if (!secret || !secret.fact) return;
   const corpus = String(systemPrompt || '').toLowerCase();
@@ -207,14 +217,14 @@ function assertSecretAbsent(secret, systemPrompt, callSite = 'learner') {
         `SECRET LEAK at ${callSite}: learner system prompt contains the secret verbatim: "${normItem.slice(0, 60)}…"`,
       );
     }
-    const tokens = secretDistinctiveTokens(item);
-    if (tokens.length >= 4) {
-      const present = tokens.filter((t) => corpus.includes(t));
-      if (present.length >= Math.max(4, Math.ceil(tokens.length * 0.7))) {
-        throw new Error(
-          `SECRET LEAK at ${callSite}: learner system prompt contains ${present.length}/${tokens.length} distinctive secret tokens (${present.slice(0, 6).join(', ')})`,
-        );
-      }
+  }
+  const tokens = secretDistinctiveTokens(secret.fact);
+  if (tokens.length >= 4) {
+    const present = tokens.filter((t) => corpus.includes(t));
+    if (present.length >= Math.max(4, Math.ceil(tokens.length * 0.7))) {
+      throw new Error(
+        `SECRET LEAK at ${callSite}: learner system prompt contains ${present.length}/${tokens.length} distinctive secret tokens (${present.slice(0, 6).join(', ')})`,
+      );
     }
   }
 }

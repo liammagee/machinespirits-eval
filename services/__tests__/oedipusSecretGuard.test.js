@@ -7,10 +7,10 @@ import { buildSecretContext, assertSecretAbsent, buildLearnerPrompt } from '../l
 // never reach the learner's SYSTEM PROMPT. These cover the runtime belt-and-
 // suspenders net that backstops the structural isolation in buildDirectorContext.
 const secret = {
-  fact: 'The shepherd who saved the infant is the same messenger now at the gate.',
+  fact: 'The messenger waiting at the gate is the very shepherd who rescued the abandoned infant on the mountain.',
   premise_ledger: [
     'The infant was given to a Corinthian herdsman on Mount Cithaeron.',
-    'The herdsman and the palace messenger are one person.',
+    'The palace messenger and that herdsman are one and the same person.',
   ],
 };
 
@@ -37,9 +37,17 @@ describe('Oedipus secret guard', () => {
       assert.throws(() => assertSecretAbsent(secret, leaked, 'test'), /SECRET LEAK/);
     });
 
-    it('throws on a paraphrase reusing most distinctive premise tokens', () => {
-      const para = 'A Corinthian herdsman once received the infant, up on Cithaeron.';
+    it('throws on a paraphrase of the FACT (the conclusion must never reach the learner)', () => {
+      const para =
+        "The gate's messenger turns out to be the shepherd who long ago rescued that abandoned infant from the mountain.";
       assert.throws(() => assertSecretAbsent(secret, para, 'test'), /SECRET LEAK/);
+    });
+
+    it('does NOT throw on a PREMISE paraphrase (domain evidence; only verbatim premises leak)', () => {
+      // Premises are the tutor's to meter; their distinctive tokens legitimately
+      // recur in the K_L scene, so a premise paraphrase is not a conclusion leak.
+      const para = 'A Corinthian herdsman once received the infant, up on Cithaeron.';
+      assert.doesNotThrow(() => assertSecretAbsent(secret, para, 'test'));
     });
 
     it('does NOT throw on incidental overlap of a couple of common words', () => {
