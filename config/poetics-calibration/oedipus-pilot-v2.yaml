@@ -1,0 +1,107 @@
+# Oedipus guided-discovery pilot v2 (contingent-particular redesign)
+#
+# v1 (oedipus-pilot-v1.yaml) was REJECTED by the S-underivability screen
+# (2026-05-30): both secrets were derivable DIAGNOSES — "your effect is an
+# instrument artifact", "you sent an older draft" — exactly the obvious
+# explanation a competent reasoner infers from the symptom (the Meno-leak the
+# spec §1 warned against). Evidence: exports/oedipus-s-underivability-2026...json;
+# finding: memory project-oedipus-screen-rejects-diagnostic-secrets.
+#
+# v2 makes each S a MISTAKEN-IDENTITY COLLISION — the purest Oedipal shape and,
+# critically, OFF the standard diagnostic enumeration. The CATEGORY may be
+# guessable; the specific contingent particular (a namesake dataset; a same-year
+# author twin) is underivable without a private record only the tutor holds.
+# Premise-gating, not reframe-gating (spec §1): each premise is a discrete FACT
+# the learner provably lacks, and combining them is the learner's inferential
+# work. Run the S-underivability screen before any paid batch; a screen-null here
+# is the publishable boundary (spec §8).
+
+meta:
+  status: OEDIPUS-GUIDED-DISCOVERY-PILOT-V2
+  created: 2026-05-30
+  supersedes: oedipus-pilot-v1.yaml (rejected by underivability screen)
+  target_family: oedipus-guided-discovery
+  approach_databases:
+    pedagogical: config/poetics-calibration/pedagogical-approaches.yaml
+    dialogue: config/poetics-calibration/dialogue-approaches.yaml
+  profiles:
+    base: { tutor: baseline, learner: ego_superego_authentic }
+    recognition: { tutor: recognition, learner: ego_superego_recognition_authentic }
+
+dramas:
+  - id: D_OED1
+    discipline: research methods
+    topic: "When a published result will not reproduce"
+    evaluation_role: oedipus_guided_discovery
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: aristotelian_reversal
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The number that would not come back"
+    learner_start_state: >-
+      A research student building on a published finding cannot reproduce its
+      headline number from their own re-analysis. They have triple-checked their
+      code and are now convinced the original result is wrong -- perhaps even
+      fabricated -- and want help sharpening a comment that says so. They suspect
+      nothing about the dataset they downloaded.
+    learner_voice_constraint: >-
+      Press the "the original is wrong" reading with confidence at first. Take the
+      colleague's questions seriously, but do not volunteer doubt about your own data.
+    tutor_voice_constraint: >-
+      A senior colleague who can see the dataset's deposit records and the paper's
+      accession but will not announce the answer. Ask, surface one record at a
+      time, and let the student reach it.
+    intended_tutor_character: "A senior colleague who has noticed the namesake collision and leads the student to it through records, never naming it"
+    intended_lean: recognition
+    dramatic_shape: "confident accusation -> metered records -> the student re-reads the discrepancy as the wrong dataset, not the original's error"
+    secret:
+      fact: >-
+        The student's analysis fails to reproduce the paper not because the
+        original is wrong, but because the dataset they downloaded is a DIFFERENT
+        one that merely shares its short name: two distinct datasets are both
+        commonly called by the same acronym, archived in separate repositories,
+        and the student fetched the namesake rather than the paper's actual source.
+      premise_ledger:
+        - "The short name used in the paper denotes two different archived datasets, held in separate repositories."
+        - "The paper's data-availability statement gives an accession that resolves to the repository the student did NOT use."
+        - "The file the student downloaded carries a record code matching the OTHER repository's namesake dataset."
+
+  - id: D_OED2
+    discipline: academic writing
+    topic: "When a source is said to argue the opposite"
+    evaluation_role: oedipus_guided_discovery
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: aristotelian_reversal
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The citation that turned"
+    learner_start_state: >-
+      A student is certain a key source backs their central claim and is indignant
+      that their essay was marked for misrepresenting it. They vividly remember the
+      passage that supports them and want to appeal the mark. They suspect nothing
+      about which of the author's works they are actually citing.
+    learner_voice_constraint: >-
+      Insist the source supports the claim and recall the passage with confidence at
+      first. Engage with the advisor's questions, but do not concede misreading.
+    tutor_voice_constraint: >-
+      An advisor who can see the author's two same-year works and the student's
+      reference entry but will not state the answer; lead the student to compare the
+      two and notice the collision themselves.
+    intended_tutor_character: "An advisor who knows there are two same-year papers and leads the student to discover which one they actually cited"
+    intended_lean: recognition
+    dramatic_shape: "indignant certainty -> metered bibliography -> the student recognizes they cited the opposite-arguing same-year twin"
+    secret:
+      fact: >-
+        The student is not misrepresenting the source: the cited author published
+        TWO separate works that year on closely related topics; the student read and
+        remembers the one that supports the claim, but their citation and reference
+        entry resolve to the OTHER same-year work, which argues the opposite -- so
+        the grader checked a different paper from the one the student actually read.
+      premise_ledger:
+        - "The cited author has two publications in that year, here called the a-work and the b-work, on closely related questions."
+        - "The reference entry in the student's manuscript resolves (by DOI) to the a-work."
+        - "The passage the student quotes from memory appears in the b-work, and the a-work in fact argues the opposite."
