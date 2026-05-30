@@ -87,6 +87,26 @@ a rollback safety net; prune it later with `npm rm @machinespirits/tutor-core`.
 `git revert` commits C→A (or `git checkout` the pre-migration ref). `node_modules/@machinespirits/tutor-core`
 is retained, so reverting the import flip restores the previous resolution immediately.
 
+## Residual `node_modules` ties (after commit E)
+
+The eval **runtime + full test suite have zero dependence** on
+`node_modules/@machinespirits/tutor-core` — verified by hiding the install and running the
+suite (2769 pass / 0 fail). Commit E swept up the path-form references the bare-specifier grep
+missed (`routes/chatRoutes.js`, `scripts/prompt-lab.js`, `tests/promptVersioning.test.js`, and
+the `scripts/analyze-a7-*` DB paths). Two *intentional* residuals remain, both harmless until
+the eventual `npm rm`:
+
+- **Graceful fallbacks**, not hard deps: the two prompt-existence probes (`eval-cli`,
+  `audit-message-chain`) still `try`/`resolve('@machinespirits/tutor-core/package.json')` *after*
+  the vendored dir, and the `analyze-a7-*` scripts default to the node_modules DB but now honor
+  `AUTH_DB_PATH`.
+- **Writing-pad DB**: tutor-core's `data/lms.sqlite` holds *historical* A7 writing-pad data and is
+  runtime state (never vendored — `data/` is gitignored). Post-migration, live runs write to
+  `tutor-core/data/lms.sqlite`; the history stays in `node_modules/.../data/lms.sqlite`. **Before
+  pruning node_modules**, archive that file (e.g. `cp node_modules/@machinespirits/tutor-core/data/lms.sqlite
+  data/tutor-core-writingpad-archive.sqlite`) and point the a7 scripts at it via `AUTH_DB_PATH` if
+  those analyses must stay reproducible.
+
 ## Wins unlocked (follow-ups — NOT part of the behaviour-preserving migration)
 
 1. **Edit tutor-core prompts/profiles in-repo** with no release cycle.

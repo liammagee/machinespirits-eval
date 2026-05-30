@@ -114,8 +114,8 @@ describe('Prompt versioning: config loader re-exports', () => {
 // ============================================================================
 
 describe('Prompt versioning: all prompt files tagged', () => {
-  const promptsDir = path.resolve(__dirname, '..', 'node_modules', '@machinespirits', 'tutor-core', 'prompts');
-  // Follow symlink to actual directory
+  // tutor-core's bundled prompts are now vendored in-repo (see TUTOR-CORE-INHOUSING.md).
+  const promptsDir = path.resolve(__dirname, '..', 'tutor-core', 'prompts');
   const realPromptsDir = fs.realpathSync(promptsDir);
 
   const promptFiles = fs.readdirSync(realPromptsDir).filter((f) => f.endsWith('.md') && f !== 'PROMPT_SCHEMA.md');

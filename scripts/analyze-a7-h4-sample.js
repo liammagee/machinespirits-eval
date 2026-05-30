@@ -50,7 +50,7 @@ const SEED = 42;
 
 const evalDb = new Database(path.join(REPO_ROOT, 'data', 'evaluations.db'), { readonly: true });
 const tutorDb = new Database(
-  path.join(REPO_ROOT, 'node_modules', '@machinespirits', 'tutor-core', 'data', 'lms.sqlite'),
+  (process.env.AUTH_DB_PATH || path.join(REPO_ROOT, 'node_modules', '@machinespirits', 'tutor-core', 'data', 'lms.sqlite')),
   { readonly: true },
 );
 

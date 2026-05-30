@@ -36,7 +36,7 @@ const router = Router();
 const CHAT_MIN_MAX_TOKENS = 4000;
 
 const LOCAL_PROMPTS_DIR = path.resolve(__dirname, '..', 'prompts');
-const CORE_PROMPTS_DIR = path.resolve(__dirname, '..', 'node_modules', '@machinespirits', 'tutor-core', 'prompts');
+const CORE_PROMPTS_DIR = path.resolve(__dirname, '..', 'tutor-core', 'prompts');
 
 function loadPromptFile(filename) {
   if (!filename) return '';
