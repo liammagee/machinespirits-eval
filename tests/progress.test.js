@@ -2,6 +2,7 @@ import { strict as assert } from 'node:assert';
 import { describe, it } from 'node:test';
 import {
   createProgressReporter,
+  computeEta,
   formatDuration,
   renderProgressBar,
   runTasksWithConcurrency,
@@ -83,5 +84,43 @@ describe('progress helpers', () => {
 
     assert.deepEqual(started, [0, 1]);
     assert.equal(active, 0);
+  });
+});
+
+describe('progress ETA + live sub-progress', () => {
+  it('computeEta projects remaining time from the completion fraction', () => {
+    assert.equal(computeEta(60_000, 0, 4), null); // no basis yet
+    assert.equal(computeEta(60_000, 1, 4), 180_000); // 25% in 60s -> 180s remain
+    assert.equal(computeEta(60_000, 2, 2), 0); // complete
+    assert.equal(computeEta(60_000, 0.5, 4), 420_000); // sub-unit progress counts (12.5%)
+    assert.equal(computeEta(1_000, 1, 0), null); // unknown total -> no ETA
+  });
+
+  it('update() feeds in-flight sub-progress into microDone; a keyed step clears it', () => {
+    const reporter = createProgressReporter({ total: 4, heartbeatMs: 0, enabled: false });
+    reporter.update('a', 0.5);
+    reporter.update('b', 0.25);
+    assert.equal(reporter.snapshot().microDone, 0.75); // 0 done + 0.5 + 0.25 in flight
+    reporter.step('a done', 1, 'a'); // a completes; its in-flight fraction is cleared
+    assert.equal(reporter.snapshot().microDone, 1.25); // 1 done + 0.25 (b still in flight)
+  });
+
+  it('surfaces an ETA in the heartbeat once there is progress, but not on event lines', async () => {
+    const lines = [];
+    const reporter = createProgressReporter({
+      label: 'demo',
+      total: 2,
+      heartbeatMs: 10,
+      stream: { write: (line) => lines.push(line.trim()) },
+    });
+    reporter.update('x', 0.5); // 0.5/2 = 25% overall -> ETA computable
+    reporter.start('begin');
+    await new Promise((resolve) => setTimeout(resolve, 45));
+    reporter.stop();
+    assert.ok(
+      lines.some((l) => /ETA ~/.test(l)),
+      `expected an ETA heartbeat line, got: ${lines.join(' | ')}`,
+    );
+    assert.ok(!/ETA ~/.test(lines[0])); // the start (event) line stays ETA-free
   });
 });

@@ -19,24 +19,63 @@ function renderProgressBar(done, total, width = 24) {
   return `[${'#'.repeat(filled)}${'.'.repeat(empty)}] ${count} ${pct}`;
 }
 
+// Fraction-based ETA in ms: project the remaining time from the completion
+// fraction so far. `microDone` is the effective progress — completed coarse
+// units PLUS the live sub-progress of in-flight units (see update()) — so the
+// estimate is meaningful long before the first coarse unit completes. Returns
+// null when there is no basis yet (microDone <= 0) or the total is unknown.
+function computeEta(elapsedMs, microDone, total) {
+  const safeTotal = Number.isFinite(total) && total > 0 ? total : 0;
+  if (!safeTotal) return null;
+  const md = Math.min(Math.max(0, microDone), safeTotal);
+  if (md <= 0) return null;
+  if (md >= safeTotal) return 0;
+  const frac = md / safeTotal;
+  return (elapsedMs * (1 - frac)) / frac;
+}
+
+// Default heartbeat cadence (ms). Overridable via PROGRESS_HEARTBEAT_MS so a run
+// can be made more (or less) chatty without code changes; an explicit heartbeatMs
+// argument still wins (e.g. tests pass 0 to disable).
+function defaultHeartbeatMs() {
+  const env = Number(process.env.PROGRESS_HEARTBEAT_MS);
+  return Number.isFinite(env) && env > 0 ? env : 30000;
+}
+
 function createProgressReporter({
   label,
   total,
   width = 24,
-  heartbeatMs = 30000,
+  heartbeatMs = defaultHeartbeatMs(),
   stream = process.stdout,
   enabled = true,
 } = {}) {
   let done = 0;
   let timer = null;
+  let lastDetail = null;
+  // key -> sub-progress in [0,1] for each in-flight unit. Summed into microDone
+  // so concurrent units contribute correctly and a single unit's turn-by-turn
+  // progress (fed via update()) sharpens the ETA between coarse steps.
+  const activeFractions = new Map();
   const startedAt = Date.now();
   const prefix = label || 'progress';
 
-  function write(message = null, currentDone = done) {
+  function microDone() {
+    let sum = done;
+    for (const f of activeFractions.values()) sum += f;
+    return sum;
+  }
+
+  function write(message = null, currentDone = done, { eta = false } = {}) {
     if (!enabled) return;
-    const elapsed = formatDuration(Date.now() - startedAt);
-    const suffix = message ? ` · ${message}` : '';
-    stream.write(`${prefix} ${renderProgressBar(currentDone, total, width)} elapsed ${elapsed}${suffix}\n`);
+    const elapsedMs = Date.now() - startedAt;
+    let line = `${prefix} ${renderProgressBar(currentDone, total, width)} elapsed ${formatDuration(elapsedMs)}`;
+    if (eta) {
+      const etaMs = computeEta(elapsedMs, microDone(), total);
+      if (etaMs != null) line += ` · ETA ~${formatDuration(etaMs)}`;
+    }
+    if (message) line += ` · ${message}`;
+    stream.write(`${line}\n`);
   }
 
   function clearHeartbeat() {
@@ -51,24 +90,44 @@ function createProgressReporter({
       write(message, done);
       clearHeartbeat();
       if (enabled && heartbeatMs > 0) {
-        timer = setInterval(() => write('still running', done), heartbeatMs);
+        // The 30s heartbeat is the only line that carries the ETA + live detail;
+        // event lines (start/step/note/finish) keep their stable format.
+        timer = setInterval(() => write(lastDetail || 'still running', done, { eta: true }), heartbeatMs);
         timer.unref?.();
       }
     },
     note(message) {
+      if (message) lastDetail = message;
       write(message, done);
     },
-    step(message, increment = 1) {
+    // Live sub-progress of an in-flight unit. Does NOT print — it refreshes the
+    // state the next heartbeat surfaces (with a sharpened ETA). `key` identifies
+    // the unit (so concurrent units sum), `fraction` is its completion in [0,1],
+    // `detail` becomes the heartbeat's activity line.
+    update(key, fraction, detail = null) {
+      if (key != null) activeFractions.set(key, Math.max(0, Math.min(1, Number(fraction) || 0)));
+      if (detail) lastDetail = detail;
+    },
+    step(message, increment = 1, key = null) {
       done += increment;
+      if (key != null) activeFractions.delete(key);
+      if (message) lastDetail = message;
       write(message, done);
     },
     finish(message = 'done') {
       done = Number.isFinite(total) && total > 0 ? total : done;
+      activeFractions.clear();
       clearHeartbeat();
       write(message, done);
     },
     stop() {
       clearHeartbeat();
+    },
+    // Test/introspection hook: current effective progress + projected ETA.
+    snapshot() {
+      const elapsedMs = Date.now() - startedAt;
+      const md = microDone();
+      return { done, microDone: md, total, elapsedMs, etaMs: computeEta(elapsedMs, md, total) };
     },
   };
 }
@@ -94,4 +153,4 @@ async function runTasksWithConcurrency(tasks, concurrency = 1) {
   return results;
 }
 
-export { createProgressReporter, formatDuration, renderProgressBar, runTasksWithConcurrency };
+export { createProgressReporter, computeEta, formatDuration, renderProgressBar, runTasksWithConcurrency };

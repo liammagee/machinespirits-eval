@@ -994,7 +994,23 @@ export async function runInteraction(config, llmCall, options = {}) {
     sessionId = `session-${Date.now()}`,
   } = config;
 
-  const { maxTurns = DEFAULT_MAX_TURNS, _trace = true, observeInternals = true, forceMaxTurns = false } = options;
+  const {
+    maxTurns = DEFAULT_MAX_TURNS,
+    _trace = true,
+    observeInternals = true,
+    forceMaxTurns = false,
+    onProgress = null,
+  } = options;
+  // Best-effort per-turn progress hook (for heartbeat/ETA reporting). Never let a
+  // reporter error break a run; the engine does not depend on its return value.
+  const emitProgress = (phase, n) => {
+    if (typeof onProgress !== 'function') return;
+    try {
+      onProgress({ phase, turnCount: n, maxTurns });
+    } catch {
+      /* progress is best-effort */
+    }
+  };
   const directorPlan = normalizeDirectorPlan(options.directorPlan || scenario?.directorPlan || null);
   const resumed = resumeStateFromTrace(options.resumeTrace, directorPlan, scenario, topic);
 
@@ -1232,6 +1248,8 @@ export async function runInteraction(config, llmCall, options = {}) {
       timestamp: new Date().toISOString(),
     });
 
+    emitProgress('tutor', turnCount);
+
     // Update tutor writing pad
     await updateTutorWritingPad(learnerId, sessionId, tutorResponse, currentLearnerMessage);
 
@@ -1246,6 +1264,7 @@ export async function runInteraction(config, llmCall, options = {}) {
 
     // ================ LEARNER TURN ================
     const learnerResponse = await runLearnerPhase(turnCount, tutorResponse);
+    emitProgress('learner', turnCount);
 
     // Check for natural ending (suppressed during drama generation — forceMaxTurns).
     if (!forceMaxTurns && (learnerResponse.suggestsEnding || learnerResponse.emotionalState === 'disengaged')) {

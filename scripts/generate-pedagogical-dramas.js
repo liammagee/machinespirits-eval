@@ -3076,12 +3076,18 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
             learnerProfile: d.learner_profile,
             forceMaxTurns: true,
             directorPlan,
+            onProgress: ({ phase, turnCount, maxTurns }) =>
+              progress.update(
+                `${d._tid}:prefix`,
+                maxTurns ? turnCount / maxTurns : 0,
+                `${d._tid} prefix · ${phase} ${turnCount}/${maxTurns}`,
+              ),
           },
         );
         const resumeTrace = tracePrefixThroughTutorTurn(prefixTrace, 2);
         const prefixTurns = externalTurns(resumeTrace);
         const prefixHash = sha256Short(renderTranscript(prefixTurns));
-        progress.step(`${d._tid} prefix ready ${prefixHash}`);
+        progress.step(`${d._tid} prefix ready ${prefixHash}`, 1, `${d._tid}:prefix`);
 
         for (const branch of branches) {
           const dirs = armDirs[branch.key];
@@ -3127,6 +3133,12 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
               forceMaxTurns: true,
               directorPlan: branchDirectorPlan,
               resumeTrace,
+              onProgress: ({ phase, turnCount, maxTurns }) =>
+                progress.update(
+                  `${d._tid}:${branch.key}`,
+                  maxTurns ? turnCount / maxTurns : 0,
+                  `${d._tid} ${branch.key} · ${phase} ${turnCount}/${maxTurns}`,
+                ),
             },
           );
           const turns = externalTurns(trace);
@@ -3186,7 +3198,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
             ),
             paired_continuation: pairedContinuation,
           };
-          progress.step(`${d._tid} ${branch.key} complete`);
+          progress.step(`${d._tid} ${branch.key} complete`, 1, `${d._tid}:${branch.key}`);
         }
         return { tid: d._tid, entries: itemEntries, warnings: itemWarnings };
       }),
@@ -3468,6 +3480,12 @@ async function main() {
             learnerProfile: d.learner_profile,
             forceMaxTurns: true,
             directorPlan,
+            onProgress: ({ phase, turnCount, maxTurns }) =>
+              progress.update(
+                `${d._tid}`,
+                maxTurns ? turnCount / maxTurns : 0,
+                `${d._tid} · ${phase} ${turnCount}/${maxTurns}`,
+              ),
           },
         );
 
@@ -3538,7 +3556,7 @@ async function main() {
         );
 
         console.log(`    → ${nTutor} tutor / ${nLearner} learner turns · ${((Date.now() - t0) / 1000).toFixed(0)}s`);
-        progress.step(`${d._tid} complete`);
+        progress.step(`${d._tid} complete`, 1, `${d._tid}`);
         return { tid: d._tid, keyItem: keyItemFor(d, nTutor, nLearner, qualityWarnings), warnings: itemWarnings };
       }),
       args.generationConcurrency,
