@@ -16,7 +16,7 @@ import assert from 'node:assert/strict';
 
 // Direct import — the engine is in node_modules but we test it as part of
 // the eval system's integration.
-import * as dialecticalEngine from '@machinespirits/tutor-core/services/dialecticalEngine';
+import * as dialecticalEngine from '../tutor-core/services/dialecticalEngine.js';
 
 // ============================================================================
 // parseJsonResponse — JSON fence stripping
@@ -94,7 +94,7 @@ describe('model resolution for dialectical engine', () => {
   let configLoader;
 
   beforeEach(async () => {
-    configLoader = (await import('@machinespirits/tutor-core/services/tutorConfigLoader')).default;
+    configLoader = (await import('../tutor-core/services/tutorConfigLoader.js')).default;
   });
 
   it('resolves openrouter.kimi-k2.5 to model with "/"', () => {

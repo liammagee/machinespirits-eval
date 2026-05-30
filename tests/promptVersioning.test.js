@@ -25,7 +25,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // 1. Unit tests for getPromptMetadata (tutor-core configLoaderBase)
 // ============================================================================
 
-import { configLoaderBase } from '@machinespirits/tutor-core';
+import { configLoaderBase } from '../tutor-core/index.js';
 const { createPromptLoader } = configLoaderBase;
 
 describe('Prompt versioning: configLoaderBase', () => {
@@ -76,7 +76,7 @@ describe('Prompt versioning: configLoaderBase', () => {
 // 2. Re-export tests: tutorConfigLoader and learnerConfigLoader
 // ============================================================================
 
-import { tutorConfigLoader } from '@machinespirits/tutor-core';
+import { tutorConfigLoader } from '../tutor-core/index.js';
 import * as learnerConfigLoader from '../services/learnerConfigLoader.js';
 
 describe('Prompt versioning: config loader re-exports', () => {

@@ -116,8 +116,7 @@
     "url": "https://github.com/liammagee/machinespirits-eval"
   },
   "peerDependencies": {
-    "@anthropic-ai/sdk": "0.71.2",
-    "@machinespirits/tutor-core": "^0.5.0"
+    "@anthropic-ai/sdk": "0.71.2"
   },
   "peerDependenciesMeta": {
     "@anthropic-ai/sdk": {

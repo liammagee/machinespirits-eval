@@ -45,7 +45,7 @@ import { resolveEvalProfile } from '../services/evaluationRunner.js';
 import * as realLLM from '../services/adaptiveTutor/realLLM.js';
 import { createAdaptiveRun } from '../services/adaptiveTutor/persistence.js';
 import { createBudgetTracker } from '../services/adaptiveTutor/budgetTracker.js';
-import { tutorConfigLoader as tutorConfig } from '@machinespirits/tutor-core';
+import { tutorConfigLoader as tutorConfig } from '../tutor-core/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');

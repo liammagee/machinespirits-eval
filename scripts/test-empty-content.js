@@ -18,7 +18,7 @@ import { fileURLToPath } from 'url';
 import { parseArgs } from 'node:util';
 import { callLearnerAI } from '../services/learnerTutorInteractionEngine.js';
 import { getProviderConfig, resolveModel } from '../services/learnerConfigLoader.js';
-import { callAI } from '@machinespirits/tutor-core/services/tutorDialogueEngine';
+import { callAI } from '../tutor-core/services/tutorDialogueEngine.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');

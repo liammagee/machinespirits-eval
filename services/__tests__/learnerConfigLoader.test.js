@@ -33,7 +33,7 @@ import {
   getProviderConfig,
 } from '../learnerConfigLoader.js';
 import { loadProviders as loadEvalProviders } from '../evalConfigLoader.js';
-import { configLoaderBase } from '@machinespirits/tutor-core';
+import { configLoaderBase } from '../../tutor-core/index.js';
 
 // ============================================================================
 // loadConfig

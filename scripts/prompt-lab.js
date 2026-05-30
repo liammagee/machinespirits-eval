@@ -7,7 +7,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { jsonrepair } from 'jsonrepair';
-import { tutorConfigLoader, unifiedAIProvider } from '@machinespirits/tutor-core';
+import { tutorConfigLoader, unifiedAIProvider } from '../tutor-core/index.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 import * as learnerConfigLoader from '../services/learnerConfigLoader.js';
 import * as evaluationStore from '../services/evaluationStore.js';

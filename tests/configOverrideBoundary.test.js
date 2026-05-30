@@ -25,7 +25,7 @@ import yaml from 'yaml';
 import { resolveConfigModels, resolveEvalProfile, EVAL_ONLY_PROFILES } from '../services/evaluationRunner.js';
 
 // tutor-core imports (via symlink)
-import * as tutorCoreConfig from '@machinespirits/tutor-core/services/tutorConfigLoader';
+import * as tutorCoreConfig from '../tutor-core/services/tutorConfigLoader.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const evalConfig = yaml.parse(fs.readFileSync(path.join(__dirname, '..', 'config', 'tutor-agents.yaml'), 'utf8'));

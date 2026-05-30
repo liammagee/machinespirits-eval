@@ -23,7 +23,7 @@ import { jsonrepair } from 'jsonrepair';
 import {
   tutorConfigLoader as defaultTutorConfig,
   tutorDialogueEngine,
-} from '@machinespirits/tutor-core';
+} from '../tutor-core/index.js';
 import * as defaultTutorWritingPad from './memory/tutorWritingPad.js';
 
 // claude-code subscription bridge. Mirrors services/adaptiveTutor/realLLM.js::callClaudeCli

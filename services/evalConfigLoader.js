@@ -11,7 +11,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import yaml from 'yaml';
-import { configLoaderBase } from '@machinespirits/tutor-core';
+import { configLoaderBase } from '../tutor-core/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_CONFIG_DIR = path.join(path.resolve(__dirname, '..'), 'config');

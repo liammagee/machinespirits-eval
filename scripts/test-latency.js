@@ -16,7 +16,7 @@
  */
 
 import 'dotenv/config';
-import { unifiedAIProvider } from '@machinespirits/tutor-core';
+import { unifiedAIProvider } from '../tutor-core/index.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 
 // ── CLI args ────────────────────────────────────────────────────────────────

@@ -27,7 +27,7 @@ let _tutorCoreLoaded = false;
 
 async function ensureTutorCore() {
   if (_tutorCoreLoaded) return;
-  const mod = await import('@machinespirits/tutor-core');
+  const mod = await import('../tutor-core/index.js');
   tutorConfigLoader = mod.tutorConfigLoader;
   dialogueLogService = mod.dialogueLogService;
   monitoringService = mod.monitoringService;

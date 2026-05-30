@@ -139,6 +139,10 @@ function safeJson(value) {
 }
 
 function findTutorCorePromptsDir() {
+  // In-housed: prefer this repo's vendored tutor-core/prompts/ (see TUTOR-CORE-INHOUSING.md).
+  const vendored = path.resolve(ROOT, 'tutor-core', 'prompts');
+  if (fs.existsSync(vendored)) return vendored;
+
   try {
     const req = createRequire(import.meta.url);
     const tutorCorePkg = req.resolve('@machinespirits/tutor-core/package.json');

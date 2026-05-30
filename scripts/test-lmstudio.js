@@ -226,7 +226,7 @@ async function testObjectResolution() {
   console.log('\n5. Object-format model resolution (eval runner → tutor-core path)');
   try {
     // Import tutor-core's config loader (via symlink)
-    const { tutorConfigLoader } = await import('@machinespirits/tutor-core');
+    const { tutorConfigLoader } = await import('../tutor-core/index.js');
 
     // This is what evalRunner passes to tutor-core
     const egoModelObj = { provider: 'lmstudio', model: lmstudioTarget.requestedRef };
@@ -290,7 +290,7 @@ async function testObjectResolution() {
 async function testTutorCorePath() {
   console.log('\n6. Full API call through tutor-core dispatch path');
   try {
-    const { tutorConfigLoader } = await import('@machinespirits/tutor-core');
+    const { tutorConfigLoader } = await import('../tutor-core/index.js');
 
     // Get the lmstudio provider config directly
     const providerConfig = tutorConfigLoader.getProviderConfig('lmstudio');
@@ -358,7 +358,7 @@ async function testTutorCorePath() {
 async function testEgoOverrideSimulation() {
   console.log('\n7. Simulate ego model override (providerConfig merge)');
   try {
-    const { tutorConfigLoader } = await import('@machinespirits/tutor-core');
+    const { tutorConfigLoader } = await import('../tutor-core/index.js');
 
     // Get the DEFAULT ego config (openrouter/nemotron for cell_1)
     const defaultEgoConfig = tutorConfigLoader.getAgentConfig('ego', 'base');
@@ -470,7 +470,7 @@ async function testFullGeneration() {
   const originalFetch = globalThis.fetch;
   const interceptedRequests = [];
   try {
-    const { tutorApiService: tutorApi } = await import('@machinespirits/tutor-core');
+    const { tutorApiService: tutorApi } = await import('../tutor-core/index.js');
 
     const context = tutorApi.buildContext(
       'Student: I am struggling with photosynthesis. I keep mixing up the light and dark reactions.',
@@ -542,7 +542,7 @@ async function testFetchProviderImport() {
       isContextOverflowError: isOF,
       truncateForContextOverflow: trunc,
       extractStructuredSummary: ess,
-    } = await import('@machinespirits/tutor-core');
+    } = await import('../tutor-core/index.js');
 
     if (typeof fp === 'function') {
       ok('_fetchProvider is a function');
@@ -576,7 +576,7 @@ async function testFetchProviderImport() {
 async function testContextOverflowDetection() {
   console.log('\n10. Context overflow error detection');
   try {
-    const { isContextOverflowError } = await import('@machinespirits/tutor-core');
+    const { isContextOverflowError } = await import('../tutor-core/index.js');
 
     // Should detect overflow errors
     if (isContextOverflowError(400, 'tokens to keep from the initial prompt are exceeding the context window')) {
@@ -630,7 +630,7 @@ async function testContextOverflowDetection() {
 async function testTruncationLevels() {
   console.log('\n11. Truncation produces smaller output at each level');
   try {
-    const { truncateForContextOverflow } = await import('@machinespirits/tutor-core');
+    const { truncateForContextOverflow } = await import('../tutor-core/index.js');
 
     const systemPrompt = 'You are a helpful tutor. '.repeat(200); // ~5000 chars
     const userPrompt = [
@@ -688,7 +688,7 @@ async function testTruncationLevels() {
 async function testFetchProviderWithLmstudio() {
   console.log('\n12. _fetchProvider with lmstudio provider (live call)');
   try {
-    const { _fetchProvider: fp, tutorConfigLoader } = await import('@machinespirits/tutor-core');
+    const { _fetchProvider: fp, tutorConfigLoader } = await import('../tutor-core/index.js');
 
     const providerConfig = tutorConfigLoader.getProviderConfig('lmstudio');
     const model = providerConfig.models?.[lmstudioTarget.requestedRef] || lmstudioTarget.requestedRef;

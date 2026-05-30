@@ -11,7 +11,7 @@
  * generate session-specific directives that are prepended to ego's system prompt.
  */
 
-import { unifiedAIProvider } from '@machinespirits/tutor-core';
+import { unifiedAIProvider } from '../tutor-core/index.js';
 import * as evalConfigLoader from './evalConfigLoader.js';
 
 /**

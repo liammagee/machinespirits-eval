@@ -17,14 +17,14 @@ import {
   monitoringService,
   tutorDialogueEngine as dialogueEngine,
   memoryDynamicsService,
-} from '@machinespirits/tutor-core';
+} from '../tutor-core/index.js';
 // setQuietMode was a convenience export tutor-core used to ship for
 // silencing verbose dialogue output during eval runs. It was removed
 // from the package's public exports in 0.5.0. Resolve it via a
 // namespace import so the static binding doesn't crash module load,
 // and fall back to a no-op when the function isn't present — if a
 // future tutor-core re-exports it, this resolver picks it up.
-import * as _tutorCore from '@machinespirits/tutor-core';
+import * as _tutorCore from '../tutor-core/index.js';
 const setQuietMode = typeof _tutorCore.setQuietMode === 'function' ? _tutorCore.setQuietMode : () => {};
 import * as rubricEvaluator from './rubricEvaluator.js';
 import {
@@ -59,7 +59,7 @@ const TRANSCRIPTS_DIR = path.join(EVAL_ROOT, 'logs', 'transcripts');
 const CHECKPOINTS_DIR = path.join(EVAL_ROOT, 'logs', 'checkpoints');
 
 // Redirect tutor-core logs to this repo's logs/ directory (if available)
-import('@machinespirits/tutor-core')
+import('../tutor-core/index.js')
   .then((mod) => {
     if (typeof mod.setLogDir === 'function') mod.setLogDir(path.join(EVAL_ROOT, 'logs'));
   })
