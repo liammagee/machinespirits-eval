@@ -77,7 +77,7 @@ import 'dotenv/config';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { spawn, execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import yaml from 'yaml';
@@ -2693,7 +2693,11 @@ function formatProvenance(entry) {
 function generatorModelLabel(args) {
   if (args.generator === 'codex') return `codex@${CODEX_REASONING_EFFORT}`;
   if (args.generator === 'gemini') return `gemini/${GEMINI_MODEL}`;
-  return `${args.model}${args.effort ? `@${args.effort}` : ''}`;
+  // --generator api routes to OpenRouter (metered). Historically this fell through
+  // to `${args.model}` (which defaults to 'opus'), so api/sonnet runs were recorded
+  // — in the banner AND the key — as "opus". Name the real model explicitly.
+  if (args.generator === 'api') return `api/${resolveApiModel(args.apiModel) || args.apiModel}`;
+  return `claude-cli/${args.model}${args.effort ? `@${args.effort}` : ''}`;
 }
 
 function formatHeldOutEntryContent(entry) {
@@ -2939,7 +2943,11 @@ function baseKeyObject({
         ? 'real-mixed'
         : args.generator === 'codex'
           ? 'real-codex'
-          : 'real-claude-code',
+          : args.generator === 'api'
+            ? 'real-api-openrouter'
+            : args.generator === 'gemini'
+              ? 'real-gemini'
+              : 'real-claude-code',
     model: args.mock
       ? null
       : args.roleMap
@@ -3321,13 +3329,30 @@ async function main() {
         ? 'REAL (codex exec)'
         : args.generator === 'gemini'
           ? `REAL (agy/${GEMINI_MODEL})`
-          : `REAL (claude --model ${args.model}${args.effort ? ` --effort ${args.effort}` : ''})`;
+          : args.generator === 'api'
+            ? `REAL (api/${resolveApiModel(args.apiModel) || args.apiModel} via OpenRouter, metered)`
+            : `REAL (claude CLI --model ${args.model}${args.effort ? ` --effort ${args.effort}` : ''}, Max-plan quota)`;
   console.log(`\n══ Phase-2 de-confound generator — ${genLabel} ══`);
   console.log(
     `  generator: ${args.roleMap ? 'mixed' : args.generator} · dramas: ${order.length} · maxTurns: ${args.maxTurns} · ` +
       `seed: ${args.seed}${args.tidStart ? ` · tid-start: ${args.tidStart}` : ''} · director: ${args.directorMode}` +
       `${revisitSummary.cue ? ` + revisit-${revisitSummary.policy}/${revisitSummary.anchor}` : ''}`,
   );
+  // Explicit model + code-version provenance. The genLabel/key historically said
+  // "claude --model opus" for every run because args.model defaults to 'opus';
+  // generatorModelLabel() now names the REAL backend/model (e.g. api/...sonnet-4.6).
+  let _gitRev = 'unknown';
+  try {
+    _gitRev = execSync('git rev-parse --short HEAD', {
+      cwd: WORKTREE_ROOT,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
+      .toString()
+      .trim();
+  } catch {
+    /* not a git checkout */
+  }
+  console.log(`  models: ${generatorModelLabel(args)} · code git:${_gitRev} · node ${process.version}`);
   console.log(`  out: ${path.relative(WORKTREE_ROOT, args.outDir)}`);
   console.log(`  held-out transcripts: ${path.relative(WORKTREE_ROOT, args.transcriptsDir)}`);
   for (const d of order) {

@@ -34,6 +34,7 @@
 import 'dotenv/config';
 import fs from 'node:fs';
 import path from 'node:path';
+import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import yaml from 'yaml';
 import { callModel, parseJsonResponse, runWithConcurrency, withScorerRetry } from './score-poetics-calibration.js';
@@ -381,9 +382,22 @@ async function run(args) {
     positiveDramas,
     revealCeiling: pairs.map((p) => p.revealCeiling).filter((v) => v != null),
   };
+  let _gitRev = 'unknown';
+  try {
+    _gitRev = execSync('git rev-parse --short HEAD', { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString()
+      .trim();
+  } catch {
+    /* not a git checkout */
+  }
   const artifact = {
     generated: new Date().toISOString(),
     scorer: 'omniscient-critic',
+    // Explicit provenance: critic panel runs via callModel (OpenRouter slugs below);
+    // distinct from the GENERATOR model recorded in each run's gen.log + key.
+    critic_source: args.mock ? 'mock' : 'api/openrouter',
+    git_commit: _gitRev,
+    node: process.version,
     sampleRoot: path.relative(ROOT, args.sampleRoot),
     spec: path.relative(ROOT, args.spec),
     panel: args.mock ? args.panel.map((m) => `${m}-mock`) : args.panel,
