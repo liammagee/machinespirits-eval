@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { describe, it } from 'node:test';
-import { buildSecretContext, assertSecretAbsent } from '../learnerTutorInteractionEngine.js';
+import { buildSecretContext, assertSecretAbsent, buildLearnerPrompt } from '../learnerTutorInteractionEngine.js';
 
 // Oedipus / guided-discovery information-asymmetry guard. A per-scenario `secret`
 // (withheld fact S + premise ledger) is visible to the director/tutor and must
@@ -66,6 +66,40 @@ describe('Oedipus secret guard', () => {
       assert.match(buildSecretContext(secret, 'socratic_discovery'), /Never state S outright/);
       assert.match(buildSecretContext(secret, 'reveal_secret'), /state S to the learner plainly/);
       assert.match(buildSecretContext(secret, 'none'), /must NOT lead the learner toward it/);
+    });
+  });
+
+  // Regression: buildLearnerPrompt scopes the guard to ARCHITECTURAL context. On
+  // response turns the additionalContext embeds the running dialogue, where the
+  // tutor's legitimately-spoken premise clues (the Socratic channel) must NOT trip
+  // a generation-time crash. The static role + persona are always guarded; turn-0
+  // scene context is guarded; the dialogue is not.
+  describe('buildLearnerPrompt guard scoping', () => {
+    const cleanRole = { prompt: 'You are a focused, confident learner. Respond to your tutor.' };
+    const persona = { prompt_modifier: 'You speak plainly.' };
+
+    it('throws when S is routed into the static learner role, even with guardContext=false', () => {
+      const leakyRole = { prompt: `You are a learner. ${secret.fact}` };
+      assert.throws(
+        () => buildLearnerPrompt(leakyRole, persona, 'Recent conversation: ...', secret, { guardContext: false }),
+        /SECRET LEAK/,
+      );
+    });
+
+    it('guards architectural additionalContext on turn 0 (guardContext defaults true)', () => {
+      assert.throws(() => buildLearnerPrompt(cleanRole, persona, `Scene. ${secret.fact}`, secret), /SECRET LEAK/);
+    });
+
+    it('does NOT trip on a tutor-spoken premise clue echoed in the response-turn dialogue', () => {
+      const dialogue = `Recent conversation:\nTUTOR: "${secret.premise_ledger[0]}"\n\nThe tutor just said:\n"And what follows?"`;
+      assert.doesNotThrow(() => buildLearnerPrompt(cleanRole, persona, dialogue, secret, { guardContext: false }));
+    });
+
+    it('is inert with no secret regardless of scope', () => {
+      assert.doesNotThrow(() =>
+        buildLearnerPrompt(cleanRole, persona, 'anything at all', null, { guardContext: false }),
+      );
+      assert.doesNotThrow(() => buildLearnerPrompt(cleanRole, persona, 'anything at all', null));
     });
   });
 });

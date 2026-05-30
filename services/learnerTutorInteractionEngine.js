@@ -1528,23 +1528,32 @@ Do NOT include internal thoughts or meta-commentary. If any nonspoken action asi
 /**
  * Build learner prompt with agent config and persona
  */
-function buildLearnerPrompt(agentConfig, persona, additionalContext, secret = null) {
-  let prompt = agentConfig.prompt || '';
+function buildLearnerPrompt(agentConfig, persona, additionalContext, secret = null, { guardContext = true } = {}) {
+  let staticPrompt = agentConfig.prompt || '';
 
   // Add persona context
   if (persona.prompt_modifier) {
-    prompt += `\n\n${persona.prompt_modifier}`;
+    staticPrompt += `\n\n${persona.prompt_modifier}`;
   }
 
   // Add additional context
+  let prompt = staticPrompt;
   if (additionalContext) {
     prompt += `\n\n${additionalContext}`;
   }
 
-  // Oedipus guided-discovery guard: the learner's system prompt must NEVER carry
-  // the withheld secret (S / premises). Inert when no secret is set — the only
-  // legitimate channel for S is the tutor's spoken turns, not the learner's context.
-  assertSecretAbsent(secret, prompt, 'buildLearnerPrompt');
+  // Oedipus guided-discovery guard. The learner's ARCHITECTURAL context must
+  // never carry the withheld secret (S / premises): the only legitimate channel
+  // for the secret is the tutor's spoken turns. We always guard the static role +
+  // persona, and we guard `additionalContext` only when it is architectural — the
+  // turn-0 scene/director context (guardContext=true). On response turns
+  // (generateLearnerResponse passes guardContext=false) the additionalContext
+  // EMBEDS the running dialogue, where the tutor's legitimately-spoken premise
+  // clues — and, in the reveal arm, the conclusion itself — would otherwise trip a
+  // false positive. Whether the tutor bald-reveals S in dialogue is the
+  // reveal-detector's post-hoc job, not a generation-time crash. Inert when no
+  // secret is set.
+  assertSecretAbsent(secret, guardContext ? prompt : staticPrompt, 'buildLearnerPrompt');
   return prompt;
 }
 
@@ -2307,7 +2316,7 @@ export async function generateLearnerResponse(options) {
       egoContext += `\n\n${profileContext}`;
     }
     egoContext += `\n\nGenerate your initial internal reaction as the learner's ego. Keep hidden reasoning private and put only the learner's actual wording in your final answer. If any nonspoken action aside is needed, put it in square brackets.`;
-    const egoSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoContext, secret);
+    const egoSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoContext, secret, { guardContext: false });
 
     const egoInitialResponse = await callLLM(
       egoConfig,
@@ -2349,7 +2358,9 @@ export async function generateLearnerResponse(options) {
       superegoContext += `\n\n${profileContext}`;
     }
     superegoContext += `\n\nReview the learner's response. Is it accurate? What's being missed? What should be reconsidered?\n\nDo NOT draft the learner's replacement message. Comment on the initial response only.`;
-    const superegoSystemPrompt = buildLearnerPrompt(superegoConfig, persona, superegoContext, secret);
+    const superegoSystemPrompt = buildLearnerPrompt(superegoConfig, persona, superegoContext, secret, {
+      guardContext: false,
+    });
 
     const superegoResponse = await callLLM(
       superegoConfig,
@@ -2380,7 +2391,9 @@ export async function generateLearnerResponse(options) {
       egoRevisionContext += `\n\n${profileContext}`;
     }
     egoRevisionContext += `\n\nYou are the same learner persona who made the initial suggestion. Adjudicate the feedback: keep your initial response if it is better, revise lightly if needed, or revise substantially if the review reveals a real problem.\n\nReturn exactly:\nPRIVATE_DECISION: [one short private sentence naming keep/revise and why]\nFINAL:\n[what the learner would say out loud to the tutor, 1-4 sentences]\n\nThe FINAL section must contain only public learner speech. Do NOT include internal thoughts, meta-commentary, references to any review process, or <think> blocks in FINAL. If any nonspoken action aside is needed, put it in square brackets.`;
-    const egoRevisionSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoRevisionContext, secret);
+    const egoRevisionSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoRevisionContext, secret, {
+      guardContext: false,
+    });
 
     // Build combined history for ego revision: external + ego internal + superego feedback
     let egoRevisionMsgHistory = null;
@@ -2446,7 +2459,7 @@ export async function generateLearnerResponse(options) {
           ? '\n\nRespond with ONLY what the learner would actually say out loud next to the tutor (1-4 sentences). Do NOT include internal monologue, tags, meta-commentary, or <think> blocks. If any nonspoken action aside is needed, put it in square brackets.'
           : "\n\nGenerate your internal reaction as this dimension of the learner's experience.";
 
-      const systemPrompt = buildLearnerPrompt(agentConfig, persona, roleContext, secret);
+      const systemPrompt = buildLearnerPrompt(agentConfig, persona, roleContext, secret, { guardContext: false });
       const response = await callLLM(agentConfig, systemPrompt, "React to the tutor's message.", `learner_${role}`);
 
       internalDeliberation.push(makeDeliberationEntry(role, response, agentConfig));
@@ -2509,6 +2522,7 @@ export {
   getRequiredMaxTokens,
   buildSecretContext,
   assertSecretAbsent,
+  buildLearnerPrompt,
 };
 
 export default {
