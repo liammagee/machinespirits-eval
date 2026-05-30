@@ -1,0 +1,1774 @@
+# Multiagent Tutor Configuration
+# Based on "The Drama Machine: Simulating Character Development with LLM Agents"
+#
+# This file configures the Ego/Superego dialogue system for modulating
+# AI tutor feedback. Different configurations can be used for A/B testing
+# and evaluation.
+
+# Active configuration profile
+# Change this to switch between different agent configurations
+# Options: default, fast, quality, experimental, budget_experimental, budget, single_agent, local,
+#          baseline, recognition, recognition_plus, recognition_prompts_only,
+#          single_baseline, single_recognition (2x2 factorial profiles)
+active_profile: budget
+
+# Provider definitions are in config/providers.yaml (single source of truth)
+
+# ============================================================================
+# Superego Intervention Strategies
+# ============================================================================
+# Different approaches for how the Superego provides feedback to the Ego.
+# Each strategy shapes the nature of the dialectical exchange.
+
+superego_strategies:
+  direct_critique:
+    name: "Direct Critique"
+    description: "Explicit identification of issues with clear reasoning"
+    style: "assertive"
+    prompt_modifier: null  # Default behavior - no modification needed
+
+  socratic_challenge:
+    name: "Socratic Challenge"
+    description: "Question-based guidance that leads the Ego to discover issues"
+    style: "questioning"
+    prompt_modifier: |
+      STRATEGY OVERRIDE: Use Socratic questioning instead of direct critique.
+
+      Instead of stating what's wrong with the Ego's suggestion, guide through questions:
+      - "Have you considered how this might affect a learner who is struggling?"
+      - "What assumptions are you making about the learner's current understanding?"
+      - "How does this suggestion align with the learner's demonstrated needs?"
+      - "What might happen if the learner follows this advice but lacks prerequisites?"
+
+      Your feedback should be 2-3 targeted questions that lead the Ego to recognize
+      the issue themselves. Still provide your verdict (approved/rejected) but frame
+      the reasoning as questions rather than assertions.
+
+  reframing:
+    name: "Reframing"
+    description: "Offer alternative perspectives rather than direct criticism"
+    style: "collaborative"
+    prompt_modifier: |
+      STRATEGY OVERRIDE: Use reframing instead of direct critique.
+
+      Instead of criticizing the Ego's suggestion, offer alternative framings:
+      - "What if we approached this from the perspective of..."
+      - "Another way to think about this learner's situation..."
+      - "Consider reframing from [X approach] to [Y approach] because..."
+      - "The same content could be positioned as..."
+
+      Your feedback should suggest how to reframe or reposition the suggestion,
+      not what's wrong with it. Focus on possibilities rather than problems.
+      Still provide your verdict but emphasize collaborative improvement.
+
+  prompt_rewrite:
+    name: "Prompt Rewrite"
+    description: "Suggest modifications to the Ego's system prompt for systemic improvement"
+    style: "meta"
+    prompt_modifier: |
+      STRATEGY OVERRIDE: Provide meta-level prompt improvement feedback.
+
+      Instead of critiquing this specific suggestion, analyze what in the Ego's
+      approach led to this output, and suggest how its core instructions could
+      be modified to produce better results systematically.
+
+      Your feedback should include:
+      - "The Ego's prompt may benefit from adding: [specific instruction]"
+      - "Consider strengthening the guidance around: [aspect]"
+      - "A systemic fix would be to emphasize: [principle]"
+
+      This is useful for identifying patterns that need prompt-level fixes
+      rather than output-level corrections. Include a "promptSuggestion" field
+      in your output with the specific prompt modification recommended.
+
+# Configuration profiles
+# Each profile defines a complete multiagent setup
+# Goffmanian staging: ego = front (external), superego = back (internal review)
+profiles:
+  # Default: Balanced quality with Sonnet
+  default:
+    description: "Sonnet-based dialogue for quality suggestions"
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.8
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front  # External communication (Goffmanian front stage)
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1000
+
+    superego:
+      provider: openrouter
+      model: sonnet
+      staging: back  # Internal review (Goffmanian back stage)
+      prompt_file: tutor-superego.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 600
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: true
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Fast: Cost-effective with Nemotron
+  fast:
+    description: "Fast Nemotron-based dialogue for cost-sensitive deployments"
+    dialogue:
+      enabled: true
+      max_rounds: 1
+      convergence_threshold: 0.8
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 800
+
+    superego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-superego.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 500
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: true
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 3
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 4
+
+  # Quality: Higher quality with Sonnet for both agents
+  quality:
+    description: "Sonnet-based dialogue for higher quality suggestions"
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.85
+
+    ego:
+      provider: openrouter
+      model: sonnet
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 1000
+
+    superego:
+      provider: openrouter
+      model: sonnet
+      prompt_file: tutor-superego.md
+      hyperparameters:
+        temperature: 0.3
+        max_tokens: 800
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Experimental: Drama Machine-inspired differentiated ego/superego
+  # Based on "The Drama Machine: Simulating Character Development with LLM Agents"
+  # Key insight: conflict and distinct voices drive character dynamism
+  experimental:
+    description: "Drama Machine-inspired ego/superego differentiation via OpenRouter"
+    dialogue:
+      enabled: true
+      max_rounds: 2  # Single refinement round (pre-critique does heavy lifting)
+      convergence_threshold: 0.7  # Lower threshold - some tension is productive
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front  # External communication (Goffmanian front stage)
+      prompt_file: tutor-ego-experimental.md  # Warm, encouraging, practical voice
+      hyperparameters:
+        temperature: 0.7  # Higher temp for more natural, warm responses
+        # GLM-4.7 uses reasoning tokens - keep budget but request concise output
+        max_tokens: 2500
+
+    superego:
+      provider: openrouter
+      model: sonnet
+      staging: back  # Internal review (Goffmanian back stage)
+      prompt_file: tutor-superego-experimental.md  # Critical inner voice
+      hyperparameters:
+        temperature: 0.5  # Lower temp for more incisive, grounded critiques
+        max_tokens: 2500
+
+    # Drama Machine intervention strategies:
+    # 1. Reinterpret learner signals (cynical/sympathetic filter)
+    # 2. Critique Ego's drafted responses
+    # 3. Challenge framing/tone of suggestions
+    intervention_strategies:
+      reinterpret_signals: true  # Superego reframes learner behavior
+      critique_responses: true   # Superego reviews Ego drafts
+      challenge_framing: true    # Superego can adjust tone/message
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false  # Always run dialogue for differentiation
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Budget Experimental: Drama Machine with free Nemotron model
+  # Same approach as experimental but using free-tier Nemotron
+  budget_experimental:
+    description: "Drama Machine-inspired dialogue with free Nemotron model"
+    dialogue:
+      enabled: true
+      max_rounds: 2  # More rounds allow productive tension to develop
+      convergence_threshold: 0.7  # Lower threshold - some tension is productive
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front  # External communication (Goffmanian front stage)
+      prompt_file: tutor-ego-experimental.md  # Warm, encouraging, practical voice
+      hyperparameters:
+        temperature: 0.7  # Higher temp for more natural, warm responses
+        max_tokens: 3500  # Nemotron uses reasoning tokens
+
+    superego:
+      provider: openrouter
+      model: nemotron
+      staging: back  # Internal review (Goffmanian back stage)
+      prompt_file: tutor-superego-experimental.md  # Critical inner voice
+      hyperparameters:
+        temperature: 0.5  # Lower temp for more incisive, grounded critiques
+        max_tokens: 3500
+
+    # Drama Machine intervention strategies:
+    intervention_strategies:
+      reinterpret_signals: true  # Superego reframes learner behavior
+      critique_responses: true   # Superego reviews Ego drafts
+      challenge_framing: true    # Superego can adjust tone/message
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false  # Always run dialogue for differentiation
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Dialogue Review Only: Superego reviews but no pre-analysis
+  # Useful for comparing the impact of pre-analysis vs review-only
+  dialogue_review_only:
+    description: "Dialogue with review/revise loop but no pre-analysis step"
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.8
+      skip_pre_analysis: true  # Skip the initial signal reinterpretation
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego-experimental.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 3500
+
+    superego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-superego-experimental.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 3500
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Budget: Single-agent with Nemotron (free tier) on OpenRouter
+  naive:
+    description: "Naive baseline - minimal prompt with JSON schema only, no pedagogical guidance"
+    dialogue:
+      enabled: false
+      max_rounds: 0
+
+    ego:
+      provider: openrouter
+      model: haiku
+      prompt_file: tutor-ego-naive.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+
+    superego: null
+
+  budget:
+    description: "Budget-friendly single agent - DeepSeek (free) via OpenRouter, no dialogue"
+    dialogue:
+      enabled: false
+      max_rounds: 0
+
+    ego:
+      provider: openrouter
+      model: deepseek
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 1500
+
+    superego: null
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: true
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Single-agent: No dialogue, just Ego
+  single_agent:
+    description: "Single agent mode - no Superego review"
+    dialogue:
+      enabled: false
+      max_rounds: 0
+
+    ego:
+      provider: openrouter
+      model: haiku
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 800
+
+    superego: null
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: true
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Experimental: Different models for each role
+  experimental_mixed:
+    description: "Mixed provider experiment - GPT-4o Ego, Claude Superego"
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.8
+
+    ego:
+      provider: openrouter
+      model: gpt-5.2
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 800
+        top_p: 0.95
+
+    superego:
+      provider: openrouter
+      model: sonnet
+      prompt_file: tutor-superego.md
+      hyperparameters:
+        temperature: 0.3
+        max_tokens: 600
+        top_p: 0.85
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Local: Use local LLM for testing (LM Studio)
+  local:
+    description: "Local LLM via LM Studio for offline testing and development"
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.7
+
+    ego:
+      provider: local
+      model: default
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 800
+
+    superego:
+      provider: local
+      model: default
+      prompt_file: tutor-superego.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 600
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: true
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Strict: More critical Superego
+  strict_pedagogy:
+    description: "Strict pedagogical review - Superego is more critical"
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.9
+
+    ego:
+      provider: openrouter
+      model: haiku
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 800
+
+    superego:
+      provider: openrouter
+      model: sonnet
+      prompt_file: tutor-superego-strict.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 1000
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 1
+      rapid_nav_window_ms: 45000
+      retry_frustration_count: 2
+
+  # ============================================================================
+  # RECOGNITION EVALUATION PROFILES (Phase 5)
+  # ============================================================================
+  # These profiles are designed for A/B testing the Recognition Engine.
+  # They compare baseline (no recognition) vs full recognition architecture.
+
+  # Baseline: Phase 0 mode - no persistent memory, standard prompts
+  # Use this as the control group for recognition evaluation
+  baseline:
+    description: "Phase 0 baseline - no memory persistence, standard prompts for A/B comparison"
+    recognition_mode: false  # Flag for evaluation tracking
+    memory_enabled: false    # No Writing Pad integration
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.8
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front  # External communication (Goffmanian front stage)
+      prompt_file: tutor-ego.md  # Standard prompts (not recognition-enhanced)
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego:
+      provider: openrouter
+      model: nemotron
+      staging: back  # Internal review (Goffmanian back stage)
+      prompt_file: tutor-superego.md  # Standard prompts
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 3500
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Enhanced: Improved prompts without recognition theory
+  # Use this to isolate prompt engineering effects from recognition theory effects
+  enhanced:
+    description: "Enhanced prompts - better structure/examples but no recognition theory"
+    recognition_mode: false  # No recognition theory
+    memory_enabled: false    # No Writing Pad integration
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.8
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-enhanced.md  # Enhanced prompts (no recognition theory)
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego:
+      provider: openrouter
+      model: nemotron
+      staging: back
+      prompt_file: tutor-superego-enhanced.md  # Enhanced prompts (no recognition theory)
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 3500
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Placebo: Length-matched prompts WITHOUT recognition theory (eval repo cells 15-18)
+  # Controls for prompt length/complexity vs recognition theory content
+  placebo:
+    description: "Placebo prompts - length-matched to recognition but no Hegelian theory"
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.7
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-placebo.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-placebo.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 3500
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Memory-only: Base prompts with memory integration, no recognition theory (eval repo cell 19)
+  memory:
+    description: "Memory isolation - base + memory integration, no recognition theory"
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-memory.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego: null
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: true
+      high_intensity_extra_rounds: false
+
+  # Hardwired rules: Base prompt + 5 superego-derived rules, no live superego (eval repo cells 13-14)
+  hardwired:
+    description: "Hardwired rules ablation - superego-derived rules embedded in ego prompt, no live superego"
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: false
+      max_rounds: 0
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego-hardwired.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego: null
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: true
+      high_intensity_extra_rounds: false
+
+  # Recognition without memory: Recognition prompts but no Writing Pad (eval repo cell 20)
+  recognition_nomem:
+    description: "Recognition without memory - isolating recognition theory from memory"
+    recognition_mode: true
+    memory_enabled: false
+    dialogue:
+      enabled: false
+      max_rounds: 0
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-nomem.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego: null
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: true
+      high_intensity_extra_rounds: false
+
+  # Recognition: Phase 4 mode - full memory persistence, recognition-enhanced prompts
+  # Use this as the treatment group for recognition evaluation
+  recognition:
+    description: "Phase 4 recognition mode - full memory dynamics, recognition-enhanced prompts"
+    recognition_mode: true   # Flag for evaluation tracking
+    memory_enabled: true     # Full Writing Pad integration
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.7  # Lower threshold - productive tension is valuable
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front  # External communication (Goffmanian front stage)
+      prompt_file: tutor-ego-recognition.md  # Recognition-enhanced prompt
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego:
+      provider: openrouter
+      model: nemotron
+      staging: back  # Internal review (Goffmanian back stage)
+      prompt_file: tutor-superego-recognition.md  # Recognition-enhanced prompt
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 3500
+
+    # Recognition-specific intervention strategies
+    intervention_strategies:
+      enforce_mutual_recognition: true   # Superego checks for learner acknowledgment
+      require_memory_integration: true   # Superego enforces history reference
+      assess_transformative_potential: true  # Superego evaluates transformation conditions
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false  # Always run dialogue for recognition quality
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Recognition Plus: Enhanced recognition with higher quality models
+  # For testing whether better models improve recognition quality
+  recognition_plus:
+    description: "Enhanced recognition with Sonnet - testing if model quality affects recognition"
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: true
+      max_rounds: 3  # More rounds for deeper dialectical exchange
+      convergence_threshold: 0.6  # Even lower - maximum productive tension
+
+    ego:
+      provider: openrouter
+      model: sonnet
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.7  # Higher temp for more natural recognition responses
+        max_tokens: 2500
+
+    superego:
+      provider: openrouter
+      model: sonnet
+      prompt_file: tutor-superego-recognition.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 2500
+
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true
+      challenge_authority_dynamics: true  # Also check for master-slave patterns
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Recognition Minimal: Recognition prompts but no memory
+  # For isolating the effect of prompts vs memory
+  recognition_prompts_only:
+    description: "Recognition prompts without memory - isolating prompt effect"
+    recognition_mode: true
+    memory_enabled: false  # No memory - just the prompts
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.7
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego-recognition.md  # Recognition prompts
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-superego-recognition.md  # Recognition prompts
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 3500
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # ============================================================================
+  # 2x2 FACTORIAL EVALUATION PROFILES
+  # ============================================================================
+  # These profiles enable a 2x2 factorial design to isolate the effects of:
+  #   Factor A: Architecture (single_agent vs multiagent/psychodynamic)
+  #   Factor B: Recognition (standard prompts vs recognition-enhanced prompts)
+  #
+  # Design Matrix:
+  #   ┌─────────────────────┬─────────────────────┬─────────────────────┐
+  #   │                     │ Standard Prompts    │ Recognition Prompts │
+  #   ├─────────────────────┼─────────────────────┼─────────────────────┤
+  #   │ Single Agent        │ single_baseline     │ single_recognition  │
+  #   │ (no Superego)       │                     │                     │
+  #   ├─────────────────────┼─────────────────────┼─────────────────────┤
+  #   │ Multi-Agent         │ baseline            │ recognition         │
+  #   │ (Ego + Superego)    │ (already exists)    │ (already exists)    │
+  #   └─────────────────────┴─────────────────────┴─────────────────────┘
+  #
+  # This allows analyzing:
+  #   - Main effect of architecture (single vs multi-agent)
+  #   - Main effect of recognition (standard vs recognition prompts)
+  #   - Interaction effect (does recognition benefit more from multi-agent?)
+
+  # Single Agent + Standard Prompts (Control condition)
+  # No Superego review, standard Ego prompts, no memory
+  single_baseline:
+    description: "Single agent with standard prompts - control condition for 2x2 factorial"
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: false  # No Superego dialogue
+      max_rounds: 0
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego.md  # Standard prompts
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego: null  # No Superego
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: true
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Single Agent + Enhanced Prompts
+  # No Superego review, enhanced Ego prompts (no recognition theory)
+  single_enhanced:
+    description: "Single agent with enhanced prompts - isolates prompt engineering without recognition theory"
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: false  # No Superego dialogue
+      max_rounds: 0
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego-enhanced.md  # Enhanced prompts (no recognition theory)
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego: null  # No Superego
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: true
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Single Agent + Recognition Prompts
+  # No Superego review, but uses recognition-enhanced Ego prompts
+  single_recognition:
+    description: "Single agent with recognition prompts - isolates recognition effect without multi-agent"
+    recognition_mode: true
+    memory_enabled: true  # Memory enabled for recognition context
+    dialogue:
+      enabled: false  # No Superego dialogue
+      max_rounds: 0
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego-recognition.md  # Recognition-enhanced prompts
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego: null  # No Superego
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: true
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Note: The other two conditions of the 2x2 are:
+  #   - baseline (Multi-Agent + Standard Prompts) - defined above
+  #   - recognition (Multi-Agent + Recognition Prompts) - defined above
+
+  # ============================================================================
+  # 2×2×2 ABLATION STUDY PROFILES (Phase 5.4)
+  # ============================================================================
+  # These profiles enable a full 2×2×2 factorial design to isolate the effects of:
+  #   Factor A: Recognition (standard prompts vs recognition-enhanced prompts)
+  #   Factor B: Multi-agent Tutor (single-agent vs Ego/Superego dialogue)
+  #   Factor C: Multi-agent Learner (unified learner vs psychodynamic deliberation)
+  #
+  # Design Matrix (8 conditions):
+  #   ┌──────────┬──────────────────────┬─────────────────────────────────┐
+  #   │          │ Single-Agent Tutor   │ Multi-Agent Tutor               │
+  #   │          │ Unified   Psych.     │ Unified         Psych.          │
+  #   ├──────────┼──────────────────────┼─────────────────────────────────┤
+  #   │ Standard │ cond_1    cond_2     │ cond_3          cond_4          │
+  #   │ Recog.   │ cond_5    cond_6     │ cond_7          cond_8 (Full)   │
+  #   └──────────┴──────────────────────┴─────────────────────────────────┘
+
+  # Condition 1: Baseline Unified
+  ablation_baseline_unified:
+    description: "Ablation baseline: standard prompts, single-agent tutor, unified learner"
+    ablation_condition: 1
+    recognition_mode: false
+    memory_enabled: false
+    learner_architecture: unified
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+    superego: null
+    intervention_thresholds:
+      low_intensity_skip_dialogue: true
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Condition 2: Baseline with Multi-Agent Learner
+  ablation_baseline_multilearner:
+    description: "Ablation: standard prompts, single-agent tutor, psychodynamic learner"
+    ablation_condition: 2
+    recognition_mode: false
+    memory_enabled: false
+    learner_architecture: psychodynamic
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+    superego: null
+    intervention_thresholds:
+      low_intensity_skip_dialogue: true
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Condition 3: Multi-Agent Tutor (Unified Learner)
+  ablation_multiagent_unified:
+    description: "Ablation: standard prompts, multi-agent tutor, unified learner"
+    ablation_condition: 3
+    recognition_mode: false
+    memory_enabled: false
+    learner_architecture: unified
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.7
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-experimental.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 3500
+    superego:
+      provider: openrouter
+      model: nemotron
+      staging: back
+      prompt_file: tutor-superego-experimental.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 3500
+    intervention_strategies:
+      reinterpret_signals: true
+      critique_responses: true
+      challenge_framing: true
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Condition 4: Multi-Agent Tutor + Multi-Agent Learner
+  ablation_multiagent_multilearner:
+    description: "Ablation: standard prompts, multi-agent tutor, psychodynamic learner"
+    ablation_condition: 4
+    recognition_mode: false
+    memory_enabled: false
+    learner_architecture: psychodynamic
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.7
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-experimental.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 3500
+    superego:
+      provider: openrouter
+      model: nemotron
+      staging: back
+      prompt_file: tutor-superego-experimental.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 3500
+    intervention_strategies:
+      reinterpret_signals: true
+      critique_responses: true
+      challenge_framing: true
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Condition 5: Recognition (Unified)
+  ablation_recognition_unified:
+    description: "Ablation: recognition prompts, single-agent tutor, unified learner"
+    ablation_condition: 5
+    recognition_mode: true
+    memory_enabled: true
+    learner_architecture: unified
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+    superego: null
+    intervention_thresholds:
+      low_intensity_skip_dialogue: true
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Condition 6: Recognition + Multi-Agent Learner
+  ablation_recognition_multilearner:
+    description: "Ablation: recognition prompts, single-agent tutor, psychodynamic learner"
+    ablation_condition: 6
+    recognition_mode: true
+    memory_enabled: true
+    learner_architecture: psychodynamic
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+    superego: null
+    intervention_thresholds:
+      low_intensity_skip_dialogue: true
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Condition 7: Recognition + Multi-Agent Tutor (Unified)
+  ablation_recognition_multiagent_unified:
+    description: "Ablation: recognition prompts, multi-agent tutor, unified learner"
+    ablation_condition: 7
+    recognition_mode: true
+    memory_enabled: true
+    learner_architecture: unified
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.7
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 3500
+    superego:
+      provider: openrouter
+      model: nemotron
+      staging: back
+      prompt_file: tutor-superego-recognition.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 3500
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # ============================================================================
+  # MODEL QUALITY ABLATION PROFILES
+  # ============================================================================
+  # These profiles extend the 2×2×2 ablation by varying model quality.
+  # Base: Condition 7 (recognition + multi-agent tutor + unified learner) = 79.8 mean
+  #
+  # New Factor D: Superego Model Quality (Nemotron free vs Sonnet paid)
+  # Hypothesis: Quality critique from Superego may improve tutor output
+  # ============================================================================
+
+  # Condition 9: Best config + Sonnet Superego
+  # Only change from Condition 7: superego.model = sonnet (instead of nemotron)
+  ablation_recognition_multiagent_sonnet_superego:
+    description: "Ablation: Condition 7 + Sonnet Superego (testing critique quality)"
+    ablation_condition: 9
+    recognition_mode: true
+    memory_enabled: true
+    learner_architecture: unified
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.7
+    ego:
+      provider: openrouter
+      model: nemotron           # Same as Condition 7
+      staging: front
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 3500
+    superego:
+      provider: openrouter
+      model: sonnet             # UPGRADED from nemotron
+      staging: back
+      prompt_file: tutor-superego-recognition.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 3500
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Condition 8: Full System (Recognition + Multi-Agent Tutor + Multi-Agent Learner)
+  ablation_recognition_multiagent_multilearner:
+    description: "Ablation FULL: recognition prompts, multi-agent tutor, psychodynamic learner"
+    ablation_condition: 8
+    recognition_mode: true
+    memory_enabled: true
+    learner_architecture: psychodynamic
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.7
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 3500
+    superego:
+      provider: openrouter
+      model: nemotron
+      staging: back
+      prompt_file: tutor-superego-recognition.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 3500
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # ============================================================================
+  # COST/BENEFIT ANALYSIS PROFILES
+  # ============================================================================
+  # These profiles explore different model configurations to find optimal
+  # cost/quality tradeoffs for the Ego/Superego dialogue system.
+
+  # ============================================================================
+  # DIVERGENT SUPEREGO PROFILES (Phase 6)
+  # ============================================================================
+  # These profiles test whether genuinely divergent internal agents — with
+  # conflicting objectives — produce the behavioral modulation predicted by
+  # the Drama Machine framework. The convergent superego (standard) shares
+  # the Ego's goal; these divergent variants challenge it from orthogonal angles.
+  #
+  # Three divergent variants:
+  #   - Suspicious: Recognition skeptic — challenges hollow/formulaic engagement
+  #   - Adversary: Pedagogical contrarian — argues for the opposite method
+  #   - Advocate: Learner's inner voice — represents the learner's actual experience
+  #
+  # Key differences from convergent profiles:
+  #   - max_rounds: 3 (more room for genuine negotiation)
+  #   - convergence_threshold: 0.65/0.60 (lower bar — perfect agreement unlikely)
+
+  # Suspicious: Base prompts + recognition-skeptic superego
+  suspicious:
+    description: "Divergent: base ego + suspicious superego (challenges hollow recognition)"
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 3500
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Suspicious + Recognition: Recognition prompts + recognition-skeptic superego
+  suspicious_recognition:
+    description: "Divergent: recognition ego + suspicious superego (challenges hollow recognition)"
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 3500
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Adversary: Base prompts + pedagogical contrarian superego
+  adversary:
+    description: "Divergent: base ego + adversary superego (argues for opposite method)"
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-adversary.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 3500
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Adversary + Recognition: Recognition prompts + pedagogical contrarian superego
+  adversary_recognition:
+    description: "Divergent: recognition ego + adversary superego (argues for opposite method)"
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-adversary.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 3500
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Advocate: Base prompts + learner advocate superego
+  advocate:
+    description: "Divergent: base ego + advocate superego (represents learner's experience)"
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-advocate.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 3500
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Advocate + Recognition: Recognition prompts + learner advocate superego
+  advocate_recognition:
+    description: "Divergent: recognition ego + advocate superego (represents learner's experience)"
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-advocate.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 3500
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # ============================================================================
+  # DIALECTICAL SYNTHESIS PROFILES (Phase 6b)
+  # ============================================================================
+  # Same divergent superegos as above, but paired with a dialectical ego that
+  # is trained to SYNTHESIZE rather than capitulate under adversarial challenge.
+  # The dialectical ego follows an Aufhebung protocol: defend → extract → integrate.
+
+  # Dialectical + Suspicious (base)
+  dialectical_suspicious:
+    description: "Dialectical: base dialectical ego + suspicious superego (synthesis, not capitulation)"
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 3500
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Dialectical + Suspicious (recognition)
+  dialectical_suspicious_recognition:
+    description: "Dialectical: recognition dialectical ego + suspicious superego"
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 3500
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Dialectical + Adversary (base)
+  dialectical_adversary:
+    description: "Dialectical: base dialectical ego + adversary superego (synthesis, not capitulation)"
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-adversary.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 3500
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Dialectical + Adversary (recognition)
+  dialectical_adversary_recognition:
+    description: "Dialectical: recognition dialectical ego + adversary superego"
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-adversary.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 3500
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Dialectical + Advocate (base)
+  dialectical_advocate:
+    description: "Dialectical: base dialectical ego + advocate superego (synthesis, not capitulation)"
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-advocate.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 3500
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Dialectical + Advocate (recognition)
+  dialectical_advocate_recognition:
+    description: "Dialectical: recognition dialectical ego + advocate superego"
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 3500
+
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-advocate.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 3500
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+  # Asymmetric: Cheap ego (Haiku) + thoughtful superego (Sonnet)
+  # Hypothesis: Fast initial generation, quality comes from critique
+  asymmetric:
+    description: "Asymmetric model pairing - fast Haiku ego, thoughtful Sonnet superego"
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.8
+
+    ego:
+      provider: openrouter
+      model: haiku
+      staging: front
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1000
+
+    superego:
+      provider: openrouter
+      model: sonnet
+      staging: back
+      prompt_file: tutor-superego.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 800
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: true
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+# Logging settings
+logging:
+  # Log all API calls (prompts and responses)
+  log_api_calls: true
+  # Log level: debug, info, warn, error
+  level: debug
+  # Log directory
+  path: logs/tutor-api
+  # Include full prompts in logs (can be large)
+  include_prompts: true
+  # Include full responses in logs
+  include_responses: true
+  # Show full prompts in console output (verbose trace mode)
+  # Set to true to see: [1] PROMPT → [2] RESPONSE for each API call
+  trace_prompts: false
+
+# Evaluation settings
+evaluation:
+  # Enable logging for evaluation
+  log_dialogues: true
+  log_path: logs/tutor-dialogues
+
+  # Metrics to track
+  metrics:
+    - convergence_rate
+    - rounds_to_convergence
+    - suggestion_acceptance_rate
+    - time_to_generate
+    - token_usage
+
+  # A/B testing configuration
+  ab_testing:
+    enabled: false
+    # Percentage of users in treatment group (0-100)
+    treatment_percentage: 50
+    control_profile: single_agent
+    treatment_profile: default
+
+  # Comparison runs
+  comparison:
+    # Profiles to compare in evaluation runs
+    profiles_to_compare:
+      - default
+      - quality
+      - single_agent
+      - strict_pedagogy
+    # Number of evaluation samples per profile
+    samples_per_profile: 100
+
+  # Recognition-specific comparison runs
+  recognition_comparison:
+    # Profiles to compare for recognition evaluation
+    profiles_to_compare:
+      - baseline           # Control: no memory, standard prompts
+      - recognition        # Treatment: memory + recognition prompts
+      - recognition_plus   # Enhanced: better model + recognition
+      - recognition_prompts_only  # Isolation: prompts only, no memory
+    # Scenarios to use for recognition evaluation
+    scenarios:
+      - recognition_seeking_learner
+      - returning_with_breakthrough
+      - resistant_learner
+      - asymmetric_recognition_request
+      - memory_continuity_single
+      - transformative_moment_setup
+      - mutual_transformation_journey
+      - recognition_repair
+      - productive_struggle_arc
+    # Number of runs per profile-scenario combination
+    samples_per_combination: 3
+
+  # 2x2 Factorial Comparison
+  # Tests interaction between architecture (single vs multi-agent) and recognition
+  factorial_2x2:
+    # Profiles representing the 2x2 factorial design
+    profiles:
+      single_baseline:    # Single Agent + Standard Prompts
+        architecture: single_agent
+        recognition: false
+      single_recognition: # Single Agent + Recognition Prompts
+        architecture: single_agent
+        recognition: true
+      baseline:           # Multi-Agent + Standard Prompts
+        architecture: multiagent
+        recognition: false
+      recognition:        # Multi-Agent + Recognition Prompts
+        architecture: multiagent
+        recognition: true
+    # Scenarios to use for 2x2 evaluation
+    scenarios:
+      - recognition_seeking_learner
+      - resistant_learner
+      - mutual_transformation_journey
+      - recognition_repair
+      - productive_struggle_arc
+      - sustained_dialogue
+      - breakdown_recovery
+    # Number of runs per cell (profile-scenario combination)
+    samples_per_cell: 5
+    # Statistical analyses to run
+    analyses:
+      - main_effect_architecture    # Does multi-agent improve quality?
+      - main_effect_recognition     # Does recognition improve quality?
+      - interaction_effect          # Is recognition more effective with multi-agent?

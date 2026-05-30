@@ -1,0 +1,79 @@
+# Shared AI Provider Configuration
+# Used by both tutor-agents.yaml and evaluation-rubric.yaml
+#
+# Model IDs are current as of February 2026. Update when new models release.
+
+providers:
+  anthropic:
+    api_key_env: ANTHROPIC_API_KEY
+    base_url: https://api.anthropic.com/v1/messages
+    default_model: claude-sonnet-4-5
+    models:
+      haiku: claude-haiku-4-5
+      sonnet: claude-sonnet-4-5
+      opus: claude-opus-4-6
+
+  openai:
+    api_key_env: OPENAI_API_KEY
+    base_url: https://api.openai.com/v1/chat/completions
+    default_model: gpt-5-mini
+    models:
+      mini: gpt-5-mini
+      standard: gpt-5.2
+
+  openrouter:
+    api_key_env: OPENROUTER_API_KEY
+    base_url: https://openrouter.ai/api/v1/chat/completions
+    default_model: nvidia/nemotron-3-nano-30b-a3b
+    # default_model: nvidia/nemotron-3-nano-30b-a3b:free
+    models:
+      # Budget-friendly options
+      nemotron: nvidia/nemotron-3-nano-30b-a3b
+      # nemotron: nvidia/nemotron-3-nano-30b-a3b:free
+      glm47: z-ai/glm-4.7
+      glm5: z-ai/glm-5
+      kimi-k2: moonshotai/kimi-k2-thinking
+      "kimi-k2.5": moonshotai/kimi-k2.5
+      deepseek: deepseek/deepseek-v3.2
+      minimax: minimax/minimax-m2.5
+      haiku: anthropic/claude-haiku-4.5
+      gpt-oss: openai/gpt-oss-120b
+      qwen3.5-plus: qwen/qwen3.5-plus-02-15
+      qwen3.5: qwen/qwen3.5-397b-a17b
+      # Mid-tier options
+      sonnet: anthropic/claude-sonnet-4.6
+      gpt-mini: openai/gpt-5-mini
+      gemini-flash: google/gemini-3-flash-preview
+      # Premium options
+      opus: anthropic/claude-opus-4.6
+      gpt: openai/gpt-5.2
+      gemini-pro: google/gemini-3-pro-preview
+
+  gemini:
+    api_key_env: GEMINI_API_KEY
+    base_url: https://generativelanguage.googleapis.com/v1beta/models
+    default_model: gemini-3-flash-preview
+    models:
+      flash: gemini-3-flash-preview
+      pro: gemini-3-pro-preview
+
+  local:
+    base_url: http://localhost:1234/v1/chat/completions
+    format: openai
+    default_model: local-model
+    models:
+      default: local-model
+
+  lmstudio:
+    base_url: http://10.0.0.174:1234/v1/chat/completions
+    format: openai
+    default_model: qwen3-14b
+    context_length: 4096
+    models:
+      default: qwen3-14b
+      qwen3-14b: qwen3-14b
+      qwen3-vl-4b: qwen/qwen3-vl-4b
+      qwen3-vl-8b: qwen/qwen3-vl-8b
+      gemma-12b: gemma-3-12b-it
+      deepseek-14b: deepseek-r1-distill-qwen-14b
+      gpt-oss-20b: openai/gpt-oss-20b

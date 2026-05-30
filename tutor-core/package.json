@@ -1,0 +1,64 @@
+{
+  "name": "@machinespirits/tutor-core",
+  "version": "0.5.2",
+  "description": "Core tutor services for Machine Spirits - Ego/Superego dialogue engine, AI providers, and configuration",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./services/*": "./services/*.js",
+    "./config/*": "./config/*",
+    "./prompts/*": "./prompts/*"
+  },
+  "files": [
+    "index.js",
+    "services/",
+    "config/",
+    "prompts/",
+    "migrations/"
+  ],
+  "keywords": [
+    "tutor",
+    "ai",
+    "education",
+    "dialogue",
+    "machine-spirits"
+  ],
+  "author": "L. Magee",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/liammagee/machinespirits-tutor-core"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.5.0",
+    "jsonrepair": "^3.13.2",
+    "yaml": "^2.8.2"
+  },
+  "peerDependencies": {
+    "@anthropic-ai/sdk": ">=0.71.0",
+    "@google/genai": ">=1.30.0",
+    "openai": ">=6.9.0"
+  },
+  "peerDependenciesMeta": {
+    "@anthropic-ai/sdk": {
+      "optional": true
+    },
+    "@google/genai": {
+      "optional": true
+    },
+    "openai": {
+      "optional": true
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

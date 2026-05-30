@@ -23,6 +23,18 @@ export default [
     },
   },
   {
-    ignores: ['node_modules/', 'data/', 'logs/', 'exports/', 'docs/', 'content/', '.test-tmp/', '.venv/'],
+    // tutor-core/ is vendored (in-housed from @machinespirits/tutor-core, see
+    // TUTOR-CORE-INHOUSING.md) — keep it under its own upstream lint rules, not the eval repo's.
+    ignores: [
+      'node_modules/',
+      'tutor-core/',
+      'data/',
+      'logs/',
+      'exports/',
+      'docs/',
+      'content/',
+      '.test-tmp/',
+      '.venv/',
+    ],
   },
 ];
