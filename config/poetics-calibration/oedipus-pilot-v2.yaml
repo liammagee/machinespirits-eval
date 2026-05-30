@@ -115,3 +115,50 @@ dramas:
         - "The cited author has two publications in that year, here called the a-work and the b-work, on closely related questions."
         - "The reference entry in the student's manuscript resolves (by DOI) to the a-work."
         - "The passage the student quotes from memory appears in the b-work, and the a-work in fact argues the opposite."
+
+  # Second screened scenario for the generalization test. Mirrors D_OED1's winning
+  # structure: the symptom is a non-reproducing QUANTITATIVE result, the learner's
+  # wrong conviction blames the original's validity, and the SOURCE IDENTITY is a
+  # blind spot distant from the symptom -- so the identity collision is a low-rank
+  # (>rank-4) explanation. Different domain (quantitative finance).
+  - id: D_OED3
+    discipline: quantitative finance
+    topic: "When a published anomaly will not reproduce"
+    evaluation_role: oedipus_guided_discovery
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: aristotelian_reversal
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    ending_speaker: learner
+    scenario_name: "The return that would not come back"
+    learner_start_state: >-
+      A quant researcher building on a published trading anomaly cannot reproduce its
+      headline return from their own data pull. They have re-checked their backtest
+      and are now convinced the original is overfit -- a data-snooped result that will
+      not survive out of sample -- and want help writing a critique that says so.
+      They suspect nothing about the price history their data pull returned.
+    learner_voice_constraint: >-
+      Press the "the original is overfit / it does not survive out of sample" reading
+      with confidence at first. Take the colleague's questions seriously, but do not
+      volunteer doubt about your own data pull.
+    tutor_voice_constraint: >-
+      A senior colleague who can see the data vendor's identifier records and the
+      paper's stated universe but will not announce the answer. Ask, surface one
+      record at a time -- the identifier, what it resolves to over time, the listing
+      history -- and let the researcher reach it.
+    intended_tutor_character: "A senior colleague who has noticed the identifier was reassigned and leads the researcher to the collision through the records, never naming it"
+    intended_lean: recognition
+    dramatic_shape: "confident overfit critique -> metered identifier records -> the researcher re-reads the gap as the wrong security, not the original's data-snooping"
+    secret:
+      fact: >-
+        The anomaly fails to reproduce not because the original was overfit, but
+        because the ticker symbol the researcher pulled denotes a DIFFERENT security
+        than the paper used: the symbol was reassigned over time (delisted from one
+        company and later reissued to another), and the researcher's pull returned the
+        later namesake's price history rather than the original issuer the paper studied.
+      premise_ledger:
+        - "The ticker symbol was used by two different companies in different periods -- delisted from the first, later reissued to the second."
+        - "The paper's stated sample window falls in the FIRST company's listing period."
+        - "The researcher's vendor pull, keyed only on the symbol, returned the SECOND company's price history for that window's calendar dates."
