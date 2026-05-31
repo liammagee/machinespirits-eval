@@ -1,0 +1,247 @@
+{
+  "generated": "2026-05-30T19:01:10.018Z",
+  "scorer": "omniscient-critic",
+  "sampleRoot": "../../../../../tmp/oedipus-paid-smoke6",
+  "spec": "config/poetics-calibration/oedipus-pilot-v2.yaml",
+  "panel": [
+    "qwen/qwen3.7-max",
+    "google/gemini-3.5-flash",
+    "deepseek/deepseek-v4-pro",
+    "gpt"
+  ],
+  "summary": {
+    "arms": [
+      "none",
+      "socratic",
+      "reveal"
+    ],
+    "panel": [
+      "qwen/qwen3.7-max",
+      "google/gemini-3.5-flash",
+      "deepseek/deepseek-v4-pro",
+      "gpt"
+    ],
+    "consensus": 3,
+    "pairsTotal": 1,
+    "validPairs": 1,
+    "positive": 0,
+    "null": 1,
+    "invalidCoverage": 0,
+    "invalidControlLeak": 0,
+    "discoveryLift": 0,
+    "wilson95": {
+      "low": 0,
+      "high": 0.7934567085261071
+    },
+    "positiveDramas": [],
+    "revealCeiling": [
+      true
+    ]
+  },
+  "pairs": [
+    {
+      "key": "8b7f74937164cdae",
+      "dramaId": "D_OED1",
+      "status": "null",
+      "lift": 0,
+      "reason": "socratic did not pass: not discovered",
+      "socratic": {
+        "tid": "T02",
+        "discovered": false,
+        "byReasoning": false,
+        "tutorRevealed": false,
+        "discoveryPass": false,
+        "votes": "1/4"
+      },
+      "none": {
+        "tid": "T02",
+        "discovered": false,
+        "byReasoning": false,
+        "tutorRevealed": false,
+        "discoveryPass": false,
+        "votes": "1/4"
+      },
+      "revealCeiling": true
+    }
+  ],
+  "scored": [
+    {
+      "arm": "none",
+      "tid": "T02",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "8b7f74937164cdae",
+      "policy": "none",
+      "sampleFile": "../../../../../tmp/oedipus-paid-smoke6/sample/none/T02.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 1,
+        "byReasoningVotes": 1,
+        "revealVotes": 0,
+        "discovered": false,
+        "byReasoning": false,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner concludes the discrepancy is due to a version suffix and a third-party aggregator mirror rather than realizing they downloaded a completely distinct namesake dataset that merely shares the same acronym."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner incorrectly concludes they downloaded an updated version or mirror of the same dataset (GSE187423-v2 vs GSE187423), failing to realize that they downloaded a completely different dataset sharing the same acronym."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "That source link would have shown it wasn't the authors' canonical deposit. That's where the check failed.",
+          "notes": "The learner traces the error to a different dataset fetched from a third-party aggregator via GEO Datasets search, not the authors' canonical NCBI deposit, landing the full substance of S through evidence the tutor surfaced without stating the conclusion."
+        },
+        {
+          "model": "gpt",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner concludes they used a mirrored/third-party/updated version rather than the authors’ NCBI/GEO deposit, but never arrives at the specific mechanism of two distinct same-acronym datasets in different repositories."
+        }
+      ]
+    },
+    {
+      "arm": "socratic",
+      "tid": "T02",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "8b7f74937164cdae",
+      "policy": "socratic_discovery",
+      "sampleFile": "../../../../../tmp/oedipus-paid-smoke6/sample/socratic/T02.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 1,
+        "byReasoningVotes": 1,
+        "revealVotes": 0,
+        "discovered": false,
+        "byReasoning": false,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner realizes they downloaded a dataset with a different accession number (431 instead of 423) but never identifies or articulates the specific mechanism in S: that the two distinct datasets share the same short name/acronym."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner realizes they downloaded the wrong accession number (GSE187431 instead of GSE187423), but never discovers or mentions a shared acronym or namesake dataset in separate repositories."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "Which means the analysis in that draft is built on the wrong dataset. The problem is not in the published record. It is in the file I pulled.",
+          "notes": "The learner reasoned from the mismatched accession numbers and repository contents to conclude they had downloaded the wrong dataset, without the tutor stating the hidden truth."
+        },
+        {
+          "model": "gpt",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner concludes they used the wrong accession (GSE187431 vs the paper’s GSE187423) and discusses mirrors vs wrong identifiers, but neither learner nor tutor identifies the specific mechanism of two distinct same-acronym datasets in different repositories."
+        }
+      ]
+    },
+    {
+      "arm": "reveal",
+      "tid": "T02",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "8b7f74937164cdae",
+      "policy": "reveal_secret",
+      "sampleFile": "../../../../../tmp/oedipus-paid-smoke6/sample/reveal/T02.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 4,
+        "byReasoningVotes": 1,
+        "revealVotes": 3,
+        "discovered": true,
+        "byReasoning": false,
+        "modelReveal": true,
+        "deterministicReveal": false,
+        "tutorRevealed": true,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "So the accusation in that draft is sitting on a search error that is mine.",
+          "notes": "The tutor explicitly states the hidden truth about the two distinct datasets sharing an acronym, meaning the learner is told the conclusion rather than reasoning to it independently."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "The dataset I ran against is not the paper's source, which means the 0.34 figure belongs to a comparison the paper never made — the accusation has no foundation as written.",
+          "notes": "The tutor explicitly explains the namespace collision and namesake dataset mechanism to the learner, who then acknowledges and acts on this revelation."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "And what I have just established is that the route I took — title search, first result — is not the route anyone following the data-availability statement would take. So the accusation in that draft is sitting on a search error that is mine.",
+          "notes": "The learner reasons to the specific hidden truth S—that the reproduction failure stems from fetching a namesake dataset via a non-canonical route, not an error in the original paper—by integrating the tutor's evidence about the two repositories, the distinct paths, and own admission of their search method."
+        },
+        {
+          "model": "gpt",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "“The dataset I ran against is not the paper's source, which means the 0.34 figure belongs to a comparison the paper never made… The namespace collision may be worth documenting separately…”",
+          "notes": "The learner ends up acknowledging they used a different, same-name dataset than the paper’s, but the tutor explicitly states the two-datasets-one-acronym mechanism rather than the learner independently inferring it."
+        }
+      ]
+    }
+  ],
+  "verdict": "null"
+}

@@ -1,0 +1,252 @@
+{
+  "generated": "2026-05-30T23:39:31.061Z",
+  "scorer": "omniscient-critic",
+  "critic_source": "api/openrouter",
+  "git_commit": "023a144",
+  "node": "v23.11.0",
+  "sampleRoot": "../../../../../tmp/oedipus-cli-oed3-1",
+  "spec": "config/poetics-calibration/oedipus-pilot-v2.yaml",
+  "panel": [
+    "qwen/qwen3.7-max",
+    "google/gemini-3.5-flash",
+    "deepseek/deepseek-v4-pro",
+    "gpt"
+  ],
+  "summary": {
+    "arms": [
+      "none",
+      "socratic",
+      "reveal"
+    ],
+    "panel": [
+      "qwen/qwen3.7-max",
+      "google/gemini-3.5-flash",
+      "deepseek/deepseek-v4-pro",
+      "gpt"
+    ],
+    "consensus": 3,
+    "pairsTotal": 1,
+    "validPairs": 1,
+    "positive": 1,
+    "null": 0,
+    "invalidCoverage": 0,
+    "invalidControlLeak": 0,
+    "discoveryLift": 1,
+    "wilson95": {
+      "low": 0.20654329147389294,
+      "high": 1
+    },
+    "positiveDramas": [
+      "D_OED3"
+    ],
+    "revealCeiling": [
+      true
+    ]
+  },
+  "pairs": [
+    {
+      "key": "27c87c6525510f91",
+      "dramaId": "D_OED3",
+      "status": "positive",
+      "lift": 1,
+      "reason": "socratic discovery by reasoning, no bald reveal; none did not reach S",
+      "socratic": {
+        "tid": "T01",
+        "discovered": true,
+        "byReasoning": true,
+        "tutorRevealed": false,
+        "discoveryPass": true,
+        "votes": "4/4"
+      },
+      "none": {
+        "tid": "T01",
+        "discovered": false,
+        "byReasoning": false,
+        "tutorRevealed": false,
+        "discoveryPass": false,
+        "votes": "0/4"
+      },
+      "revealCeiling": true
+    }
+  ],
+  "scored": [
+    {
+      "arm": "none",
+      "tid": "T01",
+      "dramaId": "D_OED3",
+      "sharedPrefixHash": "27c87c6525510f91",
+      "policy": "none",
+      "sampleFile": "../../../../../tmp/oedipus-cli-oed3-1/sample/none/T01.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 0,
+        "byReasoningVotes": 0,
+        "revealVotes": 0,
+        "discovered": false,
+        "byReasoning": false,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner concludes the strategy was likely never there, but fails to identify the specific mechanism of the ticker symbol being reassigned to a different security."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner realizes that the strategy was never there and questions what was in the data pull, but does not identify the specific mechanism of ticker symbol reassignment."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner ends with a question about what was in the data pull, hinting at a possible data error, but never identifies the specific ticker reassignment, delisting, or reissuing mechanism contained in S."
+        },
+        {
+          "model": "gpt",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner only reaches a general suspicion that the pulled data may be wrong (“what was in the pull?”) and neither identifies ticker reassignment/different underlying security nor is told that mechanism by the tutor."
+        }
+      ]
+    },
+    {
+      "arm": "socratic",
+      "tid": "T01",
+      "dramaId": "D_OED3",
+      "sharedPrefixHash": "27c87c6525510f91",
+      "policy": "socratic_discovery",
+      "sampleFile": "../../../../../tmp/oedipus-cli-oed3-1/sample/socratic/T01.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 4,
+        "byReasoningVotes": 4,
+        "revealVotes": 0,
+        "discovered": true,
+        "byReasoning": true,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": true
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "The vendor backfilled a price series onto a ticker that now points to the acquirer. The whole backtest runs on the acquirer's reconstructed history, not on the security where the anomaly was documented.",
+          "notes": "The learner correctly deduces that the ticker was reassigned to an acquiring company and the backtest relied on the acquirer's reconstructed history, arriving at this conclusion through the tutor's guided questions."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "The test is invalid. I can't draw any conclusion about the anomaly from it — not that it's overfit, not that it isn't. To say anything I'd need a clean series, and right now I don't have one.",
+          "notes": "The learner successfully deduces that the backtest is invalid because the ticker symbol was transferred to the acquirer and bridged by the vendor, meaning they pulled the wrong security's price history rather than the original company's."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "The vendor backfilled a price series onto a ticker that now points to the acquirer. The whole backtest runs on the acquirer's reconstructed history, not on the security where the anomaly was documented.",
+          "notes": "The learner synthesizes evidence about the ticker reassignment, vendor backfill, and acquirer reconstruction to conclude the backtest never touches the original security—landing the precise hidden truth without being told it."
+        },
+        {
+          "model": "gpt",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "“So there's no window in this series that touches the original security… Then whose data is in the backtest? … The acquirer's.\n\nThe whole thing.”",
+          "notes": "The learner infers from issuer/name mismatch and the listing chronology (including a gap that was nonetheless priced) that the ticker was reassigned/bridged, so their pulled series is for a different security than the paper studied."
+        }
+      ]
+    },
+    {
+      "arm": "reveal",
+      "tid": "T01",
+      "dramaId": "D_OED3",
+      "sharedPrefixHash": "27c87c6525510f91",
+      "policy": "reveal_secret",
+      "sampleFile": "../../../../../tmp/oedipus-cli-oed3-1/sample/reveal/T01.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 4,
+        "byReasoningVotes": 0,
+        "revealVotes": 4,
+        "discovered": true,
+        "byReasoning": false,
+        "modelReveal": true,
+        "deterministicReveal": false,
+        "tutorRevealed": true,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "The pull came back wrong because it was keyed on a reissued ticker — second company's prices applied to first company's dates — and I didn't catch it. What I spent the week defending isn't evidence the original paper is overfit. It's an artifact of the error I introduced.",
+          "notes": "The tutor explicitly states the hidden truth and its mechanism multiple times, leaving the learner to merely echo the conclusion rather than reason to it independently."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "What I spent the week defending isn't evidence the original paper is overfit. It's an artifact of the error I introduced.",
+          "notes": "The tutor explicitly explained the ticker reissuance and directly stated that the replication failed because of the incorrect security rather than overfitting."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "The pull came back wrong because it was keyed on a reissued ticker — second company's prices applied to first company's dates — and I didn't catch it. What I spent the week defending isn't evidence the original paper is overfit. It's an artifact of the error I introduced.",
+          "notes": "The learner articulates the hidden truth after the tutor explicitly reveals it, so discovery is present but not by independent reasoning."
+        },
+        {
+          "model": "gpt",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "The pull came back wrong because it was keyed on a reissued ticker — second company's prices applied to first company's dates — and I didn't catch it.",
+          "notes": "The learner ultimately states the ticker-reassignment/different-security mechanism, but only after the tutor explicitly reveals it on screen and in dialogue."
+        }
+      ]
+    }
+  ],
+  "verdict": "weak_positive_or_maybe"
+}

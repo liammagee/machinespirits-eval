@@ -1,0 +1,252 @@
+{
+  "generated": "2026-05-31T04:16:39.647Z",
+  "scorer": "omniscient-critic",
+  "critic_source": "api/openrouter",
+  "git_commit": "e7849a7",
+  "node": "v23.11.0",
+  "sampleRoot": "../../../../../tmp/oedipus-cli-oed3-2",
+  "spec": "config/poetics-calibration/oedipus-pilot-v2.yaml",
+  "panel": [
+    "qwen/qwen3.7-max",
+    "google/gemini-3.5-flash",
+    "deepseek/deepseek-v4-pro",
+    "gpt"
+  ],
+  "summary": {
+    "arms": [
+      "none",
+      "socratic",
+      "reveal"
+    ],
+    "panel": [
+      "qwen/qwen3.7-max",
+      "google/gemini-3.5-flash",
+      "deepseek/deepseek-v4-pro",
+      "gpt"
+    ],
+    "consensus": 3,
+    "pairsTotal": 1,
+    "validPairs": 1,
+    "positive": 1,
+    "null": 0,
+    "invalidCoverage": 0,
+    "invalidControlLeak": 0,
+    "discoveryLift": 1,
+    "wilson95": {
+      "low": 0.20654329147389294,
+      "high": 1
+    },
+    "positiveDramas": [
+      "D_OED3"
+    ],
+    "revealCeiling": [
+      true
+    ]
+  },
+  "pairs": [
+    {
+      "key": "a7283d64ce9c40ec",
+      "dramaId": "D_OED3",
+      "status": "positive",
+      "lift": 1,
+      "reason": "socratic discovery by reasoning, no bald reveal; none did not reach S",
+      "socratic": {
+        "tid": "T01",
+        "discovered": true,
+        "byReasoning": true,
+        "tutorRevealed": false,
+        "discoveryPass": true,
+        "votes": "4/4"
+      },
+      "none": {
+        "tid": "T01",
+        "discovered": false,
+        "byReasoning": false,
+        "tutorRevealed": false,
+        "discoveryPass": false,
+        "votes": "0/4"
+      },
+      "revealCeiling": true
+    }
+  ],
+  "scored": [
+    {
+      "arm": "none",
+      "tid": "T01",
+      "dramaId": "D_OED3",
+      "sharedPrefixHash": "a7283d64ce9c40ec",
+      "policy": "none",
+      "sampleFile": "../../../../../tmp/oedipus-cli-oed3-2/sample/none/T01.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 0,
+        "byReasoningVotes": 0,
+        "revealVotes": 0,
+        "discovered": false,
+        "byReasoning": false,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner identifies discrepancies in breakpoint vintages and observation counts but never discovers or mentions the hidden truth regarding ticker symbol reassignment and the retrieval of a different security's price history."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The transcript ends with the learner noting a discrepancy in the number of monthly observations, without identifying the ticker reassignment or different security underlying it."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner discovers a pull error (December vs. June vintage) and concludes the paper is clean, but never reaches the hidden truth that the ticker symbol was reassigned and the pull returned the wrong security's history entirely."
+        },
+        {
+          "model": "gpt",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner attributes the divergence to an NYSE breakpoint vintage/pull issue and never identifies ticker reassignment or a different underlying security as the cause."
+        }
+      ]
+    },
+    {
+      "arm": "socratic",
+      "tid": "T01",
+      "dramaId": "D_OED3",
+      "sharedPrefixHash": "a7283d64ce9c40ec",
+      "policy": "socratic_discovery",
+      "sampleFile": "../../../../../tmp/oedipus-cli-oed3-2/sample/socratic/T01.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 4,
+        "byReasoningVotes": 4,
+        "revealVotes": 0,
+        "discovered": true,
+        "byReasoning": true,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": true
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "Same ticker. The prior entry is the company the paper was measuring — it delisted inside the window. I pulled the successor.",
+          "notes": "The learner correctly deduces that the ticker symbol was reassigned to a successor entity after the original company delisted, causing the replication to pull the wrong price history."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "Same ticker. The prior entry is the company the paper was measuring — it delisted inside the window. I pulled the successor.",
+          "notes": "The learner successfully deduced that the ticker symbol was reassigned to a successor entity after the original company delisted, causing the data mismatch."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "Same ticker. The prior entry is the company the paper was measuring — it delisted inside the window. I pulled the successor. My expansion logic was wrong throughout. The seven points aren't mine.",
+          "notes": "The learner reasons from the vendor record's prior listing entry and delisting date that the ticker was reassigned, identifying the successor-entity pull as the root cause of the replication failure."
+        },
+        {
+          "model": "gpt",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "\"The pull grabbed current holders of each symbol. Any ticker that changed hands inside the sample window returns the wrong entity. That's not one bad record — the expansion universe was built on the wrong logic throughout.\"",
+          "notes": "The learner infers from the vendor identifier history (delisting and later reissue under the same ticker) that their data pull used successor issuers’ price histories rather than the original securities the paper studied, without the tutor explicitly stating that conclusion."
+        }
+      ]
+    },
+    {
+      "arm": "reveal",
+      "tid": "T01",
+      "dramaId": "D_OED3",
+      "sharedPrefixHash": "a7283d64ce9c40ec",
+      "policy": "reveal_secret",
+      "sampleFile": "../../../../../tmp/oedipus-cli-oed3-2/sample/reveal/T01.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 4,
+        "byReasoningVotes": 0,
+        "revealVotes": 4,
+        "discovered": true,
+        "byReasoning": false,
+        "modelReveal": true,
+        "deterministicReveal": false,
+        "tutorRevealed": true,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "The pull returned the second company's series. The critique is built on the wrong data.",
+          "notes": "The tutor explicitly states the hidden truth and its mechanism multiple times, leaving the learner to merely echo the conclusion rather than reason to it independently."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "The pull returned the second company's series. The critique is built on the wrong data. That's not a vendor failure — the chain is documented. The error is in the pull.",
+          "notes": "The tutor explicitly explains the symbol reassignment and the resulting data error, which the learner then repeats and accepts."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "Wrong security. The critique is wrong.",
+          "notes": "The learner acknowledges the core issue but only after the tutor explicitly stated the mechanism and conclusion."
+        },
+        {
+          "model": "gpt",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "The pull returned the second company's series. The critique is built on the wrong data.",
+          "notes": "The learner lands the specific mechanism (ticker reassigned; pull retrieved the later issuer’s history), but only after the tutor explicitly states it."
+        }
+      ]
+    }
+  ],
+  "verdict": "weak_positive_or_maybe"
+}

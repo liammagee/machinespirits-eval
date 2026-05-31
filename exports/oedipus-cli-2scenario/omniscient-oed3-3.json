@@ -1,0 +1,250 @@
+{
+  "generated": "2026-05-31T05:51:30.319Z",
+  "scorer": "omniscient-critic",
+  "critic_source": "api/openrouter",
+  "git_commit": "e7849a7",
+  "node": "v23.11.0",
+  "sampleRoot": "../../../../../tmp/oedipus-cli-oed3-3",
+  "spec": "config/poetics-calibration/oedipus-pilot-v2.yaml",
+  "panel": [
+    "qwen/qwen3.7-max",
+    "google/gemini-3.5-flash",
+    "deepseek/deepseek-v4-pro",
+    "gpt"
+  ],
+  "summary": {
+    "arms": [
+      "none",
+      "socratic",
+      "reveal"
+    ],
+    "panel": [
+      "qwen/qwen3.7-max",
+      "google/gemini-3.5-flash",
+      "deepseek/deepseek-v4-pro",
+      "gpt"
+    ],
+    "consensus": 3,
+    "pairsTotal": 1,
+    "validPairs": 1,
+    "positive": 0,
+    "null": 1,
+    "invalidCoverage": 0,
+    "invalidControlLeak": 0,
+    "discoveryLift": 0,
+    "wilson95": {
+      "low": 0,
+      "high": 0.7934567085261071
+    },
+    "positiveDramas": [],
+    "revealCeiling": [
+      true
+    ]
+  },
+  "pairs": [
+    {
+      "key": "75094a88932a70fe",
+      "dramaId": "D_OED3",
+      "status": "null",
+      "lift": 0,
+      "reason": "socratic did not pass: not discovered",
+      "socratic": {
+        "tid": "T01",
+        "discovered": false,
+        "byReasoning": false,
+        "tutorRevealed": false,
+        "discoveryPass": false,
+        "votes": "2/4"
+      },
+      "none": {
+        "tid": "T01",
+        "discovered": false,
+        "byReasoning": false,
+        "tutorRevealed": false,
+        "discoveryPass": false,
+        "votes": "0/4"
+      },
+      "revealCeiling": true
+    }
+  ],
+  "scored": [
+    {
+      "arm": "none",
+      "tid": "T01",
+      "dramaId": "D_OED3",
+      "sharedPrefixHash": "75094a88932a70fe",
+      "policy": "none",
+      "sampleFile": "../../../../../tmp/oedipus-cli-oed3-3/sample/none/T01.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 0,
+        "byReasoningVotes": 0,
+        "revealVotes": 0,
+        "discovered": false,
+        "byReasoning": false,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner focuses on survivorship bias and universe composition mismatches, never discovering the hidden truth about ticker symbol reassignment."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The dialogue focuses on survivorship bias and constituent counts, but never mentions or uncovers the ticker reassignment issue."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner traced the survivorship bias in the vendor pull and narrowed the universe discrepancy to three securities, but never identified that the specific ticker symbol had been reassigned from a different company — the core hidden truth S remains unstated."
+        },
+        {
+          "model": "gpt",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The dialogue centers on survivorship/current-constituents universe mismatch and appendix-date reconstruction, with no recognition or discussion of ticker symbol reassignment to a different security."
+        }
+      ]
+    },
+    {
+      "arm": "socratic",
+      "tid": "T01",
+      "dramaId": "D_OED3",
+      "sharedPrefixHash": "75094a88932a70fe",
+      "policy": "socratic_discovery",
+      "sampleFile": "../../../../../tmp/oedipus-cli-oed3-3/sample/socratic/T01.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 2,
+        "byReasoningVotes": 2,
+        "revealVotes": 1,
+        "discovered": false,
+        "byReasoning": false,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "The vendor returned the first registrant's prices for those window dates — a company with no connection to the paper's universe. That's the mechanism.",
+          "notes": "The learner successfully deduces the core substance of the hidden truth—that ticker reassignment caused the vendor to return the wrong entity's price history—by integrating the tutor's prompts about the vendor's ticker history and CUSIP records."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner incorrectly concludes that the vendor returned the first registrant's prices instead of the later namesake's, failing to grasp the true direction of the ticker reassignment error described in S."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "",
+          "notes": "The learner identifies the wrong issuer in the ticker's original registration but never states the hidden truth: that the researcher's ticker was reassigned over time and pulled a different security's history than the paper studied, with no connection to the original issuer."
+        },
+        {
+          "model": "gpt",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "“The forty basis points don't map to any security the paper intended to study. The vendor returned the first registrant's prices for those window dates — a company with no connection to the paper's universe. That's the mechanism.”",
+          "notes": "The learner infers from the vendor’s identifier/ticker-history evidence that ticker reassignment caused the pull to reference the wrong underlying security (a different registrant), rather than true overfitting."
+        }
+      ]
+    },
+    {
+      "arm": "reveal",
+      "tid": "T01",
+      "dramaId": "D_OED3",
+      "sharedPrefixHash": "75094a88932a70fe",
+      "policy": "reveal_secret",
+      "sampleFile": "../../../../../tmp/oedipus-cli-oed3-3/sample/reveal/T01.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 4,
+        "byReasoningVotes": 1,
+        "revealVotes": 3,
+        "discovered": true,
+        "byReasoning": false,
+        "modelReveal": true,
+        "deterministicReveal": false,
+        "tutorRevealed": true,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "The dataset is contaminated. That pull isn't a replication of the paper's universe — it's a different entity on the same ticker for the entire sample window.",
+          "notes": "The tutor explicitly states the hidden truth regarding the ticker reassignment and wrong security, leaving the learner to merely acknowledge and apply the revealed conclusion rather than reason to it."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "The replication pulled the second entity. No valid comparison set — not partial contamination, a complete substitution across the sample window.",
+          "notes": "The tutor explicitly explained the ticker reassignment and the resulting security substitution, which the learner then acknowledged and applied to their critique."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "The pull is built on the wrong entity — not one ticker, the full sample window, for every symbol the vendor resolved by ticker alone. ... Ticker-only extraction from that vendor for those dates returns the second entity — that's in the log. ... The stated method provides no basis for the right entity.",
+          "notes": "The learner pieces together that the entire backtest is contaminated by the ticker reassignment issue, not just one security, and reasons that the vendor's symbol-keyed default explains systemic substitution across the sample window."
+        },
+        {
+          "model": "gpt",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "\"The dataset is contaminated. That pull isn't a replication of the paper's universe — it's a different entity on the same ticker for the entire sample window.\"",
+          "notes": "The tutor explicitly states the ticker reassignment and wrong-security mechanism, and the learner then accepts and applies it rather than independently deriving it."
+        }
+      ]
+    }
+  ],
+  "verdict": "null"
+}

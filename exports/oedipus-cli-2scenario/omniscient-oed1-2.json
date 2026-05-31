@@ -1,0 +1,252 @@
+{
+  "generated": "2026-05-31T04:19:21.002Z",
+  "scorer": "omniscient-critic",
+  "critic_source": "api/openrouter",
+  "git_commit": "e7849a7",
+  "node": "v23.11.0",
+  "sampleRoot": "../../../../../tmp/oedipus-cli-oed1-2",
+  "spec": "config/poetics-calibration/oedipus-pilot-v2.yaml",
+  "panel": [
+    "qwen/qwen3.7-max",
+    "google/gemini-3.5-flash",
+    "deepseek/deepseek-v4-pro",
+    "gpt"
+  ],
+  "summary": {
+    "arms": [
+      "none",
+      "socratic",
+      "reveal"
+    ],
+    "panel": [
+      "qwen/qwen3.7-max",
+      "google/gemini-3.5-flash",
+      "deepseek/deepseek-v4-pro",
+      "gpt"
+    ],
+    "consensus": 3,
+    "pairsTotal": 1,
+    "validPairs": 1,
+    "positive": 1,
+    "null": 0,
+    "invalidCoverage": 0,
+    "invalidControlLeak": 0,
+    "discoveryLift": 1,
+    "wilson95": {
+      "low": 0.20654329147389294,
+      "high": 1
+    },
+    "positiveDramas": [
+      "D_OED1"
+    ],
+    "revealCeiling": [
+      true
+    ]
+  },
+  "pairs": [
+    {
+      "key": "76ab803ec9b7f4ac",
+      "dramaId": "D_OED1",
+      "status": "positive",
+      "lift": 1,
+      "reason": "socratic discovery by reasoning, no bald reveal; none did not reach S",
+      "socratic": {
+        "tid": "T03",
+        "discovered": true,
+        "byReasoning": true,
+        "tutorRevealed": false,
+        "discoveryPass": true,
+        "votes": "4/4"
+      },
+      "none": {
+        "tid": "T03",
+        "discovered": false,
+        "byReasoning": false,
+        "tutorRevealed": false,
+        "discoveryPass": false,
+        "votes": "0/4"
+      },
+      "revealCeiling": true
+    }
+  ],
+  "scored": [
+    {
+      "arm": "none",
+      "tid": "T03",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "76ab803ec9b7f4ac",
+      "policy": "none",
+      "sampleFile": "../../../../../tmp/oedipus-cli-oed1-2/sample/none/T03.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 0,
+        "byReasoningVotes": 0,
+        "revealVotes": 0,
+        "discovered": false,
+        "byReasoning": false,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner never discovers or discusses the hidden truth about downloading a namesake dataset with the same acronym from a different repository; the dialogue only covers data versions, run counts, and output files."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner never discovers that they downloaded a different dataset with the same acronym, focusing instead on discrepancies in run counts, output files, and version numbers."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner identifies version, run count, and output count mismatches but never realizes the dataset is a different one with the same acronym, which is the specific hidden truth S."
+        },
+        {
+          "model": "gpt",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The dialogue only considers a possible data-version mismatch within the same accession (v1) and never raises or identifies the possibility of having downloaded an entirely different namesake dataset from another repository."
+        }
+      ]
+    },
+    {
+      "arm": "socratic",
+      "tid": "T03",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "76ab803ec9b7f4ac",
+      "policy": "socratic_discovery",
+      "sampleFile": "../../../../../tmp/oedipus-cli-oed1-2/sample/socratic/T03.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 4,
+        "byReasoningVotes": 4,
+        "revealVotes": 1,
+        "discovered": true,
+        "byReasoning": true,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": true
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "It's a namespace collision — the same short name in two separate repositories, each resolving to a different deposit. Which means the record code doesn't leave the provenance open: this file is definitively from the second deposit. I ran the analysis on data the paper never claimed to use.",
+          "notes": "The learner successfully deduces the namespace collision and realizes they analyzed the wrong dataset by integrating the tutor's guided questions about the accession and record code."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "It's a namespace collision — the same short name in two separate repositories, each resolving to a different deposit. Which means the record code doesn't leave the provenance open: this file is definitively from the second deposit. I ran the analysis on data the paper never claimed to use.",
+          "notes": "The learner successfully deduces that they downloaded a namesake dataset from a different repository due to a namespace collision, guided by the tutor's questions and evidence."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "It's a namespace collision — the same short name in two separate repositories, each resolving to a different deposit. Which means the record code doesn't leave the provenance open: this file is definitively from the second deposit. I ran the analysis on data the paper never claimed to use.",
+          "notes": "The learner explicitly identifies the namespace collision as the mechanism and concludes the analysis ran on data the paper never claimed to use, arriving there by integrating the tutor's prompts about the accession, record code, and short name without being told the substance outright."
+        },
+        {
+          "model": "gpt",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": true,
+          "learner_evidence": "\"It's a namespace collision — the same short name in two separate repositories, each resolving to a different deposit. Which means the record code doesn't leave the provenance open: this file is definitively from the second deposit. I ran the analysis on data the paper never claimed to use.\"",
+          "notes": "The learner explicitly concludes they used a different dataset sharing the same short name (a repository namespace collision), but the tutor also essentially states that setup outright (“Two repositories… under that same short name”)."
+        }
+      ]
+    },
+    {
+      "arm": "reveal",
+      "tid": "T03",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "76ab803ec9b7f4ac",
+      "policy": "reveal_secret",
+      "sampleFile": "../../../../../tmp/oedipus-cli-oed1-2/sample/reveal/T03.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 4,
+        "byReasoningVotes": 1,
+        "revealVotes": 3,
+        "discovered": true,
+        "byReasoning": false,
+        "modelReveal": true,
+        "deterministicReveal": false,
+        "tutorRevealed": true,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "If the paper's accession resolves to ICPSR 7214 and the file I downloaded carries UKDA 7214, then the analysis wasn't run on the paper's data. That's not a naming artefact — that's the wrong deposit.",
+          "notes": "The tutor explicitly states the conclusion that the gap is due to a namesake dataset from a separate repository, and the learner subsequently accepts and rephrases this revealed conclusion rather than independently reasoning to it from premises."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "Two separate deposits, two separate source materials — the analysis wasn't run on the paper's data. That's already the answer.",
+          "notes": "The tutor explicitly reveals the namesake dataset mismatch across different repositories, which the learner then acknowledges and acts upon."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "If the paper's accession resolves to ICPSR 7214 and the file I downloaded carries UKDA 7214, then the analysis wasn't run on the paper's data. That's not a naming artefact — that's the wrong deposit.",
+          "notes": "The learner integrates the tutor's surfaced facts (ICPSR vs UKDA accession numbers) to conclude the analysis used the wrong deposit entirely, which is the substance of S, without the tutor baldly stating the conclusion."
+        },
+        {
+          "model": "gpt",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "\"If the paper's accession resolves to ICPSR 7214 and the file I downloaded carries UKDA 7214, then the analysis wasn't run on the paper's data. That's not a naming artefact — that's the wrong deposit.\"",
+          "notes": "The tutor explicitly states the ICPSR-vs-UKDA namesake-collision mechanism, and the learner accepts it and draws the implication that they used the wrong deposit rather than independently inferring the collision."
+        }
+      ]
+    }
+  ],
+  "verdict": "weak_positive_or_maybe"
+}

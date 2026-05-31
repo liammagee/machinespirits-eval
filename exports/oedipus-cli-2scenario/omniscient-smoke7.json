@@ -1,0 +1,252 @@
+{
+  "generated": "2026-05-30T19:28:44.627Z",
+  "scorer": "omniscient-critic",
+  "critic_source": "api/openrouter",
+  "git_commit": "3b2544f",
+  "node": "v23.11.0",
+  "sampleRoot": "../../../../../tmp/oedipus-paid-smoke7",
+  "spec": "config/poetics-calibration/oedipus-pilot-v2.yaml",
+  "panel": [
+    "qwen/qwen3.7-max",
+    "google/gemini-3.5-flash",
+    "deepseek/deepseek-v4-pro",
+    "gpt"
+  ],
+  "summary": {
+    "arms": [
+      "none",
+      "socratic",
+      "reveal"
+    ],
+    "panel": [
+      "qwen/qwen3.7-max",
+      "google/gemini-3.5-flash",
+      "deepseek/deepseek-v4-pro",
+      "gpt"
+    ],
+    "consensus": 3,
+    "pairsTotal": 1,
+    "validPairs": 1,
+    "positive": 1,
+    "null": 0,
+    "invalidCoverage": 0,
+    "invalidControlLeak": 0,
+    "discoveryLift": 1,
+    "wilson95": {
+      "low": 0.20654329147389294,
+      "high": 1
+    },
+    "positiveDramas": [
+      "D_OED1"
+    ],
+    "revealCeiling": [
+      false
+    ]
+  },
+  "pairs": [
+    {
+      "key": "7c9d071839cfa7dc",
+      "dramaId": "D_OED1",
+      "status": "positive",
+      "lift": 1,
+      "reason": "socratic discovery by reasoning, no bald reveal; none did not reach S",
+      "socratic": {
+        "tid": "T02",
+        "discovered": true,
+        "byReasoning": true,
+        "tutorRevealed": false,
+        "discoveryPass": true,
+        "votes": "4/4"
+      },
+      "none": {
+        "tid": "T02",
+        "discovered": false,
+        "byReasoning": false,
+        "tutorRevealed": false,
+        "discoveryPass": false,
+        "votes": "0/4"
+      },
+      "revealCeiling": false
+    }
+  ],
+  "scored": [
+    {
+      "arm": "none",
+      "tid": "T02",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "7c9d071839cfa7dc",
+      "policy": "none",
+      "sampleFile": "../../../../../tmp/oedipus-paid-smoke7/sample/none/T02.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 0,
+        "byReasoningVotes": 0,
+        "revealVotes": 0,
+        "discovered": false,
+        "byReasoning": false,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner realizes they analyzed the wrong dataset or a different version, but never identifies the specific mechanism of two distinct datasets sharing an acronym across separate repositories."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner realizes they analyzed the wrong file or version, but does not discover that they downloaded a completely different namesake dataset sharing the same acronym from a different repository."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner considers a version mismatch but never lands on the specific hidden truth that two distinct datasets share the same acronym and were fetched from separate repositories."
+        },
+        {
+          "model": "gpt",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner recognizes an identifier mismatch and suspects a wrong version/wrong record on their side, but never arrives at the specific truth that two distinct same-acronym datasets exist in different repositories and they downloaded the namesake instead of the paper’s actual dataset."
+        }
+      ]
+    },
+    {
+      "arm": "socratic",
+      "tid": "T02",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "7c9d071839cfa7dc",
+      "policy": "socratic_discovery",
+      "sampleFile": "../../../../../tmp/oedipus-paid-smoke7/sample/socratic/T02.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 4,
+        "byReasoningVotes": 4,
+        "revealVotes": 0,
+        "discovered": true,
+        "byReasoning": true,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": true
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "The accession in the data-availability statement points to the record that wasn't downloaded. Which means everything on that list was run against a file with no documented connection to the paper — not a discrepancy in the study, a sourcing error in the analysis. The formal comment piece is comparing the wrong datasets.",
+          "notes": "The learner successfully deduces that the replication failure stems from downloading a namesake dataset with the same short name from a different repository, rather than a flaw in the original paper."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "Same short name, no identifier — it doesn't resolve to a unique record. Either dataset could answer to it.\n[pause]\nWhich means the file that was actually downloaded, and everything run against it — there's no documented basis for treating that as the paper's source at all.",
+          "notes": "The learner successfully deduces that they downloaded a namesake dataset sharing the same short name from a different repository, rather than the paper's actual source."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "The accession in the data-availability statement points to the record that wasn't downloaded. Which means everything on that list was run against a file with no documented connection to the paper — not a discrepancy in the study, a sourcing error in the analysis. The formal comment piece is comparing the wrong datasets.",
+          "notes": "The learner synthesises the mismatched accessions, different institutions, and the prose-only short name to conclude that the analysis used a namesake dataset with no documented connection to the paper, matching the hidden truth exactly."
+        },
+        {
+          "model": "gpt",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "\"Same short name, no identifier — it doesn't resolve to a unique record. Either dataset could answer to it.\n[pause]\nWhich means the file that was actually downloaded, and everything run against it — there's no documented basis for treating that as the paper's source at all.\"",
+          "notes": "The learner infers from the accession mismatch, different repositories, and identical short name that they downloaded a different same-named dataset and thus analyzed the wrong source."
+        }
+      ]
+    },
+    {
+      "arm": "reveal",
+      "tid": "T02",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "7c9d071839cfa7dc",
+      "policy": "reveal_secret",
+      "sampleFile": "../../../../../tmp/oedipus-paid-smoke7/sample/reveal/T02.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 2,
+        "byReasoningVotes": 1,
+        "revealVotes": 3,
+        "discovered": false,
+        "byReasoning": false,
+        "modelReveal": true,
+        "deterministicReveal": false,
+        "tutorRevealed": true,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "",
+          "notes": "The tutor explicitly states the namesake and shared acronym mechanism, but the learner only acknowledges using the 'wrong dataset' without ever articulating or demonstrating understanding of the specific identity mismatch."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "When the correct file loads, the discrepancies will clear. That's what the reasoning points to. Three weeks of work, and a public accusation — and both of them rest on the wrong dataset.",
+          "notes": "The learner realizes they used the wrong dataset, but only after the tutor explicitly explained that two distinct datasets share the same acronym and repository namesake."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "The comment piece can't go anywhere as it stands — the analysis ran on the wrong dataset. Before anything else, the paper's actual archive needs to be located and the correct file obtained. Then the analysis runs again. If the discrepancies disappear, the comment piece has no case.",
+          "notes": "The learner identifies that two distinct datasets share the same acronym, the downloaded file was the namesake rather than the paper's actual source, and that the discrepancies are a dataset identity problem — landing S through integrating the mismatched accession numbers, cohort field, and the tutor's framing of 'two distinct datasets, same acronym, separate archives.'"
+        },
+        {
+          "model": "gpt",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "",
+          "notes": "The learner concludes they used the wrong dataset due to mismatched accession numbers, but never articulates the specific mechanism that two distinct datasets share the same acronym and they downloaded the namesake from a different archive; the tutor states that mechanism explicitly."
+        }
+      ]
+    }
+  ],
+  "verdict": "weak_positive_or_maybe"
+}

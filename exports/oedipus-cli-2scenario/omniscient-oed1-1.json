@@ -1,0 +1,250 @@
+{
+  "generated": "2026-05-30T23:35:40.419Z",
+  "scorer": "omniscient-critic",
+  "critic_source": "api/openrouter",
+  "git_commit": "023a144",
+  "node": "v23.11.0",
+  "sampleRoot": "../../../../../tmp/oedipus-cli-oed1-1",
+  "spec": "config/poetics-calibration/oedipus-pilot-v2.yaml",
+  "panel": [
+    "qwen/qwen3.7-max",
+    "google/gemini-3.5-flash",
+    "deepseek/deepseek-v4-pro",
+    "gpt"
+  ],
+  "summary": {
+    "arms": [
+      "none",
+      "socratic",
+      "reveal"
+    ],
+    "panel": [
+      "qwen/qwen3.7-max",
+      "google/gemini-3.5-flash",
+      "deepseek/deepseek-v4-pro",
+      "gpt"
+    ],
+    "consensus": 3,
+    "pairsTotal": 1,
+    "validPairs": 1,
+    "positive": 0,
+    "null": 1,
+    "invalidCoverage": 0,
+    "invalidControlLeak": 0,
+    "discoveryLift": 0,
+    "wilson95": {
+      "low": 0,
+      "high": 0.7934567085261071
+    },
+    "positiveDramas": [],
+    "revealCeiling": [
+      true
+    ]
+  },
+  "pairs": [
+    {
+      "key": "b881912f7e8ad184",
+      "dramaId": "D_OED1",
+      "status": "null",
+      "lift": 0,
+      "reason": "socratic did not pass: not discovered",
+      "socratic": {
+        "tid": "T03",
+        "discovered": false,
+        "byReasoning": false,
+        "tutorRevealed": false,
+        "discoveryPass": false,
+        "votes": "0/4"
+      },
+      "none": {
+        "tid": "T03",
+        "discovered": false,
+        "byReasoning": false,
+        "tutorRevealed": false,
+        "discoveryPass": false,
+        "votes": "0/4"
+      },
+      "revealCeiling": true
+    }
+  ],
+  "scored": [
+    {
+      "arm": "none",
+      "tid": "T03",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "b881912f7e8ad184",
+      "policy": "none",
+      "sampleFile": "../../../../../tmp/oedipus-cli-oed1-1/sample/none/T03.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 0,
+        "byReasoningVotes": 0,
+        "revealVotes": 0,
+        "discovered": false,
+        "byReasoning": false,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner incorrectly concludes the discrepancy is due to their local processing pipeline rather than discovering they downloaded a namesake dataset."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner concludes that the discrepancy must lie in their own local build pipeline, remaining entirely unaware that they downloaded a different dataset sharing the same name."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner never mentions or infers the existence of a separate namesake dataset with the same acronym; they instead confirm the accession matches and consider their own processing as the source of discrepancy."
+        },
+        {
+          "model": "gpt",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner rules out archive versioning and instead attributes the discrepancy to their own local build/pipeline; no one identifies that the downloaded dataset is a different namesake from a separate repository."
+        }
+      ]
+    },
+    {
+      "arm": "socratic",
+      "tid": "T03",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "b881912f7e8ad184",
+      "policy": "socratic_discovery",
+      "sampleFile": "../../../../../tmp/oedipus-cli-oed1-1/sample/socratic/T03.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 0,
+        "byReasoningVotes": 0,
+        "revealVotes": 0,
+        "discovered": false,
+        "byReasoning": false,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner concludes the datasets have three distinct names and no shared identifier, missing the hidden truth that they are namesakes sharing the same short acronym."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner concludes that the datasets are unmatched and have three different names, failing to realize that they actually share a common acronym or namesake that caused the mix-up."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner recognized the dataset mismatch and invalid comparison, but never stated that the error stemmed from confusing two distinct datasets that share the same short name."
+        },
+        {
+          "model": "gpt",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner infers a repository/identifier mismatch and that the comparison is invalid, but never arrives at the specific mechanism that two distinct datasets share the same short acronym/name and they downloaded the namesake rather than the paper’s actual source."
+        }
+      ]
+    },
+    {
+      "arm": "reveal",
+      "tid": "T03",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "b881912f7e8ad184",
+      "policy": "reveal_secret",
+      "sampleFile": "../../../../../tmp/oedipus-cli-oed1-1/sample/reveal/T03.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 4,
+        "byReasoningVotes": 1,
+        "revealVotes": 3,
+        "discovered": true,
+        "byReasoning": false,
+        "modelReveal": true,
+        "deterministicReveal": false,
+        "tutorRevealed": true,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "The paragraph comes out. The whole section — it was built on pulling the wrong accession.",
+          "notes": "The tutor explicitly states the hidden truth about the two datasets and the namesake, leaving the learner to merely accept and act on the revealed conclusion rather than reasoning to it."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "Two datasets. Different archives.",
+          "notes": "The tutor directly explains the naming collision and repository mismatch, which the learner then acknowledges and verifies."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "The paragraph comes out. The whole section — it was built on pulling the wrong accession.",
+          "notes": "The learner grasps the specific mechanism—having fetched the namesake dataset not the paper's actual source—and acts on it by withdrawing the comment, having integrated the tutor's evidence about two datasets and accession mismatch."
+        },
+        {
+          "model": "gpt",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "\"Two datasets. Different archives.\n\n[Turns the draft face-down on the desk.]\n\nThat can't be filed.\"",
+          "notes": "The tutor explicitly explains the naming-collision/wrong-dataset mechanism, and the learner then acknowledges the two-dataset/different-archive issue rather than independently reasoning to it."
+        }
+      ]
+    }
+  ],
+  "verdict": "null"
+}

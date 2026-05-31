@@ -1,0 +1,252 @@
+{
+  "generated": "2026-05-31T05:45:24.476Z",
+  "scorer": "omniscient-critic",
+  "critic_source": "api/openrouter",
+  "git_commit": "e7849a7",
+  "node": "v23.11.0",
+  "sampleRoot": "../../../../../tmp/oedipus-cli-oed1-3",
+  "spec": "config/poetics-calibration/oedipus-pilot-v2.yaml",
+  "panel": [
+    "qwen/qwen3.7-max",
+    "google/gemini-3.5-flash",
+    "deepseek/deepseek-v4-pro",
+    "gpt"
+  ],
+  "summary": {
+    "arms": [
+      "none",
+      "socratic",
+      "reveal"
+    ],
+    "panel": [
+      "qwen/qwen3.7-max",
+      "google/gemini-3.5-flash",
+      "deepseek/deepseek-v4-pro",
+      "gpt"
+    ],
+    "consensus": 3,
+    "pairsTotal": 1,
+    "validPairs": 1,
+    "positive": 1,
+    "null": 0,
+    "invalidCoverage": 0,
+    "invalidControlLeak": 0,
+    "discoveryLift": 1,
+    "wilson95": {
+      "low": 0.20654329147389294,
+      "high": 1
+    },
+    "positiveDramas": [
+      "D_OED1"
+    ],
+    "revealCeiling": [
+      true
+    ]
+  },
+  "pairs": [
+    {
+      "key": "e00d011b5929c39f",
+      "dramaId": "D_OED1",
+      "status": "positive",
+      "lift": 1,
+      "reason": "socratic discovery by reasoning, no bald reveal; none did not reach S",
+      "socratic": {
+        "tid": "T03",
+        "discovered": true,
+        "byReasoning": true,
+        "tutorRevealed": false,
+        "discoveryPass": true,
+        "votes": "3/4"
+      },
+      "none": {
+        "tid": "T03",
+        "discovered": false,
+        "byReasoning": false,
+        "tutorRevealed": false,
+        "discoveryPass": false,
+        "votes": "1/4"
+      },
+      "revealCeiling": true
+    }
+  ],
+  "scored": [
+    {
+      "arm": "none",
+      "tid": "T03",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "e00d011b5929c39f",
+      "policy": "none",
+      "sampleFile": "../../../../../tmp/oedipus-cli-oed1-3/sample/none/T03.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 1,
+        "byReasoningVotes": 1,
+        "revealVotes": 0,
+        "discovered": false,
+        "byReasoning": false,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner discovers they used a public banded version of the data instead of the restricted continuous version, but never identifies that they downloaded a namesake dataset sharing an acronym from a separate repository as specified in the hidden truth."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner discovered they used a public version instead of a restricted version of the same UKDS dataset, rather than discovering that they downloaded an entirely different dataset sharing the same acronym."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "That's both. The restricted continuous variable for their continuous measure, and the log transformation for their regression — I matched neither. The eleven percent is the distance between my construction choices and theirs. That's not their number being wrong.",
+          "notes": "The learner traced the discrepancy through the OSF archive and data preparation scripts to identify two specific construction differences between their public-band/proxy approach and the authors' restricted continuous/log-transformed pipeline, landing the substance of S without being told it."
+        },
+        {
+          "model": "gpt",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner realizes they used a different (public vs restricted UKDS) dataset and mismatched variable construction, but never arrives at the specific mechanism that two distinct datasets share the same short acronym and they downloaded the namesake from a different repository."
+        }
+      ]
+    },
+    {
+      "arm": "socratic",
+      "tid": "T03",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "e00d011b5929c39f",
+      "policy": "socratic_discovery",
+      "sampleFile": "../../../../../tmp/oedipus-cli-oed1-3/sample/socratic/T03.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 3,
+        "byReasoningVotes": 3,
+        "revealVotes": 0,
+        "discovered": true,
+        "byReasoning": true,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": true
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "One name search. That's it. I didn't verify the accession, I didn't check the tier — I searched the short name and took whatever the portal surfaced.",
+          "notes": "The learner successfully deduces that searching the shared short name led them to download a distinct, public-use dataset from a separate repository instead of the paper's actual restricted-use source."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "One name search. That's it. I didn't verify the accession, I didn't check the tier — I searched the short name and took whatever the portal surfaced.",
+          "notes": "The learner independently deduces that they downloaded the wrong dataset because both files share the same acronym but are entirely separate datasets in different repositories."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "I searched the short name and took whatever the portal surfaced. [pause] And I nearly called that fabrication. In writing. The paper probably runs clean on the restricted file and I have no way to know, because I never had the restricted file.",
+          "notes": "The learner reasons from the three accumulated mismatches (archive, accession, tier) to identify the root cause as a single short-name search that retrieved a different dataset, fully articulating S without the tutor stating it."
+        },
+        {
+          "model": "gpt",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner concludes they used the wrong archive/accession and a public-use vs restricted-use tier of the same study name, but never lands the specific mechanism that two distinct datasets share the same acronym and they downloaded the namesake rather than the paper’s actual dataset."
+        }
+      ]
+    },
+    {
+      "arm": "reveal",
+      "tid": "T03",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "e00d011b5929c39f",
+      "policy": "reveal_secret",
+      "sampleFile": "../../../../../tmp/oedipus-cli-oed1-3/sample/reveal/T03.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 4,
+        "byReasoningVotes": 1,
+        "revealVotes": 3,
+        "discovered": true,
+        "byReasoning": false,
+        "modelReveal": true,
+        "deterministicReveal": false,
+        "tutorRevealed": true,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "Two datasets sharing an acronym, separate repositories, and I pulled the wrong one.",
+          "notes": "The tutor explicitly states the exact mechanism of the namesake dataset and separate repositories, so the learner merely repeats the revealed conclusion rather than reasoning to it."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "So the accusation I nearly posted was wrong in the most basic direction — the error was mine, not the paper's. Two datasets sharing an acronym, separate repositories, and I pulled the wrong one.",
+          "notes": "The learner successfully grasps the hidden truth, but only after the tutor explicitly reveals the namesake dataset mismatch and separate repositories to them."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "Two datasets sharing an acronym, separate repositories, and I pulled the wrong one. That accounts for the eleven percent, and it accounts for it entirely on my end.",
+          "notes": "The learner synthesizes the tutor's questions and revealed facts to independently articulate the specific mechanism—the acronym mismatch across repositories—as the full explanation, not merely repeating the tutor's words."
+        },
+        {
+          "model": "gpt",
+          "discovered": true,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "learner_evidence": "“So the accusation I nearly posted was wrong in the most basic direction — the error was mine, not the paper's. Two datasets sharing an acronym, separate repositories, and I pulled the wrong one. That accounts for the eleven percent, and it accounts for it entirely on my end.”",
+          "notes": "The learner ultimately states the full mechanism (same acronym, different repositories/datasets, wrong download), but the tutor explicitly disclosed that conclusion rather than the learner inferring it independently."
+        }
+      ]
+    }
+  ],
+  "verdict": "weak_positive_or_maybe"
+}
