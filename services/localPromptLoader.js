@@ -44,6 +44,15 @@ try {
  * neither place.
  */
 export function resolvePromptPath(filename) {
+  // MECHANISM-ABLATION toggle: OEDIPUS_SUPEREGO_V1=1 routes the learner superego to
+  // the pre-`260cdc6` monotonic v1 variant, isolating whether the bidirectional
+  // superego (vs premise-licensing) drives Oedipus discovery. Default keeps v2.
+  if (
+    (process.env.OEDIPUS_SUPEREGO_V1 === '1' || process.env.OEDIPUS_SUPEREGO_V1 === 'on') &&
+    filename === 'learner-superego-recognition-authentic.md'
+  ) {
+    filename = 'learner-superego-recognition-authentic-v1.md';
+  }
   const local = path.join(EVAL_PROMPTS_DIR, filename);
   if (fs.existsSync(local)) return local;
   if (CORE_PROMPTS_DIR) {
