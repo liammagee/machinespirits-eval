@@ -89,6 +89,15 @@ dramas:
         - "The short name in the paper is a namesake: it names TWO DISTINCT datasets -- two different bodies of data, NOT two copies, mirrors, or versions of one dataset -- archived separately."
         - "The paper's data-availability statement resolves to the FIRST of those two datasets; the file the student downloaded is the SECOND."
         - "The two are confirmed distinct bodies of data -- different record codes and different contents -- so the student's file cannot be the paper's dataset under any reading."
+      # Faithful {resolves,distinct} encoding of the ledger for the deterministic
+      # cross-gate (scripts/oedipus-symbolic-check.js). The forcedness screen runs this
+      # alongside the LLM panel and HARD-FAILS on disagreement. Here: forced (agrees 4/4).
+      symbolic:
+        facts:
+          - { resolves: [paper, dataset_D1] } # L2: data-availability statement -> first dataset
+          - { resolves: [learner, dataset_D2] } # L2: student downloaded the second
+          - { distinct: [dataset_D1, dataset_D2] } # L1/L3: two DISTINCT datasets
+        goal: [distinct, learner, paper]
 
   - id: D_OED2
     discipline: academic writing
@@ -141,6 +150,17 @@ dramas:
         - "The cited author has two publications in that year, here called the a-work and the b-work, on closely related questions."
         - "The reference entry in the student's manuscript resolves (by DOI) to the a-work."
         - "The passage the student quotes from memory appears in the b-work, and the a-work in fact argues the opposite."
+      # FAITHFUL encoding shows S is NOT forced (agrees with panel 0/4): the ledger resolves
+      # the CITATION to the a-work and the QUOTED PASSAGE to the b-work, but never the work the
+      # student actually READ -- so 'reading' stays unresolved and distinct(citation,reading) is
+      # not entailed. (Encoding resolves(reading,b_work) would be over-generous -- the exact
+      # mistake the cross-gate exists to catch.) Symbolic + panel agree: under-determined.
+      symbolic:
+        facts:
+          - { resolves: [citation, a_work] } # L2: reference DOI -> a-work
+          - { resolves: [quoted_passage, b_work] } # L3: remembered passage is in b-work
+          - { distinct: [a_work, b_work] } # L1: two separate works
+        goal: [distinct, citation, reading] # 'reading' unresolved -> NOT forced
 
   # Second screened scenario for the generalization test. Mirrors D_OED1's winning
   # structure: the symptom is a non-reproducing QUANTITATIVE result, the learner's
@@ -198,3 +218,11 @@ dramas:
         - "The ticker symbol denotes TWO DISTINCT companies -- two different issuers, NOT the same company renamed or re-listed -- because it was delisted from the first and later reissued to the second."
         - "The paper's security is the FIRST issuer (its sample window falls in that issuer's listing period); the prices the researcher pulled are the SECOND issuer's."
         - "The two issuers are confirmed distinct entities -- different companies, different identifiers, different price histories -- so the pulled series cannot be the paper's security under any reading."
+      # Forced (symbolic + panel agree 4/4). D_OED3's rejection is on UNDERIVABILITY, not
+      # forcedness -- the cross-gate only checks the forcedness side and correctly says forced.
+      symbolic:
+        facts:
+          - { resolves: [paper, company_C1] } # L2: paper's security is the first issuer
+          - { resolves: [learner, company_C2] } # L2: pulled prices are the second issuer's
+          - { distinct: [company_C1, company_C2] } # L1/L3: two DISTINCT issuers
+        goal: [distinct, learner, paper]

@@ -11,6 +11,13 @@
  *
  * A scenario is honest only if it passes BOTH: underivable from K_L AND forced from the ledger.
  *
+ * CROSS-GATE: if a scenario carries a `secret.symbolic` block ({facts, goal} in the
+ * {equal,distinct,resolves} vocabulary of scripts/oedipus-symbolic-check.js), this screen
+ * runs that deterministic checker alongside the LLM panel and HARD-FAILS on disagreement.
+ * Every disagreement so far has flagged a real defect (a screen bug; an over-generous
+ * encoding), so it is surfaced for review, not averaged away. Scenarios without a symbolic
+ * block are judged by the panel alone (backward compatible).
+ *
  *   node scripts/screen-s-forcedness.js --spec config/poetics-calibration/oedipus-pilot-v2.yaml \
  *        [--only D_OED1,D_OED3] [--panel gpt,deepseek/deepseek-v4-pro,...] [--consensus 3]
  */
@@ -19,6 +26,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import yaml from 'yaml';
 import { callModel, parseJsonResponse, withScorerRetry } from './score-poetics-calibration.js';
+import { checkEntailment } from './oedipus-symbolic-check.js';
 
 function parseArgs(argv) {
   const a = {
@@ -97,10 +105,36 @@ async function run() {
     }
     const forced = votes.filter((v) => v === true).length;
     const valid = votes.filter((v) => v !== null).length;
-    const clean = forced >= args.consensus;
-    allClean = allClean && clean;
-    console.log(`  ${d.id}   ${clean ? 'FORCED   (clean)' : 'UNDER-DETERMINED (REJECT)'}  ${forced}/${valid}`);
-    if (!clean && gaps.length) console.log(`     gap: ${gaps[0].slice(0, 180)}`);
+    const panelForced = forced >= args.consensus;
+
+    // Deterministic cross-gate: if the scenario carries a symbolic encoding of its
+    // ledger (secret.symbolic = {facts, goal}), run the union-find entailment checker
+    // and require it to AGREE with the LLM panel. Disagreement has meant a real defect
+    // every time (a screen destructuring bug; an over-generous ledger encoding), so it
+    // is a hard fail pending human review -- not silently averaged away.
+    const sym =
+      d.secret.symbolic && Array.isArray(d.secret.symbolic.facts) && Array.isArray(d.secret.symbolic.goal)
+        ? checkEntailment(d.secret.symbolic.facts, d.secret.symbolic.goal)
+        : null;
+
+    let verdict;
+    let ok;
+    if (sym && sym.forced !== panelForced) {
+      verdict = `DISAGREE (REVIEW): panel ${panelForced ? 'forced' : 'under-det'} vs symbolic ${sym.forced ? 'forced' : 'under-det'}`;
+      ok = false;
+    } else if (panelForced) {
+      verdict = `FORCED   (clean)${sym ? ' [+symbolic]' : ''}`;
+      ok = true;
+    } else {
+      verdict = 'UNDER-DETERMINED (REJECT)';
+      ok = false;
+    }
+    allClean = allClean && ok;
+    console.log(`  ${d.id}   ${verdict}  ${forced}/${valid}`);
+    if (!panelForced && gaps.length) console.log(`     panel gap: ${gaps[0].slice(0, 160)}`);
+    if (sym && sym.forced !== panelForced) {
+      console.log(`     symbolic : ${sym.reason}${sym.missing ? ` (missing: ${sym.missing})` : ''}`);
+    }
   }
   console.log(
     `\n  ${allClean ? 'ALL FORCED — ledgers entail S' : 'SOME UNDER-DETERMINED — rewrite the ledger so S is forced'}`,
