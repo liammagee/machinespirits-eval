@@ -30,3 +30,17 @@ reaches discovered-consensus by reasoning. `none` = control, `reveal` = told-S c
 - Underivability screen: `scripts/screen-s-underivability.js`; panel: `scripts/critic-poetics-omniscient.js`.
 - Spec: `notes/poetics/2026-05-29-oedipus-guided-discovery-spec.md`.
 - Verified by the `paper-claim-auditor` against these files (2026-05-31).
+
+## Mechanism ablation (2×2, §7.9 v3.0.115)
+
+Isolates which fix drives discovery. `omniscient-ablation-<cell>-<run>.json`,
+D_OED1 / Sonnet-API, none+socratic arms, env-gated toggles (commit `a63493d`).
+
+| cell | superego | premise-license | socratic discovery |
+|------|----------|-----------------|--------------------|
+| `suponly` | v2 bidirectional | **off** | **0/3** (1/4, 1/4, 1/4) — committed near-miss |
+| `p1only`  | v1 monotone | **on** | **2/3** (3/4, 3/4, 1/4) |
+
+With (v1,off)=null [smoke3/4] and (v2,on)=2/3 [smoke5/6/7+oed1], the 2×2 shows
+**premise-licensing is the discovery lever** (2/3 with it regardless of critic; ~0
+without); the bidirectional superego drives *commitment* (the near-miss), not discovery.

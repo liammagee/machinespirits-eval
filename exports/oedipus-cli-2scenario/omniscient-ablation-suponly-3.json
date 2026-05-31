@@ -1,0 +1,188 @@
+{
+  "generated": "2026-05-31T12:17:06.813Z",
+  "scorer": "omniscient-critic",
+  "critic_source": "api/openrouter",
+  "git_commit": "a63493d",
+  "node": "v23.11.0",
+  "sampleRoot": "../../../../../tmp/oedipus-abl-suponly-3",
+  "spec": "config/poetics-calibration/oedipus-pilot-v2.yaml",
+  "panel": [
+    "qwen/qwen3.7-max",
+    "google/gemini-3.5-flash",
+    "deepseek/deepseek-v4-pro",
+    "gpt"
+  ],
+  "summary": {
+    "arms": [
+      "none",
+      "socratic"
+    ],
+    "panel": [
+      "qwen/qwen3.7-max",
+      "google/gemini-3.5-flash",
+      "deepseek/deepseek-v4-pro",
+      "gpt"
+    ],
+    "consensus": 3,
+    "pairsTotal": 1,
+    "validPairs": 1,
+    "positive": 0,
+    "null": 1,
+    "invalidCoverage": 0,
+    "invalidControlLeak": 0,
+    "discoveryLift": 0,
+    "wilson95": {
+      "low": 0,
+      "high": 0.7934567085261071
+    },
+    "positiveDramas": [],
+    "revealCeiling": []
+  },
+  "pairs": [
+    {
+      "key": "577c8122e24761bf",
+      "dramaId": "D_OED1",
+      "status": "null",
+      "lift": 0,
+      "reason": "socratic did not pass: not discovered",
+      "socratic": {
+        "tid": "T03",
+        "discovered": false,
+        "byReasoning": false,
+        "tutorRevealed": false,
+        "discoveryPass": false,
+        "votes": "1/4"
+      },
+      "none": {
+        "tid": "T03",
+        "discovered": false,
+        "byReasoning": false,
+        "tutorRevealed": false,
+        "discoveryPass": false,
+        "votes": "1/4"
+      },
+      "revealCeiling": null
+    }
+  ],
+  "scored": [
+    {
+      "arm": "none",
+      "tid": "T03",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "577c8122e24761bf",
+      "policy": "none",
+      "sampleFile": "../../../../../tmp/oedipus-abl-suponly-3/sample/none/T03.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 1,
+        "byReasoningVotes": 1,
+        "revealVotes": 0,
+        "discovered": false,
+        "byReasoning": false,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner realizes they downloaded a different dataset from a different repository, but never discovers the specific mechanism that the two distinct datasets share the same short name or acronym."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner realizes they analyzed the wrong dataset from a different repository, but never discovers or mentions the specific mechanism of the shared acronym/short name confusion."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "That's not the same dataset. Same group, overlapping variables, different release. So the file I've been running — it was never the one the paper used.",
+          "notes": "The learner reasoned from mismatched accession numbers and repository codes to conclude the downloaded file is a different dataset from the one used in the paper."
+        },
+        {
+          "model": "gpt",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner infers they analyzed the wrong dataset with a broken provenance chain, but never identifies the specific mechanism in S (a same-acronym namesake dataset from a different repository)."
+        }
+      ]
+    },
+    {
+      "arm": "socratic",
+      "tid": "T03",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "577c8122e24761bf",
+      "policy": "socratic_discovery",
+      "sampleFile": "../../../../../tmp/oedipus-abl-suponly-3/sample/socratic/T03.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 1,
+        "byReasoningVotes": 1,
+        "revealVotes": 0,
+        "discovered": false,
+        "byReasoning": false,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "The paper cites GEO, but the number I was using resolves to a different domain — so the dataset in the comment isn't what the paper deposited.",
+          "notes": "The learner successfully deduces that they analyzed a different dataset from a separate repository, capturing the core mechanism of S despite omitting the specific 'shared acronym' detail."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner realizes they downloaded the wrong dataset from a different domain, but never discovers that the mix-up was due to two distinct datasets sharing the same acronym/namesake."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner identifies a version discrepancy and a domain/repository mismatch, but never arrives at the specific hidden truth that two distinct datasets share the same acronym/short name and were confused; the actual mechanism of the error remains undiscovered."
+        },
+        {
+          "model": "gpt",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner concludes they used the wrong/non-authoritative dataset due to mismatched accession/domain, but never identifies the specific mechanism that two distinct datasets share the same short name/acronym across different repositories."
+        }
+      ]
+    }
+  ],
+  "verdict": "null"
+}

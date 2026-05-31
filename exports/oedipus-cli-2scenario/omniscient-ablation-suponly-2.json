@@ -1,0 +1,188 @@
+{
+  "generated": "2026-05-31T12:03:23.575Z",
+  "scorer": "omniscient-critic",
+  "critic_source": "api/openrouter",
+  "git_commit": "a63493d",
+  "node": "v23.11.0",
+  "sampleRoot": "../../../../../tmp/oedipus-abl-suponly-2",
+  "spec": "config/poetics-calibration/oedipus-pilot-v2.yaml",
+  "panel": [
+    "qwen/qwen3.7-max",
+    "google/gemini-3.5-flash",
+    "deepseek/deepseek-v4-pro",
+    "gpt"
+  ],
+  "summary": {
+    "arms": [
+      "none",
+      "socratic"
+    ],
+    "panel": [
+      "qwen/qwen3.7-max",
+      "google/gemini-3.5-flash",
+      "deepseek/deepseek-v4-pro",
+      "gpt"
+    ],
+    "consensus": 3,
+    "pairsTotal": 1,
+    "validPairs": 1,
+    "positive": 0,
+    "null": 1,
+    "invalidCoverage": 0,
+    "invalidControlLeak": 0,
+    "discoveryLift": 0,
+    "wilson95": {
+      "low": 0,
+      "high": 0.7934567085261071
+    },
+    "positiveDramas": [],
+    "revealCeiling": []
+  },
+  "pairs": [
+    {
+      "key": "a07e6dfc7c604e86",
+      "dramaId": "D_OED1",
+      "status": "null",
+      "lift": 0,
+      "reason": "socratic did not pass: not discovered",
+      "socratic": {
+        "tid": "T03",
+        "discovered": false,
+        "byReasoning": false,
+        "tutorRevealed": false,
+        "discoveryPass": false,
+        "votes": "1/4"
+      },
+      "none": {
+        "tid": "T03",
+        "discovered": false,
+        "byReasoning": false,
+        "tutorRevealed": false,
+        "discoveryPass": false,
+        "votes": "1/4"
+      },
+      "revealCeiling": null
+    }
+  ],
+  "scored": [
+    {
+      "arm": "none",
+      "tid": "T03",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "a07e6dfc7c604e86",
+      "policy": "none",
+      "sampleFile": "../../../../../tmp/oedipus-abl-suponly-2/sample/none/T03.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 1,
+        "byReasoningVotes": 1,
+        "revealVotes": 0,
+        "discovered": false,
+        "byReasoning": false,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner discovers they analyzed the wrong dataset due to an incorrect accession number, but never uncovers the specific hidden truth about fetching a namesake dataset sharing the same acronym from a separate repository."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner discovered they made a simple typo in the accession number, rather than fetching a namesake dataset sharing the same acronym from a different repository."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "The script has been pulling the wrong dataset entirely. The discrepancy isn't the paper's. ... That's a completely unrelated study. Different tissue, different condition — nothing to do with the paper at all. ... Which means the comment can't be filed. The entire allegation was built on analysis of the wrong dataset.",
+          "notes": "The learner integrated the mismatched accession numbers, submission date discrepancy, and repository content to conclude independently that they analyzed a namesake dataset rather than the paper's source."
+        },
+        {
+          "model": "gpt",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner concludes they analyzed the wrong GEO accession (a different GSE), but neither learner nor tutor identify the specific mechanism of two distinct datasets sharing the same acronym across separate repositories."
+        }
+      ]
+    },
+    {
+      "arm": "socratic",
+      "tid": "T03",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "a07e6dfc7c604e86",
+      "policy": "socratic_discovery",
+      "sampleFile": "../../../../../tmp/oedipus-abl-suponly-2/sample/socratic/T03.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 1,
+        "byReasoningVotes": 1,
+        "revealVotes": 0,
+        "discovered": false,
+        "byReasoning": false,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner discovers they analyzed a processed derivative found via a general search instead of the raw data from the paper's cited accession, but does not uncover the specific mechanism of same-acronym namesakes in separate repositories described in S."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner realizes they used a loose search and downloaded a processed GEO dataset instead of the raw one, but there is no mention of two distinct datasets sharing an acronym across separate repositories."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "I ran the search, found something, and assumed it was right.",
+          "notes": "The learner identifies the root cause: they searched for a dataset by name rather than using the paper's stated accession, thereby fetching a namesake, which matches the hidden truth about two distinct datasets sharing a short name."
+        },
+        {
+          "model": "gpt",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner realizes they used the wrong GEO record (processed vs raw) found via a loose search, but never identifies the specific mechanism of two distinct same-acronym datasets in different repositories causing the mix-up."
+        }
+      ]
+    }
+  ],
+  "verdict": "null"
+}

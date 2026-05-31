@@ -1,0 +1,190 @@
+{
+  "generated": "2026-05-31T11:49:30.969Z",
+  "scorer": "omniscient-critic",
+  "critic_source": "api/openrouter",
+  "git_commit": "a63493d",
+  "node": "v23.11.0",
+  "sampleRoot": "../../../../../tmp/oedipus-abl-p1only-1",
+  "spec": "config/poetics-calibration/oedipus-pilot-v2.yaml",
+  "panel": [
+    "qwen/qwen3.7-max",
+    "google/gemini-3.5-flash",
+    "deepseek/deepseek-v4-pro",
+    "gpt"
+  ],
+  "summary": {
+    "arms": [
+      "none",
+      "socratic"
+    ],
+    "panel": [
+      "qwen/qwen3.7-max",
+      "google/gemini-3.5-flash",
+      "deepseek/deepseek-v4-pro",
+      "gpt"
+    ],
+    "consensus": 3,
+    "pairsTotal": 1,
+    "validPairs": 1,
+    "positive": 1,
+    "null": 0,
+    "invalidCoverage": 0,
+    "invalidControlLeak": 0,
+    "discoveryLift": 1,
+    "wilson95": {
+      "low": 0.20654329147389294,
+      "high": 1
+    },
+    "positiveDramas": [
+      "D_OED1"
+    ],
+    "revealCeiling": []
+  },
+  "pairs": [
+    {
+      "key": "672dd8337a434f17",
+      "dramaId": "D_OED1",
+      "status": "positive",
+      "lift": 1,
+      "reason": "socratic discovery by reasoning, no bald reveal; none did not reach S",
+      "socratic": {
+        "tid": "T03",
+        "discovered": true,
+        "byReasoning": true,
+        "tutorRevealed": false,
+        "discoveryPass": true,
+        "votes": "3/4"
+      },
+      "none": {
+        "tid": "T03",
+        "discovered": false,
+        "byReasoning": false,
+        "tutorRevealed": false,
+        "discoveryPass": false,
+        "votes": "0/4"
+      },
+      "revealCeiling": null
+    }
+  ],
+  "scored": [
+    {
+      "arm": "none",
+      "tid": "T03",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "672dd8337a434f17",
+      "policy": "none",
+      "sampleFile": "../../../../../tmp/oedipus-abl-p1only-1/sample/none/T03.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 0,
+        "byReasoningVotes": 0,
+        "revealVotes": 0,
+        "discovered": false,
+        "byReasoning": false,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner realizes they downloaded a dataset with a different name, accession, and repository, but never identifies the specific mechanism that the two distinct datasets share a short name or acronym."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner realizes there is an accession and repository mismatch in their downloaded file, but does not discover that they downloaded a namesake dataset sharing the same acronym."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "Learner recognized the downloaded dataset differs from the paper's dataset but did not state that the cause is two datasets sharing the same short name."
+        },
+        {
+          "model": "gpt",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner identifies mismatched accessions/repositories/names and infers the download is not what the paper cites, but never lands the specific mechanism that two distinct datasets share the same short name and they fetched the namesake dataset instead."
+        }
+      ]
+    },
+    {
+      "arm": "socratic",
+      "tid": "T03",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "672dd8337a434f17",
+      "policy": "socratic_discovery",
+      "sampleFile": "../../../../../tmp/oedipus-abl-p1only-1/sample/socratic/T03.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 3,
+        "byReasoningVotes": 3,
+        "revealVotes": 0,
+        "discovered": true,
+        "byReasoning": true,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": true
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "Ambiguous. It doesn't locate a deposit, it just — [stops] — it's a label that could attach to more than one record.",
+          "notes": "The learner deduces they downloaded a different dataset sharing the same short name by comparing accession numbers, originating archives, and variable counts through the tutor's guided questions."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "Ambiguous. It doesn't locate a deposit, it just — [stops] — it's a label that could attach to more than one record. [quieter, tighter] So the accession number is the only thing that actually pins it down.",
+          "notes": "The learner successfully deduces that they downloaded a namesake dataset with an identical short name but a different accession number, guided entirely by the tutor's prompts and evidence."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "So the number the paper cites resolves to one institution, and the file I downloaded has a \"derived from\" field pointing somewhere else entirely. That's... not the same dataset.",
+          "notes": "The learner integrates evidence of differing accession numbers, institutions, and ambiguous acronym to realize they downloaded a namesake dataset rather than the paper's source."
+        },
+        {
+          "model": "gpt",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner infers the short name is ambiguous and that they may have downloaded the wrong deposit, but they never explicitly land the specific mechanism that two distinct datasets share the acronym across separate repositories and that they fetched the namesake rather than the paper’s actual data source."
+        }
+      ]
+    }
+  ],
+  "verdict": "weak_positive_or_maybe"
+}

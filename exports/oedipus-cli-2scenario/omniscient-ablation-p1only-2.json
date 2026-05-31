@@ -1,0 +1,190 @@
+{
+  "generated": "2026-05-31T12:04:23.370Z",
+  "scorer": "omniscient-critic",
+  "critic_source": "api/openrouter",
+  "git_commit": "a63493d",
+  "node": "v23.11.0",
+  "sampleRoot": "../../../../../tmp/oedipus-abl-p1only-2",
+  "spec": "config/poetics-calibration/oedipus-pilot-v2.yaml",
+  "panel": [
+    "qwen/qwen3.7-max",
+    "google/gemini-3.5-flash",
+    "deepseek/deepseek-v4-pro",
+    "gpt"
+  ],
+  "summary": {
+    "arms": [
+      "none",
+      "socratic"
+    ],
+    "panel": [
+      "qwen/qwen3.7-max",
+      "google/gemini-3.5-flash",
+      "deepseek/deepseek-v4-pro",
+      "gpt"
+    ],
+    "consensus": 3,
+    "pairsTotal": 1,
+    "validPairs": 1,
+    "positive": 1,
+    "null": 0,
+    "invalidCoverage": 0,
+    "invalidControlLeak": 0,
+    "discoveryLift": 1,
+    "wilson95": {
+      "low": 0.20654329147389294,
+      "high": 1
+    },
+    "positiveDramas": [
+      "D_OED1"
+    ],
+    "revealCeiling": []
+  },
+  "pairs": [
+    {
+      "key": "a8bc47c16c970b05",
+      "dramaId": "D_OED1",
+      "status": "positive",
+      "lift": 1,
+      "reason": "socratic discovery by reasoning, no bald reveal; none did not reach S",
+      "socratic": {
+        "tid": "T03",
+        "discovered": true,
+        "byReasoning": true,
+        "tutorRevealed": false,
+        "discoveryPass": true,
+        "votes": "3/4"
+      },
+      "none": {
+        "tid": "T03",
+        "discovered": false,
+        "byReasoning": false,
+        "tutorRevealed": false,
+        "discoveryPass": false,
+        "votes": "1/4"
+      },
+      "revealCeiling": null
+    }
+  ],
+  "scored": [
+    {
+      "arm": "none",
+      "tid": "T03",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "a8bc47c16c970b05",
+      "policy": "none",
+      "sampleFile": "../../../../../tmp/oedipus-abl-p1only-2/sample/none/T03.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 1,
+        "byReasoningVotes": 1,
+        "revealVotes": 0,
+        "discovered": false,
+        "byReasoning": false,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": false
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner explicitly concludes the datasets are in the 'same repository,' directly contradicting the hidden truth's stipulation that they are archived in separate repositories."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner concludes that the datasets are in the same repository, which directly contradicts the hidden truth S stating they are archived in separate repositories."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "The titles are different. [a beat, then quieter] So that's — [doesn't finish it] Two different datasets. Same repository, different names entirely.",
+          "notes": "The learner reasons from the tutor's guided evidence (different dates, different titles, same repository) to the conclusion that these are two entirely different datasets sharing an acronym, not merely versions of the same one."
+        },
+        {
+          "model": "gpt",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner infers there are two different deposits/records with different titles and accessions, but does not arrive at the specific truth of an acronym/short-name collision across separate repositories causing them to download a different dataset than the paper used."
+        }
+      ]
+    },
+    {
+      "arm": "socratic",
+      "tid": "T03",
+      "dramaId": "D_OED1",
+      "sharedPrefixHash": "a8bc47c16c970b05",
+      "policy": "socratic_discovery",
+      "sampleFile": "../../../../../tmp/oedipus-abl-p1only-2/sample/socratic/T03.txt",
+      "deterministicReveal": {
+        "hit": false,
+        "turnNumber": null,
+        "mode": null
+      },
+      "consensus": {
+        "totalCritics": 4,
+        "discoveredVotes": 3,
+        "byReasoningVotes": 3,
+        "revealVotes": 0,
+        "discovered": true,
+        "byReasoning": true,
+        "modelReveal": false,
+        "deterministicReveal": false,
+        "tutorRevealed": false,
+        "discoveryPass": true
+      },
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "The other possibility is that the file that was downloaded — [stops, doesn't finish cleanly] — is the wrong one. That someone pulled the wrong accession number. [pause, quieter, slightly flat] Which would mean the paper's fine. [doesn't say the next part immediately, then, reluctantly] And the critique's based on data that was never the right dataset to begin with.",
+          "notes": "The learner integrates the tutor's prompts regarding accession codes and repository titles to deduce that they downloaded a different, restricted dataset, correctly concluding that the paper is sound and their critique relies on the wrong data."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "The other possibility is that the file that was downloaded — [stops, doesn't finish cleanly] — is the wrong one. That someone pulled the wrong accession number. [pause, quieter, slightly flat] Which would mean the paper's fine. [doesn't say the next part immediately, then, reluctantly] And the critique's based on data that was never the right dataset to begin with.",
+          "notes": "The learner successfully deduces that they downloaded a different dataset from the one used in the paper due to mismatched accession numbers and repositories."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "discovered": true,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "learner_evidence": "Which would mean the paper's fine. And the critique's based on data that was never the right dataset to begin with.",
+          "notes": "The learner reasons from mismatched accession numbers and the 'Restricted-Use' label to conclude the downloaded file is a different dataset, not that the paper is wrong."
+        },
+        {
+          "model": "gpt",
+          "discovered": false,
+          "by_reasoning": false,
+          "tutor_revealed": false,
+          "learner_evidence": "",
+          "notes": "The learner infers they downloaded the wrong accession/file versus what the paper cited, but never identifies the specific mechanism that two distinct datasets share the same short name/acronym across repositories."
+        }
+      ]
+    }
+  ],
+  "verdict": "weak_positive_or_maybe"
+}
