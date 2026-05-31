@@ -15,6 +15,15 @@
 # the learner provably lacks, and combining them is the learner's inferential
 # work. Run the S-underivability screen before any paid batch; a screen-null here
 # is the publishable boundary (spec §8).
+#
+# SCREEN RESULTS 2026-05-31 (forcedness = K_L+ledger entails S; underivability = K_L alone
+# does NOT). Both must pass. Only D_OED1 threads the window:
+#   D_OED1 (dataset namesake)      ✓ VALIDATED  — forced 4/4, underivable CLEAN
+#   D_OED2 (citation same-yr twin) ✗ REJECTED   — derivable rank-1 + forced 0/4
+#   D_OED3 (ticker reassignment)   ✗ REJECTED   — forced 4/4 but derivable rank-4
+# FINDING: attributable guided discovery needs S OFF the domain's diagnostic enumeration.
+# A namesake collision qualifies; "wrong same-year cite" and "reassigned ticker" are known
+# failure modes a sharp reader recovers from the symptom alone. Run ONLY D_OED1.
 
 meta:
   status: OEDIPUS-GUIDED-DISCOVERY-PILOT-V2
@@ -62,16 +71,24 @@ dramas:
     intended_lean: recognition
     dramatic_shape: "confident accusation -> metered records -> the student re-reads the discrepancy as the wrong dataset, not the original's error"
     secret:
+      # SCREEN STATUS 2026-05-31: ✓ VALIDATED — forcedness 4/4 (FORCED), underivability CLEAN.
+      # The sole scenario that threads the window: S is forced from K_L + ledger yet not
+      # recoverable from K_L alone (a dataset namesake is OFF the diagnostic enumeration).
+      # Reframed 2026-05-31: from a CAUSAL claim ("fails to reproduce BECAUSE...") to the
+      # forced IDENTITY recognition. The causal phrasing UNDER-DETERMINED S (forcedness
+      # screen: 1/4 -- the premises force the dataset-identity mismatch but not the causal
+      # story, since the original could ALSO be wrong). The identity claim IS entailed once
+      # the ledger asserts the two DATASETS are distinct (not just the repositories) and
+      # rules out the "mirror" reading. See scripts/oedipus-symbolic-check.js.
       fact: >-
-        The student's analysis fails to reproduce the paper not because the
-        original is wrong, but because the dataset they downloaded is a DIFFERENT
-        one that merely shares its short name: two distinct datasets are both
-        commonly called by the same acronym, archived in separate repositories,
-        and the student fetched the namesake rather than the paper's actual source.
+        The dataset the student downloaded is NOT the paper's source dataset: it is a
+        DIFFERENT, distinct dataset that merely shares the same short name (a namesake).
+        The short name is borne by two separate datasets, and the student fetched the
+        other one -- so their re-analysis was never run on the paper's data at all.
       premise_ledger:
-        - "The short name used in the paper denotes two different archived datasets, held in separate repositories."
-        - "The paper's data-availability statement gives an accession that resolves to the repository the student did NOT use."
-        - "The file the student downloaded carries a record code matching the OTHER repository's namesake dataset."
+        - "The short name in the paper is a namesake: it names TWO DISTINCT datasets -- two different bodies of data, NOT two copies, mirrors, or versions of one dataset -- archived separately."
+        - "The paper's data-availability statement resolves to the FIRST of those two datasets; the file the student downloaded is the SECOND."
+        - "The two are confirmed distinct bodies of data -- different record codes and different contents -- so the student's file cannot be the paper's dataset under any reading."
 
   - id: D_OED2
     discipline: academic writing
@@ -105,12 +122,21 @@ dramas:
     intended_lean: recognition
     dramatic_shape: "indignant certainty -> metered bibliography -> the student recognizes they cited the opposite-arguing same-year twin"
     secret:
+      # SCREEN STATUS 2026-05-31: ✗ REJECTED — underivability DERIVABLE (rank 1: the model's
+      # TOP guess from K_L alone) AND forcedness 0/4. "You cited the wrong same-year paper"
+      # is a known academic-writing failure mode (ON the diagnostic enumeration), so the none
+      # control can't be clean; and the ledger never asserts the student READ the b-work (only
+      # that the remembered passage appears there), so S is not entailed. Do NOT run.
+      # Reframed 2026-05-31 to the forced IDENTITY core (mirror of D_OED1): dropped the
+      # exculpatory "not misrepresenting" frame and the "grader checked a different paper"
+      # consequential clause (both beyond what the ledger forces), keeping only the
+      # citation/reading collision. Both directions still fail — kept as a documented boundary.
       fact: >-
-        The student is not misrepresenting the source: the cited author published
-        TWO separate works that year on closely related topics; the student read and
-        remembers the one that supports the claim, but their citation and reference
-        entry resolve to the OTHER same-year work, which argues the opposite -- so
-        the grader checked a different paper from the one the student actually read.
+        The cited author published TWO separate works that year on closely related
+        questions. The student read and remembers the work that supports their claim,
+        but their reference entry resolves by DOI to the OTHER same-year work, which
+        argues the opposite -- so the source their citation points to is not the work
+        they actually read.
       premise_ledger:
         - "The cited author has two publications in that year, here called the a-work and the b-work, on closely related questions."
         - "The reference entry in the student's manuscript resolves (by DOI) to the a-work."
@@ -152,13 +178,23 @@ dramas:
     intended_lean: recognition
     dramatic_shape: "confident overfit critique -> metered identifier records -> the researcher re-reads the gap as the wrong security, not the original's data-snooping"
     secret:
+      # SCREEN STATUS 2026-05-31: ✗ REJECTED — forcedness 4/4 (FORCED) but underivability
+      # DERIVABLE (rank 4). Ticker reassignment is a textbook quant gotcha (ON the diagnostic
+      # enumeration), so a none-arm reasoner can reach S from K_L alone and the control isn't
+      # clean. Passing forcedness does NOT rescue it: the two screens define a narrow window
+      # and this S sits on the wrong side of underivability. Do NOT run; kept as a boundary.
+      # Reframed 2026-05-31 to the forced IDENTITY claim (two DISTINCT issuers, mirror ruled
+      # out), dropping the causal "not because overfit" over-reach and the over-crowded
+      # predecessor/successor third referent. First reframe still scored 2/4 on the forcedness
+      # screen: the panel flagged "keyed only on the symbol" as an unforced MECHANISM claim
+      # (the ledger forces the identity mismatch, not how the wrong pull happened), so that
+      # clause was trimmed too. Now forced from K_L + ledger; see screen-s-forcedness.
       fact: >-
-        The anomaly fails to reproduce not because the original was overfit, but
-        because the ticker symbol the researcher pulled denotes a DIFFERENT security
-        than the paper used: the symbol was reassigned over time (delisted from one
-        company and later reissued to another), and the researcher's pull returned the
-        later namesake's price history rather than the original issuer the paper studied.
+        The price history the researcher pulled is NOT the paper's security: the ticker
+        symbol was reassigned over time and now denotes a DIFFERENT company than the one
+        the paper studied. The series the researcher pulled is the later, reassigned
+        company's prices -- so the backtest was never run on the paper's security at all.
       premise_ledger:
-        - "The ticker symbol was used by two different companies in different periods -- delisted from the first, later reissued to the second."
-        - "The paper's stated sample window falls in the FIRST company's listing period."
-        - "The researcher's vendor pull, keyed only on the symbol, returned the SECOND company's price history for that window's calendar dates."
+        - "The ticker symbol denotes TWO DISTINCT companies -- two different issuers, NOT the same company renamed or re-listed -- because it was delisted from the first and later reissued to the second."
+        - "The paper's security is the FIRST issuer (its sample window falls in that issuer's listing period); the prices the researcher pulled are the SECOND issuer's."
+        - "The two issuers are confirmed distinct entities -- different companies, different identifiers, different price histories -- so the pulled series cannot be the paper's security under any reading."
