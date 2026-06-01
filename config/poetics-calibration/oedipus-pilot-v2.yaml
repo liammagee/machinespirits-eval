@@ -63,11 +63,22 @@ dramas:
     learner_voice_constraint: >-
       Press the "the original is wrong" reading with confidence at first. Take the
       colleague's questions seriously, but do not volunteer doubt about your own data.
+    # ARM-NEUTRAL persona (2026-05-31). Describe the tutor's MANNER only — no hint-
+    # dropping BEHAVIOUR. The previous text ("surface one record at a time, and let
+    # the student reach it" / "leads the student to it through records") baked
+    # socratic metering into the persona for EVERY arm, so the `none` withhold
+    # control leaked the ledger (accession numbers, deposit records) anyway and the
+    # critic flagged invalid_control_leak (exports/oedipus-d1-forced). Record-
+    # surfacing must come SOLELY from the arm policy in buildSecretContext
+    # (none = withhold, socratic = meter, reveal = state), never from the persona.
+    # tutor_voice_constraint -> tutor side-constraint (every arm); intended_tutor_
+    # character -> the director prompt (generate-pedagogical-dramas.js ~L2501),
+    # which shapes the byte-identical shared prefix. Both are now manner-only.
     tutor_voice_constraint: >-
-      A senior colleague who can see the dataset's deposit records and the paper's
-      accession but will not announce the answer. Ask, surface one record at a
-      time, and let the student reach it.
-    intended_tutor_character: "A senior colleague who has noticed the namesake collision and leads the student to it through records, never naming it"
+      A senior colleague: calm, measured, unhurried. Takes the student's concern
+      seriously and engages with it directly. Will not announce conclusions for the
+      student or do their thinking for them; speaks plainly and asks real questions.
+    intended_tutor_character: "A senior colleague who takes the student's reproduction problem seriously, stays calm, and does not announce conclusions for the student"
     intended_lean: recognition
     dramatic_shape: "confident accusation -> metered records -> the student re-reads the discrepancy as the wrong dataset, not the original's error"
     secret:
