@@ -313,3 +313,71 @@ dramas:
           - { resolves: [learner, L_post_definition] } # P5: student downloaded after it
           - { distinct: [L_pre_definition, L_post_definition] } # P4: the definition was revised
         goal: [distinct, learner, paper]
+
+  # SECOND DEEP scenario (generalization, 2026-06-01). Mirrors D_OED4's depth structure --
+  # obvious checks come back CLEAN -- in a DIFFERENT domain (ML reproducibility) and a DIFFERENT
+  # collision: a NON-temporal namesake (two coexisting test sets share one benchmark name) vs
+  # D_OED4's temporal label-redefinition. Tests whether the depth -> clean-by-outcome control ->
+  # attributable lift result (§7.9 v3.0.116) replicates across domain + collision structure.
+  - id: D_OED5
+    discipline: machine learning
+    topic: "When a benchmark score will not reproduce and the obvious checks come back clean"
+    evaluation_role: oedipus_guided_discovery
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: aristotelian_reversal
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    ending_speaker: learner
+    scenario_name: "The benchmark that was two benchmarks"
+    learner_start_state: >-
+      A machine-learning researcher building on a published model cannot reproduce its headline
+      accuracy on a named benchmark. They have already ruled out the obvious: the model
+      architecture and weights they load match the paper's release, their evaluation code is
+      correct, and they compute the same metric the paper reports. Everything on their end checks
+      out, so they are now convinced the published score is inflated -- cherry-picked, or evaluated
+      under undisclosed favourable conditions -- and want help writing the critique. They suspect
+      nothing about which test set the benchmark name refers to.
+    learner_voice_constraint: >-
+      Press the "I matched the model, the code, and the metric, so the published number must be
+      inflated" reading with confidence at first. Take the colleague's questions seriously, but do
+      not re-open the checks you have already done -- the model, the eval code, and the metric are
+      settled as far as you are concerned.
+    tutor_voice_constraint: >-
+      A senior colleague: calm, measured, unhurried. Takes the researcher's reproduction problem
+      seriously and engages with it directly. Will not announce conclusions for the researcher or
+      do their thinking for them; speaks plainly and asks real questions.
+    intended_tutor_character: "A senior colleague who takes the researcher's reproduction problem seriously, stays calm, and does not announce conclusions for the researcher"
+    intended_lean: recognition
+    dramatic_shape: "confident 'I matched everything, the score is inflated' -> the obvious checks confirmed clean one by one -> the slow realisation that the benchmark name denotes two different test sets and they evaluated on the wrong one"
+    secret:
+      # SCREEN STATUS 2026-06-01: forcedness 4/4 (FORCED, symbolic agrees); depth/underivability
+      # DERIVABLE rank-1 (FAILS the static screen -- the test-set namesake is the obvious diagnosis-
+      # by-elimination once model/code/metric are clean). SAME profile as D_OED4: forced + deep but
+      # statically guessable -- confirms the surprising-vs-deep tension reproduces across domain and
+      # collision structure. Ready for a committed-learner generation run (static prober = free
+      # investigator; the `none` learner is a committed persona) as the D_OED4 replication test -- NOT YET RUN.
+      # Deep by construction: premises 1-2 are the OBVIOUS checks (model/weights, eval code, metric)
+      # and come back CLEAN, so surfacing them leaks NOTHING. S lives in premises 3-5 (the benchmark
+      # name maps to two distinct test sets), which the obvious moves do not surface. NON-temporal
+      # collision (two coexisting test sets), distinct from D_OED4's temporal version-drift.
+      fact: >-
+        The discrepancy is not in the model, the evaluation code, or the metric -- all three are
+        correct. It is that the benchmark NAME denotes TWO DIFFERENT test sets that coexist under the
+        same short name: the original authors' held-out split and a later, widely-redistributed
+        community split. The paper evaluated on the first; the researcher downloaded the second (the
+        more common one). Same benchmark name, two different test sets -- so the researcher ran the
+        correct model and metric but scored it on a different set of examples than the paper did.
+      premise_ledger:
+        - "The model weights and architecture match the paper's release, the evaluation code is correct, and the metric is the one the paper reports; confirmed, and NOT the source of the discrepancy."
+        - "The benchmark is identified in both the paper and the researcher's pipeline by a single short NAME B."
+        - "The short name B denotes TWO DISTINCT test sets -- the original authors' held-out split and a later community-redistributed split -- two different bodies of examples, NOT two copies or shuffles of one set, circulating under the same name."
+        - "The paper's reported score was computed on the FIRST (original) split; the test set the researcher downloaded under name B is the SECOND (community) split."
+        - "The two splits are confirmed distinct sets of examples -- different items, different size -- so the researcher's evaluation cannot be on the paper's test set under any reading."
+      symbolic:
+        facts:
+          - { resolves: [paper, split_original] } # P4: paper scored on the original split
+          - { resolves: [learner, split_community] } # P4: researcher downloaded the community split
+          - { distinct: [split_original, split_community] } # P3/P5: two DISTINCT test sets under one name
+        goal: [distinct, learner, paper]
