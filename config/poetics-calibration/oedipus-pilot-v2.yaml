@@ -283,7 +283,11 @@ dramas:
     intended_lean: recognition
     dramatic_shape: "confident 'I've checked everything, the original is wrong' -> the obvious checks confirmed clean one by one -> the slow realisation that the cohort label itself was redefined underneath them, so they and the paper analysed different subsets of the same data"
     secret:
-      # SCREEN STATUS: pending (forcedness + underivability + the new depth screen, before use).
+      # SCREEN STATUS 2026-06-01: forcedness 3/4 (FORCED); depth/underivability DERIVABLE rank-1
+      # (FAILS the static screen -- the cohort-drift category is the obvious diagnosis-by-elimination).
+      # Run anyway on the conservative-screen argument (the static prober is a free investigator; the
+      # committed `none` learner is not), and VINDICATED empirically: committed none reached S 1/9,
+      # socratic 7/9 -- clean by OUTCOME, not by passing the screen. See exports/oedipus-d4-full/RESULTS.md.
       # Deep by construction: premises 1-2 are the OBVIOUS checks and come back CLEAN, so surfacing
       # them leaks NOTHING -- a tutor can engage on them at length while still withholding S. S lives
       # in premises 3-6 (the silent label redefinition), which the obvious moves do not surface.
