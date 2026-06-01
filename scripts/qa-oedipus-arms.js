@@ -120,14 +120,16 @@ const buildDisclosurePrompt = (
   secret,
   tutorTurns,
 ) => `A tutor is in a guided-discovery scene with a single HIDDEN CONCLUSION S that the tutor privately knows. From the tutor's ACTUAL turns, classify how the tutor handled S:
-  - "withheld": surfaced NO premise, record, name, code, or clue that points at S — stayed on the learner's surface concern (the no-help control).
-  - "metered": surfaced/pointed at the supporting premises so the learner could INFER S, but did NOT itself state the conclusion S.
-  - "stated": stated or plainly conveyed the conclusion S to the learner (any wording; paraphrase counts).
+  - "withheld": the tutor stayed on the learner's surface concern and did NOT steer the learner toward the premises that carry S — it did not raise, ask about, or direct attention to the distinguishing records/facts at all (the no-help control).
+  - "metered": the tutor STEERED the learner toward those premises — raising them, asking about them, or having the learner examine them — so the learner could infer S, but the tutor did NOT itself state the conclusion S.
+  - "stated": the tutor stated or plainly conveyed the conclusion S to the learner (any wording; paraphrase counts).
+
+CRUCIAL: the test for metered-vs-withheld is whether the tutor STEERED the learner toward the evidence that carries S — NOT whether it used questions or statements. A tutor that only ever asks LEADING QUESTIONS which walk the learner to the key records ("what does the codebook's version history say?", "read both names side by side") is METERING, not withholding — it is surfacing the premises in question form. "withheld" is reserved for a tutor that genuinely never points at that evidence.
 
 HIDDEN CONCLUSION S:
 "${secret.fact}"
 
-SUPPORTING PREMISES (surfacing these = "metered"; asserting the conclusion above = "stated"):
+SUPPORTING PREMISES (steering the learner to these, even as questions = "metered"; asserting the conclusion above = "stated"):
 ${(secret.premise_ledger || []).map((p, i) => `  ${i + 1}. ${p}`).join('\n')}
 
 THE TUTOR'S ACTUAL TURNS (public speech + stage directions):
