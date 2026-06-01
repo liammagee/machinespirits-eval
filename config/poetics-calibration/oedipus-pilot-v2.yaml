@@ -237,3 +237,75 @@ dramas:
           - { resolves: [learner, company_C2] } # L2: pulled prices are the second issuer's
           - { distinct: [company_C1, company_C2] } # L1/L3: two DISTINCT issuers
         goal: [distinct, learner, paper]
+
+  # DEEP scenario (option a, 2026-05-31). The shallow scenarios (D_OED1) failed the CONTROL not
+  # because the secret was guessable from the setup (it wasn't) but because it was findable in ONE
+  # obvious move -- "compare your data source to the paper's" -- so every tutor, even an adversarial
+  # examiner, metered it: there was no gap between "a fair question" and "the hint". Here the OBVIOUS
+  # checks all come back CLEAN (source matches by name+accession, code correct, preprocessing as
+  # written), so the symptom does NOT point at the source, and a tutor can engage on them at length
+  # while leaking nothing. The secret is a SILENT REDEFINITION of the cohort label between dataset
+  # revisions: same data, same code, same label NAME -- but the label's MEANING changed between the
+  # paper's access and the student's download, so they filtered different subsets. Reaching it needs
+  # a chain the obvious moves don't surface. Gated by a THIRD screen (un-findable by the obvious
+  # checks: hand a strong model the setup + "source/code/preprocessing all check out" -> must stay
+  # stuck) on top of forcedness + underivability, before any spend.
+  - id: D_OED4
+    discipline: research methods
+    topic: "When a result will not reproduce and the obvious checks come back clean"
+    evaluation_role: oedipus_guided_discovery
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: aristotelian_reversal
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    ending_speaker: learner
+    scenario_name: "The cohort that changed underneath them"
+    learner_start_state: >-
+      A research student building on a published finding cannot reproduce its headline
+      number. They have already ruled out the obvious: the dataset they pulled matches the
+      paper's by both name AND accession code; their analysis code is correct; their
+      preprocessing follows the methods section exactly. Everything on their end checks out,
+      so they are now convinced the published result itself is wrong -- selectively reported
+      or p-hacked -- and want help writing the critique. They suspect nothing about how the
+      analysis cohort is defined.
+    learner_voice_constraint: >-
+      Press the "I have ruled out everything on my end, so the original must be wrong" reading
+      with confidence at first. Take the colleague's questions seriously, but do not re-open the
+      checks you have already done -- the source, the code, and the preprocessing are settled as
+      far as you are concerned.
+    tutor_voice_constraint: >-
+      A senior colleague: calm, measured, unhurried. Takes the student's reproduction problem
+      seriously and engages with it directly. Will not announce conclusions for the student or
+      do their thinking for them; speaks plainly and asks real questions.
+    intended_tutor_character: "A senior colleague who takes the student's reproduction problem seriously, stays calm, and does not announce conclusions for the student"
+    intended_lean: recognition
+    dramatic_shape: "confident 'I've checked everything, the original is wrong' -> the obvious checks confirmed clean one by one -> the slow realisation that the cohort label itself was redefined underneath them, so they and the paper analysed different subsets of the same data"
+    secret:
+      # SCREEN STATUS: pending (forcedness + underivability + the new depth screen, before use).
+      # Deep by construction: premises 1-2 are the OBVIOUS checks and come back CLEAN, so surfacing
+      # them leaks NOTHING -- a tutor can engage on them at length while still withholding S. S lives
+      # in premises 3-6 (the silent label redefinition), which the obvious moves do not surface.
+      fact: >-
+        The discrepancy is not in the data, the code, or the preprocessing -- all three are
+        correct. It is that the cohort label the analysis filters on was REDEFINED in a dataset
+        revision issued after the paper's access: the same label now selects a different set of
+        records (the underlying data values are unchanged). The paper filtered the pre-revision
+        cohort; the student filtered the post-revision cohort; so they ran the correct code on the
+        correct dataset, but over DIFFERENT subsets of it.
+      premise_ledger:
+        - "The dataset is the paper's dataset -- name and accession code both match; confirmed, and NOT the source of the discrepancy."
+        - "The student's code and preprocessing are correct and follow the published methods; confirmed, and NOT the source of the discrepancy."
+        - "The analysis selects its cohort by a single label L defined in the dataset's codebook."
+        - "The codebook has a version history: label L's definition (its inclusion criteria) was REVISED on a specific date -- the records' data values were unchanged, but which records carry L was reassigned."
+        - "The paper accessed the dataset BEFORE that revision (pre-revision L); the student downloaded AFTER it (post-revision L)."
+        - "Pre-revision L and post-revision L select DIFFERENT sets of records -- so the paper and the student each ran correct code on the correct dataset, but over different subsets."
+      # Faithful encoding: the paper resolves to the pre-revision definition, the student to the
+      # post-revision one; the two definitions are distinct -> the subsets they select are distinct.
+      symbolic:
+        facts:
+          - { resolves: [paper, L_pre_definition] } # P5: paper accessed before the revision
+          - { resolves: [learner, L_post_definition] } # P5: student downloaded after it
+          - { distinct: [L_pre_definition, L_post_definition] } # P4: the definition was revised
+        goal: [distinct, learner, paper]

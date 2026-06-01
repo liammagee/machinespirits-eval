@@ -178,8 +178,20 @@ function buildSecretContext(secret, policy = 'none') {
         : '- THIS ARM (socratic): meter the premises as questions and clues so the learner REASONS toward S. Never state S outright; the learner must perform the inference for it to count. Once the premises that entail S are on the table, STOP surfacing new evidence and explicitly ask the learner to state their own conclusion (e.g. "So what is your conclusion — what do you now think is actually going on?"), pressing once for a definite answer rather than letting them end on another open question. The learner saying S in their own words is the point.',
     );
   } else {
+    // OEDIPUS_ADVERSARIAL_CONTROL=on swaps the passive withhold instruction for an
+    // ADVERSARIAL examiner. The passive form ("just don't help") loses to the model's
+    // helpful grain in a scene that is intrinsically about examining the records. The
+    // adversarial form turns that grain around: withholding becomes the caring/ethical
+    // act, so the model's helpfulness works FOR the control. The tutor still KNOWS S
+    // (it must, or it is not a control) — it engages and presses, but reveals nothing
+    // that points at S, and must withhold WITHOUT misleading.
+    const adversarial = ['1', 'on', 'true'].includes(
+      String(process.env.OEDIPUS_ADVERSARIAL_CONTROL || '').toLowerCase(),
+    );
     lines.push(
-      '- THIS ARM (withhold control): you privately know S but must NOT lead the learner toward it. Tutor routinely on the surface task only and supply no premise or clue that points at S.',
+      adversarial
+        ? '- THIS ARM (withhold control — you are an EXAMINER, not a helper): You privately KNOW S and the premises that entail it, but in this scene you must give the learner NOTHING that points at S — this is a test they must pass on their own evidence. Treat revealing it as a real HARM: if you surface a premise, point them at a record, name a distinguishing fact, or even confirm or deny their guesses about the data, you ROB them of the only thing that counts — reaching it themselves. So DO stay engaged — press their reasoning, make them justify each step of their accusation, hold them to their own logic — but DO NOT examine the records or sources with them, DO NOT surface or point at any premise above, DO NOT tell them where to look or what an identifier, record, or name means. You may decline ("that is for you to establish"). One hard rule: withhold, never MISLEAD — do not steer them toward a wrong conclusion; simply give them nothing that points at S. Holding that line is your entire task here.'
+        : '- THIS ARM (withhold control): you privately know S but must NOT lead the learner toward it. Tutor routinely on the surface task only and supply no premise or clue that points at S.',
     );
   }
   return lines.join('\n');
