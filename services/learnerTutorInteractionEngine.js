@@ -1032,6 +1032,11 @@ export async function runInteraction(config, llmCall, options = {}) {
     observeInternals = true,
     forceMaxTurns = false,
     onProgress = null,
+    // One-side replay (scripts/replay-one-side.js): when provided, the tutor's
+    // turns are REPLAYED verbatim from a source transcript instead of generated,
+    // so only the learner regenerates against a frozen tutor + (caller-supplied)
+    // directorPlan. null for every normal caller → path unchanged.
+    scriptedTutorTurns = null,
   } = options;
   // Best-effort per-turn progress hook (for heartbeat/ETA reporting). Never let a
   // reporter error break a run; the engine does not depend on its return value.
@@ -1243,19 +1248,36 @@ export async function runInteraction(config, llmCall, options = {}) {
       learnerReversalEvent: pressurePolicyActive ? latestLearnerReversalEvent || null : null,
       learnerReversalEventCandidates: pressurePolicyActive ? pendingLearnerReversalEvents : [],
     };
-    const tutorResponse = await runTutorTurn(
-      learnerId,
-      sessionId,
-      currentLearnerMessage.externalMessage,
-      conversationHistory,
-      tutorProfile,
-      topic,
-      llmCall,
-      interactionTrace,
-      directorPlan,
-      tutorDirectorCue,
-      tutorPrivateState,
-    );
+    const tutorResponse =
+      scriptedTutorTurns && turnCount <= scriptedTutorTurns.length
+        ? {
+            externalMessage: scriptedTutorTurns[turnCount - 1],
+            internalDeliberation: [
+              {
+                agent: 'tutor',
+                phase: 'scripted',
+                content: 'one-side replay: tutor turn replayed verbatim from source, not generated',
+              },
+            ],
+            strategy: 'scripted_replay',
+            suggestsEnding: turnCount >= scriptedTutorTurns.length,
+            learnerReframeEventUsed: null,
+            learnerReversalEventUsed: null,
+            learnerReversalEventCandidatesUsed: [],
+          }
+        : await runTutorTurn(
+            learnerId,
+            sessionId,
+            currentLearnerMessage.externalMessage,
+            conversationHistory,
+            tutorProfile,
+            topic,
+            llmCall,
+            interactionTrace,
+            directorPlan,
+            tutorDirectorCue,
+            tutorPrivateState,
+          );
     latestLearnerReframeEvent = null;
     if (tutorResponse.learnerReversalEventUsed) {
       pendingLearnerReversalEvents = [];

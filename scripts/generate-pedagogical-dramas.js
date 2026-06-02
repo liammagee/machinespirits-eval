@@ -3157,6 +3157,19 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
           const removedNotes = [];
           const publicTranscript = renderTranscript(turns, removedNotes);
           fs.writeFileSync(outTxt, publicTranscript, 'utf8');
+          // Persist the branch directorPlan to the stable run dir (next to key-<arm>.yaml) so
+          // scripts/replay-one-side.js can hold the SCENE fixed on a later replay. The volatile
+          // transcripts_dir .full.md carries the plan too, but the next generation clobbers it;
+          // this stable copy does not. Best-effort — never break a run.
+          try {
+            fs.writeFileSync(
+              path.join(path.dirname(args.keyPath), `director-${branch.key}.json`),
+              `${JSON.stringify(branchDirectorPlan, null, 2)}\n`,
+              'utf8',
+            );
+          } catch {
+            /* provenance is best-effort */
+          }
           const qualityWarnings = qualityWarningsFor({
             tid: d._tid,
             dramaId: d.id,
