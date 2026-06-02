@@ -1,0 +1,69 @@
+@prefix ms: <https://machinespirits.dev/ontology/reasoning#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Consistency axioms — the deliberate disjointness set that gives DL
+# consistency-checking TEETH over per-role acquired / theory-of-mind ABoxes.
+#
+# Third module of the shared TBox (reasoning-core ⊕ poetics-core ⊕ consistency),
+# same namespace, co-loaded by services/ontology/reasoningOntology.js.
+#
+# OWL 2 EL-safe (pairwise owl:disjointWith only — no negation/disjunction) so the
+# vendored ELK reasoner can use it for proper DL consistency (roadmap step 5). A
+# lightweight N3 precursor in consistency-rules.n3 flags violations in the EYE
+# pipeline TODAY so the set is demonstrable + testable before ELK is wired.
+#
+# THE SET DEFINES WHAT COUNTS AS A ToM CONTRADICTION — tune it deliberately.
+# Design note: notes/ontology/2026-06-02-unified-ontology-consolidation.md §3.
+#
+# SNAPSHOT DISCIPLINE: disjointness is global in OWL — `A disjointWith B` forbids
+# ANY individual from being both, ever. A learner who moves AuthorityToDeferTo →
+# ThinkingPartner across the dialogue is the pedagogical GOAL, not a contradiction.
+# So consistency MUST be checked over a per-turn ABox SNAPSHOT, never the
+# accumulated union of all turns. (This is why acquired axioms are turn-stamped.)
+# ══════════════════════════════════════════════════════════════════════════════
+
+ms:ConsistencyAxioms
+  a owl:Ontology ;
+  rdfs:label "Machine Spirits ToM / recognition consistency axioms" ;
+  rdfs:comment "Deliberate disjointness set for DL consistency-checking of per-role ToM ABoxes. OWL 2 EL-safe; checked per-turn-snapshot, not over the accumulated union." .
+
+# ── Meta-vocabulary (used by consistency-rules.n3 + tooling to report violations) ─
+ms:Inconsistent a owl:Class ;
+  rdfs:comment "an individual whose asserted/inferred types violate a disjointness axiom" .
+ms:violatesDisjointness a owl:ObjectProperty ;
+  rdfs:comment "links an inconsistent individual to a class it holds that is disjoint with another it also holds" .
+
+# ══════════════════════════════════════════════════════════════════════════════
+# (A) ToM / recognition contradictions — the load-bearing set
+# ══════════════════════════════════════════════════════════════════════════════
+
+# (1) PerceivedRole poles — the recognition axis itself. The learner cannot, at one
+#     snapshot, perceive the tutor as BOTH a pure authority-to-defer-to AND a mutual
+#     thinking-partner. The whole recognition programme is the defer→partner move;
+#     a ToM asserting both at once is incoherent (or a transition mid-flight).
+ms:AuthorityToDeferTo owl:disjointWith ms:ThinkingPartner .
+
+# (2) Claim-ownership poles — a conclusion held as one's own vs held weakly.
+ms:ConclusionOwned owl:disjointWith ms:ClaimOwnershipWeak .
+
+# (3) A recognition breakdown vs its repair, at one snapshot/target. (Modelling
+#     choice: a repair that FOLLOWS misrecognition across turns is a transition,
+#     not a contradiction — hence the snapshot discipline above.)
+ms:Misrecognition owl:disjointWith ms:RecognitionRepair .
+
+# ══════════════════════════════════════════════════════════════════════════════
+# (B) Structural / casting consistency — defined-ABox (spec) validation
+# ══════════════════════════════════════════════════════════════════════════════
+
+# (4) A role is played by exactly one kind of caster.
+ms:HumanCaster owl:disjointWith ms:LLMCaster .
+ms:HumanCaster owl:disjointWith ms:MockCaster .
+ms:LLMCaster   owl:disjointWith ms:MockCaster .
+
+# (5) The interior agencies are distinct (no individual is both an Ego and a Superego).
+ms:Ego owl:disjointWith ms:Superego .
+ms:Ego owl:disjointWith ms:Id .
+ms:Superego owl:disjointWith ms:Id .

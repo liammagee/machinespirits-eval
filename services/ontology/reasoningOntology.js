@@ -6,9 +6,19 @@ import { n3reasoner } from 'eyereasoner';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '..', '..');
-const ONTOLOGY_PATH = path.join(ROOT_DIR, 'config', 'ontology', 'reasoning-core.ttl');
-const RULES_PATH = path.join(ROOT_DIR, 'config', 'ontology', 'reasoning-rules.n3');
+const ONTOLOGY_DIR = path.join(ROOT_DIR, 'config', 'ontology');
 const NS = 'https://machinespirits.dev/ontology/reasoning#';
+
+// The shared TBox is modular but ONE vocabulary in ONE namespace, co-loaded into a
+// single EYE pipeline. The runtime previously loaded only `reasoning`, so the drama
+// (poetics) vocabulary was never reasoned over alongside reasoning, and there were no
+// consistency axioms. See notes/ontology/2026-06-02-unified-ontology-consolidation.md.
+const TBOX_MODULES = Object.freeze({
+  reasoning: { tbox: 'reasoning-core.ttl', rules: 'reasoning-rules.n3' },
+  poetics: { tbox: 'poetics-core.ttl', rules: 'poetics-rules.n3' },
+  consistency: { tbox: 'consistency-axioms.ttl', rules: 'consistency-rules.n3' },
+});
+const DEFAULT_MODULES = Object.freeze(['reasoning', 'poetics', 'consistency']);
 
 const TAG_ALIASES = Object.freeze({
   affirming_consequent: 'AffirmingConsequent',
@@ -38,18 +48,37 @@ const PREDICATES = Object.freeze({
   indicatesMissingKC: `${NS}indicatesMissingKC`,
   supportsRecognitionMove: `${NS}supportsRecognitionMove`,
   blocksPrematurePolicy: `${NS}blocksPrematurePolicy`,
+  violatesDisjointness: `${NS}violatesDisjointness`,
 });
 
-function readOntology() {
-  return fs.readFileSync(ONTOLOGY_PATH, 'utf8');
+function readModuleFile(name) {
+  return fs.readFileSync(path.join(ONTOLOGY_DIR, name), 'utf8');
 }
 
-function readRules() {
-  return fs.readFileSync(RULES_PATH, 'utf8');
+// Concatenate the requested TBox modules + their rule files into one document: all
+// TBoxes first, then all rule files, so every class/axiom is present before any rule
+// fires. Default = the full shared TBox (reasoning ⊕ poetics ⊕ consistency). Pass
+// e.g. { modules: ['reasoning'] } to scope it (the old reasoning-only behaviour).
+export function loadSharedTBox(modules = DEFAULT_MODULES) {
+  const names = Array.isArray(modules) && modules.length ? modules : DEFAULT_MODULES;
+  const tbox = [];
+  const rules = [];
+  for (const name of names) {
+    const mod = TBOX_MODULES[name];
+    if (!mod) {
+      throw new Error(`Unknown ontology module "${name}". Known: ${Object.keys(TBOX_MODULES).join(', ')}`);
+    }
+    tbox.push(readModuleFile(mod.tbox));
+    rules.push(readModuleFile(mod.rules));
+  }
+  return [...tbox, ...rules].join('\n\n');
 }
 
 function escapeLiteral(value) {
-  return String(value ?? '').replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
+  return String(value ?? '')
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, '\\n');
 }
 
 function safeLocalName(value) {
@@ -169,7 +198,7 @@ function sortedKeysByCount(counts) {
 
 export async function reasonOverObservations(observations = [], options = {}) {
   const abox = buildObservationABox(observations);
-  const data = [readOntology(), readRules(), abox].join('\n\n');
+  const data = [loadSharedTBox(options.modules), abox].join('\n\n');
   const closureText = await n3reasoner(data, undefined, {
     output: 'deductive_closure',
     outputType: 'string',
@@ -179,6 +208,34 @@ export async function reasonOverObservations(observations = [], options = {}) {
   return {
     facts,
     abox,
+    closureText: options.includeClosure ? closureText : undefined,
+  };
+}
+
+// Reason over an arbitrary ABox (TTL/N3 text) and report disjointness violations
+// against the shared TBox's consistency axioms. EYE-pipeline precursor to ELK DL
+// consistency-checking (roadmap step 5). Returns { consistent, violations }, where
+// `violations` maps each inconsistent individual to the disjoint classes it holds.
+// Check ONE turn-snapshot at a time — see config/ontology/consistency-axioms.ttl.
+export async function checkAboxConsistency(aboxText = '', options = {}) {
+  const data = [loadSharedTBox(options.modules), aboxText].join('\n\n');
+  const closureText = await n3reasoner(data, undefined, {
+    output: 'deductive_closure',
+    outputType: 'string',
+  });
+  const quads = parseTriples(closureText);
+  const violations = {};
+  for (const quad of quads) {
+    if (quad.predicate.value !== PREDICATES.violatesDisjointness) continue;
+    const subject = compactTerm(quad.subject);
+    const object = compactTerm(quad.object);
+    if (!violations[subject]) violations[subject] = new Set();
+    violations[subject].add(object);
+  }
+  const summary = Object.fromEntries(Object.entries(violations).map(([id, set]) => [id, [...set].sort()]));
+  return {
+    consistent: Object.keys(summary).length === 0,
+    violations: summary,
     closureText: options.includeClosure ? closureText : undefined,
   };
 }
@@ -218,7 +275,8 @@ export async function buildOntologyGuidance({ observations = [], role = 'tutor_e
 
 function roleGuidance(role, guidance) {
   const rec = guidance.recommendedPolicies.join(', ') || 'none inferred';
-  const avoid = [...new Set([...guidance.contraindicatedPolicies, ...guidance.blockedPolicies])].join(', ') || 'none inferred';
+  const avoid =
+    [...new Set([...guidance.contraindicatedPolicies, ...guidance.blockedPolicies])].join(', ') || 'none inferred';
   const kc = guidance.missingKnowledgeComponents.join(', ') || 'none inferred';
   const recog = guidance.recognitionMoves.join(', ') || 'none inferred';
 
@@ -238,4 +296,6 @@ export default {
   buildObservationABox,
   reasonOverObservations,
   buildOntologyGuidance,
+  checkAboxConsistency,
+  loadSharedTBox,
 };

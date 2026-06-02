@@ -1,0 +1,22 @@
+@prefix ms: <https://machinespirits.dev/ontology/reasoning#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# Consistency precursor for the EYE/n3reasoner pipeline. PROPER DL consistency +
+# classification is ELK's job (OWL 2 EL) over per-role ABoxes — roadmap step 5.
+# This lightweight forward-chaining rule makes the disjointness set in
+# consistency-axioms.ttl DEMONSTRABLE + TESTABLE today, before ELK is wired.
+#
+# Self-contained subclass/type closure (mirrors the other rule files so this file
+# is usable on its own with consistency-axioms.ttl).
+{ ?a rdfs:subClassOf ?b. ?b rdfs:subClassOf ?c } => { ?a rdfs:subClassOf ?c } .
+{ ?x rdf:type ?c. ?c rdfs:subClassOf ?d } => { ?x rdf:type ?d } .
+
+# owl:disjointWith is symmetric (so we catch the violation whichever way it is asserted).
+{ ?c owl:disjointWith ?d } => { ?d owl:disjointWith ?c } .
+
+# An individual that holds two disjoint classes (asserted OR inferred via the type
+# closure above) violates consistency — flag it for the tooling to surface.
+{ ?x rdf:type ?c . ?x rdf:type ?d . ?c owl:disjointWith ?d }
+  => { ?x ms:violatesDisjointness ?d ; rdf:type ms:Inconsistent } .
