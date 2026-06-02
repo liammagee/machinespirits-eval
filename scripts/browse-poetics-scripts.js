@@ -764,6 +764,9 @@ function createPoeticsBrowserApp({ dbPath = null } = {}) {
   const db = openPoeticsStore(dbPath || undefined);
   const app = express();
   app.use(express.json({ limit: '64kb' }));
+  app.use('/images', express.static(path.resolve(ROOT, 'notes/poetics/images'), { index: false }));
+  app.use('/assets', express.static(path.resolve(ROOT, 'notes/poetics/assets'), { index: false }));
+  app.use('/docs/research', express.static(path.resolve(ROOT, 'docs/research'), { index: false }));
   app.locals.db = db;
   app.get('/favicon.ico', (_req, res) => res.status(204).end());
   app.get('/api/runs', (_req, res) => res.json({ runs: listRuns(db) }));
