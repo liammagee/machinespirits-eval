@@ -168,5 +168,9 @@ in-context ([[adaptivity-what-works]]); honest bound = dramatic/structural form,
 5. **ELK wiring**: upgrade the EYE precursor to proper OWL 2 EL DL consistency over `TBox + role.tom(other)`.
 6. **Eval**: the two symbolic metrics (§4) as arms in the A/B harness.
 
-Status: **1 ✅, 2 ✅, 4 ✅ v0.1.** Next: step 3 (`specToDefinedABox` — the *defined* side, to replace the
-hand-authored fixture with a real drama spec), then step 5 (ELK) for production-grade DL, then step 6.
+Status: **1 ✅, 2 ✅, 3 ✅, 4 ✅ v0.1, 6 ✅ v0.1** (post-hoc A/B readout on real Codex dialogues —
+`scripts/analyze-ontology-tom.js`, write-up in `2026-06-02-ontology-tom-eval.md`: symbolic
+learner-outcome Δ≈0, and the judge's stress-trap win is tutor-move-side, not learner goal-attainment —
+the independent channel declines to corroborate it as *learning*). Key conceptual finding: ToM
+*consistency* ≠ pedagogy (scaffolding is productive inconsistency). Next: step 5 (ELK) for
+production-grade DL; the proper ToM-feedback A/B needs an **attended** multi-turn run.
