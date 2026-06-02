@@ -1,0 +1,45 @@
+name: Validation Framework
+
+# Runs the repo's data-independent validation framework: content-package validation
+# and the provable-discourse paper-claim validator (+ its tests) and the ontology
+# consistency tests. These need no private DB / logs / API keys, so they run cleanly
+# in CI and gate against regressions.
+#
+# NOT run here (by design): the DB-backed validators — `provenance:validate`,
+# `audit:message-chain`, `validate-paper-manifest` — which require the private
+# `data/evaluations.db` (gitignored, symlinked locally); run those locally with
+# `npm run provenance:validate` etc. Code-quality (`lint`, `format:check`) and the
+# full test suite live in test.yml and currently carry pre-existing failures
+# tracked separately.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  validate:
+    name: Validation framework (CI-safe checks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm install
+
+      - name: Content-package validation
+        run: npm run content:validate
+
+      - name: Paper claim validation — provable discourse (smoke)
+        run: npm run paper:provable-discourse:smoke
+
+      - name: Paper claim validation — tests
+        run: npm run paper:provable-discourse:test
+
+      - name: Ontology consistency tests
+        run: npm run ontology:test
