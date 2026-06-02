@@ -15,7 +15,9 @@ A consolidated ontology layer over the existing `reasoning-core ⊕ poetics-core
 - **Defined ABox** (`definedAbox.js`): drama spec → director ground-truth (the withheld S) +
   learner hamartia; `anagnorisisOverlap()` = the fraction of S the learner's grounded self-model
   comes to hold; `observationsToAcquired()` dialogue→memory adapter.
-- 16 unit tests green (`npm run ontology:test` = 13 + `acquiredAbox` extras).
+- 13 unit tests green (`npm run ontology:test`: reasoningOntology 7 + acquiredAbox 3 + definedAbox 3).
+- **Step 5 (ELK)** deferred: the JAR is vendored but there is no Java runtime in this environment;
+  the tested EYE precursor stays the active consistency engine (ELK is a drop-in OWL 2 EL upgrade).
 
 ## The conceptual finding (matters more than the numbers)
 
