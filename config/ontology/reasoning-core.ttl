@@ -1,0 +1,143 @@
+@prefix ms: <https://machinespirits.dev/ontology/reasoning#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ms:ReasoningRecognitionOntology
+  a owl:Ontology ;
+  rdfs:label "Machine Spirits reasoning and recognition control ontology" ;
+  rdfs:comment "A compact shared ontology for deductive-reasoning evidence, theory-of-mind hypotheses, recognition repair, and adaptive tutor policy guards." .
+
+ms:ReasoningState a owl:Class .
+ms:KnowledgeComponent a owl:Class .
+ms:ReasoningMove a owl:Class .
+ms:ReasoningError a owl:Class .
+ms:PolicyAction a owl:Class .
+ms:RecognitionState a owl:Class .
+ms:TheoryOfMindState a owl:Class .
+ms:RoleView a owl:Class .
+
+ms:DeductiveReasoning a owl:Class ; rdfs:subClassOf ms:KnowledgeComponent .
+ms:ConditionalReasoning a owl:Class ; rdfs:subClassOf ms:DeductiveReasoning .
+ms:IdentifyPremise a owl:Class ; rdfs:subClassOf ms:DeductiveReasoning .
+ms:ArticulateWarrant a owl:Class ; rdfs:subClassOf ms:DeductiveReasoning .
+ms:DistinguishNecessarySufficient a owl:Class ; rdfs:subClassOf ms:ConditionalReasoning .
+ms:ConstructCounterexample a owl:Class ; rdfs:subClassOf ms:DeductiveReasoning .
+ms:TransferInference a owl:Class ; rdfs:subClassOf ms:DeductiveReasoning .
+
+ms:PremiseStated a owl:Class ; rdfs:subClassOf ms:ReasoningMove .
+ms:WarrantMissing a owl:Class ; rdfs:subClassOf ms:ReasoningMove .
+ms:ConclusionAsserted a owl:Class ; rdfs:subClassOf ms:ReasoningMove .
+ms:CounterexampleAttempted a owl:Class ; rdfs:subClassOf ms:ReasoningMove .
+ms:ReasoningExplained a owl:Class ; rdfs:subClassOf ms:ReasoningMove .
+ms:ConclusionOwned a owl:Class ; rdfs:subClassOf ms:RecognitionState .
+ms:ClaimOwnershipWeak a owl:Class ; rdfs:subClassOf ms:RecognitionState .
+
+ms:InvalidDeductiveInference a owl:Class ; rdfs:subClassOf ms:ReasoningError .
+ms:InvalidConditionalInference a owl:Class ; rdfs:subClassOf ms:InvalidDeductiveInference .
+ms:AffirmingConsequent a owl:Class ; rdfs:subClassOf ms:InvalidConditionalInference .
+ms:DenyingAntecedent a owl:Class ; rdfs:subClassOf ms:InvalidConditionalInference .
+ms:MissingWarrant a owl:Class ; rdfs:subClassOf ms:InvalidDeductiveInference .
+ms:Equivocation a owl:Class ; rdfs:subClassOf ms:InvalidDeductiveInference .
+ms:OverextendedAnalogy a owl:Class ; rdfs:subClassOf ms:ReasoningError .
+ms:ScopeError a owl:Class ; rdfs:subClassOf ms:ReasoningError .
+
+ms:InterlocutorModel a owl:Class ; rdfs:subClassOf ms:TheoryOfMindState .
+ms:BeliefHypothesis a owl:Class ; rdfs:subClassOf ms:TheoryOfMindState .
+ms:SecondOrderBelief a owl:Class ; rdfs:subClassOf ms:TheoryOfMindState .
+ms:PerceivedRole a owl:Class ; rdfs:subClassOf ms:TheoryOfMindState .
+ms:AuthorityToDeferTo a owl:Class ; rdfs:subClassOf ms:PerceivedRole .
+ms:ThinkingPartner a owl:Class ; rdfs:subClassOf ms:PerceivedRole .
+ms:LowAnswerability a owl:Class ; rdfs:subClassOf ms:TheoryOfMindState .
+ms:EvidenceAccessGap a owl:Class ; rdfs:subClassOf ms:TheoryOfMindState .
+ms:PerspectiveConflict a owl:Class ; rdfs:subClassOf ms:RecognitionState .
+ms:Misrecognition a owl:Class ; rdfs:subClassOf ms:RecognitionState .
+ms:RecognitionRepair a owl:Class ; rdfs:subClassOf ms:RecognitionState .
+ms:ContestableRepresentation a owl:Class ; rdfs:subClassOf ms:RecognitionState .
+
+ms:supportsPolicy a owl:ObjectProperty .
+ms:contraindicatesPolicy a owl:ObjectProperty .
+ms:indicatesMissingKC a owl:ObjectProperty .
+ms:requiresKC a owl:ObjectProperty .
+ms:supportsRecognitionMove a owl:ObjectProperty .
+ms:addressesToMState a owl:ObjectProperty .
+ms:hasRoleView a owl:ObjectProperty .
+ms:hasEvidenceText a owl:DatatypeProperty .
+
+ms:ask_diagnostic_question a ms:PolicyAction .
+ms:mirror_and_extend a ms:PolicyAction .
+ms:scope_test a ms:PolicyAction .
+ms:repair_misrecognition a ms:PolicyAction .
+ms:give_worked_example a ms:PolicyAction .
+ms:lower_cognitive_load a ms:PolicyAction .
+ms:provide_hint a ms:PolicyAction .
+ms:request_elaboration a ms:PolicyAction .
+ms:acknowledge_and_redirect a ms:PolicyAction .
+ms:name_the_disagreement a ms:PolicyAction .
+ms:withhold_answer a ms:PolicyAction .
+ms:summarize_and_check a ms:PolicyAction .
+ms:pose_counterexample a ms:PolicyAction .
+ms:invite_objection a ms:PolicyAction .
+
+ms:tutor_ego a ms:RoleView .
+ms:tutor_superego a ms:RoleView .
+ms:learner_ego a ms:RoleView .
+ms:learner_superego a ms:RoleView .
+
+ms:AffirmingConsequent
+  ms:indicatesMissingKC ms:DistinguishNecessarySufficient ;
+  ms:supportsPolicy ms:request_elaboration, ms:pose_counterexample, ms:name_the_disagreement ;
+  ms:contraindicatesPolicy ms:give_worked_example, ms:summarize_and_check .
+
+ms:DenyingAntecedent
+  ms:indicatesMissingKC ms:DistinguishNecessarySufficient ;
+  ms:supportsPolicy ms:request_elaboration, ms:pose_counterexample, ms:scope_test ;
+  ms:contraindicatesPolicy ms:summarize_and_check .
+
+ms:MissingWarrant
+  ms:indicatesMissingKC ms:ArticulateWarrant ;
+  ms:supportsPolicy ms:request_elaboration, ms:provide_hint ;
+  ms:contraindicatesPolicy ms:summarize_and_check .
+
+ms:OverextendedAnalogy
+  ms:indicatesMissingKC ms:ConstructCounterexample ;
+  ms:supportsPolicy ms:scope_test, ms:pose_counterexample, ms:name_the_disagreement ;
+  ms:contraindicatesPolicy ms:mirror_and_extend .
+
+ms:ScopeError
+  ms:indicatesMissingKC ms:ConstructCounterexample ;
+  ms:supportsPolicy ms:scope_test, ms:pose_counterexample ;
+  ms:contraindicatesPolicy ms:summarize_and_check .
+
+ms:ClaimOwnershipWeak
+  ms:supportsPolicy ms:withhold_answer, ms:request_elaboration, ms:invite_objection ;
+  ms:contraindicatesPolicy ms:give_worked_example, ms:summarize_and_check ;
+  ms:supportsRecognitionMove ms:ContestableRepresentation .
+
+ms:AuthorityToDeferTo
+  ms:supportsPolicy ms:withhold_answer, ms:request_elaboration, ms:invite_objection ;
+  ms:contraindicatesPolicy ms:give_worked_example ;
+  ms:supportsRecognitionMove ms:ContestableRepresentation .
+
+ms:Misrecognition
+  ms:supportsPolicy ms:repair_misrecognition ;
+  ms:supportsRecognitionMove ms:RecognitionRepair ;
+  ms:contraindicatesPolicy ms:mirror_and_extend .
+
+ms:PerspectiveConflict
+  ms:supportsPolicy ms:name_the_disagreement, ms:invite_objection ;
+  ms:supportsRecognitionMove ms:ContestableRepresentation .
+
+ms:LowAnswerability
+  ms:supportsPolicy ms:lower_cognitive_load, ms:provide_hint ;
+  ms:contraindicatesPolicy ms:pose_counterexample, ms:scope_test .
+
+ms:EvidenceAccessGap
+  ms:supportsPolicy ms:ask_diagnostic_question, ms:provide_hint ;
+  ms:contraindicatesPolicy ms:summarize_and_check .
+
+ms:pose_counterexample ms:requiresKC ms:IdentifyPremise .
+ms:scope_test ms:requiresKC ms:PremiseStated .
+ms:mirror_and_extend ms:requiresKC ms:ReasoningExplained .
+ms:summarize_and_check ms:requiresKC ms:ConclusionOwned .
