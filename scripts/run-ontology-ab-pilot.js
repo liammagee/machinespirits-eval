@@ -614,18 +614,21 @@ function renderSuiteMarkdown(report) {
   return lines.join('\n');
 }
 
-const args = parseArgs(process.argv.slice(2));
-runPilot(args)
-  .then(({ jsonPath, mdPath, report }) => {
-    console.log(`JSON: ${path.relative(ROOT_DIR, jsonPath)}`);
-    console.log(`Markdown: ${path.relative(ROOT_DIR, mdPath)}`);
-    if (report.summary.delta != null) console.log(`Delta: ${report.summary.delta.toFixed(2)}`);
-    else {
-      console.log(`Scenarios tried: ${report.summary.nScenarios}`);
-      console.log(`Stop: ${report.stop ? `${report.stop.type} at ${report.stop.scenarioId}` : 'not reached'}`);
-    }
-  })
-  .catch((err) => {
-    console.error(err.stack || err.message);
-    process.exit(1);
-  });
+// Only run the pilot when invoked directly — importing SCENARIOS must NOT run main.
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const args = parseArgs(process.argv.slice(2));
+  runPilot(args)
+    .then(({ jsonPath, mdPath, report }) => {
+      console.log(`JSON: ${path.relative(ROOT_DIR, jsonPath)}`);
+      console.log(`Markdown: ${path.relative(ROOT_DIR, mdPath)}`);
+      if (report.summary.delta != null) console.log(`Delta: ${report.summary.delta.toFixed(2)}`);
+      else {
+        console.log(`Scenarios tried: ${report.summary.nScenarios}`);
+        console.log(`Stop: ${report.stop ? `${report.stop.type} at ${report.stop.scenarioId}` : 'not reached'}`);
+      }
+    })
+    .catch((err) => {
+      console.error(err.stack || err.message);
+      process.exit(1);
+    });
+}
