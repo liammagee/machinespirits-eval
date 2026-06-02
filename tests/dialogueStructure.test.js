@@ -128,14 +128,21 @@ describe(
   () => {
     for (const { file, data } of multiTurnLogs) {
       describe(`[${file}]`, () => {
-        it('trace starts with tutor-side entries (Turn 0 has no preceding learner)', () => {
+        // Trace-structure invariants only apply to logs that carry an agent-level
+        // dialogueTrace (ego-superego / messages-mode runs). Single-prompt-mode
+        // multi-turn logs capture their dialogue in conversationHistory / turnResults
+        // and leave dialogueTrace empty, so the three trace tests are skipped for them
+        // (the conversationHistory tests below still run on every multi-turn log).
+        const traceSkip = (data.dialogueTrace || []).length === 0 && 'no agent-level dialogueTrace (single-prompt log)';
+
+        it('trace starts with tutor-side entries (Turn 0 has no preceding learner)', { skip: traceSkip }, () => {
           const trace = data.dialogueTrace || [];
           assert.ok(trace.length > 0, 'trace should be non-empty');
           const first = trace[0];
           assert.ok(isTutorEntry(first), `first trace entry should be tutor-side, got ${first.agent}/${first.action}`);
         });
 
-        it('tutor blocks and learner blocks alternate after Turn 0', () => {
+        it('tutor blocks and learner blocks alternate after Turn 0', { skip: traceSkip }, () => {
           const segments = getNonSystemSegments(data.dialogueTrace || []);
 
           // First segment must be tutor (Turn 0)
@@ -149,7 +156,7 @@ describe(
           }
         });
 
-        it('every learner block is eventually followed by a tutor block', () => {
+        it('every learner block is eventually followed by a tutor block', { skip: traceSkip }, () => {
           const segments = getNonSystemSegments(data.dialogueTrace || []);
 
           for (let i = 0; i < segments.length; i++) {

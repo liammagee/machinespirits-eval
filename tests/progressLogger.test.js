@@ -12,7 +12,9 @@ import { fileURLToPath } from 'url';
 import { ProgressLogger, getProgressLogPath, readProgressLog } from '../services/progressLogger.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PROGRESS_DIR = path.resolve(__dirname, '..', 'logs', 'eval-progress');
+// Mirror services/progressLogger.js: honour EVAL_LOGS_DIR so the dir the test writes
+// to matches the one readProgressLog reads from under hermetic isolation (EVAL_LOGS_DIR=tmp).
+const PROGRESS_DIR = path.join(process.env.EVAL_LOGS_DIR || path.resolve(__dirname, '..', 'logs'), 'eval-progress');
 
 // Use a unique run ID per test to avoid collisions
 let testRunId;
