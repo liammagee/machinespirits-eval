@@ -93,7 +93,7 @@
     "poetics:publish-run": "node scripts/publish-poetics-run-archive.js",
     "poetics:browse": "node scripts/browse-poetics-scripts.js",
     "poetics:arc-images": "node scripts/generate-poetics-arc-images.js",
-    "ontology:test": "node --test tests/reasoningOntology.test.js",
+    "ontology:test": "node --test tests/reasoningOntology.test.js tests/acquiredAbox.test.js",
     "ontology:pilot": "node scripts/run-ontology-ab-pilot.js",
     "ontology:download-elk": "node scripts/download-elk-reasoner.js",
     "ontology:elk": "node scripts/run-elk-reasoner.js",

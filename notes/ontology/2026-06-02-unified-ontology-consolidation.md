@@ -157,13 +157,16 @@ in-context ([[adaptivity-what-works]]); honest bound = dramatic/structural form,
 
 ## 5. First implementation steps (proposed — confirm before I build)
 
-1. **TBox consolidation**: a manifest declaring `reasoning-core ⊕ poetics-core` as one TBox; co-load both
-   in `reasoningOntology.js`. (Small, unblocks everything.)
-2. **Disjointness axiom set**: add the deliberate `owl:disjointWith` block (consistency teeth).
-3. **`specToDefinedABox(drama, role)`**: drama spec block → per-role defined ABox.
-4. **Acquired accumulator**: persistent, per-role, turn-stamped generalization of `buildObservationABox`.
-5. **ELK wiring**: `checkToMConsistency(role, other)` over `TBox + role.tom(other)`.
-6. **Eval**: the two metrics above as arms in the A/B harness; a small fixture drama end-to-end.
+1. ✅ **TBox consolidation**: co-load `reasoning ⊕ poetics ⊕ consistency` in `reasoningOntology.js`.
+2. ✅ **Disjointness axiom set** (decisions 1B/2B/3A): `consistency-axioms.ttl` (ToM) + `casting-axioms.ttl`
+   (spec-validation, opt-in module).
+3. **`specToDefinedABox(drama, role)`**: drama spec block → per-role defined ABox (feeds the same accumulator).
+4. ✅ v0.1 **Acquired accumulator** (`services/ontology/acquiredAbox.js`, built acquired-first): per-role,
+   turn-stamped, two-tier (grounded/hypothesized) records + per-turn snapshot consistency (latest-wins
+   revision per `(subject, dimension)`) + a sequence analyzer (firstMisrecognition / repairs / transitions).
+   Fixture misrecognition→repair trace end-to-end in `tests/acquiredAbox.test.js`.
+5. **ELK wiring**: upgrade the EYE precursor to proper OWL 2 EL DL consistency over `TBox + role.tom(other)`.
+6. **Eval**: the two symbolic metrics (§4) as arms in the A/B harness.
 
-Step 1+2 are the safe, high-leverage start. 3–6 are where the design choices in §3 get locked, so they
-wait on a steer.
+Status: **1 ✅, 2 ✅, 4 ✅ v0.1.** Next: step 3 (`specToDefinedABox` — the *defined* side, to replace the
+hand-authored fixture with a real drama spec), then step 5 (ELK) for production-grade DL, then step 6.
