@@ -172,5 +172,8 @@ Status: **1 ✅, 2 ✅, 3 ✅, 4 ✅ v0.1, 6 ✅ v0.1** (post-hoc A/B readout on
 `scripts/analyze-ontology-tom.js`, write-up in `2026-06-02-ontology-tom-eval.md`: symbolic
 learner-outcome Δ≈0, and the judge's stress-trap win is tutor-move-side, not learner goal-attainment —
 the independent channel declines to corroborate it as *learning*). Key conceptual finding: ToM
-*consistency* ≠ pedagogy (scaffolding is productive inconsistency). Next: step 5 (ELK) for
-production-grade DL; the proper ToM-feedback A/B needs an **attended** multi-turn run.
+*consistency* ≠ pedagogy (scaffolding is productive inconsistency). The multi-turn ToM-feedback A/B is
+now **DONE** (`scripts/run-ontology-tom-ab.js`, real Codex, stress suite n=3, `2026-06-02-multi-turn-tom-ab.md`):
+**null** — `ontology_tom` does not beat plain `ontology` (anagnorisis 0.83 vs 1.00, judge +0.06 = noise);
+the consistency-checked ToM fires correctly but is redundant with the ontology guidance (§6.7–§6.10
+motif on a third instrument). Remaining: step 5 (ELK) for production-grade DL, blocked here by no JRE.
