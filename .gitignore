@@ -56,6 +56,7 @@ coverage/
 tmp/
 temp/
 *.tmp
+*.pid
 
 # Evaluation results (large/generated files)
 results/
@@ -79,6 +80,9 @@ config/poetics-calibration/**/key.yaml
 config/poetics-calibration/**/key-*.yaml
 config/poetics-calibration/phase2-sample*/
 config/poetics-calibration/phase2-deliberation*/
+# phase2-transcripts-*/ dirs slip the **/transcripts/ rule above (dir is named
+# phase2-transcripts-api etc., not literally "transcripts") — match them explicitly:
+config/poetics-calibration/phase2-transcripts*/
 config/poetics-calibration/phase2-d42-readable-projection-v1/
 
 # Prototype trees — archived off main 2026-05-17 (tag archive/adaptive-persona-mvp);
