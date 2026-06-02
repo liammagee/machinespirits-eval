@@ -2356,6 +2356,17 @@ function withPairedDirectorRevisitCue(plan, policy, anchorPolicy) {
     : withDirectorRevisitCue(cueFreePlan, policy, anchorPolicy);
 }
 
+// Attach a drama-machine `turn_plan` (per-turn, per-role adaptation move-sets;
+// notes/poetics/drama-machine/ADAPTATION-MOVES.md §6) to the director plan so the
+// engine's resolveTutorTurnPlan can honour it per turn. Inert unless the drama spec
+// carries a turn_plan array — every existing drama is unaffected. The engine treats
+// turn_plan as an OVERRIDE on the turns it names and falls back to the global
+// tutor_adaptation_policy elsewhere.
+function withTurnPlan(plan, d) {
+  if (!plan) return plan;
+  return Array.isArray(d?.turn_plan) ? { ...plan, turn_plan: d.turn_plan } : plan;
+}
+
 function withTutorAdaptationPolicy(plan, policy = 'none') {
   if (policy === 'routine') {
     return plan
@@ -2541,15 +2552,18 @@ async function buildDirectorPlan(d, llmCall, args) {
       parse_status: 'ok',
       provenance: response.provenance || response.apiPayload?.provenance || null,
     });
-    return attachSecret(
-      withDirectorCueProvenance(
-        applyApproachDirectorOverrides(
-          d,
-          withTutorAdaptationPolicy(
-            withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
-            d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+    return withTurnPlan(
+      attachSecret(
+        withDirectorCueProvenance(
+          applyApproachDirectorOverrides(
+            d,
+            withTutorAdaptationPolicy(
+              withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
+              d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+            ),
           ),
         ),
+        d,
       ),
       d,
     );
@@ -2559,15 +2573,18 @@ async function buildDirectorPlan(d, llmCall, args) {
       raw_director_response: String(response.content || '').slice(0, 2000),
       provenance: response.provenance || response.apiPayload?.provenance || null,
     });
-    return attachSecret(
-      withDirectorCueProvenance(
-        applyApproachDirectorOverrides(
-          d,
-          withTutorAdaptationPolicy(
-            withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
-            d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+    return withTurnPlan(
+      attachSecret(
+        withDirectorCueProvenance(
+          applyApproachDirectorOverrides(
+            d,
+            withTutorAdaptationPolicy(
+              withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
+              d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+            ),
           ),
         ),
+        d,
       ),
       d,
     );

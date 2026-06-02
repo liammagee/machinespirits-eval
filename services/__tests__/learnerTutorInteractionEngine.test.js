@@ -36,6 +36,11 @@ import {
   pendingLearnerReversalEventsFromTrace,
   buildTutorReframeEventContext,
   buildTutorReversalEventContext,
+  buildTutorAdaptationContext,
+  tutorMovesToPolicy,
+  resolveTutorTurnPlan,
+  gateReversalEventByTrigger,
+  buildTurnPlanConstraintLines,
   buildLearnerActionalResponseContext,
   calculateMemoryDelta,
   INTERACTION_OUTCOMES,
@@ -321,9 +326,7 @@ describe('learner reframe event detection', () => {
     const analysis = analyzePseudoCatharsis({
       previousTutorText:
         'So what does this record contain: a custody mark, or a use mark? The caption’s verb waits on that answer.',
-      priorLearnerTexts: [
-        'Oh, I get it: the sentence is not pressure just because it sits in the complaint file.',
-      ],
+      priorLearnerTexts: ['Oh, I get it: the sentence is not pressure just because it sits in the complaint file.'],
       learnerText:
         'Oh, I get it: “attached” is not the verdict; the slip has to say whether the quote is just traveling with the file or being sent for action.',
     });
@@ -1081,5 +1084,139 @@ describe('tutor adjudication prompt leakage prevention', () => {
     assert.ok(source.includes('MECHANISM_QUALITY_CHECK'));
     assert.ok(source.includes('Superego authority rule: if the review marks UPTAKE_CHECK'));
     assert.ok(source.includes('MECHANISM_ROUTE says no real route change'));
+  });
+});
+
+// ============================================================================
+// turn_plan wiring (per-turn, per-role tutor adaptation moves)
+// drama machine: notes/poetics/drama-machine/ADAPTATION-MOVES.md §6
+// ============================================================================
+
+describe('tutorMovesToPolicy', () => {
+  it('maps the peripeteia move-set to the peripeteia facet', () => {
+    assert.equal(tutorMovesToPolicy(['stock_take', 'route_change', 'action_gate']), 'peripeteia');
+  });
+
+  it('combines facets in canonical order so combos match named arms', () => {
+    assert.equal(tutorMovesToPolicy(['route_change', 'uptake']), 'uptake+peripeteia');
+  });
+
+  it('maps socratic, routine, and reveal move-sets', () => {
+    assert.equal(tutorMovesToPolicy(['meter', 'recognition_press']), 'socratic_discovery');
+    assert.equal(tutorMovesToPolicy(['hold']), 'routine');
+    assert.equal(tutorMovesToPolicy(['reveal']), 'reveal_secret');
+  });
+
+  it('returns none for empty or unknown move-sets', () => {
+    assert.equal(tutorMovesToPolicy([]), 'none');
+    assert.equal(tutorMovesToPolicy(['not_a_move']), 'none');
+    assert.equal(tutorMovesToPolicy(undefined), 'none');
+  });
+});
+
+describe('resolveTutorTurnPlan', () => {
+  const entry = {
+    role: 'tutor',
+    at: { turn: 3 },
+    moves: ['stock_take', 'route_change', 'action_gate'],
+    route_change: { from: 'counting', to: 'adversarial_role' },
+    forbid: ['hold'],
+    when_trigger: ['pseudo_catharsis', 'closure_pressure'],
+  };
+
+  it('returns null when there is no turn_plan', () => {
+    assert.equal(resolveTutorTurnPlan({}, 3), null);
+    assert.equal(resolveTutorTurnPlan({ tutor_adaptation_policy: 'peripeteia' }, 3), null);
+  });
+
+  it('resolves a matching tutor entry into policy + constraints', () => {
+    const resolved = resolveTutorTurnPlan({ turn_plan: [entry] }, 3);
+    assert.equal(resolved.policy, 'peripeteia');
+    assert.deepEqual(resolved.routeChange, { from: 'counting', to: 'adversarial_role' });
+    assert.deepEqual(resolved.forbid, ['hold']);
+    assert.deepEqual(resolved.whenTrigger, ['pseudo_catharsis', 'closure_pressure']);
+  });
+
+  it('does not match other turns, other roles, or beat-addressed entries', () => {
+    assert.equal(resolveTutorTurnPlan({ turn_plan: [entry] }, 4), null);
+    assert.equal(
+      resolveTutorTurnPlan({ turn_plan: [{ role: 'learner', at: { turn: 3 }, moves: ['revoice'] }] }, 3),
+      null,
+    );
+    // beat addressing needs act structure (TO-BUILD) and must not match yet.
+    assert.equal(
+      resolveTutorTurnPlan({ turn_plan: [{ role: 'tutor', at: { beat: 'peripeteia' }, moves: ['route_change'] }] }, 3),
+      null,
+    );
+  });
+});
+
+describe('gateReversalEventByTrigger', () => {
+  const event = { triggerType: 'resistance', learnerUtterance: 'no, that still does not follow' };
+
+  it('passes the event through when no when_trigger is set', () => {
+    assert.equal(gateReversalEventByTrigger(event, null), event);
+    assert.equal(gateReversalEventByTrigger(event, []), event);
+  });
+
+  it('keeps an event whose trigger is allowed and drops one that is not', () => {
+    assert.equal(gateReversalEventByTrigger(event, ['resistance', 'breakdown']), event);
+    assert.equal(gateReversalEventByTrigger(event, ['pseudo_catharsis']), null);
+  });
+
+  it('is a no-op on a null event', () => {
+    assert.equal(gateReversalEventByTrigger(null, ['resistance']), null);
+  });
+});
+
+describe('buildTurnPlanConstraintLines', () => {
+  it('emits route + forbid constraints when a policy is active and an event is present', () => {
+    const lines = buildTurnPlanConstraintLines({
+      routeChange: { from: 'rule recall', to: 'counterexample' },
+      forbid: ['hold'],
+      policy: 'peripeteia',
+      hasEvent: true,
+    });
+    assert.match(lines, /Turn-plan route constraint/);
+    assert.match(lines, /from "rule recall" to "counterexample"/);
+    assert.match(lines, /Turn-plan forbidden moves this turn: hold/);
+  });
+
+  it('emits nothing without an event or without an adaptive policy', () => {
+    const base = { routeChange: { from: 'a', to: 'b' }, forbid: ['hold'] };
+    assert.equal(buildTurnPlanConstraintLines({ ...base, policy: 'peripeteia', hasEvent: false }), '');
+    assert.equal(buildTurnPlanConstraintLines({ ...base, policy: 'none', hasEvent: true }), '');
+  });
+});
+
+describe('turn_plan integration', () => {
+  it('buildTutorAdaptationContext appends turn-plan constraints to the peripeteia instruction', () => {
+    const context = buildTutorAdaptationContext({
+      learnerReversalEvent: {
+        triggerType: 'resistance',
+        learnerUtterance: 'I still do not see why the grid proves it.',
+        previousTutorMove: 'Count the grid squares again.',
+        confidence: 0.8,
+      },
+      policy: 'peripeteia',
+      routeChange: { from: 'counting', to: 'adversarial_role' },
+      forbid: ['hold'],
+    });
+    // the existing peripeteia instruction still fires...
+    assert.match(context, /Tutor-private peripeteia event/);
+    // ...plus the turn-plan move-level constraints.
+    assert.match(context, /Turn-plan route constraint/);
+    assert.match(context, /to "adversarial_role"/);
+  });
+
+  it('learner actional context fires off the per-turn effective policy, not just the global one', () => {
+    const context = buildLearnerActionalResponseContext({
+      directorPlan: { tutor_adaptation_policy: 'none' }, // global says no adaptation
+      tutorResponse: {
+        effectiveTutorAdaptationPolicy: 'peripeteia', // ...but the turn_plan made THIS turn peripeteia
+        learnerReversalEventUsed: { triggerType: 'resistance', turnNumber: 3 },
+      },
+    });
+    assert.match(context, /try to perform the actual device/);
   });
 });

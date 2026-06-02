@@ -1,0 +1,146 @@
+@prefix ms: <https://machinespirits.dev/ontology/reasoning#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Drama-machine / poetics dramaturgy ontology.
+#
+# A SEPARATE FILE in the SAME namespace as reasoning-core.ttl, designed to be
+# concatenated at runtime (reasoning-core.ttl + poetics-core.ttl + reasoning-
+# rules.n3 + poetics-rules.n3 + ABox) and reasoned over by the same EYE/n3reasoner
+# pipeline in services/ontology/reasoningOntology.js. It reuses the existing
+# ms:RoleView, ms:RecognitionState, ms:ReasoningMove, ms:PolicyAction classes and
+# adds the dramaturgical vocabulary the drama machine needs: dramatic forms,
+# plot devices, adaptation moves, characters/interior agencies, and casting.
+#
+# Companion docs: notes/poetics/drama-machine/TAXONOMY.md (the structural model)
+# and ADAPTATION-MOVES.md (the move catalog this formalises).
+#
+# NOTE: this is a GENERATIVE design vocabulary (aimsAtForm = "what this move is
+# FOR"), not a scoring instrument. The critic judges the artifact, blind to any
+# of this. See ADAPTATION-MOVES.md §0.
+# ══════════════════════════════════════════════════════════════════════════════
+
+ms:PoeticsDramaturgyOntology
+  a owl:Ontology ;
+  rdfs:label "Machine Spirits poetics / drama-machine dramaturgy ontology" ;
+  rdfs:comment "Dramatic forms, plot devices, adaptation moves, characters and casting for the drama machine. Extends reasoning-core.ttl in the same namespace; consumed by the same EYE pipeline." .
+
+# ── Dramatic forms (the poetic targets — Aristotle, Poetics) ──────────────────
+# Mirror the 6 dimensions of config/evaluation-rubric-poetics.yaml.
+ms:DramaticForm a owl:Class .
+ms:Peripeteia a owl:Class ; rdfs:subClassOf ms:DramaticForm ; rdfs:label "reversal of the situation" .
+ms:Anagnorisis a owl:Class ; rdfs:subClassOf ms:DramaticForm ; rdfs:label "recognition: ignorance to knowledge" .
+ms:Catharsis a owl:Class ; rdfs:subClassOf ms:DramaticForm ; rdfs:label "earned clarification that lands for the audience" .
+ms:SurpriseInevitability a owl:Class ; rdfs:subClassOf ms:DramaticForm ; rdfs:label "surprising yet, in retrospect, inevitable" .
+ms:UnityOfAction a owl:Class ; rdfs:subClassOf ms:DramaticForm ; rdfs:label "one complete action by necessity" .
+ms:HamartiaIntegration a owl:Class ; rdfs:subClassOf ms:DramaticForm ; rdfs:label "the misconception as the mainspring of the plot" .
+
+# ── Dramatic roles (reuse the existing RoleView) ──────────────────────────────
+ms:DramaticRole a owl:Class ; rdfs:subClassOf ms:RoleView .
+ms:TutorRole a owl:Class ; rdfs:subClassOf ms:DramaticRole .
+ms:LearnerRole a owl:Class ; rdfs:subClassOf ms:DramaticRole .
+ms:DirectorRole a owl:Class ; rdfs:subClassOf ms:DramaticRole .
+ms:CriticRole a owl:Class ; rdfs:subClassOf ms:DramaticRole .
+
+# ── Characters and their interior agencies (ethos) ────────────────────────────
+ms:Character a owl:Class .
+ms:TutorCharacter a owl:Class ; rdfs:subClassOf ms:Character .
+ms:LearnerCharacter a owl:Class ; rdfs:subClassOf ms:Character .
+
+ms:InteriorAgency a owl:Class .
+ms:Ego a owl:Class ; rdfs:subClassOf ms:InteriorAgency .
+ms:Superego a owl:Class ; rdfs:subClassOf ms:InteriorAgency .
+ms:Id a owl:Class ; rdfs:subClassOf ms:InteriorAgency .
+
+# ── Plot devices (mythos) ─────────────────────────────────────────────────────
+ms:PlotDevice a owl:Class .
+ms:ContinuationPolicy a owl:Class ; rdfs:subClassOf ms:PlotDevice .
+ms:TutorAdaptationPolicy a owl:Class ; rdfs:subClassOf ms:PlotDevice .
+ms:ReversalTrigger a owl:Class ; rdfs:subClassOf ms:PlotDevice .
+ms:WithheldKnowledgeDevice a owl:Class ; rdfs:subClassOf ms:PlotDevice .
+
+# ── Adaptation moves (the move catalog; see ADAPTATION-MOVES.md) ───────────────
+ms:AdaptationMove a owl:Class .
+ms:MoveRegister a owl:Class .              # dramaturgical | rhetorical
+ms:Dramaturgical a ms:MoveRegister .
+ms:Rhetorical a ms:MoveRegister .
+
+# ── Casting (who plays a role: human | llm | mock) ────────────────────────────
+ms:Caster a owl:Class .
+ms:HumanCaster a owl:Class ; rdfs:subClassOf ms:Caster .
+ms:LLMCaster a owl:Class ; rdfs:subClassOf ms:Caster .
+ms:MockCaster a owl:Class ; rdfs:subClassOf ms:Caster .
+
+# ── The audience ──────────────────────────────────────────────────────────────
+ms:CriticPanel a owl:Class .
+
+# ── Object / datatype properties ──────────────────────────────────────────────
+ms:aimsAtForm a owl:ObjectProperty ; rdfs:comment "the dramatic form a move/device is FOR (generative intent, not a score)" .
+ms:contraindicatesForm a owl:ObjectProperty ; rdfs:comment "a move/device whose presence undercuts a form (e.g. pseudo-catharsis vs catharsis)" .
+ms:deploysDevice a owl:ObjectProperty ; rdfs:domain ms:DramaticRole ; rdfs:range ms:PlotDevice .
+ms:performsMove a owl:ObjectProperty ; rdfs:domain ms:DramaticRole ; rdfs:range ms:AdaptationMove .
+ms:performedByRole a owl:ObjectProperty ; rdfs:domain ms:AdaptationMove ; rdfs:range ms:DramaticRole .
+ms:hasRegister a owl:ObjectProperty ; rdfs:domain ms:AdaptationMove ; rdfs:range ms:MoveRegister .
+ms:respondsToTrigger a owl:ObjectProperty ; rdfs:range ms:ReversalTrigger .
+ms:hasInteriorAgency a owl:ObjectProperty ; rdfs:domain ms:Character ; rdfs:range ms:InteriorAgency .
+ms:playedBy a owl:ObjectProperty ; rdfs:domain ms:DramaticRole ; rdfs:range ms:Caster .
+ms:scoredBy a owl:ObjectProperty ; rdfs:range ms:CriticPanel .
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ABox — concrete devices, triggers, and moves (named individuals)
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Continuation policies (director → learner cues)
+ms:AnchorCue a ms:ContinuationPolicy .
+ms:RevoiceCue a ms:ContinuationPolicy ; ms:aimsAtForm ms:Peripeteia .
+ms:ReconsiderCue a ms:ContinuationPolicy ; ms:aimsAtForm ms:Peripeteia .
+ms:ReframeCue a ms:ContinuationPolicy ; ms:aimsAtForm ms:Peripeteia .
+
+# Tutor adaptation policies (expand to move-sets — see ADAPTATION-MOVES.md §6)
+ms:RoutineHold a ms:TutorAdaptationPolicy ; ms:contraindicatesForm ms:Peripeteia .
+ms:Uptake a ms:TutorAdaptationPolicy ; ms:aimsAtForm ms:Peripeteia .
+ms:PeripeteiaPolicy a ms:TutorAdaptationPolicy ; ms:aimsAtForm ms:Peripeteia .
+ms:SocraticDiscovery a ms:TutorAdaptationPolicy ; ms:aimsAtForm ms:Anagnorisis .
+ms:RevealSecret a ms:TutorAdaptationPolicy .
+
+# Reversal triggers (learner pressure that gates the tutor's route_change)
+ms:PseudoCatharsis a ms:ReversalTrigger ; ms:contraindicatesForm ms:Catharsis .
+ms:ClosurePressure a ms:ReversalTrigger .
+ms:Breakdown a ms:ReversalTrigger .
+ms:Resistance a ms:ReversalTrigger .
+ms:Misfit a ms:ReversalTrigger .
+
+# Tutor moves
+ms:StockTake a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Dramaturgical ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Peripeteia .
+ms:RouteChange a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Dramaturgical ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Peripeteia .
+ms:ActionGate a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Dramaturgical ; ms:aimsAtForm ms:Anagnorisis .
+ms:UptakeMove a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Peripeteia .
+ms:Meter a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Anagnorisis .
+ms:RecognitionPress a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Dramaturgical ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Anagnorisis .
+ms:Withhold a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Rhetorical .
+ms:Reveal a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Dramaturgical .
+ms:Hold a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:contraindicatesForm ms:Peripeteia .
+ms:RegisterShift a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Dramaturgical ; ms:aimsAtForm ms:Catharsis .
+ms:StatusShift a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Dramaturgical ; ms:aimsAtForm ms:Peripeteia .
+ms:Foreshadow a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Dramaturgical ; ms:aimsAtForm ms:SurpriseInevitability .
+
+# Learner moves
+ms:Revoice a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Rhetorical .
+ms:Reconsider a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Rhetorical .
+ms:Reframe a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Dramaturgical ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Peripeteia .
+ms:PerformDevice a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Dramaturgical ; ms:aimsAtForm ms:Anagnorisis .
+ms:VoiceMisfit a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Dramaturgical ; ms:aimsAtForm ms:HamartiaIntegration .
+ms:GenuineAnagnorisis a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Dramaturgical ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Anagnorisis .
+ms:Aporia a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:HamartiaIntegration .
+
+# Director moves
+ms:InjectRevisitCue a ms:AdaptationMove ; ms:performedByRole ms:DirectorRole ; ms:hasRegister ms:Dramaturgical .
+ms:InjectReversalPressure a ms:AdaptationMove ; ms:performedByRole ms:DirectorRole ; ms:hasRegister ms:Dramaturgical .
+ms:SceneInterruption a ms:AdaptationMove ; ms:performedByRole ms:DirectorRole ; ms:hasRegister ms:Dramaturgical .
+
+# Interior-agency facts (the asymmetry: tutor has an Id, learner does not — yet)
+ms:TutorCharacter ms:hasInteriorAgency ms:Ego , ms:Superego , ms:Id .
+ms:LearnerCharacter ms:hasInteriorAgency ms:Ego , ms:Superego .

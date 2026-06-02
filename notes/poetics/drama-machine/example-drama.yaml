@@ -1,0 +1,112 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# example-drama.yaml — a worked drama-machine spec (drama-machine v0.1).
+#
+# Brief it encodes: "a recognition-tutor, a struggling-anxious learner, on
+# logarithms, aiming for peripeteia + catharsis; the learner is an LLM (sonnet)
+# but I could swap myself in; judge with a 3-of-4 graded panel."
+#
+# Blocks marked  # RUNS TODAY  lower to existing tools (see SPEC.md §7).
+# Blocks marked  # TO-BUILD    are accepted + echoed but do not yet affect output.
+# Validate the turn_plan for form-conflicts with the poetics ontology before running.
+# ──────────────────────────────────────────────────────────────────────────────
+
+drama:
+  id: D_LOG_PERIPETEIA_1
+  targets: [peripeteia, catharsis]          # bias for the sampler; NOT shown to the critic
+
+  # ── MYTHOS (plot) ──                       # RUNS TODAY
+  topic: "logarithms as the inverse of exponentiation"
+  hamartia: "the learner treats log(a+b) as log a + log b — distributing over a sum"
+  continuation_policy: reframe                # learner must do the 3-slot reframe at the cue
+  continuation_anchor: misframing-candidate
+  tutor_adaptation_policy: peripeteia         # tutor must route-change under pressure
+
+  # ── ETHOS (character) ──                    # RUNS TODAY (goal: is TO-BUILD)
+  tutor:
+    prompt_type: recognition
+    architecture: ego_superego
+    superego_disposition: suspicious
+    recognition_mode: true
+    goal: "get the learner to author the inverse relation in their own words"   # TO-BUILD
+  learner:
+    persona: struggling_anxious
+    architecture: ego_superego_recognition_authentic
+    superego_disposition: recognition_authentic
+    start_state: "wants the rule memorised before the quiz; mistrusts 'inverse' as hand-waving"
+    goal: "pass tomorrow's quiz without having to understand why"                # TO-BUILD
+
+  # ── DIANOIA (thought) ──                    # RUNS TODAY (approach move-packs)
+  pedagogical_approach: socratic_elenchus     # core_move: expose a confident answer to counterexample
+  dialogue_approach: aristotelian_reversal    # turn_shape: pressure, reversal, recognition-or-failed
+
+  # ── LEXIS (diction) ──                      # RUNS TODAY
+  voice:
+    locale: "neutral contemporary"
+    register: "plain; the learner a little defensive"
+    person_policy: "≤1 direct 'you' per turn"
+    constraints: "no praise-first; no exclamation marks"
+
+  # ── OPSIS (spectacle) ──                    # RUNS TODAY
+  scene:
+    setting: "a library tutoring booth, the evening before a quiz"
+    relationship: "a paid tutor and a resentful teenager"
+    stakes: "the quiz is tomorrow morning"
+    opening_speaker: learner
+    ending_speaker: learner                    # end on the learner (anagnorisis lands on them)
+    object: "a half-finished worksheet with log(a+b) = log a + log b circled"
+    stage_direction_policy: short
+    stage_direction_style: object_business
+
+  # ── MELOS (composition) ──                  # RUNS TODAY
+  max_turns: 7
+
+  # ── act structure ──                        # TO-BUILD (echoed, not yet honoured)
+  act_structure:
+    beats: [exposition, complication, peripeteia, anagnorisis, catharsis]
+    place:
+      peripeteia: { turn_range: [3, 4] }
+      anagnorisis: { after: peripeteia }
+      catharsis: { at: close }
+
+# ── CAST (who plays each role) ──             # RUNS TODAY for llm:*; human-tutor is TO-BUILD
+cast:
+  director: llm:api:sonnet
+  tutor:    llm:api:sonnet
+  learner:  llm:api:sonnet                     # swap to `human` to play the learner via /play-tutor
+  critic:   llm:api:gpt
+  default_backend: api
+
+# ── AUDIENCE (the critic config) ──           # panel+consensus RUN TODAY; unified dispatch TO-BUILD
+audience:
+  panel: [gpt, deepseek-v4-pro, qwen3.7-max, gemini-3.5-flash]
+  consensus: 3-of-4
+  grading: graded                              # 0–4 attainment ladder
+  blinding: arm-blind
+  rubric: poetics-v1.0
+  structure_critic: rules                      # cheap pre-gate
+
+# ── TURN PLAN (per-role, per-turn moves) ──   # RUNS TODAY: tutor via turn_plan (engine
+#                                              # resolveTutorTurnPlan + generator withTurnPlan);
+#                                              # learner/director via interventions[]. Only
+#                                              # at:{beat:...} addressing is TO-BUILD (use turn:N).
+turn_plan:
+  - at: { turn: 1 }
+    role: director
+    moves: [inject_revisit_cue]
+    cue: { policy: reframe, anchor: misframing-candidate }
+
+  - at: { turn: 3 }                            # ≈ the peripeteia beat
+    role: tutor
+    when_trigger: [pseudo_catharsis, closure_pressure, resistance]
+    moves: [stock_take, route_change, action_gate]
+    route_change: { from: "rule recall", to: "counterexample-then-inverse-construction" }
+    forbid: [hold]                             # a louder same-route turn does NOT count
+
+  - at: { turn: 3 }
+    role: learner
+    moves: [perform_device]                    # act through the device; do not close on relief
+    forbid: [pseudo_catharsis]                 # ontology flags a conflict if this slips into a catharsis-target turn
+
+  - at: { turn: 6 }                            # ≈ the anagnorisis beat
+    role: tutor
+    moves: [recognition_press]                 # draw out the learner's own statement of the inverse relation

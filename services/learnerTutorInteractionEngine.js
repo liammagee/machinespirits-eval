@@ -747,21 +747,157 @@ function buildTutorReversalEventContext(event, policy = 'none') {
     .join('\n');
 }
 
+// ── Turn-plan resolution (per-turn, per-role adaptation moves) ───────────────
+// The drama machine's `turn_plan` (notes/poetics/drama-machine/ADAPTATION-MOVES.md
+// §6) lets a director specify per-turn tutor MOVE-SETS instead of one global
+// `tutor_adaptation_policy`. A tutor turn_plan entry names atomic moves
+// (stock_take, route_change, action_gate, uptake, meter, recognition_press, hold,
+// reveal, withhold); they fold back onto the policy facets the engine already
+// understands so the existing context builders fire unchanged, plus optional
+// route_change / forbid / when_trigger constraints. INERT unless
+// `directorPlan.turn_plan` is present, so every existing caller is unaffected.
+// (Learner/director turn_plan entries lower to `interventions[]` upstream — this
+// is the tutor-side counterpart, keeping the two sides at capability parity.)
+
+// Atomic move id -> the policy facet the engine already understands.
+const TUTOR_MOVE_TO_POLICY_FACET = Object.freeze({
+  stock_take: 'peripeteia',
+  route_change: 'peripeteia',
+  action_gate: 'peripeteia',
+  status_shift: 'peripeteia',
+  register_shift: 'peripeteia',
+  foreshadow: 'peripeteia',
+  uptake: 'uptake',
+  meter: 'socratic_discovery',
+  recognition_press: 'socratic_discovery',
+  hold: 'routine',
+  reveal: 'reveal_secret',
+  withhold: 'none',
+  // policy-name passthroughs: a facet name used directly as a "move" is accepted.
+  peripeteia: 'peripeteia',
+  routine: 'routine',
+  socratic_discovery: 'socratic_discovery',
+  reveal_secret: 'reveal_secret',
+  none: 'none',
+});
+
+// A move-set -> a canonical policy string (e.g. ['uptake','route_change'] ->
+// 'uptake+peripeteia', which matches the named arm). Unknown moves are ignored.
+function tutorMovesToPolicy(moves = []) {
+  const facets = new Set();
+  for (const move of Array.isArray(moves) ? moves : []) {
+    const facet =
+      TUTOR_MOVE_TO_POLICY_FACET[
+        String(move || '')
+          .trim()
+          .toLowerCase()
+      ];
+    if (facet && facet !== 'none') facets.add(facet);
+  }
+  if (!facets.size) return 'none';
+  return ['uptake', 'peripeteia', 'socratic_discovery', 'reveal_secret', 'routine']
+    .filter((facet) => facets.has(facet))
+    .join('+');
+}
+
+function turnPlanEntryMatchesTurn(entry, turnNumber) {
+  const at = entry?.at;
+  if (!at || typeof at !== 'object') return false;
+  // `at: { turn: N }` is wired; `at: { beat: ... }` needs act structure (TO-BUILD)
+  // and is intentionally not matched yet.
+  return Number.isFinite(Number(at.turn)) && Number(at.turn) === Number(turnNumber);
+}
+
+// Resolve the tutor's effective adaptation for a given turn number from the
+// directorPlan's turn_plan. Returns null when there is no turn_plan or no tutor
+// entry for this turn (caller then falls back to the global policy).
+function resolveTutorTurnPlan(directorPlan, turnNumber) {
+  const plan = Array.isArray(directorPlan?.turn_plan) ? directorPlan.turn_plan : null;
+  if (!plan) return null;
+  const entries = plan.filter(
+    (entry) =>
+      entry && (entry.role === 'tutor' || entry.role === 'tutor_ego') && turnPlanEntryMatchesTurn(entry, turnNumber),
+  );
+  if (!entries.length) return null;
+  const moves = [];
+  const forbid = [];
+  let routeChange = null;
+  let whenTrigger = null;
+  for (const entry of entries) {
+    if (Array.isArray(entry.moves)) moves.push(...entry.moves);
+    if (Array.isArray(entry.forbid)) forbid.push(...entry.forbid);
+    if (entry.route_change && typeof entry.route_change === 'object') routeChange = entry.route_change;
+    if (Array.isArray(entry.when_trigger)) whenTrigger = entry.when_trigger;
+  }
+  return {
+    policy: tutorMovesToPolicy(moves),
+    moves,
+    routeChange,
+    forbid: forbid.map((f) => String(f || '').trim()).filter(Boolean),
+    whenTrigger:
+      whenTrigger && whenTrigger.length ? whenTrigger.map((t) => String(t || '').trim()).filter(Boolean) : null,
+  };
+}
+
+// when_trigger gate: if a turn_plan entry only responds to certain learner
+// reversal triggers, drop an event whose triggerType isn't among them (the turn
+// then proceeds as if no reversal fired, and the event stays pending for a later
+// turn that does respond to it).
+function gateReversalEventByTrigger(event, whenTrigger) {
+  if (!event || !whenTrigger || !whenTrigger.length) return event;
+  return whenTrigger.includes(event.triggerType) ? event : null;
+}
+
+// Turn-plan move-level constraints (route_change target, forbidden moves) appended
+// to the tutor's adaptation context. Only emitted when an adaptive policy is active
+// AND there is an event to adapt to, so a turn_plan on a quiet turn invents nothing.
+function buildTurnPlanConstraintLines({ routeChange = null, forbid = null, policy = 'none', hasEvent = false } = {}) {
+  if (!hasEvent) return '';
+  if (!policyIncludes(policy, 'peripeteia') && !policyIncludes(policy, 'uptake')) return '';
+  const lines = [];
+  if (routeChange && (routeChange.from || routeChange.to)) {
+    const from = routeChange.from ? `from "${routeChange.from}"` : 'from the current route';
+    const to = routeChange.to ? `to "${routeChange.to}"` : 'to a different mechanism-level route';
+    lines.push(
+      `- Turn-plan route constraint: this turn's adaptation must move ${from} ${to}. Make that new route the device the learner has to act through.`,
+    );
+  }
+  const forbidList = (Array.isArray(forbid) ? forbid : []).map((f) => String(f || '').trim()).filter(Boolean);
+  if (forbidList.length) {
+    lines.push(
+      `- Turn-plan forbidden moves this turn: ${forbidList.join(', ')}. Do not satisfy the turn with any of these.`,
+    );
+  }
+  if (!lines.length) return '';
+  return ['Tutor-private turn-plan constraints (director-set; never name in public speech):', ...lines].join('\n');
+}
+
 function buildTutorAdaptationContext({
   learnerReframeEvent = null,
   learnerReversalEvent = null,
   policy = 'none',
+  routeChange = null,
+  forbid = null,
 } = {}) {
   return [
     buildTutorReframeEventContext(learnerReframeEvent, policyIncludes(policy, 'uptake') ? 'uptake' : 'none'),
     buildTutorReversalEventContext(learnerReversalEvent, policy),
+    buildTurnPlanConstraintLines({
+      routeChange,
+      forbid,
+      policy,
+      hasEvent: !!(learnerReframeEvent || learnerReversalEvent),
+    }),
   ]
     .filter(Boolean)
     .join('\n\n');
 }
 
 function buildLearnerActionalResponseContext({ tutorResponse = null, directorPlan = null } = {}) {
-  const policy = directorPlan?.tutor_adaptation_policy || 'none';
+  // Prefer the per-turn effective policy the tutor actually ran under (a turn_plan
+  // can make a turn peripeteia even when the global policy is 'none'); fall back to
+  // the global policy for callers without a turn_plan.
+  const policy = tutorResponse?.effectiveTutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none';
   if (!policyIncludes(policy, 'peripeteia') || !tutorResponse?.learnerReversalEventUsed) return '';
   return [
     'Immediate learner response after a tutor adaptive mechanism:',
@@ -1238,15 +1374,21 @@ export async function runInteraction(config, llmCall, options = {}) {
     // ================ TUTOR TURN ================
     const tutorDirectorCue = directorCueFor(directorPlan, turnCount, 'before_tutor');
     recordDirectorCue(interactionTrace, turnCount, tutorDirectorCue);
-    const tutorAdaptationPolicy = directorPlan?.tutor_adaptation_policy || 'none';
+    const tutorTurnPlan = resolveTutorTurnPlan(directorPlan, turnCount);
+    const tutorAdaptationPolicy = tutorTurnPlan?.policy || directorPlan?.tutor_adaptation_policy || 'none';
     const pressurePolicyActive =
       policyIncludes(tutorAdaptationPolicy, 'peripeteia') || policyIncludes(tutorAdaptationPolicy, 'routine');
     latestLearnerReversalEvent = selectLearnerReversalEvent(pendingLearnerReversalEvents);
     const tutorPrivateState = {
       tutorAdaptationPolicy,
       learnerReframeEvent: policyIncludes(tutorAdaptationPolicy, 'uptake') ? latestLearnerReframeEvent || null : null,
-      learnerReversalEvent: pressurePolicyActive ? latestLearnerReversalEvent || null : null,
+      learnerReversalEvent: pressurePolicyActive
+        ? gateReversalEventByTrigger(latestLearnerReversalEvent || null, tutorTurnPlan?.whenTrigger)
+        : null,
       learnerReversalEventCandidates: pressurePolicyActive ? pendingLearnerReversalEvents : [],
+      turnPlanRouteChange: tutorTurnPlan?.routeChange || null,
+      turnPlanForbid: tutorTurnPlan?.forbid || null,
+      turnPlanWhenTrigger: tutorTurnPlan?.whenTrigger || null,
     };
     const tutorResponse =
       scriptedTutorTurns && turnCount <= scriptedTutorTurns.length
@@ -1334,15 +1476,21 @@ export async function runInteraction(config, llmCall, options = {}) {
       reasoning: 'Director requested a tutor closing beat.',
     };
     recordDirectorCue(interactionTrace, turnCount + 1, closingCue);
-    const tutorAdaptationPolicy = directorPlan?.tutor_adaptation_policy || 'none';
+    const tutorTurnPlan = resolveTutorTurnPlan(directorPlan, turnCount + 1);
+    const tutorAdaptationPolicy = tutorTurnPlan?.policy || directorPlan?.tutor_adaptation_policy || 'none';
     const pressurePolicyActive =
       policyIncludes(tutorAdaptationPolicy, 'peripeteia') || policyIncludes(tutorAdaptationPolicy, 'routine');
     latestLearnerReversalEvent = selectLearnerReversalEvent(pendingLearnerReversalEvents);
     const tutorPrivateState = {
       tutorAdaptationPolicy,
       learnerReframeEvent: policyIncludes(tutorAdaptationPolicy, 'uptake') ? latestLearnerReframeEvent || null : null,
-      learnerReversalEvent: pressurePolicyActive ? latestLearnerReversalEvent || null : null,
+      learnerReversalEvent: pressurePolicyActive
+        ? gateReversalEventByTrigger(latestLearnerReversalEvent || null, tutorTurnPlan?.whenTrigger)
+        : null,
       learnerReversalEventCandidates: pressurePolicyActive ? pendingLearnerReversalEvents : [],
+      turnPlanRouteChange: tutorTurnPlan?.routeChange || null,
+      turnPlanForbid: tutorTurnPlan?.forbid || null,
+      turnPlanWhenTrigger: tutorTurnPlan?.whenTrigger || null,
     };
     const tutorResponse = await runTutorTurn(
       learnerId,
@@ -1710,6 +1858,8 @@ async function runTutorTurn(
     learnerReframeEvent,
     learnerReversalEvent,
     policy: tutorAdaptationPolicy,
+    routeChange: tutorPrivateState?.turnPlanRouteChange || null,
+    forbid: tutorPrivateState?.turnPlanForbid || null,
   });
 
   // Tutor internal deliberation
@@ -1923,6 +2073,7 @@ The FINAL section must contain only public tutor speech. Do not mention the Ego,
     rawResponse: egoResponse.content, // Keep raw for debugging
     internalDeliberation,
     strategy,
+    effectiveTutorAdaptationPolicy: tutorAdaptationPolicy,
     learnerReframeEventUsed: learnerReframeEvent,
     learnerReversalEventUsed: learnerReversalEvent,
     learnerReversalEventCandidatesUsed: learnerReversalEventCandidates,
@@ -2587,6 +2738,10 @@ export {
   buildTutorReframeEventContext,
   buildTutorReversalEventContext,
   buildTutorAdaptationContext,
+  tutorMovesToPolicy,
+  resolveTutorTurnPlan,
+  gateReversalEventByTrigger,
+  buildTurnPlanConstraintLines,
   buildLearnerActionalResponseContext,
   calculateMemoryDelta,
   callLearnerAI,

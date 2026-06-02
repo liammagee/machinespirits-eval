@@ -1,0 +1,35 @@
+@prefix ms: <https://machinespirits.dev/ontology/reasoning#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# Drama-machine inference rules. Designed to load alongside reasoning-rules.n3
+# (the two are concatenated). Self-contained subclass/type closure is repeated
+# here so this file also works when loaded on its own with poetics-core.ttl.
+
+# Subclass + type transitivity (mirrors reasoning-rules.n3 so this file is usable alone).
+{ ?a rdfs:subClassOf ?b. ?b rdfs:subClassOf ?c } => { ?a rdfs:subClassOf ?c } .
+{ ?x rdf:type ?c. ?c rdfs:subClassOf ?d } => { ?x rdf:type ?d } .
+
+# Propagate a move's generative intent down rdf:type (a class-level aimsAtForm
+# applies to its instances), mirroring the property-propagation pattern.
+{ ?x rdf:type ?c. ?c ms:aimsAtForm ?f } => { ?x ms:aimsAtForm ?f } .
+{ ?x rdf:type ?c. ?c ms:contraindicatesForm ?f } => { ?x ms:contraindicatesForm ?f } .
+{ ?x rdf:type ?c. ?c ms:performedByRole ?r } => { ?x ms:performedByRole ?r } .
+
+# A move performed-by a role is a move that role performs (the role's repertoire).
+{ ?m ms:performedByRole ?r } => { ?r ms:performsMove ?m } .
+
+# A role that performs a move aiming at a form ADVANCES that form. Lets the
+# sampler/skill ask "which role advances anagnorisis, and via which moves?".
+{ ?r ms:performsMove ?m. ?m ms:aimsAtForm ?f } => { ?r ms:advancesForm ?f } .
+
+# FORM CONFLICT: a turn (or turn_plan entry) that targets a form but includes a
+# move that contraindicates it is flagged. This is the load-bearing check —
+# e.g. a plan that targets Catharsis yet includes a pseudo_catharsis move.
+{ ?t ms:targetsForm ?f. ?t ms:includesMove ?m. ?m ms:contraindicatesForm ?f }
+  => { ?t ms:hasFormConflict ?f } .
+
+# MOVE SERVES TARGET: a turn's move that aims at the turn's target form is a
+# move doing the work it was specified for (the complement of a conflict).
+{ ?t ms:targetsForm ?f. ?t ms:includesMove ?m. ?m ms:aimsAtForm ?f }
+  => { ?t ms:moveServesTarget ?m } .
