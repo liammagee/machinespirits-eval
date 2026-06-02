@@ -10,34 +10,37 @@ const ROOT = path.resolve(SCRIPT_DIR, '..');
 
 const DEFAULTS = {
   codexBin: 'codex',
-  count: 6,
-  format: 'svg',
+  count: null,
+  format: 'png',
   html: 'notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html',
   imageDir: 'notes/poetics/images',
   imagePrefix: 'dramatic-recognition-arc',
   sandbox: 'workspace-write',
   timeoutMs: 20 * 60 * 1000,
+  ephemeral: true,
+  codexMemories: false,
 };
 
 const PREFERRED_PANEL_IDS = [
-  'starting-point',
-  'arc',
-  'evidence',
-  'adaptation',
-  'ending-shape',
-  'paper-implication',
-  'landing-update-0528',
-  'conceptual',
-  'durable-output',
+  'paper',
+  'proxy',
+  'sidecar',
+  'habit-break',
+  'ending',
+  'oedipus',
+  'family',
+  'surface',
+  'boundary',
 ];
 
 const STYLE_GUIDE = `
-Machine Spirits editorial cartoon style:
-- Warm paper ground with visible grain: cream, linen, ink brown, brick red, moss, and ochre.
-- Scientific comic rather than glossy sci-fi: hand-inked lines, margin labels, arrows, crop marks, small registers.
+Machine Spirits editorial cartoon style, leaning film noir by default:
+- Warm paper ground with visible grain, pushed through a low-key noir palette: cream, charcoal, ink brown, smoke grey, brick red, moss, and ochre.
+- High-contrast chiaroscuro lighting, hard shadows, venetian-blind slashes, stage haze, lamplight cones, and noir investigation-board composition.
+- Scientific comic rather than glossy sci-fi: hand-inked lines, margin labels, arrows, crop marks, small registers, and evidence tags.
 - Tutor and learner can appear as simple silhouettes, masks, or diagrammatic figures, never as copyrighted characters.
 - Use sparse lettering only: one compact title and at most two short labels. Avoid long quoted text.
-- The image should work as an article illustration in an HTML img tag, not as a screenshot or poster.
+- The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
 `.trim();
 
 const STOPWORDS = new Set(
@@ -64,7 +67,7 @@ updates managed <img> blocks in the HTML file.
 Options:
   --html <path>          Source/target HTML. Default: ${DEFAULTS.html}
   --image-dir <path>     Image output directory. Default: ${DEFAULTS.imageDir}
-  --count <number>       Number of image prompts/panels. Default: ${DEFAULTS.count}
+  --count <number>       Number of image prompts/panels. Default: main numbered section count.
   --format <svg|png>     Image format Codex should create. Default: ${DEFAULTS.format}
   --image-prefix <slug>  Managed image filename prefix. Default: ${DEFAULTS.imagePrefix}
   --prompt-file <path>   Prompt text file. Default: <image-dir>/<html-stem>-image-prompts.txt
@@ -74,6 +77,8 @@ Options:
   --codex-arg <arg>      Extra argument passed to codex exec. Repeatable.
   --sandbox <mode>       Codex exec sandbox. Default: ${DEFAULTS.sandbox}
   --dangerous            Pass --dangerously-bypass-approvals-and-sandbox.
+  --persist-codex        Persist Codex exec sessions instead of using --ephemeral.
+  --codex-memories       Let Codex exec use the user's configured memories setting.
   --timeout-ms <number>  Timeout per Codex image call. Default: ${DEFAULTS.timeoutMs}
   --dry-run              Analyze and write prompt/manifest only; do not run Codex or edit HTML.
   --skip-codex           Do not run Codex; update HTML against existing managed images.
@@ -128,6 +133,10 @@ function parseArgs(argv) {
       opts.sandbox = next();
     } else if (arg === '--dangerous') {
       opts.dangerous = true;
+    } else if (arg === '--persist-codex') {
+      opts.ephemeral = false;
+    } else if (arg === '--codex-memories') {
+      opts.codexMemories = true;
     } else if (arg === '--timeout-ms') {
       opts.timeoutMs = parsePositiveInt(next(), 'timeout-ms');
     } else if (arg === '--dry-run') {
@@ -233,6 +242,7 @@ function extractSections(html) {
       id.replace(/-/g, ' ');
     const kicker = textFromFirstMatch(content, /<p\b[^>]*class=["'][^"']*\bs__kicker\b[^"']*["'][^>]*>([\s\S]*?)<\/p>/i);
     const text = normalizeWhitespace(stripHtml(content));
+    const sectionNumber = parseSectionNumber(content);
     sections.push({
       block,
       closeIndex,
@@ -242,10 +252,22 @@ function extractSections(html) {
       kicker,
       openIndex: match.index,
       sentences: importantSentences(text),
+      sectionNumber,
       text,
     });
   }
   return sections;
+}
+
+function parseSectionNumber(content) {
+  const raw = textFromFirstMatch(content, /<h2\b[^>]*class=["'][^"']*\bs__num\b[^"']*["'][^>]*>([\s\S]*?)<\/h2>/i);
+  const match = raw.match(/^(\d+)([a-z]?)/i);
+  if (!match) return null;
+  return {
+    label: `${match[1]}${match[2] || ''}`,
+    number: Number.parseInt(match[1], 10),
+    suffix: match[2] || '',
+  };
 }
 
 function findMatchingSectionClose(html, startIndex) {
@@ -265,23 +287,41 @@ function findMatchingSectionClose(html, startIndex) {
 }
 
 function selectSectionsForPanels(sections, count) {
+  const targetCount = count || inferDefaultPanelCount(sections);
+  const mainSections = selectMainNumberedSections(sections);
+  if (!count && mainSections.length > 0) return mainSections;
+
   const byId = new Map(sections.map((section) => [section.id, section]));
   const selected = [];
   for (const id of PREFERRED_PANEL_IDS) {
-    if (selected.length >= count) break;
+    if (selected.length >= targetCount) break;
     const section = byId.get(id);
     if (section) selected.push(section);
   }
-  if (selected.length < count) {
+  if (selected.length < targetCount) {
     const selectedIds = new Set(selected.map((section) => section.id));
     for (const section of sections) {
-      if (selected.length >= count) break;
+      if (selected.length >= targetCount) break;
       if (selectedIds.has(section.id)) continue;
       if (section.id === 'glossary') continue;
       selected.push(section);
     }
   }
-  return selected.slice(0, count).sort((a, b) => a.openIndex - b.openIndex);
+  return selected.slice(0, targetCount).sort((a, b) => a.openIndex - b.openIndex);
+}
+
+function inferDefaultPanelCount(sections) {
+  const mainSections = selectMainNumberedSections(sections);
+  return mainSections.length || Math.min(PREFERRED_PANEL_IDS.length, sections.length);
+}
+
+function selectMainNumberedSections(sections) {
+  return sections
+    .filter((section) => {
+      const number = section.sectionNumber;
+      return number && number.number > 0 && number.suffix === '';
+    })
+    .sort((a, b) => a.openIndex - b.openIndex);
 }
 
 function buildPanels({ analysis, htmlPath, imageDir, opts, selectedSections }) {
@@ -326,6 +366,24 @@ function inferVisualMetaphor(section) {
   const id = section.id;
   const text = `${section.heading} ${section.text}`.toLowerCase();
   const byId = {
+    paper:
+      'a research paper unfolding into a theatre stage, with supported calibration lit clearly and adaptive responsiveness marked as a smaller unresolved shadow',
+    proxy:
+      'a modest slope gauge beside a stage door, showing that a flat average curve is only a coarse proxy for recognition',
+    sidecar:
+      'a three-lane evidence bench comparing strong, boundary, and risk claims, with the clean-anchor run pinned as a live exhibit',
+    'habit-break':
+      'a tutor at a forked path changing tools only after the learner shows a concrete stuck point',
+    ending:
+      'a learner trying the tutor device, then turning back to redraw the original difficulty',
+    oedipus:
+      'a sealed Oedipus dossier under stage light, with one panel marked guided discovery and another marked fragile replication',
+    family:
+      'three prompt-family masks on a rehearsal wall, where intersubjective pedagogy glows more strongly than theory vocabulary',
+    surface:
+      'a question mark and several surface cues acting as weather vanes, useful only when tied to the whole dialogue scene',
+    boundary:
+      'a narrow doorway labelled dramatic mechanism, opening from a larger null-result wall into a disciplined next experiment',
     'starting-point':
       'a paper mechanism diagram becoming a theatre stage, with one lane labelled calibration and one lane labelled adaptive null',
     arc:
@@ -359,12 +417,16 @@ function buildCaption(section) {
     section.sentences.find((candidate) => simplifyForComparison(candidate) !== headingKey) ||
     section.sentences[0] ||
     section.heading;
-  const label = section.kicker || section.heading;
+  const label = trimTrailingSentencePunctuation(section.kicker || section.heading);
   return clampText(`${label}: ${sentence}`, 220);
 }
 
 function buildAlt(section, metaphor) {
   return clampText(`Editorial cartoon for ${section.heading}: ${metaphor}.`, 180);
+}
+
+function trimTrailingSentencePunctuation(text) {
+  return text.replace(/[.!?]+$/g, '');
 }
 
 function buildCodexImagePrompt({ analysis, caption, imagePath, metaphor, opts, panelNumber, section, total }) {
@@ -503,6 +565,8 @@ function ensureCodexSkillSupportDirs() {
 async function runCodex(prompt, panel, opts) {
   const lastMessagePath = path.join(path.dirname(panel.image_path), `${path.basename(panel.image_path)}.codex.txt`);
   const args = ['exec', '-C', ROOT];
+  if (opts.ephemeral) args.push('--ephemeral');
+  if (!opts.codexMemories) args.push('-c', 'memories=false');
   if (opts.dangerous) {
     args.push('--dangerously-bypass-approvals-and-sandbox');
   } else {
@@ -659,13 +723,20 @@ function fallbackInsertionIndex(html) {
 
 function importantSentences(text) {
   const keywords = /(adapt|recogn|evidence|null|boundary|mechanism|tutor|learner|score|critic|control|secret|discovery|paper|result|claim|reframe|ending|pressure)/i;
-  const sentences = normalizeWhitespace(text)
-    .match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [];
+  const sentences = splitSentences(text);
   const cleaned = sentences
     .map((sentence) => normalizeWhitespace(sentence))
     .filter((sentence) => sentence.length > 40 && sentence.length < 360);
   const important = cleaned.filter((sentence) => keywords.test(sentence));
   return uniqueStrings([...important, ...cleaned]).slice(0, 6);
+}
+
+function splitSentences(text) {
+  const decimalMarker = '__DECIMAL_POINT__';
+  const protectedText = normalizeWhitespace(text).replace(/(\d)\.(\d)/g, `$1${decimalMarker}$2`);
+  return (protectedText.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || []).map((sentence) =>
+    sentence.replace(new RegExp(decimalMarker, 'g'), '.'),
+  );
 }
 
 function topKeywords(text, limit) {

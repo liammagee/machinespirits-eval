@@ -111,3 +111,6 @@ docs/research/SESSION-NOTES-*.md
 
 # Literature PDFs — reproducible from arxiv_manifest.json + download_pdfs.sh
 docs/explorations/literature/pdfs/
+
+# Antigravity CLI — machine-local symlink to ~/.gemini config (not for the repo)
+.antigravitycli/
