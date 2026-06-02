@@ -1,0 +1,4 @@
+Created and verified: [dramatic-recognition-arc-05.png](/Users/lmagee/Dev/machinespirits/machinespirits-eval-dramatic/notes/poetics/images/dramatic-recognition-arc-05.png)
+
+It is a valid PNG, RGB, `1586x992`, with three in-image labels: `ENDING SHAPE`, `TRY DEVICE`, `RE-READ`.
+

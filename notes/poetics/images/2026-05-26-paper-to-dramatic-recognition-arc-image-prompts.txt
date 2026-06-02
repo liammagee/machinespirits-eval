@@ -1,0 +1,457 @@
+# Cartoon Image Prompts
+
+Source HTML: notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html
+Generated at: 2026-06-02T20:36:31.419Z
+Panel count: 9
+Format: png
+
+## Text Analysis
+
+Title: From Paper 2.0 to dramatic recognition
+Description: A live, data-driven synthesis note. The last paper found that recognition prompts and a draft-then-critique architecture did not change tutor trajectories on average. This branch sharpens that broad null into a narrower question: can a tutor answer a learner's specific stuck point with a visible change of move? Every claim here links into the running poetics browser for proof.
+Top terms: tutor, learner, recognition, room, witness, clean, mechanism, adaptation, critic, three, case, control, file, back, routine, gate, pass, secret
+
+Selected sections:
+- 01 #starting-point: The last paper gave us a disciplined mechanism story, not a deployed adaptive tutor. -> notes/poetics/images/dramatic-recognition-arc-01.png
+- 02 #arc: The shift from paper mechanism testing to dramatic mechanism discovery. -> notes/poetics/images/dramatic-recognition-arc-02.png
+- 03 #evidence: What's solid, what's borderline, what's still a hazard. -> notes/poetics/images/dramatic-recognition-arc-03.png
+- 04 #adaptation: The headline is mechanism-level adaptation, not guaranteed recognitive closure. -> notes/poetics/images/dramatic-recognition-arc-04.png
+- 05 #ending-shape: A single mechanism change with a strong local and noisy broad result. -> notes/poetics/images/dramatic-recognition-arc-05.png
+- 06 #landing-update: One pass. Not yet a pattern. Adaptation → recognition walked in once. -> notes/poetics/images/dramatic-recognition-arc-06.png
+- 07 #conceptual: From measuring average slopes to specifying what adaptation would have to be. -> notes/poetics/images/dramatic-recognition-arc-07.png
+- 08 #durable-output: A mechanism specification, a curated dataset, and a control loop. -> notes/poetics/images/dramatic-recognition-arc-08.png
+- 09 #paper-implication: The branch doesn't break the null — it answers a different question. And there, when the secret runs deep, the help does the work. -> notes/poetics/images/dramatic-recognition-arc-09.png
+
+## Prompts
+
+### Prompt 01 - #starting-point
+
+Target image: notes/poetics/images/dramatic-recognition-arc-01.png
+HTML src: images/dramatic-recognition-arc-01.png
+Caption: The last paper gave us a disciplined mechanism story, not a deployed adaptive tutor: Calibration supported Recognition-oriented prompts narrow and lift the tutor's output distribution.
+Alt: Editorial cartoon for The last paper gave us a disciplined mechanism story, not a deployed adaptive tutor.: a paper mechanism diagram becoming a theatre stage, with one lane label...
+Visual metaphor: a paper mechanism diagram becoming a theatre stage, with one lane labelled calibration and one lane labelled adaptive null
+
+```
+You are Codex running inside the Machine Spirits evaluation repository.
+Create one cartoon image file for the dramatic-recognition arc note.
+
+Target file: notes/poetics/images/dramatic-recognition-arc-01.png
+Panel: 1 of 9
+Target article section: #starting-point
+Section heading: The last paper gave us a disciplined mechanism story, not a deployed adaptive tutor.
+Article title: From Paper 2.0 to dramatic recognition
+
+Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-01.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
+Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
+
+Art direction:
+Machine Spirits editorial cartoon style, leaning film noir by default:
+- Warm paper ground with visible grain, pushed through a low-key noir palette: cream, charcoal, ink brown, smoke grey, brick red, moss, and ochre.
+- High-contrast chiaroscuro lighting, hard shadows, venetian-blind slashes, stage haze, lamplight cones, and noir investigation-board composition.
+- Scientific comic rather than glossy sci-fi: hand-inked lines, margin labels, arrows, crop marks, small registers, and evidence tags.
+- Tutor and learner can appear as simple silhouettes, masks, or diagrammatic figures, never as copyrighted characters.
+- Use sparse lettering only: one compact title and at most two short labels. Avoid long quoted text.
+- The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
+
+Textual context to complement:
+The last paper gave us a disciplined mechanism story, not a deployed adaptive tutor. Calibration supported Recognition-oriented prompts narrow and lift the tutor's output distribution. The effect is on how the tutor speaks, not yet on how it changes course. Error correction supported The ego–superego architecture (draft, then self-critique, then revise) improves tutor output when there is enough residual error for the critique to catch.
+
+Image concept:
+a paper mechanism diagram becoming a theatre stage, with one lane labelled calibration and one lane labelled adaptive null
+
+Caption this image will carry in the page:
+The last paper gave us a disciplined mechanism story, not a deployed adaptive tutor: Calibration supported Recognition-oriented prompts narrow and lift the tutor's output distribution.
+
+Composition requirements:
+- Landscape editorial cartoon, roughly 16:10.
+- Keep labels sparse and legible: no more than three in-image labels, each under six words.
+- Show a tutor-learner mechanism, a measurement apparatus, or an evidence/control-loop metaphor.
+- Avoid photorealism, corporate-vector stock style, copyrighted characters, screenshots, and dense prose.
+
+Return a short final note listing the created file.
+```
+
+### Prompt 02 - #arc
+
+Target image: notes/poetics/images/dramatic-recognition-arc-02.png
+HTML src: images/dramatic-recognition-arc-02.png
+Caption: The shift from paper mechanism testing to dramatic mechanism discovery: Tooling outcome The sidecar is itself a major output of this arc — a laboratory apparatus for the narrower dialogical mechanism the paper's null le...
+Alt: Editorial cartoon for The shift from paper mechanism testing to dramatic mechanism discovery.: a measured slope chart dissolving into a staged learner-tutor encounter under a spot...
+Visual metaphor: a measured slope chart dissolving into a staged learner-tutor encounter under a spotlight
+
+```
+You are Codex running inside the Machine Spirits evaluation repository.
+Create one cartoon image file for the dramatic-recognition arc note.
+
+Target file: notes/poetics/images/dramatic-recognition-arc-02.png
+Panel: 2 of 9
+Target article section: #arc
+Section heading: The shift from paper mechanism testing to dramatic mechanism discovery.
+Article title: From Paper 2.0 to dramatic recognition
+
+Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-02.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
+Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
+
+Art direction:
+Machine Spirits editorial cartoon style, leaning film noir by default:
+- Warm paper ground with visible grain, pushed through a low-key noir palette: cream, charcoal, ink brown, smoke grey, brick red, moss, and ochre.
+- High-contrast chiaroscuro lighting, hard shadows, venetian-blind slashes, stage haze, lamplight cones, and noir investigation-board composition.
+- Scientific comic rather than glossy sci-fi: hand-inked lines, margin labels, arrows, crop marks, small registers, and evidence tags.
+- Tutor and learner can appear as simple silhouettes, masks, or diagrammatic figures, never as copyrighted characters.
+- Use sparse lettering only: one compact title and at most two short labels. Avoid long quoted text.
+- The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
+
+Textual context to complement:
+The shift from paper mechanism testing to dramatic mechanism discovery. Tooling outcome The sidecar is itself a major output of this arc — a laboratory apparatus for the narrower dialogical mechanism the paper's null left under-specified. Broad trajectory test Adaptation was operationalised as average turn-by-turn slope across ordinary 3–5-turn dialogues. The dialogical event was under-specified The paper measured score sequences.
+
+Image concept:
+a measured slope chart dissolving into a staged learner-tutor encounter under a spotlight
+
+Caption this image will carry in the page:
+The shift from paper mechanism testing to dramatic mechanism discovery: Tooling outcome The sidecar is itself a major output of this arc — a laboratory apparatus for the narrower dialogical mechanism the paper's null le...
+
+Composition requirements:
+- Landscape editorial cartoon, roughly 16:10.
+- Keep labels sparse and legible: no more than three in-image labels, each under six words.
+- Show a tutor-learner mechanism, a measurement apparatus, or an evidence/control-loop metaphor.
+- Avoid photorealism, corporate-vector stock style, copyrighted characters, screenshots, and dense prose.
+
+Return a short final note listing the created file.
+```
+
+### Prompt 03 - #evidence
+
+Target image: notes/poetics/images/dramatic-recognition-arc-03.png
+HTML src: images/dramatic-recognition-arc-03.png
+Caption: The Evidence Wall · Live: How the file reads Strong means it holds up under the four-critic rule on a clean baseline.
+Alt: Editorial cartoon for What's solid, what's borderline, what's still a hazard.: an evidence wall with strong, boundary, and risk cards connected to a small poetics browser terminal.
+Visual metaphor: an evidence wall with strong, boundary, and risk cards connected to a small poetics browser terminal
+
+```
+You are Codex running inside the Machine Spirits evaluation repository.
+Create one cartoon image file for the dramatic-recognition arc note.
+
+Target file: notes/poetics/images/dramatic-recognition-arc-03.png
+Panel: 3 of 9
+Target article section: #evidence
+Section heading: What's solid, what's borderline, what's still a hazard.
+Article title: From Paper 2.0 to dramatic recognition
+
+Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-03.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
+Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
+
+Art direction:
+Machine Spirits editorial cartoon style, leaning film noir by default:
+- Warm paper ground with visible grain, pushed through a low-key noir palette: cream, charcoal, ink brown, smoke grey, brick red, moss, and ochre.
+- High-contrast chiaroscuro lighting, hard shadows, venetian-blind slashes, stage haze, lamplight cones, and noir investigation-board composition.
+- Scientific comic rather than glossy sci-fi: hand-inked lines, margin labels, arrows, crop marks, small registers, and evidence tags.
+- Tutor and learner can appear as simple silhouettes, masks, or diagrammatic figures, never as copyrighted characters.
+- Use sparse lettering only: one compact title and at most two short labels. Avoid long quoted text.
+- The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
+
+Textual context to complement:
+How the file reads Strong means it holds up under the four-critic rule on a clean baseline. Boundary means the critics split or the scene only does half the job. Output means the apparatus itself — separate from any claim it carries. All Strong Boundary Risk Output Current landing Gated adaptation → recognition loop D42, D50, D53 gave us one clean gated iteration.
+
+Image concept:
+an evidence wall with strong, boundary, and risk cards connected to a small poetics browser terminal
+
+Caption this image will carry in the page:
+The Evidence Wall · Live: How the file reads Strong means it holds up under the four-critic rule on a clean baseline.
+
+Composition requirements:
+- Landscape editorial cartoon, roughly 16:10.
+- Keep labels sparse and legible: no more than three in-image labels, each under six words.
+- Show a tutor-learner mechanism, a measurement apparatus, or an evidence/control-loop metaphor.
+- Avoid photorealism, corporate-vector stock style, copyrighted characters, screenshots, and dense prose.
+
+Return a short final note listing the created file.
+```
+
+### Prompt 04 - #adaptation
+
+Target image: notes/poetics/images/dramatic-recognition-arc-04.png
+HTML src: images/dramatic-recognition-arc-04.png
+Caption: Adaptation Boundary: The branch supports tutor adaptation as a visible change of teaching move under clean-baseline reversal pressure.
+Alt: Editorial cartoon for The headline is mechanism-level adaptation, not guaranteed recognitive closure.: a tutor at a forked path changing tools only after the learner shows a concr...
+Visual metaphor: a tutor at a forked path changing tools only after the learner shows a concrete stuck point
+
+```
+You are Codex running inside the Machine Spirits evaluation repository.
+Create one cartoon image file for the dramatic-recognition arc note.
+
+Target file: notes/poetics/images/dramatic-recognition-arc-04.png
+Panel: 4 of 9
+Target article section: #adaptation
+Section heading: The headline is mechanism-level adaptation, not guaranteed recognitive closure.
+Article title: From Paper 2.0 to dramatic recognition
+
+Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-04.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
+Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
+
+Art direction:
+Machine Spirits editorial cartoon style, leaning film noir by default:
+- Warm paper ground with visible grain, pushed through a low-key noir palette: cream, charcoal, ink brown, smoke grey, brick red, moss, and ochre.
+- High-contrast chiaroscuro lighting, hard shadows, venetian-blind slashes, stage haze, lamplight cones, and noir investigation-board composition.
+- Scientific comic rather than glossy sci-fi: hand-inked lines, margin labels, arrows, crop marks, small registers, and evidence tags.
+- Tutor and learner can appear as simple silhouettes, masks, or diagrammatic figures, never as copyrighted characters.
+- Use sparse lettering only: one compact title and at most two short labels. Avoid long quoted text.
+- The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
+
+Textual context to complement:
+The headline is mechanism-level adaptation, not guaranteed recognitive closure. The branch supports tutor adaptation as a visible change of teaching move under clean-baseline reversal pressure. Whether the learner then performs full recognitive self-reframe is downstream, partial, and critic-sensitive — and should not be folded into the adaptation claim. The accordions hold the detail; each links into the run that produced its evidence.
+
+Image concept:
+a tutor at a forked path changing tools only after the learner shows a concrete stuck point
+
+Caption this image will carry in the page:
+Adaptation Boundary: The branch supports tutor adaptation as a visible change of teaching move under clean-baseline reversal pressure.
+
+Composition requirements:
+- Landscape editorial cartoon, roughly 16:10.
+- Keep labels sparse and legible: no more than three in-image labels, each under six words.
+- Show a tutor-learner mechanism, a measurement apparatus, or an evidence/control-loop metaphor.
+- Avoid photorealism, corporate-vector stock style, copyrighted characters, screenshots, and dense prose.
+
+Return a short final note listing the created file.
+```
+
+### Prompt 05 - #ending-shape
+
+Target image: notes/poetics/images/dramatic-recognition-arc-05.png
+HTML src: images/dramatic-recognition-arc-05.png
+Caption: Ending Shape · live chart: The ending-shape constraint asks for a tighter dramatic close: after the tutor's new device, the learner must publicly try the device and then re-read the prior difficulty.
+Alt: Editorial cartoon for A single mechanism change with a strong local and noisy broad result.: a learner trying the tutor device, then turning back to redraw the original difficulty.
+Visual metaphor: a learner trying the tutor device, then turning back to redraw the original difficulty
+
+```
+You are Codex running inside the Machine Spirits evaluation repository.
+Create one cartoon image file for the dramatic-recognition arc note.
+
+Target file: notes/poetics/images/dramatic-recognition-arc-05.png
+Panel: 5 of 9
+Target article section: #ending-shape
+Section heading: A single mechanism change with a strong local and noisy broad result.
+Article title: From Paper 2.0 to dramatic recognition
+
+Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-05.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
+Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
+
+Art direction:
+Machine Spirits editorial cartoon style, leaning film noir by default:
+- Warm paper ground with visible grain, pushed through a low-key noir palette: cream, charcoal, ink brown, smoke grey, brick red, moss, and ochre.
+- High-contrast chiaroscuro lighting, hard shadows, venetian-blind slashes, stage haze, lamplight cones, and noir investigation-board composition.
+- Scientific comic rather than glossy sci-fi: hand-inked lines, margin labels, arrows, crop marks, small registers, and evidence tags.
+- Tutor and learner can appear as simple silhouettes, masks, or diagrammatic figures, never as copyrighted characters.
+- Use sparse lettering only: one compact title and at most two short labels. Avoid long quoted text.
+- The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
+
+Textual context to complement:
+A single mechanism change with a strong local and noisy broad result. The ending-shape constraint asks for a tighter dramatic close: after the tutor's new device, the learner must publicly try the device and then re-read the prior difficulty. Without that two-beat ending, "adaptation" can register as a tutor move without a learner anchor. Five critics Scoring is now Qwen 3.7 Max, Gemini 3.5 Flash, DeepSeek V4 Pro, Claude Sonnet 4.6, plus an isolated Codex pass.
+
+Image concept:
+a learner trying the tutor device, then turning back to redraw the original difficulty
+
+Caption this image will carry in the page:
+Ending Shape · live chart: The ending-shape constraint asks for a tighter dramatic close: after the tutor's new device, the learner must publicly try the device and then re-read the prior difficulty.
+
+Composition requirements:
+- Landscape editorial cartoon, roughly 16:10.
+- Keep labels sparse and legible: no more than three in-image labels, each under six words.
+- Show a tutor-learner mechanism, a measurement apparatus, or an evidence/control-loop metaphor.
+- Avoid photorealism, corporate-vector stock style, copyrighted characters, screenshots, and dense prose.
+
+Return a short final note listing the created file.
+```
+
+### Prompt 06 - #landing-update
+
+Target image: notes/poetics/images/dramatic-recognition-arc-06.png
+HTML src: images/dramatic-recognition-arc-06.png
+Caption: One pass. Not yet a pattern. Adaptation → recognition walked in once: Run phase2-adaptation-recognition-loop-20260527T105617Z brought D42, D50, and D53 into the same room.
+Alt: Editorial cartoon for One pass. Not yet a pattern. Adaptation → recognition walked in once.: an evidence wall with strong, boundary, and risk cards connected to a small poetics br...
+Visual metaphor: an evidence wall with strong, boundary, and risk cards connected to a small poetics browser terminal
+
+```
+You are Codex running inside the Machine Spirits evaluation repository.
+Create one cartoon image file for the dramatic-recognition arc note.
+
+Target file: notes/poetics/images/dramatic-recognition-arc-06.png
+Panel: 6 of 9
+Target article section: #landing-update
+Section heading: One pass. Not yet a pattern. Adaptation → recognition walked in once.
+Article title: From Paper 2.0 to dramatic recognition
+
+Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-06.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
+Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
+
+Art direction:
+Machine Spirits editorial cartoon style, leaning film noir by default:
+- Warm paper ground with visible grain, pushed through a low-key noir palette: cream, charcoal, ink brown, smoke grey, brick red, moss, and ochre.
+- High-contrast chiaroscuro lighting, hard shadows, venetian-blind slashes, stage haze, lamplight cones, and noir investigation-board composition.
+- Scientific comic rather than glossy sci-fi: hand-inked lines, margin labels, arrows, crop marks, small registers, and evidence tags.
+- Tutor and learner can appear as simple silhouettes, masks, or diagrammatic figures, never as copyrighted characters.
+- Use sparse lettering only: one compact title and at most two short labels. Avoid long quoted text.
+- The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
+
+Textual context to complement:
+Run phase2-adaptation-recognition-loop-20260527T105617Z brought D42, D50, and D53 into the same room. That isn't a verdict against tutor adaptation. It draws a tighter line around the recognition claim downstream of it. On the record Branch-valid tutor peripeteia can produce a recognitive reframe in clean anchors.
+
+Image concept:
+an evidence wall with strong, boundary, and risk cards connected to a small poetics browser terminal
+
+Caption this image will carry in the page:
+One pass. Not yet a pattern. Adaptation → recognition walked in once: Run phase2-adaptation-recognition-loop-20260527T105617Z brought D42, D50, and D53 into the same room.
+
+Composition requirements:
+- Landscape editorial cartoon, roughly 16:10.
+- Keep labels sparse and legible: no more than three in-image labels, each under six words.
+- Show a tutor-learner mechanism, a measurement apparatus, or an evidence/control-loop metaphor.
+- Avoid photorealism, corporate-vector stock style, copyrighted characters, screenshots, and dense prose.
+
+Return a short final note listing the created file.
+```
+
+### Prompt 07 - #conceptual
+
+Target image: notes/poetics/images/dramatic-recognition-arc-07.png
+HTML src: images/dramatic-recognition-arc-07.png
+Caption: From measuring average slopes to specifying what adaptation would have to be: Pair of questions Old: Do recognition and architecture improve average turn-by-turn slopes?
+Alt: Editorial cartoon for From measuring average slopes to specifying what adaptation would have to be.: a ruler for average slopes laid beside a blueprint for dramatic mechanism spec...
+Visual metaphor: a ruler for average slopes laid beside a blueprint for dramatic mechanism specification
+
+```
+You are Codex running inside the Machine Spirits evaluation repository.
+Create one cartoon image file for the dramatic-recognition arc note.
+
+Target file: notes/poetics/images/dramatic-recognition-arc-07.png
+Panel: 7 of 9
+Target article section: #conceptual
+Section heading: From measuring average slopes to specifying what adaptation would have to be.
+Article title: From Paper 2.0 to dramatic recognition
+
+Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-07.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
+Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
+
+Art direction:
+Machine Spirits editorial cartoon style, leaning film noir by default:
+- Warm paper ground with visible grain, pushed through a low-key noir palette: cream, charcoal, ink brown, smoke grey, brick red, moss, and ochre.
+- High-contrast chiaroscuro lighting, hard shadows, venetian-blind slashes, stage haze, lamplight cones, and noir investigation-board composition.
+- Scientific comic rather than glossy sci-fi: hand-inked lines, margin labels, arrows, crop marks, small registers, and evidence tags.
+- Tutor and learner can appear as simple silhouettes, masks, or diagrammatic figures, never as copyrighted characters.
+- Use sparse lettering only: one compact title and at most two short labels. Avoid long quoted text.
+- The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
+
+Textual context to complement:
+From measuring average slopes to specifying what adaptation would have to be. Pair of questions Old: Do recognition and architecture improve average turn-by-turn slopes? New: Can a tutor receive a learner's stuck point, change its public mechanism, and produce new action or re-reading? Ordinary continuity The tutor continues competently.
+
+Image concept:
+a ruler for average slopes laid beside a blueprint for dramatic mechanism specification
+
+Caption this image will carry in the page:
+From measuring average slopes to specifying what adaptation would have to be: Pair of questions Old: Do recognition and architecture improve average turn-by-turn slopes?
+
+Composition requirements:
+- Landscape editorial cartoon, roughly 16:10.
+- Keep labels sparse and legible: no more than three in-image labels, each under six words.
+- Show a tutor-learner mechanism, a measurement apparatus, or an evidence/control-loop metaphor.
+- Avoid photorealism, corporate-vector stock style, copyrighted characters, screenshots, and dense prose.
+
+Return a short final note listing the created file.
+```
+
+### Prompt 08 - #durable-output
+
+Target image: notes/poetics/images/dramatic-recognition-arc-08.png
+HTML src: images/dramatic-recognition-arc-08.png
+Caption: A mechanism specification, a curated dataset, and a control loop: Three linked artifacts would carry the work past calibration and into something that can change future tutor behaviour.
+Alt: Editorial cartoon for A mechanism specification, a curated dataset, and a control loop.: a compact control loop machine: observe, classify, choose, generate, check, update.
+Visual metaphor: a compact control loop machine: observe, classify, choose, generate, check, update
+
+```
+You are Codex running inside the Machine Spirits evaluation repository.
+Create one cartoon image file for the dramatic-recognition arc note.
+
+Target file: notes/poetics/images/dramatic-recognition-arc-08.png
+Panel: 8 of 9
+Target article section: #durable-output
+Section heading: A mechanism specification, a curated dataset, and a control loop.
+Article title: From Paper 2.0 to dramatic recognition
+
+Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-08.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
+Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
+
+Art direction:
+Machine Spirits editorial cartoon style, leaning film noir by default:
+- Warm paper ground with visible grain, pushed through a low-key noir palette: cream, charcoal, ink brown, smoke grey, brick red, moss, and ochre.
+- High-contrast chiaroscuro lighting, hard shadows, venetian-blind slashes, stage haze, lamplight cones, and noir investigation-board composition.
+- Scientific comic rather than glossy sci-fi: hand-inked lines, margin labels, arrows, crop marks, small registers, and evidence tags.
+- Tutor and learner can appear as simple silhouettes, masks, or diagrammatic figures, never as copyrighted characters.
+- Use sparse lettering only: one compact title and at most two short labels. Avoid long quoted text.
+- The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
+
+Textual context to complement:
+A mechanism specification, a curated dataset, and a control loop. Three linked artifacts would carry the work past calibration and into something that can change future tutor behaviour. Classify learner state from public + deliberation. Choose tutor mechanism appropriate to that state.
+
+Image concept:
+a compact control loop machine: observe, classify, choose, generate, check, update
+
+Caption this image will carry in the page:
+A mechanism specification, a curated dataset, and a control loop: Three linked artifacts would carry the work past calibration and into something that can change future tutor behaviour.
+
+Composition requirements:
+- Landscape editorial cartoon, roughly 16:10.
+- Keep labels sparse and legible: no more than three in-image labels, each under six words.
+- Show a tutor-learner mechanism, a measurement apparatus, or an evidence/control-loop metaphor.
+- Avoid photorealism, corporate-vector stock style, copyrighted characters, screenshots, and dense prose.
+
+Return a short final note listing the created file.
+```
+
+### Prompt 09 - #paper-implication
+
+Target image: notes/poetics/images/dramatic-recognition-arc-09.png
+HTML src: images/dramatic-recognition-arc-09.png
+Caption: The branch doesn't break the null — it answers a different question. And there, when the secret runs deep, the help does the work: The branch doesn't break the null — it answers a different question.
+Alt: Editorial cartoon for The branch doesn't break the null — it answers a different question. And there, when the secret runs deep, the help does the work.: a null-result seal refram...
+Visual metaphor: a null-result seal reframed into a narrower guided-discovery doorway where deep secrets need help
+
+```
+You are Codex running inside the Machine Spirits evaluation repository.
+Create one cartoon image file for the dramatic-recognition arc note.
+
+Target file: notes/poetics/images/dramatic-recognition-arc-09.png
+Panel: 9 of 9
+Target article section: #paper-implication
+Section heading: The branch doesn't break the null — it answers a different question. And there, when the secret runs deep, the help does the work.
+Article title: From Paper 2.0 to dramatic recognition
+
+Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-09.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
+Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
+
+Art direction:
+Machine Spirits editorial cartoon style, leaning film noir by default:
+- Warm paper ground with visible grain, pushed through a low-key noir palette: cream, charcoal, ink brown, smoke grey, brick red, moss, and ochre.
+- High-contrast chiaroscuro lighting, hard shadows, venetian-blind slashes, stage haze, lamplight cones, and noir investigation-board composition.
+- Scientific comic rather than glossy sci-fi: hand-inked lines, margin labels, arrows, crop marks, small registers, and evidence tags.
+- Tutor and learner can appear as simple silhouettes, masks, or diagrammatic figures, never as copyrighted characters.
+- Use sparse lettering only: one compact title and at most two short labels. Avoid long quoted text.
+- The image should work as a clear article illustration in an HTML img tag, not as a screenshot, poster, or murky mood piece.
+
+Textual context to complement:
+The branch doesn't break the null — it answers a different question. And there, when the secret runs deep, the help does the work. Discipline Per project rule, spin-offs must not introduce empirical claims that aren't first in paper-full-2.0. Paper 2.0 found adaptive responsiveness null as a general trajectory mechanism — recognition prompts and the draft-then-critique architecture didn't move tutors on average.
+
+Image concept:
+a null-result seal reframed into a narrower guided-discovery doorway where deep secrets need help
+
+Caption this image will carry in the page:
+The branch doesn't break the null — it answers a different question. And there, when the secret runs deep, the help does the work: The branch doesn't break the null — it answers a different question.
+
+Composition requirements:
+- Landscape editorial cartoon, roughly 16:10.
+- Keep labels sparse and legible: no more than three in-image labels, each under six words.
+- Show a tutor-learner mechanism, a measurement apparatus, or an evidence/control-loop metaphor.
+- Avoid photorealism, corporate-vector stock style, copyrighted characters, screenshots, and dense prose.
+
+Return a short final note listing the created file.
+```

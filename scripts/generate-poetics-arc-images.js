@@ -81,6 +81,7 @@ Options:
   --codex-memories       Let Codex exec use the user's configured memories setting.
   --timeout-ms <number>  Timeout per Codex image call. Default: ${DEFAULTS.timeoutMs}
   --dry-run              Analyze and write prompt/manifest only; do not run Codex or edit HTML.
+  --html-only            Update HTML using existing managed images; do not run Codex.
   --skip-codex           Do not run Codex; update HTML against existing managed images.
   --skip-html            Do not edit HTML after image generation.
   --allow-missing        Allow HTML update even if managed image files are missing.
@@ -141,7 +142,7 @@ function parseArgs(argv) {
       opts.timeoutMs = parsePositiveInt(next(), 'timeout-ms');
     } else if (arg === '--dry-run') {
       opts.dryRun = true;
-    } else if (arg === '--skip-codex') {
+    } else if (arg === '--skip-codex' || arg === '--html-only') {
       opts.skipCodex = true;
     } else if (arg === '--skip-html') {
       opts.skipHtml = true;
@@ -154,6 +155,9 @@ function parseArgs(argv) {
 
   if (!['svg', 'png'].includes(opts.format)) {
     throw new Error(`--format must be svg or png, got: ${opts.format}`);
+  }
+  if (opts.skipCodex && opts.skipHtml && !opts.dryRun) {
+    throw new Error('--html-only/--skip-codex cannot be combined with --skip-html unless --dry-run is also set');
   }
   return opts;
 }
@@ -564,6 +568,7 @@ function ensureCodexSkillSupportDirs() {
 
 async function runCodex(prompt, panel, opts) {
   const lastMessagePath = path.join(path.dirname(panel.image_path), `${path.basename(panel.image_path)}.codex.txt`);
+  const transcriptPath = path.join(path.dirname(panel.image_path), `${path.basename(panel.image_path)}.codex.log`);
   const args = ['exec', '-C', ROOT];
   if (opts.ephemeral) args.push('--ephemeral');
   if (!opts.codexMemories) args.push('-c', 'memories=false');
@@ -578,13 +583,14 @@ async function runCodex(prompt, panel, opts) {
   args.push('-');
 
   await new Promise((resolve, reject) => {
+    const transcript = fs.createWriteStream(transcriptPath, { flags: 'w' });
     const child = spawn(opts.codexBin, args, {
       cwd: ROOT,
       env: {
         ...process.env,
         CODEX_GENERATED_POETICS_ARC_IMAGE: '1',
       },
-      stdio: ['pipe', 'inherit', 'inherit'],
+      stdio: ['pipe', 'pipe', 'pipe'],
     });
     let settled = false;
     const timer = setTimeout(() => {
@@ -596,19 +602,47 @@ async function runCodex(prompt, panel, opts) {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
+      transcript.end();
       fn(value);
     }
 
+    child.stdout.on('data', (chunk) => transcript.write(chunk));
+    child.stderr.on('data', (chunk) => transcript.write(chunk));
     child.stdin.on('error', (error) => {
       if (error.code !== 'EPIPE') finish(reject, error);
     });
     child.on('error', (error) => finish(reject, error));
     child.on('close', (code) => {
       if (code === 0) finish(resolve);
-      else finish(reject, new Error(`codex exited with code ${code}`));
+      else finish(reject, new Error(`codex exited with code ${code}; see ${relativeToRoot(transcriptPath)}`));
     });
     child.stdin.end(prompt);
   });
+}
+
+function printCreatedFileSummary({ manifestFile, missing, panels, promptFile, skipCodex }) {
+  const missingPaths = new Set(missing.map((panel) => panel.image_path));
+  const created = panels.filter((panel) => fs.existsSync(panel.image_path) && !missingPaths.has(panel.image_path));
+  console.log('');
+  console.log('Created files summary:');
+  console.log(`- Prompt file: ${relativeToRoot(promptFile)}`);
+  console.log(`- Manifest: ${relativeToRoot(manifestFile)}`);
+  if (skipCodex) {
+    console.log('- Images: skipped Codex generation');
+  } else if (created.length) {
+    console.log('- Images:');
+    for (const panel of created) {
+      console.log(`  ${String(panel.panel).padStart(2, '0')}. ${panel.section_id}: ${panel.image_file}`);
+    }
+  } else {
+    console.log('- Images: none created');
+  }
+  if (missing.length) {
+    console.log('- Missing images:');
+    for (const panel of missing) {
+      console.log(`  ${String(panel.panel).padStart(2, '0')}. ${panel.section_id}: ${panel.image_file}`);
+    }
+  }
 }
 
 function validateImages(panels, allowMissing) {
@@ -655,10 +689,14 @@ function upsertManagedStyle(html) {
   const styleRe = /\/\* poetics-arc-images:style:begin \*\/[\s\S]*?\/\* poetics-arc-images:style:end \*\//;
   if (styleRe.test(html)) return html.replace(styleRe, styleBlock);
   const closeStyle = html.indexOf('</style>');
-  if (closeStyle === -1) {
-    throw new Error('Cannot find </style> in target HTML for managed image styles');
+  if (closeStyle !== -1) {
+    return `${html.slice(0, closeStyle)}\n\n${styleBlock}\n${html.slice(closeStyle)}`;
   }
-  return `${html.slice(0, closeStyle)}\n\n${styleBlock}\n${html.slice(closeStyle)}`;
+  const closeHead = html.indexOf('</head>');
+  if (closeHead === -1) {
+    throw new Error('Cannot find </head> in target HTML for managed image styles');
+  }
+  return `${html.slice(0, closeHead)}<style>\n${styleBlock}\n</style>\n${html.slice(closeHead)}`;
 }
 
 function buildManagedStyleBlock() {
@@ -903,6 +941,14 @@ async function main() {
   } else {
     console.log('Skipped HTML update.');
   }
+
+  printCreatedFileSummary({
+    manifestFile: inputs.manifestFile,
+    missing,
+    panels,
+    promptFile: inputs.promptFile,
+    skipCodex: opts.skipCodex,
+  });
 }
 
 main().catch((error) => {

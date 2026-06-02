@@ -1,0 +1,110 @@
+{
+  "generated_at": "2026-06-02T20:36:31.420Z",
+  "html": "notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html",
+  "image_format": "png",
+  "image_prefix": "dramatic-recognition-arc",
+  "prompt_file": "notes/poetics/images/2026-05-26-paper-to-dramatic-recognition-arc-image-prompts.txt",
+  "style": "machinespirits-poetics-editorial-cartoon-v1",
+  "title": "From Paper 2.0 to dramatic recognition",
+  "images": [
+    {
+      "alt": "Editorial cartoon for The last paper gave us a disciplined mechanism story, not a deployed adaptive tutor.: a paper mechanism diagram becoming a theatre stage, with one lane label...",
+      "caption": "The last paper gave us a disciplined mechanism story, not a deployed adaptive tutor: Calibration supported Recognition-oriented prompts narrow and lift the tutor's output distribution.",
+      "image_file": "notes/poetics/images/dramatic-recognition-arc-01.png",
+      "image_src": "images/dramatic-recognition-arc-01.png",
+      "panel": 1,
+      "section_heading": "The last paper gave us a disciplined mechanism story, not a deployed adaptive tutor.",
+      "section_id": "starting-point",
+      "section_kicker": null,
+      "visual_metaphor": "a paper mechanism diagram becoming a theatre stage, with one lane labelled calibration and one lane labelled adaptive null"
+    },
+    {
+      "alt": "Editorial cartoon for The shift from paper mechanism testing to dramatic mechanism discovery.: a measured slope chart dissolving into a staged learner-tutor encounter under a spot...",
+      "caption": "The shift from paper mechanism testing to dramatic mechanism discovery: Tooling outcome The sidecar is itself a major output of this arc — a laboratory apparatus for the narrower dialogical mechanism the paper's null le...",
+      "image_file": "notes/poetics/images/dramatic-recognition-arc-02.png",
+      "image_src": "images/dramatic-recognition-arc-02.png",
+      "panel": 2,
+      "section_heading": "The shift from paper mechanism testing to dramatic mechanism discovery.",
+      "section_id": "arc",
+      "section_kicker": null,
+      "visual_metaphor": "a measured slope chart dissolving into a staged learner-tutor encounter under a spotlight"
+    },
+    {
+      "alt": "Editorial cartoon for What's solid, what's borderline, what's still a hazard.: an evidence wall with strong, boundary, and risk cards connected to a small poetics browser terminal.",
+      "caption": "The Evidence Wall · Live: How the file reads Strong means it holds up under the four-critic rule on a clean baseline.",
+      "image_file": "notes/poetics/images/dramatic-recognition-arc-03.png",
+      "image_src": "images/dramatic-recognition-arc-03.png",
+      "panel": 3,
+      "section_heading": "What's solid, what's borderline, what's still a hazard.",
+      "section_id": "evidence",
+      "section_kicker": "The Evidence Wall · Live",
+      "visual_metaphor": "an evidence wall with strong, boundary, and risk cards connected to a small poetics browser terminal"
+    },
+    {
+      "alt": "Editorial cartoon for The headline is mechanism-level adaptation, not guaranteed recognitive closure.: a tutor at a forked path changing tools only after the learner shows a concr...",
+      "caption": "Adaptation Boundary: The branch supports tutor adaptation as a visible change of teaching move under clean-baseline reversal pressure.",
+      "image_file": "notes/poetics/images/dramatic-recognition-arc-04.png",
+      "image_src": "images/dramatic-recognition-arc-04.png",
+      "panel": 4,
+      "section_heading": "The headline is mechanism-level adaptation, not guaranteed recognitive closure.",
+      "section_id": "adaptation",
+      "section_kicker": "Adaptation Boundary",
+      "visual_metaphor": "a tutor at a forked path changing tools only after the learner shows a concrete stuck point"
+    },
+    {
+      "alt": "Editorial cartoon for A single mechanism change with a strong local and noisy broad result.: a learner trying the tutor device, then turning back to redraw the original difficulty.",
+      "caption": "Ending Shape · live chart: The ending-shape constraint asks for a tighter dramatic close: after the tutor's new device, the learner must publicly try the device and then re-read the prior difficulty.",
+      "image_file": "notes/poetics/images/dramatic-recognition-arc-05.png",
+      "image_src": "images/dramatic-recognition-arc-05.png",
+      "panel": 5,
+      "section_heading": "A single mechanism change with a strong local and noisy broad result.",
+      "section_id": "ending-shape",
+      "section_kicker": "Ending Shape · live chart",
+      "visual_metaphor": "a learner trying the tutor device, then turning back to redraw the original difficulty"
+    },
+    {
+      "alt": "Editorial cartoon for One pass. Not yet a pattern. Adaptation → recognition walked in once.: an evidence wall with strong, boundary, and risk cards connected to a small poetics br...",
+      "caption": "One pass. Not yet a pattern. Adaptation → recognition walked in once: Run phase2-adaptation-recognition-loop-20260527T105617Z brought D42, D50, and D53 into the same room.",
+      "image_file": "notes/poetics/images/dramatic-recognition-arc-06.png",
+      "image_src": "images/dramatic-recognition-arc-06.png",
+      "panel": 6,
+      "section_heading": "One pass. Not yet a pattern. Adaptation → recognition walked in once.",
+      "section_id": "landing-update",
+      "section_kicker": null,
+      "visual_metaphor": "an evidence wall with strong, boundary, and risk cards connected to a small poetics browser terminal"
+    },
+    {
+      "alt": "Editorial cartoon for From measuring average slopes to specifying what adaptation would have to be.: a ruler for average slopes laid beside a blueprint for dramatic mechanism spec...",
+      "caption": "From measuring average slopes to specifying what adaptation would have to be: Pair of questions Old: Do recognition and architecture improve average turn-by-turn slopes?",
+      "image_file": "notes/poetics/images/dramatic-recognition-arc-07.png",
+      "image_src": "images/dramatic-recognition-arc-07.png",
+      "panel": 7,
+      "section_heading": "From measuring average slopes to specifying what adaptation would have to be.",
+      "section_id": "conceptual",
+      "section_kicker": null,
+      "visual_metaphor": "a ruler for average slopes laid beside a blueprint for dramatic mechanism specification"
+    },
+    {
+      "alt": "Editorial cartoon for A mechanism specification, a curated dataset, and a control loop.: a compact control loop machine: observe, classify, choose, generate, check, update.",
+      "caption": "A mechanism specification, a curated dataset, and a control loop: Three linked artifacts would carry the work past calibration and into something that can change future tutor behaviour.",
+      "image_file": "notes/poetics/images/dramatic-recognition-arc-08.png",
+      "image_src": "images/dramatic-recognition-arc-08.png",
+      "panel": 8,
+      "section_heading": "A mechanism specification, a curated dataset, and a control loop.",
+      "section_id": "durable-output",
+      "section_kicker": null,
+      "visual_metaphor": "a compact control loop machine: observe, classify, choose, generate, check, update"
+    },
+    {
+      "alt": "Editorial cartoon for The branch doesn't break the null — it answers a different question. And there, when the secret runs deep, the help does the work.: a null-result seal refram...",
+      "caption": "The branch doesn't break the null — it answers a different question. And there, when the secret runs deep, the help does the work: The branch doesn't break the null — it answers a different question.",
+      "image_file": "notes/poetics/images/dramatic-recognition-arc-09.png",
+      "image_src": "images/dramatic-recognition-arc-09.png",
+      "panel": 9,
+      "section_heading": "The branch doesn't break the null — it answers a different question. And there, when the secret runs deep, the help does the work.",
+      "section_id": "paper-implication",
+      "section_kicker": null,
+      "visual_metaphor": "a null-result seal reframed into a narrower guided-discovery doorway where deep secrets need help"
+    }
+  ]
+}
