@@ -216,7 +216,7 @@ function normalCdf(x) {
 
 // ── Cell metadata ──────────────────────────────────────────────────────
 
-const FAMILY = {
+const _FAMILY = {
   cell_1_base_single_unified: 'transmission',
   cell_5_recog_single_unified: 'intersubjective',
   cell_95_base_matched_single_unified: 'intersubjective',

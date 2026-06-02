@@ -520,7 +520,7 @@ function buildReport({ runId, judge, perCell, allRegexKeys }) {
     '| 4 | broad acknowledgement | pragmatic | 0.14 | -0.181 / -0.307 | Negative correlate (formulaic echoing) |',
   );
   lines.push(
-    `| 5 | intersub_advantage | semantic | ${fmt(advFamilyD, 2)} | ${fmt(advR5, 3)} / ${fmt(advR95, 3)} | Family marker, **negative** within-cell (Simpson\'s) |`,
+    `| 5 | intersub_advantage | semantic | ${fmt(advFamilyD, 2)} | ${fmt(advR5, 3)} / ${fmt(advR95, 3)} | Family marker, **negative** within-cell (Simpson's) |`,
   );
   lines.push('');
   lines.push(

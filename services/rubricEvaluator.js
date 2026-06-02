@@ -843,7 +843,9 @@ async function callJudgeModel(prompt, overrides = {}) {
       const cliTimeout = setTimeout(() => {
         try {
           child.kill('SIGKILL');
-        } catch (_) {}
+        } catch (_) {
+          // intentionally empty
+        }
         reject(new Error('claude CLI judge timed out after 180s'));
       }, 180_000);
       child.stdout.on('data', (d) => {

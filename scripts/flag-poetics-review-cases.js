@@ -13,7 +13,7 @@ import { openPoeticsStore, upsertPoeticsReviewFlag } from '../services/poeticsSt
 import { classifyPoeticsConsensus, parseCriticFormString } from './lib/poeticsConsensus.js';
 
 const __filename = fileURLToPath(import.meta.url);
-const ROOT = path.resolve(path.dirname(__filename), '..');
+const _ROOT = path.resolve(path.dirname(__filename), '..');
 
 function parseArgs(argv) {
   const args = {

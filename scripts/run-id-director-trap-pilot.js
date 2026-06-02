@@ -327,6 +327,7 @@ async function main() {
           verbose,
         });
         persisted++;
+        // eslint-disable-next-line no-constant-condition
         if (verbose || true) {
           console.log(`[id-director-trap]   ✓ ${variantId} (turns=${out.turns}, dialogue=${out.dialogueId})`);
         }

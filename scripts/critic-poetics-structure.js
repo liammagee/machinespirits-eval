@@ -145,7 +145,7 @@ function hasPeripeteiaReorientation(turns, peripeteia) {
   return PERIPETEIA_PRESSURE_FRAME.test(text) && PERIPETEIA_REPLACEMENT_FRAME.test(text);
 }
 
-function deterministicChecks({ id, item, raw }) {
+function deterministicChecks({ id: _id, item, raw }) {
   const turns = parseTurns(raw);
   const tutorTurns = turns.filter((turn) => turn.role === 'TUTOR');
   const learnerTurns = turns.filter((turn) => turn.role === 'LEARNER');

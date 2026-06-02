@@ -227,7 +227,7 @@ function saveJudge2File(state) {
 function mean(xs) {
   return xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : NaN;
 }
-function std(xs) {
+function _std(xs) {
   if (xs.length < 2) return NaN;
   const m = mean(xs);
   return Math.sqrt(xs.reduce((s, x) => s + (x - m) ** 2, 0) / (xs.length - 1));

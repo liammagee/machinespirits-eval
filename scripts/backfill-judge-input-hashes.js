@@ -134,7 +134,7 @@ function reconstructPromptHash({ dialogueLog, scenario, targetTurnIndex }) {
   }
 }
 
-function backfillRow(row, opts) {
+function backfillRow(row, _opts) {
   const ts = safeJsonParse(row.tutor_scores);
   if (!ts) return { row_id: row.id, status: 'skip', reason: 'unparseable tutor_scores' };
 

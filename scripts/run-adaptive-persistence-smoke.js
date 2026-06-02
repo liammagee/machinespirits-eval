@@ -8,7 +8,6 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'adaptive-persist-'));
 const tmpDb = path.join(tmpDir, 'evaluations.db');

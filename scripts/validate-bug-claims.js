@@ -146,7 +146,7 @@ function formatDetail(value) {
 }
 
 function remediationForCheck(check) {
-  const details = check.details || {};
+  const _details = check.details || {};
 
   switch (check.id) {
     case 'manifest-paper-validator':

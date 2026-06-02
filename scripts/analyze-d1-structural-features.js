@@ -429,7 +429,7 @@ function buildReport({ runId, judge, perCell }) {
   lines.push('### Prompt marker: **question-mark rate**');
   lines.push('');
   lines.push(
-    `Family $d = ${fmt(familyD.questionRate, 3)}$ is large but cell_5\'s rate (0.0064) is 3.2× cell_95\'s (0.0020) — the recognition prompt is genuinely more question-dense than the matched-pedagogical prompt. Within-cell $r$\'s are small to null. Question-mark *count* is a marker of the recognition prompt specifically; the family-level signal is carried more cleanly by ends-with-question (where to put the question matters more than how many you ask).`,
+    `Family $d = ${fmt(familyD.questionRate, 3)}$ is large but cell_5's rate (0.0064) is 3.2× cell_95's (0.0020) — the recognition prompt is genuinely more question-dense than the matched-pedagogical prompt. Within-cell $r$'s are small to null. Question-mark *count* is a marker of the recognition prompt specifically; the family-level signal is carried more cleanly by ends-with-question (where to put the question matters more than how many you ask).`,
   );
   lines.push('');
   lines.push('### Null features: acknowledgement markers, epistemic hedges');

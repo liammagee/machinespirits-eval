@@ -55,7 +55,7 @@ const untrackedCount = wt.filter((l) => l.startsWith('??')).length;
 const today = new Date().toISOString().slice(0, 10);
 
 const paperText = readFileSync(PAPER_PATH, 'utf-8');
-const paperVersion = (paperText.match(/^version:\s*"([^"]+)"/m) || [, 'unknown'])[1];
+const paperVersion = (paperText.match(/^version:\s*"([^"]+)"/m) || [undefined, 'unknown'])[1];
 const findLine = (re) => {
   const lines = paperText.split('\n');
   for (let i = 0; i < lines.length; i++) if (re.test(lines[i])) return i + 1;

@@ -33,7 +33,6 @@
  *   separately.
  */
 
-import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Database from 'better-sqlite3';
@@ -246,10 +245,10 @@ console.log(
   `Recog arc ρs: [${recogRhos.map((r) => r.toFixed(3)).join(', ')}]   mean = ${meanArr(recogRhos).toFixed(3)}`,
 );
 
-const baseOver = baseRhos.filter((r) => r > 0.5).length;
+const _baseOver = baseRhos.filter((r) => r > 0.5).length;
 const recogOver = recogRhos.filter((r) => r > 0.5).length;
 const baseUnder = baseRhos.filter((r) => r <= 0.3).length;
-const recogUnder = recogRhos.filter((r) => r <= 0.3).length;
+const _recogUnder = recogRhos.filter((r) => r <= 0.3).length;
 console.log(`Recog arcs with ρ > 0.5: ${recogOver}/${recogRhos.length}`);
 console.log(`Base  arcs with ρ ≤ 0.3: ${baseUnder}/${baseRhos.length}`);
 

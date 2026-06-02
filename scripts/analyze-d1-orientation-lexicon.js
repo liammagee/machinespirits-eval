@@ -48,7 +48,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import { RECOGNITION_LEXICON, computeConceptDensities, extractText, pearson } from './analyze-recognition-lexicon.js';
+import { RECOGNITION_LEXICON, extractText, pearson } from './analyze-recognition-lexicon.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DB_PATH = path.resolve(__dirname, '..', 'data', 'evaluations.db');
@@ -94,7 +94,7 @@ export const INTERSUBJECTIVE_LEXICON = {
   inquiry: [/\binquiry\b/i, /\bexplorator(?:y|ily)\b/i, /\bprob(?:e|es|ed|ing)\b/i],
 };
 
-const INTERSUB_CONCEPTS = Object.keys(INTERSUBJECTIVE_LEXICON);
+const _INTERSUB_CONCEPTS = Object.keys(INTERSUBJECTIVE_LEXICON);
 
 // ── Per-row density (using both lexicons) ───────────────────────────────
 
