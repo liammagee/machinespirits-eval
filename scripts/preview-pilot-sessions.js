@@ -39,7 +39,10 @@ function parseArgs(argv) {
     else if (a === '--session') out.sessionId = argv[++i];
     else if (a === '--out') out.out = argv[++i];
     else if (a === '--status') out.status = argv[++i];
-    else if (a === '-h' || a === '--help') { console.log(fs.readFileSync(__filename, 'utf-8').slice(0, 1200)); process.exit(0); }
+    else if (a === '-h' || a === '--help') {
+      console.log(fs.readFileSync(__filename, 'utf-8').slice(0, 1200));
+      process.exit(0);
+    }
   }
   return out;
 }
@@ -48,21 +51,29 @@ function reconstructSessionData(db, sessionId) {
   const session = db.prepare('SELECT * FROM pilot_sessions WHERE id = ?').get(sessionId);
   if (!session) return null;
   if (typeof session.intake_data === 'string') {
-    try { session.intake_data = JSON.parse(session.intake_data); } catch { /* leave */ }
+    try {
+      session.intake_data = JSON.parse(session.intake_data);
+    } catch {
+      /* leave */
+    }
   }
   const turns = db.prepare('SELECT * FROM pilot_turns WHERE session_id = ? ORDER BY turn_index').all(sessionId);
-  const tests = db.prepare('SELECT * FROM pilot_test_items WHERE session_id = ? ORDER BY phase, item_position').all(sessionId);
+  const tests = db
+    .prepare('SELECT * FROM pilot_test_items WHERE session_id = ? ORDER BY phase, item_position')
+    .all(sessionId);
   const survey = db.prepare('SELECT * FROM pilot_exit_survey WHERE session_id = ?').get(sessionId);
-  const exitPayload = survey ? {
-    nasa_tlx: survey.nasa_tlx ? JSON.parse(survey.nasa_tlx) : {},
-    engagement_likert: survey.engagement_likert ? JSON.parse(survey.engagement_likert) : {},
-    open_ended: survey.open_ended ? JSON.parse(survey.open_ended) : { tutor_got_right: '', felt_misunderstood: '' },
-  } : { nasa_tlx: {}, engagement_likert: {}, open_ended: { tutor_got_right: '', felt_misunderstood: '' } };
+  const exitPayload = survey
+    ? {
+        nasa_tlx: survey.nasa_tlx ? JSON.parse(survey.nasa_tlx) : {},
+        engagement_likert: survey.engagement_likert ? JSON.parse(survey.engagement_likert) : {},
+        open_ended: survey.open_ended ? JSON.parse(survey.open_ended) : { tutor_got_right: '', felt_misunderstood: '' },
+      }
+    : { nasa_tlx: {}, engagement_likert: {}, open_ended: { tutor_got_right: '', felt_misunderstood: '' } };
   return {
     session,
     turns,
     tests,
-    persona: '(unknown)',           // not stored in DB; reconstructed reports won't have this
+    persona: '(unknown)', // not stored in DB; reconstructed reports won't have this
     exitPayload,
   };
 }
@@ -79,9 +90,10 @@ async function main() {
   if (args.sessionId) {
     sessionIds = [args.sessionId];
   } else {
-    const rows = args.status === 'all'
-      ? db.prepare('SELECT id FROM pilot_sessions ORDER BY enrolled_at').all()
-      : db.prepare('SELECT id FROM pilot_sessions WHERE status = ? ORDER BY enrolled_at').all(args.status);
+    const rows =
+      args.status === 'all'
+        ? db.prepare('SELECT id FROM pilot_sessions ORDER BY enrolled_at').all()
+        : db.prepare('SELECT id FROM pilot_sessions WHERE status = ? ORDER BY enrolled_at').all(args.status);
     sessionIds = rows.map((r) => r.id);
   }
 

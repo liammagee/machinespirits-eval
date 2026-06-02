@@ -53,18 +53,17 @@ router.get('/config', (req, res) => {
 
 router.post('/enroll', (req, res) => {
   try {
-    const {
-      participant_pid = null,
-      scenario_lecture_ref = null,
-      force_condition = null,
-    } = req.body || {};
+    const { participant_pid = null, scenario_lecture_ref = null, force_condition = null } = req.body || {};
 
     // Idempotency for Prolific: if a PID has an active session, return it
     // rather than enrolling twice.
     if (participant_pid) {
       const existing = pilotStore.getSessionByPid(participant_pid);
-      if (existing && existing.status !== pilotStore.PILOT_STATUSES.ABANDONED
-          && existing.status !== pilotStore.PILOT_STATUSES.COMPLETED) {
+      if (
+        existing &&
+        existing.status !== pilotStore.PILOT_STATUSES.ABANDONED &&
+        existing.status !== pilotStore.PILOT_STATUSES.COMPLETED
+      ) {
         return res.json({
           session: pilotStore.getBlindedSessionView(existing.id),
           resumed: true,

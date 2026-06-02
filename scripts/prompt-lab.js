@@ -587,7 +587,9 @@ function getScoredIterations(session) {
 function getBestScoredIteration(session) {
   const useTargetDims = session.targetDimensions?.length > 0;
   const getScore = (entry) =>
-    useTargetDims ? (entry.targetDimScore ?? entry.summary?.primaryScore ?? null) : (entry.summary?.primaryScore ?? null);
+    useTargetDims
+      ? (entry.targetDimScore ?? entry.summary?.primaryScore ?? null)
+      : (entry.summary?.primaryScore ?? null);
 
   const scored = getScoredIterations(session).filter((entry) => getScore(entry) != null);
   return scored.sort((a, b) => (getScore(b) || 0) - (getScore(a) || 0))[0] || null;
@@ -2475,19 +2477,13 @@ async function runSessionIteration(session, options = {}) {
     comparison: {
       previousIteration: previous?.iteration ?? null,
       deltaVsPrevious:
-        getIterScore(previous) != null && currentScore != null
-          ? currentScore - getIterScore(previous)
-          : null,
+        getIterScore(previous) != null && currentScore != null ? currentScore - getIterScore(previous) : null,
       baselineIteration: baseline?.iteration ?? null,
       deltaVsBaseline:
-        getIterScore(baseline) != null && currentScore != null
-          ? currentScore - getIterScore(baseline)
-          : null,
+        getIterScore(baseline) != null && currentScore != null ? currentScore - getIterScore(baseline) : null,
       bestBeforeIteration: bestBefore?.iteration ?? null,
       deltaVsBestBefore:
-        getIterScore(bestBefore) != null && currentScore != null
-          ? currentScore - getIterScore(bestBefore)
-          : null,
+        getIterScore(bestBefore) != null && currentScore != null ? currentScore - getIterScore(bestBefore) : null,
     },
     accepted: null,
     revertedToIteration: null,
@@ -2511,9 +2507,7 @@ async function runSessionIteration(session, options = {}) {
     `  Primary metric (${summary.metricName}): ${summary.primaryScore == null ? 'n/a' : summary.primaryScore.toFixed(1)}`,
   );
   if (hasTargetDims && targetDimScore != null) {
-    console.log(
-      `  Target dims (${session.targetDimensions.join(', ')}): ${targetDimScore.toFixed(1)}`,
-    );
+    console.log(`  Target dims (${session.targetDimensions.join(', ')}): ${targetDimScore.toFixed(1)}`);
   }
   if (summary.totalRuns > 1) {
     console.log(`  Replications: ${summary.scoredRuns}/${summary.totalRuns} scored`);
@@ -2896,8 +2890,7 @@ async function handleAutotune() {
 
     const candidateScore = getCmpScore(latestEntry);
     const bestBeforeScore = getCmpScore(bestBefore);
-    const accepted =
-      candidateScore != null && (bestBeforeScore == null || candidateScore >= bestBeforeScore);
+    const accepted = candidateScore != null && (bestBeforeScore == null || candidateScore >= bestBeforeScore);
 
     if (latestEntry) {
       latestEntry.accepted = accepted;
@@ -2905,8 +2898,7 @@ async function handleAutotune() {
       latestEntry.comparison = {
         ...latestEntry.comparison,
         basisIteration: basisIteration.iteration,
-        deltaVsBasis:
-          candidateScore != null && basisScore != null ? candidateScore - basisScore : null,
+        deltaVsBasis: candidateScore != null && basisScore != null ? candidateScore - basisScore : null,
       };
     }
 
@@ -2929,12 +2921,12 @@ async function handleAutotune() {
       );
     }
     if (!accepted && !keepWorse && bestBefore) {
-      const bestDir = bestBefore.snapshotDir
-        ? path.join(bestBefore.snapshotDir, 'prompts')
-        : latestSession.baselineDir;
+      const bestDir = bestBefore.snapshotDir ? path.join(bestBefore.snapshotDir, 'prompts') : latestSession.baselineDir;
       restoreWorkingPromptsFromDir(latestSession, bestDir);
       if (latestEntry) latestEntry.revertedToIteration = bestBefore.iteration;
-      console.log(`    Decision: reverted to iteration ${bestBefore.iteration}${!bestBefore.snapshotDir ? ' (baseline)' : ''}`);
+      console.log(
+        `    Decision: reverted to iteration ${bestBefore.iteration}${!bestBefore.snapshotDir ? ' (baseline)' : ''}`,
+      );
     } else if (accepted) {
       console.log('    Decision: accepted');
     } else {
@@ -3006,9 +2998,7 @@ async function handleImport() {
     comparison: {
       previousIteration: previous?.iteration ?? null,
       deltaVsPrevious:
-        getIterScore(previous) != null && currentScore != null
-          ? currentScore - getIterScore(previous)
-          : null,
+        getIterScore(previous) != null && currentScore != null ? currentScore - getIterScore(previous) : null,
     },
     accepted: null,
     revertedToIteration: null,
@@ -3083,9 +3073,10 @@ async function handleStatus() {
 
   const best = getBestScoredIteration(session);
   if (best) {
-    const scoreLabel = session.targetDimensions?.length > 0 && best.targetDimScore != null
-      ? `target dims: ${best.targetDimScore.toFixed(1)}, overall: ${best.summary.primaryScore?.toFixed(1) ?? 'n/a'}`
-      : `${best.summary.primaryScore?.toFixed(1) ?? 'n/a'}`;
+    const scoreLabel =
+      session.targetDimensions?.length > 0 && best.targetDimScore != null
+        ? `target dims: ${best.targetDimScore.toFixed(1)}, overall: ${best.summary.primaryScore?.toFixed(1) ?? 'n/a'}`
+        : `${best.summary.primaryScore?.toFixed(1) ?? 'n/a'}`;
     console.log(`\nBest score: ${scoreLabel} (iteration ${best.iteration}, ${best.dryRun ? 'mock' : 'live'})`);
   }
 }

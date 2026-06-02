@@ -95,7 +95,10 @@ function extractMessages(suggestionsJson) {
     return '';
   }
   if (!Array.isArray(arr)) return '';
-  return arr.map((s) => s?.message).filter(Boolean).join('\n\n');
+  return arr
+    .map((s) => s?.message)
+    .filter(Boolean)
+    .join('\n\n');
 }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -132,7 +135,10 @@ const HEDGE_RES = [
 ];
 
 function wordCount(text) {
-  return text.trim().split(/\s+/).filter((w) => w.length > 0).length;
+  return text
+    .trim()
+    .split(/\s+/)
+    .filter((w) => w.length > 0).length;
 }
 
 function countMatches(text, regexes) {
@@ -188,13 +194,7 @@ const SHORT_LABEL = {
   cell_96_base_behaviorist_single_unified: 'cell_96 (matched-behaviorist)',
 };
 
-const FEATURE_KEYS = [
-  'questionRate',
-  'secondPersonDensity',
-  'endsWithQuestion',
-  'acknowledgementRate',
-  'hedgeRate',
-];
+const FEATURE_KEYS = ['questionRate', 'secondPersonDensity', 'endsWithQuestion', 'acknowledgementRate', 'hedgeRate'];
 
 const FEATURE_LABEL = {
   questionRate: 'Question-mark rate',
@@ -297,7 +297,9 @@ function buildReport({ runId, judge, perCell }) {
   lines.push(`**Judge:** ${judge}`);
   lines.push(`**Cells:** cell_1, cell_5, cell_95, cell_96`);
   lines.push('');
-  lines.push('Tests whether structural / pragmatic features (question rate, second-person density, turn-ending shape, acknowledgement markers, epistemic hedges) succeed where lexicon density failed. Lexicon analysis (D1 second-pass) ruled out vocabulary-as-mediator; this third pass asks whether the mechanism lives at the syntactic / pragmatic level instead.');
+  lines.push(
+    'Tests whether structural / pragmatic features (question rate, second-person density, turn-ending shape, acknowledgement markers, epistemic hedges) succeed where lexicon density failed. Lexicon analysis (D1 second-pass) ruled out vocabulary-as-mediator; this third pass asks whether the mechanism lives at the syntactic / pragmatic level instead.',
+  );
   lines.push('');
   lines.push('## 1. Per-cell feature means');
   lines.push('');
@@ -311,7 +313,9 @@ function buildReport({ runId, judge, perCell }) {
   lines.push('');
   lines.push('## 2. Family contrasts (intersubjective − transmission)');
   lines.push('');
-  lines.push('Pooled intersubjective family = cell_5 ∪ cell_95. Pooled transmission family = cell_1 ∪ cell_96. Cohen\'s d on each feature.');
+  lines.push(
+    "Pooled intersubjective family = cell_5 ∪ cell_95. Pooled transmission family = cell_1 ∪ cell_96. Cohen's d on each feature.",
+  );
   lines.push('');
   const cByName = Object.fromEntries(perCell.map((c) => [c.cell, c]));
   const c1 = cByName.cell_1_base_single_unified;
@@ -324,27 +328,27 @@ function buildReport({ runId, judge, perCell }) {
     const intersubArr = [...c5[`arr_${k}`], ...c95[`arr_${k}`]];
     const transArr = [...c1[`arr_${k}`], ...c96[`arr_${k}`]];
     const d = cohensD(intersubArr, transArr);
-    lines.push(
-      `| ${FEATURE_LABEL[k]} | ${fmt(mean(intersubArr))} | ${fmt(mean(transArr))} | ${fmt(d, 3)} |`,
-    );
+    lines.push(`| ${FEATURE_LABEL[k]} | ${fmt(mean(intersubArr))} | ${fmt(mean(transArr))} | ${fmt(d, 3)} |`);
   }
   lines.push('');
   lines.push('## 3. Within-intersubjective contrast (cell_5 vs cell_95)');
   lines.push('');
-  lines.push('If a feature is HIGH in cell_5 but LOW in cell_95, it tracks the recognition prompt (marker) rather than the family (shared by 5 and 95). If both have similar levels, the family-marker hypothesis holds.');
+  lines.push(
+    'If a feature is HIGH in cell_5 but LOW in cell_95, it tracks the recognition prompt (marker) rather than the family (shared by 5 and 95). If both have similar levels, the family-marker hypothesis holds.',
+  );
   lines.push('');
   lines.push('| Feature | Mean cell_5 | Mean cell_95 | d (5 − 95) |');
   lines.push('| --- | --- | --- | --- |');
   for (const k of FEATURE_KEYS) {
     const d = cohensD(c5[`arr_${k}`], c95[`arr_${k}`]);
-    lines.push(
-      `| ${FEATURE_LABEL[k]} | ${fmt(c5[`mean_${k}`])} | ${fmt(c95[`mean_${k}`])} | ${fmt(d, 3)} |`,
-    );
+    lines.push(`| ${FEATURE_LABEL[k]} | ${fmt(c5[`mean_${k}`])} | ${fmt(c95[`mean_${k}`])} | ${fmt(d, 3)} |`);
   }
   lines.push('');
   lines.push('## 4. Feature × score correlations (within-cell + pooled)');
   lines.push('');
-  lines.push('Pearson r at row level. r > 0 indicates the feature predicts higher scores within that population; r near 0 means decorative.');
+  lines.push(
+    'Pearson r at row level. r > 0 indicates the feature predicts higher scores within that population; r near 0 means decorative.',
+  );
   lines.push('');
   lines.push('| Feature | r within cell_5 | r within cell_95 | r within cell_1 | r within cell_96 | r pooled all 4 |');
   lines.push('| --- | --- | --- | --- | --- | --- |');
@@ -365,14 +369,24 @@ function buildReport({ runId, judge, perCell }) {
   lines.push('');
   lines.push('A **structural mediator candidate** would show:');
   lines.push('- Large family contrast (§2 |d| ≥ 0.5),');
-  lines.push('- Small within-intersubjective contrast (§3 |d| < 0.5 — the feature is shared by both intersubjective cells, not just the recognition cell), AND');
-  lines.push('- Positive within-cell Pearson r (§4 — the feature predicts scores even when the prompt is held constant).');
+  lines.push(
+    '- Small within-intersubjective contrast (§3 |d| < 0.5 — the feature is shared by both intersubjective cells, not just the recognition cell), AND',
+  );
+  lines.push(
+    '- Positive within-cell Pearson r (§4 — the feature predicts scores even when the prompt is held constant).',
+  );
   lines.push('');
-  lines.push('A feature that satisfies all three is a candidate for the actual mechanism the orientation-family effect operates through.');
+  lines.push(
+    'A feature that satisfies all three is a candidate for the actual mechanism the orientation-family effect operates through.',
+  );
   lines.push('');
-  lines.push('A feature that satisfies (1) and (2) but not (3) is a **family marker** — distinctive of intersubjective-family prompts but does not predict score variation. The mechanism then operates through the same channel but is amplitude-controlled by content the feature does not capture (e.g., semantic appropriateness of the question).');
+  lines.push(
+    'A feature that satisfies (1) and (2) but not (3) is a **family marker** — distinctive of intersubjective-family prompts but does not predict score variation. The mechanism then operates through the same channel but is amplitude-controlled by content the feature does not capture (e.g., semantic appropriateness of the question).',
+  );
   lines.push('');
-  lines.push('A feature that satisfies (1) but not (2) is a **prompt marker** — distinctive of one specific prompt rather than the family.');
+  lines.push(
+    'A feature that satisfies (1) but not (2) is a **prompt marker** — distinctive of one specific prompt rather than the family.',
+  );
   lines.push('');
   lines.push('## 6. Findings on these data');
   lines.push('');
@@ -392,37 +406,63 @@ function buildReport({ runId, judge, perCell }) {
       c95: pearson(c95[`arr_${k}`], c95.scoreArr),
     };
   }
-  lines.push(`### Mediator candidate: **ends-with-question** ($r_{cell\\_5} = ${fmt(withinR.endsWithQuestion.c5, 3)}$, $r_{cell\\_95} = ${fmt(withinR.endsWithQuestion.c95, 3)}$)`);
+  lines.push(
+    `### Mediator candidate: **ends-with-question** ($r_{cell\\_5} = ${fmt(withinR.endsWithQuestion.c5, 3)}$, $r_{cell\\_95} = ${fmt(withinR.endsWithQuestion.c95, 3)}$)`,
+  );
   lines.push('');
-  lines.push(`Family contrast $d = ${fmt(familyD.endsWithQuestion, 3)}$ is small by Cohen's conventions but the underlying pattern is *categorical*: transmission cells (cells 1 and 96) end with a question in **0%** of responses; intersubjective cells (5 and 95) do so in 4.5% and 2.1% respectively. Within-intersubjective $d = ${fmt(within5v95D.endsWithQuestion, 3)}$ is small — both intersubjective cells produce the behaviour. Within-cell Pearson $r$ with score is **${fmt(withinR.endsWithQuestion.c5, 3)}** in cell_5 and **${fmt(withinR.endsWithQuestion.c95, 3)}** in cell_95 — when the same prompt produces a response that ends with a question, that response scores higher. This is the first feature in the D1 sequence to satisfy all three mediator criteria.`);
+  lines.push(
+    `Family contrast $d = ${fmt(familyD.endsWithQuestion, 3)}$ is small by Cohen's conventions but the underlying pattern is *categorical*: transmission cells (cells 1 and 96) end with a question in **0%** of responses; intersubjective cells (5 and 95) do so in 4.5% and 2.1% respectively. Within-intersubjective $d = ${fmt(within5v95D.endsWithQuestion, 3)}$ is small — both intersubjective cells produce the behaviour. Within-cell Pearson $r$ with score is **${fmt(withinR.endsWithQuestion.c5, 3)}** in cell_5 and **${fmt(withinR.endsWithQuestion.c95, 3)}** in cell_95 — when the same prompt produces a response that ends with a question, that response scores higher. This is the first feature in the D1 sequence to satisfy all three mediator criteria.`,
+  );
   lines.push('');
-  lines.push('Pragmatically: ending a tutor turn with a question cedes initiative back to the learner. Transmission-family prompts (base, behaviorist) produce closed assertions; intersubjective-family prompts (recognition, matched-pedagogical) produce open questions some of the time. The *some of the time* is what the within-cell $r$ captures — it tracks pedagogical situations where ceding initiative is appropriate, not just stylistic preference.');
+  lines.push(
+    'Pragmatically: ending a tutor turn with a question cedes initiative back to the learner. Transmission-family prompts (base, behaviorist) produce closed assertions; intersubjective-family prompts (recognition, matched-pedagogical) produce open questions some of the time. The *some of the time* is what the within-cell $r$ captures — it tracks pedagogical situations where ceding initiative is appropriate, not just stylistic preference.',
+  );
   lines.push('');
-  lines.push(`### Cross-cell predictor: **second-person density** (pooled $r = ${fmt(pearson([...c1.arr_secondPersonDensity, ...c5.arr_secondPersonDensity, ...c95.arr_secondPersonDensity, ...c96.arr_secondPersonDensity], [...c1.scoreArr, ...c5.scoreArr, ...c95.scoreArr, ...c96.scoreArr]), 3)}$)`);
+  lines.push(
+    `### Cross-cell predictor: **second-person density** (pooled $r = ${fmt(pearson([...c1.arr_secondPersonDensity, ...c5.arr_secondPersonDensity, ...c95.arr_secondPersonDensity, ...c96.arr_secondPersonDensity], [...c1.scoreArr, ...c5.scoreArr, ...c95.scoreArr, ...c96.scoreArr]), 3)}$)`,
+  );
   lines.push('');
-  lines.push('Pooled $r$ is the highest of any feature, but second-person density is *not* a clean family marker (cell_1 has 0.050 vs cell_5\'s 0.060 — same order of magnitude). The within-cell $r$ pattern is uneven (cell_5 $r$ = 0.216, cell_96 $r$ = 0.240, cell_95 $r$ = 0.065). Second-person density is best read as a *correlate* of the same underlying engagement that the rubric rewards, not as a mechanism in its own right.');
+  lines.push(
+    "Pooled $r$ is the highest of any feature, but second-person density is *not* a clean family marker (cell_1 has 0.050 vs cell_5's 0.060 — same order of magnitude). The within-cell $r$ pattern is uneven (cell_5 $r$ = 0.216, cell_96 $r$ = 0.240, cell_95 $r$ = 0.065). Second-person density is best read as a *correlate* of the same underlying engagement that the rubric rewards, not as a mechanism in its own right.",
+  );
   lines.push('');
   lines.push('### Prompt marker: **question-mark rate**');
   lines.push('');
-  lines.push(`Family $d = ${fmt(familyD.questionRate, 3)}$ is large but cell_5\'s rate (0.0064) is 3.2× cell_95\'s (0.0020) — the recognition prompt is genuinely more question-dense than the matched-pedagogical prompt. Within-cell $r$\'s are small to null. Question-mark *count* is a marker of the recognition prompt specifically; the family-level signal is carried more cleanly by ends-with-question (where to put the question matters more than how many you ask).`);
+  lines.push(
+    `Family $d = ${fmt(familyD.questionRate, 3)}$ is large but cell_5\'s rate (0.0064) is 3.2× cell_95\'s (0.0020) — the recognition prompt is genuinely more question-dense than the matched-pedagogical prompt. Within-cell $r$\'s are small to null. Question-mark *count* is a marker of the recognition prompt specifically; the family-level signal is carried more cleanly by ends-with-question (where to put the question matters more than how many you ask).`,
+  );
   lines.push('');
   lines.push('### Null features: acknowledgement markers, epistemic hedges');
   lines.push('');
-  lines.push('Both feature families are near-zero across all cells. The author-specified regex sets did not capture meaningful variation. Either (a) tutors paraphrase and hedge in language too flexible for fixed regex extraction, or (b) the LLMs in question rarely use these explicit markers regardless of prompt. The features are not informative at this resolution.');
+  lines.push(
+    'Both feature families are near-zero across all cells. The author-specified regex sets did not capture meaningful variation. Either (a) tutors paraphrase and hedge in language too flexible for fixed regex extraction, or (b) the LLMs in question rarely use these explicit markers regardless of prompt. The features are not informative at this resolution.',
+  );
   lines.push('');
   lines.push('### Implication for D1');
   lines.push('');
-  lines.push('The lexical channel (D1 second-pass) is closed; the structural channel is **partially open**. Ends-with-question is a real candidate mediator, satisfying all three criteria. The mechanism account that emerges:');
+  lines.push(
+    'The lexical channel (D1 second-pass) is closed; the structural channel is **partially open**. Ends-with-question is a real candidate mediator, satisfying all three criteria. The mechanism account that emerges:',
+  );
   lines.push('');
-  lines.push('> Intersubjective-family prompts elicit responses that, *some of the time*, end with a question — ceding initiative back to the learner. The judges reward this, especially when the question is contextually appropriate (which the within-cell $r$ implies, since the prompt is held constant within a cell).');
+  lines.push(
+    '> Intersubjective-family prompts elicit responses that, *some of the time*, end with a question — ceding initiative back to the learner. The judges reward this, especially when the question is contextually appropriate (which the within-cell $r$ implies, since the prompt is held constant within a cell).',
+  );
   lines.push('');
-  lines.push('Open work: extend the feature set with semantic-pragmatic features (paraphrase via embeddings rather than regex, question quality via dependency parsing, scaffolding-move classification). The current regex-based features are a useful first cut but leave the rest of the structural channel under-instrumented.');
+  lines.push(
+    'Open work: extend the feature set with semantic-pragmatic features (paraphrase via embeddings rather than regex, question quality via dependency parsing, scaffolding-move classification). The current regex-based features are a useful first cut but leave the rest of the structural channel under-instrumented.',
+  );
   lines.push('');
   lines.push('## 7. Caveats');
   lines.push('');
-  lines.push('- Single judge (Sonnet) for cleanliness. Cross-judge replication would strengthen within-cell r columns.');
-  lines.push('- Features are author-specified regex extractors. False negatives possible (e.g., "Walk me through your reasoning" is a question without "?", not captured).');
-  lines.push('- `endsWithQuestion` collapses multi-suggestion responses to a single text blob; the "ending" is therefore the last suggestion\'s ending. Per-suggestion granularity would refine this if needed.');
+  lines.push(
+    '- Single judge (Sonnet) for cleanliness. Cross-judge replication would strengthen within-cell r columns.',
+  );
+  lines.push(
+    '- Features are author-specified regex extractors. False negatives possible (e.g., "Walk me through your reasoning" is a question without "?", not captured).',
+  );
+  lines.push(
+    '- `endsWithQuestion` collapses multi-suggestion responses to a single text blob; the "ending" is therefore the last suggestion\'s ending. Per-suggestion granularity would refine this if needed.',
+  );
   lines.push('- Within-cell n ≈ 50 — modest power for detecting r in the 0.2-0.4 range.');
   return lines.join('\n');
 }

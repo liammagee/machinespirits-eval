@@ -176,7 +176,8 @@ async function main() {
   const modelConfig = getModelConfig(modelChoice);
   console.error(`\nClassifier: ${modelConfig.label} (${modelConfig.model})`);
   console.error(`Items to classify: ${matched.length}`);
-  const estimatedCost = matched.length * 800 * (modelChoice === 'sonnet' ? 0.000003 : modelChoice === 'flash' ? 0.0000005 : 0.000003);
+  const estimatedCost =
+    matched.length * 800 * (modelChoice === 'sonnet' ? 0.000003 : modelChoice === 'flash' ? 0.0000005 : 0.000003);
   console.error(`Estimated cost: $${estimatedCost.toFixed(2)}\n`);
 
   const results = [];
@@ -184,7 +185,13 @@ async function main() {
   let errors = 0;
   for (const row of matched) {
     try {
-      const classification = await classify(row.feedback, row.profileName, row.approved, row.interventionType, modelConfig);
+      const classification = await classify(
+        row.feedback,
+        row.profileName,
+        row.approved,
+        row.interventionType,
+        modelConfig,
+      );
       results.push({
         item_id: row.item_id,
         classification,

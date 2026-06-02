@@ -29,7 +29,8 @@ const __filename = fileURLToPath(import.meta.url);
 const REPO = path.resolve(path.dirname(__filename), '..');
 const DB_PATH = path.join(REPO, 'data/evaluations.db');
 const PAPER_PATH = path.join(REPO, 'docs/research/paper-full-2.0.md');
-const DEFAULT_OUT = '/Users/lmagee/Dev/machinespirits/machinespirits-content-philosophy/articles/ai-tutor/branch-status.html';
+const DEFAULT_OUT =
+  '/Users/lmagee/Dev/machinespirits/machinespirits-content-philosophy/articles/ai-tutor/branch-status.html';
 
 // ---------- args -----------------------------------------------------------
 const args = process.argv.slice(2);
@@ -271,17 +272,35 @@ const NARRATIVE = {
   ],
 
   remainingRuns: [
-    ['cell_120 (state-policy, field isolation)', '~60 min', 'low',
-      'Closes the field-isolation question in P2.2; unblocks §6.8.6.', 'queued'],
-    ['cell_106 N=32 (id-director on traps)', '~60 min', 'low',
-      'Lifts the N=6 pilot to defensible N; unblocks half of §6.8.7. Script exists, no new engineering.', 'queued'],
-    ['cell_114 dialogue-engine baseline', 'build + ~60 min run', 'low',
+    [
+      'cell_120 (state-policy, field isolation)',
+      '~60 min',
+      'low',
+      'Closes the field-isolation question in P2.2; unblocks §6.8.6.',
+      'queued',
+    ],
+    [
+      'cell_106 N=32 (id-director on traps)',
+      '~60 min',
+      'low',
+      'Lifts the N=6 pilot to defensible N; unblocks half of §6.8.7. Script exists, no new engineering.',
+      'queued',
+    ],
+    [
+      'cell_114 dialogue-engine baseline',
+      'build + ~60 min run',
+      'low',
       `Single most consequential addition; unblocks the other half of §6.8.7 and the §6.3.9
        forward pointer. Run plan written up in the parking note <em>Closing the dialogue-engine gap</em> section.`,
-      'design done; build pending'],
-    ['Inter-rater rejudge on adaptive grader', '~30 min', 'near-zero',
+      'design done; build pending',
+    ],
+    [
+      'Inter-rater rejudge on adaptive grader',
+      '~30 min',
+      'near-zero',
       'Best ROI move against the single-judge / non-blinded-rubric concern (§5.12.4).',
-      'queued'],
+      'queued',
+    ],
   ],
 };
 
@@ -300,11 +319,19 @@ const tagClass = {
 const tag = (label) => `<span class="tag ${tagClass[label] || ''}">${label}</span>`;
 
 const adaptiveTable = () => {
-  const rows = ['cell_110_langgraph_adaptive', 'cell_118_state_policy_minimal_profile', 'cell_119_state_policy_no_misconceptions'];
+  const rows = [
+    'cell_110_langgraph_adaptive',
+    'cell_118_state_policy_minimal_profile',
+    'cell_119_state_policy_no_misconceptions',
+  ];
   const lookup = {
     cell_110_langgraph_adaptive: { label: 'cell_110', strip: '—', strictKey: 'cell_110' },
     cell_118_state_policy_minimal_profile: { label: 'cell_118', strip: 'profile fields', strictKey: 'cell_118' },
-    cell_119_state_policy_no_misconceptions: { label: 'cell_119', strip: 'misconception tracking', strictKey: 'cell_119' },
+    cell_119_state_policy_no_misconceptions: {
+      label: 'cell_119',
+      strip: 'misconception tracking',
+      strictKey: 'cell_119',
+    },
   };
   return rows
     .map((name) => {
@@ -342,23 +369,24 @@ const p21Table = () => {
 
 const paper68Table = () =>
   NARRATIVE.paper68Status
-    .map(([num, title, status, blocking]) =>
-      `<tr><td>§${num}</td><td>${title}</td><td>${tag(status)}</td><td>${blocking}</td></tr>`,
+    .map(
+      ([num, title, status, blocking]) =>
+        `<tr><td>§${num}</td><td>${title}</td><td>${tag(status)}</td><td>${blocking}</td></tr>`,
     )
     .join('\n');
 
 const remainingRunsTable = () =>
   NARRATIVE.remainingRuns
-    .map(([run, wall, cost, why, status]) =>
-      `<tr><td><strong>${run}</strong></td><td>${wall}</td><td>${cost}</td><td>${why}</td><td>${tag(status)}</td></tr>`,
+    .map(
+      ([run, wall, cost, why, status]) =>
+        `<tr><td><strong>${run}</strong></td><td>${wall}</td><td>${cost}</td><td>${why}</td><td>${tag(status)}</td></tr>`,
     )
     .join('\n');
 
 const unestablishedBlocks = () =>
   NARRATIVE.unestablished.map((u, i) => `<h3>${i + 1}. ${u.title}</h3><p>${u.body.trim()}</p>`).join('\n');
 
-const paperEditsList = () =>
-  NARRATIVE.paperEditsBeyond68.map((s) => `<li>${s}</li>`).join('\n');
+const paperEditsList = () => NARRATIVE.paperEditsBeyond68.map((s) => `<li>${s}</li>`).join('\n');
 
 const c110 = cell('cell_110_langgraph_adaptive');
 const c110ss = NARRATIVE.strategyShift.cell_110;

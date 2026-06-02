@@ -12,95 +12,105 @@
   grouped bar charts (<svg class="chart" id="X"> + a techne-chart JSON block).
 -->
 <html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="color-scheme" content="light dark" />
-<title>Untitled techne doc</title>
-<meta name="description" content="A techne editorial note." />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap" />
-<link rel="stylesheet" href="assets/techne.css" />
-</head>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Untitled techne doc</title>
+    <meta name="description" content="A techne editorial note." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap"
+    />
+    <link rel="stylesheet" href="assets/techne.css" />
+  </head>
 
-<body>
-
-<header class="rail" id="rail">
-  <div class="rail__inner">
-    <span class="rail__title">Untitled techne doc</span>
-    <span class="rail__dot" aria-hidden="true"></span>
-    <nav class="rail__nav" aria-label="Section navigation">
-      <a href="#one">First section</a>
-      <a href="#two">Second section</a>
-    </nav>
-    <div class="rail__actions">
-      <button class="rail__btn" id="themeToggle" type="button">Dark</button>
-    </div>
-  </div>
-  <div class="rail__progress" id="railProgress"></div>
-</header>
-
-<main>
-
-  <section class="hero">
-    <div class="hero__rune"><span>§</span> Techne doc · updated YYYY-MM-DD</div>
-    <h1 class="hero__h1">A title with an <span class="em">emphasis</span></h1>
-    <p class="hero__subtitle">One-line standfirst that sets up the piece.</p>
-    <div class="hero__lede">
-      <div>
-        <p>Opening paragraph. The first letter gets a drop cap automatically. Write the lede here.</p>
+  <body>
+    <header class="rail" id="rail">
+      <div class="rail__inner">
+        <span class="rail__title">Untitled techne doc</span>
+        <span class="rail__dot" aria-hidden="true"></span>
+        <nav class="rail__nav" aria-label="Section navigation">
+          <a href="#one">First section</a>
+          <a href="#two">Second section</a>
+        </nav>
+        <div class="rail__actions">
+          <button class="rail__btn" id="themeToggle" type="button">Dark</button>
+        </div>
       </div>
-    </div>
-  </section>
+      <div class="rail__progress" id="railProgress"></div>
+    </header>
 
-  <div class="shell">
-
-    <!-- A standard section: giant margin number (ml) · body · marginal note (mr). -->
-    <section class="s" id="one">
-      <div class="diag">
-        <div class="ml"><h2 class="s__num">01<span class="glyph">·</span></h2></div>
-        <div class="body">
-          <p class="s__kicker">Kicker</p>
-          <h2 class="s__h">A section heading with an <em>emphasis</em>.</h2>
-          <p>Body prose. Use <code>&lt;code&gt;</code> for inline code, <em>em</em> and <strong>strong</strong> as usual.</p>
-
-          <!-- a claim card -->
-          <div class="claim">
-            <span class="claim__no">i.</span>
-            <h3 class="claim__h">A claim <span class="chip chip--moss">supported</span></h3>
-            <div class="claim__body"><p>What the claim says, with the evidence beside it.</p></div>
+    <main>
+      <section class="hero">
+        <div class="hero__rune"><span>§</span> Techne doc · updated YYYY-MM-DD</div>
+        <h1 class="hero__h1">A title with an <span class="em">emphasis</span></h1>
+        <p class="hero__subtitle">One-line standfirst that sets up the piece.</p>
+        <div class="hero__lede">
+          <div>
+            <p>Opening paragraph. The first letter gets a drop cap automatically. Write the lede here.</p>
           </div>
+        </div>
+      </section>
 
-          <p class="pq">A pull-quote sets a line apart in italic display type.<cite>source · vX.Y</cite></p>
-        </div>
-        <div class="mr">
-          <p class="note note--moss"><span class="note__lbl">Note</span> A marginal aside.</p>
-        </div>
+      <div class="shell">
+        <!-- A standard section: giant margin number (ml) · body · marginal note (mr). -->
+        <section class="s" id="one">
+          <div class="diag">
+            <div class="ml">
+              <h2 class="s__num">01<span class="glyph">·</span></h2>
+            </div>
+            <div class="body">
+              <p class="s__kicker">Kicker</p>
+              <h2 class="s__h">A section heading with an <em>emphasis</em>.</h2>
+              <p>
+                Body prose. Use <code>&lt;code&gt;</code> for inline code, <em>em</em> and <strong>strong</strong> as
+                usual.
+              </p>
+
+              <!-- a claim card -->
+              <div class="claim">
+                <span class="claim__no">i.</span>
+                <h3 class="claim__h">A claim <span class="chip chip--moss">supported</span></h3>
+                <div class="claim__body"><p>What the claim says, with the evidence beside it.</p></div>
+              </div>
+
+              <p class="pq">A pull-quote sets a line apart in italic display type.<cite>source · vX.Y</cite></p>
+            </div>
+            <div class="mr">
+              <p class="note note--moss"><span class="note__lbl">Note</span> A marginal aside.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="s" id="two">
+          <div class="diag">
+            <div class="ml">
+              <h2 class="s__num">02<span class="glyph">·</span></h2>
+            </div>
+            <div class="body">
+              <p class="s__kicker">Kicker</p>
+              <h2 class="s__h">Second section.</h2>
+              <p>
+                Add more sections by copying a <code>section.s</code> block and giving it a unique <code>id</code> (then
+                add it to the rail nav above so the scroll-spy tracks it).
+              </p>
+            </div>
+          </div>
+        </section>
       </div>
-    </section>
+      <!-- /shell -->
 
-    <section class="s" id="two">
-      <div class="diag">
-        <div class="ml"><h2 class="s__num">02<span class="glyph">·</span></h2></div>
-        <div class="body">
-          <p class="s__kicker">Kicker</p>
-          <h2 class="s__h">Second section.</h2>
-          <p>Add more sections by copying a <code>section.s</code> block and giving it a unique <code>id</code>
-            (then add it to the rail nav above so the scroll-spy tracks it).</p>
-        </div>
-      </div>
-    </section>
+      <footer class="colophon">
+        <p>
+          <span class="label">Colophon</span> &nbsp; Typeset in Fraunces, Source Serif 4, JetBrains Mono. Design:
+          <code>assets/techne.css</code>. Behaviour: <code>assets/techne.js</code>.
+        </p>
+      </footer>
+    </main>
 
-  </div><!-- /shell -->
-
-  <footer class="colophon">
-    <p><span class="label">Colophon</span> &nbsp; Typeset in Fraunces, Source Serif 4, JetBrains Mono.
-      Design: <code>assets/techne.css</code>. Behaviour: <code>assets/techne.js</code>.</p>
-  </footer>
-
-</main>
-
-<script src="assets/techne.js"></script>
-</body>
+    <script src="assets/techne.js"></script>
+  </body>
 </html>

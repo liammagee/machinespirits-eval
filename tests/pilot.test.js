@@ -29,25 +29,34 @@ function request(baseUrl, method, route, body = null, headers = {}) {
   return new Promise((resolve, reject) => {
     const url = new URL(`${baseUrl}${route}`);
     const payload = body ? JSON.stringify(body) : null;
-    const req = http.request({
-      hostname: url.hostname,
-      port: url.port,
-      path: url.pathname + url.search,
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(payload ? { 'Content-Length': Buffer.byteLength(payload) } : {}),
-        ...headers,
+    const req = http.request(
+      {
+        hostname: url.hostname,
+        port: url.port,
+        path: url.pathname + url.search,
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(payload ? { 'Content-Length': Buffer.byteLength(payload) } : {}),
+          ...headers,
+        },
       },
-    }, (res) => {
-      let data = '';
-      res.on('data', (c) => { data += c; });
-      res.on('end', () => {
-        let parsed;
-        try { parsed = JSON.parse(data); } catch { parsed = data; }
-        resolve({ status: res.statusCode, body: parsed });
-      });
-    });
+      (res) => {
+        let data = '';
+        res.on('data', (c) => {
+          data += c;
+        });
+        res.on('end', () => {
+          let parsed;
+          try {
+            parsed = JSON.parse(data);
+          } catch {
+            parsed = data;
+          }
+          resolve({ status: res.statusCode, body: parsed });
+        });
+      },
+    );
     req.on('error', reject);
     if (payload) req.write(payload);
     req.end();
@@ -90,20 +99,16 @@ describe('pilot routes', () => {
     assert.ok(body.session);
     assert.ok(body.session.id);
     assert.strictEqual(body.session.status, 'enrolled');
-    assert.strictEqual(body.session.condition_cell, undefined,
-      'blinded view must NOT include condition_cell');
-    assert.strictEqual(body.session.assignment_seed, undefined,
-      'blinded view must NOT include assignment_seed');
-    assert.strictEqual(body.session.participant_pid, undefined,
-      'blinded view must NOT include participant_pid');
+    assert.strictEqual(body.session.condition_cell, undefined, 'blinded view must NOT include condition_cell');
+    assert.strictEqual(body.session.assignment_seed, undefined, 'blinded view must NOT include assignment_seed');
+    assert.strictEqual(body.session.participant_pid, undefined, 'blinded view must NOT include participant_pid');
   });
 
   it('POST /api/pilot/enroll with PID is idempotent for active session', async () => {
     const pid = `test-pid-${Date.now()}`;
     const first = await request(baseUrl, 'POST', '/api/pilot/enroll', { participant_pid: pid });
     const second = await request(baseUrl, 'POST', '/api/pilot/enroll', { participant_pid: pid });
-    assert.strictEqual(first.body.session.id, second.body.session.id,
-      'same PID should return same session');
+    assert.strictEqual(first.body.session.id, second.body.session.id, 'same PID should return same session');
     assert.strictEqual(second.body.resumed, true);
   });
 
@@ -117,11 +122,15 @@ describe('pilot routes', () => {
     assert.strictEqual(r.body.session.status, 'consented');
 
     r = await request(baseUrl, 'POST', `/api/pilot/session/${id}/intake`, {
-      age_band: '25-34', prior_math: 'some_high_school', comfort_screener_score: 4,
+      age_band: '25-34',
+      prior_math: 'some_high_school',
+      comfort_screener_score: 4,
     });
     assert.strictEqual(r.body.session.status, 'intake_done');
     assert.deepStrictEqual(r.body.session.intake_data, {
-      age_band: '25-34', prior_math: 'some_high_school', comfort_screener_score: 4,
+      age_band: '25-34',
+      prior_math: 'some_high_school',
+      comfort_screener_score: 4,
     });
 
     r = await request(baseUrl, 'POST', `/api/pilot/session/${id}/pretest/start`);
@@ -135,8 +144,7 @@ describe('pilot routes', () => {
     assert.ok(['A', 'B'].includes(preItemsResp.body.form));
     // Items returned to participants must NOT carry the answer key
     for (const item of preItemsResp.body.items) {
-      assert.strictEqual(item.correct, undefined,
-        'public item view must NOT include `correct`');
+      assert.strictEqual(item.correct, undefined, 'public item view must NOT include `correct`');
     }
 
     // Submit responses — pick the first choice for each item so we get a
@@ -165,8 +173,11 @@ describe('pilot routes', () => {
     const postItemsResp = await request(baseUrl, 'GET', `/api/pilot/session/${id}/items?phase=posttest`);
     assert.strictEqual(postItemsResp.status, 200);
     // Pretest and posttest must be DIFFERENT forms (counterbalanced)
-    assert.notStrictEqual(postItemsResp.body.form, preItemsResp.body.form,
-      'pre/post forms must differ for counterbalancing');
+    assert.notStrictEqual(
+      postItemsResp.body.form,
+      preItemsResp.body.form,
+      'pre/post forms must differ for counterbalancing',
+    );
 
     const postResponses = postItemsResp.body.items.slice(0, 3).map((item, i) => ({
       item_id: item.id,
@@ -240,8 +251,10 @@ describe('ingest-pilot-sessions — pure helpers', () => {
 
   it('pairTurns groups alternating learner→tutor turns', () => {
     const turns = [
-      { role: 'learner', content: 'a' }, { role: 'tutor', content: 'A' },
-      { role: 'learner', content: 'b' }, { role: 'tutor', content: 'B' },
+      { role: 'learner', content: 'a' },
+      { role: 'tutor', content: 'A' },
+      { role: 'learner', content: 'b' },
+      { role: 'tutor', content: 'B' },
     ];
     const pairs = pairTurns(turns);
     assert.strictEqual(pairs.length, 2);
@@ -251,7 +264,8 @@ describe('ingest-pilot-sessions — pure helpers', () => {
 
   it('pairTurns drops orphan learner turn at end (timer expiry)', () => {
     const turns = [
-      { role: 'learner', content: 'a' }, { role: 'tutor', content: 'A' },
+      { role: 'learner', content: 'a' },
+      { role: 'tutor', content: 'A' },
       { role: 'learner', content: 'b' }, // no tutor reply
     ];
     const pairs = pairTurns(turns);
@@ -261,7 +275,8 @@ describe('ingest-pilot-sessions — pure helpers', () => {
   it('pairTurns skips an out-of-order tutor-first sequence', () => {
     const turns = [
       { role: 'tutor', content: 'huh' }, // shouldn't happen but we tolerate
-      { role: 'learner', content: 'a' }, { role: 'tutor', content: 'A' },
+      { role: 'learner', content: 'a' },
+      { role: 'tutor', content: 'A' },
     ];
     const pairs = pairTurns(turns);
     assert.strictEqual(pairs.length, 1);
@@ -280,10 +295,18 @@ describe('ingest-pilot-sessions — pure helpers', () => {
     };
     const turns = [
       { role: 'learner', content: 'hello', config_hash: 'c1', dialogue_content_hash: 'd1' },
-      { role: 'tutor',   content: 'hi there',
-        config_hash: 'c1', dialogue_content_hash: 'd2',
-        latency_ms: 1000, input_tokens: 500, output_tokens: 30,
-        ego_model: 'sonnet', deliberation: null, was_revised: 0 },
+      {
+        role: 'tutor',
+        content: 'hi there',
+        config_hash: 'c1',
+        dialogue_content_hash: 'd2',
+        latency_ms: 1000,
+        input_tokens: 500,
+        output_tokens: 30,
+        ego_model: 'sonnet',
+        deliberation: null,
+        was_revised: 0,
+      },
     ];
     const profile = {
       ego: { provider: 'openrouter', model: 'sonnet' },
@@ -317,7 +340,8 @@ describe('pilotStore — turn persistence + hashing', () => {
     pilotStore.recordIntake(session.id, {});
     pilotStore.startPretest(session.id);
     pilotStore.recordTestResponses(session.id, {
-      phase: 'pretest', form: 'A',
+      phase: 'pretest',
+      form: 'A',
       responses: [{ item_id: 'x', item_position: 0, response_value: '1', is_correct: true }],
     });
     pilotStore.startTutoring(session.id);
@@ -330,16 +354,25 @@ describe('pilotStore — turn persistence + hashing', () => {
     });
 
     const t1 = pilotStore.appendTurn(session.id, {
-      role: 'learner', content: 'what is 1/2 + 1/4?', configHash,
+      role: 'learner',
+      content: 'what is 1/2 + 1/4?',
+      configHash,
     });
     const t2 = pilotStore.appendTurn(session.id, {
-      role: 'tutor', content: 'Good question — let\'s think about it.',
-      configHash, latencyMs: 1234, inputTokens: 100, outputTokens: 50,
+      role: 'tutor',
+      content: "Good question — let's think about it.",
+      configHash,
+      latencyMs: 1234,
+      inputTokens: 100,
+      outputTokens: 50,
     });
     assert.strictEqual(t1.turnIndex, 0);
     assert.strictEqual(t2.turnIndex, 1);
-    assert.notStrictEqual(t1.dialogueContentHash, t2.dialogueContentHash,
-      'cumulative hashes must change as conversation grows');
+    assert.notStrictEqual(
+      t1.dialogueContentHash,
+      t2.dialogueContentHash,
+      'cumulative hashes must change as conversation grows',
+    );
 
     const turns = pilotStore.listTurns(session.id);
     assert.strictEqual(turns.length, 2);

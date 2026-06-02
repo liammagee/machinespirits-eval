@@ -42,7 +42,7 @@ const ROOT_DIR = path.resolve(__dirname, '..');
 
 function parseArgs(argv) {
   const out = {
-    participants: null,           // resolves to 2 if not set
+    participants: null, // resolves to 2 if not set
     condition: null,
     persona: 'eager_novice',
     turns: 5,
@@ -77,8 +77,9 @@ const PERSONAS = {
     blurb: 'a curious adult learner who is a little nervous about math but trying',
     intake: { age_band: '25–34', prior_math: 'high_school', comfort_self: 2 },
     pretestProb: 0.35,
-    posttestBoost: { cell_1_base_single_unified: 0.05, cell_5_recog_single_unified: 0.20 },
-    starter: "hi i'm trying to get my head around fractions again. adding them is the part that always confuses me — like what does 1/2 + 1/3 even equal?",
+    posttestBoost: { cell_1_base_single_unified: 0.05, cell_5_recog_single_unified: 0.2 },
+    starter:
+      "hi i'm trying to get my head around fractions again. adding them is the part that always confuses me — like what does 1/2 + 1/3 even equal?",
     systemPromptExtras:
       'You are nervous about math but eager to learn. Type 1-2 sentences. Use lower-case, casual punctuation. Sometimes say "ohhh" or "wait" when something clicks.',
   },
@@ -97,8 +98,9 @@ const PERSONAS = {
     blurb: 'an adult learner who studied math a while ago and wants quick efficient explanations',
     intake: { age_band: '25–34', prior_math: 'some_college', comfort_self: 4 },
     pretestProb: 0.65,
-    posttestBoost: { cell_1_base_single_unified: 0.03, cell_5_recog_single_unified: 0.10 },
-    starter: 'I remember most fraction operations but I want to make sure I really understand why common denominators are needed. Can you walk me through it?',
+    posttestBoost: { cell_1_base_single_unified: 0.03, cell_5_recog_single_unified: 0.1 },
+    starter:
+      'I remember most fraction operations but I want to make sure I really understand why common denominators are needed. Can you walk me through it?',
     systemPromptExtras:
       'You are direct, focused, and want efficient explanations. 1-2 sentences. Standard punctuation.',
   },
@@ -110,28 +112,41 @@ function request(baseUrl, method, route, body = null, headers = {}) {
   return new Promise((resolve, reject) => {
     const url = new URL(`${baseUrl}${route}`);
     const payload = body ? JSON.stringify(body) : null;
-    const req = http.request({
-      hostname: url.hostname,
-      port: url.port,
-      path: url.pathname + url.search,
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(payload ? { 'Content-Length': Buffer.byteLength(payload) } : {}),
-        ...headers,
+    const req = http.request(
+      {
+        hostname: url.hostname,
+        port: url.port,
+        path: url.pathname + url.search,
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(payload ? { 'Content-Length': Buffer.byteLength(payload) } : {}),
+          ...headers,
+        },
       },
-    }, (res) => {
-      let data = '';
-      res.on('data', (c) => { data += c; });
-      res.on('end', () => {
-        let parsed;
-        try { parsed = JSON.parse(data); } catch { parsed = data; }
-        if (res.statusCode >= 400) {
-          return reject(new Error(`${method} ${route} → ${res.statusCode}: ${typeof parsed === 'string' ? parsed : JSON.stringify(parsed)}`));
-        }
-        resolve(parsed);
-      });
-    });
+      (res) => {
+        let data = '';
+        res.on('data', (c) => {
+          data += c;
+        });
+        res.on('end', () => {
+          let parsed;
+          try {
+            parsed = JSON.parse(data);
+          } catch {
+            parsed = data;
+          }
+          if (res.statusCode >= 400) {
+            return reject(
+              new Error(
+                `${method} ${route} → ${res.statusCode}: ${typeof parsed === 'string' ? parsed : JSON.stringify(parsed)}`,
+              ),
+            );
+          }
+          resolve(parsed);
+        });
+      },
+    );
     req.on('error', reject);
     if (payload) req.write(payload);
     req.end();
@@ -266,9 +281,7 @@ function plausibleExitSurvey(persona, condition, deltaItems) {
       tutor_got_right: recog
         ? 'It used a pizza analogy that finally made the common-denominator thing click.'
         : 'It explained the steps clearly enough.',
-      felt_misunderstood: recog
-        ? ''
-        : 'It moved on before I really understood why the bottom number stays.',
+      felt_misunderstood: recog ? '' : 'It moved on before I really understood why the bottom number stays.',
     },
   };
 }
@@ -280,8 +293,7 @@ async function simulateSession({ baseUrl, condition, personaId, turns, apiKey, a
   if (!persona) throw new Error(`unknown persona: ${personaId}`);
 
   // 1. enroll
-  const enroll = await request(baseUrl, 'POST', '/api/pilot/enroll',
-    condition ? { force_condition: condition } : {});
+  const enroll = await request(baseUrl, 'POST', '/api/pilot/enroll', condition ? { force_condition: condition } : {});
   const sessionId = enroll.session.id;
 
   // 2. consent
@@ -311,7 +323,9 @@ async function simulateSession({ baseUrl, condition, personaId, turns, apiKey, a
     if (turnIdx < turns - 1) {
       // generate next learner message
       learnerMessage = await generateLearnerReply({
-        persona, history: conversation, apiKey,
+        persona,
+        history: conversation,
+        apiKey,
       });
     }
   }
@@ -320,8 +334,7 @@ async function simulateSession({ baseUrl, condition, personaId, turns, apiKey, a
   // 6. posttest — boost over pretest based on condition
   await request(baseUrl, 'POST', `/api/pilot/session/${sessionId}/posttest/start`);
   const postItems = await request(baseUrl, 'GET', `/api/pilot/session/${sessionId}/items?phase=posttest`);
-  const postProb = Math.min(0.95,
-    persona.pretestProb + (persona.posttestBoost[condition] || 0));
+  const postProb = Math.min(0.95, persona.pretestProb + (persona.posttestBoost[condition] || 0));
   const postResponses = buildResponses(postItems.items, postProb);
   await request(baseUrl, 'POST', `/api/pilot/session/${sessionId}/posttest/submit`, { responses: postResponses });
 
@@ -334,8 +347,9 @@ async function simulateSession({ baseUrl, condition, personaId, turns, apiKey, a
   await request(baseUrl, 'POST', `/api/pilot/session/${sessionId}/exit`, exitPayload);
 
   // 8. fetch full unblinded view for the report
-  const adminView = await request(baseUrl, 'GET', `/api/pilot/admin/session/${sessionId}`,
-    null, { 'x-pilot-admin-token': adminToken });
+  const adminView = await request(baseUrl, 'GET', `/api/pilot/admin/session/${sessionId}`, null, {
+    'x-pilot-admin-token': adminToken,
+  });
   return { ...adminView, persona: personaId, exitPayload };
 }
 
@@ -370,26 +384,32 @@ function renderReport(data) {
   lines.push(`| **Status** | ${s.status} |`);
   lines.push(`| **Scenario** | ${s.scenario_lecture_ref} |`);
   lines.push(`| **Tutoring duration** | ${fmt(tutoringMs)} |`);
-  lines.push(`| **Total turns** | ${turns.length} (${turns.filter(t=>t.role==='tutor').length} tutor, ${turns.filter(t=>t.role==='learner').length} learner) |`);
+  lines.push(
+    `| **Total turns** | ${turns.length} (${turns.filter((t) => t.role === 'tutor').length} tutor, ${turns.filter((t) => t.role === 'learner').length} learner) |`,
+  );
   lines.push('');
 
   // Intake
   lines.push('### Intake');
   lines.push('');
-  const intake = typeof s.intake_data === 'string' ? JSON.parse(s.intake_data) : (s.intake_data || {});
+  const intake = typeof s.intake_data === 'string' ? JSON.parse(s.intake_data) : s.intake_data || {};
   for (const [k, v] of Object.entries(intake)) {
     lines.push(`- **${k}**: ${v}`);
   }
   lines.push('');
 
   // Pretest
-  lines.push(`### Pretest — ${preCorrect}/${pre.length} correct (${pre.length ? Math.round(100 * preCorrect / pre.length) : 0}%)`);
+  lines.push(
+    `### Pretest — ${preCorrect}/${pre.length} correct (${pre.length ? Math.round((100 * preCorrect) / pre.length) : 0}%)`,
+  );
   lines.push('');
   lines.push('| # | item | response | correct? | rt |');
   lines.push('|---|---|---|---|---|');
   for (const t of pre) {
     const mark = t.is_correct ? '✓' : '✗';
-    lines.push(`| ${t.item_position + 1} | \`${t.item_id}\` | \`${t.response_value}\` | ${mark} | ${fmt(t.response_ms)} |`);
+    lines.push(
+      `| ${t.item_position + 1} | \`${t.item_id}\` | \`${t.response_value}\` | ${mark} | ${fmt(t.response_ms)} |`,
+    );
   }
   lines.push('');
 
@@ -398,9 +418,7 @@ function renderReport(data) {
   lines.push('');
   for (const t of turns) {
     const tag = t.role === 'tutor' ? '**Tutor**' : '**Learner**';
-    const meta = t.role === 'tutor'
-      ? ` _(${fmt(t.latency_ms)}, in:${t.input_tokens} out:${t.output_tokens})_`
-      : '';
+    const meta = t.role === 'tutor' ? ` _(${fmt(t.latency_ms)}, in:${t.input_tokens} out:${t.output_tokens})_` : '';
     lines.push(`#### Turn ${t.turn_index} — ${tag}${meta}`);
     lines.push('');
     // Indent multi-line content as a quote
@@ -412,13 +430,17 @@ function renderReport(data) {
   // Posttest
   const delta = postCorrect - preCorrect;
   const deltaSign = delta > 0 ? `+${delta}` : `${delta}`;
-  lines.push(`### Posttest — ${postCorrect}/${post.length} correct (${post.length ? Math.round(100 * postCorrect / post.length) : 0}%)  · Δ ${deltaSign}`);
+  lines.push(
+    `### Posttest — ${postCorrect}/${post.length} correct (${post.length ? Math.round((100 * postCorrect) / post.length) : 0}%)  · Δ ${deltaSign}`,
+  );
   lines.push('');
   lines.push('| # | item | response | correct? | rt |');
   lines.push('|---|---|---|---|---|');
   for (const t of post) {
     const mark = t.is_correct ? '✓' : '✗';
-    lines.push(`| ${t.item_position + 1} | \`${t.item_id}\` | \`${t.response_value}\` | ${mark} | ${fmt(t.response_ms)} |`);
+    lines.push(
+      `| ${t.item_position + 1} | \`${t.item_id}\` | \`${t.response_value}\` | ${mark} | ${fmt(t.response_ms)} |`,
+    );
   }
   lines.push('');
 
@@ -454,9 +476,7 @@ async function main() {
   const args = parseArgs(process.argv);
 
   // Configure isolated DB BEFORE importing the app
-  const dbPath = args.db
-    || process.env.SIM_DB_PATH
-    || path.join(ROOT_DIR, 'data', 'pilot-simulation.db');
+  const dbPath = args.db || process.env.SIM_DB_PATH || path.join(ROOT_DIR, 'data', 'pilot-simulation.db');
   const dbDir = path.dirname(dbPath);
   if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
   process.env.EVAL_DB_PATH = dbPath;
@@ -501,7 +521,8 @@ async function main() {
     process.stderr.write(`  [${i + 1}/${plan.length}] ${condition} ... `);
     try {
       const data = await simulateSession({
-        baseUrl, condition,
+        baseUrl,
+        condition,
         personaId: args.persona,
         turns: args.turns,
         apiKey,

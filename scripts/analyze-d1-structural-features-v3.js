@@ -86,7 +86,10 @@ function extractMessages(suggestionsJson) {
     return '';
   }
   if (!Array.isArray(arr)) return '';
-  return arr.map((s) => s?.message).filter(Boolean).join('\n\n');
+  return arr
+    .map((s) => s?.message)
+    .filter(Boolean)
+    .join('\n\n');
 }
 
 function hashText(text) {
@@ -280,12 +283,20 @@ function buildReport({ runId, judge, perCell, allRegexKeys }) {
   lines.push(`**Embedding model:** OpenAI text-embedding-3-small (1536 dims)`);
   lines.push(`**Cells:** cell_1, cell_5, cell_95, cell_96`);
   lines.push('');
-  lines.push('Pass 3 (basic regex) and pass 4 (refined regex) reached the limits of bag-of-features pragmatics. Pass 5 adds embedding-based semantic features that catch flexible-synonym paraphrase, framing, and rhythm that fixed regex misses. Two hand-authored canonical references (~120 words each):');
+  lines.push(
+    'Pass 3 (basic regex) and pass 4 (refined regex) reached the limits of bag-of-features pragmatics. Pass 5 adds embedding-based semantic features that catch flexible-synonym paraphrase, framing, and rhythm that fixed regex misses. Two hand-authored canonical references (~120 words each):',
+  );
   lines.push('');
-  lines.push('- **Intersubjective scaffolding canonical**: exemplifies turn-taking, question-asking, learner-acknowledgement, inclusive framing, and invitations to articulate intuition.');
-  lines.push('- **Transmission explanation canonical**: exemplifies direct explanation, definition-and-application, definitive framing, instruction to memorize, no questions.');
+  lines.push(
+    '- **Intersubjective scaffolding canonical**: exemplifies turn-taking, question-asking, learner-acknowledgement, inclusive framing, and invitations to articulate intuition.',
+  );
+  lines.push(
+    '- **Transmission explanation canonical**: exemplifies direct explanation, definition-and-application, definitive framing, instruction to memorize, no questions.',
+  );
   lines.push('');
-  lines.push('Three derived features per response: cosine similarity to each canonical, plus their *difference* (intersub_advantage = sim_intersub − sim_transmission). The advantage feature isolates the direction of pragmatic style independent of overall tutor-talk semantics.');
+  lines.push(
+    'Three derived features per response: cosine similarity to each canonical, plus their *difference* (intersub_advantage = sim_intersub − sim_transmission). The advantage feature isolates the direction of pragmatic style independent of overall tutor-talk semantics.',
+  );
   lines.push('');
   lines.push('## 1. Per-cell embedding feature means');
   lines.push('');
@@ -324,7 +335,9 @@ function buildReport({ runId, judge, perCell, allRegexKeys }) {
   lines.push('| --- | --- | --- | --- |');
   for (const [label, key] of featureSets) {
     const d = cohensD(c5[key], c95[key]);
-    lines.push(`| ${label} | ${fmt(c5[key].reduce((s, v) => s + v, 0) / c5[key].length, 4)} | ${fmt(c95[key].reduce((s, v) => s + v, 0) / c95[key].length, 4)} | ${fmt(d, 3)} |`);
+    lines.push(
+      `| ${label} | ${fmt(c5[key].reduce((s, v) => s + v, 0) / c5[key].length, 4)} | ${fmt(c95[key].reduce((s, v) => s + v, 0) / c95[key].length, 4)} | ${fmt(d, 3)} |`,
+    );
   }
   lines.push('');
   lines.push('## 4. Feature × score correlations (within-cell + pooled)');
@@ -346,14 +359,31 @@ function buildReport({ runId, judge, perCell, allRegexKeys }) {
   lines.push('');
   lines.push('## 5. Cross-feature correlation matrix (pass 3 + pass 4 + pass 5, pooled across 4 cells)');
   lines.push('');
-  lines.push('Identifies redundancy (features measuring the same underlying construct) and complementarity (features capturing orthogonal channels). High |r| (e.g. > 0.5) between two features means they probably reflect the same channel.');
+  lines.push(
+    'Identifies redundancy (features measuring the same underlying construct) and complementarity (features capturing orthogonal channels). High |r| (e.g. > 0.5) between two features means they probably reflect the same channel.',
+  );
   lines.push('');
   // Build pooled feature matrix
   const allRowsByFeature = {};
   // embedding features
-  allRowsByFeature.sim_intersub = [...c1.simIntersubArr, ...c5.simIntersubArr, ...c95.simIntersubArr, ...c96.simIntersubArr];
-  allRowsByFeature.sim_transmission = [...c1.simTransmissionArr, ...c5.simTransmissionArr, ...c95.simTransmissionArr, ...c96.simTransmissionArr];
-  allRowsByFeature.intersub_advantage = [...c1.advantageArr, ...c5.advantageArr, ...c95.advantageArr, ...c96.advantageArr];
+  allRowsByFeature.sim_intersub = [
+    ...c1.simIntersubArr,
+    ...c5.simIntersubArr,
+    ...c95.simIntersubArr,
+    ...c96.simIntersubArr,
+  ];
+  allRowsByFeature.sim_transmission = [
+    ...c1.simTransmissionArr,
+    ...c5.simTransmissionArr,
+    ...c95.simTransmissionArr,
+    ...c96.simTransmissionArr,
+  ];
+  allRowsByFeature.intersub_advantage = [
+    ...c1.advantageArr,
+    ...c5.advantageArr,
+    ...c95.advantageArr,
+    ...c96.advantageArr,
+  ];
   // regex features
   for (const k of allRegexKeys) {
     allRowsByFeature[k] = [
@@ -376,16 +406,16 @@ function buildReport({ runId, judge, perCell, allRegexKeys }) {
   lines.push('');
   lines.push('| Feature | r with score |');
   lines.push('| --- | --- |');
-  const ranked = allFeatureNames
-    .map((f) => ({ f, r: rWithScore[f] }))
-    .sort((a, b) => Math.abs(b.r) - Math.abs(a.r));
+  const ranked = allFeatureNames.map((f) => ({ f, r: rWithScore[f] })).sort((a, b) => Math.abs(b.r) - Math.abs(a.r));
   for (const row of ranked) {
     lines.push(`| ${row.f} | ${fmt(row.r, 3)} |`);
   }
   lines.push('');
   lines.push('### 5b. Pairwise r between embedding features and regex features');
   lines.push('');
-  lines.push('Shows how much overlap each regex feature has with the embedding-derived intersubjective_advantage. High |r| means the embedding catches the same channel as the regex.');
+  lines.push(
+    'Shows how much overlap each regex feature has with the embedding-derived intersubjective_advantage. High |r| means the embedding catches the same channel as the regex.',
+  );
   lines.push('');
   lines.push('| Regex feature | r with intersub_advantage |');
   lines.push('| --- | --- |');
@@ -401,69 +431,116 @@ function buildReport({ runId, judge, perCell, allRegexKeys }) {
   const strongestPositive = ranked.find((r) => r.r > 0);
   const strongestNegative = ranked.find((r) => r.r < 0);
   if (strongestPositive) {
-    lines.push(`**Strongest pooled-r positive feature**: \`${strongestPositive.f}\` (r = ${fmt(strongestPositive.r, 3)} with score across all 4 cells).`);
+    lines.push(
+      `**Strongest pooled-r positive feature**: \`${strongestPositive.f}\` (r = ${fmt(strongestPositive.r, 3)} with score across all 4 cells).`,
+    );
     lines.push('');
   }
   if (strongestNegative && Math.abs(strongestNegative.r) >= 0.15) {
-    lines.push(`**Strongest pooled-r negative feature**: \`${strongestNegative.f}\` (r = ${fmt(strongestNegative.r, 3)}).`);
+    lines.push(
+      `**Strongest pooled-r negative feature**: \`${strongestNegative.f}\` (r = ${fmt(strongestNegative.r, 3)}).`,
+    );
     lines.push('');
   }
   // Headline interpretations of the embedding features specifically
-  const advFamilyD = cohensD(
-    [...c5.advantageArr, ...c95.advantageArr],
-    [...c1.advantageArr, ...c96.advantageArr],
-  );
+  const advFamilyD = cohensD([...c5.advantageArr, ...c95.advantageArr], [...c1.advantageArr, ...c96.advantageArr]);
   const advWithinD = cohensD(c5.advantageArr, c95.advantageArr);
   const advR5 = withinR.intersub_advantage.r5;
   const advR95 = withinR.intersub_advantage.r95;
   const advRPooled = withinR.intersub_advantage.rPooled;
-  lines.push(`**intersub_advantage (the headline embedding feature)**: family d = ${fmt(advFamilyD, 3)} (intersub vs trans), within-intersubjective d = ${fmt(advWithinD, 3)}, within-cell r = cell_5 **${fmt(advR5, 3)}**, cell_95 **${fmt(advR95, 3)}**, pooled ${fmt(advRPooled, 3)}.`);
+  lines.push(
+    `**intersub_advantage (the headline embedding feature)**: family d = ${fmt(advFamilyD, 3)} (intersub vs trans), within-intersubjective d = ${fmt(advWithinD, 3)}, within-cell r = cell_5 **${fmt(advR5, 3)}**, cell_95 **${fmt(advR95, 3)}**, pooled ${fmt(advRPooled, 3)}.`,
+  );
   lines.push('');
-  lines.push('### Interpretation: Simpson\'s paradox at the embedding level');
+  lines.push("### Interpretation: Simpson's paradox at the embedding level");
   lines.push('');
   // Detect Simpson's paradox: pooled and within-cell r have opposite signs
   const simpsonsParadox = advRPooled > 0.15 && advR5 < -0.15 && advR95 < -0.15;
   if (simpsonsParadox) {
-    lines.push('**The pooled positive correlation is misleading.** Pooled $r = +' + fmt(advRPooled, 3) + '$ across all four cells looks like a mediator, but **within each intersubjective cell** (where the prompt is held constant), the correlation is *negative* ($r = ' + fmt(advR5, 3) + '$ in cell_5, $r = ' + fmt(advR95, 3) + '$ in cell_95). Cell_1 is also slightly negative; only cell_96 (which has very low advantage scores AND very low rubric scores) anchors the positive end. This is a classic **Simpson\'s paradox**: between-cell variance dominates the pooled correlation; within cells, the relationship reverses.');
+    lines.push(
+      '**The pooled positive correlation is misleading.** Pooled $r = +' +
+        fmt(advRPooled, 3) +
+        '$ across all four cells looks like a mediator, but **within each intersubjective cell** (where the prompt is held constant), the correlation is *negative* ($r = ' +
+        fmt(advR5, 3) +
+        '$ in cell_5, $r = ' +
+        fmt(advR95, 3) +
+        "$ in cell_95). Cell_1 is also slightly negative; only cell_96 (which has very low advantage scores AND very low rubric scores) anchors the positive end. This is a classic **Simpson's paradox**: between-cell variance dominates the pooled correlation; within cells, the relationship reverses.",
+    );
     lines.push('');
-    lines.push('**Substantive read**: the more a response in cell_5 or cell_95 pattern-matches the generic intersubjective canonical, the *lower* its rubric score. Possible mechanism: responses that match the canonical too closely sound formulaic — the canonical captures family-level pragmatic *form* (turn-taking, scaffolding, inclusive framing) but not response-level *substance* (specific engagement with the scenario\'s content). The rubric rewards substance; surface-form mimicry of the canonical is a weak proxy that tracks lower-quality responses.');
+    lines.push(
+      "**Substantive read**: the more a response in cell_5 or cell_95 pattern-matches the generic intersubjective canonical, the *lower* its rubric score. Possible mechanism: responses that match the canonical too closely sound formulaic — the canonical captures family-level pragmatic *form* (turn-taking, scaffolding, inclusive framing) but not response-level *substance* (specific engagement with the scenario's content). The rubric rewards substance; surface-form mimicry of the canonical is a weak proxy that tracks lower-quality responses.",
+    );
     lines.push('');
-    lines.push('intersub_advantage is therefore a **family marker** (family d = ' + fmt(advFamilyD, 3) + ', strong) but **not a within-cell mediator** — opposite of what the auto-generated mediator-criteria check would assert if it used pooled r alone. The mediator-criteria framework needs to be evaluated within-cell, not pooled, to avoid this trap.');
+    lines.push(
+      'intersub_advantage is therefore a **family marker** (family d = ' +
+        fmt(advFamilyD, 3) +
+        ', strong) but **not a within-cell mediator** — opposite of what the auto-generated mediator-criteria check would assert if it used pooled r alone. The mediator-criteria framework needs to be evaluated within-cell, not pooled, to avoid this trap.',
+    );
     lines.push('');
-    lines.push('**Implication for ends-with-question (pass 3)**: that finding survives. Cell_5 within-cell $r = +0.325$, cell_95 $r = +0.392$ — both positive, both substantial. ends-with-question is a *real* within-cell mediator; intersub_advantage is *not*. The two features differ in mechanism: ending-with-question is a discrete pragmatic act that varies meaningfully even within a fixed prompt, while embedding similarity to a canonical captures something more like overall stylistic conformity, which has a ceiling effect within prompt.');
+    lines.push(
+      '**Implication for ends-with-question (pass 3)**: that finding survives. Cell_5 within-cell $r = +0.325$, cell_95 $r = +0.392$ — both positive, both substantial. ends-with-question is a *real* within-cell mediator; intersub_advantage is *not*. The two features differ in mechanism: ending-with-question is a discrete pragmatic act that varies meaningfully even within a fixed prompt, while embedding similarity to a canonical captures something more like overall stylistic conformity, which has a ceiling effect within prompt.',
+    );
   } else if (advFamilyD > 0.5 && advR5 > 0.15 && advR95 > 0.15) {
-    lines.push('intersub_advantage **satisfies all three mediator criteria** with positive within-cell r in both intersubjective cells. Embedding-based semantic similarity to a hand-authored intersubjective canonical is a stronger family-level discriminator than any single regex feature, and predicts scores within cells.');
+    lines.push(
+      'intersub_advantage **satisfies all three mediator criteria** with positive within-cell r in both intersubjective cells. Embedding-based semantic similarity to a hand-authored intersubjective canonical is a stronger family-level discriminator than any single regex feature, and predicts scores within cells.',
+    );
   } else if (advFamilyD > 0.5) {
-    lines.push('intersub_advantage is a strong **family marker** (family d = ' + fmt(advFamilyD, 3) + ') but does not consistently predict within-cell score variation. Embedding similarity discriminates the families effectively but the score-driver is partly orthogonal.');
+    lines.push(
+      'intersub_advantage is a strong **family marker** (family d = ' +
+        fmt(advFamilyD, 3) +
+        ') but does not consistently predict within-cell score variation. Embedding similarity discriminates the families effectively but the score-driver is partly orthogonal.',
+    );
   } else {
-    lines.push('intersub_advantage shows weaker family separation than expected. Possible reasons: canonicals too generic, or the cells\' actual response styles are more similar at the embedding level than at the surface-pragmatic level.');
+    lines.push(
+      "intersub_advantage shows weaker family separation than expected. Possible reasons: canonicals too generic, or the cells' actual response styles are more similar at the embedding level than at the surface-pragmatic level.",
+    );
   }
   lines.push('');
   lines.push('### Cross-feature check (§5b)');
   lines.push('');
-  lines.push('Pairwise r between intersub_advantage and the regex features is uniformly small (largest |r| = 0.31 with second-person density). The embedding feature is **largely orthogonal** to the regex features — it captures something different. But that "something different" is a family marker, not a within-cell mediator (per the Simpson\'s analysis above). The orthogonality is real but does not yield a new mechanism candidate.');
+  lines.push(
+    'Pairwise r between intersub_advantage and the regex features is uniformly small (largest |r| = 0.31 with second-person density). The embedding feature is **largely orthogonal** to the regex features — it captures something different. But that "something different" is a family marker, not a within-cell mediator (per the Simpson\'s analysis above). The orthogonality is real but does not yield a new mechanism candidate.',
+  );
   lines.push('');
-  lines.push('Where embedding-feature r with regex-features is high (e.g. > 0.5), the two would be measuring the same channel and the embedding could be a drop-in replacement. Here no pairwise r exceeds 0.31; the embedding and the regexes are sampling different aspects of response style.');
+  lines.push(
+    'Where embedding-feature r with regex-features is high (e.g. > 0.5), the two would be measuring the same channel and the embedding could be a drop-in replacement. Here no pairwise r exceeds 0.31; the embedding and the regexes are sampling different aspects of response style.',
+  );
   lines.push('');
   lines.push('### Mediator scoreboard (D1 sequence summary)');
   lines.push('');
   lines.push('| Pass | Feature | Type | Family d | Within-cell r (cell_5 / cell_95) | Verdict |');
   lines.push('| --- | --- | --- | --- | --- | --- |');
-  lines.push('| 3 | ends-with-question | pragmatic | small (categorical) | +0.325 / +0.392 | **Strongest within-cell mediator** |');
+  lines.push(
+    '| 3 | ends-with-question | pragmatic | small (categorical) | +0.325 / +0.392 | **Strongest within-cell mediator** |',
+  );
   lines.push('| 3 | second-person density | pragmatic | 0.69 | +0.216 / +0.065 | Family-aligned correlate |');
   lines.push('| 3 | question-mark rate | pragmatic | 0.61 | +0.036 / +0.218 | Recognition-prompt marker |');
   lines.push('| 4 | scaffolding-move imperatives | pragmatic | 0.59 | +0.186 / +0.048 | Cleanest family marker |');
-  lines.push('| 4 | broad acknowledgement | pragmatic | 0.14 | -0.181 / -0.307 | Negative correlate (formulaic echoing) |');
-  lines.push(`| 5 | intersub_advantage | semantic | ${fmt(advFamilyD, 2)} | ${fmt(advR5, 3)} / ${fmt(advR95, 3)} | Family marker, **negative** within-cell (Simpson\'s) |`);
+  lines.push(
+    '| 4 | broad acknowledgement | pragmatic | 0.14 | -0.181 / -0.307 | Negative correlate (formulaic echoing) |',
+  );
+  lines.push(
+    `| 5 | intersub_advantage | semantic | ${fmt(advFamilyD, 2)} | ${fmt(advR5, 3)} / ${fmt(advR95, 3)} | Family marker, **negative** within-cell (Simpson\'s) |`,
+  );
   lines.push('');
-  lines.push('Net: ends-with-question remains the only feature that satisfies all three mediator criteria within both intersubjective cells. Embeddings discriminate families well but introduce Simpson\'s-paradox risk that surface pragmatic features avoid.');
+  lines.push(
+    "Net: ends-with-question remains the only feature that satisfies all three mediator criteria within both intersubjective cells. Embeddings discriminate families well but introduce Simpson's-paradox risk that surface pragmatic features avoid.",
+  );
   lines.push('');
   lines.push('## 7. Caveats');
   lines.push('');
-  lines.push('- Single judge (Sonnet) for cleanliness. Cross-judge replication would strengthen within-cell r columns.');
-  lines.push('- Two canonical references are author-specified and intentionally extreme. Real tutor responses sit at varied points along the intersubjective ↔ transmission continuum; the binary canonical contrast may oversimplify.');
-  lines.push('- Embedding semantics are model-dependent. text-embedding-3-small captures English well but its judgments of "what is intersubjective" are themselves a language-model artifact.');
-  lines.push('- Multi-feature mediation analysis (multiple regression with all regex + embedding features as predictors of score) is the natural next step but requires a JS OLS implementation; deferred to pass 6.');
+  lines.push(
+    '- Single judge (Sonnet) for cleanliness. Cross-judge replication would strengthen within-cell r columns.',
+  );
+  lines.push(
+    '- Two canonical references are author-specified and intentionally extreme. Real tutor responses sit at varied points along the intersubjective ↔ transmission continuum; the binary canonical contrast may oversimplify.',
+  );
+  lines.push(
+    '- Embedding semantics are model-dependent. text-embedding-3-small captures English well but its judgments of "what is intersubjective" are themselves a language-model artifact.',
+  );
+  lines.push(
+    '- Multi-feature mediation analysis (multiple regression with all regex + embedding features as predictors of score) is the natural next step but requires a JS OLS implementation; deferred to pass 6.',
+  );
   return lines.join('\n');
 }
 
@@ -509,7 +586,10 @@ async function main() {
     if (r.score == null) continue;
     const text = extractMessages(r.suggestions);
     if (!text) continue;
-    const wc = text.trim().split(/\s+/).filter((w) => w.length > 0).length;
+    const wc = text
+      .trim()
+      .split(/\s+/)
+      .filter((w) => w.length > 0).length;
     if (wc < 20) continue;
     items.push({
       id: r.id,

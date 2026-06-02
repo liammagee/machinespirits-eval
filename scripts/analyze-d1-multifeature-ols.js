@@ -64,7 +64,10 @@ function extractMessages(suggestionsJson) {
     return '';
   }
   if (!Array.isArray(arr)) return '';
-  return arr.map((s) => s?.message).filter(Boolean).join('\n\n');
+  return arr
+    .map((s) => s?.message)
+    .filter(Boolean)
+    .join('\n\n');
 }
 
 function hashText(text) {
@@ -178,7 +181,7 @@ function ols(X, y) {
     ssTot += (y[i] - yMean) * (y[i] - yMean);
   }
   const r2 = ssTot === 0 ? 0 : 1 - ssRes / ssTot;
-  const adjR2 = 1 - (1 - r2) * (n - 1) / (n - k);
+  const adjR2 = 1 - ((1 - r2) * (n - 1)) / (n - k);
 
   // SE for each coefficient: σ² = ssRes / (n-k); SE_j = sqrt(σ² × (X'X)^-1_jj)
   const sigma2 = ssRes / (n - k);
@@ -199,8 +202,15 @@ function ols(X, y) {
 function normalCdf(x) {
   // Abramowitz & Stegun 7.1.26
   const t = 1.0 / (1.0 + 0.2316419 * x);
-  const d = 0.3989422804014327 * Math.exp(-x * x / 2);
-  const phi = 1 - d * (0.319381530 * t + (-0.356563782) * t * t + 1.781477937 * t * t * t + (-1.821255978) * Math.pow(t, 4) + 1.330274429 * Math.pow(t, 5));
+  const d = 0.3989422804014327 * Math.exp((-x * x) / 2);
+  const phi =
+    1 -
+    d *
+      (0.31938153 * t +
+        -0.356563782 * t * t +
+        1.781477937 * t * t * t +
+        -1.821255978 * Math.pow(t, 4) +
+        1.330274429 * Math.pow(t, 5));
   return phi;
 }
 
@@ -264,7 +274,10 @@ function buildItems(rows, cache, embIntersub, embTransmission) {
     if (r.score == null) continue;
     const text = extractMessages(r.suggestions);
     if (!text) continue;
-    const wc = text.trim().split(/\s+/).filter((w) => w.length > 0).length;
+    const wc = text
+      .trim()
+      .split(/\s+/)
+      .filter((w) => w.length > 0).length;
     if (wc < 20) continue;
     const f1 = extractV1Features(text);
     const f2 = extractV2Features(text);
@@ -318,9 +331,13 @@ function buildReport(perCellFits, pooledFit, runId, judge) {
   lines.push('');
   lines.push(`**Run:** \`${runId}\` (A10b 4-way matched-specificity)`);
   lines.push(`**Judge:** ${judge}`);
-  lines.push(`**Predictors:** ${OLS_FEATURES.length} features (intercept + ${OLS_FEATURES.length} predictors = ${OLS_FEATURES.length + 1} columns)`);
+  lines.push(
+    `**Predictors:** ${OLS_FEATURES.length} features (intercept + ${OLS_FEATURES.length} predictors = ${OLS_FEATURES.length + 1} columns)`,
+  );
   lines.push('');
-  lines.push('Tests whether ends-with-question retains its within-cell mediator status when partialled-out for the other regex + embedding features. The within-cell univariate analyses (passes 3-5) reported zero-order Pearson r; this pass reports OLS partial coefficients (each coefficient is the marginal contribution of the feature to score, holding the other predictors constant).');
+  lines.push(
+    'Tests whether ends-with-question retains its within-cell mediator status when partialled-out for the other regex + embedding features. The within-cell univariate analyses (passes 3-5) reported zero-order Pearson r; this pass reports OLS partial coefficients (each coefficient is the marginal contribution of the feature to score, holding the other predictors constant).',
+  );
   lines.push('');
   lines.push('## 1. Per-cell OLS coefficients');
   lines.push('');
@@ -340,7 +357,9 @@ function buildReport(perCellFits, pooledFit, runId, judge) {
     lines.push(`| (intercept) | ${fmt(f.beta[0], 2)} | ${fmt(f.se[0], 2)} | ${fmt(f.t[0])} | ${fmtP(f.p[0])} |`);
     for (let i = 0; i < OLS_FEATURES.length; i++) {
       const name = OLS_FEATURES[i];
-      lines.push(`| ${FEATURE_LABEL[name]} | ${fmt(f.beta[i + 1], 2)} | ${fmt(f.se[i + 1], 2)} | ${fmt(f.t[i + 1])} | ${fmtP(f.p[i + 1])} |`);
+      lines.push(
+        `| ${FEATURE_LABEL[name]} | ${fmt(f.beta[i + 1], 2)} | ${fmt(f.se[i + 1], 2)} | ${fmt(f.t[i + 1])} | ${fmtP(f.p[i + 1])} |`,
+      );
     }
     lines.push('');
   }
@@ -357,7 +376,9 @@ function buildReport(perCellFits, pooledFit, runId, judge) {
     lines.push(`| (intercept) | ${fmt(f.beta[0], 2)} | ${fmt(f.se[0], 2)} | ${fmt(f.t[0])} | ${fmtP(f.p[0])} |`);
     for (let i = 0; i < OLS_FEATURES.length; i++) {
       const name = OLS_FEATURES[i];
-      lines.push(`| ${FEATURE_LABEL[name]} | ${fmt(f.beta[i + 1], 2)} | ${fmt(f.se[i + 1], 2)} | ${fmt(f.t[i + 1])} | ${fmtP(f.p[i + 1])} |`);
+      lines.push(
+        `| ${FEATURE_LABEL[name]} | ${fmt(f.beta[i + 1], 2)} | ${fmt(f.se[i + 1], 2)} | ${fmt(f.t[i + 1])} | ${fmtP(f.p[i + 1])} |`,
+      );
     }
   }
   lines.push('');
@@ -377,11 +398,17 @@ function buildReport(perCellFits, pooledFit, runId, judge) {
     lines.push(`- cell_95: β = ${fmt(c95b, 2)}, p = ${fmtP(c95p)}`);
     lines.push('');
     if (c5b > 0 && c95b > 0) {
-      lines.push('Both partial coefficients are positive: the within-cell mediator finding survives multivariate control. Ending the tutor turn with a question retains a positive marginal contribution to score even after partialling out second-person density, scaffolding moves, broad acknowledgement, question rate, and the embedding-based intersub_advantage. The §7.10 mediator interpretation is robust to the multi-channel-correlate confound.');
+      lines.push(
+        'Both partial coefficients are positive: the within-cell mediator finding survives multivariate control. Ending the tutor turn with a question retains a positive marginal contribution to score even after partialling out second-person density, scaffolding moves, broad acknowledgement, question rate, and the embedding-based intersub_advantage. The §7.10 mediator interpretation is robust to the multi-channel-correlate confound.',
+      );
     } else if (c5b > 0 || c95b > 0) {
-      lines.push('Mixed: one of the two intersubjective cells retains a positive partial coefficient; the other does not. The mediator interpretation is partly robust to multivariate control. Per-cell variation in the partial estimate likely reflects feature collinearity with other predictors (especially question_rate and intersub_advantage).');
+      lines.push(
+        'Mixed: one of the two intersubjective cells retains a positive partial coefficient; the other does not. The mediator interpretation is partly robust to multivariate control. Per-cell variation in the partial estimate likely reflects feature collinearity with other predictors (especially question_rate and intersub_advantage).',
+      );
     } else {
-      lines.push('Both partial coefficients are non-positive: the univariate within-cell mediator finding does not survive multivariate control. ends-with-question is collinear with one or more of the other predictors, and the joint variance is what tracks score; the §7.10 single-feature mediator framing should be hedged accordingly.');
+      lines.push(
+        'Both partial coefficients are non-positive: the univariate within-cell mediator finding does not survive multivariate control. ends-with-question is collinear with one or more of the other predictors, and the joint variance is what tracks score; the §7.10 single-feature mediator framing should be hedged accordingly.',
+      );
     }
   }
   lines.push('');
@@ -399,22 +426,42 @@ function buildReport(perCellFits, pooledFit, runId, judge) {
       lines.push(`- cell_95 within: β = ${fmt(c95b, 2)}, p = ${fmtP(c95Row.fit.p[iaIdx])}`);
       lines.push('');
       if (poolB > 0 && c5b < 0 && c95b < 0) {
-        lines.push('Simpson\'s paradox replicates at the multivariate level: pooled β is positive but within-cell β is negative in both intersubjective cells. The §7.10 reading (intersub_advantage is a family marker, not a within-cell mediator) survives multivariate control.');
+        lines.push(
+          "Simpson's paradox replicates at the multivariate level: pooled β is positive but within-cell β is negative in both intersubjective cells. The §7.10 reading (intersub_advantage is a family marker, not a within-cell mediator) survives multivariate control.",
+        );
       } else if (poolB > 0 && (c5b > 0 || c95b > 0)) {
-        lines.push('Simpson\'s pattern attenuated under multivariate control: at least one intersubjective cell now shows positive partial β. Multivariate correction reveals shared variance with other features that the univariate analysis missed.');
+        lines.push(
+          "Simpson's pattern attenuated under multivariate control: at least one intersubjective cell now shows positive partial β. Multivariate correction reveals shared variance with other features that the univariate analysis missed.",
+        );
       } else {
-        lines.push('Pattern altered under multivariate control. Within-cell partial β values: cell_5 ' + fmt(c5b, 2) + ', cell_95 ' + fmt(c95b, 2) + '.');
+        lines.push(
+          'Pattern altered under multivariate control. Within-cell partial β values: cell_5 ' +
+            fmt(c5b, 2) +
+            ', cell_95 ' +
+            fmt(c95b, 2) +
+            '.',
+        );
       }
     }
   }
   lines.push('');
   lines.push('## 4. Caveats');
   lines.push('');
-  lines.push(`- Per-cell n ≈ 50 with k = 7 columns (including intercept) gives df ≈ 43. Estimates are stable but power for individual coefficients is modest; a single-feature SE of ~10 score points is typical.`);
-  lines.push('- Multicollinearity among predictors (especially question_rate ↔ ends_with_question and intersub_advantage ↔ second_person_density) inflates SE without biasing β. Variance inflation factors are not reported here but pairwise predictor r is bounded by §5b of the pass-5 report (largest pairwise |r| = 0.31).');
-  lines.push('- p-values use the normal approximation to Student\'s t with df = n - k. For df ≈ 43, this is essentially identical to the exact t distribution.');
-  lines.push('- Single judge (Sonnet) for the primary analysis. Cross-judge replication via the pass-5 cross-judge script (`scripts/analyze-d1-cross-judge-replication.js`).');
-  lines.push('- This is a *post-hoc* analysis on already-collected data; no pre-registration. Reads as descriptive evidence of within-cell relationships, not causal mediation.');
+  lines.push(
+    `- Per-cell n ≈ 50 with k = 7 columns (including intercept) gives df ≈ 43. Estimates are stable but power for individual coefficients is modest; a single-feature SE of ~10 score points is typical.`,
+  );
+  lines.push(
+    '- Multicollinearity among predictors (especially question_rate ↔ ends_with_question and intersub_advantage ↔ second_person_density) inflates SE without biasing β. Variance inflation factors are not reported here but pairwise predictor r is bounded by §5b of the pass-5 report (largest pairwise |r| = 0.31).',
+  );
+  lines.push(
+    "- p-values use the normal approximation to Student's t with df = n - k. For df ≈ 43, this is essentially identical to the exact t distribution.",
+  );
+  lines.push(
+    '- Single judge (Sonnet) for the primary analysis. Cross-judge replication via the pass-5 cross-judge script (`scripts/analyze-d1-cross-judge-replication.js`).',
+  );
+  lines.push(
+    '- This is a *post-hoc* analysis on already-collected data; no pre-registration. Reads as descriptive evidence of within-cell relationships, not causal mediation.',
+  );
   return lines.join('\n');
 }
 

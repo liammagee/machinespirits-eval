@@ -48,12 +48,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import {
-  RECOGNITION_LEXICON,
-  computeConceptDensities,
-  extractText,
-  pearson,
-} from './analyze-recognition-lexicon.js';
+import { RECOGNITION_LEXICON, computeConceptDensities, extractText, pearson } from './analyze-recognition-lexicon.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DB_PATH = path.resolve(__dirname, '..', 'data', 'evaluations.db');
@@ -79,11 +74,7 @@ const DB_PATH = path.resolve(__dirname, '..', 'data', 'evaluations.db');
 
 export const INTERSUBJECTIVE_LEXICON = {
   scaffolding: [/\bscaffold(?:ed|ing|s)?\b/i, /\bzone\s+of\s+proximal\b/i, /\bZPD\b/],
-  construct: [
-    /\bconstruct(?:ion|ions|ivism|ivist|ive|ed|ing)?\b/i,
-    /\bsense[-\s]making\b/i,
-    /\bmeaning[-\s]making\b/i,
-  ],
+  construct: [/\bconstruct(?:ion|ions|ivism|ivist|ive|ed|ing)?\b/i, /\bsense[-\s]making\b/i, /\bmeaning[-\s]making\b/i],
   prior: [/\bprior\s+knowledge\b/i, /\bpreconception(?:s|al)?\b/i, /\bmisconception(?:s|al)?\b/i],
   productive: [/\bproductive\s+(?:failure|struggle|difficulty|tension)\b/i, /\bdesirable\s+difficult/i],
   dialogic: [
@@ -244,7 +235,9 @@ function buildReport({ runId, judge, perCell }) {
   lines.push(`**Judge:** ${judge}`);
   lines.push(`**Cells:** cell_1, cell_5, cell_95, cell_96 (4 cells × ~50 rows/cell)`);
   lines.push('');
-  lines.push('Tests whether the Hegelian-recognition vocabulary is a *mediator* of recognition\'s effect or merely a *marker* of the recognition prompt. A10b established that cell_95 (matched-pedagogical, no Hegelian vocabulary) reproduces cell_5 (recognition) within $|d| < 0.2$ on scores. If Hegelian density tracks scores within the intersubjective family, vocabulary is mediator. If cell_95 scores like cell_5 without Hegelian density, vocabulary is marker — the broader intersubjective stance is the mechanism.');
+  lines.push(
+    "Tests whether the Hegelian-recognition vocabulary is a *mediator* of recognition's effect or merely a *marker* of the recognition prompt. A10b established that cell_95 (matched-pedagogical, no Hegelian vocabulary) reproduces cell_5 (recognition) within $|d| < 0.2$ on scores. If Hegelian density tracks scores within the intersubjective family, vocabulary is mediator. If cell_95 scores like cell_5 without Hegelian density, vocabulary is marker — the broader intersubjective stance is the mechanism.",
+  );
   lines.push('');
   lines.push('## 1. Per-cell density and score');
   lines.push('');
@@ -283,7 +276,12 @@ function buildReport({ runId, judge, perCell }) {
     contrast('cell_5 vs cell_95 (within intersubjective)', c5, c95, 'intersubArr'),
     contrast('cell_95 vs cell_1 (matched-pedagogical vs base)', c95, c1, 'intersubArr'),
     contrast('cell_95 vs cell_96 (within transmission cross-check)', c95, c96, 'intersubArr'),
-    contrast('intersubjective family vs transmission (5+95 vs 1+96)', { label: '(5+95)', intersubArr: [...c5.intersubArr, ...c95.intersubArr] }, { label: '(1+96)', intersubArr: [...c1.intersubArr, ...c96.intersubArr] }, 'intersubArr'),
+    contrast(
+      'intersubjective family vs transmission (5+95 vs 1+96)',
+      { label: '(5+95)', intersubArr: [...c5.intersubArr, ...c95.intersubArr] },
+      { label: '(1+96)', intersubArr: [...c1.intersubArr, ...c96.intersubArr] },
+      'intersubArr',
+    ),
   ];
   lines.push('');
   lines.push('| Contrast | Mean A | Mean B | d (A − B) |');
@@ -294,9 +292,13 @@ function buildReport({ runId, judge, perCell }) {
   lines.push('');
   lines.push('## 3. Density × score correlations');
   lines.push('');
-  lines.push('Pearson r computed at the row level (each row contributes its density and its rubric score). r > 0 indicates the lexicon predicts higher scores; r near 0 indicates the lexicon is decorative.');
+  lines.push(
+    'Pearson r computed at the row level (each row contributes its density and its rubric score). r > 0 indicates the lexicon predicts higher scores; r near 0 indicates the lexicon is decorative.',
+  );
   lines.push('');
-  lines.push('| Lexicon | r (within cell_5) | r (within cell_95) | r (within cell_1) | r (within cell_96) | r (pooled across all 4 cells) |');
+  lines.push(
+    '| Lexicon | r (within cell_5) | r (within cell_95) | r (within cell_1) | r (within cell_96) | r (pooled across all 4 cells) |',
+  );
   lines.push('| --- | --- | --- | --- | --- | --- |');
   function rWithin(c, key) {
     const arrD = c[key];
@@ -335,24 +337,42 @@ function buildReport({ runId, judge, perCell }) {
   lines.push('');
   lines.push('Read the Hegelian-density vs intersubjective-density panels jointly. Three patterns to look for:');
   lines.push('');
-  lines.push('1. **Hegelian vocabulary is a marker, not a mediator.** Cell_5 uses Hegelian vocab moderately ($d \\approx 1.0$ vs cell_95). Cell_95 uses Hegelian vocab *less than* cell_1 ($d \\approx -0.5$) — its expanded blocklist worked. Yet cells 5 and 95 score equivalently (~49). Recognition vocabulary tracks the recognition *prompt* but does not track the recognition *effect*: the vocabulary can be removed entirely without losing the score.');
+  lines.push(
+    '1. **Hegelian vocabulary is a marker, not a mediator.** Cell_5 uses Hegelian vocab moderately ($d \\approx 1.0$ vs cell_95). Cell_95 uses Hegelian vocab *less than* cell_1 ($d \\approx -0.5$) — its expanded blocklist worked. Yet cells 5 and 95 score equivalently (~49). Recognition vocabulary tracks the recognition *prompt* but does not track the recognition *effect*: the vocabulary can be removed entirely without losing the score.',
+  );
   lines.push('');
-  lines.push('2. **Intersubjective vocabulary is also a marker, not a mediator — by a different route.** Cell_95 is hyper-dense in Vygotskian/constructivist terms ($\\sim 13\\times$ cell_5). Cell_5 has only trace intersubjective vocabulary. Yet again the scores converge. The two intersubjective-family cells use *almost entirely non-overlapping* vocabularies and produce equivalent rubric scores. Neither lexicon is the load-bearing channel.');
+  lines.push(
+    '2. **Intersubjective vocabulary is also a marker, not a mediator — by a different route.** Cell_95 is hyper-dense in Vygotskian/constructivist terms ($\\sim 13\\times$ cell_5). Cell_5 has only trace intersubjective vocabulary. Yet again the scores converge. The two intersubjective-family cells use *almost entirely non-overlapping* vocabularies and produce equivalent rubric scores. Neither lexicon is the load-bearing channel.',
+  );
   lines.push('');
-  lines.push('3. **Score-tracking lives at a structural/pragmatic level both lexicons miss.** The pooled $r$\'s for intersubjective vocabulary (~0.37) outperform Hegelian ($r \\approx 0.17$), so the intersubjective lexicon does carry *some* signal — but the magnitude is modest and the within-cell $r$\'s are inconsistent (cell_1 $r = -0.29$ vs cell_96 $r = +0.23$ on the same lexicon, opposite signs). What both intersubjective-family prompts share is not vocabulary but a *stance* — turn-taking that cedes initiative, questions over assertions, learner-acknowledgement before content delivery. Bag-of-concepts cannot reach the structural level where the mechanism lives.');
+  lines.push(
+    "3. **Score-tracking lives at a structural/pragmatic level both lexicons miss.** The pooled $r$'s for intersubjective vocabulary (~0.37) outperform Hegelian ($r \\approx 0.17$), so the intersubjective lexicon does carry *some* signal — but the magnitude is modest and the within-cell $r$'s are inconsistent (cell_1 $r = -0.29$ vs cell_96 $r = +0.23$ on the same lexicon, opposite signs). What both intersubjective-family prompts share is not vocabulary but a *stance* — turn-taking that cedes initiative, questions over assertions, learner-acknowledgement before content delivery. Bag-of-concepts cannot reach the structural level where the mechanism lives.",
+  );
   lines.push('');
   lines.push('### Implication for D1');
   lines.push('');
-  lines.push('Lexicon density is a **necessary diagnostic but not the mechanism**. The first-pass D1 finding (Hegelian density correlates weakly with scores) is reproduced and extended. The new finding is that *swapping the family vocabulary entirely* (Hegelian → Vygotskian) preserves the score effect — confirming A10b\'s orientation-family interpretation while ruling out vocabulary-as-mediator at the lexical level.');
+  lines.push(
+    "Lexicon density is a **necessary diagnostic but not the mechanism**. The first-pass D1 finding (Hegelian density correlates weakly with scores) is reproduced and extended. The new finding is that *swapping the family vocabulary entirely* (Hegelian → Vygotskian) preserves the score effect — confirming A10b's orientation-family interpretation while ruling out vocabulary-as-mediator at the lexical level.",
+  );
   lines.push('');
-  lines.push('The remaining mechanism question — what structural features of the intersubjective stance make it work — requires either (a) higher-order behavioral coding (question-asking rates, learner-acknowledgement turn structure), or (b) the parked white-box analysis (attention to learner tokens, residual-stream alignment). The lexical channel is now closed as a candidate.');
+  lines.push(
+    'The remaining mechanism question — what structural features of the intersubjective stance make it work — requires either (a) higher-order behavioral coding (question-asking rates, learner-acknowledgement turn structure), or (b) the parked white-box analysis (attention to learner tokens, residual-stream alignment). The lexical channel is now closed as a candidate.',
+  );
   lines.push('');
   lines.push('## 5. Caveats');
   lines.push('');
-  lines.push('- Single judge (Sonnet) for cleanliness. Cross-judge replication would strengthen the within-cell r columns.');
-  lines.push('- Lexicons are author-specified, not learned. False negatives possible (the prompts may use intersubjective constructs we did not enumerate).');
-  lines.push('- The intersubjective lexicon is broader than the Hegelian one (10 concepts each but Vygotskian terms are more frequent in everyday tutoring discourse). Density comparisons across lexicons are not directly meaningful — only within-lexicon, across-cell comparisons are.');
-  lines.push('- Row-level correlations have low power within a single cell (n ≈ 50). Pooled r across 4 cells is the more powerful test.');
+  lines.push(
+    '- Single judge (Sonnet) for cleanliness. Cross-judge replication would strengthen the within-cell r columns.',
+  );
+  lines.push(
+    '- Lexicons are author-specified, not learned. False negatives possible (the prompts may use intersubjective constructs we did not enumerate).',
+  );
+  lines.push(
+    '- The intersubjective lexicon is broader than the Hegelian one (10 concepts each but Vygotskian terms are more frequent in everyday tutoring discourse). Density comparisons across lexicons are not directly meaningful — only within-lexicon, across-cell comparisons are.',
+  );
+  lines.push(
+    '- Row-level correlations have low power within a single cell (n ≈ 50). Pooled r across 4 cells is the more powerful test.',
+  );
   return lines.join('\n');
 }
 
@@ -390,7 +410,9 @@ async function main() {
   }
   const perCell = buildPerCell(rows);
   for (const c of perCell) {
-    console.log(`  ${c.cell}: n=${c.n}, mean score=${fmt(c.meanScore, 2)}, mean Heg=${fmt(c.meanHeg)}, mean Intersub=${fmt(c.meanIntersub)}`);
+    console.log(
+      `  ${c.cell}: n=${c.n}, mean score=${fmt(c.meanScore, 2)}, mean Heg=${fmt(c.meanHeg)}, mean Intersub=${fmt(c.meanIntersub)}`,
+    );
   }
   const report = buildReport({ runId: args.runId, judge: args.judge, perCell });
   const outPath = args.output || path.join(__dirname, '..', 'exports', 'd1-orientation-lexicon.md');

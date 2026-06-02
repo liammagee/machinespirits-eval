@@ -45,7 +45,8 @@ function olsSlope(ys) {
   const xs = Array.from({ length: n }, (_, i) => i);
   const mx = mean(xs);
   const my = mean(ys);
-  let num = 0, den = 0;
+  let num = 0,
+    den = 0;
   for (let i = 0; i < n; i++) {
     num += (xs[i] - mx) * (ys[i] - my);
     den += (xs[i] - mx) * (xs[i] - mx);
@@ -55,20 +56,25 @@ function olsSlope(ys) {
 
 function welchT(a, b) {
   if (a.length < 2 || b.length < 2) return { t: NaN, df: NaN };
-  const ma = mean(a), mb = mean(b);
-  const va = variance(a), vb = variance(b);
-  const na = a.length, nb = b.length;
+  const ma = mean(a),
+    mb = mean(b);
+  const va = variance(a),
+    vb = variance(b);
+  const na = a.length,
+    nb = b.length;
   const se = Math.sqrt(va / na + vb / nb);
   const t = (ma - mb) / se;
-  const df = ((va / na + vb / nb) ** 2) /
-    (((va / na) ** 2) / (na - 1) + ((vb / nb) ** 2) / (nb - 1));
+  const df = (va / na + vb / nb) ** 2 / ((va / na) ** 2 / (na - 1) + (vb / nb) ** 2 / (nb - 1));
   return { t, df };
 }
 
 function cohenD(a, b) {
-  const ma = mean(a), mb = mean(b);
-  const va = variance(a), vb = variance(b);
-  const na = a.length, nb = b.length;
+  const ma = mean(a),
+    mb = mean(b);
+  const va = variance(a),
+    vb = variance(b);
+  const na = a.length,
+    nb = b.length;
   if (na + nb - 2 < 1) return NaN;
   const pooled = Math.sqrt(((na - 1) * va + (nb - 1) * vb) / (na + nb - 2));
   return pooled === 0 ? NaN : (ma - mb) / pooled;
@@ -80,9 +86,16 @@ function perTurnMeans(tutorScoresJson) {
   // sorted by turn index.
   if (!tutorScoresJson) return [];
   let obj;
-  try { obj = JSON.parse(tutorScoresJson); } catch { return []; }
+  try {
+    obj = JSON.parse(tutorScoresJson);
+  } catch {
+    return [];
+  }
   if (!obj || typeof obj !== 'object') return [];
-  const turnIdxs = Object.keys(obj).map(Number).filter(Number.isFinite).sort((a, b) => a - b);
+  const turnIdxs = Object.keys(obj)
+    .map(Number)
+    .filter(Number.isFinite)
+    .sort((a, b) => a - b);
   const out = [];
   for (const t of turnIdxs) {
     const turn = obj[String(t)];
@@ -95,12 +108,16 @@ function perTurnMeans(tutorScoresJson) {
 }
 
 function analyzeRun(runId, description) {
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT id, profile_name, tutor_scores, judge_model,
            tutor_first_turn_score, tutor_last_turn_score, tutor_overall_score
     FROM evaluation_results
     WHERE run_id = ? AND judge_model IS NOT NULL
-  `).all(runId);
+  `,
+    )
+    .all(runId);
 
   if (rows.length === 0) {
     console.log(`\n## ${runId}: no scored rows yet`);
@@ -139,8 +156,8 @@ function analyzeRun(runId, description) {
       console.log(`  (insufficient data for contrast)`);
       continue;
     }
-    const baseSlopes = base.map(r => r.slope).filter(Number.isFinite);
-    const recogSlopes = recog.map(r => r.slope).filter(Number.isFinite);
+    const baseSlopes = base.map((r) => r.slope).filter(Number.isFinite);
+    const recogSlopes = recog.map((r) => r.slope).filter(Number.isFinite);
 
     const baseMeanSlope = mean(baseSlopes);
     const recogMeanSlope = mean(recogSlopes);
@@ -150,10 +167,10 @@ function analyzeRun(runId, description) {
     const d = cohenD(recogSlopes, baseSlopes);
     const { t, df } = welchT(recogSlopes, baseSlopes);
 
-    const baseFirst = mean(base.map(r => r.t_first).filter(Number.isFinite));
-    const recogFirst = mean(recog.map(r => r.t_first).filter(Number.isFinite));
-    const baseLast = mean(base.map(r => r.t_last).filter(Number.isFinite));
-    const recogLast = mean(recog.map(r => r.t_last).filter(Number.isFinite));
+    const baseFirst = mean(base.map((r) => r.t_first).filter(Number.isFinite));
+    const recogFirst = mean(recog.map((r) => r.t_first).filter(Number.isFinite));
+    const baseLast = mean(base.map((r) => r.t_last).filter(Number.isFinite));
+    const recogLast = mean(recog.map((r) => r.t_last).filter(Number.isFinite));
 
     console.log(`  Slope (pts/turn, per-turn dim-mean 1-5 scale):`);
     console.log(`    base:  mean=${baseMeanSlope.toFixed(3)}, SD=${baseSDslope.toFixed(3)}, n=${baseSlopes.length}`);
@@ -161,24 +178,36 @@ function analyzeRun(runId, description) {
     console.log(`    Cohen's d (recog - base): ${d.toFixed(3)}`);
     console.log(`    Welch's t(${df.toFixed(1)}) = ${t.toFixed(3)}`);
     console.log(`  Rubric aggregate scores (0-100 scale):`);
-    console.log(`    t_first: base=${baseFirst?.toFixed(2)}, recog=${recogFirst?.toFixed(2)}, Δ=${(recogFirst - baseFirst)?.toFixed(2)}`);
-    console.log(`    t_last:  base=${baseLast?.toFixed(2)}, recog=${recogLast?.toFixed(2)}, Δ=${(recogLast - baseLast)?.toFixed(2)}`);
-    console.log(`  A12 pre-registered decision grid: d ≥ 1.0 → replicates; d < 0.5 → fails to replicate; d ∈ (0.5, 1.0) → partial`);
+    console.log(
+      `    t_first: base=${baseFirst?.toFixed(2)}, recog=${recogFirst?.toFixed(2)}, Δ=${(recogFirst - baseFirst)?.toFixed(2)}`,
+    );
+    console.log(
+      `    t_last:  base=${baseLast?.toFixed(2)}, recog=${recogLast?.toFixed(2)}, Δ=${(recogLast - baseLast)?.toFixed(2)}`,
+    );
+    console.log(
+      `  A12 pre-registered decision grid: d ≥ 1.0 → replicates; d < 0.5 → fails to replicate; d ∈ (0.5, 1.0) → partial`,
+    );
     const verdict = Number.isFinite(d)
-      ? d >= 1.0 ? 'REPLICATES'
-      : d < 0.5 ? 'FAILS TO REPLICATE'
-      : 'PARTIAL (inconclusive)'
+      ? d >= 1.0
+        ? 'REPLICATES'
+        : d < 0.5
+          ? 'FAILS TO REPLICATE'
+          : 'PARTIAL (inconclusive)'
       : 'INSUFFICIENT DATA';
     console.log(`  Verdict on slope effect: **${verdict}**`);
   }
 }
 
 // Discover A12 runs from the DB.
-const runs = db.prepare(`
+const runs = db
+  .prepare(
+    `
   SELECT id, description FROM evaluation_runs
   WHERE description LIKE 'A12%'
   ORDER BY created_at DESC
-`).all();
+`,
+  )
+  .all();
 
 if (runs.length === 0) {
   console.error('No A12 runs found in DB. Expected description LIKE "A12%".');
@@ -199,4 +228,6 @@ console.log(`\n---\n## Reference: original DeepSeek/Sonnet finding`);
 console.log(`  recog slope = +2.79 pts/turn (on 0-100 aggregate); base slope = -0.21 pts/turn`);
 console.log(`  Cohen's d on slopes = 1.63, Welch's t(21.9) = 3.99, p ≈ .0006, n=12/condition`);
 console.log(`  Gap widens from +12 at T0 to +35 at T8-T10.`);
-console.log(`\nNote: the A12 replication uses per-turn dim-mean on a 1-5 scale, so slope magnitudes are not directly comparable to the original 0-100 figure. The PRIMARY comparison is Cohen's d on slopes (dimensionless), which IS directly comparable across scale choices. The rubric aggregate Δ (t_first, t_last) is reported on the same 0-100 scale as the original for level comparison.`);
+console.log(
+  `\nNote: the A12 replication uses per-turn dim-mean on a 1-5 scale, so slope magnitudes are not directly comparable to the original 0-100 figure. The PRIMARY comparison is Cohen's d on slopes (dimensionless), which IS directly comparable across scale choices. The rubric aggregate Δ (t_first, t_last) is reported on the same 0-100 scale as the original for level comparison.`,
+);

@@ -45,20 +45,29 @@ const getOption = (name) => {
 };
 const outPath = getOption('out');
 
-function mean(a) { return a.length ? a.reduce((s, v) => s + v, 0) / a.length : 0; }
+function mean(a) {
+  return a.length ? a.reduce((s, v) => s + v, 0) / a.length : 0;
+}
 function variance(a) {
   if (a.length < 2) return 0;
   const m = mean(a);
   return a.reduce((s, v) => s + (v - m) ** 2, 0) / (a.length - 1);
 }
-function std(a) { return Math.sqrt(variance(a)); }
+function std(a) {
+  return Math.sqrt(variance(a));
+}
 function cohensD(recog, base) {
   if (recog.length < 2 || base.length < 2) return null;
-  const vR = variance(recog), vB = variance(base), nR = recog.length, nB = base.length;
+  const vR = variance(recog),
+    vB = variance(base),
+    nR = recog.length,
+    nB = base.length;
   const pooled = Math.sqrt(((nR - 1) * vR + (nB - 1) * vB) / (nR + nB - 2));
   return pooled === 0 ? null : (mean(recog) - mean(base)) / pooled;
 }
-function r(v, d = 2) { return v == null || !Number.isFinite(v) ? '—' : v.toFixed(d); }
+function r(v, d = 2) {
+  return v == null || !Number.isFinite(v) ? '—' : v.toFixed(d);
+}
 
 function queryScores(db, { runIds = null, profilePatterns, judge }) {
   const patternClause = profilePatterns.map(() => 'profile_name LIKE ?').join(' OR ');
@@ -188,7 +197,9 @@ function main() {
   lines.push(`Generated: ${new Date().toISOString()}`);
   lines.push(`D4 run ID: ${runId}`);
   lines.push('');
-  lines.push('Tests whether the disposition gradient documented on philosophy (hostile > moderate > cooperative superegos benefit from recognition in that order) replicates on social-emotional learning (SEL). Paper §3.4 Prediction 3 cites cells 40-45 on philosophy with gradient susp > adv > advocate.');
+  lines.push(
+    'Tests whether the disposition gradient documented on philosophy (hostile > moderate > cooperative superegos benefit from recognition in that order) replicates on social-emotional learning (SEL). Paper §3.4 Prediction 3 cites cells 40-45 on philosophy with gradient susp > adv > advocate.',
+  );
   lines.push('');
 
   lines.push('## Primary result: D4 SEL (cells 22-27, Haiku 4.5 × Sonnet 4.6)');
@@ -196,17 +207,32 @@ function main() {
   lines.push(...renderTable(gradientTable(selSummary), 'SEL'));
 
   const selGradient = gradientTable(selSummary);
-  const gradientDir = (selGradient[0]?.delta ?? 0) > (selGradient[1]?.delta ?? 0)
-    && (selGradient[1]?.delta ?? 0) > (selGradient[2]?.delta ?? 0);
-  lines.push(`Gradient direction on SEL: susp Δ=${r(selGradient[0]?.delta, 1)} ${gradientDir ? '>' : 'vs'} adv Δ=${r(selGradient[1]?.delta, 1)} ${gradientDir ? '>' : 'vs'} advocate Δ=${r(selGradient[2]?.delta, 1)}. ${gradientDir ? '**Predicted gradient reproduces on SEL.**' : '**Predicted gradient does NOT reproduce.**'}`);
+  const gradientDir =
+    (selGradient[0]?.delta ?? 0) > (selGradient[1]?.delta ?? 0) &&
+    (selGradient[1]?.delta ?? 0) > (selGradient[2]?.delta ?? 0);
+  lines.push(
+    `Gradient direction on SEL: susp Δ=${r(selGradient[0]?.delta, 1)} ${gradientDir ? '>' : 'vs'} adv Δ=${r(selGradient[1]?.delta, 1)} ${gradientDir ? '>' : 'vs'} advocate Δ=${r(selGradient[2]?.delta, 1)}. ${gradientDir ? '**Predicted gradient reproduces on SEL.**' : '**Predicted gradient does NOT reproduce.**'}`,
+  );
   lines.push('');
 
   lines.push('## Philosophy baselines');
   lines.push('');
-  lines.push('Two existing-DB baselines for comparison. Both are Opus 4.6-judged (the D4 SEL run is Sonnet 4.6-judged, so judge-model differs — flagged as confound below).');
+  lines.push(
+    'Two existing-DB baselines for comparison. Both are Opus 4.6-judged (the D4 SEL run is Sonnet 4.6-judged, so judge-model differs — flagged as confound below).',
+  );
   lines.push('');
-  lines.push(...renderTable(gradientTable(phil22Summary), 'Philosophy, cells 22-27 (standard ego + divergent superego, Haiku × Opus) — matched cells'));
-  lines.push(...renderTable(gradientTable(phil40Summary), 'Philosophy, cells 40-45 (dialectical ego + divergent superego, Haiku × Opus) — paper-cited gradient'));
+  lines.push(
+    ...renderTable(
+      gradientTable(phil22Summary),
+      'Philosophy, cells 22-27 (standard ego + divergent superego, Haiku × Opus) — matched cells',
+    ),
+  );
+  lines.push(
+    ...renderTable(
+      gradientTable(phil40Summary),
+      'Philosophy, cells 40-45 (dialectical ego + divergent superego, Haiku × Opus) — paper-cited gradient',
+    ),
+  );
 
   lines.push('## Comparison');
   lines.push('');
@@ -215,30 +241,48 @@ function main() {
   const phil22G = gradientTable(phil22Summary);
   const phil40G = gradientTable(phil40Summary);
   const sign = (a, b, c) => `${r(a, 1)} ${a > b ? '>' : '<'} ${r(b, 1)} ${b > c ? '>' : '<'} ${r(c, 1)}`;
-  lines.push(`| **SEL (D4)** | 22-27 | Haiku 4.5 | Sonnet 4.6 | ${r(selGradient[0].delta, 1)} | ${r(selGradient[1].delta, 1)} | ${r(selGradient[2].delta, 1)} | ${sign(selGradient[0].delta, selGradient[1].delta, selGradient[2].delta)} |`);
+  lines.push(
+    `| **SEL (D4)** | 22-27 | Haiku 4.5 | Sonnet 4.6 | ${r(selGradient[0].delta, 1)} | ${r(selGradient[1].delta, 1)} | ${r(selGradient[2].delta, 1)} | ${sign(selGradient[0].delta, selGradient[1].delta, selGradient[2].delta)} |`,
+  );
   if (phil22G[0]?.nBase) {
-    lines.push(`| Philosophy | 22-27 | Haiku 4.5 | Opus 4.6 | ${r(phil22G[0].delta, 1)} | ${r(phil22G[1].delta, 1)} | ${r(phil22G[2].delta, 1)} | ${sign(phil22G[0].delta, phil22G[1].delta, phil22G[2].delta)} |`);
+    lines.push(
+      `| Philosophy | 22-27 | Haiku 4.5 | Opus 4.6 | ${r(phil22G[0].delta, 1)} | ${r(phil22G[1].delta, 1)} | ${r(phil22G[2].delta, 1)} | ${sign(phil22G[0].delta, phil22G[1].delta, phil22G[2].delta)} |`,
+    );
   }
   if (phil40G[0]?.nBase) {
-    lines.push(`| Philosophy | 40-45 | Haiku 4.5 | Opus 4.6 | ${r(phil40G[0].delta, 1)} | ${r(phil40G[1].delta, 1)} | ${r(phil40G[2].delta, 1)} | ${sign(phil40G[0].delta, phil40G[1].delta, phil40G[2].delta)} |`);
+    lines.push(
+      `| Philosophy | 40-45 | Haiku 4.5 | Opus 4.6 | ${r(phil40G[0].delta, 1)} | ${r(phil40G[1].delta, 1)} | ${r(phil40G[2].delta, 1)} | ${sign(phil40G[0].delta, phil40G[1].delta, phil40G[2].delta)} |`,
+    );
   }
   lines.push('');
 
   lines.push('## Interpretation');
   lines.push('');
   if (gradientDir) {
-    lines.push('The disposition gradient **replicates directionally on SEL**: hostile superegos (suspicious) benefit most from recognition, cooperative superegos (advocate) least. This is the pattern Prediction 3 derives from recognition theory: recognition emerges from *struggle*, so the dispositions that create the most struggle (suspicious, adversary) have the most room for recognition to operate. The replication supports the theoretical framing as domain-general rather than philosophy-specific.');
+    lines.push(
+      'The disposition gradient **replicates directionally on SEL**: hostile superegos (suspicious) benefit most from recognition, cooperative superegos (advocate) least. This is the pattern Prediction 3 derives from recognition theory: recognition emerges from *struggle*, so the dispositions that create the most struggle (suspicious, adversary) have the most room for recognition to operate. The replication supports the theoretical framing as domain-general rather than philosophy-specific.',
+    );
   } else {
-    lines.push('The disposition gradient **does NOT replicate directionally on SEL**. This would suggest that Prediction 3 (recognition emerges from struggle) is philosophy-specific and does not generalize to SEL. Interpretation requires care — single replication does not foreclose the effect, but it does bound domain-general claims.');
+    lines.push(
+      'The disposition gradient **does NOT replicate directionally on SEL**. This would suggest that Prediction 3 (recognition emerges from struggle) is philosophy-specific and does not generalize to SEL. Interpretation requires care — single replication does not foreclose the effect, but it does bound domain-general claims.',
+    );
   }
   lines.push('');
 
   lines.push('## Confounds and caveats');
   lines.push('');
-  lines.push('- **Judge-model differs**: D4 SEL uses Sonnet 4.6; philosophy baselines are Opus 4.6. Sonnet and Opus produce different absolute magnitudes (see §6.4 cross-judge validation). Direction-of-gradient should replicate across judges, but Δ magnitudes are not directly comparable. A matched-judge replication would rejudge either side.');
-  lines.push('- **Cells 22-27 vs 40-45**: D4 uses standard ego + divergent superego (cells 22-27); the paper-cited gradient uses dialectical ego + divergent superego (cells 40-45). The two contrasts differ in ego architecture; the gradient is expected to replicate in both under the same theoretical account, but the precise magnitudes will differ.');
-  lines.push('- **Single-domain replication**: this extends the gradient from 1 to 2 domains. A cross-application generalization claim would require additional domains.');
-  lines.push('- **Learner-side test deferred**: the D4 scope also includes testing whether recognition rescues hostile learner-side superegos. This requires new cells (learner-side disposition variants) and is out of scope for the current pass.');
+  lines.push(
+    '- **Judge-model differs**: D4 SEL uses Sonnet 4.6; philosophy baselines are Opus 4.6. Sonnet and Opus produce different absolute magnitudes (see §6.4 cross-judge validation). Direction-of-gradient should replicate across judges, but Δ magnitudes are not directly comparable. A matched-judge replication would rejudge either side.',
+  );
+  lines.push(
+    '- **Cells 22-27 vs 40-45**: D4 uses standard ego + divergent superego (cells 22-27); the paper-cited gradient uses dialectical ego + divergent superego (cells 40-45). The two contrasts differ in ego architecture; the gradient is expected to replicate in both under the same theoretical account, but the precise magnitudes will differ.',
+  );
+  lines.push(
+    '- **Single-domain replication**: this extends the gradient from 1 to 2 domains. A cross-application generalization claim would require additional domains.',
+  );
+  lines.push(
+    '- **Learner-side test deferred**: the D4 scope also includes testing whether recognition rescues hostile learner-side superegos. This requires new cells (learner-side disposition variants) and is out of scope for the current pass.',
+  );
   lines.push('');
 
   const report = lines.join('\n');

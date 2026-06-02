@@ -32,16 +32,23 @@ const getOption = (name) => {
 };
 const outPath = getOption('out');
 
-function mean(a) { return a.length ? a.reduce((s, v) => s + v, 0) / a.length : 0; }
+function mean(a) {
+  return a.length ? a.reduce((s, v) => s + v, 0) / a.length : 0;
+}
 function variance(a) {
   if (a.length < 2) return 0;
   const m = mean(a);
   return a.reduce((s, v) => s + (v - m) ** 2, 0) / (a.length - 1);
 }
-function std(a) { return Math.sqrt(variance(a)); }
+function std(a) {
+  return Math.sqrt(variance(a));
+}
 function cohensD(x, y) {
   if (x.length < 2 || y.length < 2) return null;
-  const vX = variance(x), vY = variance(y), nX = x.length, nY = y.length;
+  const vX = variance(x),
+    vY = variance(y),
+    nX = x.length,
+    nY = y.length;
   const pooled = Math.sqrt(((nX - 1) * vX + (nY - 1) * vY) / (nX + nY - 2));
   return pooled === 0 ? null : (mean(x) - mean(y)) / pooled;
 }
@@ -49,15 +56,21 @@ function welchSE(x, y) {
   // SE for difference of means, Welch (unequal variance)
   return Math.sqrt(variance(x) / x.length + variance(y) / y.length);
 }
-function r(v, d = 2) { return v == null || !Number.isFinite(v) ? '—' : v.toFixed(d); }
+function r(v, d = 2) {
+  return v == null || !Number.isFinite(v) ? '—' : v.toFixed(d);
+}
 
 // Pearson correlation
 function pearson(xs, ys) {
   if (xs.length !== ys.length || xs.length < 2) return null;
-  const mx = mean(xs), my = mean(ys);
-  let num = 0, dx2 = 0, dy2 = 0;
+  const mx = mean(xs),
+    my = mean(ys);
+  let num = 0,
+    dx2 = 0,
+    dy2 = 0;
   for (let i = 0; i < xs.length; i++) {
-    const dx = xs[i] - mx, dy = ys[i] - my;
+    const dx = xs[i] - mx,
+      dy = ys[i] - my;
     num += dx * dy;
     dx2 += dx * dx;
     dy2 += dy * dy;
@@ -70,8 +83,10 @@ function pearson(xs, ys) {
 function linearRegression(xs, ys) {
   const rho = pearson(xs, ys);
   if (rho === null) return null;
-  const mx = mean(xs), my = mean(ys);
-  const sx = std(xs), sy = std(ys);
+  const mx = mean(xs),
+    my = mean(ys);
+  const sx = std(xs),
+    sy = std(ys);
   if (sx === 0) return null;
   const slope = rho * (sy / sx);
   const intercept = my - slope * mx;
@@ -116,9 +131,13 @@ function queryScoresByJudge(ego, profile) {
 
 // Pick the dominant judge (most rows) for a given {ego, profile} pair.
 function dominantJudge(byJudge) {
-  let best = null, bestN = 0;
+  let best = null,
+    bestN = 0;
   for (const [judge, arr] of Object.entries(byJudge)) {
-    if (arr.length > bestN) { best = judge; bestN = arr.length; }
+    if (arr.length > bestN) {
+      best = judge;
+      bestN = arr.length;
+    }
   }
   return best;
 }
@@ -134,7 +153,8 @@ const perModel = MODELS.map(({ key, ego }) => {
   const sharedJudges = Object.keys(base.byJudge).filter(
     (j) => prosth.byJudge[j] && base.byJudge[j].length >= 20 && prosth.byJudge[j].length >= 20,
   );
-  let matched = false, matchedJudge = null;
+  let matched = false,
+    matchedJudge = null;
   let baseArr, prosthArr;
   if (sharedJudges.length) {
     // Prefer claude-code/sonnet if available, else first shared
@@ -182,7 +202,9 @@ lines.push(`# A3 — Capability Threshold for Cognitive Prosthesis`);
 lines.push('');
 lines.push(`Generated: ${new Date().toISOString()}`);
 lines.push('');
-lines.push(`Tests the hypothesis: does cell_66 (superego-routed bidirectional profiling, "cognitive prosthesis") help low-capability models more than high-capability ones? Design: 6 ego models × 2 cells (cell_5 base vs cell_66 prosthesis). All cells share kimi-k2.5 superego, recognition-mode prompts. Judge is selected per model: within-judge (matched) when both cells share a judge with n≥20, else dominant-judge per cell (cross-judge, flagged ⚠). Models are ordered by baseline capability (cell_5 mean). Dry-run mock judges are excluded.`);
+lines.push(
+  `Tests the hypothesis: does cell_66 (superego-routed bidirectional profiling, "cognitive prosthesis") help low-capability models more than high-capability ones? Design: 6 ego models × 2 cells (cell_5 base vs cell_66 prosthesis). All cells share kimi-k2.5 superego, recognition-mode prompts. Judge is selected per model: within-judge (matched) when both cells share a judge with n≥20, else dominant-judge per cell (cross-judge, flagged ⚠). Models are ordered by baseline capability (cell_5 mean). Dry-run mock judges are excluded.`,
+);
 lines.push('');
 lines.push(`## Per-model means and prosthesis effect (tutor first-turn score, 0-100)`);
 lines.push('');
@@ -201,7 +223,9 @@ for (const m of sorted) {
   );
 }
 lines.push('');
-lines.push(`⚠ = cross-judge comparison (baseline and prosthesis scored by different judges). Within-judge rows are directly comparable; cross-judge rows carry judge-stringency confound.`);
+lines.push(
+  `⚠ = cross-judge comparison (baseline and prosthesis scored by different judges). Within-judge rows are directly comparable; cross-judge rows carry judge-stringency confound.`,
+);
 lines.push('');
 
 lines.push(`## Capability threshold test (linear regression of Δ on baseline)`);
@@ -213,7 +237,9 @@ if (regression) {
   lines.push(`- **R²**: ${r(regression.r2, 3)}`);
   lines.push('');
   const dir = regression.slope < 0 ? 'more negative' : 'more positive';
-  lines.push(`Interpretation: as baseline capability increases by 1 point, the prosthesis effect becomes ${r(Math.abs(regression.slope), 3)} points ${dir}.`);
+  lines.push(
+    `Interpretation: as baseline capability increases by 1 point, the prosthesis effect becomes ${r(Math.abs(regression.slope), 3)} points ${dir}.`,
+  );
 } else {
   lines.push(`Regression not computable.`);
 }
@@ -222,37 +248,59 @@ lines.push('');
 lines.push(`## Interpretation`);
 lines.push('');
 const matchedRows = perModel.filter((m) => m.matched);
-const nNeg = perModel.filter((m) => (m.delta + m.deltaCI) < 0).length;       // 95% CI fully below 0
+const nNeg = perModel.filter((m) => m.delta + m.deltaCI < 0).length; // 95% CI fully below 0
 const nNull = perModel.filter((m) => m.delta - m.deltaCI <= 0 && m.delta + m.deltaCI >= 0).length;
-const nPos = perModel.filter((m) => (m.delta - m.deltaCI) > 0).length;        // 95% CI fully above 0
+const nPos = perModel.filter((m) => m.delta - m.deltaCI > 0).length; // 95% CI fully above 0
 
-lines.push(`Using 95% CIs on Δ: ${nNeg}/${perModel.length} models show significant harm, ${nNull} show null effect, ${nPos} show significant benefit.`);
+lines.push(
+  `Using 95% CIs on Δ: ${nNeg}/${perModel.length} models show significant harm, ${nNull} show null effect, ${nPos} show significant benefit.`,
+);
 lines.push('');
 if (matchedRows.length) {
-  lines.push(`**Within-judge (matched, n=${matchedRows.length})**: ${matchedRows.map((m) => `${m.key} Δ=${r(m.delta)} (d=${r(m.cohensD)})`).join('; ')}.`);
+  lines.push(
+    `**Within-judge (matched, n=${matchedRows.length})**: ${matchedRows.map((m) => `${m.key} Δ=${r(m.delta)} (d=${r(m.cohensD)})`).join('; ')}.`,
+  );
   lines.push('');
 }
-lines.push(`**Regression**: Δ ~ baseline slope = ${r(regression.slope, 3)} (r=${r(regression.r, 3)}, R²=${r(regression.r2, 3)}). Stronger baseline ⇒ larger harm, but note the relationship is driven partly by the one null-effect model (Qwen) sitting at the lowest baseline.`);
+lines.push(
+  `**Regression**: Δ ~ baseline slope = ${r(regression.slope, 3)} (r=${r(regression.r, 3)}, R²=${r(regression.r2, 3)}). Stronger baseline ⇒ larger harm, but note the relationship is driven partly by the one null-effect model (Qwen) sitting at the lowest baseline.`,
+);
 lines.push('');
 lines.push(`### What this means for the paper`);
 lines.push('');
-lines.push(`The capability-threshold hypothesis predicted prosthesis would *help* weaker models (compensating for ego-reasoning limits) and *hurt* stronger ones (disrupting already-competent reasoning). The data partially inform this story but do not confirm it:`);
+lines.push(
+  `The capability-threshold hypothesis predicted prosthesis would *help* weaker models (compensating for ego-reasoning limits) and *hurt* stronger ones (disrupting already-competent reasoning). The data partially inform this story but do not confirm it:`,
+);
 lines.push('');
-lines.push(`- Of the two within-judge matched comparisons, one model (Qwen 3.5, baseline 65.7) shows **null** effect, the other (Nemotron, baseline 66.4) shows **substantial harm** (d=-1.29). Two low-capability models, opposite outcomes — so capability alone does not predict prosthesis response.`);
-lines.push(`- For the four higher-capability models, cross-judge comparisons consistently show large harm (d ≤ -2.0). These are confounded with the fact that baseline uses opus-4.6 and prosthesis uses code/sonnet, which likely differs in stringency. The directional signal is robust; the magnitude estimates are inflated.`);
-lines.push(`- The regression slope (Δ on baseline, r=${r(regression.r, 3)}) is not a clean capability-threshold signal in the Nagel sense. A sharper question is: what about Qwen's response pattern makes prosthesis neutral where it's harmful for Nemotron? Early candidates: response-length norms, dialectical synthesis tolerance, or architectural affinity for the bidirectional profiling schema.`);
+lines.push(
+  `- Of the two within-judge matched comparisons, one model (Qwen 3.5, baseline 65.7) shows **null** effect, the other (Nemotron, baseline 66.4) shows **substantial harm** (d=-1.29). Two low-capability models, opposite outcomes — so capability alone does not predict prosthesis response.`,
+);
+lines.push(
+  `- For the four higher-capability models, cross-judge comparisons consistently show large harm (d ≤ -2.0). These are confounded with the fact that baseline uses opus-4.6 and prosthesis uses code/sonnet, which likely differs in stringency. The directional signal is robust; the magnitude estimates are inflated.`,
+);
+lines.push(
+  `- The regression slope (Δ on baseline, r=${r(regression.r, 3)}) is not a clean capability-threshold signal in the Nagel sense. A sharper question is: what about Qwen's response pattern makes prosthesis neutral where it's harmful for Nemotron? Early candidates: response-length norms, dialectical synthesis tolerance, or architectural affinity for the bidirectional profiling schema.`,
+);
 lines.push('');
-lines.push(`Headline for paper §6.6.x: prosthesis is **not uniformly beneficial on weaker models and not uniformly harmful on stronger ones**; the architectural cost is model-dependent and motivates the authentic-learner/no-prosthesis variants already reported in cells 78-79. The capability-threshold hypothesis, as originally framed, is not supported.`);
+lines.push(
+  `Headline for paper §6.6.x: prosthesis is **not uniformly beneficial on weaker models and not uniformly harmful on stronger ones**; the architectural cost is model-dependent and motivates the authentic-learner/no-prosthesis variants already reported in cells 78-79. The capability-threshold hypothesis, as originally framed, is not supported.`,
+);
 lines.push('');
 
 lines.push(`## Caveats`);
 lines.push('');
 const nMatched = perModel.filter((m) => m.matched).length;
-lines.push(`- **Judge confound (primary)**: only ${nMatched}/${perModel.length} model(s) have matched within-judge comparison. For the rest, baseline and prosthesis are scored by different judges; the Δ reflects both the architectural effect and judge-stringency drift. The matched comparisons (if any) are the cleanest evidence.`);
+lines.push(
+  `- **Judge confound (primary)**: only ${nMatched}/${perModel.length} model(s) have matched within-judge comparison. For the rest, baseline and prosthesis are scored by different judges; the Δ reflects both the architectural effect and judge-stringency drift. The matched comparisons (if any) are the cleanest evidence.`,
+);
 lines.push(`- Single superego (kimi-k2.5). A different superego may alter the prosthesis signal.`);
 lines.push(`- Single domain (philosophy). Cross-domain replication would strengthen the generalization.`);
-lines.push(`- Only one prosthesis variant (descriptive). Prescriptive (cell_67) and adversary (cell_68) are not tested here.`);
-lines.push(`- Effective n below 63 for several prosthesis cells due to OpenRouter credit exhaustion mid-run. The smallest (Nemotron n=30, DeepSeek n=43) still support clear directional inference within the available judge.`);
+lines.push(
+  `- Only one prosthesis variant (descriptive). Prescriptive (cell_67) and adversary (cell_68) are not tested here.`,
+);
+lines.push(
+  `- Effective n below 63 for several prosthesis cells due to OpenRouter credit exhaustion mid-run. The smallest (Nemotron n=30, DeepSeek n=43) still support clear directional inference within the available judge.`,
+);
 
 const report = lines.join('\n');
 if (outPath) {

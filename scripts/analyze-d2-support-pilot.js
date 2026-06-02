@@ -34,20 +34,29 @@ const getOption = (name) => {
 };
 const outPath = getOption('out');
 
-function mean(arr) { return arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : 0; }
+function mean(arr) {
+  return arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : 0;
+}
 function variance(arr) {
   if (arr.length < 2) return 0;
   const m = mean(arr);
   return arr.reduce((s, v) => s + (v - m) ** 2, 0) / (arr.length - 1);
 }
-function std(arr) { return Math.sqrt(variance(arr)); }
+function std(arr) {
+  return Math.sqrt(variance(arr));
+}
 function cohensD(a, b) {
   if (a.length < 2 || b.length < 2) return null;
-  const vA = variance(a), vB = variance(b), nA = a.length, nB = b.length;
+  const vA = variance(a),
+    vB = variance(b),
+    nA = a.length,
+    nB = b.length;
   const pooled = Math.sqrt(((nA - 1) * vA + (nB - 1) * vB) / (nA + nB - 2));
   return pooled === 0 ? null : (mean(a) - mean(b)) / pooled;
 }
-function r(v, d = 2) { return v == null || !Number.isFinite(v) ? '—' : v.toFixed(d); }
+function r(v, d = 2) {
+  return v == null || !Number.isFinite(v) ? '—' : v.toFixed(d);
+}
 
 function queryScores(db, runIds, profile, judge) {
   const ids = Array.isArray(runIds) ? runIds : [runIds];
@@ -141,7 +150,9 @@ function main() {
   lines.push('');
   lines.push(`Generated: ${new Date().toISOString()}`);
   lines.push('');
-  lines.push('Tests whether the recognition main effect transfers to a domain where the skill being coached is itself de-pedagogical (listener presence, sitting with distress, declining to fix). Haiku 4.5 generation × Sonnet 4.6 judge, matched to the A6 single-prompt-mode contrasts.');
+  lines.push(
+    'Tests whether the recognition main effect transfers to a domain where the skill being coached is itself de-pedagogical (listener presence, sitting with distress, declining to fix). Haiku 4.5 generation × Sonnet 4.6 judge, matched to the A6 single-prompt-mode contrasts.',
+  );
   lines.push('');
   lines.push('## Primary result');
   lines.push('');
@@ -178,22 +189,36 @@ function main() {
   lines.push('## Interpretation');
   lines.push('');
   if (d2.d != null && d2.d > 0.5) {
-    lines.push(`Recognition produces a ${magnitudeLabel(d2.d)} positive effect (d = ${r(d2.d, 2)}) on tutor-side quality when the domain being coached is peer support listening rather than traditional knowledge transfer. The directional claim — that recognition-enhanced tutoring helps the tutor coach even a de-pedagogical skill — replicates. This is an *adjacency* test, not a full cross-application test (the tutor prompt still frames the LLM as a tutor); the stronger claim requires role-reframed prompts, deferred to D2 Path 2.`);
+    lines.push(
+      `Recognition produces a ${magnitudeLabel(d2.d)} positive effect (d = ${r(d2.d, 2)}) on tutor-side quality when the domain being coached is peer support listening rather than traditional knowledge transfer. The directional claim — that recognition-enhanced tutoring helps the tutor coach even a de-pedagogical skill — replicates. This is an *adjacency* test, not a full cross-application test (the tutor prompt still frames the LLM as a tutor); the stronger claim requires role-reframed prompts, deferred to D2 Path 2.`,
+    );
     lines.push('');
   } else if (d2.d != null && d2.d > 0) {
-    lines.push(`Recognition produces a small positive effect (d = ${r(d2.d, 2)}) in direction but not at the "very large" class seen in A6's five domains (d = 1.45–2.71). This suggests the recognition benefit may attenuate when the domain being coached runs counter to traditional pedagogy. Interpretation is limited by the single-application scope of this pilot.`);
+    lines.push(
+      `Recognition produces a small positive effect (d = ${r(d2.d, 2)}) in direction but not at the "very large" class seen in A6's five domains (d = 1.45–2.71). This suggests the recognition benefit may attenuate when the domain being coached runs counter to traditional pedagogy. Interpretation is limited by the single-application scope of this pilot.`,
+    );
     lines.push('');
   } else {
-    lines.push(`Recognition does NOT produce a positive effect on peer-support coaching (d = ${r(d2.d, 2)}). This would suggest the recognition mechanism is pedagogy-bound rather than application-general, and would require scoping the §6.1–6.2 mechanism language accordingly.`);
+    lines.push(
+      `Recognition does NOT produce a positive effect on peer-support coaching (d = ${r(d2.d, 2)}). This would suggest the recognition mechanism is pedagogy-bound rather than application-general, and would require scoping the §6.1–6.2 mechanism language accordingly.`,
+    );
     lines.push('');
   }
 
   lines.push('## Confounds and caveats');
   lines.push('');
-  lines.push('- **Structurally still tutoring**: the LLM is prompted as a tutor coaching a trainee, not as a peer support listener directly. A true cross-application test requires role-reframed prompts (D2 Path 2, deferred).');
-  lines.push('- **Single application**: one application does not support a cross-application generalization claim. The pilot shows whether recognition *can* help in at least one non-philosophical-tutoring-like domain, not whether it helps across applications broadly.');
-  lines.push('- **Same generation and judge as A6**: Haiku 4.5 generation, Sonnet 4.6 judge, held constant. Cross-judge validation on D2 was not run for this pilot (Sonnet-only).');
-  lines.push('- **Scenario counts match A6**: 4 core + 1 mood = 5 scenarios × 3 runs = n=15 per cell, matching the A6 per-domain sample size.');
+  lines.push(
+    '- **Structurally still tutoring**: the LLM is prompted as a tutor coaching a trainee, not as a peer support listener directly. A true cross-application test requires role-reframed prompts (D2 Path 2, deferred).',
+  );
+  lines.push(
+    '- **Single application**: one application does not support a cross-application generalization claim. The pilot shows whether recognition *can* help in at least one non-philosophical-tutoring-like domain, not whether it helps across applications broadly.',
+  );
+  lines.push(
+    '- **Same generation and judge as A6**: Haiku 4.5 generation, Sonnet 4.6 judge, held constant. Cross-judge validation on D2 was not run for this pilot (Sonnet-only).',
+  );
+  lines.push(
+    '- **Scenario counts match A6**: 4 core + 1 mood = 5 scenarios × 3 runs = n=15 per cell, matching the A6 per-domain sample size.',
+  );
   lines.push('');
 
   const report = lines.join('\n');

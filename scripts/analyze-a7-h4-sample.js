@@ -50,7 +50,8 @@ const SEED = 42;
 
 const evalDb = new Database(path.join(REPO_ROOT, 'data', 'evaluations.db'), { readonly: true });
 const tutorDb = new Database(
-  (process.env.AUTH_DB_PATH || path.join(REPO_ROOT, 'node_modules', '@machinespirits', 'tutor-core', 'data', 'lms.sqlite')),
+  process.env.AUTH_DB_PATH ||
+    path.join(REPO_ROOT, 'node_modules', '@machinespirits', 'tutor-core', 'data', 'lms.sqlite'),
   { readonly: true },
 );
 
@@ -155,10 +156,16 @@ blindedLines.push('## Coding instructions');
 blindedLines.push('');
 blindedLines.push('For each dialogue D1..D10, code **0 or 1**:');
 blindedLines.push('');
-blindedLines.push('- **1** = tutor\'s message in this session contains an *explicit reference* to a specific prior-session event (verbatim quote, paraphrase, named breakthrough, "you said earlier...", "in our last session you mentioned X", explicit pointer to a prior synthesis or impasse).');
-blindedLines.push('- **0** = no explicit cross-session reference. Topic continuity (e.g., "Hegel\'s master-slave dialectic") without referencing the *learner\'s prior engagement* with it counts as 0.');
+blindedLines.push(
+  '- **1** = tutor\'s message in this session contains an *explicit reference* to a specific prior-session event (verbatim quote, paraphrase, named breakthrough, "you said earlier...", "in our last session you mentioned X", explicit pointer to a prior synthesis or impasse).',
+);
+blindedLines.push(
+  '- **0** = no explicit cross-session reference. Topic continuity (e.g., "Hegel\'s master-slave dialectic") without referencing the *learner\'s prior engagement* with it counts as 0.',
+);
 blindedLines.push('');
-blindedLines.push('Borderline rule: if the tutor\'s message could plausibly be the same regardless of whether prior sessions happened, code 0.');
+blindedLines.push(
+  "Borderline rule: if the tutor's message could plausibly be the same regardless of whether prior sessions happened, code 0.",
+);
 blindedLines.push('');
 blindedLines.push('Submit codes by editing the table at the end of this file.');
 blindedLines.push('');
@@ -193,7 +200,7 @@ for (let i = 0; i < samples.length; i++) {
     }
   }
   blindedLines.push('');
-  blindedLines.push('**Tutor\'s last message in this session:**');
+  blindedLines.push("**Tutor's last message in this session:**");
   blindedLines.push('');
   blindedLines.push('```');
   blindedLines.push(tutorMsg);
@@ -232,7 +239,11 @@ for (const id in key) {
   scenarioCounts[s] = (scenarioCounts[s] || 0) + 1;
 }
 for (const [s, n] of Object.entries(scenarioCounts).sort()) console.log(`  ${s}: ${n}`);
-console.log(`Conditions (blinded order): ${Object.values(key).map((k) => k.condition[0]).join('')}`);
+console.log(
+  `Conditions (blinded order): ${Object.values(key)
+    .map((k) => k.condition[0])
+    .join('')}`,
+);
 console.log('');
 console.log(`Blinded coding file: ${blindedPath}`);
 console.log(`Unblinding key:      ${keyPath}`);

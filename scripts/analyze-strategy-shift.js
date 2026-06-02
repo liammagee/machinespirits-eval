@@ -57,11 +57,16 @@ const profileFilter = getOption('profile');
 const outPath = getOption('out');
 
 if (!runIdArg) {
-  console.error('Usage: node scripts/analyze-strategy-shift.js --run-id <runId>[,<runId2>,...] [--profile <name>] [--out <path>]');
+  console.error(
+    'Usage: node scripts/analyze-strategy-shift.js --run-id <runId>[,<runId2>,...] [--profile <name>] [--out <path>]',
+  );
   process.exit(2);
 }
 
-const runIds = runIdArg.split(',').map((s) => s.trim()).filter(Boolean);
+const runIds = runIdArg
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
 const runId = runIds.length === 1 ? runIds[0] : runIds.join(',');
 
 const db = new Database(DB_PATH, { readonly: true });
@@ -69,7 +74,10 @@ const db = new Database(DB_PATH, { readonly: true });
 const placeholders = runIds.map(() => '?').join(',');
 let query = `SELECT id, run_id, scenario_id, scenario_type, scenario_name, profile_name, dialogue_id FROM evaluation_results WHERE run_id IN (${placeholders})`;
 const params = [...runIds];
-if (profileFilter) { query += ' AND profile_name = ?'; params.push(profileFilter); }
+if (profileFilter) {
+  query += ' AND profile_name = ?';
+  params.push(profileFilter);
+}
 const rows = db.prepare(query).all(...params);
 db.close();
 
@@ -85,8 +93,16 @@ function loadTrace(dialogueId) {
 }
 
 function jaccard(a, b) {
-  const ta = new Set(String(a).toLowerCase().match(/\b\w+\b/g) || []);
-  const tb = new Set(String(b).toLowerCase().match(/\b\w+\b/g) || []);
+  const ta = new Set(
+    String(a)
+      .toLowerCase()
+      .match(/\b\w+\b/g) || [],
+  );
+  const tb = new Set(
+    String(b)
+      .toLowerCase()
+      .match(/\b\w+\b/g) || [],
+  );
   if (ta.size === 0 && tb.size === 0) return 1;
   let inter = 0;
   for (const t of ta) if (tb.has(t)) inter++;
@@ -114,7 +130,13 @@ const REFINEMENT_JACCARD = 0.6;
 // match within "substantive engagement" — this metric generalises that
 // principle to all scenarios.
 const POLICY_FAMILIES = Object.freeze({
-  substantive_engagement: ['mirror_and_extend', 'scope_test', 'name_the_disagreement', 'pose_counterexample', 'invite_objection'],
+  substantive_engagement: [
+    'mirror_and_extend',
+    'scope_test',
+    'name_the_disagreement',
+    'pose_counterexample',
+    'invite_objection',
+  ],
   diagnostic: ['ask_diagnostic_question', 'request_elaboration', 'summarize_and_check'],
   scaffolding: ['give_worked_example', 'lower_cognitive_load', 'provide_hint', 'withhold_answer'],
   repair_affective: ['repair_misrecognition', 'acknowledge_and_redirect'],
@@ -259,9 +281,7 @@ for (const row of rows) {
 
   const orig = analyzeBranch(trace.original, expectedShift, triggerTurn);
   const cf = trace.counterfactual ? analyzeBranch(trace.counterfactual, expectedShift, triggerTurn) : null;
-  const counterfactualDivergence = cf
-    ? computeDivergence(orig.policyTrace, cf.policyTrace, triggerTurn)
-    : null;
+  const counterfactualDivergence = cf ? computeDivergence(orig.policyTrace, cf.policyTrace, triggerTurn) : null;
 
   // Family-level counterfactual divergence: under perturbation, does the
   // family of the selected action change? When this is much lower than
@@ -377,8 +397,14 @@ function aggregate(records, key) {
   return out;
 }
 
-const byProfile = aggregate(perScenario.filter((r) => !r.error), (r) => r.profileName);
-const byScenarioType = aggregate(perScenario.filter((r) => !r.error), (r) => r.scenarioType);
+const byProfile = aggregate(
+  perScenario.filter((r) => !r.error),
+  (r) => r.profileName,
+);
+const byScenarioType = aggregate(
+  perScenario.filter((r) => !r.error),
+  (r) => r.scenarioType,
+);
 
 const report = {
   runId,
@@ -398,7 +424,9 @@ console.log(`\nStrategy-shift report — runId(s)=${runIds.join(',')}`);
 console.log(`  scenarios: ${perScenario.length} (${perScenario.filter((r) => r.error).length} errored)`);
 
 console.log('\nBy profile:');
-console.log('  profile                                   n   shift%  shift_n  window%  window_n  family%  family_n   cf_div%  cf_div_n  cf_fam%  cf_fam_n  refine%  refine_n');
+console.log(
+  '  profile                                   n   shift%  shift_n  window%  window_n  family%  family_n   cf_div%  cf_div_n  cf_fam%  cf_fam_n  refine%  refine_n',
+);
 for (const row of byProfile) {
   console.log(
     `  ${String(row.key).padEnd(40)} ${String(row.n).padStart(3)}  ${fmtPct(row.strategy_shift_correctness)}  ${fmtFrac(row.strategy_shift_correct_count, row.strategy_shift_evaluable).padStart(7)}  ${fmtPct(row.shift_window_correctness)}  ${fmtFrac(row.shift_window_correct_count, row.shift_window_evaluable).padStart(8)}  ${fmtPct(row.family_match_rate)}  ${fmtFrac(row.family_match_count, row.family_match_evaluable).padStart(8)}  ${fmtPct(row.counterfactual_divergence)}  ${fmtFrac(row.counterfactual_divergent_count, row.counterfactual_total).padStart(7)}  ${fmtPct(row.counterfactual_family_divergence)}  ${fmtFrac(row.counterfactual_family_divergent_count, row.counterfactual_family_total).padStart(7)}  ${fmtPct(row.within_action_refinement_rate)}  ${fmtFrac(row.within_action_refinements, row.same_action_repeats).padStart(7)}`,
@@ -407,17 +435,24 @@ for (const row of byProfile) {
 
 // Per-cell family confusion matrix. Diagonal entries show right-family
 // pick rate; off-diagonal entries reveal systematic misdirection.
-const FAMILY_ABBR = { substantive_engagement: 'subst', diagnostic: 'diag', scaffolding: 'scaf', repair_affective: 'rep' };
+const FAMILY_ABBR = {
+  substantive_engagement: 'subst',
+  diagnostic: 'diag',
+  scaffolding: 'scaf',
+  repair_affective: 'rep',
+};
 console.log('\nFamily confusion matrix per profile (rows = expected family, cols = actual at trigger+1):');
 for (const row of byProfile) {
   const cm = row.confusion_matrix || {};
   console.log(`  ${row.key}`);
-  console.log(`    expected\\actual         ${FAMILY_NAMES.map((f) => FAMILY_ABBR[f].padStart(5)).join('  ')}    diag_rate`);
+  console.log(
+    `    expected\\actual         ${FAMILY_NAMES.map((f) => FAMILY_ABBR[f].padStart(5)).join('  ')}    diag_rate`,
+  );
   for (const ef of FAMILY_NAMES) {
     const cells = FAMILY_NAMES.map((af) => String((cm[ef] && cm[ef][af]) || 0).padStart(5));
     const rowTotal = FAMILY_NAMES.reduce((s, af) => s + ((cm[ef] && cm[ef][af]) || 0), 0);
     const diag = (cm[ef] && cm[ef][ef]) || 0;
-    const diagRate = rowTotal ? `${diag}/${rowTotal} (${(100 * diag / rowTotal).toFixed(0)}%)` : '   --';
+    const diagRate = rowTotal ? `${diag}/${rowTotal} (${((100 * diag) / rowTotal).toFixed(0)}%)` : '   --';
     console.log(`    ${ef.padEnd(24)}${cells.join('  ')}    ${diagRate}`);
   }
 }
@@ -426,7 +461,9 @@ for (const row of byProfile) {
 // the trigger+1 action fell in. Useful for separating "wrong label"
 // from "wrong family" failures, and "late pivot" from "no pivot".
 console.log('\nBy profile (pivot landing diagnostics):');
-console.log('  profile                                   trigger+1  trigger+2  trigger+3   actual_family_distribution_at_trigger+1');
+console.log(
+  '  profile                                   trigger+1  trigger+2  trigger+3   actual_family_distribution_at_trigger+1',
+);
 for (const row of byProfile) {
   const off = row.shift_window_offset_distribution || { 1: 0, 2: 0, 3: 0 };
   const famParts = Object.entries(row.actual_family_distribution || {})
@@ -439,7 +476,9 @@ for (const row of byProfile) {
 }
 
 console.log('\nBy scenario type:');
-console.log('  scenario_type                       n   shift%  shift_n  window%  window_n  family%  family_n   cf_div%  cf_div_n');
+console.log(
+  '  scenario_type                       n   shift%  shift_n  window%  window_n  family%  family_n   cf_div%  cf_div_n',
+);
 for (const row of byScenarioType) {
   console.log(
     `  ${String(row.key).padEnd(35)} ${String(row.n).padStart(3)}  ${fmtPct(row.strategy_shift_correctness)}  ${fmtFrac(row.strategy_shift_correct_count, row.strategy_shift_evaluable).padStart(7)}  ${fmtPct(row.shift_window_correctness)}  ${fmtFrac(row.shift_window_correct_count, row.shift_window_evaluable).padStart(8)}  ${fmtPct(row.family_match_rate)}  ${fmtFrac(row.family_match_count, row.family_match_evaluable).padStart(8)}  ${fmtPct(row.counterfactual_divergence)}  ${fmtFrac(row.counterfactual_divergent_count, row.counterfactual_total).padStart(7)}`,

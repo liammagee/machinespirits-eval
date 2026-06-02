@@ -464,9 +464,7 @@ LEARNER: "The arrow names who acts on the cart. [moves the motion strip aside] T
       assert.equal(adaptiveDetail.endingShapeDiagnostics.learnerReorientationVotes, 3);
       assert.equal(adaptiveDetail.endingShapeDiagnostics.completeEndingShapeVotes, 1);
       assert.ok(
-        adaptiveDetail.endingShapeDiagnostics.disagreementFlags.some((flag) =>
-          flag.includes('complete ending shape'),
-        ),
+        adaptiveDetail.endingShapeDiagnostics.disagreementFlags.some((flag) => flag.includes('complete ending shape')),
       );
     }));
 
@@ -474,10 +472,7 @@ LEARNER: "The arrow names who acts on the cart. [moves the motion strip aside] T
     const html = renderBrowserHtml();
     assert.match(html, /const formatTimestamp = /);
     assert.match(html, /script ' \+ formatTimestamp\(item\.createdAt\)/);
-    assert.match(
-      html,
-      /const ORIGIN_CLASSES = \["none","organic","peripeteia_induced","false_closure","ambiguous"\];/,
-    );
+    assert.match(html, /const ORIGIN_CLASSES = \["none","organic","peripeteia_induced","false_closure","ambiguous"\];/);
     assert.match(html, /const scoreOrigin = /);
     assert.doesNotMatch(html, /recognitionOriginForScoreRow\(s\)/);
   });

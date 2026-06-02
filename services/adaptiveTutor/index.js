@@ -16,7 +16,12 @@ import { runScenario, runScenarioWithCounterfactual } from './runner.js';
 import { llmMode } from './llm.js';
 import { createAdaptiveRun, persistScenarioWithCounterfactual, persistScenarioRun } from './persistence.js';
 import { createBudgetTracker } from './budgetTracker.js';
-import { setActiveBudgetTracker, clearActiveBudgetTracker, setActiveCellConfig, clearActiveCellConfig } from './realLLM.js';
+import {
+  setActiveBudgetTracker,
+  clearActiveBudgetTracker,
+  setActiveCellConfig,
+  clearActiveCellConfig,
+} from './realLLM.js';
 import { SUPPORTED_ARCHITECTURES } from './graph.js';
 import * as evaluationStore from '../evaluationStore.js';
 
@@ -36,7 +41,13 @@ function loadScenarios(scenarioSource) {
 
 function applyScenarioFilter(scenarios, filter) {
   if (!filter || filter === 'all') return scenarios;
-  const wanted = Array.isArray(filter) ? new Set(filter) : new Set(String(filter).split(',').map((s) => s.trim()));
+  const wanted = Array.isArray(filter)
+    ? new Set(filter)
+    : new Set(
+        String(filter)
+          .split(',')
+          .map((s) => s.trim()),
+      );
   return scenarios.filter((s) => wanted.has(s.id) || wanted.has(s.scenario_type));
 }
 
@@ -101,7 +112,9 @@ export async function runAdaptiveEvaluation({
   // an immediate error rather than silently falling back to default.
   const architecture = adaptiveCfg.architecture ?? 'state_policy';
   if (!SUPPORTED_ARCHITECTURES.includes(architecture)) {
-    throw new Error(`profile ${profileName}: unsupported adaptive.architecture "${architecture}" (expected one of: ${SUPPORTED_ARCHITECTURES.join(', ')})`);
+    throw new Error(
+      `profile ${profileName}: unsupported adaptive.architecture "${architecture}" (expected one of: ${SUPPORTED_ARCHITECTURES.join(', ')})`,
+    );
   }
   const graphOptions = { architecture };
   const agentConfigForRow = {
@@ -118,7 +131,10 @@ export async function runAdaptiveEvaluation({
     llmMode: llmMode(),
     metadata: { profileNames: [profileName], scenarioSource, scenarioFilter, maxCostUsd, architecture },
   });
-  if (verbose) console.log(`[adaptive] runId=${run.id} scenarios=${scenarios.length} runsPerConfig=${runsPerConfig} architecture=${architecture} llmMode=${llmMode()}`);
+  if (verbose)
+    console.log(
+      `[adaptive] runId=${run.id} scenarios=${scenarios.length} runsPerConfig=${runsPerConfig} architecture=${architecture} llmMode=${llmMode()}`,
+    );
 
   // Budget tracker is bound when --max-cost is set. Mock runs ignore it.
   let tracker = null;
@@ -139,7 +155,10 @@ export async function runAdaptiveEvaluation({
       temperature: adaptiveCfg.hyperparameters?.temperature,
       maxTokens: adaptiveCfg.hyperparameters?.max_tokens,
     });
-    if (verbose) console.log(`[adaptive] cell-config: provider=${adaptiveCfg.provider || '(default)'} model=${adaptiveCfg.model || '(default)'}`);
+    if (verbose)
+      console.log(
+        `[adaptive] cell-config: provider=${adaptiveCfg.provider || '(default)'} model=${adaptiveCfg.model || '(default)'}`,
+      );
   }
 
   const persisted = [];
@@ -164,14 +183,28 @@ export async function runAdaptiveEvaluation({
             const result = await runScenarioWithCounterfactual(scenario, buildPerturbation(yamlScenario), graphOptions);
             const usage = tracker?.delta(snap);
             const out = persistScenarioWithCounterfactual({
-              runId: run.id, scenario, scenarioConfig, result, profileName, agentConfig: agentConfigForRow, llmMode: llmMode(), usage,
+              runId: run.id,
+              scenario,
+              scenarioConfig,
+              result,
+              profileName,
+              agentConfig: agentConfigForRow,
+              llmMode: llmMode(),
+              usage,
             });
             persisted.push(out);
           } else {
             const result = await runScenario(scenario, graphOptions);
             const usage = tracker?.delta(snap);
             const out = persistScenarioRun({
-              runId: run.id, scenario, scenarioConfig, runResult: result, profileName, agentConfig: agentConfigForRow, llmMode: llmMode(), usage,
+              runId: run.id,
+              scenario,
+              scenarioConfig,
+              runResult: result,
+              profileName,
+              agentConfig: agentConfigForRow,
+              llmMode: llmMode(),
+              usage,
             });
             persisted.push(out);
           }

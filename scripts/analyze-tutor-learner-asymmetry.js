@@ -46,16 +46,23 @@ const getOption = (name) => {
 const outPath = getOption('out');
 const judgeFilter = getOption('judge'); // optional filter to single judge
 
-function mean(arr) { return arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : 0; }
+function mean(arr) {
+  return arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : 0;
+}
 function variance(arr) {
   if (arr.length < 2) return 0;
   const m = mean(arr);
   return arr.reduce((s, v) => s + (v - m) ** 2, 0) / (arr.length - 1);
 }
-function std(arr) { return Math.sqrt(variance(arr)); }
+function std(arr) {
+  return Math.sqrt(variance(arr));
+}
 function pearson(x, y) {
   if (x.length !== y.length || x.length < 3) return null;
-  const mx = mean(x), my = mean(y), sx = std(x), sy = std(y);
+  const mx = mean(x),
+    my = mean(y),
+    sx = std(x),
+    sy = std(y);
   if (sx === 0 || sy === 0) return null;
   let s = 0;
   for (let i = 0; i < x.length; i++) s += (x[i] - mx) * (y[i] - my);
@@ -63,11 +70,16 @@ function pearson(x, y) {
 }
 function cohensD(a, b) {
   if (a.length < 2 || b.length < 2) return null;
-  const vA = variance(a), vB = variance(b), nA = a.length, nB = b.length;
+  const vA = variance(a),
+    vB = variance(b),
+    nA = a.length,
+    nB = b.length;
   const pooled = Math.sqrt(((nA - 1) * vA + (nB - 1) * vB) / (nA + nB - 2));
   return pooled === 0 ? null : (mean(a) - mean(b)) / pooled;
 }
-function r(v, d = 2) { return v == null || !Number.isFinite(v) ? '—' : v.toFixed(d); }
+function r(v, d = 2) {
+  return v == null || !Number.isFinite(v) ? '—' : v.toFixed(d);
+}
 
 const METRICS = [
   { key: 'tutor_first_turn_score', label: 'tutor rubric', role: 'tutor', kind: 'rubric' },
@@ -171,9 +183,13 @@ function formatReport(results) {
   lines.push('');
   lines.push(`Generated: ${new Date().toISOString()}`);
   lines.push('');
-  lines.push('Scope: messages-mode 2×2×2 factorial cells 80–87, rubric v2.2, rows with all four metrics populated (tutor rubric, tutor holistic, learner rubric, learner holistic). Recognition arm = cells 84–87; base arm = cells 80–83.');
+  lines.push(
+    'Scope: messages-mode 2×2×2 factorial cells 80–87, rubric v2.2, rows with all four metrics populated (tutor rubric, tutor holistic, learner rubric, learner holistic). Recognition arm = cells 84–87; base arm = cells 80–83.',
+  );
   lines.push('');
-  lines.push('Recognition effect d computed as Cohen\'s d (recog − base, pooled SD). Rubric↔holistic Pearson r computed within each role on the paired subset.');
+  lines.push(
+    "Recognition effect d computed as Cohen's d (recog − base, pooled SD). Rubric↔holistic Pearson r computed within each role on the paired subset.",
+  );
   lines.push('');
 
   // Pooled summary
@@ -185,10 +201,14 @@ function formatReport(results) {
   lines.push('|--------|--------|---------|-----------|------------|---|------------------|');
   for (const m of METRICS) {
     const e = pooled.effects[m.key];
-    lines.push(`| ${m.label} | ${e.n_base} | ${e.n_recog} | ${r(e.mean_base)} | ${r(e.mean_recog)} | ${r(e.delta)} | ${r(e.d, 3)} |`);
+    lines.push(
+      `| ${m.label} | ${e.n_base} | ${e.n_recog} | ${r(e.mean_base)} | ${r(e.mean_recog)} | ${r(e.delta)} | ${r(e.d, 3)} |`,
+    );
   }
   lines.push('');
-  lines.push(`Rubric↔holistic Pearson r within role (pooled): tutor ${r(pooled.correlations.tutor_r, 3)}, learner ${r(pooled.correlations.learner_r, 3)}.`);
+  lines.push(
+    `Rubric↔holistic Pearson r within role (pooled): tutor ${r(pooled.correlations.tutor_r, 3)}, learner ${r(pooled.correlations.learner_r, 3)}.`,
+  );
   lines.push('');
 
   const gap = formatGapLine(pooled.effects);
@@ -197,11 +217,15 @@ function formatReport(results) {
   lines.push(`| Metric family | Tutor d | Learner d | Gap (t − l) | Learner/Tutor ratio |`);
   lines.push('|---------------|---------|-----------|-------------|---------------------|');
   lines.push(`| Rubric | ${r(gap.tr, 3)} | ${r(gap.lr, 3)} | ${r(gap.gapRubric, 3)} | ${r(gap.ratioRubric, 3)} |`);
-  lines.push(`| Holistic | ${r(gap.th, 3)} | ${r(gap.lh, 3)} | ${r(gap.gapHolistic, 3)} | ${r(gap.ratioHolistic, 3)} |`);
+  lines.push(
+    `| Holistic | ${r(gap.th, 3)} | ${r(gap.lh, 3)} | ${r(gap.gapHolistic, 3)} | ${r(gap.ratioHolistic, 3)} |`,
+  );
   lines.push('');
   if (gap.gapRubric != null && gap.gapHolistic != null) {
     const shrinkage = ((gap.gapRubric - gap.gapHolistic) / gap.gapRubric) * 100;
-    lines.push(`Tutor–learner d-gap on rubric: **${r(gap.gapRubric, 3)}**. On holistic: **${r(gap.gapHolistic, 3)}**. Shrinkage: **${r(shrinkage, 1)}%**.`);
+    lines.push(
+      `Tutor–learner d-gap on rubric: **${r(gap.gapRubric, 3)}**. On holistic: **${r(gap.gapHolistic, 3)}**. Shrinkage: **${r(shrinkage, 1)}%**.`,
+    );
     lines.push('');
   }
 
@@ -213,7 +237,9 @@ function formatReport(results) {
     const g = formatGapLine(b.effects);
     lines.push(`### ${j}`);
     lines.push('');
-    lines.push(`N total: ${b.n_total} (base ${b.arms.base.length}, recog ${b.arms.recog.length}). Rubric↔holistic r: tutor ${r(b.correlations.tutor_r, 3)}, learner ${r(b.correlations.learner_r, 3)}.`);
+    lines.push(
+      `N total: ${b.n_total} (base ${b.arms.base.length}, recog ${b.arms.recog.length}). Rubric↔holistic r: tutor ${r(b.correlations.tutor_r, 3)}, learner ${r(b.correlations.learner_r, 3)}.`,
+    );
     lines.push('');
     lines.push('| Metric | Mean base | Mean recog | d (recog − base) |');
     lines.push('|--------|-----------|------------|------------------|');
@@ -224,7 +250,9 @@ function formatReport(results) {
     lines.push('');
     if (g.gapRubric != null && g.gapHolistic != null) {
       const shrinkage = ((g.gapRubric - g.gapHolistic) / g.gapRubric) * 100;
-      lines.push(`Tutor–learner d-gap: rubric ${r(g.gapRubric, 3)}; holistic ${r(g.gapHolistic, 3)}; shrinkage ${r(shrinkage, 1)}%.`);
+      lines.push(
+        `Tutor–learner d-gap: rubric ${r(g.gapRubric, 3)}; holistic ${r(g.gapHolistic, 3)}; shrinkage ${r(shrinkage, 1)}%.`,
+      );
     }
     lines.push('');
   }
@@ -234,16 +262,23 @@ function formatReport(results) {
   lines.push('');
   if (gap.gapRubric != null && gap.gapHolistic != null) {
     const shrinkage = ((gap.gapRubric - gap.gapHolistic) / gap.gapRubric) * 100;
-    const direction = shrinkage > 10 ? 'narrows substantially on holistic, consistent with the rubric-artifact account for M6\'s remaining piece' :
-                      shrinkage < -10 ? 'widens on holistic, arguing against the rubric-artifact account' :
-                      'is roughly stable across rubric and holistic, consistent with a genuine role-level difference rather than a rubric-artifact';
-    lines.push(`The tutor–learner recognition-effect d-gap ${direction} (rubric ${r(gap.gapRubric, 3)} → holistic ${r(gap.gapHolistic, 3)}, shrinkage ${r(shrinkage, 1)}%).`);
+    const direction =
+      shrinkage > 10
+        ? "narrows substantially on holistic, consistent with the rubric-artifact account for M6's remaining piece"
+        : shrinkage < -10
+          ? 'widens on holistic, arguing against the rubric-artifact account'
+          : 'is roughly stable across rubric and holistic, consistent with a genuine role-level difference rather than a rubric-artifact';
+    lines.push(
+      `The tutor–learner recognition-effect d-gap ${direction} (rubric ${r(gap.gapRubric, 3)} → holistic ${r(gap.gapHolistic, 3)}, shrinkage ${r(shrinkage, 1)}%).`,
+    );
     lines.push('');
   }
   lines.push('Additional checks worth running if the primary test is ambiguous:');
   lines.push('- Regress learner score on learner-message token length (is the effect absorbed by length?)');
-  lines.push('- Check per-dimension learner rubric scores under recog vs base (which dimensions move, which don\'t?)');
-  lines.push('- Same contrast on messages-mode cells 80–87 restricted to single-architecture (unified-only) to rule out architecture × recognition interaction confound.');
+  lines.push("- Check per-dimension learner rubric scores under recog vs base (which dimensions move, which don't?)");
+  lines.push(
+    '- Same contrast on messages-mode cells 80–87 restricted to single-architecture (unified-only) to rule out architecture × recognition interaction confound.',
+  );
   lines.push('');
 
   return lines.join('\n');

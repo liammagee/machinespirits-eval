@@ -6,12 +6,7 @@
 // these functions pure and side-effect-free so they remain trivially
 // testable.
 
-const FAMILY_ORDER = [
-  'intersubjective',
-  'transmission',
-  'neutral',
-  'architectural_variant',
-];
+const FAMILY_ORDER = ['intersubjective', 'transmission', 'neutral', 'architectural_variant'];
 
 const FAMILY_LABEL = {
   intersubjective: 'Intersubjective (recognition / matched-pedagogical)',
@@ -36,7 +31,7 @@ export function effectMagnitude(d) {
 // (U+2212) for negatives so it reads as a chip token rather than a hyphen.
 export function formatEffectSize(d) {
   if (d == null || Number.isNaN(d)) return '';
-  const sign = d > 0 ? '+' : (d < 0 ? '−' : '');
+  const sign = d > 0 ? '+' : d < 0 ? '−' : '';
   return sign + Math.abs(d).toFixed(2);
 }
 
@@ -52,7 +47,7 @@ export function compareDefault(orientation) {
   if (pt === 'matched_pedagogical') return 'cell_96_base_behaviorist_single_unified';
   if (pt === 'matched_behaviorist') return 'cell_95_base_matched_single_unified';
   if (fam === 'intersubjective') return 'cell_1_base_single_unified';
-  if (fam === 'transmission')    return 'cell_5_recog_single_unified';
+  if (fam === 'transmission') return 'cell_5_recog_single_unified';
   return 'cell_5_recog_single_unified';
 }
 
@@ -66,13 +61,11 @@ export function groupCellsByFamily(cells) {
     if (!buckets.has(fam)) buckets.set(fam, []);
     buckets.get(fam).push(c);
   }
-  return FAMILY_ORDER
-    .filter((f) => buckets.has(f))
-    .map((f) => ({
-      family: f,
-      label: FAMILY_LABEL[f] || f,
-      cells: buckets.get(f),
-    }));
+  return FAMILY_ORDER.filter((f) => buckets.has(f)).map((f) => ({
+    family: f,
+    label: FAMILY_LABEL[f] || f,
+    cells: buckets.get(f),
+  }));
 }
 
 // Vocabulary diff for the compare panel. Splits each side's vocabulary
@@ -103,10 +96,7 @@ export function orientationTooltip(o) {
     o.keyMechanism ? 'mechanism: ' + o.keyMechanism : null,
   ].filter(Boolean);
   if (o.effectVsBase != null) {
-    lines.push(
-      'effect vs base: ' + formatEffectSize(o.effectVsBase) +
-      ' (' + effectMagnitude(o.effectVsBase) + ')'
-    );
+    lines.push('effect vs base: ' + formatEffectSize(o.effectVsBase) + ' (' + effectMagnitude(o.effectVsBase) + ')');
   }
   return lines.join('\n');
 }

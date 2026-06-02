@@ -20,26 +20,32 @@ export function buildPrompt(trace) {
   const dialogue = trace.original?.dialogue || [];
   const perTurn = trace.original?.perTurn || [];
 
-  const turns = dialogue.map((t, i) => {
-    const role = t.role === 'tutor' ? 'TUTOR' : 'LEARNER';
-    return `[turn ${Math.floor(i / 2)}] ${role}: ${t.content}`;
-  }).join('\n\n');
+  const turns = dialogue
+    .map((t, i) => {
+      const role = t.role === 'tutor' ? 'TUTOR' : 'LEARNER';
+      return `[turn ${Math.floor(i / 2)}] ${role}: ${t.content}`;
+    })
+    .join('\n\n');
 
   const policyTrace = perTurn
     .filter((pt) => pt.tutorInternal?.policyAction)
     .map((pt) => `  turn ${pt.turn}: ${pt.tutorInternal.policyAction}`)
     .join('\n');
 
-  const scenarioJson = JSON.stringify({
-    id: scenario.id,
-    scenarioType: scenario.scenarioType,
-    expectedStrategyShift: scenario.expectedStrategyShift,
-    triggerTurn: hidden.triggerTurn,
-    triggerSignal: hidden.triggerSignal,
-    actualMisconception: hidden.actualMisconception,
-    actualSophistication: hidden.actualSophistication,
-    maxTurns: scenario.maxTurns,
-  }, null, 2);
+  const scenarioJson = JSON.stringify(
+    {
+      id: scenario.id,
+      scenarioType: scenario.scenarioType,
+      expectedStrategyShift: scenario.expectedStrategyShift,
+      triggerTurn: hidden.triggerTurn,
+      triggerSignal: hidden.triggerSignal,
+      actualMisconception: hidden.actualMisconception,
+      actualSophistication: hidden.actualSophistication,
+      maxTurns: scenario.maxTurns,
+    },
+    null,
+    2,
+  );
 
   return `You are evaluating an adaptive tutor's performance on a single "trap scenario" — a dialogue designed to test whether the tutor recognises a hidden trigger and shifts strategy accordingly.
 

@@ -59,10 +59,10 @@ function tokenize(text) {
   if (!text) return [];
   return text
     .toLowerCase()
-    .replace(/<[^>]+>/g, ' ')        // strip XML-like tags from reflection bodies
+    .replace(/<[^>]+>/g, ' ') // strip XML-like tags from reflection bodies
     .replace(/[^\w\s]/g, ' ')
     .split(/\s+/)
-    .filter((t) => t.length > 2);     // drop short stopwords; keeps content terms
+    .filter((t) => t.length > 2); // drop short stopwords; keeps content terms
 }
 
 function jaccard(a, b) {
@@ -171,8 +171,15 @@ export function extractReflectionActionPairs(trace) {
       const e = trace[i];
       if (e.agent !== 'ego') continue;
       if (!['generate', 'revise', 'generate_final'].includes(e.action)) continue;
-      const text = (e.suggestions || []).map((s) => `${s.title || ''} ${s.message || ''} ${s.reasoning || ''}`).join(' ').trim();
-      const messageOnly = (e.suggestions || []).map((s) => s.message || '').filter(Boolean).join(' ').trim();
+      const text = (e.suggestions || [])
+        .map((s) => `${s.title || ''} ${s.message || ''} ${s.reasoning || ''}`)
+        .join(' ')
+        .trim();
+      const messageOnly = (e.suggestions || [])
+        .map((s) => s.message || '')
+        .filter(Boolean)
+        .join(' ')
+        .trim();
       if (text) {
         action = text; // keep latest within the window (revise wins over earlier generate)
         actionMessage = messageOnly;
@@ -205,7 +212,10 @@ export function computeTurnDrift(trace) {
     }
     if (e.agent !== 'ego') continue;
     if (!['generate', 'revise', 'generate_final'].includes(e.action)) continue;
-    const text = (e.suggestions || []).map((s) => `${s.title || ''} ${s.message || ''} ${s.reasoning || ''}`).join(' ').trim();
+    const text = (e.suggestions || [])
+      .map((s) => `${s.title || ''} ${s.message || ''} ${s.reasoning || ''}`)
+      .join(' ')
+      .trim();
     if (text) currentText = text;
   }
   if (currentText) turnTexts.push(currentText);
@@ -291,9 +301,7 @@ export function aggregateByCell(allPairs) {
 function formatTable(rows, columns) {
   const header = `| ${columns.map((c) => c.label).join(' | ')} |`;
   const sep = `| ${columns.map(() => '---').join(' | ')} |`;
-  const body = rows
-    .map((r) => `| ${columns.map((c) => c.fmt(r[c.key])).join(' | ')} |`)
-    .join('\n');
+  const body = rows.map((r) => `| ${columns.map((c) => c.fmt(r[c.key])).join(' | ')} |`).join('\n');
   return [header, sep, body].join('\n');
 }
 
@@ -308,11 +316,19 @@ export function buildReport({ runIds, summary, minPairs }) {
   lines.push('');
   lines.push('## What this measures');
   lines.push('');
-  lines.push('- **Coupling** — cosine similarity between a turn\'s `ego_self_reflection` text and the same turn\'s final tutor message. High = reflection themes show up in the action.');
+  lines.push(
+    "- **Coupling** — cosine similarity between a turn's `ego_self_reflection` text and the same turn's final tutor message. High = reflection themes show up in the action.",
+  );
   lines.push('- **Gap** — `1 − Coupling`. Big numbers mean the insight stayed cognitive.');
-  lines.push('- **Turn drift** — cosine distance between consecutive final tutor messages on the same dialogue. The "how much does the tutor change between turns at all" baseline.');
-  lines.push('- **Gap − Drift** — diagnostic. If ≈ 0, reflection content is no more present in next-turn behavior than any neighbouring turn would be (i.e. reflection adds no special coupling).');
-  lines.push('- **EoQ%** — fraction of `actionMessage` ending in `?`. The sibling D1 fifth-pass found `ends-with-question` is the sole within-cell mediator of the orientation-family effect (commits e8dc7a8 / 3c9eaa6 / c334722); reporting it here lets cross-checking of whether D3 architectural bridges shift the same channel.');
+  lines.push(
+    '- **Turn drift** — cosine distance between consecutive final tutor messages on the same dialogue. The "how much does the tutor change between turns at all" baseline.',
+  );
+  lines.push(
+    '- **Gap − Drift** — diagnostic. If ≈ 0, reflection content is no more present in next-turn behavior than any neighbouring turn would be (i.e. reflection adds no special coupling).',
+  );
+  lines.push(
+    '- **EoQ%** — fraction of `actionMessage` ending in `?`. The sibling D1 fifth-pass found `ends-with-question` is the sole within-cell mediator of the orientation-family effect (commits e8dc7a8 / 3c9eaa6 / c334722); reporting it here lets cross-checking of whether D3 architectural bridges shift the same channel.',
+  );
   lines.push('');
 
   if (filtered.length === 0) {
@@ -332,7 +348,7 @@ export function buildReport({ runIds, summary, minPairs }) {
       { key: 'meanGap', label: 'Gap', fmt: (v) => v.toFixed(3) },
       { key: 'meanTurnDrift', label: 'Turn drift', fmt: (v) => v.toFixed(3) },
       { key: 'gapMinusDrift', label: 'Gap−Drift', fmt: (v) => v.toFixed(3) },
-      { key: 'endsWithQuestionRate', label: 'EoQ%', fmt: (v) => v == null ? '—' : `${(v * 100).toFixed(0)}%` },
+      { key: 'endsWithQuestionRate', label: 'EoQ%', fmt: (v) => (v == null ? '—' : `${(v * 100).toFixed(0)}%`) },
     ]),
   );
   lines.push('');
@@ -348,19 +364,27 @@ export function buildReport({ runIds, summary, minPairs }) {
     const recogCellMeans = recog.map((s) => s.meanGap);
     lines.push('## Recognition contrast (cell-level)');
     lines.push('');
-    lines.push(`- Base cells (n=${base.length}): mean cell gap = ${mean(baseCellMeans).toFixed(3)} (sd ${sd(baseCellMeans).toFixed(3)})`);
-    lines.push(`- Recog cells (n=${recog.length}): mean cell gap = ${mean(recogCellMeans).toFixed(3)} (sd ${sd(recogCellMeans).toFixed(3)})`);
+    lines.push(
+      `- Base cells (n=${base.length}): mean cell gap = ${mean(baseCellMeans).toFixed(3)} (sd ${sd(baseCellMeans).toFixed(3)})`,
+    );
+    lines.push(
+      `- Recog cells (n=${recog.length}): mean cell gap = ${mean(recogCellMeans).toFixed(3)} (sd ${sd(recogCellMeans).toFixed(3)})`,
+    );
     lines.push(`- Cohen's d (base − recog cell means): ${cohensD(baseCellMeans, recogCellMeans).toFixed(3)}`);
     if (Math.min(base.length, recog.length) < 5) {
       lines.push('');
-      lines.push('_n per group < 5 — treat the d as exploratory; replicate across more cells/runs before drawing conclusions._');
+      lines.push(
+        '_n per group < 5 — treat the d as exploratory; replicate across more cells/runs before drawing conclusions._',
+      );
     }
     lines.push('');
   }
 
   lines.push('## How to read');
   lines.push('');
-  lines.push('A small **Gap** with a large **Turn drift** is the strongest evidence the reflection shaped behavior — the tutor changes between turns *and* the change tracks the reflection. A large **Gap − Drift** says reflection content is no more present in next-turn behavior than a neighbouring turn would be: awareness without coupling. Compare across cells to see which mechanisms (suspicious vs adversary vs advocate; base vs recog) actually narrow the gap.');
+  lines.push(
+    'A small **Gap** with a large **Turn drift** is the strongest evidence the reflection shaped behavior — the tutor changes between turns *and* the change tracks the reflection. A large **Gap − Drift** says reflection content is no more present in next-turn behavior than a neighbouring turn would be: awareness without coupling. Compare across cells to see which mechanisms (suspicious vs adversary vs advocate; base vs recog) actually narrow the gap.',
+  );
   return lines.join('\n');
 }
 
@@ -369,7 +393,9 @@ export function buildReport({ runIds, summary, minPairs }) {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.runIds.length === 0) {
-    console.error('Usage: node scripts/analyze-insight-action-gap.js <runId> [<runId>...] [--json] [--output PATH] [--min-pairs N]');
+    console.error(
+      'Usage: node scripts/analyze-insight-action-gap.js <runId> [<runId>...] [--json] [--output PATH] [--min-pairs N]',
+    );
     process.exit(1);
   }
 
@@ -411,7 +437,9 @@ async function main() {
     b.drifts.push(...drifts);
   }
 
-  console.log(`Scanned ${dialoguesScanned} reflection-mechanism dialogues; used ${dialoguesUsed}; ${pairsFound} reflection-action pairs`);
+  console.log(
+    `Scanned ${dialoguesScanned} reflection-mechanism dialogues; used ${dialoguesUsed}; ${pairsFound} reflection-action pairs`,
+  );
 
   const summary = aggregateByCell([...buckets.values()]);
   const report = buildReport({ runIds: args.runIds, summary, minPairs: args.minPairs });

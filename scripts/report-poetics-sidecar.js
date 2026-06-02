@@ -479,7 +479,14 @@ function renderConsensusSection(run) {
       `| ${arm} | ${bucket.claimable || 0} | ${bucket.boundary || 0} | ${bucket.negative || 0} | ${bucket.insufficient || 0} |`,
     );
   }
-  lines.push('', `Overall: ${Object.entries(byStatus).map(([k, v]) => `${k}=${v}`).join(', ') || 'n/a'}`);
+  lines.push(
+    '',
+    `Overall: ${
+      Object.entries(byStatus)
+        .map(([k, v]) => `${k}=${v}`)
+        .join(', ') || 'n/a'
+    }`,
+  );
   return lines.join('\n');
 }
 
@@ -515,9 +522,7 @@ function renderTutorAdaptationSection(run) {
     const row = run.targetAdaptation[arm];
     const denom = row.scored || 0;
     const peripeteiaDenom = row.peripeteiaScored || 0;
-    const meanPeripeteia = peripeteiaDenom
-      ? Math.round((10 * row.peripeteiaScoreSum) / peripeteiaDenom) / 10
-      : 'n/a';
+    const meanPeripeteia = peripeteiaDenom ? Math.round((10 * row.peripeteiaScoreSum) / peripeteiaDenom) / 10 : 'n/a';
     const meanScore = denom ? Math.round((10 * row.scoreSum) / denom) / 10 : 'n/a';
     const meanDelta = denom ? Math.round((1000 * row.uptakeDeltaSum) / denom) / 1000 : 'n/a';
     lines.push(

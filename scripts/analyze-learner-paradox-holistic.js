@@ -128,7 +128,11 @@ function summarize(rows) {
   }
   const contrasts = [
     { name: 'Base: ego_superego − unified', egoSup: byArch.ego_superego, unified: byArch.unified },
-    { name: 'Recognition: ego_superego_recognition − unified_recognition', egoSup: byArch.ego_superego_recognition, unified: byArch.unified_recognition },
+    {
+      name: 'Recognition: ego_superego_recognition − unified_recognition',
+      egoSup: byArch.ego_superego_recognition,
+      unified: byArch.unified_recognition,
+    },
   ];
   const contrastStats = contrasts.map((c) => {
     if (!c.egoSup || !c.unified) return { name: c.name, error: 'missing-arch' };
@@ -173,7 +177,10 @@ function renderSection(lines, header, intro, s) {
   const { archStats, contrastStats, cellStats, totalN } = s;
   lines.push(header);
   lines.push('');
-  if (intro) { lines.push(intro); lines.push(''); }
+  if (intro) {
+    lines.push(intro);
+    lines.push('');
+  }
   lines.push(`Paired rows: ${totalN}`);
   lines.push('');
 
@@ -190,7 +197,10 @@ function renderSection(lines, header, intro, s) {
   lines.push('| Contrast | n (ego_sup) | n (unified) | Rubric Δ | Holistic Δ | d (rubric) | d (holistic) |');
   lines.push('|----------|-------------|-------------|----------|------------|------------|--------------|');
   for (const c of contrastStats) {
-    if (c.error) { lines.push(`| ${c.name} | — | — | — | — | — | — |`); continue; }
+    if (c.error) {
+      lines.push(`| ${c.name} | — | — | — | — | — | — |`);
+      continue;
+    }
     lines.push(
       `| ${c.name} | ${c.n_ego_sup} | ${c.n_unified} | ${roundN(c.gap_rubric)} | ${roundN(c.gap_holistic)} | ${roundN(c.d_rubric, 3)} | ${roundN(c.d_holistic, 3)} |`,
     );
@@ -270,7 +280,9 @@ function formatReport(results) {
       );
     }
   }
-  const avgR = Object.values(pooled.archStats).map((s) => s.r).filter((r) => r != null);
+  const avgR = Object.values(pooled.archStats)
+    .map((s) => s.r)
+    .filter((r) => r != null);
   if (avgR.length) {
     lines.push(
       `Rubric↔holistic correlations (pooled) are ${roundN(Math.min(...avgR), 3)}–${roundN(Math.max(...avgR), 3)} across architectures — convergent validity does **not** break down for ego_superego learners.`,

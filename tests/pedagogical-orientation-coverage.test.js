@@ -38,12 +38,7 @@ const REQUIRED_FIELDS = [
   'vocabulary',
 ];
 
-const VALID_FAMILIES = new Set([
-  'transmission',
-  'neutral',
-  'intersubjective',
-  'architectural_variant',
-]);
+const VALID_FAMILIES = new Set(['transmission', 'neutral', 'intersubjective', 'architectural_variant']);
 
 describe('pedagogical orientation coverage', () => {
   it('every cell_* profile prompt_type has an entry in pedagogical_orientations', () => {

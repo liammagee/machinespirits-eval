@@ -117,17 +117,11 @@ function main() {
   const all = lines.map((l) => JSON.parse(l));
   console.error(`Loaded ${all.length} classified critiques`);
 
-  const categories = includeApproval
-    ? [...SUBSTANTIVE_CATEGORIES, ...NOISE_CATEGORIES]
-    : SUBSTANTIVE_CATEGORIES;
+  const categories = includeApproval ? [...SUBSTANTIVE_CATEGORIES, ...NOISE_CATEGORIES] : SUBSTANTIVE_CATEGORIES;
 
-  const perCat = perCatOverride
-    ? parseInt(perCatOverride)
-    : Math.max(1, Math.floor(size / categories.length));
+  const perCat = perCatOverride ? parseInt(perCatOverride) : Math.max(1, Math.floor(size / categories.length));
 
-  console.error(
-    `Target: ${size} items, ${perCat} per category across ${categories.length} categories`
-  );
+  console.error(`Target: ${size} items, ${perCat} per category across ${categories.length} categories`);
 
   const rng = mulberry32(seed);
 
@@ -158,7 +152,7 @@ function main() {
         categories.includes(r.classification.primary) &&
         r.feedback &&
         r.feedback.length >= 40 &&
-        !sample.includes(r)
+        !sample.includes(r),
     );
     const extra = shuffle(remaining, rng).slice(0, deficit);
     sample.push(...extra);
@@ -194,19 +188,7 @@ function main() {
     const eg = (row.egoGenerate || '').slice(0, 500);
     const er = (row.egoRevision || '').slice(0, 500);
     const snip = learnerSnippet(row.learnerContext).slice(0, 400);
-    rows.push(
-      [
-        csvEscape(id),
-        csvEscape(fb),
-        csvEscape(eg),
-        csvEscape(er),
-        csvEscape(snip),
-        '',
-        '',
-        '',
-        '',
-      ].join(',')
-    );
+    rows.push([csvEscape(id), csvEscape(fb), csvEscape(eg), csvEscape(er), csvEscape(snip), '', '', '', ''].join(','));
     keys.push(
       JSON.stringify({
         item_id: id,
@@ -221,7 +203,7 @@ function main() {
         learner_architecture: row.learnerArchitecture,
         approved: row.approved,
         intervention_type: row.interventionType,
-      })
+      }),
     );
   }
 

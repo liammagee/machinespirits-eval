@@ -69,7 +69,10 @@ function extractMessages(suggestionsJson) {
     return '';
   }
   if (!Array.isArray(arr)) return '';
-  return arr.map((s) => s?.message).filter(Boolean).join('\n\n');
+  return arr
+    .map((s) => s?.message)
+    .filter(Boolean)
+    .join('\n\n');
 }
 
 function hashText(text) {
@@ -134,7 +137,10 @@ function processJudge(db, runId, judge, cache, embIntersub, embTransmission) {
     if (r.score == null) continue;
     const text = extractMessages(r.suggestions);
     if (!text) continue;
-    const wc = text.trim().split(/\s+/).filter((w) => w.length > 0).length;
+    const wc = text
+      .trim()
+      .split(/\s+/)
+      .filter((w) => w.length > 0).length;
     if (wc < 20) continue;
     const h = hashText(text);
     const emb = cache[h];
@@ -190,25 +196,35 @@ function buildReport(runId, judges) {
   lines.push('# D1 Cross-Judge Replication of §7.10 Mechanism Findings');
   lines.push('');
   lines.push(`**Run:** \`${runId}\` (A10b 4-way matched-specificity)`);
-  lines.push(`**Judges:** Sonnet 4.6, Opus 4.7, GPT-5.2 (the same three-judge panel as Paper 2.0 §7.9 cross-judge contrasts)`);
+  lines.push(
+    `**Judges:** Sonnet 4.6, Opus 4.7, GPT-5.2 (the same three-judge panel as Paper 2.0 §7.9 cross-judge contrasts)`,
+  );
   lines.push('');
   lines.push('Tests whether the two §7.10 headline findings hold when the rubric judge is varied:');
   lines.push('');
-  lines.push('1. **ends-with-question** is a within-cell mediator within both intersubjective cells (Sonnet headline: cell_5 $r = +0.325$, cell_95 $r = +0.392$).');
-  lines.push('2. **intersub_advantage** shows Simpson\'s paradox: pooled $r$ positive, within-cell $r$ negative in intersubjective cells (Sonnet headline: pooled $r = +0.259$, cell_5 $r = -0.282$, cell_95 $r = -0.242$).');
+  lines.push(
+    '1. **ends-with-question** is a within-cell mediator within both intersubjective cells (Sonnet headline: cell_5 $r = +0.325$, cell_95 $r = +0.392$).',
+  );
+  lines.push(
+    "2. **intersub_advantage** shows Simpson's paradox: pooled $r$ positive, within-cell $r$ negative in intersubjective cells (Sonnet headline: pooled $r = +0.259$, cell_5 $r = -0.282$, cell_95 $r = -0.242$).",
+  );
   lines.push('');
   lines.push('Replication = same direction with magnitude not collapsing to zero. Sign-flip = failed replication.');
   lines.push('');
   lines.push('## 1. ends-with-question — within-cell Pearson r with score');
   lines.push('');
-  lines.push('| Judge | n cell_5 | r cell_5 | n cell_95 | r cell_95 | n cell_1 | r cell_1 | n cell_96 | r cell_96 | pooled r |');
+  lines.push(
+    '| Judge | n cell_5 | r cell_5 | n cell_95 | r cell_95 | n cell_1 | r cell_1 | n cell_96 | r cell_96 | pooled r |',
+  );
   lines.push('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
   for (const j of judges) {
     const c1 = j.byCell.cell_1_base_single_unified;
     const c5 = j.byCell.cell_5_recog_single_unified;
     const c95 = j.byCell.cell_95_base_matched_single_unified;
     const c96 = j.byCell.cell_96_base_behaviorist_single_unified;
-    lines.push(`| ${j.judgeLabel} | ${c5?.n ?? '?'} | ${fmt(c5?.r_ends_q)} | ${c95?.n ?? '?'} | ${fmt(c95?.r_ends_q)} | ${c1?.n ?? '?'} | ${fmt(c1?.r_ends_q)} | ${c96?.n ?? '?'} | ${fmt(c96?.r_ends_q)} | ${fmt(j.pooled_r_ends_q)} |`);
+    lines.push(
+      `| ${j.judgeLabel} | ${c5?.n ?? '?'} | ${fmt(c5?.r_ends_q)} | ${c95?.n ?? '?'} | ${fmt(c95?.r_ends_q)} | ${c1?.n ?? '?'} | ${fmt(c1?.r_ends_q)} | ${c96?.n ?? '?'} | ${fmt(c96?.r_ends_q)} | ${fmt(j.pooled_r_ends_q)} |`,
+    );
   }
   lines.push('');
   lines.push('### Replication verdict (ends-with-question)');
@@ -228,9 +244,11 @@ function buildReport(runId, judges) {
       if (c95.r_ends_q > 0) intersubPositive++;
     }
   }
-  lines.push(`Within-intersubjective-cell positive correlations: ${intersubPositive} of ${intersubAny} (across cell_5 and cell_95 over the three judges).`);
+  lines.push(
+    `Within-intersubjective-cell positive correlations: ${intersubPositive} of ${intersubAny} (across cell_5 and cell_95 over the three judges).`,
+  );
   lines.push('');
-  lines.push('## 2. intersub_advantage — within-cell vs pooled (Simpson\'s paradox check)');
+  lines.push("## 2. intersub_advantage — within-cell vs pooled (Simpson's paradox check)");
   lines.push('');
   lines.push('| Judge | r cell_5 | r cell_95 | r cell_1 | r cell_96 | pooled r |');
   lines.push('| --- | --- | --- | --- | --- | --- |');
@@ -239,10 +257,12 @@ function buildReport(runId, judges) {
     const c5 = j.byCell.cell_5_recog_single_unified;
     const c95 = j.byCell.cell_95_base_matched_single_unified;
     const c96 = j.byCell.cell_96_base_behaviorist_single_unified;
-    lines.push(`| ${j.judgeLabel} | ${fmt(c5?.r_advantage)} | ${fmt(c95?.r_advantage)} | ${fmt(c1?.r_advantage)} | ${fmt(c96?.r_advantage)} | ${fmt(j.pooled_r_advantage)} |`);
+    lines.push(
+      `| ${j.judgeLabel} | ${fmt(c5?.r_advantage)} | ${fmt(c95?.r_advantage)} | ${fmt(c1?.r_advantage)} | ${fmt(c96?.r_advantage)} | ${fmt(j.pooled_r_advantage)} |`,
+    );
   }
   lines.push('');
-  lines.push('### Replication verdict (Simpson\'s paradox)');
+  lines.push("### Replication verdict (Simpson's paradox)");
   lines.push('');
   let simpsonsHolds = 0;
   for (const j of judges) {
@@ -254,33 +274,49 @@ function buildReport(runId, judges) {
       simpsonsHolds++;
     }
   }
-  lines.push(`Simpson's-paradox pattern (pooled $r > 0.05$, within-cell $r < -0.05$ in BOTH intersubjective cells) holds in ${simpsonsHolds} of ${judges.length} judges.`);
+  lines.push(
+    `Simpson's-paradox pattern (pooled $r > 0.05$, within-cell $r < -0.05$ in BOTH intersubjective cells) holds in ${simpsonsHolds} of ${judges.length} judges.`,
+  );
   lines.push('');
   lines.push('## 3. Per-cell ends-with-question rate (categorical family signal)');
   lines.push('');
-  lines.push('Cells 1 and 96 should produce 0 ends-with-question; cells 5 and 95 some > 0. Categorical family signal preserved across judges.');
+  lines.push(
+    'Cells 1 and 96 should produce 0 ends-with-question; cells 5 and 95 some > 0. Categorical family signal preserved across judges.',
+  );
   lines.push('');
-  lines.push('| Judge | cell_1 (base) | cell_5 (recognition) | cell_95 (matched-pedagogical) | cell_96 (behaviorist) |');
+  lines.push(
+    '| Judge | cell_1 (base) | cell_5 (recognition) | cell_95 (matched-pedagogical) | cell_96 (behaviorist) |',
+  );
   lines.push('| --- | --- | --- | --- | --- |');
   for (const j of judges) {
     const c1 = j.byCell.cell_1_base_single_unified;
     const c5 = j.byCell.cell_5_recog_single_unified;
     const c95 = j.byCell.cell_95_base_matched_single_unified;
     const c96 = j.byCell.cell_96_base_behaviorist_single_unified;
-    lines.push(`| ${j.judgeLabel} | ${fmt(c1?.meanEndsQ)} | ${fmt(c5?.meanEndsQ)} | ${fmt(c95?.meanEndsQ)} | ${fmt(c96?.meanEndsQ)} |`);
+    lines.push(
+      `| ${j.judgeLabel} | ${fmt(c1?.meanEndsQ)} | ${fmt(c5?.meanEndsQ)} | ${fmt(c95?.meanEndsQ)} | ${fmt(c96?.meanEndsQ)} |`,
+    );
   }
   lines.push('');
   lines.push('## 4. Findings');
   lines.push('');
   lines.push('Both §7.10 headline findings replicate across the three-judge panel, with one honest nuance to flag.');
   lines.push('');
-  lines.push('1. **ends-with-question** is positive within-cell in 5 of 6 cell-judge combinations across the two intersubjective cells. The one exception is GPT-5.2 scoring of cell_95, which shows essentially no correlation ($r = -0.011$) rather than a sign-flip. Magnitudes vary (Sonnet strongest in cell_95; Opus and GPT smaller), but no judge produces a meaningfully negative within-cell correlation in either intersubjective cell. The mediator interpretation survives cross-judge replication; the GPT cell_95 attenuation is consistent with judge-specific noise at small effect sizes (cf. §7.9 structural-features caveat for within-Hegelian-family contrasts at small magnitude).');
+  lines.push(
+    '1. **ends-with-question** is positive within-cell in 5 of 6 cell-judge combinations across the two intersubjective cells. The one exception is GPT-5.2 scoring of cell_95, which shows essentially no correlation ($r = -0.011$) rather than a sign-flip. Magnitudes vary (Sonnet strongest in cell_95; Opus and GPT smaller), but no judge produces a meaningfully negative within-cell correlation in either intersubjective cell. The mediator interpretation survives cross-judge replication; the GPT cell_95 attenuation is consistent with judge-specific noise at small effect sizes (cf. §7.9 structural-features caveat for within-Hegelian-family contrasts at small magnitude).',
+  );
   lines.push('');
-  lines.push('2. **intersub_advantage** Simpson\'s paradox replicates in all three judges: pooled $r$ is positive in each (Sonnet $+0.26$, Opus $+0.36$, GPT $+0.14$), and within-cell $r$ is negative in cell_5 across all three (Sonnet $-0.28$, Opus $-0.08$, GPT $-0.22$) and in cell_95 across all three (Sonnet $-0.24$, Opus $-0.15$, GPT $-0.40$). The pooled-vs-within-cell sign reversal is not a Sonnet artefact; it is a property of the data structure (cell_96 outlier anchors the pooled positive). Of the two findings this is the more robust: directionally consistent in 6 of 6 cell-judge pairs, magnitude varies but never approaches zero in cell_95.');
+  lines.push(
+    "2. **intersub_advantage** Simpson's paradox replicates in all three judges: pooled $r$ is positive in each (Sonnet $+0.26$, Opus $+0.36$, GPT $+0.14$), and within-cell $r$ is negative in cell_5 across all three (Sonnet $-0.28$, Opus $-0.08$, GPT $-0.22$) and in cell_95 across all three (Sonnet $-0.24$, Opus $-0.15$, GPT $-0.40$). The pooled-vs-within-cell sign reversal is not a Sonnet artefact; it is a property of the data structure (cell_96 outlier anchors the pooled positive). Of the two findings this is the more robust: directionally consistent in 6 of 6 cell-judge pairs, magnitude varies but never approaches zero in cell_95.",
+  );
   lines.push('');
-  lines.push('3. **Per-cell ends-with-question rate** preserves the categorical 0% (transmission) vs >0% (intersubjective) family signal across all three judges, as expected since this is a property of the response text not the judge score. Cell_5 produces ends-with-question in 4.5--6.8% of responses; cell_95 in 2.1--4.3%; cells 1 and 96 in 0% across all three judges.');
+  lines.push(
+    '3. **Per-cell ends-with-question rate** preserves the categorical 0% (transmission) vs >0% (intersubjective) family signal across all three judges, as expected since this is a property of the response text not the judge score. Cell_5 produces ends-with-question in 4.5--6.8% of responses; cell_95 in 2.1--4.3%; cells 1 and 96 in 0% across all three judges.',
+  );
   lines.push('');
-  lines.push('The §7.10 mechanism conclusions therefore generalise across the three-judge panel and do not require Sonnet-specific hedging, with the small caveat that the ends-with-question $\\times$ cell_95 within-cell correlation attenuates to zero under GPT scoring. The methodological caveat (Simpson\'s paradox at the row level) is a property of the data structure, not a judge-specific artefact, and the cross-judge convergence on the paradox direction strengthens the §8.6 methods note.');
+  lines.push(
+    "The §7.10 mechanism conclusions therefore generalise across the three-judge panel and do not require Sonnet-specific hedging, with the small caveat that the ends-with-question $\\times$ cell_95 within-cell correlation attenuates to zero under GPT scoring. The methodological caveat (Simpson's paradox at the row level) is a property of the data structure, not a judge-specific artefact, and the cross-judge convergence on the paradox direction strengthens the §8.6 methods note.",
+  );
   return lines.join('\n');
 }
 
@@ -310,7 +346,9 @@ async function main() {
   for (const judge of JUDGES) {
     const result = processJudge(db, args.runId, judge, cache, embIntersub, embTransmission);
     judgeResults.push(result);
-    console.log(`${judge.label}: cells=${Object.keys(result.byCell).length}, pooled r_advantage=${fmt(result.pooled_r_advantage)}, pooled r_ends_q=${fmt(result.pooled_r_ends_q)}`);
+    console.log(
+      `${judge.label}: cells=${Object.keys(result.byCell).length}, pooled r_advantage=${fmt(result.pooled_r_advantage)}, pooled r_ends_q=${fmt(result.pooled_r_ends_q)}`,
+    );
   }
 
   const report = buildReport(args.runId, judgeResults);

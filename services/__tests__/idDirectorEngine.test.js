@@ -171,8 +171,7 @@ describe('runIdDirectedTurn', () => {
   test('happy path: id authors prompt, ego executes against it', async () => {
     const idJson = JSON.stringify({
       generated_prompt:
-        'You are a witness in present tense. Show one image and hand the question back. ' +
-        'A '.repeat(60),
+        'You are a witness in present tense. Show one image and hand the question back. ' + 'A '.repeat(60),
       persona_delta: 'from neutral to witness',
       stage_directions: 'image-led',
       reasoning: 'Learner asked for an example.',

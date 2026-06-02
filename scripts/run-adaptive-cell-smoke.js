@@ -52,16 +52,16 @@ const yaml = await import('js-yaml');
 const scenarioSource = evalProfile.scenario_source || 'config/adaptive-trap-scenarios.yaml';
 const scenariosFile = fs.readFileSync(scenarioSource, 'utf8');
 const scenariosDoc = yaml.default.load(scenariosFile);
-const expectedScenarioTypes = new Set(
-  (scenariosDoc?.scenarios || []).map((s) => s.scenario_type || s.id),
-);
+const expectedScenarioTypes = new Set((scenariosDoc?.scenarios || []).map((s) => s.scenario_type || s.id));
 const seenTypes = new Set();
 for (const row of rows) {
   if (row.profileName !== profileName) fails.push(`profileName mismatch on ${row.scenarioId}: ${row.profileName}`);
-  if (!expectedScenarioTypes.has(row.scenarioType)) fails.push(`unexpected scenarioType on ${row.scenarioId}: ${row.scenarioType}`);
+  if (!expectedScenarioTypes.has(row.scenarioType))
+    fails.push(`unexpected scenarioType on ${row.scenarioId}: ${row.scenarioType}`);
   seenTypes.add(row.scenarioType);
   if (!row.dialogueId) fails.push(`no dialogueId on ${row.scenarioId}`);
-  if (!Array.isArray(row.suggestions) || row.suggestions.length === 0) fails.push(`suggestions empty on ${row.scenarioId}`);
+  if (!Array.isArray(row.suggestions) || row.suggestions.length === 0)
+    fails.push(`suggestions empty on ${row.scenarioId}`);
 }
 const missing = [...expectedScenarioTypes].filter((t) => !seenTypes.has(t));
 if (missing.length) fails.push(`missing scenario types: ${missing.join(', ')}`);

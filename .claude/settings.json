@@ -1,13 +1,7 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(npm test *)",
-      "Bash(npm run test:hermetic *)"
-    ],
-    "deny": [
-      "mcp__evaluations-db__write_query",
-      "mcp__evaluations-db__create_table"
-    ]
+    "allow": ["Bash(npm test *)", "Bash(npm run test:hermetic *)"],
+    "deny": ["mcp__evaluations-db__write_query", "mcp__evaluations-db__create_table"]
   },
   "hooks": {
     "SessionStart": [

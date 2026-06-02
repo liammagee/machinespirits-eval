@@ -57,10 +57,25 @@ const db = new Database(DB_PATH);
 
 // ─────────────────────────────────────── arg parsing
 function parseArgs(argv) {
-  const args = { runIds: [], profile: null, scenario: null, limit: null, dryRun: false, overwrite: false, model: null, verbose: false };
+  const args = {
+    runIds: [],
+    profile: null,
+    scenario: null,
+    limit: null,
+    dryRun: false,
+    overwrite: false,
+    model: null,
+    verbose: false,
+  };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === '--run-id') args.runIds.push(...argv[++i].split(',').map((s) => s.trim()).filter(Boolean));
+    if (a === '--run-id')
+      args.runIds.push(
+        ...argv[++i]
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
+      );
     else if (a === '--profile') args.profile = argv[++i];
     else if (a === '--scenario') args.scenario = argv[++i];
     else if (a === '--limit') args.limit = parseInt(argv[++i], 10);
@@ -69,7 +84,11 @@ function parseArgs(argv) {
     else if (a === '--model') args.model = argv[++i];
     else if (a === '--verbose') args.verbose = true;
     else if (a === '-h' || a === '--help') {
-      const help = fs.readFileSync(fileURLToPath(import.meta.url), 'utf-8').split('\n').slice(1, 45).join('\n');
+      const help = fs
+        .readFileSync(fileURLToPath(import.meta.url), 'utf-8')
+        .split('\n')
+        .slice(1, 45)
+        .join('\n');
       console.log(help);
       process.exit(0);
     } else {
@@ -132,8 +151,12 @@ async function callCodex(prompt) {
     const child = spawn('codex', cliArgs, { stdio: ['pipe', 'pipe', 'pipe'], env: cliEnv });
     let out = '';
     let err = '';
-    child.stdout.on('data', (d) => { out += d; });
-    child.stderr.on('data', (d) => { err += d; });
+    child.stdout.on('data', (d) => {
+      out += d;
+    });
+    child.stderr.on('data', (d) => {
+      err += d;
+    });
     child.on('error', reject);
     child.on('close', (code) => {
       if (code !== 0) reject(new Error(err || out || `codex exited with code ${code}`));
@@ -183,8 +206,12 @@ function persistScores(rowId, parsed, modelLabel) {
 // ─────────────────────────────────────── main loop
 async function main() {
   const rows = selectRows();
-  console.log(`PLAN: grade ${rows.length} rows from runs [${ARGS.runIds.join(', ')}]${ARGS.profile ? ` profile~${ARGS.profile}` : ''}${ARGS.scenario ? ` scenario=${ARGS.scenario}` : ''}`);
-  console.log(`MODE: ${ARGS.dryRun ? 'DRY RUN' : 'WRITE'} | overwrite=${ARGS.overwrite} | model=${ARGS.model || '(codex default)'} | grader_version=${GRADER_VERSION}`);
+  console.log(
+    `PLAN: grade ${rows.length} rows from runs [${ARGS.runIds.join(', ')}]${ARGS.profile ? ` profile~${ARGS.profile}` : ''}${ARGS.scenario ? ` scenario=${ARGS.scenario}` : ''}`,
+  );
+  console.log(
+    `MODE: ${ARGS.dryRun ? 'DRY RUN' : 'WRITE'} | overwrite=${ARGS.overwrite} | model=${ARGS.model || '(codex default)'} | grader_version=${GRADER_VERSION}`,
+  );
   console.log('');
 
   const modelLabel = ARGS.model ? `codex-cli.${ARGS.model}` : 'codex-cli.default';
@@ -220,7 +247,9 @@ async function main() {
       const dt = Date.now() - t0;
       persistScores(row.id, parsed, modelLabel);
       const s = parsed.scores || {};
-      console.log(`${tag} ${row.scenario_id} ${row.profile_name.slice(0, 40)} | trig=${s.trigger_recognition} exec=${s.strategy_execution} qual=${s.strategy_quality} coh=${s.pedagogical_coherence} | ${dt}ms`);
+      console.log(
+        `${tag} ${row.scenario_id} ${row.profile_name.slice(0, 40)} | trig=${s.trigger_recognition} exec=${s.strategy_execution} qual=${s.strategy_quality} coh=${s.pedagogical_coherence} | ${dt}ms`,
+      );
       if (ARGS.verbose) {
         console.log('  raw stdout (first 500 chars):', rawStdout.slice(0, 500));
       }

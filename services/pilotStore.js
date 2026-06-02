@@ -115,16 +115,14 @@ db.exec(`
   );
 `);
 
-const PILOT_CONDITIONS = (
-  process.env.PILOT_CONDITIONS ||
-  'cell_1_base_single_unified,cell_5_recog_single_unified'
-).split(',').map((s) => s.trim()).filter(Boolean);
+const PILOT_CONDITIONS = (process.env.PILOT_CONDITIONS || 'cell_1_base_single_unified,cell_5_recog_single_unified')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
 
-const PILOT_DEFAULT_LECTURE =
-  process.env.PILOT_DEFAULT_LECTURE || '101-lecture-1';
+const PILOT_DEFAULT_LECTURE = process.env.PILOT_DEFAULT_LECTURE || '101-lecture-1';
 
-export const PILOT_TUTORING_CAP_MS =
-  Number(process.env.PILOT_TUTORING_CAP_MS) || 15 * 60 * 1000;
+export const PILOT_TUTORING_CAP_MS = Number(process.env.PILOT_TUTORING_CAP_MS) || 15 * 60 * 1000;
 
 const STUDY_SECRET = process.env.PILOT_STUDY_SECRET || 'a1-pilot-dev';
 
@@ -191,9 +189,7 @@ function pickCondition() {
 }
 
 export function enrollSession({ participantPid = null, scenarioLectureRef = null, forceCondition = null } = {}) {
-  const condition = forceCondition && PILOT_CONDITIONS.includes(forceCondition)
-    ? forceCondition
-    : pickCondition();
+  const condition = forceCondition && PILOT_CONDITIONS.includes(forceCondition) ? forceCondition : pickCondition();
   const id = randomUUID();
   const now = nowMs();
   const seed = randomBytes(16).toString('hex');
@@ -204,8 +200,7 @@ export function enrollSession({ participantPid = null, scenarioLectureRef = null
     `INSERT INTO pilot_sessions (id, enrolled_at, participant_pid, participant_pid_hash,
        condition_cell, scenario_lecture_ref, assignment_seed, status, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(id, now, participantPid, pidHash, condition, lectureRef, seed,
-        PILOT_STATUSES.ENROLLED, now, now);
+  ).run(id, now, participantPid, pidHash, condition, lectureRef, seed, PILOT_STATUSES.ENROLLED, now, now);
 
   return getSession(id);
 }
@@ -214,7 +209,11 @@ export function getSession(id) {
   const row = db.prepare('SELECT * FROM pilot_sessions WHERE id = ?').get(id);
   if (!row) return null;
   if (row.intake_data) {
-    try { row.intake_data = JSON.parse(row.intake_data); } catch { /* leave as string */ }
+    try {
+      row.intake_data = JSON.parse(row.intake_data);
+    } catch {
+      /* leave as string */
+    }
   }
   return row;
 }
@@ -227,7 +226,11 @@ export function getSessionByPid(participantPid) {
     .get(pidHash);
   if (!row) return null;
   if (row.intake_data) {
-    try { row.intake_data = JSON.parse(row.intake_data); } catch { /* leave as string */ }
+    try {
+      row.intake_data = JSON.parse(row.intake_data);
+    } catch {
+      /* leave as string */
+    }
   }
   return row;
 }
@@ -286,8 +289,7 @@ function updateSession(id, patch) {
     if (v && typeof v === 'object') return JSON.stringify(v);
     return v;
   });
-  db.prepare(`UPDATE pilot_sessions SET ${sets}, updated_at = ? WHERE id = ?`)
-    .run(...values, nowMs(), id);
+  db.prepare(`UPDATE pilot_sessions SET ${sets}, updated_at = ? WHERE id = ?`).run(...values, nowMs(), id);
   return getSession(id);
 }
 
@@ -333,8 +335,7 @@ export function recordTestResponses(id, { phase, form = null, responses = [] }) 
   const insert = db.transaction((rows) => {
     for (let i = 0; i < rows.length; i++) {
       const r = rows[i];
-      const v = r.response_value !== undefined && r.response_value !== null
-        ? String(r.response_value) : null;
+      const v = r.response_value !== undefined && r.response_value !== null ? String(r.response_value) : null;
       stmt.run(
         id,
         phase,
@@ -342,7 +343,7 @@ export function recordTestResponses(id, { phase, form = null, responses = [] }) 
         String(r.item_id),
         Number(r.item_position ?? i),
         v,
-        r.is_correct === undefined ? null : (r.is_correct ? 1 : 0),
+        r.is_correct === undefined ? null : r.is_correct ? 1 : 0,
         r.response_ms ?? null,
         now,
       );
@@ -441,25 +442,41 @@ export function abandonSession(id, reason = null) {
 
 // ─── Turn persistence ────────────────────────────────────────────────────
 
-export function computeConfigHash({ cellName, egoConfig, superegoConfig, egoPromptText = '', superegoPromptText = '', topic = '', lectureText = '' }) {
+export function computeConfigHash({
+  cellName,
+  egoConfig,
+  superegoConfig,
+  egoPromptText = '',
+  superegoPromptText = '',
+  topic = '',
+  lectureText = '',
+}) {
   const h = createHash('sha256');
   h.update(cellName || '');
   h.update('\0');
-  h.update(JSON.stringify({
-    p: egoConfig?.provider || null,
-    m: egoConfig?.model || null,
-    f: egoConfig?.prompt_file || null,
-    t: egoConfig?.hyperparameters?.temperature ?? null,
-  }));
+  h.update(
+    JSON.stringify({
+      p: egoConfig?.provider || null,
+      m: egoConfig?.model || null,
+      f: egoConfig?.prompt_file || null,
+      t: egoConfig?.hyperparameters?.temperature ?? null,
+    }),
+  );
   h.update('\0');
   h.update(egoPromptText);
   h.update('\0');
-  h.update(JSON.stringify(superegoConfig ? {
-    p: superegoConfig.provider,
-    m: superegoConfig.model,
-    f: superegoConfig.prompt_file || null,
-    t: superegoConfig.hyperparameters?.temperature ?? null,
-  } : null));
+  h.update(
+    JSON.stringify(
+      superegoConfig
+        ? {
+            p: superegoConfig.provider,
+            m: superegoConfig.model,
+            f: superegoConfig.prompt_file || null,
+            t: superegoConfig.hyperparameters?.temperature ?? null,
+          }
+        : null,
+    ),
+  );
   h.update('\0');
   h.update(superegoPromptText || '');
   h.update('\0');
@@ -481,9 +498,7 @@ function computeDialogueContentHash(turns) {
 }
 
 export function listTurns(sessionId) {
-  return db.prepare(
-    'SELECT * FROM pilot_turns WHERE session_id = ? ORDER BY turn_index',
-  ).all(sessionId);
+  return db.prepare('SELECT * FROM pilot_turns WHERE session_id = ? ORDER BY turn_index').all(sessionId);
 }
 
 export function appendTurn(sessionId, params) {

@@ -344,10 +344,7 @@ migrateAddColumn(
   `ALTER TABLE evaluation_results ADD COLUMN adaptive_pedagogical_coherence REAL`,
   'adaptive_pedagogical_coherence',
 );
-migrateAddColumn(
-  `ALTER TABLE evaluation_results ADD COLUMN adaptive_grader_scores TEXT`,
-  'adaptive_grader_scores',
-);
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN adaptive_grader_scores TEXT`, 'adaptive_grader_scores');
 migrateAddColumn(
   `ALTER TABLE evaluation_results ADD COLUMN adaptive_grader_reasoning TEXT`,
   'adaptive_grader_reasoning',
@@ -356,10 +353,7 @@ migrateAddColumn(
   `ALTER TABLE evaluation_results ADD COLUMN adaptive_grader_judge_model TEXT`,
   'adaptive_grader_judge_model',
 );
-migrateAddColumn(
-  `ALTER TABLE evaluation_results ADD COLUMN adaptive_grader_version TEXT`,
-  'adaptive_grader_version',
-);
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN adaptive_grader_version TEXT`, 'adaptive_grader_version');
 
 // Deliberation rounds: cumulative ego-superego cycles across all conversation turns
 // (split from dialogue_rounds which now stores conversation turn count)

@@ -107,12 +107,9 @@ async function runScenario({ runId, scenario, profile, profileName, agentConfig,
       simulationsContext: '',
       messageHistory,
     };
-    const idResult = await idDirectorEngine.generateIdDirectedSuggestion(
-      context,
-      { profileName },
-      profile,
-      { previousPersona },
-    );
+    const idResult = await idDirectorEngine.generateIdDirectedSuggestion(context, { profileName }, profile, {
+      previousPersona,
+    });
     if (!idResult.success) {
       throw new Error(`id-director failed at turn ${turn}: ${idResult.error}`);
     }
@@ -259,8 +256,7 @@ async function main() {
   }
   if (profile?.factors?.id_director !== true) {
     throw new Error(
-      `profile ${profileName} is not an id-director cell ` +
-        `(factors.id_director=${profile?.factors?.id_director})`,
+      `profile ${profileName} is not an id-director cell ` + `(factors.id_director=${profile?.factors?.id_director})`,
     );
   }
   const agentConfig = {
@@ -332,9 +328,7 @@ async function main() {
         });
         persisted++;
         if (verbose || true) {
-          console.log(
-            `[id-director-trap]   ✓ ${variantId} (turns=${out.turns}, dialogue=${out.dialogueId})`,
-          );
+          console.log(`[id-director-trap]   ✓ ${variantId} (turns=${out.turns}, dialogue=${out.dialogueId})`);
         }
       } catch (err) {
         failed++;
@@ -348,9 +342,7 @@ async function main() {
   if (tracker) realLLM.clearActiveBudgetTracker();
   idDirectorEngine.__resetDeps();
 
-  console.log(
-    `[id-director-trap] runId=${runId} persisted=${persisted}/${totalScenarios} failed=${failed}`,
-  );
+  console.log(`[id-director-trap] runId=${runId} persisted=${persisted}/${totalScenarios} failed=${failed}`);
 }
 
 main().catch((err) => {

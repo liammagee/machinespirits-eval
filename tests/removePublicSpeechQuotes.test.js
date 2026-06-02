@@ -19,10 +19,7 @@ describe('remove-public-speech-quotes', () => {
 
   it('can also strip terminal ellipses when requested', () => {
     const input = 'Learner: [Rubs her eyes]\n\n"Oh I get it..."\n';
-    assert.equal(
-      removePublicSpeechQuotes(input, { stripEllipsis: true }),
-      'Learner: [Rubs her eyes]\n\nOh I get it\n',
-    );
+    assert.equal(removePublicSpeechQuotes(input, { stripEllipsis: true }), 'Learner: [Rubs her eyes]\n\nOh I get it\n');
   });
 
   it('removes same-line wrapping quotes without touching interior quoted terms', () => {

@@ -70,7 +70,10 @@ const CATEGORIES = [
 ];
 
 function parseCsv(text) {
-  const lines = text.replace(/\r\n/g, '\n').split('\n').filter((l) => l.length > 0);
+  const lines = text
+    .replace(/\r\n/g, '\n')
+    .split('\n')
+    .filter((l) => l.length > 0);
   if (lines.length === 0) return { header: [], rows: [] };
   const parseRow = (line) => {
     const out = [];
@@ -114,7 +117,10 @@ function parseCsv(text) {
 
 function normalizeLabel(s) {
   if (!s) return null;
-  const up = s.toUpperCase().trim().replace(/[\s-]+/g, '_');
+  const up = s
+    .toUpperCase()
+    .trim()
+    .replace(/[\s-]+/g, '_');
   return CATEGORIES.includes(up) ? up : null;
 }
 
@@ -157,9 +163,7 @@ function loadSyntheticRater(arg) {
 function autoDiscoverRaters() {
   const dir = join(ROOT, 'exports');
   if (!existsSync(dir)) return [];
-  const files = readdirSync(dir).filter((f) =>
-    /^human-validation-pilot-rater-.+\.csv$/.test(f)
-  );
+  const files = readdirSync(dir).filter((f) => /^human-validation-pilot-rater-.+\.csv$/.test(f));
   return files.map((f) => {
     const id = f.replace(/^human-validation-pilot-rater-/, '').replace(/\.csv$/, '');
     return `${id}:${join(dir, f)}`;
@@ -192,9 +196,7 @@ function cohensKappa(pairs) {
 function fleissKappa(allRaters, items) {
   const k = allRaters.length;
   if (k < 2) return { kappa: NaN, n: 0 };
-  const categories = Array.from(
-    new Set(items.flatMap((id) => allRaters.map((r) => r.map[id]).filter(Boolean)))
-  );
+  const categories = Array.from(new Set(items.flatMap((id) => allRaters.map((r) => r.map[id]).filter(Boolean))));
   if (categories.length < 2) return { kappa: NaN, n: 0 };
   const N = items.length;
   const catIdx = {};
@@ -338,20 +340,18 @@ function main() {
   out.push('## Raters\n');
   for (const r of raters) {
     out.push(
-      `- **${r.id}**${r.synthetic ? ' (synthetic LLM baseline)' : ''}: ${r.filled}/${r.totalRows} items labelled. Path: \`${basename(r.path)}\``
+      `- **${r.id}**${r.synthetic ? ' (synthetic LLM baseline)' : ''}: ${r.filled}/${r.totalRows} items labelled. Path: \`${basename(r.path)}\``,
     );
   }
   out.push('');
 
   const llmMap = Object.fromEntries(items.map((id) => [id, key[id].llm_primary]));
 
-  out.push('## LLM ↔ Rater Agreement (Cohen\'s κ, primary category)\n');
-  out.push('| Rater | n_items | Agreement | Chance | **Cohen\'s κ** | Interpretation |');
+  out.push("## LLM ↔ Rater Agreement (Cohen's κ, primary category)\n");
+  out.push("| Rater | n_items | Agreement | Chance | **Cohen's κ** | Interpretation |");
   out.push('|-------|---------|-----------|--------|---------------|----------------|');
   for (const r of raters) {
-    const pairs = items
-      .map((id) => [llmMap[id], r.map[id]])
-      .filter(([a, b]) => a && b);
+    const pairs = items.map((id) => [llmMap[id], r.map[id]]).filter(([a, b]) => a && b);
     const k = cohensKappa(pairs);
     const interp =
       k.kappa < 0
@@ -365,45 +365,32 @@ function main() {
               : k.kappa < 0.81
                 ? 'Substantial'
                 : 'Almost perfect';
-    out.push(
-      `| ${r.id} | ${k.n} | ${fmt(k.agree)} | ${fmt(k.chance)} | **${fmt(k.kappa)}** | ${interp} |`
-    );
+    out.push(`| ${r.id} | ${k.n} | ${fmt(k.agree)} | ${fmt(k.chance)} | **${fmt(k.kappa)}** | ${interp} |`);
   }
   out.push('');
 
   if (raters.length >= 2) {
     out.push('## Rater ↔ Rater Agreement\n');
-    out.push('| A | B | n_items | Agreement | **Cohen\'s κ** |');
+    out.push("| A | B | n_items | Agreement | **Cohen's κ** |");
     out.push('|---|---|---------|-----------|---------------|');
     for (let i = 0; i < raters.length; i++) {
       for (let j = i + 1; j < raters.length; j++) {
         const A = raters[i],
           B = raters[j];
-        const pairs = items
-          .map((id) => [A.map[id], B.map[id]])
-          .filter(([a, b]) => a && b);
+        const pairs = items.map((id) => [A.map[id], B.map[id]]).filter(([a, b]) => a && b);
         const k = cohensKappa(pairs);
-        out.push(
-          `| ${A.id} | ${B.id} | ${k.n} | ${fmt(k.agree)} | **${fmt(k.kappa)}** |`
-        );
+        out.push(`| ${A.id} | ${B.id} | ${k.n} | ${fmt(k.agree)} | **${fmt(k.kappa)}** |`);
       }
     }
     out.push('');
 
-    const allRaters = [
-      { id: 'LLM', map: llmMap, synthetic: false },
-      ...raters,
-    ];
+    const allRaters = [{ id: 'LLM', map: llmMap, synthetic: false }, ...raters];
     const fk = fleissKappa(allRaters, items);
-    out.push(
-      `**Fleiss' κ across all raters + LLM** (n=${fk.n} items with complete coverage): **${fmt(fk.kappa)}**\n`
-    );
+    out.push(`**Fleiss' κ across all raters + LLM** (n=${fk.n} items with complete coverage): **${fmt(fk.kappa)}**\n`);
   }
 
   for (const r of raters) {
-    const pairs = items
-      .map((id) => [llmMap[id], r.map[id]])
-      .filter(([a, b]) => a && b);
+    const pairs = items.map((id) => [llmMap[id], r.map[id]]).filter(([a, b]) => a && b);
     out.push(`## Per-Category F1 — LLM vs ${r.id}\n`);
     out.push('| Category | TP | FP | FN | Precision | Recall | F1 |');
     out.push('|----------|----|----|----|-----------|--------|-----|');
@@ -411,16 +398,12 @@ function main() {
     for (const cat of CATEGORIES) {
       const s = pcf[cat];
       if (s.tp === 0 && s.fp === 0 && s.fn === 0) continue;
-      out.push(
-        `| ${cat} | ${s.tp} | ${s.fp} | ${s.fn} | ${fmt(s.precision)} | ${fmt(s.recall)} | ${fmt(s.f1)} |`
-      );
+      out.push(`| ${cat} | ${s.tp} | ${s.fp} | ${s.fn} | ${fmt(s.precision)} | ${fmt(s.recall)} | ${fmt(s.f1)} |`);
     }
     out.push('');
 
     out.push(`### Confusion Matrix — LLM (rows) vs ${r.id} (cols)\n`);
-    const activeCats = CATEGORIES.filter((c) =>
-      pairs.some(([a, b]) => a === c || b === c)
-    );
+    const activeCats = CATEGORIES.filter((c) => pairs.some(([a, b]) => a === c || b === c));
     out.push(renderCM(confusionMatrix(pairs, activeCats), activeCats));
     out.push('');
   }

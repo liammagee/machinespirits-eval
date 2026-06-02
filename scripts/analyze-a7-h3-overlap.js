@@ -47,19 +47,24 @@ const TIMESTAMP = tsIdx !== -1 ? args[tsIdx + 1] : '1777173286';
 
 const evalDb = new Database(path.join(REPO_ROOT, 'data', 'evaluations.db'), { readonly: true });
 const tutorDb = new Database(
-  (process.env.AUTH_DB_PATH || path.join(REPO_ROOT, 'node_modules', '@machinespirits', 'tutor-core', 'data', 'lms.sqlite')),
+  process.env.AUTH_DB_PATH ||
+    path.join(REPO_ROOT, 'node_modules', '@machinespirits', 'tutor-core', 'data', 'lms.sqlite'),
   { readonly: true },
 );
 
 // ─── Tokenisation ────────────────────────────────────────────────────────
-const STOPWORDS = new Set(`
+const STOPWORDS = new Set(
+  `
   a an and are as at be been being but by can could did do does doing for from
   had has have having he her here him his how i if in into is it its itself
   just like me more most my no nor not now of off on once only or our out over
   same she should so some such than that the their them then there these they
   this those through to too under until up very was we were what when where
   which while who whom why will with you your yours yourself
-`.split(/\s+/).filter(Boolean));
+`
+    .split(/\s+/)
+    .filter(Boolean),
+);
 
 function tokenise(text) {
   if (!text) return new Set();
@@ -81,9 +86,7 @@ function jaccard(a, b) {
 
 // ─── Spearman rank correlation ───────────────────────────────────────────
 function rank(arr) {
-  const sorted = arr
-    .map((v, i) => ({ v, i }))
-    .sort((a, b) => a.v - b.v);
+  const sorted = arr.map((v, i) => ({ v, i })).sort((a, b) => a.v - b.v);
   const ranks = new Array(arr.length);
   let i = 0;
   while (i < sorted.length) {
@@ -103,7 +106,9 @@ function spearman(xs, ys) {
   const ry = rank(ys);
   const meanX = rx.reduce((s, x) => s + x, 0) / n;
   const meanY = ry.reduce((s, y) => s + y, 0) / n;
-  let num = 0, dx = 0, dy = 0;
+  let num = 0,
+    dx = 0,
+    dy = 0;
   for (let i = 0; i < n; i++) {
     num += (rx[i] - meanX) * (ry[i] - meanY);
     dx += (rx[i] - meanX) ** 2;
@@ -147,8 +152,7 @@ for (const arc of arcs) {
     .all(arc);
 }
 
-const padIdRow = (arc) =>
-  tutorDb.prepare(`SELECT id FROM writing_pads WHERE learner_id = ?`).get(arc);
+const padIdRow = (arc) => tutorDb.prepare(`SELECT id FROM writing_pads WHERE learner_id = ?`).get(arc);
 
 const arcMoments = {};
 for (const arc of arcs) {
@@ -172,9 +176,7 @@ function lastTutorMessage(suggestionsJson) {
     const last = arr[arr.length - 1];
     if (typeof last === 'string') return last;
     if (last && typeof last === 'object') {
-      return [last.suggestion, last.message, last.text, last.content]
-        .filter(Boolean)
-        .join(' ');
+      return [last.suggestion, last.message, last.text, last.content].filter(Boolean).join(' ');
     }
     return String(last);
   } catch {
@@ -227,14 +229,22 @@ for (const arc of arcs) {
   console.log(`  ${cond.padEnd(6)}${tag.padEnd(16)}${(rho ?? 0).toFixed(3).padStart(7)}   ${fmtSeries}`);
 }
 
-const baseRhos = arcs.filter((a) => !a.includes('recog')).map((a) => rhoByArc[a]).filter((r) => r !== null);
-const recogRhos = arcs.filter((a) => a.includes('recog')).map((a) => rhoByArc[a]).filter((r) => r !== null);
+const baseRhos = arcs
+  .filter((a) => !a.includes('recog'))
+  .map((a) => rhoByArc[a])
+  .filter((r) => r !== null);
+const recogRhos = arcs
+  .filter((a) => a.includes('recog'))
+  .map((a) => rhoByArc[a])
+  .filter((r) => r !== null);
 const meanArr = (a) => (a.length === 0 ? 0 : a.reduce((s, x) => s + x, 0) / a.length);
 console.log('');
 console.log('=== H3 verdict ===');
 console.log('H3 predicted: recog Spearman ρ > 0.5; base ρ ≤ 0.3');
 console.log(`Base  arc ρs: [${baseRhos.map((r) => r.toFixed(3)).join(', ')}]   mean = ${meanArr(baseRhos).toFixed(3)}`);
-console.log(`Recog arc ρs: [${recogRhos.map((r) => r.toFixed(3)).join(', ')}]   mean = ${meanArr(recogRhos).toFixed(3)}`);
+console.log(
+  `Recog arc ρs: [${recogRhos.map((r) => r.toFixed(3)).join(', ')}]   mean = ${meanArr(recogRhos).toFixed(3)}`,
+);
 
 const baseOver = baseRhos.filter((r) => r > 0.5).length;
 const recogOver = recogRhos.filter((r) => r > 0.5).length;
@@ -253,15 +263,18 @@ console.log(`Recog mean overlap: ${meanArr(recogAllOverlap).toFixed(3)} (n=${rec
 
 // Welch t on the per-arc rhos
 function tStat(a, b) {
-  const ma = meanArr(a), mb = meanArr(b);
+  const ma = meanArr(a),
+    mb = meanArr(b);
   const sa = Math.sqrt(a.reduce((s, x) => s + (x - ma) ** 2, 0) / (a.length - 1));
   const sb = Math.sqrt(b.reduce((s, x) => s + (x - mb) ** 2, 0) / (b.length - 1));
-  const t = (mb - ma) / Math.sqrt(sa * sa / a.length + sb * sb / b.length);
+  const t = (mb - ma) / Math.sqrt((sa * sa) / a.length + (sb * sb) / b.length);
   return { t, sa, sb, ma, mb };
 }
 const ts = tStat(baseRhos, recogRhos);
 console.log('');
-console.log(`Welch t on per-arc ρ (recog − base): ${ts.t.toFixed(3)}   (Base SD ${ts.sa.toFixed(3)}, Recog SD ${ts.sb.toFixed(3)})`);
+console.log(
+  `Welch t on per-arc ρ (recog − base): ${ts.t.toFixed(3)}   (Base SD ${ts.sa.toFixed(3)}, Recog SD ${ts.sb.toFixed(3)})`,
+);
 
 evalDb.close();
 tutorDb.close();

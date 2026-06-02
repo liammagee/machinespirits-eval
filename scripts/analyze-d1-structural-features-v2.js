@@ -75,7 +75,10 @@ function extractMessages(suggestionsJson) {
     return '';
   }
   if (!Array.isArray(arr)) return '';
-  return arr.map((s) => s?.message).filter(Boolean).join('\n\n');
+  return arr
+    .map((s) => s?.message)
+    .filter(Boolean)
+    .join('\n\n');
 }
 
 // ── Refined feature regexes ────────────────────────────────────────────
@@ -109,13 +112,7 @@ const SCAFFOLDING_RES = [
 
 // Inclusive framing: first-person plural that frames the task as joint.
 
-const INCLUSIVE_RES = [
-  /\blet'?s\b/gi,
-  /\bwe(?:'re|'ve|'ll|'d)?\b/gi,
-  /\bus\b/gi,
-  /\bour(?:s)?\b/gi,
-  /\btogether\b/gi,
-];
+const INCLUSIVE_RES = [/\blet'?s\b/gi, /\bwe(?:'re|'ve|'ll|'d)?\b/gi, /\bus\b/gi, /\bour(?:s)?\b/gi, /\btogether\b/gi];
 
 // Modal invitations: softened command — invitation rather than imperative.
 
@@ -162,7 +159,10 @@ const BROAD_HEDGE_RES = [
 ];
 
 function wordCount(text) {
-  return text.trim().split(/\s+/).filter((w) => w.length > 0).length;
+  return text
+    .trim()
+    .split(/\s+/)
+    .filter((w) => w.length > 0).length;
 }
 
 function countMatches(text, regexes) {
@@ -226,7 +226,7 @@ const FEATURE_KEYS = [
 const FEATURE_LABEL = {
   indirectQuestionRate: 'Indirect questions (no `?`)',
   scaffoldingMoves: 'Scaffolding-move imperatives',
-  inclusiveFraming: 'Inclusive framing (let\'s/we/us)',
+  inclusiveFraming: "Inclusive framing (let's/we/us)",
   modalInvitation: 'Modal invitations',
   broadAcknowledgement: 'Broad acknowledgement (quotes + paraphrase)',
   broadHedge: 'Broad epistemic hedges',
@@ -325,7 +325,9 @@ function buildReport({ runId, judge, perCell }) {
   lines.push(`**Judge:** ${judge}`);
   lines.push(`**Cells:** cell_1, cell_5, cell_95, cell_96`);
   lines.push('');
-  lines.push('Pass 3 surfaced ends-with-question as the first concrete structural mediator candidate (within-cell r = 0.325 in cell_5, r = 0.392 in cell_95). Pass 4 adds six refined regex features targeting pass 3\'s known gaps: indirect questions (without `?`), scaffolding-move imperatives, inclusive framing, modal invitations, broad acknowledgement (quotes + flexible paraphrase), and broad epistemic hedges.');
+  lines.push(
+    "Pass 3 surfaced ends-with-question as the first concrete structural mediator candidate (within-cell r = 0.325 in cell_5, r = 0.392 in cell_95). Pass 4 adds six refined regex features targeting pass 3's known gaps: indirect questions (without `?`), scaffolding-move imperatives, inclusive framing, modal invitations, broad acknowledgement (quotes + flexible paraphrase), and broad epistemic hedges.",
+  );
   lines.push('');
   lines.push('## 1. Per-cell feature means');
   lines.push('');
@@ -350,9 +352,7 @@ function buildReport({ runId, judge, perCell }) {
     const intersubArr = [...c5[`arr_${k}`], ...c95[`arr_${k}`]];
     const transArr = [...c1[`arr_${k}`], ...c96[`arr_${k}`]];
     const d = cohensD(intersubArr, transArr);
-    lines.push(
-      `| ${FEATURE_LABEL[k]} | ${fmt(mean(intersubArr))} | ${fmt(mean(transArr))} | ${fmt(d, 3)} |`,
-    );
+    lines.push(`| ${FEATURE_LABEL[k]} | ${fmt(mean(intersubArr))} | ${fmt(mean(transArr))} | ${fmt(d, 3)} |`);
   }
   lines.push('');
   lines.push('## 3. Within-intersubjective contrast (cell_5 vs cell_95)');
@@ -361,9 +361,7 @@ function buildReport({ runId, judge, perCell }) {
   lines.push('| --- | --- | --- | --- |');
   for (const k of FEATURE_KEYS) {
     const d = cohensD(c5[`arr_${k}`], c95[`arr_${k}`]);
-    lines.push(
-      `| ${FEATURE_LABEL[k]} | ${fmt(c5[`mean_${k}`])} | ${fmt(c95[`mean_${k}`])} | ${fmt(d, 3)} |`,
-    );
+    lines.push(`| ${FEATURE_LABEL[k]} | ${fmt(c5[`mean_${k}`])} | ${fmt(c95[`mean_${k}`])} | ${fmt(d, 3)} |`);
   }
   lines.push('');
   lines.push('## 4. Feature × score correlations (within-cell + pooled)');
@@ -387,7 +385,9 @@ function buildReport({ runId, judge, perCell }) {
   lines.push('');
   lines.push('## 5. Comparison to pass 3');
   lines.push('');
-  lines.push('Pass 3\'s ends-with-question feature had within-cell r = 0.325 (cell_5) and r = 0.392 (cell_95). Pass 4 features that beat or match those numbers are stronger structural mediator candidates; features substantially below are at most secondary channels.');
+  lines.push(
+    "Pass 3's ends-with-question feature had within-cell r = 0.325 (cell_5) and r = 0.392 (cell_95). Pass 4 features that beat or match those numbers are stronger structural mediator candidates; features substantially below are at most secondary channels.",
+  );
   lines.push('');
   lines.push('| Feature | r cell_5 | r cell_95 | Verdict |');
   lines.push('| --- | --- | --- | --- |');
@@ -427,11 +427,15 @@ function buildReport({ runId, judge, perCell }) {
   const topNegative = negatives[0];
 
   if (topPositive) {
-    lines.push(`**Strongest positive within-cell correlation**: ${topPositive.label} (cell_5 r = ${fmt(topPositive.r5, 3)}, cell_95 r = ${fmt(topPositive.r95, 3)}, pooled r = ${fmt(topPositive.rPooled, 3)}). Below pass 3's ends-with-question reference (r = 0.325 / 0.392).`);
+    lines.push(
+      `**Strongest positive within-cell correlation**: ${topPositive.label} (cell_5 r = ${fmt(topPositive.r5, 3)}, cell_95 r = ${fmt(topPositive.r95, 3)}, pooled r = ${fmt(topPositive.rPooled, 3)}). Below pass 3's ends-with-question reference (r = 0.325 / 0.392).`,
+    );
     lines.push('');
   }
   if (topNegative && Math.abs(topNegative.avgRSigned) >= 0.15) {
-    lines.push(`**Strongest negative within-cell correlation**: ${topNegative.label} (cell_5 r = ${fmt(topNegative.r5, 3)}, cell_95 r = ${fmt(topNegative.r95, 3)}, pooled r = ${fmt(topNegative.rPooled, 3)}). The feature predicts *lower* scores within cells — explicit acknowledgement markers (quoted text, "your X" possessives, paraphrase phrases) appear in weaker responses more often than in stronger ones. Possible interpretations: (a) verbose acknowledgement substitutes for substantive engagement; (b) the strongest tutor responses engage with learner content without surface-level echoing; (c) regex artefact (technical-term quotes counted alongside learner echoes). The rubric's "active sense-making" criteria reward synthetic moves over reflective ones.`);
+    lines.push(
+      `**Strongest negative within-cell correlation**: ${topNegative.label} (cell_5 r = ${fmt(topNegative.r5, 3)}, cell_95 r = ${fmt(topNegative.r95, 3)}, pooled r = ${fmt(topNegative.rPooled, 3)}). The feature predicts *lower* scores within cells — explicit acknowledgement markers (quoted text, "your X" possessives, paraphrase phrases) appear in weaker responses more often than in stronger ones. Possible interpretations: (a) verbose acknowledgement substitutes for substantive engagement; (b) the strongest tutor responses engage with learner content without surface-level echoing; (c) regex artefact (technical-term quotes counted alongside learner echoes). The rubric's "active sense-making" criteria reward synthetic moves over reflective ones.`,
+    );
     lines.push('');
   }
   // Family-marker call: scaffolding-moves is the cleanest if family d > 0.4
@@ -445,38 +449,57 @@ function buildReport({ runId, judge, perCell }) {
     const fm = familyMarkers[0];
     const fam = cohensD([...c5[`arr_${fm.k}`], ...c95[`arr_${fm.k}`]], [...c1[`arr_${fm.k}`], ...c96[`arr_${fm.k}`]]);
     const within = cohensD(c5[`arr_${fm.k}`], c95[`arr_${fm.k}`]);
-    lines.push(`**Cleanest family marker**: ${fm.label} (family d = ${fmt(fam, 3)}, within-intersubjective d = ${fmt(within, 3)}). Both intersubjective cells produce the behaviour; transmission cells do not. Within-cell r is modest (cell_5 ${fmt(fm.r5, 3)}, cell_95 ${fmt(fm.r95, 3)}) — the feature is *characteristic* of intersubjective-family prompts but does not by itself predict score variation strongly.`);
+    lines.push(
+      `**Cleanest family marker**: ${fm.label} (family d = ${fmt(fam, 3)}, within-intersubjective d = ${fmt(within, 3)}). Both intersubjective cells produce the behaviour; transmission cells do not. Within-cell r is modest (cell_5 ${fmt(fm.r5, 3)}, cell_95 ${fmt(fm.r95, 3)}) — the feature is *characteristic* of intersubjective-family prompts but does not by itself predict score variation strongly.`,
+    );
     lines.push('');
   }
   lines.push('### Per-feature commentary');
   lines.push('');
   for (const k of FEATURE_KEYS) {
-    const fam = cohensD(
-      [...c5[`arr_${k}`], ...c95[`arr_${k}`]],
-      [...c1[`arr_${k}`], ...c96[`arr_${k}`]],
-    );
+    const fam = cohensD([...c5[`arr_${k}`], ...c95[`arr_${k}`]], [...c1[`arr_${k}`], ...c96[`arr_${k}`]]);
     const w595 = cohensD(c5[`arr_${k}`], c95[`arr_${k}`]);
-    lines.push(`**${FEATURE_LABEL[k]}** — family d = ${fmt(fam, 3)}, within-intersub d = ${fmt(w595, 3)}, within-cell r (5/95) = ${fmt(withinR[k].r5, 3)}/${fmt(withinR[k].r95, 3)}, pooled r = ${fmt(withinR[k].rPooled, 3)}.`);
+    lines.push(
+      `**${FEATURE_LABEL[k]}** — family d = ${fmt(fam, 3)}, within-intersub d = ${fmt(w595, 3)}, within-cell r (5/95) = ${fmt(withinR[k].r5, 3)}/${fmt(withinR[k].r95, 3)}, pooled r = ${fmt(withinR[k].rPooled, 3)}.`,
+    );
     lines.push('');
   }
   lines.push('### Synthesis');
   lines.push('');
-  lines.push('Read pass 3 + pass 4 jointly. **ends-with-question (pass 3) remains the single strongest within-cell correlate of score** (r = 0.325 / 0.392), and no pass-4 feature beats it. Pass 4 surfaces two additional findings:');
+  lines.push(
+    'Read pass 3 + pass 4 jointly. **ends-with-question (pass 3) remains the single strongest within-cell correlate of score** (r = 0.325 / 0.392), and no pass-4 feature beats it. Pass 4 surfaces two additional findings:',
+  );
   lines.push('');
-  lines.push('1. **Scaffolding-move imperatives** ("Try ...", "Notice ...", "Consider ...") are a clean *family marker*: family d ≈ 0.59, within-intersubjective d ≈ 0.12, AND modestly positive within-cell r in cell_5 (0.186). Cell_5 and cell_95 both produce them; cell_1 and cell_96 do not. Confirms the intersubjective-family stance manifests through scaffolding pragmatics as well as ending-shape.');
+  lines.push(
+    '1. **Scaffolding-move imperatives** ("Try ...", "Notice ...", "Consider ...") are a clean *family marker*: family d ≈ 0.59, within-intersubjective d ≈ 0.12, AND modestly positive within-cell r in cell_5 (0.186). Cell_5 and cell_95 both produce them; cell_1 and cell_96 do not. Confirms the intersubjective-family stance manifests through scaffolding pragmatics as well as ending-shape.',
+  );
   lines.push('');
-  lines.push('2. **Broad acknowledgement** (quoted spans + "your X" possessives + paraphrase markers) is *negatively* correlated with score across most cells. This is the only consistently-signed effect in the negative direction. The rubric appears to penalise (or at least not reward) verbose surface-level echoing of learner content; it rewards synthetic engagement that does not need to quote.');
+  lines.push(
+    '2. **Broad acknowledgement** (quoted spans + "your X" possessives + paraphrase markers) is *negatively* correlated with score across most cells. This is the only consistently-signed effect in the negative direction. The rubric appears to penalise (or at least not reward) verbose surface-level echoing of learner content; it rewards synthetic engagement that does not need to quote.',
+  );
   lines.push('');
-  lines.push('Together with pass 3, the structural channel reads as **multi-feature, weakly-individuated**: the intersubjective stance manifests through ending-shape (strongest mediator), scaffolding moves (clean family marker, weaker mediator), inclusive framing (cell-1 specific), and *avoidance* of explicit acknowledgement (negative correlate). No single feature fully accounts for the orientation-family score effect; a multi-feature mediation account is consistent with the data but not yet formally tested.');
+  lines.push(
+    'Together with pass 3, the structural channel reads as **multi-feature, weakly-individuated**: the intersubjective stance manifests through ending-shape (strongest mediator), scaffolding moves (clean family marker, weaker mediator), inclusive framing (cell-1 specific), and *avoidance* of explicit acknowledgement (negative correlate). No single feature fully accounts for the orientation-family score effect; a multi-feature mediation account is consistent with the data but not yet formally tested.',
+  );
   lines.push('');
-  lines.push('The next-most-tractable instrument is **embedding-based semantic features** — paraphrase-of-learner-input via cosine similarity, response-to-prototype distance for canonical scaffolding examples. Embeddings would catch what regex misses (a tutor that paraphrases the learner using flexible synonyms rather than fixed phrases). API-cheap (~$0.01 for embeddings on 200 rows). Would also enable a formal mediation analysis on combined regex + embedding features.');
+  lines.push(
+    'The next-most-tractable instrument is **embedding-based semantic features** — paraphrase-of-learner-input via cosine similarity, response-to-prototype distance for canonical scaffolding examples. Embeddings would catch what regex misses (a tutor that paraphrases the learner using flexible synonyms rather than fixed phrases). API-cheap (~$0.01 for embeddings on 200 rows). Would also enable a formal mediation analysis on combined regex + embedding features.',
+  );
   lines.push('');
   lines.push('## 7. Caveats');
   lines.push('');
-  lines.push('- Single judge (Sonnet) for cleanliness. Cross-judge replication would strengthen within-cell r columns.');
-  lines.push('- Features remain author-specified regex extractors. Subject to false negatives (e.g., a tutor that paraphrases without using "your X" possessives or quoted spans is missed by broadAcknowledgement).');
-  lines.push('- Features are likely correlated (inclusive framing co-occurs with scaffolding moves, etc.). Pooled r columns over-estimate independent contributions; a mediation analysis would partial out shared variance.');
-  lines.push('- n ≈ 50/cell is modest power for r in the 0.2-0.4 range. CI is approximately ±0.27 around each within-cell r at this n.');
+  lines.push(
+    '- Single judge (Sonnet) for cleanliness. Cross-judge replication would strengthen within-cell r columns.',
+  );
+  lines.push(
+    '- Features remain author-specified regex extractors. Subject to false negatives (e.g., a tutor that paraphrases without using "your X" possessives or quoted spans is missed by broadAcknowledgement).',
+  );
+  lines.push(
+    '- Features are likely correlated (inclusive framing co-occurs with scaffolding moves, etc.). Pooled r columns over-estimate independent contributions; a mediation analysis would partial out shared variance.',
+  );
+  lines.push(
+    '- n ≈ 50/cell is modest power for r in the 0.2-0.4 range. CI is approximately ±0.27 around each within-cell r at this n.',
+  );
   return lines.join('\n');
 }
 

@@ -118,7 +118,11 @@ function pairTurns(turns) {
 function parseDeliberation(raw) {
   if (!raw) return [];
   if (Array.isArray(raw)) return raw;
-  try { return JSON.parse(raw); } catch { return []; }
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
 }
 
 function buildDialogueLog(session, turns, profile) {
@@ -137,11 +141,13 @@ function buildDialogueLog(session, turns, profile) {
         title: `Pilot turn ${idx + 1}`,
         message: tutorMessage,
       },
-      suggestions: [{
-        type: 'response',
-        title: `Pilot turn ${idx + 1}`,
-        message: tutorMessage,
-      }],
+      suggestions: [
+        {
+          type: 'response',
+          title: `Pilot turn ${idx + 1}`,
+          message: tutorMessage,
+        },
+      ],
     };
   });
 
@@ -262,7 +268,7 @@ function buildDialogueLog(session, turns, profile) {
       tutoringStartedAt: session.tutoring_started_at,
       tutoringCompletedAt: session.tutoring_completed_at,
       totalTutoringMs: session.total_tutoring_ms,
-      pretestForm: null,        // resolved separately if needed by joins
+      pretestForm: null, // resolved separately if needed by joins
       posttestForm: null,
     },
   };
@@ -364,7 +370,9 @@ async function main() {
     process.exit(0);
   }
 
-  console.log(`Eligible sessions: ${eligible.length}${skipped.length ? ` (skipping ${skipped.length} already-ingested)` : ''}`);
+  console.log(
+    `Eligible sessions: ${eligible.length}${skipped.length ? ` (skipping ${skipped.length} already-ingested)` : ''}`,
+  );
   if (args.dryRun) {
     for (const s of eligible) {
       const turns = pilotStore.listTurns(s.id);

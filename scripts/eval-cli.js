@@ -1688,9 +1688,7 @@ async function main() {
         // tutor-agents.yaml use a different scenario format and runner
         // (services/adaptiveTutor/), so they bypass evaluationRunner entirely.
         const allTutorAgents = evalConfigLoader.loadTutorAgents()?.profiles || {};
-        const adaptiveProfiles = selectedProfileNames.filter(
-          (name) => allTutorAgents[name]?.runner === 'adaptive',
-        );
+        const adaptiveProfiles = selectedProfileNames.filter((name) => allTutorAgents[name]?.runner === 'adaptive');
         if (adaptiveProfiles.length > 0 && adaptiveProfiles.length !== selectedProfileNames.length) {
           console.error(`Error: cannot mix adaptive-runner profiles with standard profiles in one run.`);
           console.error(`  adaptive: ${adaptiveProfiles.join(', ')}`);
@@ -6343,7 +6341,9 @@ async function main() {
         } else {
           try {
             const tutorCorePath = path.dirname(
-              (await import('module')).createRequire(import.meta.url).resolve('@machinespirits/tutor-core/package.json'),
+              (await import('module'))
+                .createRequire(import.meta.url)
+                .resolve('@machinespirits/tutor-core/package.json'),
             );
             tutorCorePromptsDir = path.join(tutorCorePath, 'prompts');
           } catch {

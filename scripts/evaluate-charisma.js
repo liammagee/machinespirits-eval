@@ -172,7 +172,9 @@ async function main() {
   const { positional, flags } = parseArgs(process.argv);
   const runId = positional[0];
   if (!runId) {
-    console.error('Usage: evaluate-charisma.js <runId> [--judge <model>] [--force] [--scenario <id>] [--profile <name>] [--limit <n>] [--verbose]');
+    console.error(
+      'Usage: evaluate-charisma.js <runId> [--judge <model>] [--force] [--scenario <id>] [--profile <name>] [--limit <n>] [--verbose]',
+    );
     process.exit(1);
   }
 
@@ -188,7 +190,9 @@ async function main() {
     console.error('config/evaluation-rubric-charisma.yaml not found or unparseable.');
     process.exit(1);
   }
-  console.log(`Charisma rubric loaded: ${rubric.name} (v${rubric.version}, ${Object.keys(rubric.dimensions).length} dimensions)`);
+  console.log(
+    `Charisma rubric loaded: ${rubric.name} (v${rubric.version}, ${Object.keys(rubric.dimensions).length} dimensions)`,
+  );
 
   const all = evaluationStore.getResults(runId, {});
   if (all.length === 0) {

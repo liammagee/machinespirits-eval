@@ -242,7 +242,7 @@ export function buildReport({ runIds, overall, byConcept, rowCount, minRows }) {
   lines.push(`**Rows analyzed:** ${rowCount}`);
   lines.push('');
   lines.push('Measures per-response density of ten Hegelian recognition concepts, then asks:');
-  lines.push('1. Do recog-prompt cells use the vocabulary more densely than base cells? (Cohen\'s d row-level)');
+  lines.push("1. Do recog-prompt cells use the vocabulary more densely than base cells? (Cohen's d row-level)");
   lines.push('2. Is concept density correlated with the rubric score? (Pearson r row-level)');
   lines.push('');
   lines.push('## Overall recognition density');
@@ -274,11 +274,17 @@ export function buildReport({ runIds, overall, byConcept, rowCount, minRows }) {
   lines.push('');
   lines.push('## How to read');
   lines.push('');
-  lines.push('A **large d** with a **meaningfully-positive r** is the cleanest signal that a concept is BOTH distinctive of the recognition prompt AND associated with higher scores — a candidate mechanism for the recognition effect.');
+  lines.push(
+    'A **large d** with a **meaningfully-positive r** is the cleanest signal that a concept is BOTH distinctive of the recognition prompt AND associated with higher scores — a candidate mechanism for the recognition effect.',
+  );
   lines.push('');
-  lines.push('A **large d** with an r near zero means the prompt induces the vocabulary, but the vocabulary itself does not predict quality (stylistic effect, not mechanism).');
+  lines.push(
+    'A **large d** with an r near zero means the prompt induces the vocabulary, but the vocabulary itself does not predict quality (stylistic effect, not mechanism).',
+  );
   lines.push('');
-  lines.push('A **small d** with any r means the prompt is not shifting usage of that concept in output — the effect, if present, must flow through a different channel.');
+  lines.push(
+    'A **small d** with any r means the prompt is not shifting usage of that concept in output — the effect, if present, must flow through a different channel.',
+  );
   return lines.join('\n');
 }
 
@@ -352,7 +358,10 @@ async function main() {
 
   if (args.json) {
     const jsonPath = outPath.replace(/\.md$/, '.json');
-    fs.writeFileSync(jsonPath, JSON.stringify({ runIds: args.runIds, overall, byConcept, rowCount: rows.length }, null, 2));
+    fs.writeFileSync(
+      jsonPath,
+      JSON.stringify({ runIds: args.runIds, overall, byConcept, rowCount: rows.length }, null, 2),
+    );
     console.log(`Wrote JSON   → ${jsonPath}`);
   }
 }

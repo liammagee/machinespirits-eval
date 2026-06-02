@@ -47,7 +47,11 @@ function recognitionOriginForScoreRow(row = {}) {
   const formClass = row.formClass || row.form_class || null;
   const recon = scoreValue(row.recontextualization, learnerSelf.score100);
   const statedInsight = scoreValue(row.statedInsight, row.stated_insight);
-  const learnerActionScore = scoreValue(row.actionalBreakthrough, row.metadata?.actional_breakthrough, learnerAction.score100);
+  const learnerActionScore = scoreValue(
+    row.actionalBreakthrough,
+    row.metadata?.actional_breakthrough,
+    learnerAction.score100,
+  );
   const tutorMechanismScore = scoreValue(
     row.tutorAdaptiveMechanism,
     row.tutorStrategicReversal,
@@ -91,8 +95,7 @@ function recognitionOriginForScoreRow(row = {}) {
     return {
       class: 'false_closure',
       basis: 'stated_insight_without_recontextualization',
-      justification:
-        'The learner marks relief or closure without enough recontextualization of earlier learner turns.',
+      justification: 'The learner marks relief or closure without enough recontextualization of earlier learner turns.',
       completeEndingShape,
       scores,
       evidence,

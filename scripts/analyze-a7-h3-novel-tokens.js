@@ -53,18 +53,23 @@ const TIMESTAMP = tsIdx !== -1 ? args[tsIdx + 1] : '1777173286';
 
 const evalDb = new Database(path.join(REPO_ROOT, 'data', 'evaluations.db'), { readonly: true });
 const tutorDb = new Database(
-  (process.env.AUTH_DB_PATH || path.join(REPO_ROOT, 'node_modules', '@machinespirits', 'tutor-core', 'data', 'lms.sqlite')),
+  process.env.AUTH_DB_PATH ||
+    path.join(REPO_ROOT, 'node_modules', '@machinespirits', 'tutor-core', 'data', 'lms.sqlite'),
   { readonly: true },
 );
 
-const STOPWORDS = new Set(`
+const STOPWORDS = new Set(
+  `
   a an and are as at be been being but by can could did do does doing for from
   had has have having he her here him his how i if in into is it its itself
   just like me more most my no nor not now of off on once only or our out over
   same she should so some such than that the their them then there these they
   this those through to too under until up very was we were what when where
   which while who whom why will with you your yours yourself
-`.split(/\s+/).filter(Boolean));
+`
+    .split(/\s+/)
+    .filter(Boolean),
+);
 
 function tokenise(text) {
   if (!text) return new Set();
@@ -111,7 +116,9 @@ function spearman(xs, ys) {
   const ry = rank(ys);
   const meanX = rx.reduce((s, x) => s + x, 0) / n;
   const meanY = ry.reduce((s, y) => s + y, 0) / n;
-  let num = 0, dx = 0, dy = 0;
+  let num = 0,
+    dx = 0,
+    dy = 0;
   for (let i = 0; i < n; i++) {
     num += (rx[i] - meanX) * (ry[i] - meanY);
     dx += (rx[i] - meanX) ** 2;
@@ -209,15 +216,23 @@ for (const arc of arcs) {
   console.log(`  ${cond.padEnd(6)}${tag.padEnd(16)}${(rho ?? 0).toFixed(3).padStart(7)}   ${fmt}`);
 }
 
-const baseRhos = arcs.filter((a) => !a.includes('recog')).map((a) => rhoByArc[a]).filter((r) => r !== null);
-const recogRhos = arcs.filter((a) => a.includes('recog')).map((a) => rhoByArc[a]).filter((r) => r !== null);
+const baseRhos = arcs
+  .filter((a) => !a.includes('recog'))
+  .map((a) => rhoByArc[a])
+  .filter((r) => r !== null);
+const recogRhos = arcs
+  .filter((a) => a.includes('recog'))
+  .map((a) => rhoByArc[a])
+  .filter((r) => r !== null);
 const meanArr = (a) => (a.length === 0 ? 0 : a.reduce((s, x) => s + x, 0) / a.length);
 const sdArr = (a, m = meanArr(a)) => Math.sqrt(a.reduce((s, x) => s + (x - m) ** 2, 0) / (a.length - 1));
 
 console.log('');
 console.log('=== Verdict ===');
 console.log(`Base  arc ρs: [${baseRhos.map((r) => r.toFixed(3)).join(', ')}]   mean = ${meanArr(baseRhos).toFixed(3)}`);
-console.log(`Recog arc ρs: [${recogRhos.map((r) => r.toFixed(3)).join(', ')}]   mean = ${meanArr(recogRhos).toFixed(3)}`);
+console.log(
+  `Recog arc ρs: [${recogRhos.map((r) => r.toFixed(3)).join(', ')}]   mean = ${meanArr(recogRhos).toFixed(3)}`,
+);
 
 // Mean recurrence by condition
 const baseAll = arcs.filter((a) => !a.includes('recog')).flatMap((a) => series[a].map((s) => s.recurrence));
@@ -231,17 +246,20 @@ console.log(`Lift: ${(meanArr(recogAll) - meanArr(baseAll)).toFixed(4)} (${liftP
 // Welch t on per-arc rhos
 const sb = sdArr(baseRhos);
 const sr = sdArr(recogRhos);
-const t = (meanArr(recogRhos) - meanArr(baseRhos))
-  / Math.sqrt(sb * sb / baseRhos.length + sr * sr / recogRhos.length);
+const t =
+  (meanArr(recogRhos) - meanArr(baseRhos)) / Math.sqrt((sb * sb) / baseRhos.length + (sr * sr) / recogRhos.length);
 console.log(`Welch t on per-arc ρ (recog − base): ${t.toFixed(3)}`);
 
 // Welch t on per-observation recurrence (richer test)
-const mb = meanArr(baseAll), mr = meanArr(recogAll);
-const sbAll = sdArr(baseAll, mb), srAll = sdArr(recogAll, mr);
-const tObs = (mr - mb) / Math.sqrt(sbAll * sbAll / baseAll.length + srAll * srAll / recogAll.length);
-const numObs = (sbAll * sbAll / baseAll.length + srAll * srAll / recogAll.length) ** 2;
-const denObs = (sbAll * sbAll / baseAll.length) ** 2 / (baseAll.length - 1)
-  + (srAll * srAll / recogAll.length) ** 2 / (recogAll.length - 1);
+const mb = meanArr(baseAll),
+  mr = meanArr(recogAll);
+const sbAll = sdArr(baseAll, mb),
+  srAll = sdArr(recogAll, mr);
+const tObs = (mr - mb) / Math.sqrt((sbAll * sbAll) / baseAll.length + (srAll * srAll) / recogAll.length);
+const numObs = ((sbAll * sbAll) / baseAll.length + (srAll * srAll) / recogAll.length) ** 2;
+const denObs =
+  ((sbAll * sbAll) / baseAll.length) ** 2 / (baseAll.length - 1) +
+  ((srAll * srAll) / recogAll.length) ** 2 / (recogAll.length - 1);
 const dfObs = numObs / denObs;
 
 // p-value: for large df (> 30) the t-distribution is well-approximated by
@@ -253,11 +271,15 @@ function normCdf(z) {
   const sign = z < 0 ? -1 : 1;
   const x = Math.abs(z) / Math.SQRT2;
   const t = 1 / (1 + 0.3275911 * x);
-  const erf = 1 - ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+  const erf =
+    1 -
+    ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
   return 0.5 * (1 + sign * erf);
 }
 const pObs = 2 * (1 - normCdf(Math.abs(tObs)));
-console.log(`Welch t on per-observation recurrence: t = ${tObs.toFixed(3)}, df = ${dfObs.toFixed(2)}, p ≈ ${pObs.toFixed(3)} (normal approx, df = ${dfObs.toFixed(0)} so t ≈ z)`);
+console.log(
+  `Welch t on per-observation recurrence: t = ${tObs.toFixed(3)}, df = ${dfObs.toFixed(2)}, p ≈ ${pObs.toFixed(3)} (normal approx, df = ${dfObs.toFixed(0)} so t ≈ z)`,
+);
 
 evalDb.close();
 tutorDb.close();

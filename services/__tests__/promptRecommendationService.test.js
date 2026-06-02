@@ -241,10 +241,7 @@ describe('generateRecommendations', () => {
       fetched++;
       return mockOpenRouterResponse();
     };
-    const results = [
-      makeResult({ tutorFirstTurnScore: 95 }),
-      makeResult({ tutorFirstTurnScore: 96 }),
-    ];
+    const results = [makeResult({ tutorFirstTurnScore: 95 }), makeResult({ tutorFirstTurnScore: 96 })];
     const out = await generateRecommendations({
       results,
       profileName: 'cell_5',

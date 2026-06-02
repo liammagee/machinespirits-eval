@@ -20,10 +20,7 @@ import { fileURLToPath } from 'node:url';
 
 import { jsonrepair } from 'jsonrepair';
 
-import {
-  tutorConfigLoader as defaultTutorConfig,
-  tutorDialogueEngine,
-} from '../tutor-core/index.js';
+import { tutorConfigLoader as defaultTutorConfig, tutorDialogueEngine } from '../tutor-core/index.js';
 import * as defaultTutorWritingPad from './memory/tutorWritingPad.js';
 
 // claude-code subscription bridge. Mirrors services/adaptiveTutor/realLLM.js::callClaudeCli
@@ -41,19 +38,13 @@ async function callClaudeCli({ systemPrompt, userPrompt, model, role, messageHis
   // multi-turn history goes to stdin.
   let userText = '';
   if (Array.isArray(messageHistory) && messageHistory.length > 0) {
-    const transcript = messageHistory
-      .map((m) => `${m.role || 'user'}: ${m.content || ''}`)
-      .join('\n\n');
+    const transcript = messageHistory.map((m) => `${m.role || 'user'}: ${m.content || ''}`).join('\n\n');
     userText += `Conversation so far:\n${transcript}\n\n`;
   }
   userText += `Latest message:\n${userPrompt}`;
   const start = Date.now();
   return await new Promise((resolve, reject) => {
-    const args = [
-      '-p', '-',
-      '--output-format', 'text',
-      '--system-prompt', systemPrompt,
-    ];
+    const args = ['-p', '-', '--output-format', 'text', '--system-prompt', systemPrompt];
     if (model) args.push('--model', model);
     const env = { ...process.env };
     delete env.CLAUDE_CODE;
@@ -64,12 +55,23 @@ async function callClaudeCli({ systemPrompt, userPrompt, model, role, messageHis
     let out = '';
     let err = '';
     const cliTimeout = setTimeout(() => {
-      try { child.kill('SIGKILL'); } catch (_) { /* already gone */ }
+      try {
+        child.kill('SIGKILL');
+      } catch (_) {
+        /* already gone */
+      }
       reject(new Error(`claude CLI timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms (role=${role})`));
     }, CLAUDE_CLI_TIMEOUT_MS);
-    child.stdout.on('data', (d) => { out += d; });
-    child.stderr.on('data', (d) => { err += d; });
-    child.on('error', (e) => { clearTimeout(cliTimeout); reject(e); });
+    child.stdout.on('data', (d) => {
+      out += d;
+    });
+    child.stderr.on('data', (d) => {
+      err += d;
+    });
+    child.on('error', (e) => {
+      clearTimeout(cliTimeout);
+      reject(e);
+    });
     child.on('close', (code) => {
       clearTimeout(cliTimeout);
       if (code !== 0) {
@@ -192,12 +194,7 @@ function buildIdUserMessage({
     '</recognition_mode>',
   ];
   if (learnerRegister && typeof learnerRegister === 'object') {
-    lines.push(
-      '',
-      '<learner_register>',
-      JSON.stringify(learnerRegister, null, 2),
-      '</learner_register>',
-    );
+    lines.push('', '<learner_register>', JSON.stringify(learnerRegister, null, 2), '</learner_register>');
   }
   return lines.join('\n');
 }
@@ -250,13 +247,18 @@ export function parseRegisterClassification(rawText) {
     try {
       parsed = JSON.parse(jsonrepair(text));
     } catch {
-      return { register: 'unknown', confidence: 0, evidence: '', shift_from_previous: null, parse_status: 'parse_error' };
+      return {
+        register: 'unknown',
+        confidence: 0,
+        evidence: '',
+        shift_from_previous: null,
+        parse_status: 'parse_error',
+      };
     }
   }
   const register = VALID_REGISTER_TAGS.has(parsed?.register) ? parsed.register : 'unknown';
   const confidenceRaw = parsed?.confidence;
-  const confidence =
-    typeof confidenceRaw === 'number' && confidenceRaw >= 0 && confidenceRaw <= 1 ? confidenceRaw : 0;
+  const confidence = typeof confidenceRaw === 'number' && confidenceRaw >= 0 && confidenceRaw <= 1 ? confidenceRaw : 0;
   return {
     register,
     confidence,
@@ -483,54 +485,37 @@ export async function runIdDirectedTurn({
 
   const idStaticPrompt = idConfig?.prompt || '';
   const idModel = idConfig?.model || egoConfig?.model;
-  const idResponse = await llmCall(
-    idModel,
-    idStaticPrompt,
-    [{ role: 'user', content: idUserMessage }],
-    {
-      temperature: getRequiredTemperature(idConfig, 'tutor_id'),
-      maxTokens: getRequiredMaxTokens(idConfig, 'tutor_id'),
-      agentRole: 'tutor_id',
-    },
-  );
+  const idResponse = await llmCall(idModel, idStaticPrompt, [{ role: 'user', content: idUserMessage }], {
+    temperature: getRequiredTemperature(idConfig, 'tutor_id'),
+    maxTokens: getRequiredMaxTokens(idConfig, 'tutor_id'),
+    agentRole: 'tutor_id',
+  });
 
   if (trace?.metrics) {
-    trace.metrics.tutorInputTokens =
-      (trace.metrics.tutorInputTokens || 0) + (idResponse?.usage?.inputTokens || 0);
-    trace.metrics.tutorOutputTokens =
-      (trace.metrics.tutorOutputTokens || 0) + (idResponse?.usage?.outputTokens || 0);
+    trace.metrics.tutorInputTokens = (trace.metrics.tutorInputTokens || 0) + (idResponse?.usage?.inputTokens || 0);
+    trace.metrics.tutorOutputTokens = (trace.metrics.tutorOutputTokens || 0) + (idResponse?.usage?.outputTokens || 0);
   }
 
   const construction = parseIdConstruction(idResponse?.content || '');
 
   if (construction.parse_status === 'fallback') {
-    console.warn(
-      `[IdDirector] ${construction.parse_failure_reason} — falling back to minimal persona.`,
-    );
+    console.warn(`[IdDirector] ${construction.parse_failure_reason} — falling back to minimal persona.`);
   }
 
   const internalDeliberation = [];
   internalDeliberation.push(buildIdDeliberationEntry(idResponse, idConfig, construction));
 
   const egoSystemPrompt = construction.generated_prompt;
-  const egoModel =
-    egoConfig?.model || _deps.tutorConfig.getProviderConfig?.('openrouter')?.default_model;
-  const egoResponse = await llmCall(
-    egoModel,
-    egoSystemPrompt,
-    [{ role: 'user', content: learnerMessage }],
-    {
-      temperature: getRequiredTemperature(egoConfig, 'tutor_ego'),
-      maxTokens: getRequiredMaxTokens(egoConfig, 'tutor_ego'),
-      agentRole: 'tutor_ego',
-    },
-  );
+  const egoModel = egoConfig?.model || _deps.tutorConfig.getProviderConfig?.('openrouter')?.default_model;
+  const egoResponse = await llmCall(egoModel, egoSystemPrompt, [{ role: 'user', content: learnerMessage }], {
+    temperature: getRequiredTemperature(egoConfig, 'tutor_ego'),
+    maxTokens: getRequiredMaxTokens(egoConfig, 'tutor_ego'),
+    agentRole: 'tutor_ego',
+  });
 
   if (trace?.metrics) {
-    trace.metrics.tutorInputTokens =
-      (trace.metrics.tutorInputTokens || 0) + (egoResponse?.usage?.inputTokens || 0);
-    trace.metrics.tutorOutputTokens =
-      (trace.metrics.tutorOutputTokens || 0) + (egoResponse?.usage?.outputTokens || 0);
+    trace.metrics.tutorInputTokens = (trace.metrics.tutorInputTokens || 0) + (egoResponse?.usage?.inputTokens || 0);
+    trace.metrics.tutorOutputTokens = (trace.metrics.tutorOutputTokens || 0) + (egoResponse?.usage?.outputTokens || 0);
   }
 
   internalDeliberation.push(buildEgoDeliberationEntry(egoResponse, egoConfig, egoSystemPrompt));
@@ -538,8 +523,7 @@ export async function runIdDirectedTurn({
   let externalMessage = (egoResponse?.content || '').trim();
   if (!externalMessage) {
     console.warn('[IdDirector] Empty ego output, using fallback message.');
-    externalMessage =
-      "Let me try that again — could you say a little more about what you're working through?";
+    externalMessage = "Let me try that again — could you say a little more about what you're working through?";
   }
 
   return {
@@ -567,9 +551,7 @@ function readPromptFile(filename, fallback = '') {
   try {
     return fs.readFileSync(filePath, 'utf-8');
   } catch (err) {
-    console.warn(
-      `[idDirectorEngine] Could not read prompt file ${filename}: ${err.message}; using fallback.`,
-    );
+    console.warn(`[idDirectorEngine] Could not read prompt file ${filename}: ${err.message}; using fallback.`);
     return fallback;
   }
 }
@@ -702,14 +684,10 @@ function extractLearnerInputs(context) {
   }
 
   // Single-prompt / multi-turn path: parse the structured learnerContext block.
-  const { latestLearnerMessage, priorExchanges } = parseStructuredLearnerContext(
-    context?.learnerContext || '',
-  );
+  const { latestLearnerMessage, priorExchanges } = parseStructuredLearnerContext(context?.learnerContext || '');
   const recent = priorExchanges.slice(-6, -1); // last few, excluding the current message
   const excerpt =
-    recent.length > 0
-      ? recent.map((e) => `${e.role.toUpperCase()}: ${e.content}`).join('\n\n')
-      : '(no prior turns)';
+    recent.length > 0 ? recent.map((e) => `${e.role.toUpperCase()}: ${e.content}`).join('\n\n') : '(no prior turns)';
   return {
     learnerMessage: latestLearnerMessage || '(no current learner message)',
     historyExcerpt: excerpt,
@@ -857,10 +835,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
 
   const recognitionMode = evalCellProfile.recognition_mode === true;
   const useRegisterClassifier = evalCellProfile.factors?.register_classifier === true;
-  const idTuning =
-    typeof evalCellProfile.factors?.id_tuning === 'string'
-      ? evalCellProfile.factors.id_tuning
-      : null;
+  const idTuning = typeof evalCellProfile.factors?.id_tuning === 'string' ? evalCellProfile.factors.id_tuning : null;
   const witnessExemplars = evalCellProfile.factors?.witness_exemplars === true;
   const { learnerMessage, historyExcerpt, messageHistory } = extractLearnerInputs(context);
   const curriculumContext = context?.curriculumContext || '';
@@ -887,7 +862,8 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
           idCell.classifier_resolved_model ||
           classifierProviderConfig?.models?.[idCell.classifier_model || idCell.model] ||
           idCell.classifier_model ||
-          (idCell.resolvedModel || idCell.model),
+          idCell.resolvedModel ||
+          idCell.model,
         hyperparameters: idCell.classifier_hyperparameters || { temperature: 0.2, max_tokens: 800 },
         prompt: classifierStaticPrompt,
         isConfigured: classifierProviderConfig?.isConfigured,
@@ -899,9 +875,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
           classifierConfig,
         });
       } catch (err) {
-        console.warn(
-          `[idDirectorEngine] register classifier failed (${err.message}); running without classifier.`,
-        );
+        console.warn(`[idDirectorEngine] register classifier failed (${err.message}); running without classifier.`);
         learnerRegister = null;
       }
     }
@@ -946,13 +920,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     prompt: idStaticPrompt,
     isConfigured: idProviderConfig.isConfigured,
   };
-  const idResponse = await callAIWithCliBridge(
-    idAgentConfig,
-    idStaticPrompt,
-    idUserMessage,
-    'tutor_id',
-    {},
-  );
+  const idResponse = await callAIWithCliBridge(idAgentConfig, idStaticPrompt, idUserMessage, 'tutor_id', {});
   // tutorDialogueEngine.callAI returns { text, model, provider, latencyMs,
   // inputTokens, outputTokens, ... } — fields are flat, not nested under
   // a `usage` object as some other LLM SDKs use.
@@ -991,13 +959,9 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   // For multi-turn cells, pass messageHistory so the ego sees the conversation
   // context. The ego's *system prompt* is the id's authored prompt; the user
   // turn is the most recent learner message.
-  const egoResponse = await callAIWithCliBridge(
-    egoAgentConfig,
-    egoSystemPrompt,
-    learnerMessage,
-    'tutor_ego',
-    { messageHistory: messageHistory.length > 0 ? messageHistory : null },
-  );
+  const egoResponse = await callAIWithCliBridge(egoAgentConfig, egoSystemPrompt, learnerMessage, 'tutor_ego', {
+    messageHistory: messageHistory.length > 0 ? messageHistory : null,
+  });
   totalInputTokens += egoResponse?.inputTokens || 0;
   totalOutputTokens += egoResponse?.outputTokens || 0;
   totalCost += egoResponse?.cost || 0;

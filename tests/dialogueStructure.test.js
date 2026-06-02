@@ -42,11 +42,7 @@ const SYSTEM_AGENTS = new Set(['system']);
  * and don't belong to either side's deliberation block. Treated like system
  * entries: they segment the trace but are filtered before block analysis.
  */
-const PROFILING_AGENTS = new Set([
-  'learner_other_ego',
-  'tutor_other_ego',
-  'ego_self_reflection',
-]);
+const PROFILING_AGENTS = new Set(['learner_other_ego', 'tutor_other_ego', 'ego_self_reflection']);
 
 /** True if this entry is a learner-side entry (any learner agent label). */
 function isLearnerEntry(entry) {

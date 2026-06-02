@@ -66,7 +66,11 @@ function parseArgs(argv) {
 function safeJsonParse(s) {
   if (!s) return null;
   if (typeof s !== 'string') return s;
-  try { return JSON.parse(s); } catch { return null; }
+  try {
+    return JSON.parse(s);
+  } catch {
+    return null;
+  }
 }
 
 // Match the audit's filter exactly so we patch only what it sees.
@@ -136,7 +140,11 @@ function backfillRow(row, opts) {
 
   const dialogueLog = row.dialogue_id ? evaluationStore.loadDialogueLog(row.dialogue_id) : null;
   let scenario = null;
-  try { scenario = evalConfigLoader.getScenario(row.scenario_id); } catch { /* ignore */ }
+  try {
+    scenario = evalConfigLoader.getScenario(row.scenario_id);
+  } catch {
+    /* ignore */
+  }
 
   const turnsBackfilled = [];
   const turnsKept = [];
@@ -149,9 +157,7 @@ function backfillRow(row, opts) {
     }
     const turnIndex = Number(turnKey);
     const reconstructed = reconstructPromptHash({ dialogueLog, scenario, targetTurnIndex: turnIndex });
-    const hash = reconstructed
-      ? reconstructed
-      : buildFallbackHash(row.dialogue_id, turnIndex, turnValue);
+    const hash = reconstructed ? reconstructed : buildFallbackHash(row.dialogue_id, turnIndex, turnValue);
     const source = reconstructed ? 'reconstructed' : 'fallback';
 
     // Patch in place — preserves all existing fields (scores, summary, etc.)
@@ -205,14 +211,13 @@ async function main() {
   let patched = 0;
   let totalTurns = 0;
   const sourceCounts = { reconstructed: 0, fallback: 0 };
-  const updateStmt = db.prepare(
-    'UPDATE evaluation_results SET tutor_scores = ? WHERE id = ?',
-  );
+  const updateStmt = db.prepare('UPDATE evaluation_results SET tutor_scores = ? WHERE id = ?');
 
   for (const target of targets) {
     const result = backfillRow(target, args);
     if (result.status !== 'patched') {
-      if (args.verbose) console.log(`  skip id=${result.row_id}: ${result.status}${result.reason ? ' ('+result.reason+')' : ''}`);
+      if (args.verbose)
+        console.log(`  skip id=${result.row_id}: ${result.status}${result.reason ? ' (' + result.reason + ')' : ''}`);
       continue;
     }
     patched++;
@@ -221,7 +226,9 @@ async function main() {
 
     if (args.verbose || args.dryRun) {
       const sources = result.turns_backfilled.map((t) => `${t.turnKey}:${t.source}`).join(', ');
-      console.log(`  ${args.dryRun ? '[dry] ' : ''}id=${result.row_id} run=${result.run_id} cell=${(result.profile_name || '').slice(0, 40)} → ${result.turns_backfilled.length} turns [${sources}]`);
+      console.log(
+        `  ${args.dryRun ? '[dry] ' : ''}id=${result.row_id} run=${result.run_id} cell=${(result.profile_name || '').slice(0, 40)} → ${result.turns_backfilled.length} turns [${sources}]`,
+      );
     }
 
     if (!args.dryRun) {

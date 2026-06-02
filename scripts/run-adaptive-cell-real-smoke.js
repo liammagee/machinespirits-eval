@@ -79,8 +79,11 @@ const seenIds = new Set();
 const perScenario = [];
 for (const f of files) {
   let trace;
-  try { trace = JSON.parse(fs.readFileSync(path.join(tracesDir, f), 'utf8')); }
-  catch { continue; }
+  try {
+    trace = JSON.parse(fs.readFileSync(path.join(tracesDir, f), 'utf8'));
+  } catch {
+    continue;
+  }
   const sid = trace?.scenario?.id;
   if (!sid || seenIds.has(sid)) continue;
   seenIds.add(sid);
@@ -99,7 +102,8 @@ for (const f of files) {
     s.total += 1;
     if (e.validated) s.validated += 1;
   }
-  const byTurn = [...turnStats.entries()].sort(([a], [b]) => a - b)
+  const byTurn = [...turnStats.entries()]
+    .sort(([a], [b]) => a - b)
     .map(([turn, s]) => ({ turn, total: s.total, validated: s.validated }));
 
   const total = origLog.length + cfLog.length;
@@ -123,10 +127,15 @@ for (const f of files) {
   const allEvidence = [...origLog, ...cfLog];
   const obsTurnIndex = new Map(allEvidence.map((e) => [e.obs_id, e.turn]));
 
-  const grounded = allHyp.filter((h) => Array.isArray(h.supporting_evidence) && h.supporting_evidence.length > 0).length;
+  const grounded = allHyp.filter(
+    (h) => Array.isArray(h.supporting_evidence) && h.supporting_evidence.length > 0,
+  ).length;
   const groundedRate = allHyp.length > 0 ? grounded / allHyp.length : null;
   const claimLens = allHyp.map((h) => (h.claim || '').length);
-  const statusDist = allHyp.reduce((acc, h) => { acc[h.status || 'tentative'] = (acc[h.status || 'tentative'] || 0) + 1; return acc; }, {});
+  const statusDist = allHyp.reduce((acc, h) => {
+    acc[h.status || 'tentative'] = (acc[h.status || 'tentative'] || 0) + 1;
+    return acc;
+  }, {});
   const createdAtTurns = allHyp.map((h) => h.created_at_turn).filter((t) => typeof t === 'number');
 
   // Revision-rate computation. For each hypothesis with a valid created_at_turn,
@@ -150,7 +159,10 @@ for (const f of files) {
 
   perScenario.push({
     scenarioId: sid,
-    total, validated, rate, byTurn,
+    total,
+    validated,
+    rate,
+    byTurn,
     hyp: {
       count: allHyp.length,
       grounded,
@@ -182,10 +194,16 @@ for (const s of perScenario) {
   const gPct = h.groundedRate == null ? 'n/a' : `${(h.groundedRate * 100).toFixed(1)}%`;
   const rPct = h.revisionRate == null ? 'n/a' : `${(h.revisionRate * 100).toFixed(1)}%`;
   const turnsStr = h.createdAtTurns.length > 0 ? `[${h.createdAtTurns.join(',')}]` : '[]';
-  const statusStr = Object.entries(h.statusDist).map(([k, v]) => `${k}=${v}`).join(' ');
-  console.log(`  ${s.scenarioId.padEnd(40)} hyp=${h.count}  grounded=${h.grounded}/${h.count} (${gPct})  avgClaimLen=${h.avgClaimLen.toFixed(0)}`);
+  const statusStr = Object.entries(h.statusDist)
+    .map(([k, v]) => `${k}=${v}`)
+    .join(' ');
+  console.log(
+    `  ${s.scenarioId.padEnd(40)} hyp=${h.count}  grounded=${h.grounded}/${h.count} (${gPct})  avgClaimLen=${h.avgClaimLen.toFixed(0)}`,
+  );
   console.log(`    created_at_turns: ${turnsStr}  status: ${statusStr || '(none)'}`);
-  console.log(`    revised: ${h.revised}/${h.revisable} (${rPct})  [excludes hyp created on final turn — no revision opportunity]`);
+  console.log(
+    `    revised: ${h.revised}/${h.revisable} (${rPct})  [excludes hyp created on final turn — no revision opportunity]`,
+  );
   console.log(`    sample: "${h.sampleClaim}"`);
 }
 
@@ -232,7 +250,9 @@ if (allHypAll === 0) {
   console.log(`  total hypotheses:   ${allHypAll}`);
   console.log(`  grounded:           ${groundedAll}`);
   console.log(`  aggregate rate:     ${gAggPct}%`);
-  console.log('  threshold (soft):   70.0%  (Stage-2-internal; Stage 3 will gate on retention against groundingValidator)');
+  console.log(
+    '  threshold (soft):   70.0%  (Stage-2-internal; Stage 3 will gate on retention against groundingValidator)',
+  );
   if (gAggRate >= 0.95) console.log('  VERDICT: ≥95% — updater consistently cites the ledger.');
   else if (gAggRate >= 0.7) console.log('  VERDICT: ≥70% — soft gate cleared.');
   else console.log('  VERDICT: <70% — updater prompt iteration recommended.');
@@ -258,7 +278,9 @@ if (revisableAll === 0) {
   const rAggPct = (rAggRate * 100).toFixed(1);
   console.log('\n--- Stage 2b diagnostic (revision rate, lower bound) ---');
   console.log(`  revisable hypotheses:  ${revisableAll}  (created before final turn)`);
-  console.log(`  revised:               ${revisedAll}  (supporting_evidence span post-creation OR status=contradicted)`);
+  console.log(
+    `  revised:               ${revisedAll}  (supporting_evidence span post-creation OR status=contradicted)`,
+  );
   console.log(`  aggregate rate:        ${rAggPct}%`);
   console.log('  (Diagnostic, no gate. Pre-tune baseline on 3-scenario smoke was ~0%;');
   console.log('   a higher revision rate with a lower distinct-hypothesis count is the goal.)');

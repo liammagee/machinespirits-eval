@@ -134,7 +134,8 @@ function extractTutorInnerFragments(tutorPath, maxChars) {
   for (const block of blocks) {
     const turn = block.match(/^## Turn ([^/]+) \/ TUTOR/)?.[1]?.trim() || '?';
     const critique = importantCritique(sectionAfter(block, 'Tutor Superego (critique)'));
-    const adjudication = sectionAfter(block, 'Tutor Ego (adjudication/final authority)').match(/_private decision:[\s\S]*?_/)?.[0] || '';
+    const adjudication =
+      sectionAfter(block, 'Tutor Ego (adjudication/final authority)').match(/_private decision:[\s\S]*?_/)?.[0] || '';
     const output = sectionAfter(block, 'Tutor Public Output');
     const useful = [critique, adjudication, output].filter(Boolean).join('\n\n');
     if (!useful) continue;
@@ -238,8 +239,7 @@ function groupCases(rows) {
         globalCoherence: row.global_coherence,
         pivotLearnerTurn: row.pivot_learner_turn,
         recoheredEarlier: row.recohered_earlier,
-        tutorAdaptiveMechanism:
-          metadata.tutor_adaptive_mechanism ?? metadata.tutor_strategic_reversal ?? null,
+        tutorAdaptiveMechanism: metadata.tutor_adaptive_mechanism ?? metadata.tutor_strategic_reversal ?? null,
         tutorContingentAdaptation: metadata.tutor_contingent_adaptation ?? null,
         tutorReversalEvidence: metadata.tutor_reversal_evidence || '',
         tutorReversalJustification: metadata.tutor_reversal_justification || '',
@@ -267,7 +267,8 @@ function classifyCase(c, args) {
   if (c.qualityStatus === 'review_before_scoring' || c.qualityWarnings.length) issueTags.push('quality_gated');
   if (branchValidity.valid === false) issueTags.push('branch_private_event_missing');
   if (consensus.claimStatus !== 'claimable') issueTags.push(`consensus_${consensus.claimStatus}`);
-  if (meanTutorMechanism == null || meanTutorMechanism < args.minTutorMechanism) issueTags.push('low_judge_tutor_mechanism');
+  if (meanTutorMechanism == null || meanTutorMechanism < args.minTutorMechanism)
+    issueTags.push('low_judge_tutor_mechanism');
   if (c.arm.includes('peripeteia')) {
     if (peripeteia.learner_reversal_pressure === false) issueTags.push('no_branch_pressure');
     if (peripeteia.instrumented_pressure === false) issueTags.push('no_instrumented_pressure');

@@ -7,7 +7,11 @@
 //
 // No paid API calls. Strict pass/fail at the bottom.
 
-import { runScenarioWithCounterfactual, divergenceReport, summariseDivergence } from '../services/adaptiveTutor/runner.js';
+import {
+  runScenarioWithCounterfactual,
+  divergenceReport,
+  summariseDivergence,
+} from '../services/adaptiveTutor/runner.js';
 
 const scenario = {
   id: 'smoke-resistance-to-insight',

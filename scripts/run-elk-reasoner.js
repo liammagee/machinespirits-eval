@@ -48,9 +48,7 @@ function resolveInput(inputPath) {
   if (absoluteInput.endsWith('.ttl')) {
     const functionalMirror = absoluteInput.replace(/\.ttl$/, '.ofn');
     if (fs.existsSync(functionalMirror)) {
-      console.log(
-        `ELK standalone expects OWL functional syntax; using ${path.relative(ROOT_DIR, functionalMirror)}.`,
-      );
+      console.log(`ELK standalone expects OWL functional syntax; using ${path.relative(ROOT_DIR, functionalMirror)}.`);
       return functionalMirror;
     }
   }

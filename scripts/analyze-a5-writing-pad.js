@@ -43,20 +43,29 @@ const getOption = (name) => {
 };
 const outPath = getOption('out');
 
-function mean(a) { return a.length ? a.reduce((s, v) => s + v, 0) / a.length : 0; }
+function mean(a) {
+  return a.length ? a.reduce((s, v) => s + v, 0) / a.length : 0;
+}
 function variance(a) {
   if (a.length < 2) return 0;
   const m = mean(a);
   return a.reduce((s, v) => s + (v - m) ** 2, 0) / (a.length - 1);
 }
-function std(a) { return Math.sqrt(variance(a)); }
+function std(a) {
+  return Math.sqrt(variance(a));
+}
 function cohensD(x, y) {
   if (x.length < 2 || y.length < 2) return null;
-  const vX = variance(x), vY = variance(y), nX = x.length, nY = y.length;
+  const vX = variance(x),
+    vY = variance(y),
+    nX = x.length,
+    nY = y.length;
   const pooled = Math.sqrt(((nX - 1) * vX + (nY - 1) * vY) / (nX + nY - 2));
   return pooled === 0 ? null : (mean(x) - mean(y)) / pooled;
 }
-function r(v, d = 2) { return v == null || !Number.isFinite(v) ? '—' : v.toFixed(d); }
+function r(v, d = 2) {
+  return v == null || !Number.isFinite(v) ? '—' : v.toFixed(d);
+}
 
 // Two-way ANOVA for balanced 2×2 design
 function twoWayANOVA({ a0b0, a0b1, a1b0, a1b1 }) {
@@ -70,8 +79,10 @@ function twoWayANOVA({ a0b0, a0b1, a1b0, a1b1 }) {
   const meanB1 = mean([...a0b1, ...a1b1]);
 
   const cellMeans = {
-    a0b0: mean(a0b0), a0b1: mean(a0b1),
-    a1b0: mean(a1b0), a1b1: mean(a1b1),
+    a0b0: mean(a0b0),
+    a0b1: mean(a0b1),
+    a1b0: mean(a1b0),
+    a1b1: mean(a1b1),
   };
 
   const N = all.length;
@@ -95,7 +106,9 @@ function twoWayANOVA({ a0b0, a0b1, a1b0, a1b1 }) {
   const SS_AB = SS_cells - SS_A - SS_B;
   const SS_within = SS_total - SS_cells;
 
-  const df_A = 1, df_B = 1, df_AB = 1;
+  const df_A = 1,
+    df_B = 1,
+    df_AB = 1;
   const df_within = N - 4;
   const MS_A = SS_A / df_A;
   const MS_B = SS_B / df_B;
@@ -111,7 +124,9 @@ function twoWayANOVA({ a0b0, a0b1, a1b0, a1b1 }) {
   const eta_AB = SS_AB / SS_total;
 
   return {
-    grandMean, nPerCell, N,
+    grandMean,
+    nPerCell,
+    N,
     marginals: { meanA0, meanA1, meanB0, meanB1 },
     cellMeans,
     SS: { total: SS_total, A: SS_A, B: SS_B, AB: SS_AB, within: SS_within },
@@ -143,8 +158,11 @@ function betacf(x, a, b) {
   const MAXIT = 200;
   const EPS = 3e-14;
   const FPMIN = 1e-300;
-  const qab = a + b, qap = a + 1, qam = a - 1;
-  let c = 1, d = 1 - (qab * x) / qap;
+  const qab = a + b,
+    qap = a + 1,
+    qam = a - 1;
+  let c = 1,
+    d = 1 - (qab * x) / qap;
   if (Math.abs(d) < FPMIN) d = FPMIN;
   d = 1 / d;
   let h = d;
@@ -172,9 +190,8 @@ function betacf(x, a, b) {
 function lnGamma(z) {
   const g = 7;
   const c = [
-    0.99999999999980993, 676.5203681218851, -1259.1392167224028,
-    771.32342877765313, -176.61502916214059, 12.507343278686905,
-    -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7,
+    0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059,
+    12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7,
   ];
   if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - lnGamma(1 - z);
   z -= 1;
@@ -221,10 +238,10 @@ const byCell = groupByCell(rows);
 //  Factor A = recognition (0 = base, 1 = recog)
 //  Factor B = writing_pad  (0 = off,  1 = on)
 const cellMap = {
-  'cell_40_base_dialectical_suspicious_unified_superego': { A: 0, B: 1, label: 'base × pad ON' },
-  'cell_41_recog_dialectical_suspicious_unified_superego': { A: 1, B: 1, label: 'recog × pad ON' },
-  'cell_93_base_dialectical_suspicious_unified_superego_nopad': { A: 0, B: 0, label: 'base × pad OFF' },
-  'cell_94_recog_dialectical_suspicious_unified_superego_nopad': { A: 1, B: 0, label: 'recog × pad OFF' },
+  cell_40_base_dialectical_suspicious_unified_superego: { A: 0, B: 1, label: 'base × pad ON' },
+  cell_41_recog_dialectical_suspicious_unified_superego: { A: 1, B: 1, label: 'recog × pad ON' },
+  cell_93_base_dialectical_suspicious_unified_superego_nopad: { A: 0, B: 0, label: 'base × pad OFF' },
+  cell_94_recog_dialectical_suspicious_unified_superego_nopad: { A: 1, B: 0, label: 'recog × pad OFF' },
 };
 
 const groups = { a0b0: [], a0b1: [], a1b0: [], a1b1: [] };
@@ -253,7 +270,9 @@ lines.push(`Generated: ${new Date().toISOString()}`);
 lines.push(`Run ID: ${runId}`);
 lines.push(`Judge: ${judge.join(', ')}`);
 lines.push('');
-lines.push(`Tests whether the Freudian Writing Pad (three-layer tutor memory) is necessary for the recognition effect, or whether recognition transfers without it. 2×2 factorial: recognition (base/recog) × Writing Pad (on/off). All cells share nemotron ego + kimi-k2.5 superego, dialectical prompts, suspicious superego disposition.`);
+lines.push(
+  `Tests whether the Freudian Writing Pad (three-layer tutor memory) is necessary for the recognition effect, or whether recognition transfers without it. 2×2 factorial: recognition (base/recog) × Writing Pad (on/off). All cells share nemotron ego + kimi-k2.5 superego, dialectical prompts, suspicious superego disposition.`,
+);
 lines.push('');
 lines.push(`## Cell means (tutor first-turn score, 0-100)`);
 lines.push('');
@@ -263,17 +282,29 @@ const nBase = groups.a0b0.length + groups.a0b1.length;
 const nRecog = groups.a1b0.length + groups.a1b1.length;
 const nPadOn = groups.a0b1.length + groups.a1b1.length;
 const nPadOff = groups.a0b0.length + groups.a1b0.length;
-lines.push(`| Base | ${r(aov.cellMeans.a0b1)} (SD=${r(std(groups.a0b1))}, n=${groups.a0b1.length}) | ${r(aov.cellMeans.a0b0)} (SD=${r(std(groups.a0b0))}, n=${groups.a0b0.length}) | ${r(aov.marginals.meanA0)} (n=${nBase}) |`);
-lines.push(`| Recog | ${r(aov.cellMeans.a1b1)} (SD=${r(std(groups.a1b1))}, n=${groups.a1b1.length}) | ${r(aov.cellMeans.a1b0)} (SD=${r(std(groups.a1b0))}, n=${groups.a1b0.length}) | ${r(aov.marginals.meanA1)} (n=${nRecog}) |`);
-lines.push(`| Col mean | ${r(aov.marginals.meanB1)} (n=${nPadOn}) | ${r(aov.marginals.meanB0)} (n=${nPadOff}) | **${r(aov.grandMean)}** (N=${aov.N}) |`);
+lines.push(
+  `| Base | ${r(aov.cellMeans.a0b1)} (SD=${r(std(groups.a0b1))}, n=${groups.a0b1.length}) | ${r(aov.cellMeans.a0b0)} (SD=${r(std(groups.a0b0))}, n=${groups.a0b0.length}) | ${r(aov.marginals.meanA0)} (n=${nBase}) |`,
+);
+lines.push(
+  `| Recog | ${r(aov.cellMeans.a1b1)} (SD=${r(std(groups.a1b1))}, n=${groups.a1b1.length}) | ${r(aov.cellMeans.a1b0)} (SD=${r(std(groups.a1b0))}, n=${groups.a1b0.length}) | ${r(aov.marginals.meanA1)} (n=${nRecog}) |`,
+);
+lines.push(
+  `| Col mean | ${r(aov.marginals.meanB1)} (n=${nPadOn}) | ${r(aov.marginals.meanB0)} (n=${nPadOff}) | **${r(aov.grandMean)}** (N=${aov.N}) |`,
+);
 lines.push('');
 lines.push(`## Main effects and interaction (2-way ANOVA, Type I)`);
 lines.push('');
 lines.push(`| Effect | SS | df | F | p | η² |`);
 lines.push(`|---|---|---|---|---|---|`);
-lines.push(`| Recognition (A) | ${r(aov.SS.A, 1)} | ${aov.df.A} | ${r(aov.F.A)} | ${pStr(pA)} | ${r(aov.etaSq.A, 3)} |`);
-lines.push(`| Writing Pad (B) | ${r(aov.SS.B, 1)} | ${aov.df.B} | ${r(aov.F.B)} | ${pStr(pB)} | ${r(aov.etaSq.B, 3)} |`);
-lines.push(`| A × B interaction | ${r(aov.SS.AB, 1)} | ${aov.df.AB} | ${r(aov.F.AB)} | ${pStr(pAB)} | ${r(aov.etaSq.AB, 3)} |`);
+lines.push(
+  `| Recognition (A) | ${r(aov.SS.A, 1)} | ${aov.df.A} | ${r(aov.F.A)} | ${pStr(pA)} | ${r(aov.etaSq.A, 3)} |`,
+);
+lines.push(
+  `| Writing Pad (B) | ${r(aov.SS.B, 1)} | ${aov.df.B} | ${r(aov.F.B)} | ${pStr(pB)} | ${r(aov.etaSq.B, 3)} |`,
+);
+lines.push(
+  `| A × B interaction | ${r(aov.SS.AB, 1)} | ${aov.df.AB} | ${r(aov.F.AB)} | ${pStr(pAB)} | ${r(aov.etaSq.AB, 3)} |`,
+);
 lines.push(`| Within (error) | ${r(aov.SS.within, 1)} | ${aov.df.within} | — | — | — |`);
 lines.push(`| Total | ${r(aov.SS.total, 1)} | ${aov.N - 1} | — | — | — |`);
 lines.push('');
@@ -290,20 +321,33 @@ lines.push(`## Interpretation`);
 lines.push('');
 const recogEffect = aov.marginals.meanA1 - aov.marginals.meanA0;
 const padEffect = aov.marginals.meanB1 - aov.marginals.meanB0;
-lines.push(`- **Recognition main effect**: Δ = ${r(recogEffect)} (recog − base). ${pA < 0.05 ? 'Significant.' : 'n.s.'}`);
-lines.push(`- **Writing Pad main effect**: Δ = ${r(padEffect)} (pad ON − pad OFF). ${pB < 0.05 ? 'Significant.' : 'n.s.'} ${padEffect < 0 ? 'Pad OFF scores **higher** (against Writing Pad necessity).' : 'Pad ON scores higher.'}`);
-lines.push(`- **Interaction**: ${pAB < 0.05 ? 'Significant — recognition effect depends on Writing Pad.' : 'n.s. — recognition effect is similar with or without Writing Pad.'}`);
+lines.push(
+  `- **Recognition main effect**: Δ = ${r(recogEffect)} (recog − base). ${pA < 0.05 ? 'Significant.' : 'n.s.'}`,
+);
+lines.push(
+  `- **Writing Pad main effect**: Δ = ${r(padEffect)} (pad ON − pad OFF). ${pB < 0.05 ? 'Significant.' : 'n.s.'} ${padEffect < 0 ? 'Pad OFF scores **higher** (against Writing Pad necessity).' : 'Pad ON scores higher.'}`,
+);
+lines.push(
+  `- **Interaction**: ${pAB < 0.05 ? 'Significant — recognition effect depends on Writing Pad.' : 'n.s. — recognition effect is similar with or without Writing Pad.'}`,
+);
 lines.push('');
 lines.push(`### What this means for the paper`);
 lines.push('');
 const recogHoldsWithoutPad = d_recog_padOff !== null && d_recog_padOff > 0.2;
 if (pAB >= 0.05 && recogHoldsWithoutPad) {
-  const direction = padEffect < 0 ? 'actually scores slightly **higher** without the pad' : 'is slightly higher with the pad';
-  lines.push(`The Writing Pad is **not load-bearing** for the recognition effect. Recognition raises scores in both pad-on (d=${r(d_recog_padOn)}) and pad-off (d=${r(d_recog_padOff)}) conditions, with no significant interaction (F=${r(aov.F.AB)}, p=${pStr(pAB)}). Disabling the three-layer memory scaffolding ${direction} overall (main effect p=${pStr(pB)}, d=${r(d_pad_recog)} within recog condition). This refutes the "Writing Pad is necessary" hypothesis and suggests recognition operates at the prompt level, not via the memory architecture.`);
+  const direction =
+    padEffect < 0 ? 'actually scores slightly **higher** without the pad' : 'is slightly higher with the pad';
+  lines.push(
+    `The Writing Pad is **not load-bearing** for the recognition effect. Recognition raises scores in both pad-on (d=${r(d_recog_padOn)}) and pad-off (d=${r(d_recog_padOff)}) conditions, with no significant interaction (F=${r(aov.F.AB)}, p=${pStr(pAB)}). Disabling the three-layer memory scaffolding ${direction} overall (main effect p=${pStr(pB)}, d=${r(d_pad_recog)} within recog condition). This refutes the "Writing Pad is necessary" hypothesis and suggests recognition operates at the prompt level, not via the memory architecture.`,
+  );
 } else if (pAB < 0.05) {
-  lines.push(`The Writing Pad **modulates** the recognition effect (significant interaction, F=${r(aov.F.AB)}, p=${pStr(pAB)}). Recognition effect is d=${r(d_recog_padOn)} with pad on vs d=${r(d_recog_padOff)} with pad off.`);
+  lines.push(
+    `The Writing Pad **modulates** the recognition effect (significant interaction, F=${r(aov.F.AB)}, p=${pStr(pAB)}). Recognition effect is d=${r(d_recog_padOn)} with pad on vs d=${r(d_recog_padOff)} with pad off.`,
+  );
 } else {
-  lines.push(`Neither main effect nor interaction is compelling. Recognition effect remains robust across both pad conditions (d=${r(d_recog_padOn)} / ${r(d_recog_padOff)}).`);
+  lines.push(
+    `Neither main effect nor interaction is compelling. Recognition effect remains robust across both pad conditions (d=${r(d_recog_padOn)} / ${r(d_recog_padOff)}).`,
+  );
 }
 lines.push('');
 lines.push(`## Caveats`);
@@ -311,7 +355,9 @@ lines.push('');
 lines.push(`- Single domain (philosophy). A cross-domain replication would strengthen the generalization.`);
 lines.push(`- Single ego/superego model pair (nemotron × kimi-k2.5). Effect may differ with other model combinations.`);
 lines.push(`- Judge: Sonnet 4.6 (single judge). Cross-judge validation would reduce judge-specific variance.`);
-lines.push(`- Writing Pad is only one of several memory/reflection mechanisms. Disabling it may not cleanly isolate memory architecture from other features.`);
+lines.push(
+  `- Writing Pad is only one of several memory/reflection mechanisms. Disabling it may not cleanly isolate memory architecture from other features.`,
+);
 
 const report = lines.join('\n');
 if (outPath) {

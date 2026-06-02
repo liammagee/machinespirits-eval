@@ -841,12 +841,21 @@ async function callJudgeModel(prompt, overrides = {}) {
       let out = '';
       let err = '';
       const cliTimeout = setTimeout(() => {
-        try { child.kill('SIGKILL'); } catch (_) {}
+        try {
+          child.kill('SIGKILL');
+        } catch (_) {}
         reject(new Error('claude CLI judge timed out after 180s'));
       }, 180_000);
-      child.stdout.on('data', (d) => { out += d; });
-      child.stderr.on('data', (d) => { err += d; });
-      child.on('error', (e) => { clearTimeout(cliTimeout); reject(e); });
+      child.stdout.on('data', (d) => {
+        out += d;
+      });
+      child.stderr.on('data', (d) => {
+        err += d;
+      });
+      child.on('error', (e) => {
+        clearTimeout(cliTimeout);
+        reject(e);
+      });
       child.on('close', (code) => {
         clearTimeout(cliTimeout);
         if (code !== 0) {
@@ -1710,8 +1719,7 @@ export function clearTutorCharismaRubricPathOverride() {
  * mtime-based caching. Mirrors loadTutorHolisticRubric.
  */
 export function loadTutorCharismaRubric({ forceReload } = {}) {
-  const rubricPath =
-    _tutorCharismaRubricPathOverride || path.join(EVAL_CONFIG_DIR, 'evaluation-rubric-charisma.yaml');
+  const rubricPath = _tutorCharismaRubricPathOverride || path.join(EVAL_CONFIG_DIR, 'evaluation-rubric-charisma.yaml');
 
   try {
     const stats = fs.statSync(rubricPath);

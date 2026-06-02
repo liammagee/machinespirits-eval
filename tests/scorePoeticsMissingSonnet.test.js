@@ -77,10 +77,11 @@ describe('score-poetics-missing-sonnet', () => {
     const plan = buildScorePlan({ rootDir: root, model: DEFAULT_MODEL });
 
     assert.equal(plan.batchId, 'demo-run');
-    assert.deepEqual(
-      plan.jobs.map((job) => job.id).sort(),
-      ['control-r01-d4', 'target-r01-prefix-baseline', 'target-r01-reframe'],
-    );
+    assert.deepEqual(plan.jobs.map((job) => job.id).sort(), [
+      'control-r01-d4',
+      'target-r01-prefix-baseline',
+      'target-r01-reframe',
+    ]);
     assert.deepEqual(
       plan.skipped.map((job) => job.id),
       ['target-r01-none'],
@@ -117,10 +118,7 @@ describe('score-poetics-missing-sonnet', () => {
     );
 
     assert.equal(ensurePlanIncludesCritic(root, DEFAULT_MODEL), true);
-    assert.deepEqual(JSON.parse(fs.readFileSync(planPath, 'utf8')).critics, [
-      'qwen/qwen3.7-max',
-      DEFAULT_MODEL,
-    ]);
+    assert.deepEqual(JSON.parse(fs.readFileSync(planPath, 'utf8')).critics, ['qwen/qwen3.7-max', DEFAULT_MODEL]);
     assert.equal(ensurePlanIncludesCritic(root, DEFAULT_MODEL), false);
   });
 });

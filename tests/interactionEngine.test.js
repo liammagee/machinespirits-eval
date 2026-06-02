@@ -342,7 +342,10 @@ describe('runInteraction (multi-turn)', () => {
         return { content: 'Keep the resistance visible; do not fake understanding.', usage: {} };
       }
       if (options.agentRole === 'learner_ego' && /Produce your final response/.test(user)) {
-        return { content: "FINAL:\nBut that still doesn't make sense; I don't see why the old route works.", usage: {} };
+        return {
+          content: "FINAL:\nBut that still doesn't make sense; I don't see why the old route works.",
+          usage: {},
+        };
       }
       if (options.agentRole === 'learner_ego' && /opening message/.test(user)) {
         return { content: 'FINAL:\nI think loose means no gravity.', usage: {} };
@@ -463,7 +466,9 @@ describe('runInteraction (multi-turn)', () => {
       'tutor ego adjudication should require a concrete public action gate',
     );
     assert.ok(
-      tutorAdjudicationPrompts.some((prompt) => /stock-taking contrast/.test(prompt) && /new public device/.test(prompt)),
+      tutorAdjudicationPrompts.some(
+        (prompt) => /stock-taking contrast/.test(prompt) && /new public device/.test(prompt),
+      ),
       'tutor ego adjudication should force a public contrast plus new device',
     );
     assert.ok(
@@ -485,7 +490,10 @@ describe('runInteraction (multi-turn)', () => {
         return { content: 'Keep the resistance visible; do not fake understanding.', usage: {} };
       }
       if (options.agentRole === 'learner_ego' && /Produce your final response/.test(user)) {
-        return { content: "FINAL:\nBut that still doesn't make sense; I don't see why the old route works.", usage: {} };
+        return {
+          content: "FINAL:\nBut that still doesn't make sense; I don't see why the old route works.",
+          usage: {},
+        };
       }
       if (options.agentRole === 'learner_ego' && /opening message/.test(user)) {
         return { content: 'FINAL:\nI think loose means no gravity.', usage: {} };

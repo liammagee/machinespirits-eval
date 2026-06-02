@@ -59,9 +59,7 @@ test('extractReflectionActionPairs prefers the latest revise over earlier genera
 });
 
 test('extractReflectionActionPairs returns [] when reflection has no matching action turn', () => {
-  const trace = [
-    reflection(0, 'Just a reflection with no action.'),
-  ];
+  const trace = [reflection(0, 'Just a reflection with no action.')];
   const pairs = extractReflectionActionPairs(trace);
   assert.deepEqual(pairs, []);
 });
@@ -119,7 +117,11 @@ test('aggregateByCell collapses pairs per profile and computes coupling/gap/drif
     {
       profile: 'cell_41_recog_dialectical_suspicious_unified_superego',
       pairs: [
-        { turn: 0, reflection: 'recognition mutual learner subject', action: 'recognition acknowledging the learner subject' },
+        {
+          turn: 0,
+          reflection: 'recognition mutual learner subject',
+          action: 'recognition acknowledging the learner subject',
+        },
       ],
       drifts: [0.3],
     },
@@ -142,8 +144,32 @@ test('aggregateByCell collapses pairs per profile and computes coupling/gap/drif
 
 test('buildReport renders both base and recog rows when both have data', () => {
   const summary = [
-    { profile: 'cell_40_base_dialectical_suspicious_unified_superego', condition: 'base', reflectionPairs: 10, driftSamples: 8, meanCoupling: 0.42, sdCoupling: 0.1, meanJaccard: 0.3, meanGap: 0.58, meanTurnDrift: 0.65, sdTurnDrift: 0.1, gapMinusDrift: -0.07 },
-    { profile: 'cell_41_recog_dialectical_suspicious_unified_superego', condition: 'recog', reflectionPairs: 12, driftSamples: 9, meanCoupling: 0.55, sdCoupling: 0.1, meanJaccard: 0.4, meanGap: 0.45, meanTurnDrift: 0.7, sdTurnDrift: 0.1, gapMinusDrift: -0.25 },
+    {
+      profile: 'cell_40_base_dialectical_suspicious_unified_superego',
+      condition: 'base',
+      reflectionPairs: 10,
+      driftSamples: 8,
+      meanCoupling: 0.42,
+      sdCoupling: 0.1,
+      meanJaccard: 0.3,
+      meanGap: 0.58,
+      meanTurnDrift: 0.65,
+      sdTurnDrift: 0.1,
+      gapMinusDrift: -0.07,
+    },
+    {
+      profile: 'cell_41_recog_dialectical_suspicious_unified_superego',
+      condition: 'recog',
+      reflectionPairs: 12,
+      driftSamples: 9,
+      meanCoupling: 0.55,
+      sdCoupling: 0.1,
+      meanJaccard: 0.4,
+      meanGap: 0.45,
+      meanTurnDrift: 0.7,
+      sdTurnDrift: 0.1,
+      gapMinusDrift: -0.25,
+    },
   ];
 
   const report = buildReport({ runIds: ['eval-test'], summary, minPairs: 5 });
@@ -156,7 +182,19 @@ test('buildReport renders both base and recog rows when both have data', () => {
 
 test('buildReport degrades gracefully when no cells meet minPairs', () => {
   const summary = [
-    { profile: 'cell_40_base_dialectical_suspicious_unified_superego', condition: 'base', reflectionPairs: 1, driftSamples: 0, meanCoupling: 0, sdCoupling: 0, meanJaccard: 0, meanGap: 1, meanTurnDrift: 0, sdTurnDrift: 0, gapMinusDrift: 1 },
+    {
+      profile: 'cell_40_base_dialectical_suspicious_unified_superego',
+      condition: 'base',
+      reflectionPairs: 1,
+      driftSamples: 0,
+      meanCoupling: 0,
+      sdCoupling: 0,
+      meanJaccard: 0,
+      meanGap: 1,
+      meanTurnDrift: 0,
+      sdTurnDrift: 0,
+      gapMinusDrift: 1,
+    },
   ];
   const report = buildReport({ runIds: ['eval-test'], summary, minPairs: 5 });
   assert.match(report, /No cells met the minimum-pairs threshold/);

@@ -21,10 +21,16 @@ function get(baseUrl, p) {
     http
       .get(`${baseUrl}${p}`, (res) => {
         let data = '';
-        res.on('data', (chunk) => { data += chunk; });
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
         res.on('end', () => {
           let body;
-          try { body = JSON.parse(data); } catch { body = data; }
+          try {
+            body = JSON.parse(data);
+          } catch {
+            body = data;
+          }
           resolve({ status: res.statusCode, body });
         });
       })
@@ -114,8 +120,11 @@ describe('GET /api/chat/cells', () => {
     const { body } = await get(baseUrl, '/api/chat/cells');
     const known = new Set(Object.keys(body.orientations));
     const offenders = body.cells.filter((c) => known.has(c.promptType) && !c.orientation);
-    assert.equal(offenders.length, 0,
-      `cells with known prompt_type but null orientation: ${offenders.map((c) => c.name).join(', ')}`);
+    assert.equal(
+      offenders.length,
+      0,
+      `cells with known prompt_type but null orientation: ${offenders.map((c) => c.name).join(', ')}`,
+    );
   });
 
   it('effective family is intersubjective for recognition_mode cells, transmission otherwise', async () => {
@@ -142,8 +151,10 @@ describe('GET /api/chat/cells', () => {
       const o = c.orientation;
       if (!o) continue;
       const v = o.effectVsBase;
-      assert.ok(v === null || v === undefined || typeof v === 'number',
-        `${c.name}: effectVsBase must be number or nullish, got ${typeof v} (${v})`);
+      assert.ok(
+        v === null || v === undefined || typeof v === 'number',
+        `${c.name}: effectVsBase must be number or nullish, got ${typeof v} (${v})`,
+      );
     }
   });
 });

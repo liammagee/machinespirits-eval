@@ -19,7 +19,8 @@ fs.mkdirSync(path.join(tmpLogs, 'tutor-dialogues'), { recursive: true });
 
 // Imports come *after* env is set so evaluationStore reads the temp path.
 const { runScenarioWithCounterfactual } = await import('../services/adaptiveTutor/runner.js');
-const { createAdaptiveRun, persistScenarioWithCounterfactual } = await import('../services/adaptiveTutor/persistence.js');
+const { createAdaptiveRun, persistScenarioWithCounterfactual } =
+  await import('../services/adaptiveTutor/persistence.js');
 const evaluationStore = await import('../services/evaluationStore.js');
 const { llmMode } = await import('../services/adaptiveTutor/llm.js');
 

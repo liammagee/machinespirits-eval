@@ -103,7 +103,7 @@ function buildEgoSystemPrompt(baseEgoPrompt, messageHistory) {
     '# Conversation so far',
     transcript || '(no prior turns)',
     '',
-    'Continue as the tutor: respond to the learner\'s latest message.',
+    "Continue as the tutor: respond to the learner's latest message.",
   ].join('\n');
 }
 
@@ -117,10 +117,10 @@ async function runScenario({ runId, scenario, profileName, agentConfig, baseEgoP
   }));
 
   const perTurnTrace = [];
-  let totalInputTokens = 0;
-  let totalOutputTokens = 0;
+  const totalInputTokens = 0;
+  const totalOutputTokens = 0;
   let totalApiCalls = 0;
-  let totalCost = 0;
+  const totalCost = 0;
 
   const startMs = Date.now();
   for (let turn = 0; turn < maxTurns; turn++) {
@@ -378,9 +378,7 @@ async function main() {
   realLLM.clearActiveCellConfig();
   if (tracker) realLLM.clearActiveBudgetTracker();
 
-  console.log(
-    `[dialogue-engine-trap] runId=${runId} persisted=${persisted}/${totalScenarios} failed=${failed}`,
-  );
+  console.log(`[dialogue-engine-trap] runId=${runId} persisted=${persisted}/${totalScenarios} failed=${failed}`);
 }
 
 main().catch((err) => {

@@ -110,7 +110,11 @@ function unitArms(unit) {
 
   const prefixKeyPath = path.join(path.dirname(keyPath), 'key-prefix-baseline.yaml');
   const prefixSampleDir = path.join(outDir, 'prefix-baseline');
-  if (fs.existsSync(prefixKeyPath) && fs.existsSync(prefixSampleDir) && !unit.pairedPolicies.includes('prefix-baseline')) {
+  if (
+    fs.existsSync(prefixKeyPath) &&
+    fs.existsSync(prefixSampleDir) &&
+    !unit.pairedPolicies.includes('prefix-baseline')
+  ) {
     arms.push({
       id: `${unit.id}-prefix-baseline`,
       sampleDir: prefixSampleDir,

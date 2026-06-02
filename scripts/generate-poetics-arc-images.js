@@ -52,7 +52,9 @@ const STOPWORDS = new Set(
   same she should so some such than that the their theirs them themselves then there these they
   this those through to too under until up very was we were what when where which while who whom
   why will with you your yours yourself yourselves
-  `.trim().split(/\s+/),
+  `
+    .trim()
+    .split(/\s+/),
 );
 
 function printHelp() {
@@ -244,7 +246,10 @@ function extractSections(html) {
       textFromFirstMatch(content, /<h3\b[^>]*class=["'][^"']*\bs__sub\b[^"']*["'][^>]*>([\s\S]*?)<\/h3>/i) ||
       textFromFirstMatch(content, /<h[2-4]\b[^>]*>([\s\S]*?)<\/h[2-4]>/i) ||
       id.replace(/-/g, ' ');
-    const kicker = textFromFirstMatch(content, /<p\b[^>]*class=["'][^"']*\bs__kicker\b[^"']*["'][^>]*>([\s\S]*?)<\/p>/i);
+    const kicker = textFromFirstMatch(
+      content,
+      /<p\b[^>]*class=["'][^"']*\bs__kicker\b[^"']*["'][^>]*>([\s\S]*?)<\/p>/i,
+    );
     const text = normalizeWhitespace(stripHtml(content));
     const sectionNumber = parseSectionNumber(content);
     sections.push({
@@ -376,10 +381,8 @@ function inferVisualMetaphor(section) {
       'a modest slope gauge beside a stage door, showing that a flat average curve is only a coarse proxy for recognition',
     sidecar:
       'a three-lane evidence bench comparing strong, boundary, and risk claims, with the clean-anchor run pinned as a live exhibit',
-    'habit-break':
-      'a tutor at a forked path changing tools only after the learner shows a concrete stuck point',
-    ending:
-      'a learner trying the tutor device, then turning back to redraw the original difficulty',
+    'habit-break': 'a tutor at a forked path changing tools only after the learner shows a concrete stuck point',
+    ending: 'a learner trying the tutor device, then turning back to redraw the original difficulty',
     oedipus:
       'a sealed Oedipus dossier under stage light, with one panel marked guided discovery and another marked fragile replication',
     family:
@@ -390,20 +393,13 @@ function inferVisualMetaphor(section) {
       'a narrow doorway labelled dramatic mechanism, opening from a larger null-result wall into a disciplined next experiment',
     'starting-point':
       'a paper mechanism diagram becoming a theatre stage, with one lane labelled calibration and one lane labelled adaptive null',
-    arc:
-      'a measured slope chart dissolving into a staged learner-tutor encounter under a spotlight',
-    evidence:
-      'an evidence wall with strong, boundary, and risk cards connected to a small poetics browser terminal',
-    adaptation:
-      'a tutor at a forked path changing tools only after the learner shows a concrete stuck point',
-    'ending-shape':
-      'a learner trying the tutor device, then turning back to redraw the original difficulty',
-    'landing-update-0528':
-      'case files, witnesses, and a critic panel showing a result that will not stabilize',
-    conceptual:
-      'a ruler for average slopes laid beside a blueprint for dramatic mechanism specification',
-    'durable-output':
-      'a compact control loop machine: observe, classify, choose, generate, check, update',
+    arc: 'a measured slope chart dissolving into a staged learner-tutor encounter under a spotlight',
+    evidence: 'an evidence wall with strong, boundary, and risk cards connected to a small poetics browser terminal',
+    adaptation: 'a tutor at a forked path changing tools only after the learner shows a concrete stuck point',
+    'ending-shape': 'a learner trying the tutor device, then turning back to redraw the original difficulty',
+    'landing-update-0528': 'case files, witnesses, and a critic panel showing a result that will not stabilize',
+    conceptual: 'a ruler for average slopes laid beside a blueprint for dramatic mechanism specification',
+    'durable-output': 'a compact control loop machine: observe, classify, choose, generate, check, update',
     'paper-implication':
       'a null-result seal reframed into a narrower guided-discovery doorway where deep secrets need help',
   };
@@ -504,8 +500,8 @@ ${selected}
 ## Prompts
 
 ${panels
-  .map(
-    (panel) => `
+  .map((panel) =>
+    `
 ### Prompt ${String(panel.panel).padStart(2, '0')} - #${panel.section_id}
 
 Target image: ${panel.image_file}
@@ -550,9 +546,7 @@ ${panel.codex_prompt}
 async function runCodexForPanels(panels, opts) {
   ensureCodexSkillSupportDirs();
   for (const panel of panels) {
-    console.log(
-      `Generating ${panel.image_file} with ${opts.codexBin} (${panel.panel}/${panels.length})...`,
-    );
+    console.log(`Generating ${panel.image_file} with ${opts.codexBin} (${panel.panel}/${panels.length})...`);
     await runCodex(panel.codex_prompt, panel, opts);
   }
 }
@@ -678,10 +672,7 @@ function updateHtmlWithImages(html, panels) {
 }
 
 function stripManagedImageBlocks(html) {
-  return html.replace(
-    /\n?\s*<!-- poetics-arc-images:begin\b[\s\S]*?<!-- poetics-arc-images:end\b[^>]*-->\n?/g,
-    '\n',
-  );
+  return html.replace(/\n?\s*<!-- poetics-arc-images:begin\b[\s\S]*?<!-- poetics-arc-images:end\b[^>]*-->\n?/g, '\n');
 }
 
 function upsertManagedStyle(html) {
@@ -760,7 +751,8 @@ function fallbackInsertionIndex(html) {
 }
 
 function importantSentences(text) {
-  const keywords = /(adapt|recogn|evidence|null|boundary|mechanism|tutor|learner|score|critic|control|secret|discovery|paper|result|claim|reframe|ending|pressure)/i;
+  const keywords =
+    /(adapt|recogn|evidence|null|boundary|mechanism|tutor|learner|score|critic|control|secret|discovery|paper|result|claim|reframe|ending|pressure)/i;
   const sentences = splitSentences(text);
   const cleaned = sentences
     .map((sentence) => normalizeWhitespace(sentence))
@@ -801,7 +793,10 @@ function getAttr(tag, name) {
 }
 
 function getMetaContent(html, name) {
-  const re = new RegExp(`<meta\\b(?=[^>]*\\bname=["']${escapeRegExp(name)}["'])(?=[^>]*\\bcontent=(["'])(.*?)\\1)[^>]*>`, 'i');
+  const re = new RegExp(
+    `<meta\\b(?=[^>]*\\bname=["']${escapeRegExp(name)}["'])(?=[^>]*\\bcontent=(["'])(.*?)\\1)[^>]*>`,
+    'i',
+  );
   const match = html.match(re);
   return match ? decodeHtml(match[2]) : '';
 }
@@ -862,7 +857,10 @@ function clampText(text, max) {
 }
 
 function simplifyForComparison(text) {
-  return normalizeWhitespace(text).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  return normalizeWhitespace(text)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
 }
 
 function slugify(text) {

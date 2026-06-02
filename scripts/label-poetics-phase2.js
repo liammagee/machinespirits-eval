@@ -228,7 +228,7 @@ async function main() {
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   try {
-    let labeller = (args.labeller || (await ask(rl, 'Labeller id: '))).trim().replace(/[^\w-]/g, '');
+    const labeller = (args.labeller || (await ask(rl, 'Labeller id: '))).trim().replace(/[^\w-]/g, '');
     if (!labeller) {
       console.error('A labeller id is required (letters/digits/-/_).');
       return;

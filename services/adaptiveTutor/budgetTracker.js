@@ -95,9 +95,7 @@ export function createBudgetTracker({ maxUsd } = {}) {
     estimate(promptText, maxOutputTokens, model) {
       const [inRate, outRate] = lookupRates(model);
       const inputTokens = estimateInputTokens(promptText);
-      const outputTokens = Number.isFinite(maxOutputTokens) && maxOutputTokens > 0
-        ? Number(maxOutputTokens)
-        : 1500;
+      const outputTokens = Number.isFinite(maxOutputTokens) && maxOutputTokens > 0 ? Number(maxOutputTokens) : 1500;
       return (inputTokens / 1000) * inRate + (outputTokens / 1000) * outRate;
     },
 

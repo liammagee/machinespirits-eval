@@ -97,11 +97,7 @@ function priorCatharsisCount(priorLearnerTexts = []) {
   );
 }
 
-export function analyzePseudoCatharsis({
-  learnerText,
-  previousTutorText = '',
-  priorLearnerTexts = [],
-} = {}) {
+export function analyzePseudoCatharsis({ learnerText, previousTutorText = '', priorLearnerTexts = [] } = {}) {
   const text = String(learnerText || '').trim();
   if (!text) {
     return {

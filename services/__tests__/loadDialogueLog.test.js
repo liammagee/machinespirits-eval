@@ -67,8 +67,16 @@ before(async () => {
 
 after(() => {
   // Clean up test file + temp logs root
-  try { fs.unlinkSync(TEST_FILE); } catch { /* ignore */ }
-  try { fs.rmSync(TMP_LOGS_ROOT, { recursive: true, force: true }); } catch { /* ignore */ }
+  try {
+    fs.unlinkSync(TEST_FILE);
+  } catch {
+    /* ignore */
+  }
+  try {
+    fs.rmSync(TMP_LOGS_ROOT, { recursive: true, force: true });
+  } catch {
+    /* ignore */
+  }
 });
 
 // ── Tests ─────────────────────────────────────────────────────────────────

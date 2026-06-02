@@ -51,9 +51,7 @@ const VERBOSE = args.includes('--verbose');
 // --- Mirror of eval-cli.js extractLearnerTurnsFromTrace ------------------
 function extractLearnerTurnsFromTrace(trace, isMultiAgent, conversationHistory) {
   const learnerTurns = [];
-  let turnMarkers = trace.filter(
-    (t) => (t.agent === 'learner' || t.agent === 'user') && t.action === 'turn_action',
-  );
+  let turnMarkers = trace.filter((t) => (t.agent === 'learner' || t.agent === 'user') && t.action === 'turn_action');
   if (turnMarkers.length === 0) {
     turnMarkers = trace.filter(
       (t) =>
@@ -68,8 +66,7 @@ function extractLearnerTurnsFromTrace(trace, isMultiAgent, conversationHistory) 
     });
   }
   for (const ta of turnMarkers) {
-    let rawMessage =
-      ta.action === 'final_output' ? ta.detail || ta.contextSummary || '' : ta.contextSummary || '';
+    let rawMessage = ta.action === 'final_output' ? ta.detail || ta.contextSummary || '' : ta.contextSummary || '';
     const externalMatch = rawMessage.match(/\[EXTERNAL\]:?\s*([\s\S]*)/i);
     if (externalMatch) rawMessage = externalMatch[1].trim();
     const turnData = {
@@ -213,9 +210,7 @@ async function main() {
     const trace = dialogueLog.dialogueTrace || [];
     const learnerArch = dialogueLog.learnerArchitecture || r.learner_architecture || 'unified';
     const isMultiAgent =
-      learnerArch.includes('ego_superego') ||
-      learnerArch === 'multi_agent' ||
-      learnerArch.includes('psychodynamic');
+      learnerArch.includes('ego_superego') || learnerArch === 'multi_agent' || learnerArch.includes('psychodynamic');
     const learnerTurns = extractLearnerTurnsFromTrace(trace, isMultiAgent, dialogueLog.conversationHistory);
     if (learnerTurns.length === 0) {
       console.error(`${tag} ... SKIP (no learner turns)`);
@@ -241,14 +236,10 @@ async function main() {
         failed++;
         continue;
       }
-      updateStmt.run(
-        JSON.stringify(parsed.scores || {}),
-        overall,
-        parsed.summary || null,
-        JUDGE_MODEL,
-        r.id,
+      updateStmt.run(JSON.stringify(parsed.scores || {}), overall, parsed.summary || null, JUDGE_MODEL, r.id);
+      console.error(
+        `${tag} ... holistic=${overall.toFixed(1)}${VERBOSE ? `  ${(parsed.summary || '').slice(0, 80)}` : ''}`,
       );
-      console.error(`${tag} ... holistic=${overall.toFixed(1)}${VERBOSE ? `  ${(parsed.summary || '').slice(0, 80)}` : ''}`);
       done++;
     } catch (err) {
       console.error(`${tag} ... FAIL: ${err.message.slice(0, 150)}`);

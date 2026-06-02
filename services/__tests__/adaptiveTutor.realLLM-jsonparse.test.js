@@ -16,12 +16,13 @@ const { parseJsonLoose, escapeEmbeddedQuotes } = await import('../adaptiveTutor/
 test('parseJsonLoose handles the production tutorSuperego embedded-quote failure', () => {
   // The exact raw response that tripped jsonrepair on cell_117 run
   // eval-2026-05-07-51020ae1, scenario metaphor_boundary_case_v1.
-  const raw = '```json\n'
-    + '{\n'
-    + '  "needsRevision": true,\n'
-    + '  "feedback": "The draft asks: \'when you hear the word "recognition," what does it make you think of?\' and that probe is too high a floor."\n'
-    + '}\n'
-    + '```';
+  const raw =
+    '```json\n' +
+    '{\n' +
+    '  "needsRevision": true,\n' +
+    '  "feedback": "The draft asks: \'when you hear the word "recognition," what does it make you think of?\' and that probe is too high a floor."\n' +
+    '}\n' +
+    '```';
   const parsed = parseJsonLoose(raw);
   assert.equal(parsed.needsRevision, true);
   assert.match(parsed.feedback, /recognition/);

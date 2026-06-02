@@ -18,8 +18,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
 
-const ITEMS_PATH = process.env.PILOT_ITEMS_PATH
-  || path.join(ROOT_DIR, 'config', 'pilot', 'fractions-items.yaml');
+const ITEMS_PATH = process.env.PILOT_ITEMS_PATH || path.join(ROOT_DIR, 'config', 'pilot', 'fractions-items.yaml');
 
 let cache = null;
 
@@ -93,9 +92,10 @@ export function scoreResponses(sessionId, phase, responses) {
 
   return responses.map((r, idx) => {
     const item = byId.get(r.item_id);
-    const isCorrect = item && r.response_value !== undefined && r.response_value !== null
-      ? String(r.response_value).toLowerCase() === String(item.correct).toLowerCase()
-      : null;
+    const isCorrect =
+      item && r.response_value !== undefined && r.response_value !== null
+        ? String(r.response_value).toLowerCase() === String(item.correct).toLowerCase()
+        : null;
     return {
       item_id: r.item_id,
       item_position: r.item_position ?? idx,

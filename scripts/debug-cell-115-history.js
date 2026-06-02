@@ -16,9 +16,7 @@ const scenario = {
     triggerTurn: 1,
     triggerSignal: 'debug',
   },
-  openingTurns: [
-    { role: 'learner', content: 'Hi can you explain something?' },
-  ],
+  openingTurns: [{ role: 'learner', content: 'Hi can you explain something?' }],
   maxTurns: 3,
 };
 
@@ -32,9 +30,7 @@ history.forEach((snap, i) => {
   const lp = v.learnerProfile || {};
   const next = snap.next?.join(',') || '(end)';
   const hasTom = !!(lp.summaryText || lp.hypothesizedLearnerPerceptionOfTutor || lp.tomProbes);
-  console.log(
-    `[${i}] turn=${v.turn}, updatedAtTurn=${lp.updatedAtTurn}, hasTom=${hasTom}, next→${next}`,
-  );
+  console.log(`[${i}] turn=${v.turn}, updatedAtTurn=${lp.updatedAtTurn}, hasTom=${hasTom}, next→${next}`);
 });
 
 console.log('\n--- Replicating extractTurnTrace logic ---');

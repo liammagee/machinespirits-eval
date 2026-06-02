@@ -30,16 +30,16 @@ describe('orientation-helpers / effectMagnitude', () => {
     assert.equal(effectMagnitude(NaN), 'unknown');
   });
 
-  it('bins per Cohen\'s conventions (positive)', () => {
+  it("bins per Cohen's conventions (positive)", () => {
     assert.equal(effectMagnitude(0), 'trivial');
     assert.equal(effectMagnitude(0.19), 'trivial');
-    assert.equal(effectMagnitude(0.20), 'small');
+    assert.equal(effectMagnitude(0.2), 'small');
     assert.equal(effectMagnitude(0.49), 'small');
-    assert.equal(effectMagnitude(0.50), 'medium');
+    assert.equal(effectMagnitude(0.5), 'medium');
     assert.equal(effectMagnitude(0.79), 'medium');
-    assert.equal(effectMagnitude(0.80), 'large');
+    assert.equal(effectMagnitude(0.8), 'large');
     assert.equal(effectMagnitude(1.19), 'large');
-    assert.equal(effectMagnitude(1.20), 'very-large');
+    assert.equal(effectMagnitude(1.2), 'very-large');
     assert.equal(effectMagnitude(2.5), 'very-large');
   });
 
@@ -126,12 +126,10 @@ describe('orientation-helpers / groupCellsByFamily', () => {
 
   it('orders families intersubjective → transmission → neutral → architectural_variant', () => {
     const groups = groupCellsByFamily(sample);
-    assert.deepEqual(groups.map((g) => g.family), [
-      'intersubjective',
-      'transmission',
-      'neutral',
-      'architectural_variant',
-    ]);
+    assert.deepEqual(
+      groups.map((g) => g.family),
+      ['intersubjective', 'transmission', 'neutral', 'architectural_variant'],
+    );
   });
 
   it('attaches non-empty human-readable labels to each group', () => {
@@ -171,9 +169,7 @@ describe('orientation-helpers / groupCellsByFamily', () => {
   });
 
   it('omits empty families', () => {
-    const groups = groupCellsByFamily([
-      { name: 'cell_1', orientation: { effectiveFamily: 'transmission' } },
-    ]);
+    const groups = groupCellsByFamily([{ name: 'cell_1', orientation: { effectiveFamily: 'transmission' } }]);
     assert.equal(groups.length, 1);
     assert.equal(groups[0].family, 'transmission');
   });
@@ -206,7 +202,7 @@ describe('orientation-helpers / vocabularyDiff', () => {
     const out = vocabularyDiff(['z', 'a', 'm'], ['m', 'a', 'q']);
     assert.deepEqual(out.onlyA, ['z']);
     assert.deepEqual(out.onlyB, ['q']);
-    assert.deepEqual(out.shared, ['a', 'm']);  // input-A order preserved
+    assert.deepEqual(out.shared, ['a', 'm']); // input-A order preserved
   });
 });
 
@@ -224,13 +220,7 @@ describe('orientation-helpers / orientationTooltip', () => {
       roleOfTutor: 'R',
       keyMechanism: 'M',
     });
-    assert.deepEqual(out.split('\n'), [
-      'Test',
-      'lineage: L',
-      'learner: V',
-      'tutor: R',
-      'mechanism: M',
-    ]);
+    assert.deepEqual(out.split('\n'), ['Test', 'lineage: L', 'learner: V', 'tutor: R', 'mechanism: M']);
   });
 
   it('appends formatted effect line when effectVsBase is set', () => {
@@ -238,8 +228,10 @@ describe('orientation-helpers / orientationTooltip', () => {
       shortLabel: 'Test',
       effectVsBase: 1.21,
     });
-    assert.ok(out.includes('effect vs base: +1.21 (very-large)'),
-      `tooltip should append effect-size line, got: ${JSON.stringify(out)}`);
+    assert.ok(
+      out.includes('effect vs base: +1.21 (very-large)'),
+      `tooltip should append effect-size line, got: ${JSON.stringify(out)}`,
+    );
   });
 
   it('omits effect line when effectVsBase is null', () => {
@@ -255,18 +247,15 @@ describe('orientation-helpers / orientationTooltip', () => {
 
 describe('orientation-helpers / canonical exports', () => {
   it('FAMILIES is the ordered family-key list', () => {
-    assert.deepEqual(FAMILIES, [
-      'intersubjective',
-      'transmission',
-      'neutral',
-      'architectural_variant',
-    ]);
+    assert.deepEqual(FAMILIES, ['intersubjective', 'transmission', 'neutral', 'architectural_variant']);
   });
 
   it('FAMILY_LABELS covers every FAMILIES key', () => {
     for (const fam of FAMILIES) {
-      assert.ok(typeof FAMILY_LABELS[fam] === 'string' && FAMILY_LABELS[fam].length > 0,
-        `missing FAMILY_LABELS["${fam}"]`);
+      assert.ok(
+        typeof FAMILY_LABELS[fam] === 'string' && FAMILY_LABELS[fam].length > 0,
+        `missing FAMILY_LABELS["${fam}"]`,
+      );
     }
   });
 });

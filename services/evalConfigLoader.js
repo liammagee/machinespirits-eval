@@ -231,11 +231,7 @@ export function getProviderConfig(providerName, options = {}) {
   // the user's Claude Code subscription, so it is always considered configured.
   const needsApiKey = Boolean(provider.api_key_env);
   const isConfigured =
-    providerName === 'claude-code'
-      ? true
-      : needsApiKey
-        ? Boolean(apiKey)
-        : Boolean(provider.base_url);
+    providerName === 'claude-code' ? true : needsApiKey ? Boolean(apiKey) : Boolean(provider.base_url);
 
   return {
     ...provider,

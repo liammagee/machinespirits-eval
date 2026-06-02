@@ -32,13 +32,13 @@ const C = {
 
 const { values: args } = parseArgs({
   options: {
-    cell:    { type: 'string', default: 'cell_1_base_single_unified' },
-    topic:   { type: 'string', default: 'general conversation' },
+    cell: { type: 'string', default: 'cell_1_base_single_unified' },
+    topic: { type: 'string', default: 'general conversation' },
     lecture: { type: 'string' },
-    server:  { type: 'string', default: 'http://localhost:8081' },
-    show:    { type: 'boolean', default: false },
-    cli:     { type: 'boolean', default: false },
-    help:    { type: 'boolean', default: false },
+    server: { type: 'string', default: 'http://localhost:8081' },
+    show: { type: 'boolean', default: false },
+    cli: { type: 'boolean', default: false },
+    help: { type: 'boolean', default: false },
   },
 });
 
@@ -78,7 +78,11 @@ async function api(method, urlPath, body) {
   const text = await res.text();
   if (!res.ok) {
     let msg = text;
-    try { msg = JSON.parse(text).error || text; } catch { /* keep raw */ }
+    try {
+      msg = JSON.parse(text).error || text;
+    } catch {
+      /* keep raw */
+    }
     throw new Error(`HTTP ${res.status}: ${msg}`);
   }
   return text ? JSON.parse(text) : null;
@@ -168,9 +172,9 @@ const commands = {
     const cells = await loadCells();
     const filter = (arg || '').toLowerCase();
     const filtered = filter
-      ? cells.filter((c) =>
-          c.name.toLowerCase().includes(filter)
-          || (c.description || '').toLowerCase().includes(filter))
+      ? cells.filter(
+          (c) => c.name.toLowerCase().includes(filter) || (c.description || '').toLowerCase().includes(filter),
+        )
       : cells;
     console.log();
     if (!filtered.length) {
@@ -242,8 +246,12 @@ const commands = {
     state.history = [];
     console.log(`${C.dim}→ history cleared${C.reset}`);
   },
-  quit() { process.exit(0); },
-  exit() { process.exit(0); },
+  quit() {
+    process.exit(0);
+  },
+  exit() {
+    process.exit(0);
+  },
 };
 
 async function sendTurn(message) {
@@ -271,7 +279,10 @@ async function main() {
   }
 
   const rl = readline.createInterface({ input, output });
-  rl.on('SIGINT', () => { console.log(); process.exit(0); });
+  rl.on('SIGINT', () => {
+    console.log();
+    process.exit(0);
+  });
 
   while (true) {
     let line;
@@ -287,8 +298,11 @@ async function main() {
       const [name, ...rest] = trimmed.slice(1).split(/\s+/);
       const handler = commands[name.toLowerCase()];
       if (handler) {
-        try { await handler(rest.join(' ')); }
-        catch (err) { console.error(`${C.red}Error: ${err.message}${C.reset}`); }
+        try {
+          await handler(rest.join(' '));
+        } catch (err) {
+          console.error(`${C.red}Error: ${err.message}${C.reset}`);
+        }
       } else {
         console.log(`${C.red}Unknown command: /${name}${C.reset} (try /help)`);
       }

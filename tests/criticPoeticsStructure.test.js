@@ -8,7 +8,9 @@ import { deterministicChecks, parseTurns, run } from '../scripts/critic-poetics-
 
 describe('critic-poetics-structure', () => {
   it('parses public transcript turns for structural checks', () => {
-    const turns = parseTurns('STAGE: [A chart is turned.]\n\nLEARNER: I still do not buy it.\n\nTUTOR: Hold on. Test this smaller case.');
+    const turns = parseTurns(
+      'STAGE: [A chart is turned.]\n\nLEARNER: I still do not buy it.\n\nTUTOR: Hold on. Test this smaller case.',
+    );
     assert.deepEqual(
       turns.map((turn) => `${turn.role}${turn.turnNumber}`),
       ['STAGE1', 'LEARNER1', 'TUTOR1'],

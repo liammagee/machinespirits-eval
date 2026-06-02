@@ -99,7 +99,8 @@ const ARCHAIC_PASTICHE = /\b(?:thou|thee|thy|hath|doth|wherefore|anon|prithee|me
 const ACTION_PAREN =
   /\((?:[^)]*\b(?:points?|checks?|draws?|holds?|looks?|marks?|nods?|pauses?|reads?|slides?|taps?|turns?|writes?)\b[^)]*)\)/i;
 const STAGE_INTRUSION = /\b(?:the (?:tutor|learner) must|director|scene card|hidden|ego|superego)\b/i;
-const INTERNAL_LEAK = /\b(?:PRIVATE_DECISION|FEEDBACK:|KEEP_OR_CHANGE|UPTAKE_CHECK|PERIPETEIA_CHECK|REGISTER_CHECK|<think>)\b/i;
+const INTERNAL_LEAK =
+  /\b(?:PRIVATE_DECISION|FEEDBACK:|KEEP_OR_CHANGE|UPTAKE_CHECK|PERIPETEIA_CHECK|REGISTER_CHECK|<think>)\b/i;
 const PERIPETEIA_PRESSURE_FRAME =
   /\b(?:the pressure|the misfit|the old check|the earlier check|the old rule|the prior check|what changed|the loose pressure|I was treating|I was using|I was letting|I was reading|I had been treating)\b/i;
 const PERIPETEIA_REPLACEMENT_FRAME =
@@ -160,16 +161,21 @@ function deterministicChecks({ id, item, raw }) {
   if (!learnerTurns.length) violations.push('missing_learner_turn');
   if (unknownBlocks.length) violations.push('unlabelled_public_block');
   if (INTERNAL_LEAK.test(raw)) violations.push('internal_deliberation_leak');
-  if (lineEvidence(publicTurns, (turn) => THEORY_LEAK.test(turn.text)).length) violations.push('public_theory_or_process_leak');
+  if (lineEvidence(publicTurns, (turn) => THEORY_LEAK.test(turn.text)).length)
+    violations.push('public_theory_or_process_leak');
   if (lineEvidence(publicTurns, (turn) => ARCHAIC_PASTICHE.test(turn.text)).length) violations.push('archaic_pastiche');
-  if (lineEvidence(publicTurns, (turn) => ACTION_PAREN.test(turn.text)).length) violations.push('unbracketed_action_aside');
+  if (lineEvidence(publicTurns, (turn) => ACTION_PAREN.test(turn.text)).length)
+    violations.push('unbracketed_action_aside');
   if (lineEvidence(publicTurns, (turn) => !isDirectQuotedSpeech(turn.text)).length)
     violations.push('public_speech_not_direct_quote');
-  if (lineEvidence(stageTurns, (turn) => STAGE_INTRUSION.test(turn.text)).length) violations.push('intrusive_stage_direction');
+  if (lineEvidence(stageTurns, (turn) => STAGE_INTRUSION.test(turn.text)).length)
+    violations.push('intrusive_stage_direction');
   if (!item?.dramatic_shape) warnings.push('missing_dramatic_shape_in_key');
   if (!item?.dialogue_approach) warnings.push('missing_dialogue_approach_in_key');
-  if (requiresPeripeteia && !peripeteia.learner_reversal_pressure) warnings.push('peripeteia_arm_without_detected_pressure');
-  if (requiresPeripeteia && !peripeteia.tutor_adaptive_mechanism) warnings.push('peripeteia_arm_without_detected_tutor_mechanism');
+  if (requiresPeripeteia && !peripeteia.learner_reversal_pressure)
+    warnings.push('peripeteia_arm_without_detected_pressure');
+  if (requiresPeripeteia && !peripeteia.tutor_adaptive_mechanism)
+    warnings.push('peripeteia_arm_without_detected_tutor_mechanism');
   if (requiresPeripeteia && !hasPeripeteiaReorientation(turns, peripeteia)) {
     violations.push('peripeteia_arm_without_earned_reorientation');
   }

@@ -29,16 +29,17 @@ test('callRole budget gate trips before callAI when ceiling is below per-call es
   realLLM.setActiveBudgetTracker(tracker);
   try {
     await assert.rejects(
-      () => realLLM.callRole('tutorEgoInitial', {
-        learnerLastMessage: 'hello',
-        learnerProfile: {
-          misconceptions: [],
-          confidence: 0.5,
-          agencySignal: 'unknown',
-          zpdEstimate: '',
-          lastEvidence: '',
-        },
-      }),
+      () =>
+        realLLM.callRole('tutorEgoInitial', {
+          learnerLastMessage: 'hello',
+          learnerProfile: {
+            misconceptions: [],
+            confidence: 0.5,
+            agencySignal: 'unknown',
+            zpdEstimate: '',
+            lastEvidence: '',
+          },
+        }),
       (err) => {
         assert.equal(err.code, 'BUDGET_EXCEEDED');
         assert.match(err.message, /BudgetExceeded/);

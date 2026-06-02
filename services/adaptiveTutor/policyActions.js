@@ -39,9 +39,9 @@ export const POLICY_ACTIONS = Object.freeze([
 
 export const POLICY_ACTION_DESCRIPTIONS = Object.freeze({
   ask_diagnostic_question: 'Probe the learner with a question whose answer reveals what they actually believe.',
-  mirror_and_extend: 'Restate the learner\'s point in tighter form and push it one logical step further.',
-  scope_test: 'Propose a boundary or limit case to test whether the learner\'s claim still holds.',
-  repair_misrecognition: 'Explicitly correct an earlier misread of the learner\'s position before continuing.',
+  mirror_and_extend: "Restate the learner's point in tighter form and push it one logical step further.",
+  scope_test: "Propose a boundary or limit case to test whether the learner's claim still holds.",
+  repair_misrecognition: "Explicitly correct an earlier misread of the learner's position before continuing.",
   give_worked_example: 'Demonstrate a complete worked example end-to-end.',
   lower_cognitive_load: 'Slow the dialogue down or simplify the framing for an overloaded learner.',
   provide_hint: 'Offer a partial scaffold without giving away the answer.',
@@ -50,7 +50,7 @@ export const POLICY_ACTION_DESCRIPTIONS = Object.freeze({
   name_the_disagreement: 'Make the substantive point of disagreement explicit instead of papering it over.',
   withhold_answer: 'Refuse to give the answer in order to keep the learner in productive struggle.',
   summarize_and_check: 'Consolidate the dialogue so far and verify shared understanding.',
-  pose_counterexample: 'Present a counterexample that challenges the learner\'s current claim.',
+  pose_counterexample: "Present a counterexample that challenges the learner's current claim.",
   invite_objection: 'Explicitly invite the learner to push back ("what are you not buying here?").',
 });
 
@@ -115,7 +115,9 @@ function loadPolicyActionDetails() {
     parsed = yaml.parse(raw);
   } catch (err) {
     if (process.env.NODE_ENV !== 'test') {
-      console.warn(`[policyActions] failed to parse ${POLICY_ACTIONS_YAML_PATH}: ${err.message}. Falling back to inline descriptions.`);
+      console.warn(
+        `[policyActions] failed to parse ${POLICY_ACTIONS_YAML_PATH}: ${err.message}. Falling back to inline descriptions.`,
+      );
     }
     return buildFallbackDetails();
   }
@@ -142,7 +144,9 @@ function loadPolicyActionDetails() {
     hydrated += 1;
   }
   if (hydrated < POLICY_ACTIONS.length && process.env.NODE_ENV !== 'test') {
-    console.warn(`[policyActions] hydrated ${hydrated}/${POLICY_ACTIONS.length} actions from YAML; remainder fell back to inline.`);
+    console.warn(
+      `[policyActions] hydrated ${hydrated}/${POLICY_ACTIONS.length} actions from YAML; remainder fell back to inline.`,
+    );
   }
   return out;
 }

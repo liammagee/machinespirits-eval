@@ -97,9 +97,7 @@ function validateItem(item, formLetter, errors, warnings) {
   if (item.correct === undefined || item.correct === null) {
     errors.push(`${where}: missing correct field`);
   } else if (!seenChoiceValues.has(item.correct)) {
-    errors.push(
-      `${where}: correct="${item.correct}" not in choice values [${[...seenChoiceValues].join(', ')}]`,
-    );
+    errors.push(`${where}: correct="${item.correct}" not in choice values [${[...seenChoiceValues].join(', ')}]`);
   }
 }
 
@@ -143,9 +141,8 @@ function validateForm(form, letter, errors, warnings) {
 
 function main() {
   const args = parseArgs(process.argv);
-  const itemsPath = args.pathArg
-    || process.env.PILOT_ITEMS_PATH
-    || path.join(ROOT_DIR, 'config', 'pilot', 'fractions-items.yaml');
+  const itemsPath =
+    args.pathArg || process.env.PILOT_ITEMS_PATH || path.join(ROOT_DIR, 'config', 'pilot', 'fractions-items.yaml');
 
   if (!fs.existsSync(itemsPath)) {
     console.error(`[validate-pilot-items] file not found: ${itemsPath}`);
@@ -191,7 +188,9 @@ function main() {
     for (const letter of ['A', 'B']) {
       const stats = formStats[letter];
       if (stats) {
-        const types = Object.entries(stats.types).map(([t, n]) => `${t}=${n}`).join(', ');
+        const types = Object.entries(stats.types)
+          .map(([t, n]) => `${t}=${n}`)
+          .join(', ');
         console.log(`  Form ${letter}: ${stats.count} items (${types})`);
       } else {
         console.log(`  Form ${letter}: missing`);
