@@ -1,1 +1,11 @@
 # DB files are no longer tracked — symlinked from ~/.machinespirits-data/
+
+# Source/text files: force text diffs. Unicode in comments or ontology files can
+# otherwise trip git's binary heuristic and render diffs as "Binary files differ".
+*.js   text
+*.ttl  text
+*.n3   text
+*.ofn  text
+*.md   text
+*.yaml text
+*.json text
