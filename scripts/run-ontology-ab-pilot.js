@@ -9,7 +9,7 @@ import { buildOntologyGuidance } from '../services/ontology/reasoningOntology.js
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '..');
 
-const SCENARIOS = [
+export const SCENARIOS = [
   {
     id: 'deductive_affirming_consequent_v1',
     difficulty: 1,
@@ -17,8 +17,7 @@ const SCENARIOS = [
     hidden: {
       learnerMisconception: 'affirming_consequent',
       learnerPerceptionOfTutor: 'authority_to_defer_to',
-      targetRepair:
-        'learner distinguishes sufficient from necessary conditions before accepting the conclusion',
+      targetRepair: 'learner distinguishes sufficient from necessary conditions before accepting the conclusion',
     },
     openingSeed:
       'If the benchmark had changed, the replication score would drop. The replication score dropped, so the benchmark must have changed. That seems settled, right?',
@@ -71,8 +70,7 @@ const SCENARIOS = [
     hidden: {
       learnerMisconception: 'affirming_consequent',
       learnerPerceptionOfTutor: 'thinking_partner_needed',
-      targetRepair:
-        'learner rejects the inference from better wording to mastery and asks for a transfer check',
+      targetRepair: 'learner rejects the inference from better wording to mastery and asks for a transfer check',
     },
     openingSeed:
       'If I understood necessary and sufficient conditions, I would stop saying the result is certain. I stopped saying it is certain and I asked a better question, so I must understand it now. Can we skip the explanation?',
@@ -127,8 +125,7 @@ const SCENARIOS = [
       learnerMisconception: 'scope_error',
       learnerPerceptionOfTutor: 'authority_to_defer_to',
       learnerResistance: 'high',
-      targetRepair:
-        'learner retreats from causal writeup pressure and states a bounded, reviewable uncertainty claim',
+      targetRepair: 'learner retreats from causal writeup pressure and states a bounded, reviewable uncertainty claim',
     },
     openingSeed:
       'I know we lack logs and only have one lower ontology score, but the paper needs a clear claim. If ontology made one answer worse, that proves the mechanism is harmful enough to report, right?',
@@ -211,7 +208,7 @@ function scenariosForArgs(args) {
 
 function scenarioForRole(role, scenario) {
   if (role === 'judge' || role.startsWith('learner_')) return scenario;
-  const { hidden, observationTags, ...visible } = scenario;
+  const { hidden: _hidden, observationTags: _observationTags, ...visible } = scenario;
   return visible;
 }
 
@@ -372,7 +369,10 @@ function messageFrom(roleOutput) {
 }
 
 function heuristicJudge(dialogue, arm) {
-  const combined = dialogue.map((m) => m.content).join('\n').toLowerCase();
+  const combined = dialogue
+    .map((m) => m.content)
+    .join('\n')
+    .toLowerCase();
   const asksWarrant = /missing step|another premise|rules out|prove|possible cause|compatible/.test(combined);
   const labelsOnly = /affirming-the-consequent|affirming the consequent/.test(combined) && !asksWarrant;
   return {
@@ -401,12 +401,15 @@ function scoreField(judge, field, aliases = []) {
 
 async function runArm({ arm, opening, args, scenario }) {
   const observations = detectObservations(opening, scenario);
-  const ontologyGuidance =
-    arm === 'ontology' ? await buildOntologyGuidance({ observations, role: 'tutor_ego' }) : null;
+  const ontologyGuidance = arm === 'ontology' ? await buildOntologyGuidance({ observations, role: 'tutor_ego' }) : null;
   const dialogue = [{ role: 'learner', content: messageFrom(opening) }];
 
   const tutorDraft = runRole('tutor_ego', { arm, dialogue, ontologyGuidance, scenario }, args);
-  const tutorCritique = runRole('tutor_superego', { arm, dialogue, draft: tutorDraft, ontologyGuidance, scenario }, args);
+  const tutorCritique = runRole(
+    'tutor_superego',
+    { arm, dialogue, draft: tutorDraft, ontologyGuidance, scenario },
+    args,
+  );
   const tutorMessage = messageFrom(tutorCritique) || messageFrom(tutorDraft);
   dialogue.push({ role: 'tutor', content: tutorMessage });
 
@@ -591,7 +594,9 @@ function renderSuiteMarkdown(report) {
   lines.push(`Scenarios tried: ${report.summary.nScenarios}`);
   lines.push(`Stop: ${report.stop ? `${report.stop.type} at ${report.stop.scenarioId}` : 'not reached'}`);
   if (report.stop) lines.push(`Stop detail: ${report.stop.detail}`);
-  lines.push(`Thresholds: delta >= ${report.thresholds.stopDelta}; both totals <= ${report.thresholds.negligibleTotal}`);
+  lines.push(
+    `Thresholds: delta >= ${report.thresholds.stopDelta}; both totals <= ${report.thresholds.negligibleTotal}`,
+  );
   lines.push('');
   lines.push('| Scenario | Difficulty | Baseline | Ontology | Delta | Stop |');
   lines.push('|---|---:|---:|---:|---:|---|');
