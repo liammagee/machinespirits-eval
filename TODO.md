@@ -522,6 +522,18 @@ Decisive contrast = **S1 vs S0** (byte-identical edit-rights channel; sole diffe
 
 ---
 
+### A17. One-Side Replay Replication Across Scenes (FOLLOW-UP — recorded 2026-06-02; §7.9 v3.0.117)
+
+**Origin**: §7.9 v3.0.117. The one-side replay (`scripts/replay-one-side.js`) freezes a run's tutor + scene (`directorPlan`) and regenerates only the learner K times, isolating learner-variance from scene-variance. The first and only run so far (D\_OED5 run3 socratic, K=8) found the near-miss was a **learner draw, not a structural cap**: graded mean 3.38 vs the original 2.5 (3/8 full species, 5/8 grade ≥3.5) — the evidence-rich scene supports species-level discovery and run3's original learner merely under-committed (`exports/replay-d5-run3-socratic/`).
+
+**Bound (why replication is needed)**: this is **one scene**. D\_OED5 run1's and run2's scenes were lost to a volatile-directory overwrite *before* the per-run `directorPlan` persistence fix landed, so they cannot be replayed. The structural-vs-draw verdict may differ for an *evidence-poor* scene (e.g. D\_OED5 run1, where the learner found "just the name, no identifier") — which the single run3 result cannot test.
+
+**The follow-up**: now that generation persists `director-<arm>.json` per run, replicate across scenes. Generate fresh D\_OED5 (and D\_OED4) runs with persistence on; replay each scene's learner K≈8× and graded-score (`scripts/score-replays.js`); read the per-scene grade distribution (tight low cluster = structural cap; wide/high = learner draw). Hypothesis: the verdict tracks scene evidence-richness, confirming §7.9's two-layer model — *whether a scene carries a decisive artifact* is a scene property; *given* one that does, *whether a particular learner reaches the species* is partly a draw.
+
+**Cost / gate**: paid generation + replay + scoring; exploratory (not pre-registered); gated on explicit go-ahead with a cost estimate. Result lands in §7.9 with a version bump if run.
+
+---
+
 ## B. Code Quality & Infrastructure
 
 ### ~~B1. Test Coverage Gaps~~ (DONE)
