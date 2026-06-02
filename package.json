@@ -93,7 +93,7 @@
     "poetics:publish-run": "node scripts/publish-poetics-run-archive.js",
     "poetics:browse": "node scripts/browse-poetics-scripts.js",
     "poetics:arc-images": "node scripts/generate-poetics-arc-images.js",
-    "poetics:build-arc": "bash notes/poetics/build-arc.sh",
+    "poetics:package-arc": "node notes/poetics/package-standalone.js notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html",
     "ontology:test": "node --test tests/reasoningOntology.test.js tests/acquiredAbox.test.js tests/definedAbox.test.js",
     "ontology:pilot": "node scripts/run-ontology-ab-pilot.js",
     "ontology:download-elk": "node scripts/download-elk-reasoner.js",

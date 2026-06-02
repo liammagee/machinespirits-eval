@@ -2170,7 +2170,51 @@
 
 </main>
 
-<script src="assets/arc.js"></script>
+<!-- doc-specific content consumed by assets/techne.js: glossary aliases + chart data -->
+<script type="application/json" id="techne-gloss-aliases">
+{
+  "stuck point": "aporia",
+  "adaptive-responsiveness": "adaptive-responsiveness",
+  "four-critic rule": "four-critic-rule",
+  "change of teaching move": "habit-break",
+  "low-organic": "low-organic",
+  "branch-local pressure": "branch-local-pressure",
+  "ego–superego": "ego-superego",
+  "ego-superego": "ego-superego",
+  "ending-shape": "habit-break"
+}
+</script>
+<script type="application/json" class="techne-chart" data-target="chartD42">
+{
+  "metrics": [
+    { "label": "recognition (/5)" },
+    { "label": "avg action" },
+    { "label": "avg tutor mechanism" },
+    { "label": "avg mechanism quality" }
+  ],
+  "arms": [
+    { "key": "routine",         "label": "routine",         "values": [0, 60, 35, 35], "denom": [5, null, null, null] },
+    { "key": "none",            "label": "none",            "values": [0, 65, 25, 25], "denom": [5, null, null, null] },
+    { "key": "peripeteia-only", "label": "peripeteia-only", "values": [4, 80, 80, 80], "denom": [5, null, null, null] }
+  ]
+}
+</script>
+<script type="application/json" class="techne-chart" data-target="chartStrat">
+{
+  "metrics": [
+    { "label": "recognition (% of rows)" },
+    { "label": "avg action" },
+    { "label": "avg tutor mechanism" },
+    { "label": "avg quality" }
+  ],
+  "arms": [
+    { "key": "routine",         "label": "routine",         "values": [46, 70.8, 53.1, 49.0], "denom": [100, null, null, null] },
+    { "key": "none",            "label": "none",            "values": [63, 65.6, 44.8, 46.9], "denom": [100, null, null, null] },
+    { "key": "peripeteia-only", "label": "peripeteia-only", "values": [100, 87.5, 68.8, 56.3], "denom": [100, null, null, null] }
+  ]
+}
+</script>
+<script src="assets/techne.js"></script>
 
 </body>
 </html>

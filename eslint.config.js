@@ -23,6 +23,13 @@ export default [
     },
   },
   {
+    // techne-doc browser assets (notes/poetics/assets/*.js) run in the browser, not Node.
+    files: ['notes/poetics/assets/**/*.js'],
+    languageOptions: {
+      globals: { ...globals.browser },
+    },
+  },
+  {
     // tutor-core/ is vendored (in-housed from @machinespirits/tutor-core, see
     // TUTOR-CORE-INHOUSING.md) — keep it under its own upstream lint rules, not the eval repo's.
     ignores: [
