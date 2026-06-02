@@ -9,3 +9,9 @@ content/
 *.md
 *.yaml
 *.yml
+
+# Hand-authored HTML/CSS — app UIs (public/) and the techne arc templates
+# (notes/poetics/) are authored by hand against the techne framework, not
+# prettier-formatted. Source code (.js/.json/.ttl/.n3) is still formatted.
+*.html
+*.css
