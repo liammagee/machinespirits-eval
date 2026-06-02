@@ -103,6 +103,44 @@ Two TBoxes, one namespace (`ms: https://machinespirits.dev/ontology/reasoning#`)
   blocksPrematurePolicy — already works); add **ELK** for *DL consistency/classification* over `TBox +
   role.tom`. (Wire `run-elk-reasoner.js` to the per-role ABox.)
 
+**Disjointness set — decided 2026-06-02 (1B/2B/3A):** cut `Misrecognition ⊥ RecognitionRepair` (1B —
+breakdown→repair is a diachronic transition, not a synchronic clash); moved casting/agency disjointness
+to `casting-axioms.ttl`, a module loaded only by spec validation, not the default ToM check (2B); added
+`KCMastered ⊥ KCMissing` attached to a per-(learner, KC, turn) status individual (3A). Kept
+`AuthorityToDeferTo ⊥ ThinkingPartner` and `ConclusionOwned ⊥ ClaimOwnershipWeak`. (Implemented in
+`config/ontology/consistency-axioms.ttl` + `casting-axioms.ttl`; 7/7 tests.)
+
+## 3.1 Temporal + epistemic layering (proposed) — DL stays atemporal, modality stays out
+
+Learning is nonmonotonic (earlier commitments are revisable) and ToM assertions are usually *guesses*,
+not facts. Two literatures tempt us — temporal description logics and modal/epistemic DLs — but both are
+research-grade with no maintained reasoner (ELK has no temporal/modal sibling) and high worst-case
+complexity (temporal + expressive DL is PSPACE → undecidable). Embedding either INTO the reasoner is the
+step too far. The feasible, higher-value realisation keeps the DL atemporal and puts both structures in
+thin layers OUTSIDE it:
+
+- **Temporal = snapshot-stratification + a sequence layer.** Materialise one ABox snapshot per turn (the
+  `acquiredAtTurn` stamp); run plain DL consistency on each snapshot independently (ELK/EYE — tractable,
+  tooling we have); express the cross-turn (LTL-style) patterns — *eventually consistent*, *inconsistency
+  at t repaired by t+1*, *monotone vs revised* — as turn-indexed N3 rules / plain code over the sequence
+  of snapshot results. This IS the synchronic/diachronic split: point-in-time axioms must be consistent;
+  revision across snapshots is development, not contradiction.
+- **Epistemic = a two-tier acquired ABox** (the right frame for "uncertainty" — ToM is *doxastic*, not
+  alethic; the vocab already has `BeliefHypothesis` / `SecondOrderBelief`). Tag each acquired axiom
+  `grounded` (observed / scenario-stipulated) vs `hypothesized` (the role's inference), optionally with a
+  confidence weight. Check at two strengths: grounded-only MUST be consistent (a real error); a
+  grounded + hypothesized inconsistency is the *pedagogically interesting* signal — a hypothesis refuted
+  by observation = a detected misrecognition to revise. Delivers known/believed (□/◇) as graph-membership,
+  no modal operators, and composes with the temporal layer (a hypothesis raised → tested → confirmed/
+  refuted across turns).
+
+Why layered beats monolithic: it keeps the symbolic core (per-snapshot DL consistency) clean, tractable,
+architecture-independent and *falsifiable* — the §6.10-beating structured signal — rather than a slow,
+unfalsifiable temporal-modal-DL black box that would replace the working ELK. Each layer is independently
+inspectable + testable. Build order: temporal folds into step 4 (turn-stamped acquired accumulator) + a
+small sequence analyzer; the epistemic tier folds into steps 3–4 (provenance tag on acquired axioms +
+the two-strength check).
+
 ## 4. Evaluation (extends the existing A/B harness; results → paper)
 
 Two **symbolic, architecture-independent** instruments the ABoxes unlock:

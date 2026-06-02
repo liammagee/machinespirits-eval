@@ -17,6 +17,10 @@ const TBOX_MODULES = Object.freeze({
   reasoning: { tbox: 'reasoning-core.ttl', rules: 'reasoning-rules.n3' },
   poetics: { tbox: 'poetics-core.ttl', rules: 'poetics-rules.n3' },
   consistency: { tbox: 'consistency-axioms.ttl', rules: 'consistency-rules.n3' },
+  // Structural/casting disjointness — spec validation only (decision 2B). NOT in
+  // DEFAULT_MODULES: opt in via loadSharedTBox([...,'consistency','casting']). Axioms
+  // only; the generic disjointness rule lives in the consistency module.
+  casting: { tbox: 'casting-axioms.ttl' },
 });
 const DEFAULT_MODULES = Object.freeze(['reasoning', 'poetics', 'consistency']);
 
@@ -69,7 +73,7 @@ export function loadSharedTBox(modules = DEFAULT_MODULES) {
       throw new Error(`Unknown ontology module "${name}". Known: ${Object.keys(TBOX_MODULES).join(', ')}`);
     }
     tbox.push(readModuleFile(mod.tbox));
-    rules.push(readModuleFile(mod.rules));
+    if (mod.rules) rules.push(readModuleFile(mod.rules));
   }
   return [...tbox, ...rules].join('\n\n');
 }

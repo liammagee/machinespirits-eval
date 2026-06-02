@@ -67,3 +67,27 @@ test('the drama (poetics) vocabulary is co-loaded and reasoned over', async () =
 
   assert.match(closureText, /hasFormConflict/);
 });
+
+test('a learner modelled as both mastering and lacking a KC is inconsistent (decision 3A)', async () => {
+  const abox = `${ABOX_PREFIXES}\nms:tom_learner_warrant_t5 rdf:type ms:KCMastered ; rdf:type ms:KCMissing .`;
+  const result = await checkAboxConsistency(abox);
+
+  assert.equal(result.consistent, false);
+  assert.ok(result.violations.tom_learner_warrant_t5.includes('KCMastered'));
+  assert.ok(result.violations.tom_learner_warrant_t5.includes('KCMissing'));
+});
+
+test('casting consistency is scoped out of the default ToM check (decision 2B)', async () => {
+  // A role cast as both human and LLM is a setup error, not a ToM contradiction:
+  // the default check ignores it; a spec validator opts the casting module in.
+  const abox = `${ABOX_PREFIXES}\nms:role1 rdf:type ms:HumanCaster ; rdf:type ms:LLMCaster .`;
+
+  const defaultCheck = await checkAboxConsistency(abox);
+  assert.equal(defaultCheck.consistent, true);
+
+  const specCheck = await checkAboxConsistency(abox, {
+    modules: ['reasoning', 'poetics', 'consistency', 'casting'],
+  });
+  assert.equal(specCheck.consistent, false);
+  assert.ok(specCheck.violations.role1);
+});

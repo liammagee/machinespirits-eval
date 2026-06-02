@@ -6,6 +6,8 @@
 # ══════════════════════════════════════════════════════════════════════════════
 # Consistency axioms — the deliberate disjointness set that gives DL
 # consistency-checking TEETH over per-role acquired / theory-of-mind ABoxes.
+# This module is THEORY-OF-MIND ONLY (decision 2B); structural/casting
+# disjointness lives in casting-axioms.ttl and is loaded only by spec validation.
 #
 # Third module of the shared TBox (reasoning-core ⊕ poetics-core ⊕ consistency),
 # same namespace, co-loaded by services/ontology/reasoningOntology.js.
@@ -18,17 +20,20 @@
 # THE SET DEFINES WHAT COUNTS AS A ToM CONTRADICTION — tune it deliberately.
 # Design note: notes/ontology/2026-06-02-unified-ontology-consolidation.md §3.
 #
-# SNAPSHOT DISCIPLINE: disjointness is global in OWL — `A disjointWith B` forbids
-# ANY individual from being both, ever. A learner who moves AuthorityToDeferTo →
-# ThinkingPartner across the dialogue is the pedagogical GOAL, not a contradiction.
-# So consistency MUST be checked over a per-turn ABox SNAPSHOT, never the
-# accumulated union of all turns. (This is why acquired axioms are turn-stamped.)
+# SNAPSHOT DISCIPLINE (synchronic vs diachronic): disjointness is global in OWL —
+# `A disjointWith B` forbids ANY individual from being both, ever. But learning is
+# NONMONOTONIC: a learner who moves AuthorityToDeferTo → ThinkingPartner across the
+# dialogue is the pedagogical GOAL, not a contradiction. So a point-in-time
+# (synchronic) snapshot must be consistent; revision ACROSS snapshots (diachronic)
+# is expected development, NOT inconsistency. Consistency is therefore checked over
+# one per-turn ABox SNAPSHOT, never the accumulated union — and the cross-turn
+# (temporal) layer lives outside the DL. See the design note §3.1.
 # ══════════════════════════════════════════════════════════════════════════════
 
 ms:ConsistencyAxioms
   a owl:Ontology ;
   rdfs:label "Machine Spirits ToM / recognition consistency axioms" ;
-  rdfs:comment "Deliberate disjointness set for DL consistency-checking of per-role ToM ABoxes. OWL 2 EL-safe; checked per-turn-snapshot, not over the accumulated union." .
+  rdfs:comment "Deliberate ToM disjointness set for DL consistency-checking of per-role ABoxes. OWL 2 EL-safe; checked per-turn-snapshot, not over the accumulated union." .
 
 # ── Meta-vocabulary (used by consistency-rules.n3 + tooling to report violations) ─
 ms:Inconsistent a owl:Class ;
@@ -36,34 +41,35 @@ ms:Inconsistent a owl:Class ;
 ms:violatesDisjointness a owl:ObjectProperty ;
   rdfs:comment "links an inconsistent individual to a class it holds that is disjoint with another it also holds" .
 
+# ── KC-status vocabulary (decision 3A) ────────────────────────────────────────
+# Mastery is a property of a LEARNER about a KC, not of the KC in the abstract: the
+# ABox mints one status individual per (role's-model-of-learner, KC, turn) and types
+# it KCMastered or KCMissing (attachment via ms:aboutLearner / ms:aboutKC). Asserting
+# BOTH on that individual (the tutor's model says the learner both has and lacks the
+# skill at one snapshot) is the contradiction.
+ms:KCStatus a owl:Class .
+ms:KCMastered a owl:Class ; rdfs:subClassOf ms:KCStatus .
+ms:KCMissing a owl:Class ; rdfs:subClassOf ms:KCStatus .
+ms:aboutLearner a owl:ObjectProperty ; rdfs:comment "the learner this KC-status / ToM assertion is about" .
+ms:aboutKC a owl:ObjectProperty ; rdfs:range ms:KnowledgeComponent ; rdfs:comment "the knowledge component a KC-status is about" .
+
 # ══════════════════════════════════════════════════════════════════════════════
-# (A) ToM / recognition contradictions — the load-bearing set
+# ToM / recognition contradictions — the load-bearing set (all snapshot-scoped)
 # ══════════════════════════════════════════════════════════════════════════════
 
 # (1) PerceivedRole poles — the recognition axis itself. The learner cannot, at one
 #     snapshot, perceive the tutor as BOTH a pure authority-to-defer-to AND a mutual
-#     thinking-partner. The whole recognition programme is the defer→partner move;
-#     a ToM asserting both at once is incoherent (or a transition mid-flight).
+#     thinking-partner. The whole recognition programme is the defer→partner move.
 ms:AuthorityToDeferTo owl:disjointWith ms:ThinkingPartner .
 
 # (2) Claim-ownership poles — a conclusion held as one's own vs held weakly.
 ms:ConclusionOwned owl:disjointWith ms:ClaimOwnershipWeak .
 
-# (3) A recognition breakdown vs its repair, at one snapshot/target. (Modelling
-#     choice: a repair that FOLLOWS misrecognition across turns is a transition,
-#     not a contradiction — hence the snapshot discipline above.)
-ms:Misrecognition owl:disjointWith ms:RecognitionRepair .
+# (3A) KC mastery — a learner snapshot cannot both master AND lack the same KC.
+#      (The most natural ToM contradiction: a model that says the learner both can
+#      and cannot justify their reasoning.)
+ms:KCMastered owl:disjointWith ms:KCMissing .
 
-# ══════════════════════════════════════════════════════════════════════════════
-# (B) Structural / casting consistency — defined-ABox (spec) validation
-# ══════════════════════════════════════════════════════════════════════════════
-
-# (4) A role is played by exactly one kind of caster.
-ms:HumanCaster owl:disjointWith ms:LLMCaster .
-ms:HumanCaster owl:disjointWith ms:MockCaster .
-ms:LLMCaster   owl:disjointWith ms:MockCaster .
-
-# (5) The interior agencies are distinct (no individual is both an Ego and a Superego).
-ms:Ego owl:disjointWith ms:Superego .
-ms:Ego owl:disjointWith ms:Id .
-ms:Superego owl:disjointWith ms:Id .
+# NOTE: Misrecognition ⊥ RecognitionRepair was CUT (decision 1B). Breakdown→repair
+# is a nonmonotonic transition across turns (diachronic), handled by the temporal
+# layer, not a synchronic contradiction.

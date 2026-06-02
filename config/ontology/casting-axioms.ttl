@@ -1,0 +1,28 @@
+@prefix ms: <https://machinespirits.dev/ontology/reasoning#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Casting / structural consistency — DEFINED-ABox (spec) validation, NOT theory of
+# mind. Scoped OUT of the default ToM consistency check (decision 2B): this module
+# is registered but NOT in DEFAULT_MODULES, so checkAboxConsistency() never loads it
+# by default. A spec validator opts it in explicitly:
+#   loadSharedTBox(['reasoning','poetics','consistency','casting'])
+# The generic disjointness rule that flags violations lives in consistency-rules.n3,
+# so this file carries axioms only (no rules). OWL 2 EL-safe.
+# ══════════════════════════════════════════════════════════════════════════════
+
+ms:CastingAxioms
+  a owl:Ontology ;
+  rdfs:label "Machine Spirits casting / structural consistency axioms" ;
+  rdfs:comment "Disjointness for scenario-setup validation (a role has one caster; the interior agencies are distinct). Loaded by spec validation, not by ToM consistency checks." .
+
+# A role is played by exactly one kind of caster.
+ms:HumanCaster owl:disjointWith ms:LLMCaster .
+ms:HumanCaster owl:disjointWith ms:MockCaster .
+ms:LLMCaster   owl:disjointWith ms:MockCaster .
+
+# The interior agencies are distinct (no individual is both an Ego and a Superego).
+ms:Ego owl:disjointWith ms:Superego .
+ms:Ego owl:disjointWith ms:Id .
+ms:Superego owl:disjointWith ms:Id .
