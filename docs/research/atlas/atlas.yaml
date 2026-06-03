@@ -1,0 +1,201 @@
+# Geist Atlas manifest — a PROJECTION of paper-full-2.0.md into the research-atlas
+# form (short spine + semi-autonomous modules), per
+# notes/geist_dialogue_research_atlas_note.html §4.
+#
+# paper-full-2.0.md remains the single source of truth. This file does NOT carry
+# prose; it declares which heading anchors of the paper compose each module, plus
+# each module's claim-status. `sections:` are matched by section number
+# ("6.3" → "### 6.3 …", exact on the token) — robust to title edits.
+# Validate after editing the paper:  npm run atlas:validate
+# Build:                             npm run atlas:build
+
+atlas:
+  title: "Geist in the Machine"
+  subtitle: "A Research Atlas of Dialectical Agent Pedagogy"
+  source: paper-full-2.0.md
+
+  orientation: |
+    This atlas is a *projection* of the canonical paper (`paper-full-2.0.md`) into a
+    short spine plus a set of semi-autonomous modules. The paper remains the single
+    source of truth — every claim here is machine-checked against it under provable
+    discourse. The atlas exists so the work can be read by mechanism family rather
+    than as one ~280-page argument, and so live arcs (drama machine, charisma,
+    ontology) can grow as modules without restructuring the whole.
+
+    The consolidated single PDF is still available and unchanged: it *is* the source.
+    Build it with `npm run atlas:consolidated`. The modules below are derived views
+    of that same source — they cannot drift from it, because they are slices of it.
+
+  maps:
+    theoretical: |
+      The programme asks: *what kinds of agent-internal structure produce better
+      pedagogical relation, and which apparent structures are illusory, redundant,
+      or too costly to pay?* Three mechanism families organise the answer —
+      **recognition** (calibration + conditional error correction, the cleanest
+      results), **drama / charisma** (voice, persona, productive internal conflict),
+      and **ontology / state** (whether a modelable learner interior exists at all).
+    methodological: |
+      The apparatus is itself a contribution: process tracing adapted for agent
+      architectures, a provable-discourse framework that machine-verifies every
+      mechanism claim against the evaluation DB, four rubric iterations treated as
+      construct development, and the test suite as analytical provenance.
+    evidence: |
+      Each module declares a claim-status (grammar at the foot of this spine). The
+      table is generated from the manifest, so a status change here propagates to
+      the spine automatically.
+
+  # Numbered body sections deliberately not assigned to a module: §1 Introduction
+  # and §9 Conclusion are folded into this spine; §2 Related Work is shared context;
+  # §4 System Architecture is shared apparatus summarised in the methodological map.
+  exclude: ["1", "2", "4", "9"]
+
+families:
+  recognition: "Recognition and Pedagogical Calibration"
+  apparatus: "Apparatus as Method"
+  drama-charisma: "Drama and Charisma"
+  ontology-state: "Ontology, State, and the Limits of Interior Modeling"
+  translation: "Translation and Future Programme"
+
+modules:
+  - id: recognition-calibration
+    n: 1
+    title: "Recognition as Calibration"
+    family: recognition
+    status: settled
+    claim: >-
+      Recognition-oriented prompts narrow within-response dimension variance, lift
+      the weakest dimensions most, and operate identically without a superego — the
+      active ingredient is intersubjective-pedagogy orientation, not Hegelian vocabulary.
+    abstract: >-
+      The clean prompt-level mechanism: recognition acts as calibration, a floor-lifting
+      and variance-narrowing transformation of tutor output. Includes the A10/A10b
+      matched-pedagogy controls that locate the effect at the orientation-family level.
+    sections: ["3.2", "6.1", "7.9"]
+    cross_refs: ["superego-error-correction", "adaptive-null"]
+
+  - id: superego-error-correction
+    n: 2
+    title: "Superego as Conditional Error Corrector"
+    family: recognition
+    status: settled
+    claim: >-
+      Superego critique corrects errors and interacts with calibration through
+      universal substitution; its residual architectural benefit under recognition
+      is model-dependent (near-zero on strong models, large on weak ones).
+    abstract: >-
+      The architecture-level mechanism: what the superego catches, how critique
+      resolves across deliberation rounds, the factorial interaction, and the
+      ~15–17% additivity deficit consistent across three models.
+    sections: ["6.2", "6.4", "7.3"]
+    cross_refs: ["recognition-calibration"]
+
+  - id: adaptive-null
+    n: 3
+    title: "The Adaptive-Responsiveness Null"
+    family: recognition
+    status: killed
+    claim: >-
+      No experimental factor modulates within-dialogue trajectories (all d ≤ 0.15,
+      well-powered to detect d ≥ 0.27); the one exploratory single-scenario effect
+      did not survive pre-registered replication.
+    abstract: >-
+      The third pre-registered mechanism, turned from a failed hypothesis into a
+      substantive well-powered null — including the insight-action gap and the A16
+      cumulative-rewrite pre-registration.
+    sections: ["6.3"]
+    cross_refs: ["ontology-state-interior"]
+
+  - id: provable-discourse
+    n: 4
+    title: "Provable Discourse and Process Tracing for Agent Architectures"
+    family: apparatus
+    status: methods
+    claim: >-
+      The evaluation apparatus — process tracing, machine-checked claims, symmetry
+      rules, reproducible provenance — is a transferable method for mechanistic LLM
+      evaluation, not just background infrastructure.
+    abstract: >-
+      The apparatus-as-method module: superego-critique taxonomy, the provable-discourse
+      framework that verifies every mechanism claim against data, and the reproducibility
+      chain.
+    sections: ["5.3", "5.9", "5.11", "7.4"]
+    cross_refs: ["rubrics-as-instruments"]
+
+  - id: drama-machine
+    n: 5
+    title: "Drama Machine Pedagogy"
+    family: drama-charisma
+    status: planned
+    claim: >-
+      Can productive internal conflict be engineered as a stable source of pedagogical
+      quality, rather than merely simulated as roleplay?
+    abstract: >-
+      An active arc. Develops deliberative tension, role differentiation, and
+      anti-sycophantic friction as a pedagogical architecture extending — but not
+      reducible to — the ego/superego result. Prose lands as a new section of the
+      canonical paper; this module is the scaffold.
+    sections: []
+    cross_refs: ["superego-error-correction", "id-director-charisma"]
+
+  - id: id-director-charisma
+    n: 6
+    title: "The Id-Director and Charismatic Pedagogy"
+    family: drama-charisma
+    status: exploratory
+    claim: >-
+      Id-directed charisma can produce extraordinary pedagogical voice but trades off
+      against recognition-oriented elicitation; c104/c105/c107 are distinct design
+      points rather than one super-cell.
+    abstract: >-
+      A parallel architecture family — a transient ego repeatedly authored by a durable
+      id — scored on a Weberian charisma rubric independent of the v2.2 tutor rubric.
+    sections: ["6.7", "8.9"]
+    cross_refs: ["drama-machine", "recognition-calibration"]
+
+  - id: ontology-state-interior
+    n: 7
+    title: "Ontology, State, and the Failure of Rich Learner Interiors"
+    family: ontology-state
+    status: killed
+    claim: >-
+      Richer externalised learner state, hand-authored policy actions, counterfactual
+      replay, fitted policies, and a logged hidden interior are all null relative to
+      the strong implicit base — the apparatus is the durable contribution.
+    abstract: >-
+      The deepest theoretical arc, mostly negative: the adaptive runner and trap
+      methodology, bilateral-ToM and state-schema ablations, hypothesis tracking, and
+      the concealed-interior signal test. Asks whether there is a modelable interior
+      at all, or whether interiority is an artifact of trace design.
+    sections: ["6.8", "6.9", "6.10"]
+    cross_refs: ["adaptive-null", "provable-discourse"]
+
+  - id: rubrics-as-instruments
+    n: 8
+    title: "Rubrics as Instruments and Optimization Signals"
+    family: apparatus
+    status: methods
+    claim: >-
+      Rubric evolution is construct development; the rubric doubles as an optimisation
+      signal for automated prompt tuning, with dimension-targeted gains that partly
+      transfer across models.
+    abstract: >-
+      Treats the four rubric iterations, the measurement paradox, scoring, and
+      automated prompt tuning as instrument design rather than incidental tooling.
+    sections: ["5.2", "5.6", "7.7", "7.8"]
+    cross_refs: ["provable-discourse"]
+
+  - id: human-learning-translation
+    n: 9
+    title: "Human Learning Translation Agenda"
+    family: translation
+    status: future
+    claim: >-
+      All findings concern tutor output quality as judged by LLMs interacting with
+      synthetic learners; whether the supported mechanisms translate to human learning
+      outcomes is open.
+    abstract: >-
+      Separates judged tutor quality from human learning outcomes, motivated by the
+      model-dependent tutor-learner asymmetry and the synthetic-learner / LLM-judge
+      limits. The translation programme and its pilot infrastructure.
+    sections: ["6.5", "8.1", "8.2"]
+    cross_refs: ["recognition-calibration"]
