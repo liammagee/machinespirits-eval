@@ -806,6 +806,11 @@ claims:
       min_occurrences: 0
     evidence:
       type: provenance_check
+      # Dialogue logs are git-archived in the private sibling repo, not this
+      # paper-writing fork. Point at the canonical log archive (sibling layout
+      # per CLAUDE.md). TODO: consolidate all logs + DB into the private repo
+      # so this can revert to the default repo-relative logs/tutor-dialogues.
+      log_dir: ../machinespirits-eval-private/logs/tutor-dialogues
       checks:
         - dialogue_hash_match
       filters:
