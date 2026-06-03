@@ -260,7 +260,7 @@ node scripts/eval-cli.js rejudge <runId> --judge openrouter.gpt
 npm run analyze:reliability
 ```
 
-Full registry: `scripts/ANALYSIS-SCRIPTS.md`. Workflow guide: `docs/analysis-toolkit-guide.md`. Claude skill: `/analyze-data`.
+Full registry: `scripts/ANALYSIS-SCRIPTS.md`. Workflow guide: `docs/analysis-toolkit-guide.md`. Claude skill: `/ms-analyze-data`.
 
 ### Paper & Validation
 

@@ -72,7 +72,7 @@ drama:
 cast:
   director: llm:api:sonnet
   tutor:    llm:api:sonnet
-  learner:  llm:api:sonnet                     # swap to `human` to play the learner via /play-tutor
+  learner:  llm:api:sonnet                     # swap to `human` to play the learner via /ms-play-tutor
   critic:   llm:api:gpt
   default_backend: api
 

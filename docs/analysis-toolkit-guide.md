@@ -1,6 +1,6 @@
 # Analysis Toolkit Guide
 
-Decision tree for Paper 2.0 post-hoc analysis. See also `scripts/ANALYSIS-SCRIPTS.md` for full registry, and the `/analyze-data` Claude skill.
+Decision tree for Paper 2.0 post-hoc analysis. See also `scripts/ANALYSIS-SCRIPTS.md` for full registry, and the `/ms-analyze-data` Claude skill.
 
 ## Standard Pipeline (after a new run)
 

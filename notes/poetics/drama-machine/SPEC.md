@@ -1,6 +1,6 @@
 # The Drama Spec — How to Declare a Drama
 
-**Status:** design / v0.1 (2026-06-02). The `drama:` block reflects fields that **run today**; `cast:`, `audience:`, `turn_plan:`, `act_structure:`, and `learners:` are the **declarative target** — some lower to existing CLI flags (marked WIRED), some need a small loader/engine extension (marked TO-BUILD). The [`/drama-machine`](../../../.claude/skills/drama-machine/SKILL.md) skill is the lowering layer until a unified loader exists (roadmap #1).
+**Status:** design / v0.1 (2026-06-02). The `drama:` block reflects fields that **run today**; `cast:`, `audience:`, `turn_plan:`, `act_structure:`, and `learners:` are the **declarative target** — some lower to existing CLI flags (marked WIRED), some need a small loader/engine extension (marked TO-BUILD). The [`/ms-drama-machine`](../../../.claude/skills/ms-drama-machine/SKILL.md) skill is the lowering layer until a unified loader exists (roadmap #1).
 **Companions:** [`TAXONOMY.md`](TAXONOMY.md) (the slots) · [`ADAPTATION-MOVES.md`](ADAPTATION-MOVES.md) (the `turn_plan:` moves) · [`example-drama.yaml`](example-drama.yaml) (runnable).
 
 ---
@@ -89,7 +89,7 @@ cast:
   director:        llm:claude:opus       # who authors the scene card
   tutor:           llm:api:sonnet        # whole tutor (ego+superego+id share a backend unless split)
   tutor_superego:  llm:codex             # o   split a sub-agent onto a different backend
-  learner:         human                 # ← the human plays the learner (via /play-tutor today)
+  learner:         human                 # ← the human plays the learner (via /ms-play-tutor today)
   critic:          llm:api:gpt           # default audience model (overridable in audience:)
   default_backend: api                   # o   fallback for unset roles
 ```
@@ -101,7 +101,7 @@ cast:
 | `cast:` value | Lowers to | Status |
 |---|---|---|
 | `llm:<backend>:<model>` on any role | `--generator <backend>` + `--role-map "<role>=<backend>"` + model alias | **WIRED** |
-| `learner: human` | run via the `/play-tutor` skill (Claude tutor, human learner) | **WIRED** (interactive only) |
+| `learner: human` | run via the `/ms-play-tutor` skill (Claude tutor, human learner) | **WIRED** (interactive only) |
 | `tutor: human` | — | **TO-BUILD** (no `human` in `--generator`) |
 | freeze one side, vary the other | `replay-one-side.js --side learner` | **WIRED (learner)** / **TO-BUILD (tutor)** — needs `scriptedLearnerTurns` |
 | `critic:` per-drama binding | passed to the critic script | **TO-BUILD** (critic is a post-gen CLI choice today) |
@@ -171,7 +171,7 @@ The loader/skill should **accept and echo** these so specs are forward-stable, b
 
 ## 7. What runs today (the compile path)
 
-Until the unified loader (roadmap #1) lands, `/drama-machine` lowers a spec to the existing tools:
+Until the unified loader (roadmap #1) lands, `/ms-drama-machine` lowers a spec to the existing tools:
 
 ```bash
 # 1. drama: → a dramas: YAML entry (config/poetics-calibration/<name>.yaml)
@@ -191,7 +191,7 @@ node scripts/critic-poetics-omniscient-graded.js \
   --panel gpt,deepseek-v4-pro,qwen3.7-max,gemini-3.5-flash
 ```
 
-`cast.learner: human` instead routes to `/play-tutor` (interactive). A `mock` cast or the `--mock` flag (with any valid `--generator`) gives a free plumbing check.
+`cast.learner: human` instead routes to `/ms-play-tutor` (interactive). A `mock` cast or the `--mock` flag (with any valid `--generator`) gives a free plumbing check.
 
 ---
 

@@ -1,7 +1,7 @@
 # The Drama Machine — A Structural Model for Pedagogical Dramaturgy
 
 **Status:** design / v0.1 (2026-06-02). Systematises machinery already in the repo; does **not** yet implement the to-build elements it names.
-**Companions:** [`ADAPTATION-MOVES.md`](ADAPTATION-MOVES.md) (the per-role move catalog) · [`SPEC.md`](SPEC.md) (how to declare a drama) · [`example-drama.yaml`](example-drama.yaml) (a runnable one) · [`config/ontology/poetics-core.ttl`](../../../config/ontology/poetics-core.ttl) (the formal ontology) · [`.claude/skills/drama-machine/`](../../../.claude/skills/drama-machine/SKILL.md) (the invocable assembler).
+**Companions:** [`ADAPTATION-MOVES.md`](ADAPTATION-MOVES.md) (the per-role move catalog) · [`SPEC.md`](SPEC.md) (how to declare a drama) · [`example-drama.yaml`](example-drama.yaml) (a runnable one) · [`config/ontology/poetics-core.ttl`](../../../config/ontology/poetics-core.ttl) (the formal ontology) · [`.claude/skills/ms-drama-machine/`](../../../.claude/skills/ms-drama-machine/SKILL.md) (the invocable assembler).
 **Arc:** serves `DRAMATIC-RECOGNITION-PLAN.md`. Makes no new empirical claims (those live only in `docs/research/paper-full-2.0.md`).
 
 ---
@@ -26,7 +26,7 @@ A **drama** is a *binding of values to slots*. The **drama machine** is three st
                        [TO-BUILD]            [WIRED]               [WIRED]
 ```
 
-The assembler and the audience exist. The **sampler** (turn a brief into a filled spec) is the new connective tissue the `/drama-machine` skill provides. The deep gaps (act structure, multi-learner, recognition/catharsis *generators*) are roadmap, marked **[TO-BUILD]** throughout.
+The assembler and the audience exist. The **sampler** (turn a brief into a filled spec) is the new connective tissue the `/ms-drama-machine` skill provides. The deep gaps (act structure, multi-learner, recognition/catharsis *generators*) are roadmap, marked **[TO-BUILD]** throughout.
 
 ---
 
@@ -294,8 +294,8 @@ Orthogonal to the six parts: each **role** can be played by a human, a specific 
 | director | ✗ | ✓ `--role-map director=<backend>` | ✓ | CLI only |
 | tutor_ego / tutor_superego | ✗ | ✓ `--role-map tutor=…` | ✓ | CLI only |
 | learner_ego / learner_superego | ✗ | ✓ `--role-map learner=…` | ✓ | CLI only |
-| **tutor (whole)** | **Claude** | ✓ | — | `/play-tutor` skill (Claude tutor, human learner) |
-| **learner (whole)** | **✓ human** | ✓ | ✓ | `/play-tutor` (human) · `replay-one-side.js --side learner` (LLM/mock) |
+| **tutor (whole)** | **Claude** | ✓ | — | `/ms-play-tutor` skill (Claude tutor, human learner) |
+| **learner (whole)** | **✓ human** | ✓ | ✓ | `/ms-play-tutor` (human) · `replay-one-side.js --side learner` (LLM/mock) |
 | critic | ✓ (human labelling) | ✓ | ✓ | post-generation scripts |
 
 LLM backends: `claude` (Max-plan CLI) · `codex` (Codex CLI) · `gemini` (agy CLI) · `api` (OpenRouter, metered).
@@ -321,7 +321,7 @@ LLM backends: `claude` (Max-plan CLI) · `codex` (Codex CLI) · `gemini` (agy CL
                                                                                           (the WIRED audience) → consensus verdict
 ```
 
-**What runs today:** if every slot is specified with WIRED values, `/drama-machine` emits a spec the existing generator + critic execute end-to-end. **What the sampler adds:** turning a *partial* brief ("anxious learner, logarithms, aim for peripeteia") into a *fully-filled* spec by sampling the unspecified slots from sensible priors. **What stays roadmap:** act structure, anagnorisis/catharsis generators, multi-learner, the human-as-tutor and tutor-side-replay casting, and the unified critic-config dispatcher.
+**What runs today:** if every slot is specified with WIRED values, `/ms-drama-machine` emits a spec the existing generator + critic execute end-to-end. **What the sampler adds:** turning a *partial* brief ("anxious learner, logarithms, aim for peripeteia") into a *fully-filled* spec by sampling the unspecified slots from sensible priors. **What stays roadmap:** act structure, anagnorisis/catharsis generators, multi-learner, the human-as-tutor and tutor-side-replay casting, and the unified critic-config dispatcher.
 
 ---
 
@@ -330,7 +330,7 @@ LLM backends: `claude` (Max-plan CLI) · `codex` (Codex CLI) · `gemini` (agy CL
 | # | To-build | Leverage | Size |
 |---|---|---|---|
 | 1 | **Unified spec loader** — read `drama: / cast: / audience:` and dispatch to generator + critic from one entry-point | unlocks the whole declarative vision | M |
-| 2 | **The sampler** — brief → filled spec from priors (the `/drama-machine` skill does the lightweight version) | the "stochastic assembly" the user asked for | S–M |
+| 2 | **The sampler** — brief → filled spec from priors (the `/ms-drama-machine` skill does the lightweight version) | the "stochastic assembly" the user asked for | S–M |
 | 3 | **Tutor-side replay** (`scriptedLearnerTurns` hook) | symmetry; enables human/frozen learner + varied tutor | S |
 | 4 | **Act/beat structure** + turn-range cue placement | the central dramaturgical gap | L |
 | 5 | **Anagnorisis & catharsis generators** (not just detectors) | closes the §2.4 asymmetry | M |

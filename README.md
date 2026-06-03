@@ -205,13 +205,13 @@ This project includes [Claude Code skills](https://docs.anthropic.com/en/docs/cl
 
 | Command | What it does |
 |---------|-------------|
-| `/analyze-run <runId>` | Pull scores from DB, compute means, effect sizes, flag issues |
-| `/check-models [alias]` | Probe OpenRouter rate limits and availability |
-| `/build-paper` | Build paper PDF, check citations and cross-references |
-| `/run-eval <cells> --runs N` | Full generation + judging pipeline with pre-flight checks |
-| `/query-db <question>` | Natural language query against the evaluation database |
+| `/ms-analyze-run <runId>` | Pull scores from DB, compute means, effect sizes, flag issues |
+| `/ms-check-models [alias]` | Probe OpenRouter rate limits and availability |
+| `/ms-build-paper` | Build paper PDF, check citations and cross-references |
+| `/ms-run-eval <cells> --runs N` | Full generation + judging pipeline with pre-flight checks |
+| `/ms-query-db <question>` | Natural language query against the evaluation database |
 
-Skills with a `description` field (`analyze-run`, `check-models`, `query-db`) can also be invoked automatically by Claude when relevant to the conversation. `/run-eval` requires explicit invocation since it consumes API credits.
+Skills with a `description` field (`ms-analyze-run`, `ms-check-models`, `ms-query-db`) can also be invoked automatically by Claude when relevant to the conversation. `/ms-run-eval` requires explicit invocation since it consumes API credits.
 
 ## Running Tests
 

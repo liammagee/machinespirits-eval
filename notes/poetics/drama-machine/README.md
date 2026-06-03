@@ -19,12 +19,12 @@ A structural model + spec + skill for assembling **pedagogical dramas** — tuto
 | [`SPEC.md`](SPEC.md) | **The spec model.** How to declare a drama: `drama:` (what) / `cast:` (who plays each role) / `audience:` (critic config) / `turn_plan:` (moves), and how each lowers to existing tools. |
 | [`example-drama.yaml`](example-drama.yaml) | A worked, mostly-runnable spec (logarithms · anxious learner · peripeteia+catharsis). |
 | [`../../../config/ontology/poetics-core.ttl`](../../../config/ontology/poetics-core.ttl) + [`poetics-rules.n3`](../../../config/ontology/poetics-rules.n3) | **The formal ontology.** Drama forms, devices, moves, characters, casting — a real OWL/N3 ontology in the same namespace as `reasoning-core.ttl`, reasoned by the same EYE pipeline. Validates a `turn_plan` for form-conflicts (e.g. a catharsis target that includes a pseudo-catharsis move). |
-| [`../../../.claude/skills/drama-machine/SKILL.md`](../../../.claude/skills/drama-machine/SKILL.md) | **The assembler.** `/drama-machine <brief>` — maps a brief to slots, samples the rest, validates, emits a spec, optionally runs generator + critic. |
+| [`../../../.claude/skills/ms-drama-machine/SKILL.md`](../../../.claude/skills/ms-drama-machine/SKILL.md) | **The assembler.** `/ms-drama-machine <brief>` — maps a brief to slots, samples the rest, validates, emits a spec, optionally runs generator + critic. |
 
 ## The picture
 
 ```
-  BRIEF ──► /drama-machine ──► drama: / cast: / audience: / turn_plan:  spec
+  BRIEF ──► /ms-drama-machine ──► drama: / cast: / audience: / turn_plan:  spec
                   │                          │
             (sample slots          ┌─────────┴─────────┐
              from priors)          ▼                   ▼
@@ -41,7 +41,7 @@ The **assembler** and **audience** exist today. The **sampler** is the skill's c
 ## Quickstart
 
 ```
-/drama-machine a recognition tutor and an anxious learner on logarithms, aiming for peripeteia and catharsis --mock --run
+/ms-drama-machine a recognition tutor and an anxious learner on logarithms, aiming for peripeteia and catharsis --mock --run
 ```
 
 …or hand-write a spec from [`example-drama.yaml`](example-drama.yaml) and run it per [`SPEC.md`](SPEC.md) §7.
