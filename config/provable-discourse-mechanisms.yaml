@@ -954,14 +954,17 @@ claims:
       min_occurrences: 0
     evidence:
       type: code_path
-      file: "services/learnerTutorInteractionEngine.js"
+      # Fork note: the drama-machine learner engine composes labels dynamically
+      # (`learner_${role}`), so the literal three-stage labels live in the
+      # deliberation-trace consumer (evaluationRunner.js), not the engine.
+      file: "services/evaluationRunner.js"
       pattern: "learner_ego_initial|learner_superego|learner_ego_revision"
       min_matches: 3
     assertion:
       op: gte
       expected: 3
     remediation:
-      - "If learner deliberation labels are missing, check generateLearnerResponse()."
+      - "If learner deliberation labels are missing, check the learner ego/superego/revision trace handling in evaluationRunner.js (engine composes labels via learner_${role})."
     tags: [s4, architecture, verified]
 
   - id: paper2.s4.architecture.two_file_storage
