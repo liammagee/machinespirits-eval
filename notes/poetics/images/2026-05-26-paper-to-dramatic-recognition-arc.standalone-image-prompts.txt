@@ -1,7 +1,7 @@
 # Cartoon Image Prompts
 
-Source HTML: notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html
-Generated at: 2026-06-03T13:05:55.031Z
+Source HTML: notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.standalone.html
+Generated at: 2026-06-03T13:00:23.228Z
 Panel count: 9
 Format: png
 
@@ -9,7 +9,7 @@ Format: png
 
 Title: From Paper 2.0 to dramatic recognition
 Description: A live, data-driven synthesis note. The last paper found that recognition prompts and a draft-then-critique architecture did not change tutor trajectories on average. This branch sharpens that broad null into a narrower question: can a tutor answer a learner's specific stuck point with a visible change of move? Every claim here links into the running poetics browser for proof.
-Top terms: tutor, learner, recognition, mechanism, room, adaptation, witness, clean, three, critic, case, control, file, back, paper, pass, routine, secret
+Top terms: tutor, const, learner, recognition, room, witness, clean, mechanism, adaptation, critic, three, case, file, control, back, null, routine, gate
 
 Selected sections:
 - 01 #starting-point: The last paper gave us a disciplined mechanism story, not a deployed adaptive tutor. -> notes/poetics/images/dramatic-recognition-arc-01.png

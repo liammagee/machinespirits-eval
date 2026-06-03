@@ -699,12 +699,20 @@ function buildManagedStyleBlock() {
     border-bottom: 1px solid var(--rule);
     padding: clamp(0.8rem, 1.7vw, 1.1rem) 0;
   }
+  .arc-cartoon__frame {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    border: 1px solid var(--rule);
+    background: var(--paper-3);
+    overflow: hidden;
+  }
   .arc-cartoon__img {
     display: block;
     width: 100%;
-    height: auto;
-    border: 1px solid var(--rule);
-    background: var(--paper-3);
+    height: 100%;
+    object-fit: contain;
   }
   .arc-cartoon figcaption {
     display: grid;
@@ -736,7 +744,9 @@ function buildFigureBlock(panel) {
   const number = String(panel.panel).padStart(2, '0');
   return `          <!-- poetics-arc-images:begin panel="${number}" section="${escapeHtml(panel.section_id)}" -->
           <figure class="arc-cartoon" data-arc-image-panel="${number}" data-arc-image-section="${escapeHtml(panel.section_id)}">
-            <img class="arc-cartoon__img" src="${escapeHtml(panel.image_src)}" alt="${escapeHtml(panel.alt)}" loading="lazy" decoding="async" />
+            <div class="arc-cartoon__frame">
+              <img class="arc-cartoon__img" src="${escapeHtml(panel.image_src)}" alt="${escapeHtml(panel.alt)}" loading="lazy" decoding="async" />
+            </div>
             <figcaption><span>Panel ${number}</span>${escapeHtml(panel.caption)}</figcaption>
           </figure>
           <!-- poetics-arc-images:end panel="${number}" -->`;

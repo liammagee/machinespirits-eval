@@ -94,6 +94,7 @@
     "poetics:browse": "node scripts/browse-poetics-scripts.js",
     "poetics:arc-images": "node scripts/generate-poetics-arc-images.js",
     "poetics:package-arc": "node notes/poetics/package-standalone.js notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html",
+    "poetics:publish-arc": "node notes/poetics/publish-arc-to-site.js",
     "atlas:validate": "node scripts/build-atlas.js validate",
     "atlas:build": "node scripts/build-atlas.js build",
     "atlas:module": "node scripts/build-atlas.js module",

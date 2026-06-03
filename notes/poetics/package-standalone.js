@@ -8,34 +8,46 @@
 
    Usage:  node notes/poetics/package-standalone.js <doc.html> [out.html]
    Default out: <doc>.standalone.html
+
+   Also exports bundleStandalone(input) -> html string, so other tooling
+   (e.g. publish-arc-to-site.js) can reuse the inliner without shelling out.
 */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve, basename, extname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const [, , input, output] = process.argv;
-if (!input) {
-  console.error('usage: node package-standalone.js <doc.html> [out.html]');
-  process.exit(1);
-}
-
-const docDir = dirname(input);
 const isLocal = (href) => Boolean(href) && !/^(https?:)?\/\//.test(href) && !href.startsWith('data:');
 
-let html = readFileSync(input, 'utf8');
+// Inline a doc's local stylesheets and scripts; return the self-contained HTML
+// string. Remote (CDN) and data: refs pass through untouched.
+export function bundleStandalone(input) {
+  const docDir = dirname(input);
+  let html = readFileSync(input, 'utf8');
 
-// inline local stylesheets (remote CDN links pass through untouched)
-html = html.replace(/<link\b[^>]*rel="stylesheet"[^>]*>/g, (tag) => {
-  const m = tag.match(/href="([^"]+)"/);
-  if (!m || !isLocal(m[1])) return tag;
-  return '<style>\n' + readFileSync(resolve(docDir, m[1]), 'utf8') + '\n</style>';
-});
+  // inline local stylesheets (remote CDN links pass through untouched)
+  html = html.replace(/<link\b[^>]*rel="stylesheet"[^>]*>/g, (tag) => {
+    const m = tag.match(/href="([^"]+)"/);
+    if (!m || !isLocal(m[1])) return tag;
+    return '<style>\n' + readFileSync(resolve(docDir, m[1]), 'utf8') + '\n</style>';
+  });
 
-// inline local <script src> (inline JSON/data scripts have no src, so are left alone)
-html = html.replace(/<script\b[^>]*\bsrc="([^"]+)"[^>]*><\/script>/g, (tag, src) => {
-  if (!isLocal(src)) return tag;
-  return '<script>\n' + readFileSync(resolve(docDir, src), 'utf8') + '\n</script>';
-});
+  // inline local <script src> (inline JSON/data scripts have no src, so are left alone)
+  html = html.replace(/<script\b[^>]*\bsrc="([^"]+)"[^>]*><\/script>/g, (tag, src) => {
+    if (!isLocal(src)) return tag;
+    return '<script>\n' + readFileSync(resolve(docDir, src), 'utf8') + '\n</script>';
+  });
 
-const out = output || join(docDir, basename(input, extname(input)) + '.standalone' + extname(input));
-writeFileSync(out, html);
-console.log('wrote ' + out + ' (self-contained)');
+  return html;
+}
+
+// CLI entry — only when run directly, not when imported.
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const [, , input, output] = process.argv;
+  if (!input) {
+    console.error('usage: node package-standalone.js <doc.html> [out.html]');
+    process.exit(1);
+  }
+  const out = output || join(dirname(input), basename(input, extname(input)) + '.standalone' + extname(input));
+  writeFileSync(out, bundleStandalone(input));
+  console.log('wrote ' + out + ' (self-contained)');
+}
