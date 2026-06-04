@@ -17,8 +17,8 @@ atlas:
   orientation: |
     This atlas is a *projection* of the canonical paper (`paper-full-2.0.md`) into a
     short spine plus a set of semi-autonomous modules. The paper remains the single
-    source of truth — every claim here is machine-checked against it under provable
-    discourse. The atlas exists so the work can be read by mechanism family rather
+    source of truth — every paper claim the modules derive from is machine-checked
+    against the evaluation DB under provable discourse. The atlas exists so the work can be read by mechanism family rather
     than as one ~280-page argument, and so live arcs (drama machine, charisma,
     ontology) can grow as modules without restructuring the whole.
 
@@ -31,7 +31,7 @@ atlas:
       The programme asks: *what kinds of agent-internal structure produce better
       pedagogical relation, and which apparent structures are illusory, redundant,
       or too costly to pay?* Three mechanism families organise the answer —
-      **recognition** (calibration + conditional error correction, the cleanest
+      **recognition** (calibration + conditional error correction, the settled
       results), **drama / charisma** (voice, persona, productive internal conflict),
       and **ontology / state** (whether a modelable learner interior exists at all).
     methodological: |
@@ -158,9 +158,12 @@ modules:
     family: ontology-state
     status: killed
     claim: >-
-      Richer externalised learner state, hand-authored policy actions, counterfactual
-      replay, fitted policies, and a logged hidden interior are all null relative to
-      the strong implicit base — the apparatus is the durable contribution.
+      Richer externalised learner state, hand-authored elaborations beyond the lean
+      `state_policy` base (bilateral-ToM, state enrichment, evidence-bound nodes),
+      counterfactual replay, fitted policies, and a logged hidden interior are null
+      relative to the strong implicit base — the base `state_policy` architecture
+      itself produces only a bounded binary-channel positive (47.8% strict_shift) —
+      the apparatus is the durable contribution.
     abstract: >-
       The deepest theoretical arc, mostly negative: the adaptive runner and trap
       methodology, bilateral-ToM and state-schema ablations, hypothesis tracking, and
@@ -176,8 +179,9 @@ modules:
     status: methods
     claim: >-
       Rubric evolution is construct development; the rubric doubles as an optimisation
-      signal for automated prompt tuning, with dimension-targeted gains that partly
-      transfer across models.
+      signal for automated prompt tuning, with measurable tuning gains that transfer
+      asymmetrically across models — favourable in one direction, destructive in the
+      other, so optimisation must be model-stratified.
     abstract: >-
       Treats the four rubric iterations, the measurement paradox, scoring, and
       automated prompt tuning as instrument design rather than incidental tooling.
