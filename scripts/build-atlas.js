@@ -206,11 +206,14 @@ function buildSpine(man, paper) {
 
   out.push('## Evidence map\n');
   if (a.maps?.evidence) out.push(`${a.maps.evidence.trim()}\n`);
-  out.push('| # | Module | Family | Status | Claim |');
-  out.push('|---|--------|--------|--------|-------|');
+  // Scannable index only — #/Module/Family/Status. The full claim sentence is
+  // not a table column (it wraps badly in a narrow cell and balloons the table
+  // across pages); each module's claim is carried as prose in "The modules" below.
+  out.push('| # | Module | Family | Status |');
+  out.push('|---|--------|--------|--------|');
   for (const m of byN(man)) {
     const st = STATUS[m.status] || { tag: m.status };
-    out.push(`| ${m.n} | ${cell(m.title)} | ${cell(familyLabel(man, m.family))} | ${st.tag} | ${cell(m.claim)} |`);
+    out.push(`| ${m.n} | ${cell(m.title)} | ${cell(familyLabel(man, m.family))} | ${st.tag} |`);
   }
   out.push('');
 
