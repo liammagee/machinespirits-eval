@@ -16,6 +16,13 @@ const NS = 'https://machinespirits.dev/ontology/reasoning#';
 const TBOX_MODULES = Object.freeze({
   reasoning: { tbox: 'reasoning-core.ttl', rules: 'reasoning-rules.n3' },
   poetics: { tbox: 'poetics-core.ttl', rules: 'poetics-rules.n3' },
+  // Adaptation / recognition / correction decomposition (v0.1, draft). Lifts the
+  // run-poetics-adaptation-loop gate-struct into declarative facts: the 8-stage
+  // pipeline, recognition-origin (organic vs peripeteia_induced), correction-origin
+  // (scaffolded vs self), and the three "correction" senses. OPT-IN ONLY (not in
+  // DEFAULT_MODULES): load via loadSharedTBox([...,'adaptation']). See
+  // tests/adaptationOntology.test.js for the verified worked ABox.
+  adaptation: { tbox: 'adaptation-core.ttl', rules: 'adaptation-rules.n3' },
   consistency: { tbox: 'consistency-axioms.ttl', rules: 'consistency-rules.n3' },
   // Structural/casting disjointness — spec validation only (decision 2B). NOT in
   // DEFAULT_MODULES: opt in via loadSharedTBox([...,'consistency','casting']). Axioms

@@ -1,0 +1,146 @@
+@prefix ms: <https://machinespirits.dev/ontology/reasoning#> .
+@prefix math: <http://www.w3.org/2000/10/swap/math#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# adaptation-rules.n3 -- loads alongside poetics-rules.n3 (concatenated). ALL rules
+# below were RUN through eyereasoner n3reasoner deductive_closure (the repo pipeline,
+# reasoningOntology.js:206) over the worked ABox + the real repo TBox; every
+# "=> {...}" head below was observed in the closure output. NO scoped negation-as-
+# failure is used (mirroring the repo's monotonic style); incompleteness is carried
+# by a POSITIVE ms:chainBroken marker, not by an underivable ms:chainComplete false.
+
+# -- self-contained subclass/type closure (mirrors poetics-rules.n3 exactly) -----
+{ ?a rdfs:subClassOf ?b. ?b rdfs:subClassOf ?c } => { ?a rdfs:subClassOf ?c } .
+{ ?x rdf:type ?c. ?c rdfs:subClassOf ?d } => { ?x rdf:type ?d } .
+
+# ============================================================================
+# ABOX-POPULATION BRIDGE: numeric gate-struct fields -> the boolean/typed
+# predicates the chain rules consume. THIS is the "lift the JS gate-struct into
+# declarative facts" step the prior decomposition left unspecified. math:
+# builtins are confirmed firing in this eyereasoner's deductive_closure.
+# ============================================================================
+
+# T-GATEFIRED-ACTIONAL: actionalVotes >= cut fires the DevicePerformance gate.
+{ ?s a ms:DevicePerformanceStage ; ms:partOfEvent ?e ; ms:actionalVotes ?v . ?v math:notLessThan 3 }
+  => { ?s ms:gateFired true } .
+# T-RECON-HIGH / T-RECON-LOW: recontextualization score -> boolean (both directions).
+{ ?r a ms:ReorientationStage ; ms:recontextualization ?x . ?x math:notLessThan 75 } => { ?r ms:recontextualizationHigh true } .
+{ ?r a ms:ReorientationStage ; ms:recontextualization ?x . ?x math:lessThan 75 }    => { ?r ms:recontextualizationHigh false } .
+# T-STATED-HIGH: statedInsight score -> boolean.
+{ ?r a ms:ReorientationStage ; ms:statedInsight ?x . ?x math:notLessThan 75 } => { ?r ms:statedInsightHigh true } .
+# T-RECOGNITION-GATE: a high-recontextualization Reorientation fires its own gate.
+{ ?r a ms:ReorientationStage ; ms:recontextualizationHigh true } => { ?r ms:gateFired true } .
+
+# ============================================================================
+# THE LOAD-BEARING DISTINCTION: intervention-attributable vs organic recognition.
+# DERIVED from the stage chain. Organic is the DEFAULT; PeripeteiaInduced is MARKED.
+# ============================================================================
+
+# R1 chainComplete TRUE: all six upstream gates fired on the same event.
+{ ?s1 a ms:PressureTriggerStage        ; ms:partOfEvent ?e ; ms:gateFired true .
+  ?s2 a ms:MechanismShiftStage         ; ms:partOfEvent ?e ; ms:gateFired true .
+  ?s3 a ms:DeviceOfferStage            ; ms:partOfEvent ?e ; ms:gateFired true .
+  ?s4 a ms:DevicePerformanceStage      ; ms:partOfEvent ?e ; ms:gateFired true .
+  ?s5 a ms:OldCheckNamingStage         ; ms:partOfEvent ?e ; ms:gateFired true .
+  ?s6 a ms:ReplacementCheckNamingStage ; ms:partOfEvent ?e ; ms:gateFired true .
+  ?r  a ms:ReorientationStage          ; ms:partOfEvent ?e }
+  => { ?r ms:chainComplete true . ?e ms:chainComplete true } .
+
+# R1b chainBroken TRUE (the FIX for the dead R3): ANY upstream stage on the event
+# with gateFired=false POSITIVELY marks the chain broken. Monotonic -- replaces the
+# underivable "ms:chainComplete false" premise the critique flagged.
+{ ?su a ms:AdaptationRecognitionStage ; ms:partOfEvent ?e ; ms:gateFired false .
+  ?r  a ms:ReorientationStage         ; ms:partOfEvent ?e }
+  => { ?r ms:chainBroken true . ?e ms:chainBroken true } .
+
+# R2 PERIPETEIA-INDUCED (marked): complete chain + Reorientation gate fired.
+{ ?r a ms:ReorientationStage ; ms:chainComplete true ; ms:gateFired true }
+  => { ?r a ms:PeripeteiaInducedRecognition } .
+# R3 ORGANIC (default, NOW FIRES): a fired Reorientation whose chain is BROKEN.
+{ ?r a ms:ReorientationStage ; ms:gateFired true ; ms:chainBroken true }
+  => { ?r a ms:OrganicRecognition } .
+
+# ============================================================================
+# CONTROL-LEAK: the event->policy bridge (the FIX for the inert R4) + the leak.
+# ============================================================================
+
+# R-POLICY: lift the arm's policy onto the event (was the missing event->hasPolicy edge).
+{ ?e ms:onArm ?arm . ?arm ms:appliesPolicy ?p } => { ?e ms:hasPolicy ?p } .
+# R4 CONTROL-LEAK (NOW FIRES): any fired Reorientation on a hold-policy arm.
+{ ?e ms:hasPolicy ?p . ?p ms:forbidsChainActivation ms:ReorientationStage .
+  ?r a ms:ReorientationStage ; ms:partOfEvent ?e ; ms:gateFired true }
+  => { ?e ms:hasFailureAxis ms:control_leak } .
+
+# ============================================================================
+# PER-STAGE GATE (UN)FIRING + FailureAxis binding (each pins the first unfired gate).
+# ============================================================================
+
+# R5 instrumented-pressure precondition: only a director-cued, branch-local trigger fires.
+{ ?s a ms:PressureTriggerStage ; ms:realizedBy ?t . ?t ms:isDirectorCued true ; ms:branchLocal true }
+  => { ?s ms:gateFired true } .
+# R6 wrong-trigger -> mechanism_not_publicly_resolved (the D53 KEYSTONE, VERIFIED).
+{ ?rc a ms:RouteChange ; ms:consumesTrigger ?t ; ms:leavesUnusedCandidate ?u .
+  ?t ms:isDirectorCued false . ?u ms:isDirectorCued true .
+  ?s a ms:MechanismShiftStage ; ms:realizedBy ?rc ; ms:partOfEvent ?e }
+  => { ?s ms:gateFired false . ?e ms:hasFailureAxis ms:mechanism_not_publicly_resolved } .
+# R6b superego-drives-mechanism (sense-2 tutor driver): superego routing the director cue fires the gate.
+{ ?se ms:correctsAgency ms:Ego ; ms:correctsRouteFamily ?rc .
+  ?rc ms:consumesTrigger ?t . ?t ms:isDirectorCued true .
+  ?s a ms:MechanismShiftStage ; ms:realizedBy ?rc }
+  => { ?s ms:gateFired true } .
+# R6c private-only: a route surfacing no public device.
+{ ?rc a ms:RouteChange ; ms:surfacesAsDevice false .
+  ?off a ms:DeviceOfferStage ; ms:realizedBy ?rc ; ms:partOfEvent ?e }
+  => { ?off ms:gateFired false . ?e ms:hasFailureAxis ms:private_only_adaptation } .
+# R7 action-gap: committed only in stage-business OR actionalVotes below cut.
+{ ?pd a ms:PerformDevice ; ms:committedInSpeech false .
+  ?s a ms:DevicePerformanceStage ; ms:realizedBy ?pd ; ms:partOfEvent ?e }
+  => { ?s ms:gateFired false . ?e ms:hasFailureAxis ms:action_gap } .
+{ ?s a ms:DevicePerformanceStage ; ms:partOfEvent ?e ; ms:actionalVotes ?v . ?v math:lessThan 3 }
+  => { ?s ms:gateFired false . ?e ms:hasFailureAxis ms:action_gap } .
+# R8 costume-guard preserves the stems (sense-2 learner driver): keeps stages 5-6 fireable.
+{ ?se ms:correctsAgency ms:Ego ; ms:preservesStem ?rf .
+  ?rf ms:problemNamed true ; ms:replacementNamed true ; ms:anchorOverlap ?o . ?o math:lessThan 0.5 .
+  ?s5 a ms:OldCheckNamingStage ; ms:realizedBy ?rf ; ms:partOfEvent ?e .
+  ?s6 a ms:ReplacementCheckNamingStage ; ms:realizedBy ?rf ; ms:partOfEvent ?e }
+  => { ?s5 ms:gateFired true . ?s6 ms:gateFired true } .
+
+# ============================================================================
+# CORRECTION-ORIGIN classifier (NEW, the critique's missing-component #4):
+# scaffolded vs self-discovered repair, parallel to recognition-origin.
+# ============================================================================
+
+# R-CORR-SCAFFOLDED: repair on an event whose MechanismShift gate fired = tutor-induced.
+{ ?h a ms:HamartiaRepairStage ; ms:partOfEvent ?e ; ms:gateFired true .
+  ?s a ms:MechanismShiftStage ; ms:partOfEvent ?e ; ms:gateFired true }
+  => { ?h a ms:ScaffoldedRepair ; ms:correctionOrigin ms:tutor_induced } .
+# R-CORR-SELF: repair on an event carrying a recognition FailureAxis = self-discovered.
+{ ?h a ms:HamartiaRepairStage ; ms:partOfEvent ?e ; ms:gateFired true .
+  ?e ms:hasFailureAxis ?f }
+  => { ?h a ms:SelfRepair ; ms:correctionOrigin ms:self_discovered } .
+
+# ============================================================================
+# CORRECTION (sense 1) IS ORTHOGONAL TO RECOGNITION.
+# ============================================================================
+
+# R-REPAIR: a fired HamartiaRepair on an event ALSO carrying a FailureAxis is
+# repair-without-recognition-credit (D53: strongest repair, still fails). VERIFIED.
+{ ?h a ms:HamartiaRepairStage ; ms:partOfEvent ?e ; ms:gateFired true .
+  ?e ms:hasFailureAxis ?f }
+  => { ?e a ms:repairWithoutRecognitionCredit ; ms:repairDespite ?f } .
+# R-FALSE-CLOSURE (the FIX: keys on DERIVED booleans from the thresholding rules above).
+{ ?r a ms:ReorientationStage ; ms:statedInsightHigh true ; ms:recontextualizationHigh false }
+  => { ?r a ms:FalseClosureRecognition . ?r ms:contraindicatesForm ms:Catharsis } .
+
+# ============================================================================
+# CORRECTION (sense 3): loop-corrects-generator (diagnostic saturation).
+# NOTE (honest): R-SAT requires >=3 chained iteration individuals each carrying a
+# FailureAxis; the live loop-status artifacts have only ONE usable iteration
+# (iteration-2 hit a stageError), so R-SAT is VERIFIED on a synthetic 3-iteration
+# ABox but UNINSTANTIATED on the real corpus -- see open_questions.
+# ============================================================================
+{ ?loop ms:iteration ?i1 , ?i2 , ?i3 .
+  ?i1 ms:hasFailureAxis ?ax . ?i2 ms:hasFailureAxis ?ax . ?i3 ms:hasFailureAxis ?ax .
+  ?i1 ms:precedesIteration ?i2 . ?i2 ms:precedesIteration ?i3 }
+  => { ?loop ms:saturatedOn ?ax ; ms:demandsSurgery true } .

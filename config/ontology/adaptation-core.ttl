@@ -1,0 +1,162 @@
+@prefix ms: <https://machinespirits.dev/ontology/reasoning#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# ==============================================================================
+# adaptation-core.ttl -- Adaptation / Recognition / Correction core module.
+#
+# SAME namespace as reasoning-core.ttl + poetics-core.ttl, concatenated at runtime
+# and reasoned over by the same eyereasoner n3reasoner deductive_closure pipeline
+# (services/ontology/reasoningOntology.js:206). It lifts the procedural gate-struct
+# in run-poetics-adaptation-loop.js:summarizeItem into ontology-derived facts.
+#
+# REVISION NOTE (fixes the adversarial critique): three rules in the prior draft
+# were structurally dead under monotonic forward-chaining. Fixed by (a) an inverted
+# Organic-default / Induced-marked split driven by a POSITIVE ms:chainBroken marker
+# (no underivable ms:chainComplete-false); (b) an event->policy derivation bridge
+# (ms:onArm . ms:appliesPolicy => ms:hasPolicy) so control_leak fires; (c) in-rule
+# numeric->boolean thresholding so FalseClosure + the recognition gate fire from the
+# raw score fields. A correction-ORIGIN classifier (ScaffoldedRepair/SelfRepair) was
+# added. The GateSignal layer, ms:precedesStage, ms:scoredOnAxis-on-stages-1-7,
+# ms:TutorIdDirection, ms:ToMMisrecognitionRepair, and the static realizedBy->
+# GenuineAnagnorisis/VoiceMisfit bindings were DELETED as inert. Every head triple
+# in adaptation-rules.n3 was observed in a live closure run over this TBox.
+#
+# GENERATIVE SCAFFOLDING, NOT a measurement-improvement claim (the prior ToM layer
+# was an empirical NULL). REUSES (no redefinition): ms:Peripeteia, ms:Anagnorisis,
+# ms:Catharsis, ms:HamartiaIntegration, ms:ReversalTrigger (+5 individuals),
+# ms:RouteChange, ms:PerformDevice, ms:Reframe, ms:Ego/Superego/Id,
+# ms:TutorAdaptationPolicy/ms:RoutineHold/ms:PeripeteiaPolicy, ms:RecognitionRepair,
+# ms:Misrecognition, ms:contraindicatesForm, ms:hasInteriorAgency.
+# ==============================================================================
+
+ms:AdaptationCoreOntology a owl:Ontology ;
+  rdfs:label "Machine Spirits adaptation / recognition / correction core" ;
+  rdfs:comment "Eight-stage adaptation->recognition pipeline + three correction senses, extending poetics-core.ttl in the same ms: namespace and eyereasoner pipeline." .
+
+# -- the eight temporal micro-stages (parent typed so R1b can match 'any stage') --
+ms:AdaptationRecognitionStage a owl:Class ;
+  rdfs:comment "Abstract parent of the eight stages. Each stage's gate is a per-transcript ms:gateFired boolean (NO separate GateSignal layer -- removed as inert)." .
+ms:PressureTriggerStage        a owl:Class ; rdfs:subClassOf ms:AdaptationRecognitionStage .
+ms:MechanismShiftStage         a owl:Class ; rdfs:subClassOf ms:AdaptationRecognitionStage .
+ms:DeviceOfferStage            a owl:Class ; rdfs:subClassOf ms:AdaptationRecognitionStage .
+ms:DevicePerformanceStage      a owl:Class ; rdfs:subClassOf ms:AdaptationRecognitionStage .
+ms:OldCheckNamingStage         a owl:Class ; rdfs:subClassOf ms:AdaptationRecognitionStage .
+ms:ReplacementCheckNamingStage a owl:Class ; rdfs:subClassOf ms:AdaptationRecognitionStage .
+ms:ReorientationStage          a owl:Class ; rdfs:subClassOf ms:AdaptationRecognitionStage .
+ms:HamartiaRepairStage         a owl:Class ; rdfs:subClassOf ms:AdaptationRecognitionStage ;
+  rdfs:comment "Stage 8, the CORRECTION axis. A fired repair never confers recognition credit (R-REPAIR)." .
+
+# -- recognition-origin: Organic (default) and Induced are SIBLINGS, kept disjoint --
+# (NOT subclass-of-each-other: making Induced subClassOf Organic self-violates the
+#  disjointness on every complete chain -- caught and fixed during verification.)
+ms:OrganicRecognition           a owl:Class ; rdfs:subClassOf ms:ReorientationStage ;
+  rdfs:comment "DEFAULT class for a fired Reorientation on a BROKEN chain (R3). On a hold arm it is control_leak (R4)." .
+ms:PeripeteiaInducedRecognition a owl:Class ; rdfs:subClassOf ms:ReorientationStage ;
+  rdfs:comment "MARKED: derived (not voted) iff ms:chainComplete true (R2)." .
+ms:FalseClosureRecognition      a owl:Class ; rdfs:subClassOf ms:ReorientationStage ;
+  rdfs:comment "statedInsightHigh & not recontextualizationHigh -> unearned closure (R-FALSE-CLOSURE)." .
+ms:OrganicRecognition owl:disjointWith ms:PeripeteiaInducedRecognition .
+
+# -- correction-origin: parallel classifier (NEW -- the critique's missing #4) -----
+ms:ScaffoldedRepair a owl:Class ; rdfs:subClassOf ms:HamartiaRepairStage ;
+  rdfs:comment "Repair on an event whose MechanismShift gate fired -> tutor_induced (R-CORR-SCAFFOLDED)." .
+ms:SelfRepair       a owl:Class ; rdfs:subClassOf ms:HamartiaRepairStage ;
+  rdfs:comment "Repair on an event carrying a recognition FailureAxis -> self_discovered (R-CORR-SELF)." .
+ms:ScaffoldedRepair owl:disjointWith ms:SelfRepair .
+
+ms:CorrectionOrigin a owl:Class .
+ms:tutor_induced   a ms:CorrectionOrigin .
+ms:self_discovered a ms:CorrectionOrigin .
+
+# -- failure axes (reified objects, not string labels) --------------------------
+ms:FailureAxis a owl:Class .
+ms:control_leak                    a ms:FailureAxis .
+ms:action_gap                      a ms:FailureAxis .
+ms:branch_invalid                  a ms:FailureAxis .
+ms:private_only_adaptation         a ms:FailureAxis .
+ms:mechanism_not_publicly_resolved a ms:FailureAxis .
+ms:recognition_not_produced        a ms:FailureAxis .
+
+ms:repairWithoutRecognitionCredit a owl:Class ;
+  rdfs:comment "Event with a fired HamartiaRepairStage that ALSO carries a recognition FailureAxis." .
+ms:DiagnosticSaturation a owl:Class ;
+  rdfs:comment "Loop-corrects-generator: N iterations on the same FailureAxis -> ms:demandsSurgery." .
+
+# -- object / datatype properties (NEW only) ------------------------------------
+ms:partOfEvent    a owl:ObjectProperty ; rdfs:domain ms:AdaptationRecognitionStage ;
+  rdfs:comment "links a stage to its adaptation->recognition event (the chain rules key on this, NOT on ordering)." .
+ms:realizedBy     a owl:ObjectProperty ; rdfs:domain ms:AdaptationRecognitionStage ;
+  rdfs:comment "binds a stage to a PER-TRANSCRIPT reused move/trigger/reframe individual (R5/R6/R8 match these). The STATIC spec bindings were removed as inert." .
+ms:gateFired      a owl:DatatypeProperty ; rdfs:domain ms:AdaptationRecognitionStage ; rdfs:range xsd:boolean .
+ms:chainComplete  a owl:DatatypeProperty ; rdfs:range xsd:boolean .
+ms:chainBroken    a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+  rdfs:comment "POSITIVE incompleteness marker (R1b). Replaces the underivable ms:chainComplete-false the critique flagged." .
+
+# numeric score fields + their derived booleans (the ABox-population bridge) ------
+ms:recontextualization     a owl:DatatypeProperty ; rdfs:range xsd:decimal .
+ms:recontextualizationHigh a owl:DatatypeProperty ; rdfs:range xsd:boolean .
+ms:statedInsight           a owl:DatatypeProperty ; rdfs:range xsd:decimal .
+ms:statedInsightHigh       a owl:DatatypeProperty ; rdfs:range xsd:boolean .
+ms:actionalVotes           a owl:DatatypeProperty ; rdfs:range xsd:integer .
+
+ms:hasFailureAxis a owl:ObjectProperty ; rdfs:range ms:FailureAxis .
+ms:repairDespite  a owl:ObjectProperty ; rdfs:range ms:FailureAxis .
+ms:correctionOrigin a owl:ObjectProperty ; rdfs:domain ms:HamartiaRepairStage ; rdfs:range ms:CorrectionOrigin .
+
+# trigger provenance -- the discriminators that make attribution decidable --------
+ms:isDirectorCued a owl:DatatypeProperty ; rdfs:domain ms:ReversalTrigger ; rdfs:range xsd:boolean .
+ms:branchLocal    a owl:DatatypeProperty ; rdfs:domain ms:ReversalTrigger ; rdfs:range xsd:boolean .
+ms:triggerConfidence a owl:DatatypeProperty ; rdfs:domain ms:ReversalTrigger ; rdfs:range xsd:decimal .
+ms:consumesTrigger       a owl:ObjectProperty ; rdfs:domain ms:RouteChange ; rdfs:range ms:ReversalTrigger .
+ms:leavesUnusedCandidate a owl:ObjectProperty ; rdfs:domain ms:RouteChange ; rdfs:range ms:ReversalTrigger ;
+  rdfs:comment "D53/T15 pathology: a director cue sits here unused while an organic event was consumed." .
+ms:surfacesAsDevice  a owl:DatatypeProperty ; rdfs:domain ms:RouteChange ; rdfs:range xsd:boolean .
+ms:committedInSpeech a owl:DatatypeProperty ; rdfs:domain ms:PerformDevice ; rdfs:range xsd:boolean .
+ms:problemNamed      a owl:DatatypeProperty ; rdfs:domain ms:Reframe ; rdfs:range xsd:boolean .
+ms:replacementNamed  a owl:DatatypeProperty ; rdfs:domain ms:Reframe ; rdfs:range xsd:boolean .
+ms:anchorOverlap     a owl:DatatypeProperty ; rdfs:domain ms:Reframe ; rdfs:range xsd:decimal .
+
+# the three correction senses, as first-class edges/objects ----------------------
+ms:correctsAgency      a owl:ObjectProperty ; rdfs:domain ms:InteriorAgency ; rdfs:range ms:InteriorAgency ;
+  rdfs:comment "sense-2: superego corrects ego (tutor AND learner)." .
+ms:correctsRouteFamily a owl:ObjectProperty ; rdfs:domain ms:Superego ; rdfs:range ms:RouteChange .
+ms:preservesStem       a owl:ObjectProperty ; rdfs:domain ms:Superego ; rdfs:range ms:Reframe .
+ms:saturatedOn   a owl:ObjectProperty ; rdfs:range ms:FailureAxis .
+ms:demandsSurgery a owl:DatatypeProperty ; rdfs:range xsd:boolean .
+ms:iteration         a owl:ObjectProperty .
+ms:precedesIteration a owl:ObjectProperty .
+
+# control / policy bridge (the event->policy derivation the prior R4 was missing) -
+ms:onArm        a owl:ObjectProperty ;
+  rdfs:comment "per-transcript: which experimental arm this event ran on." .
+ms:appliesPolicy a owl:ObjectProperty ; rdfs:range ms:TutorAdaptationPolicy ;
+  rdfs:comment "static spec: an arm applies a TutorAdaptationPolicy. R-POLICY lifts this to the event." .
+ms:hasPolicy    a owl:ObjectProperty ; rdfs:range ms:TutorAdaptationPolicy ;
+  rdfs:comment "DERIVED by R-POLICY (event onArm arm, arm appliesPolicy p). R4 reads this." .
+ms:forbidsChainActivation a owl:ObjectProperty ; rdfs:domain ms:TutorAdaptationPolicy ; rdfs:range ms:AdaptationRecognitionStage .
+ms:bindsFailureToStage a owl:ObjectProperty ; rdfs:domain ms:FailureAxis ; rdfs:range ms:AdaptationRecognitionStage .
+
+# ==============================================================================
+# STATIC ABox -- arm->policy spec + the control guard. (Stage ORDERING and the
+# static realizedBy/GateSignal bindings were REMOVED: no rule consulted them.)
+# Per-transcript facts -- stage->event, stage->per-transcript-move, numeric scores,
+# event->arm -- are asserted at runtime by the population bridge from summarizeItem.
+# ==============================================================================
+
+ms:ArmPeripeteia ms:appliesPolicy ms:PeripeteiaPolicy .
+ms:ArmNone       ms:appliesPolicy ms:RoutineHold .
+ms:RoutineHold   ms:forbidsChainActivation ms:ReorientationStage .
+
+# the two superego correction channels (sense 2), restated for ABox locality
+ms:Superego ms:correctsAgency ms:Ego .
+
+# each FailureAxis pinned to the FIRST unfired gate (report the WHY, not a label)
+ms:branch_invalid                  ms:bindsFailureToStage ms:PressureTriggerStage .
+ms:mechanism_not_publicly_resolved ms:bindsFailureToStage ms:MechanismShiftStage .
+ms:private_only_adaptation         ms:bindsFailureToStage ms:DeviceOfferStage .
+ms:action_gap                      ms:bindsFailureToStage ms:DevicePerformanceStage .
+ms:recognition_not_produced        ms:bindsFailureToStage ms:ReorientationStage .
+ms:control_leak                    ms:bindsFailureToStage ms:ReorientationStage .
