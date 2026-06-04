@@ -244,6 +244,105 @@ export async function checkAboxConsistency(aboxText = '', options = {}) {
   };
 }
 
+// ── Drama-machine turn_plan validation (poetics ontology) ─────────────────────
+// Build an ABox for a drama-machine turn_plan: each entry becomes one individual
+// `tpN` that `ms:targetsForm` the forms it aims at (the entry's own `target(s)`,
+// else the drama's global `targets:`) and `ms:includesMove` each of its moves.
+// The poetics rules then derive `ms:hasFormConflict` (a targeted form undercut by
+// an included move — e.g. a catharsis-target turn that includes pseudo_catharsis,
+// or a peripeteia-target turn that includes hold) and `ms:moveServesTarget`.
+export function buildTurnPlanABox(turnPlan = [], dramaTargets = []) {
+  const globalTargets = [...new Set((dramaTargets || []).map(safeLocalName).filter(Boolean))];
+  const lines = [
+    '@prefix ms: <https://machinespirits.dev/ontology/reasoning#> .',
+    '@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .',
+    '',
+  ];
+  (Array.isArray(turnPlan) ? turnPlan : []).forEach((entry, idx) => {
+    const subj = `tp${idx}`;
+    const explicit = [].concat(entry?.targets || []).concat(entry?.target ? [entry.target] : []);
+    const targets = [...new Set((explicit.length ? explicit : globalTargets).map(safeLocalName).filter(Boolean))];
+    const moves = [...new Set((entry?.moves || []).map(safeLocalName).filter(Boolean))];
+    for (const f of targets) lines.push(`ms:${subj} ms:targetsForm ms:${f} .`);
+    for (const m of moves) lines.push(`ms:${subj} ms:includesMove ms:${m} .`);
+  });
+  return lines.join('\n');
+}
+
+function addToSetMap(map, key, value) {
+  if (!map.has(key)) map.set(key, new Set());
+  map.get(key).add(value);
+}
+
+// Validate a turn_plan against the poetics ontology. Reasons the turn-plan ABox
+// over the poetics TBox+rules and reports: `conflicts` (a targeted form undercut
+// by an included move — the load-bearing error), `serves` (moves doing the work
+// their turn was specified for — positive confirmation), and `warnings` (an
+// explicitly-targeted form with no move serving it). Pure read; the only I/O is
+// the in-process EYE reasoner. `entries` are the original turn_plan objects, used
+// to map `tpN` individuals back to {turn, role}.
+export async function validateTurnPlan(turnPlan = [], dramaTargets = [], options = {}) {
+  const entries = Array.isArray(turnPlan) ? turnPlan : [];
+  const abox = buildTurnPlanABox(entries, dramaTargets);
+  const data = [loadSharedTBox(options.modules || ['poetics']), abox].join('\n\n');
+  const closureText = await n3reasoner(data, undefined, {
+    output: 'deductive_closure',
+    outputType: 'string',
+  });
+  const quads = parseTriples(closureText);
+
+  const conflictForms = new Map(); // idx -> Set(form)
+  const targetedForms = new Map(); // idx -> Set(form)
+  const aimsByMove = new Map(); // moveLocal -> Set(form)
+  const contraByMove = new Map(); // moveLocal -> Set(form)
+
+  for (const quad of quads) {
+    const predicate = quad.predicate.value;
+    const subject = compactTerm(quad.subject);
+    const object = compactTerm(quad.object);
+    if (/^tp\d+$/.test(subject)) {
+      const idx = Number(subject.slice(2));
+      if (predicate === `${NS}hasFormConflict`) addToSetMap(conflictForms, idx, object);
+      else if (predicate === `${NS}targetsForm`) addToSetMap(targetedForms, idx, object);
+    } else if (predicate === `${NS}aimsAtForm`) {
+      addToSetMap(aimsByMove, subject, object);
+    } else if (predicate === `${NS}contraindicatesForm`) {
+      addToSetMap(contraByMove, subject, object);
+    }
+  }
+
+  const meta = (idx) => ({
+    index: idx,
+    turn: entries[idx]?.at?.turn ?? entries[idx]?.turn ?? null,
+    role: entries[idx]?.role ?? null,
+  });
+  const conflicts = [];
+  const serves = [];
+  const warnings = [];
+
+  entries.forEach((entry, idx) => {
+    const moveLocals = (entry?.moves || []).map((raw) => ({ raw, local: safeLocalName(raw) })).filter((m) => m.local);
+    const explicitForms = new Set(
+      []
+        .concat(entry?.targets || [])
+        .concat(entry?.target ? [entry.target] : [])
+        .map(safeLocalName)
+        .filter(Boolean),
+    );
+    for (const form of conflictForms.get(idx) || []) {
+      const offending = moveLocals.filter((m) => contraByMove.get(m.local)?.has(form)).map((m) => m.raw);
+      conflicts.push({ ...meta(idx), form, moves: offending });
+    }
+    for (const form of targetedForms.get(idx) || []) {
+      const serving = moveLocals.filter((m) => aimsByMove.get(m.local)?.has(form)).map((m) => m.raw);
+      if (serving.length) serves.push({ ...meta(idx), form, moves: serving });
+      else if (explicitForms.has(form)) warnings.push({ ...meta(idx), form, message: `no move serves ${form}` });
+    }
+  });
+
+  return { ok: conflicts.length === 0, turns: entries.length, conflicts, serves, warnings };
+}
+
 export async function buildOntologyGuidance({ observations = [], role = 'tutor_ego' } = {}) {
   const result = await reasonOverObservations(observations);
   const supported = tally(result.facts, 'supportsPolicy');
@@ -302,4 +401,6 @@ export default {
   buildOntologyGuidance,
   checkAboxConsistency,
   loadSharedTBox,
+  buildTurnPlanABox,
+  validateTurnPlan,
 };

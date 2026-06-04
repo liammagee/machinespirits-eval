@@ -11,9 +11,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { exec } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import YAML from 'yaml';
 import { openPoeticsStore, upsertPoeticsLabel, upsertPoeticsReviewFlag } from '../services/poeticsStore.js';
 import { classifyPoeticsConsensus, parseCriticFormString } from './lib/poeticsConsensus.js';
 import { ORIGIN_CLASSES, originCounts, recognitionOriginForScoreRow } from './lib/recognitionOrigin.js';
+import { validateTurnPlan } from '../services/ontology/reasoningOntology.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -816,6 +818,48 @@ function createPoeticsBrowserApp({ dbPath = null } = {}) {
       return res.status(400).json({ error: error.message || String(error) });
     }
   });
+  app.get('/compose', (_req, res) => res.type('html').send(renderComposeHtml()));
+  app.post('/api/compose/validate', async (req, res) => {
+    try {
+      const spec = (req.body && req.body.spec) || {};
+      const turnPlan = Array.isArray(spec.turn_plan) ? spec.turn_plan : [];
+      const targets = (spec.drama && spec.drama.targets) || [];
+      const validation = await validateTurnPlan(turnPlan, targets);
+      return res.json({ ok: true, validation, yaml: specToYaml(spec) });
+    } catch (error) {
+      return res.status(400).json({ error: error.message || String(error) });
+    }
+  });
+  app.post('/api/compose/write', async (req, res) => {
+    try {
+      const spec = (req.body && req.body.spec) || {};
+      const force = !!(req.body && req.body.force);
+      const turnPlan = Array.isArray(spec.turn_plan) ? spec.turn_plan : [];
+      const targets = (spec.drama && spec.drama.targets) || [];
+      const validation = await validateTurnPlan(turnPlan, targets);
+      if (!validation.ok && !force) {
+        return res.status(409).json({ error: 'turn_plan has form conflicts', needsForce: true, validation });
+      }
+      const yamlText = specToYaml(spec);
+      const filename = safeDramaFilename(req.body && req.body.filename, spec.drama && spec.drama.id);
+      const destDir = path.resolve(ROOT, 'exports/drama-specs');
+      const dest = path.resolve(destDir, filename);
+      if (!dest.startsWith(`${destDir}${path.sep}`)) {
+        return res.status(400).json({ error: 'unsafe filename' });
+      }
+      fs.mkdirSync(destDir, { recursive: true });
+      fs.writeFileSync(dest, yamlText, 'utf8');
+      return res.json({
+        ok: true,
+        path: path.relative(ROOT, dest),
+        bytes: Buffer.byteLength(yamlText),
+        yaml: yamlText,
+        validation,
+      });
+    } catch (error) {
+      return res.status(400).json({ error: error.message || String(error) });
+    }
+  });
   app.get('/arc', (_req, res) => {
     const arcPath = path.resolve(ROOT, 'notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html');
     if (!fs.existsSync(arcPath)) return res.status(404).type('text').send('arc note not found');
@@ -823,6 +867,434 @@ function createPoeticsBrowserApp({ dbPath = null } = {}) {
   });
   app.get('/', (_req, res) => res.type('html').send(renderBrowserHtml()));
   return app;
+}
+
+// ── Drama composer (GET /compose) ─────────────────────────────────────────────
+// A form-based front-end to the drama-machine spec model (notes/poetics/drama-
+// machine/SPEC.md): renders the Aristotelian slots, validates a turn_plan against
+// the poetics ontology live (POST /api/compose/validate), and writes a
+// .drama.yaml (POST /api/compose/write). The same headless work the
+// /ms-drama-machine skill does, with human visibility.
+const COMPOSER_VOCAB = Object.freeze({
+  forms: [
+    'peripeteia',
+    'anagnorisis',
+    'catharsis',
+    'surprise_inevitability',
+    'unity_of_action',
+    'hamartia_integration',
+  ],
+  promptTypes: ['recognition', 'base', 'placebo', 'naive', 'dialectical_suspicious', 'matched_recognition'],
+  tutorArch: ['ego_superego', 'ego_only', 'id_director'],
+  superego: ['suspicious', 'standard', 'adversary', 'advocate', 'strict', 'coupling'],
+  personas: ['struggling_anxious', 'confused_novice', 'eager_explorer', 'focused_achiever', 'adversarial_tester'],
+  learnerArch: ['ego_superego_recognition_authentic', 'ego_superego_recognition', 'ego_superego', 'unified'],
+  continuationPolicy: ['none', 'anchor', 'revoice', 'reconsider', 'reframe'],
+  adaptationPolicy: [
+    'none',
+    'routine',
+    'uptake',
+    'peripeteia',
+    'uptake+peripeteia',
+    'socratic_discovery',
+    'reveal_secret',
+  ],
+  speakers: ['learner', 'tutor', 'director'],
+  stagePolicy: ['sparse', 'none', 'none_except_required_cue', 'short', 'interventionist', 'rich'],
+  stageStyle: [
+    'object_business',
+    'bare_transcript',
+    'scene_heading',
+    'ambient_pressure',
+    'placard_caption',
+    'thread_metadata',
+    'choric_margin',
+    'rich_scene_work',
+  ],
+  grading: ['graded', 'binary'],
+  blinding: ['arm-blind', 'omniscient', 'fully-blind'],
+  roles: ['tutor', 'learner', 'director'],
+  movesByRole: {
+    tutor: [
+      'stock_take',
+      'route_change',
+      'action_gate',
+      'uptake',
+      'meter',
+      'recognition_press',
+      'withhold',
+      'reveal',
+      'register_shift',
+      'status_shift',
+      'foreshadow',
+    ],
+    learner: ['revoice', 'reconsider', 'reframe', 'perform_device', 'voice_misfit', 'genuine_anagnorisis', 'aporia'],
+    director: ['inject_revisit_cue', 'inject_reversal_pressure', 'scene_interruption'],
+  },
+  // Moves/triggers the ontology flags as contraindicating a form — selectable so
+  // the live validator visibly fires (hold ⊣ peripeteia, pseudo_catharsis ⊣ catharsis).
+  antiPatterns: ['hold', 'pseudo_catharsis'],
+  castSuggest: ['llm:api:sonnet', 'llm:claude:opus', 'llm:codex', 'llm:gemini', 'human', 'mock'],
+  panelSuggest: ['gpt', 'deepseek-v4-pro', 'qwen3.7-max', 'gemini-3.5-flash'],
+});
+
+// Recursively drop null / '' / empty arrays / empty objects so the emitted YAML is clean.
+function pruneEmpty(value) {
+  if (Array.isArray(value)) {
+    const arr = value.map(pruneEmpty).filter((v) => v !== undefined);
+    return arr.length ? arr : undefined;
+  }
+  if (value && typeof value === 'object') {
+    const out = {};
+    for (const [k, v] of Object.entries(value)) {
+      const pv = pruneEmpty(v);
+      if (pv !== undefined) out[k] = pv;
+    }
+    return Object.keys(out).length ? out : undefined;
+  }
+  if (value === null || value === '') return undefined;
+  return value;
+}
+
+function specToYaml(spec) {
+  return YAML.stringify(pruneEmpty(spec) || {}, { lineWidth: 0 });
+}
+
+// Path-safe basename for a written spec: strip any directory, force a .drama.yaml suffix.
+function safeDramaFilename(name, fallbackId) {
+  const base = String(name || fallbackId || 'drama').trim();
+  let slug = base
+    .replace(/\.drama\.ya?ml$/i, '')
+    .replace(/[^a-zA-Z0-9._-]+/g, '-')
+    .replace(/^[-.]+|[-.]+$/g, '');
+  if (!slug) slug = 'drama';
+  return `${slug}.drama.yaml`;
+}
+
+const composeOptions = (list, selected) =>
+  list
+    .map((v) => `<option value="${escapeHtml(v)}"${v === selected ? ' selected' : ''}>${escapeHtml(v)}</option>`)
+    .join('');
+
+const composeDatalist = (id, list) =>
+  `<datalist id="${id}">${list.map((v) => `<option value="${escapeHtml(v)}"></option>`).join('')}</datalist>`;
+
+const composeFormChecks = (selected) =>
+  COMPOSER_VOCAB.forms
+    .map(
+      (f) =>
+        `<label class="chk"><input type="checkbox" class="f-target" value="${escapeHtml(f)}"${
+          selected.includes(f) ? ' checked' : ''
+        }> ${escapeHtml(f)}</label>`,
+    )
+    .join('');
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
+  );
+}
+
+function renderComposeHtml() {
+  const V = COMPOSER_VOCAB;
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Drama Composer · poetics</title>
+<style>
+:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
+[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{ background:var(--paper); color:var(--ink); font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
+code,pre{ font-family: ui-monospace,'SF Mono',Menlo,monospace; }
+.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
+.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
+.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
+.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
+.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
+.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
+[data-theme="dark"] .rail__arc{ color:var(--paper); }
+.compose{ display:grid; grid-template-columns: minmax(0,1.3fr) minmax(330px,.9fr); align-items:start; }
+@media (max-width:900px){ .compose{ grid-template-columns:1fr; } }
+.cform{ padding:18px 20px; display:flex; flex-direction:column; gap:16px; max-height:calc(100vh - 52px); overflow:auto; }
+.cside{ position:sticky; top:52px; padding:16px 16px; display:flex; flex-direction:column; gap:14px; border-left:1px solid var(--rule); max-height:calc(100vh - 52px); overflow:auto; background:var(--paper-3); }
+section.sec{ border:1px solid var(--rule); background:var(--paper-4); }
+.sec > h3{ margin:0; padding:9px 12px; font:600 12px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-2); background:var(--paper-2); border-bottom:1px solid var(--rule); }
+.sec > .body{ padding:12px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 14px; }
+.sec > .body.one{ grid-template-columns:1fr; }
+label.fld,.fld{ display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.04em; }
+.fld.wide,label.fld.wide{ grid-column:1 / -1; }
+input[type=text],input[type=number],select,textarea{ width:100%; font:13px ui-monospace,monospace; color:var(--ink); background:var(--paper); border:1px solid var(--rule); padding:6px 8px; }
+textarea{ min-height:46px; resize:vertical; }
+.checks{ display:flex; flex-wrap:wrap; gap:6px 12px; margin-top:4px; }
+label.chk{ display:inline-flex; align-items:center; gap:5px; font:12px ui-monospace,monospace; color:var(--ink-2); text-transform:none; letter-spacing:0; }
+label.chk-anti{ color:var(--brick-d); }
+.turn-row{ border:1px solid var(--rule); margin-bottom:8px; background:var(--paper-3); }
+.turn-grid{ display:flex; align-items:center; gap:10px; padding:8px 10px; border-bottom:1px solid var(--rule-soft); }
+label.mini{ display:inline-flex; align-items:center; gap:6px; font:11px ui-monospace,monospace; color:var(--ink-3); text-transform:uppercase; }
+label.mini input,label.mini select{ width:auto; }
+label.mini .t-turn{ width:56px; }
+.t-del{ margin-left:auto; border:1px solid var(--rule); background:var(--paper-4); color:var(--brick-d); cursor:pointer; width:26px; height:26px; }
+.turn-row .moves{ display:flex; flex-wrap:wrap; gap:6px 12px; padding:8px 10px; }
+.btn{ font:12px ui-monospace,monospace; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink); padding:7px 12px; cursor:pointer; }
+.btn.primary{ background:var(--moss-deep); color:var(--paper); border-color:var(--moss-deep); }
+.addbar{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.panel{ border:1px solid var(--rule); background:var(--paper-4); }
+.panel-head{ padding:7px 10px; font:600 11px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-2); background:var(--paper-2); border-bottom:1px solid var(--rule); }
+#validationPanel{ padding:10px; display:flex; flex-direction:column; gap:6px; }
+.v-head{ font:600 13px/1.3 ui-monospace,monospace; }
+.v-line{ font:12px/1.45 ui-monospace,monospace; padding:6px 8px; border-left:3px solid var(--rule); background:var(--paper-3); }
+.v-ok{ color:var(--moss-deep); }
+.v-conflict{ color:var(--brick-d); border-left-color:var(--brick); background:var(--brick-soft); }
+.v-warn{ color:var(--ochre-d); border-left-color:var(--ochre); background:var(--ochre-soft); }
+.v-serve{ color:var(--moss); border-left-color:var(--moss); background:var(--moss-soft); }
+.v-line code{ background:rgba(127,127,127,.15); padding:0 3px; }
+.yaml{ margin:0; padding:12px; font:12px/1.5 ui-monospace,monospace; color:var(--ink-2); white-space:pre-wrap; max-height:330px; overflow:auto; }
+.writebar{ padding:12px; display:flex; flex-direction:column; gap:8px; }
+.write-result{ font:12px ui-monospace,monospace; color:var(--ink-3); min-height:16px; }
+.write-result code,.run-hint code{ background:rgba(127,127,127,.15); padding:0 3px; color:var(--moss-deep); }
+.run-hint{ font:11px/1.5 ui-monospace,monospace; color:var(--ink-4); border-top:1px dashed var(--rule); padding-top:8px; }
+.muted{ color:var(--ink-4); font-style:italic; font-size:11px; }
+</style>
+</head>
+<body>
+<header class="rail">
+  <div class="rail__inner">
+    <span class="rail__brand">drama composer</span>
+    <span class="rail__sub">assemble a drama-machine spec · validated live against the poetics ontology</span>
+    <a class="rail__arc" href="/" title="Back to the poetics script browser"><span>browser</span><span aria-hidden="true">→</span></a>
+    <a class="rail__btn" href="/arc">arc</a>
+    <button class="rail__btn" id="themeToggle" type="button">theme</button>
+  </div>
+</header>
+<div class="compose">
+  <form class="cform" id="cform" onsubmit="return false">
+    <section class="sec"><h3>Drama · mythos / melos</h3><div class="body">
+      <label class="fld">id<input type="text" id="d-id" value="D_LOG_PERIPETEIA_1"></label>
+      <label class="fld">max_turns<input type="number" id="d-maxturns" min="1" value="7"></label>
+      <label class="fld wide">topic<input type="text" id="d-topic" value="logarithms as the inverse of exponentiation"></label>
+      <label class="fld wide">hamartia — the misconception that drives the plot<input type="text" id="d-hamartia" value="treats log(a+b) as log a + log b"></label>
+      <label class="fld">continuation_policy<select id="d-cont">${composeOptions(V.continuationPolicy, 'reframe')}</select></label>
+      <label class="fld">tutor_adaptation_policy<select id="d-adapt">${composeOptions(V.adaptationPolicy, 'peripeteia')}</select></label>
+      <div class="fld wide"><span>targets — dramatic forms to bias toward</span><div class="checks">${composeFormChecks(['peripeteia', 'catharsis'])}</div></div>
+    </div></section>
+    <section class="sec"><h3>Tutor · ethos</h3><div class="body">
+      <label class="fld">prompt_type<select id="t-prompt">${composeOptions(V.promptTypes, 'recognition')}</select></label>
+      <label class="fld">architecture<select id="t-arch">${composeOptions(V.tutorArch, 'ego_superego')}</select></label>
+      <label class="fld">superego_disposition<select id="t-superego">${composeOptions(V.superego, 'suspicious')}</select></label>
+      <label class="chk" style="align-self:end"><input type="checkbox" id="t-recog" checked> recognition_mode</label>
+    </div></section>
+    <section class="sec"><h3>Learner · ethos</h3><div class="body">
+      <label class="fld">persona<select id="l-persona">${composeOptions(V.personas, 'struggling_anxious')}</select></label>
+      <label class="fld">architecture<select id="l-arch">${composeOptions(V.learnerArch, 'ego_superego_recognition_authentic')}</select></label>
+      <label class="fld">superego_disposition<input type="text" id="l-superego" value="recognition_authentic"></label>
+      <label class="fld wide">start_state<textarea id="l-start">wants the rule memorised before the quiz; mistrusts 'inverse' as hand-waving</textarea></label>
+    </div></section>
+    <section class="sec"><h3>Thought &amp; diction · dianoia / lexis</h3><div class="body">
+      <label class="fld">pedagogical_approach<input type="text" id="d-pedagogical" value="socratic_elenchus"></label>
+      <label class="fld">dialogue_approach<input type="text" id="d-dialogue" value="aristotelian_reversal"></label>
+      <label class="fld wide">voice.register<input type="text" id="v-register" value="plain; the learner a little defensive"></label>
+    </div></section>
+    <section class="sec"><h3>Spectacle · opsis</h3><div class="body">
+      <label class="fld wide">scene.setting<input type="text" id="s-setting" value="a library tutoring booth, the evening before a quiz"></label>
+      <label class="fld">relationship<input type="text" id="s-relationship" value="a paid tutor and a resentful teenager"></label>
+      <label class="fld">stakes<input type="text" id="s-stakes" value="the quiz is tomorrow morning"></label>
+      <label class="fld">opening_speaker<select id="s-open">${composeOptions(V.speakers, 'learner')}</select></label>
+      <label class="fld">ending_speaker<select id="s-end">${composeOptions(V.speakers, 'learner')}</select></label>
+      <label class="fld wide">object<input type="text" id="s-object" value="a half-finished worksheet with log(a+b) = log a + log b circled"></label>
+      <label class="fld">stage_direction_policy<select id="s-stagepolicy">${composeOptions(V.stagePolicy, 'short')}</select></label>
+      <label class="fld">stage_direction_style<select id="s-stagestyle">${composeOptions(V.stageStyle, 'object_business')}</select></label>
+    </div></section>
+    <section class="sec"><h3>Cast · who plays each role</h3><div class="body">
+      <label class="fld">director<input type="text" id="c-director" list="castList" value="llm:api:sonnet"></label>
+      <label class="fld">tutor<input type="text" id="c-tutor" list="castList" value="llm:api:sonnet"></label>
+      <label class="fld">learner<input type="text" id="c-learner" list="castList" value="llm:api:sonnet"></label>
+      <label class="fld">critic<input type="text" id="c-critic" list="castList" value="llm:api:gpt"></label>
+      <label class="fld">default_backend<input type="text" id="c-backend" value="api"></label>
+      <div class="muted" style="grid-column:1/-1">grammar: <code>human</code> · <code>llm:&lt;backend&gt;:&lt;model&gt;</code> · <code>mock</code> — backends claude · codex · gemini · api</div>
+    </div></section>
+    <section class="sec"><h3>Audience · critic config</h3><div class="body">
+      <label class="fld wide">panel — comma-separated judge models<input type="text" id="a-panel" list="panelList" value="gpt, deepseek-v4-pro, qwen3.7-max, gemini-3.5-flash"></label>
+      <label class="fld">consensus<input type="text" id="a-consensus" value="3-of-4"></label>
+      <label class="fld">grading<select id="a-grading">${composeOptions(V.grading, 'graded')}</select></label>
+      <label class="fld">blinding<select id="a-blinding">${composeOptions(V.blinding, 'arm-blind')}</select></label>
+      <label class="fld">rubric<input type="text" id="a-rubric" value="poetics-v1.0"></label>
+    </div></section>
+    <section class="sec"><h3>Turn plan · per-turn adaptation moves</h3><div class="body one">
+      <div id="turnPlan"></div>
+      <div class="addbar"><button type="button" class="btn" id="addTurn">+ add turn</button><span class="muted">⚠ anti-pattern moves are checked against the turn's target form by the ontology, live.</span></div>
+    </div></section>
+  </form>
+  <aside class="cside">
+    <div class="panel"><div class="panel-head">ontology validation · live</div><div id="validationPanel"></div></div>
+    <div class="panel"><div class="panel-head">spec.yaml</div><pre id="yamlPreview" class="yaml">…</pre></div>
+    <div class="panel"><div class="panel-head">write</div><div class="writebar">
+      <input type="text" id="filename" placeholder="filename (defaults to drama id)">
+      <button type="button" class="btn primary" id="writeBtn">Write .drama.yaml</button>
+      <div id="writeResult" class="write-result"></div>
+      <div class="run-hint">Writes to <code>exports/drama-specs/</code>. To generate + judge it, lower per SPEC.md §7 (or invoke the <code>/ms-drama-machine</code> skill with <code>--run</code>).</div>
+    </div></div>
+  </aside>
+</div>
+${composeDatalist('castList', V.castSuggest)}
+${composeDatalist('panelList', V.panelSuggest)}
+<script>
+const VOCAB = ${JSON.stringify(V)};
+const $ = (id) => document.getElementById(id);
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function val(id){ var e=$(id); return e ? String(e.value).trim() : ''; }
+function checkedBox(id){ var e=$(id); return e ? !!e.checked : false; }
+function oNone(v){ return v==='none' ? '' : v; }
+
+var turns = [
+  { turn:1, role:'director', target:'', moves:['inject_revisit_cue'] },
+  { turn:3, role:'tutor', target:'peripeteia', moves:['stock_take','route_change','action_gate'] },
+  { turn:3, role:'learner', target:'', moves:['perform_device'] },
+  { turn:6, role:'tutor', target:'anagnorisis', moves:['recognition_press'] }
+];
+
+function movesFor(role){
+  var base = (VOCAB.movesByRole[role] || []).slice();
+  VOCAB.antiPatterns.forEach(function(m){ if(base.indexOf(m)<0) base.push(m); });
+  return base;
+}
+function turnRowHtml(t){
+  var roleOpts = VOCAB.roles.map(function(r){ return '<option value="'+r+'"'+(r===t.role?' selected':'')+'>'+r+'</option>'; }).join('');
+  var formOpts = '<option value="">(inherit targets)</option>' + VOCAB.forms.map(function(f){ return '<option value="'+f+'"'+(f===t.target?' selected':'')+'>'+f+'</option>'; }).join('');
+  var moveChecks = movesFor(t.role).map(function(m){
+    var anti = VOCAB.antiPatterns.indexOf(m)>=0;
+    return '<label class="chk'+(anti?' chk-anti':'')+'"><input type="checkbox" class="t-move" value="'+esc(m)+'"'+(t.moves.indexOf(m)>=0?' checked':'')+'> '+esc(m)+(anti?' ⚠':'')+'</label>';
+  }).join('');
+  return '<div class="turn-row">'
+    + '<div class="turn-grid">'
+    + '<label class="mini">turn <input type="number" min="1" class="t-turn" value="'+esc(t.turn)+'"></label>'
+    + '<label class="mini">role <select class="t-role">'+roleOpts+'</select></label>'
+    + '<label class="mini">target <select class="t-target">'+formOpts+'</select></label>'
+    + '<button type="button" class="t-del" title="remove turn">✕</button>'
+    + '</div>'
+    + '<div class="moves">'+moveChecks+'</div>'
+    + '</div>';
+}
+function renderTurns(){ $('turnPlan').innerHTML = turns.length ? turns.map(turnRowHtml).join('') : '<div class="muted">No turns. Add one.</div>'; }
+function readTurnsFromDom(){
+  var next = [];
+  document.querySelectorAll('#turnPlan .turn-row').forEach(function(row){
+    next.push({
+      turn: Number(row.querySelector('.t-turn').value) || 1,
+      role: row.querySelector('.t-role').value,
+      target: row.querySelector('.t-target').value,
+      moves: Array.prototype.slice.call(row.querySelectorAll('.t-move:checked')).map(function(c){ return c.value; })
+    });
+  });
+  turns = next;
+}
+function rowIndex(row){ return Array.prototype.indexOf.call(row.parentNode.children, row); }
+
+function readSpec(){
+  readTurnsFromDom();
+  var targets = Array.prototype.slice.call(document.querySelectorAll('.f-target:checked')).map(function(c){ return c.value; });
+  var drama = {
+    id: val('d-id'),
+    targets: targets,
+    topic: val('d-topic'),
+    hamartia: val('d-hamartia'),
+    continuation_policy: oNone(val('d-cont')),
+    tutor_adaptation_policy: oNone(val('d-adapt')),
+    tutor: { prompt_type: val('t-prompt'), architecture: val('t-arch'), superego_disposition: val('t-superego'), recognition_mode: checkedBox('t-recog') || '' },
+    learner: { persona: val('l-persona'), architecture: val('l-arch'), superego_disposition: val('l-superego'), start_state: val('l-start') },
+    pedagogical_approach: val('d-pedagogical'),
+    dialogue_approach: val('d-dialogue'),
+    voice: { register: val('v-register') },
+    scene: { setting: val('s-setting'), relationship: val('s-relationship'), stakes: val('s-stakes'), opening_speaker: val('s-open'), ending_speaker: val('s-end'), object: val('s-object'), stage_direction_policy: val('s-stagepolicy'), stage_direction_style: val('s-stagestyle') },
+    max_turns: Number(val('d-maxturns')) || ''
+  };
+  var cast = { director: val('c-director'), tutor: val('c-tutor'), learner: val('c-learner'), critic: val('c-critic'), default_backend: val('c-backend') };
+  var audience = { panel: val('a-panel').split(',').map(function(s){ return s.trim(); }).filter(Boolean), consensus: val('a-consensus'), grading: val('a-grading'), blinding: val('a-blinding'), rubric: val('a-rubric') };
+  var turn_plan = turns.map(function(t){ var e = { at: { turn: t.turn }, role: t.role, moves: t.moves }; if (t.target) e.target = t.target; return e; });
+  return { drama: drama, cast: cast, audience: audience, turn_plan: turn_plan };
+}
+
+async function postJson(url, body){
+  var res = await fetch(url, { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body) });
+  var data = {};
+  try { data = await res.json(); } catch (_e) {}
+  if (!res.ok){ var err = new Error(data.error || res.statusText); Object.assign(err, data); throw err; }
+  return data;
+}
+
+var vTimer = null;
+function scheduleValidate(){ clearTimeout(vTimer); vTimer = setTimeout(validate, 280); }
+function fmtTurn(x){ return (x.turn!=null ? ('turn '+x.turn) : 'turn') + (x.role ? (' · '+x.role) : ''); }
+function codes(list){ return list.map(function(m){ return '<code>'+esc(m)+'</code>'; }).join(', '); }
+function renderValidation(v){
+  var html = '';
+  if (v.ok) html += '<div class="v-head v-ok">✓ no form conflicts · '+v.turns+' turn'+(v.turns===1?'':'s')+'</div>';
+  else html += '<div class="v-head v-conflict">✕ '+v.conflicts.length+' form conflict'+(v.conflicts.length===1?'':'s')+'</div>';
+  v.conflicts.forEach(function(c){ html += '<div class="v-line v-conflict"><b>'+esc(fmtTurn(c))+'</b> targets <b>'+esc(c.form)+'</b> but includes '+codes(c.moves)+' — contraindicates it</div>'; });
+  v.warnings.forEach(function(w){ html += '<div class="v-line v-warn"><b>'+esc(fmtTurn(w))+'</b> '+esc(w.message)+'</div>'; });
+  v.serves.forEach(function(s){ html += '<div class="v-line v-serve"><b>'+esc(fmtTurn(s))+'</b> '+codes(s.moves)+' → serves <b>'+esc(s.form)+'</b></div>'; });
+  $('validationPanel').innerHTML = html || '<div class="muted">no turns to validate</div>';
+}
+async function validate(){
+  var spec = readSpec();
+  try {
+    var r = await postJson('/api/compose/validate', { spec: spec });
+    renderValidation(r.validation);
+    $('yamlPreview').textContent = r.yaml;
+  } catch (e) {
+    $('validationPanel').innerHTML = '<div class="v-line v-conflict">validation error: '+esc(e.message)+'</div>';
+  }
+}
+async function write(force){
+  var spec = readSpec();
+  try {
+    var r = await postJson('/api/compose/write', { spec: spec, filename: val('filename'), force: !!force });
+    $('writeResult').innerHTML = 'wrote <code>'+esc(r.path)+'</code> · '+r.bytes+' bytes';
+    if (r.validation) renderValidation(r.validation);
+  } catch (e) {
+    if (e.needsForce){
+      var n = e.validation ? e.validation.conflicts.length : '?';
+      if (window.confirm('turn_plan has '+n+' form conflict(s). Write the spec anyway?')) return write(true);
+      $('writeResult').textContent = 'not written — resolve conflicts or confirm';
+    } else { $('writeResult').textContent = 'error: '+esc(e.message); }
+  }
+}
+
+// turn-plan delegation (survives innerHTML re-renders — bound on the container)
+$('turnPlan').addEventListener('change', function(e){
+  var row = e.target.closest('.turn-row'); if(!row) return;
+  readTurnsFromDom();
+  if (e.target.classList.contains('t-role')){
+    var i = rowIndex(row); var allowed = movesFor(turns[i].role);
+    turns[i].moves = turns[i].moves.filter(function(m){ return allowed.indexOf(m)>=0; });
+    renderTurns();
+  }
+  scheduleValidate();
+});
+$('turnPlan').addEventListener('input', function(e){ if (e.target.classList.contains('t-turn')){ readTurnsFromDom(); scheduleValidate(); } });
+$('turnPlan').addEventListener('click', function(e){
+  if (!e.target.classList.contains('t-del')) return;
+  readTurnsFromDom(); turns.splice(rowIndex(e.target.closest('.turn-row')), 1); renderTurns(); scheduleValidate();
+});
+$('addTurn').addEventListener('click', function(){ readTurnsFromDom(); turns.push({ turn: turns.length ? turns[turns.length-1].turn : 1, role:'tutor', target:'', moves:[] }); renderTurns(); scheduleValidate(); });
+$('writeBtn').addEventListener('click', function(){ write(false); });
+document.addEventListener('change', function(e){ if (e.target.closest('#cform') && !e.target.closest('#turnPlan')) scheduleValidate(); });
+document.addEventListener('input', function(e){ if (e.target.closest('#cform') && !e.target.closest('#turnPlan')) scheduleValidate(); });
+$('themeToggle').addEventListener('click', function(){
+  var d = document.documentElement; var nx = d.getAttribute('data-theme')==='dark' ? '' : 'dark';
+  if (nx) d.setAttribute('data-theme','dark'); else d.removeAttribute('data-theme');
+  try { localStorage.setItem('poetics-theme', nx); } catch (_e) {}
+});
+try { if (localStorage.getItem('poetics-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); } catch (_e) {}
+renderTurns();
+validate();
+</script>
+</body>
+</html>`;
 }
 
 function renderBrowserHtml() {
@@ -1349,6 +1821,60 @@ pre {
   display: grid;
   gap: 14px;
 }
+.view-toggle {
+  display: flex;
+  justify-content: flex-end;
+  max-width: 70rem;
+  margin: 0 auto 12px;
+}
+.vt-btn {
+  font: 11px/1 "JetBrains Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: 1px solid var(--rule);
+  background: var(--paper-4);
+  color: var(--ink-3);
+  padding: 5px 12px;
+  cursor: pointer;
+}
+.vt-btn + .vt-btn { border-left: none; }
+.vt-btn.active { background: var(--moss-deep); color: var(--paper); border-color: var(--moss-deep); }
+.swimlane {
+  max-width: 70rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.swim-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--paper);
+  padding-bottom: 4px;
+}
+.swim-label {
+  font: 700 10.5px/1 "JetBrains Mono", monospace;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border-bottom: 2px solid var(--rule);
+}
+.swim-label.tutor { color: var(--moss-deep); border-bottom-color: var(--moss-deep); }
+.swim-label.learner { color: var(--ochre-d); border-bottom-color: var(--ochre-d); }
+.swim-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+.swim-row.span { grid-template-columns: 1fr; }
+.swim-row .lane { min-width: 0; }
+.swim-row.span .scene-card { max-width: 48rem; margin: 0 auto; opacity: 0.92; }
+.swimlane .scene-card { margin: 0; }
 .scene-card {
   border: 1px solid var(--rule);
   background: var(--paper-4);
@@ -1659,6 +2185,7 @@ tbody th {
   <div class="rail__inner">
     <span class="rail__brand">poetics</span>
     <span class="rail__sub" id="railSub">sidecar browser · public scripts, full traces, critic scores, labels as perspective</span>
+    <a class="rail__btn" href="/compose" title="Assemble a drama spec — the drama composer">compose</a>
     <a class="rail__arc" href="/arc" title="Open the dramatic-recognition arc synthesis note">
       <span>recognition arc</span>
       <span class="rail__arc__arrow" aria-hidden="true">→</span>
@@ -1731,6 +2258,7 @@ const state = {
   unlabelled: false,
   flagger: 'codex',
   initialItemId: '',
+  previewMode: 'script',
 };
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1803,22 +2331,45 @@ function previewHref(item) {
   return '/?' + params.toString();
 }
 
+function sceneCardHtml(block) {
+  const type = block.type || 'other';
+  const speech = block.speech || (type === 'stage' ? '' : block.raw || '');
+  const blocking = block.blocking || (type === 'stage' ? block.raw || '' : '');
+  const head = type === 'stage'
+    ? '<div class="scene-head"><span class="speaker">STAGE DIRECTION</span><span class="turn-num">' + esc(String(block.index || '')) + '</span></div>'
+    : '<div class="scene-head"><span class="speaker">' + esc(block.speaker || 'TEXT') + '</span><span class="turn-num">' + esc(String(block.index || '')) + '</span></div>';
+  return '<section class="scene-card ' + esc(type) + '">' + head +
+    (blocking ? '<div class="blocking">[' + inlineEsc(blocking).replace(/^\\[|\\]$/g, '') + ']</div>' : '') +
+    (speech ? '<div class="speech">' + inlineEsc(speech) + '</div>' : '') +
+    '</section>';
+}
 function renderTranscriptPreview(blocks, fallbackText) {
   if (!blocks || blocks.length === 0) {
     return '<pre>' + esc(fallbackText || 'No public sample found.') + '</pre>';
   }
-  return '<div class="script-preview">' + blocks.map((block) => {
+  return '<div class="script-preview">' + blocks.map(sceneCardHtml).join('') + '</div>';
+}
+function renderSwimlane(blocks, fallbackText) {
+  if (!blocks || blocks.length === 0) {
+    return '<pre>' + esc(fallbackText || 'No public sample found.') + '</pre>';
+  }
+  const rows = blocks.map((block) => {
     const type = block.type || 'other';
-    const speech = block.speech || (type === 'stage' ? '' : block.raw || '');
-    const blocking = block.blocking || (type === 'stage' ? block.raw || '' : '');
-    const head = type === 'stage'
-      ? '<div class="scene-head"><span class="speaker">STAGE DIRECTION</span><span class="turn-num">' + esc(String(block.index || '')) + '</span></div>'
-      : '<div class="scene-head"><span class="speaker">' + esc(block.speaker || 'TEXT') + '</span><span class="turn-num">' + esc(String(block.index || '')) + '</span></div>';
-    return '<section class="scene-card ' + esc(type) + '">' + head +
-      (blocking ? '<div class="blocking">[' + inlineEsc(blocking).replace(/^\\[|\\]$/g, '') + ']</div>' : '') +
-      (speech ? '<div class="speech">' + inlineEsc(speech) + '</div>' : '') +
-      '</section>';
-  }).join('') + '</div>';
+    const card = sceneCardHtml(block);
+    if (type === 'tutor') return '<div class="swim-row"><div class="lane">' + card + '</div><div class="lane empty" aria-hidden="true"></div></div>';
+    if (type === 'learner') return '<div class="swim-row"><div class="lane empty" aria-hidden="true"></div><div class="lane">' + card + '</div></div>';
+    return '<div class="swim-row span">' + card + '</div>';
+  }).join('');
+  return '<div class="swimlane"><div class="swim-head"><span class="swim-label tutor">tutor</span><span class="swim-label learner">learner</span></div>' + rows + '</div>';
+}
+function renderScriptView(blocks, fallbackText) {
+  const mode = state.previewMode === 'swimlane' ? 'swimlane' : 'script';
+  const toggle = '<div class="view-toggle">' +
+    '<button type="button" class="vt-btn' + (mode === 'script' ? ' active' : '') + '" data-view="script">script</button>' +
+    '<button type="button" class="vt-btn' + (mode === 'swimlane' ? ' active' : '') + '" data-view="swimlane">swimlane</button>' +
+    '</div>';
+  const body = mode === 'swimlane' ? renderSwimlane(blocks, fallbackText) : renderTranscriptPreview(blocks, fallbackText);
+  return toggle + body;
 }
 
 function renderAdaptationSidecar(adaptation) {
@@ -2020,14 +2571,14 @@ function renderPane() {
   if (state.blind) {
     const current = detail.label || {};
     state.selectedLabel = state.selectedLabel || current.form_class || null;
-    pane.innerHTML = renderTranscriptPreview(detail.samplePreview, detail.sampleText) + renderLabelPanel(current);
+    pane.innerHTML = renderScriptView(detail.samplePreview, detail.sampleText) + renderLabelPanel(current);
     wireLabelPanel();
   } else if (state.tab === 'preview') {
-    pane.innerHTML = renderOriginDiagnostics(detail) + renderEndingShapeDiagnostics(detail) + renderTranscriptPreview(detail.samplePreview, detail.sampleText);
+    pane.innerHTML = renderOriginDiagnostics(detail) + renderEndingShapeDiagnostics(detail) + renderScriptView(detail.samplePreview, detail.sampleText);
   } else if (state.tab === 'sample') {
     pane.innerHTML = '<pre>' + esc(detail.sampleText || 'No public sample found.') + '</pre>';
   } else if (state.tab === 'full') {
-    pane.innerHTML = renderTranscriptPreview(detail.fullTranscriptPreview, detail.fullTranscriptText || 'No full transcript found.');
+    pane.innerHTML = renderScriptView(detail.fullTranscriptPreview, detail.fullTranscriptText || 'No full transcript found.');
   } else if (state.tab === 'scores') {
     const adaptation = detail.tutorAdaptation;
     const adaptationHtml = renderAdaptationSidecar(adaptation);
@@ -2262,6 +2813,12 @@ async function init() {
     document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t === tab));
     renderPane();
   }));
+  el('pane').addEventListener('click', (e) => {
+    const btn = e.target.closest('.vt-btn');
+    if (!btn) return;
+    state.previewMode = btn.dataset.view === 'swimlane' ? 'swimlane' : 'script';
+    renderPane();
+  });
 }
 init().catch((err) => { el('items').innerHTML = '<div class="empty">' + esc(err.message) + '</div>'; });
 </script>
