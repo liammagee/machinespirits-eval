@@ -3,7 +3,12 @@ import assert from 'node:assert/strict';
 import { n3reasoner } from 'eyereasoner';
 import { Parser } from 'n3';
 import { loadSharedTBox } from '../services/ontology/reasoningOntology.js';
-import { summaryToAbox, votedOrigin, extractTriggerConsumption } from '../services/ontology/adaptationAboxBridge.js';
+import {
+  summaryToAbox,
+  votedOrigin,
+  extractTriggerConsumption,
+  detectNamingFrames,
+} from '../services/ontology/adaptationAboxBridge.js';
 
 // The population bridge (gate-struct -> adaptation-core ABox) must faithfully transcribe
 // the procedural gate's decisions so the ontology reproduces control_leak / action_gap
@@ -99,11 +104,18 @@ const WRONG_TRIGGER_PERI = {
   _trigger: { wrongTrigger: true, usedDirectorCued: false, unusedDirectorCuedExists: true },
 };
 
-const fixtures = [CLEAN_PERI, LEAK_CONTROL, ACTION_GAP_PERI, NEGATIVE_CONTROL, WRONG_TRIGGER_PERI];
+// A clean induced chain BY THE BOOLEANS, but the learner's final turn carries NEITHER
+// structure-critic naming frame -> S5/S6 do not fire -> chain broken -> Organic (the real
+// frames override the "recognition produced" proxy).
+const FRAMELESS_PERI = { ...CLEAN_PERI, dramaId: 'T6', _frames: { oldCheckFrame: false, replacementFrame: false } };
+
+const fixtures = [CLEAN_PERI, LEAK_CONTROL, ACTION_GAP_PERI, NEGATIVE_CONTROL, WRONG_TRIGGER_PERI, FRAMELESS_PERI];
 let quads = [];
 
 before(async () => {
-  const lifted = fixtures.map((s) => summaryToAbox(s, { ...CUTS, triggerConsumption: s._trigger || null }));
+  const lifted = fixtures.map((s) =>
+    summaryToAbox(s, { ...CUTS, triggerConsumption: s._trigger || null, namingFrames: s._frames || null }),
+  );
   const abox = `@prefix ms: <${NS}> .\n@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n${lifted.map((l) => l.ttl).join('\n')}\n`;
   const data = [loadSharedTBox(['reasoning', 'poetics', 'adaptation']), abox].join('\n\n');
   const closure = await n3reasoner(data, undefined, { output: 'deductive_closure', outputType: 'string' });
@@ -186,4 +198,21 @@ test('extractTriggerConsumption flags the organic-consumed / director-cued-unuse
   assert.equal(right.usedDirectorCued, true);
 
   assert.equal(extractTriggerConsumption({ turns: [] }), null);
+});
+
+test('detectNamingFrames spots the structure-critic old-check + replacement frames', () => {
+  const both = detectNamingFrames(
+    'I was treating the figure as the mark — that is the pressure. Now the check is the master mark.',
+  );
+  assert.equal(both.oldCheckFrame, true);
+  assert.equal(both.replacementFrame, true);
+  const neither = detectNamingFrames('the cat sat on the mat');
+  assert.equal(neither.oldCheckFrame, false);
+  assert.equal(neither.replacementFrame, false);
+});
+
+test('real S5/S6 frames override the proxy: a frame-less peripeteia chain derives Organic, not induced', () => {
+  // FRAMELESS_PERI is a clean induced chain by the booleans, but namingFrames force S5/S6 false.
+  assert.ok(typeOf('R_T6_peripeteia_only').includes('OrganicRecognition'));
+  assert.ok(!typeOf('R_T6_peripeteia_only').includes('PeripeteiaInducedRecognition'));
 });

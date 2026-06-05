@@ -23,8 +23,10 @@ import { loadSharedTBox } from '../services/ontology/reasoningOntology.js';
 import {
   summaryToAbox,
   extractTriggerConsumption,
+  detectNamingFrames,
   unpopulatableFromGateStruct,
 } from '../services/ontology/adaptationAboxBridge.js';
+import { extractLearnerRepairText } from '../services/ontology/hamartiaRepairDetector.js';
 
 const NS = 'https://machinespirits.dev/ontology/reasoning#';
 const statusPath =
@@ -60,7 +62,9 @@ const lifted = cells.map((s) => {
   const deliberation = readDeliberation(s);
   if (deliberation) delibJoined += 1;
   const triggerConsumption = deliberation ? extractTriggerConsumption(deliberation) : null;
-  return summaryToAbox(s, { ...cuts, triggerConsumption });
+  const txt = deliberation ? extractLearnerRepairText(deliberation) : null;
+  const namingFrames = txt ? detectNamingFrames(txt.publicText) : null;
+  return summaryToAbox(s, { ...cuts, triggerConsumption, namingFrames });
 });
 const abox = `@prefix ms: <${NS}> .\n@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n${lifted.map((l) => l.ttl).join('\n')}\n`;
 const data = [loadSharedTBox(['reasoning', 'poetics', 'adaptation']), abox].join('\n\n');
