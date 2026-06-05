@@ -55,3 +55,24 @@
   ?sr a ms:CompleteLearnerSelfReframe .
   ?r a ms:TutorRevision ; ms:accountableTo ?u ; ms:changesRoleView ?rv }
   => { ?e a ms:DyadicRevision . ?r a ms:AccountableTutorRevision } .
+
+# Adaptation-claim gates. Recognition is necessary but insufficient: a transcript
+# first survives form, then origin attribution, then counterfactual/non-leakage
+# evidence before it becomes a candidate peripeteia-induced adaptation claim.
+{ ?e a ms:DyadicRevision ;
+     ms:hasPanelRecognitionEvidence ?rec .
+  ?rec a ms:BlindPanelRecognitionEvidence }
+  => { ?e a ms:RecognitiveFormSurvivor } .
+
+{ ?e a ms:RecognitiveFormSurvivor ;
+     ms:hasOriginAttributionEvidence ?origin .
+  ?origin a ms:BlindPanelOriginAttribution ;
+     ms:hasRecognitionOrigin ms:PeripeteiaInducedOrigin }
+  => { ?e a ms:PeripeteiaOriginSurvivor } .
+
+{ ?e a ms:PeripeteiaOriginSurvivor ;
+     ms:hasCounterfactualContrast ?contrast ;
+     ms:hasNonLeakageEvidence ?nonLeakage .
+  ?contrast a ms:CounterfactualContrastEvidence .
+  ?nonLeakage a ms:NonLeakageEvidence }
+  => { ?e a ms:PeripeteiaInducedAdaptationCandidate } .

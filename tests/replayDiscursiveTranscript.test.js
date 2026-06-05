@@ -57,6 +57,9 @@ test('parseArgs resolves adversarial checker policy from generator', () => {
 });
 
 test('parseArgs accepts explicit replay item concurrency and feedback file', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'disc-replay-policy-memory-'));
+  const policyMemory = path.join(tmp, 'policy-memory.md');
+  fs.writeFileSync(policyMemory, '# policy\n', 'utf8');
   const args = parseArgs([
     '--transcript',
     '/tmp/T01.txt',
@@ -64,9 +67,12 @@ test('parseArgs accepts explicit replay item concurrency and feedback file', () 
     '3',
     '--feedback-file',
     '/tmp/replay-feedback.txt',
+    '--policy-memory',
+    policyMemory,
   ]);
   assert.equal(args.itemConcurrency, 3);
   assert.equal(args.feedbackFile, '/tmp/replay-feedback.txt');
+  assert.deepEqual(args.policyMemoryFiles, [policyMemory]);
 });
 
 test('evaluateLocalGate accepts a clean local checker result', () => {
@@ -288,6 +294,7 @@ test('mock replay writes counterfactual artifact bundle without DB', async () =>
   const transcript = path.join(tmp, 'T01.full.md');
   const key = path.join(tmp, 'key.yaml');
   const outDir = path.join(tmp, 'out');
+  const policyMemory = path.join(tmp, 'policy-memory.md');
   fs.writeFileSync(
     transcript,
     `# Full held-out role transcript
@@ -304,6 +311,7 @@ TUTOR: "Place it below."
 The tutor privately notices a repair opportunity.`,
   );
   fs.writeFileSync(key, 'items:\n  T01:\n    tutor_adaptation_policy: peripeteia\n');
+  fs.writeFileSync(policyMemory, 'Policy memory: keep ledger entries temporally scoped.\n', 'utf8');
 
   const result = await runReplay({
     transcript,
@@ -329,12 +337,15 @@ The tutor privately notices a repair opportunity.`,
     feedbackByItem: {
       'T01.full': 'Blind panel failed: only 2/5 recognition votes; make the self-reframe public.',
     },
+    policyMemoryFiles: [policyMemory],
   });
 
   assert.equal(result.manifest.count, 1);
   assert.equal(result.manifest.item_concurrency, 2);
   const record = result.manifest.records[0];
   assert.equal(record.feedback.provided, true);
+  assert.equal(record.policyMemory.provided, true);
+  assert.equal(result.manifest.policy_memory.provided, true);
   assert.ok(fs.existsSync(record.paths.revisedPublic));
   assert.ok(fs.existsSync(record.paths.revisionJson));
   assert.ok(fs.existsSync(record.paths.checkJson));
@@ -349,5 +360,9 @@ The tutor privately notices a repair opportunity.`,
   assert.match(
     fs.readFileSync(path.join(outDir, 'T01.full', 'rewrite.prompt.txt'), 'utf8'),
     /Blind panel failed: only 2\/5 recognition votes/,
+  );
+  assert.match(
+    fs.readFileSync(path.join(outDir, 'T01.full', 'rewrite.prompt.txt'), 'utf8'),
+    /Policy memory: keep ledger entries temporally scoped/,
   );
 });

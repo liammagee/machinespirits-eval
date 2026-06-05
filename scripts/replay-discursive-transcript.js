@@ -64,7 +64,8 @@ function usage() {
     [--min-learner-actional-uptake N] [--min-learner-self-reframe N]
     [--min-dyadic-revision N]
     [--min-non-leakage N] [--min-prose-preservation N]
-    [--item-concurrency N] [--feedback-file path] [--timeout-ms N]
+    [--item-concurrency N] [--feedback-file path] [--policy-memory path]
+    [--timeout-ms N]
     [--force] [--dry-run]
 
 Defaults are cost-safe: --generator mock --checker none.
@@ -119,6 +120,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (t === '--inner-max-chars') args.innerMaxChars = Number(argv[++i]);
     else if (t === '--item-concurrency') args.itemConcurrency = Number(argv[++i]);
     else if (t === '--feedback-file') args.feedbackFile = path.resolve(argv[++i]);
+    else if (t === '--policy-memory') args.policyMemoryFiles.push(path.resolve(argv[++i]));
     else if (t === '--force') args.force = true;
     else if (t === '--dry-run') args.dryRun = true;
     else throw new Error(`unknown arg: ${t}\n\n${usage()}`);
@@ -153,6 +155,7 @@ function defaultArgs() {
     itemConcurrency: DEFAULT_ITEM_CONCURRENCY,
     feedbackFile: null,
     feedbackByItem: {},
+    policyMemoryFiles: [],
     force: false,
     dryRun: false,
   };
@@ -163,6 +166,7 @@ function finalizeArgs(rawArgs) {
     ...defaultArgs(),
     ...rawArgs,
     itemIds: [...(rawArgs.itemIds || [])],
+    policyMemoryFiles: [...(rawArgs.policyMemoryFiles || [])],
     gateThresholds: {
       ...DEFAULT_GATE_THRESHOLDS,
       ...(rawArgs.gateThresholds || {}),
@@ -185,6 +189,9 @@ function finalizeArgs(rawArgs) {
   if (!Number.isFinite(args.innerMaxChars) || args.innerMaxChars < 0) throw new Error('--inner-max-chars must be >= 0');
   if (!Number.isInteger(args.itemConcurrency) || args.itemConcurrency < 1) {
     throw new Error('--item-concurrency must be a positive integer');
+  }
+  for (const filePath of args.policyMemoryFiles || []) {
+    if (!fs.existsSync(filePath)) throw new Error(`policy memory file not found: ${filePath}`);
   }
   validateGateThresholds(args.gateThresholds);
   return args;
@@ -583,7 +590,7 @@ function loadItems(args) {
   }
 }
 
-function buildOntologySummary() {
+function buildOntologySummary({ policyMemoryText = '' } = {}) {
   return `Discursive-game/accountable-scorekeeping criteria:
 - Treat this as counterfactual offline revision, not online adaptation.
 - Preserve the dramatic setting, roles, task facts, and learner voice unless needed for accountability.
@@ -595,15 +602,24 @@ function buildOntologySummary() {
 - Every tutor shift must be licensed by public evidence or by held-out state that is also publicly licensable; do not leak hidden-only facts as tutor knowledge.
 - Repair without learner uptake is repair, not adaptation credit.
 - Prefer finite tactics: request_elaboration, invite_objection, name_the_disagreement, scope_test, pose_counterexample, withhold_answer, repair_misrecognition, summarize_and_check, mirror_and_extend.
+${policyMemoryText ? `\nReusable learned-policy memory:\n${policyMemoryText}` : ''}
 - Output JSON only.`;
 }
 
-export function buildRewritePrompt({ item, publicTranscript, heldOutContext, keyText, keyData, feedbackText = '' }) {
+export function buildRewritePrompt({
+  item,
+  publicTranscript,
+  heldOutContext,
+  keyText,
+  keyData,
+  feedbackText = '',
+  policyMemoryText = '',
+}) {
   const systemPrompt = `You are a counterfactual transcript reviser for a research harness.
 
 You revise one existing public transcript copy to make accountable discursive adaptation more inspectable. You may use held-out inner state for diagnosis, but the revised public transcript must not reveal hidden-only facts unless the public transcript licenses them.
 
-${buildOntologySummary()}`;
+${buildOntologySummary({ policyMemoryText })}`;
 
   const userPrompt = `Revise the transcript below in one pass.
 
@@ -684,7 +700,15 @@ function feedbackForItem(args, item) {
   return truncateMiddle(mapped || direct || '', args.innerMaxChars || 18_000);
 }
 
-export function buildCheckPrompt({ item, publicTranscript, revision }) {
+function policyMemoryForArgs(args) {
+  const text = (args.policyMemoryFiles || [])
+    .map((filePath) => readText(filePath).trim())
+    .filter(Boolean)
+    .join('\n\n---\n\n');
+  return truncateMiddle(text, args.innerMaxChars || 18_000);
+}
+
+export function buildCheckPrompt({ item, publicTranscript, revision, policyMemoryText = '' }) {
   const systemPrompt = `You are an arm's-length smoke-check critic for counterfactual transcript revision.
 
 Do not score general writing quality as the main target. Check whether the revised transcript makes accountable discursive adaptation inspectable while preserving non-leakage and claim boundaries.
@@ -713,7 +737,7 @@ Required JSON shape:
 }
 
 Criteria:
-${buildOntologySummary()}
+${buildOntologySummary({ policyMemoryText })}
 
 Scoring guidance:
 - Score each criterion on 0.0-1.0 when possible. If you use whole-number scoring, use 0-10; percentages are accepted but not preferred.
@@ -1043,7 +1067,21 @@ async function replayOne(item, args, outDir) {
   fs.mkdirSync(itemDir, { recursive: true });
 
   const feedbackText = feedbackForItem(args, item);
-  const rewritePrompt = buildRewritePrompt({ item, publicTranscript, heldOutContext, keyText, keyData, feedbackText });
+  const policyMemoryText = policyMemoryForArgs(args);
+  const policyMemory = {
+    provided: Boolean(policyMemoryText),
+    files: args.policyMemoryFiles || [],
+    sha256: policyMemoryText ? sha256Short(policyMemoryText) : null,
+  };
+  const rewritePrompt = buildRewritePrompt({
+    item,
+    publicTranscript,
+    heldOutContext,
+    keyText,
+    keyData,
+    feedbackText,
+    policyMemoryText,
+  });
   fs.writeFileSync(path.join(itemDir, 'original-public.txt'), rawPublic);
   fs.writeFileSync(path.join(itemDir, 'rewrite.prompt.txt'), `${rewritePrompt.systemPrompt}\n\n---\n\n${rewritePrompt.userPrompt}`);
 
@@ -1062,6 +1100,7 @@ async function replayOne(item, args, outDir) {
         provided: Boolean(feedbackText),
         sha256: feedbackText ? sha256Short(feedbackText) : null,
       },
+      policyMemory,
     };
   }
 
@@ -1073,7 +1112,7 @@ async function replayOne(item, args, outDir) {
 
   let checker = null;
   if (args.checker !== 'none') {
-    const checkPrompt = buildCheckPrompt({ item, publicTranscript, revision });
+    const checkPrompt = buildCheckPrompt({ item, publicTranscript, revision, policyMemoryText });
     fs.writeFileSync(path.join(itemDir, 'check.prompt.txt'), `${checkPrompt.systemPrompt}\n\n---\n\n${checkPrompt.userPrompt}`);
     const checkerCall = await callBackend(args.checker, checkPrompt, { ...args, publicTranscript }, 'checker');
     fs.writeFileSync(path.join(itemDir, 'check.raw.txt'), checkerCall.content);
@@ -1113,6 +1152,7 @@ async function replayOne(item, args, outDir) {
       provided: Boolean(feedbackText),
       sha256: feedbackText ? sha256Short(feedbackText) : null,
     },
+    policyMemory,
   };
   fs.writeFileSync(itemManifestPath, JSON.stringify(record, null, 2));
   return record;
@@ -1170,6 +1210,10 @@ export async function runReplay(rawArgs) {
     generator: args.generator,
     checker: args.checker,
     checker_policy: args.checkerPolicy || null,
+    policy_memory: {
+      files: args.policyMemoryFiles || [],
+      provided: Boolean((args.policyMemoryFiles || []).length),
+    },
     item_concurrency: args.itemConcurrency || DEFAULT_ITEM_CONCURRENCY,
     local_gate: {
       enabled: args.localGate !== false,

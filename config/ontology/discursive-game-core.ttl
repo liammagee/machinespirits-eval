@@ -96,6 +96,66 @@ ms:DyadicRevision a owl:Class ;
   rdfs:subClassOf ms:ScorekeepingEvent ;
   rdfs:comment "A scorekeeping episode in which both the tutor policy/role view and learner position are revised in relation to one another." .
 
+# -- adaptation-claim layer ------------------------------------------------------
+
+ms:AdaptationClaim a owl:Class ;
+  rdfs:comment "A claim about adaptation evidence. This separates recognitive form from tutor-induced origin and from reliable held-out replication." .
+ms:RecognitiveFormSurvivor a owl:Class ;
+  rdfs:subClassOf ms:AdaptationClaim ;
+  rdfs:comment "A public transcript episode that survives the blind recognitive-form gate. This alone is not an adaptation-origin claim." .
+ms:PeripeteiaOriginSurvivor a owl:Class ;
+  rdfs:subClassOf ms:AdaptationClaim ;
+  rdfs:comment "A recognitive-form survivor whose blind origin evidence attributes the learner reframe to a tutor peripeteia-linked strategic move." .
+ms:PeripeteiaInducedAdaptationCandidate a owl:Class ;
+  rdfs:subClassOf ms:AdaptationClaim ;
+  rdfs:comment "A candidate adaptation claim: recognitive form + peripeteia origin + counterfactual controls + non-leakage evidence. Not yet reliable without held-out replication." .
+ms:ReliablePeripeteiaInducedAdaptationClaim a owl:Class ;
+  rdfs:subClassOf ms:PeripeteiaInducedAdaptationCandidate ;
+  rdfs:comment "A claim status reserved for validation scripts after repeated held-out, paired-control success. Do not infer from a single transcript." .
+
+ms:AdaptationEvidence a owl:Class .
+ms:BlindPanelRecognitionEvidence a owl:Class ; rdfs:subClassOf ms:AdaptationEvidence .
+ms:BlindPanelOriginAttribution a owl:Class ; rdfs:subClassOf ms:AdaptationEvidence .
+ms:CounterfactualContrastEvidence a owl:Class ; rdfs:subClassOf ms:AdaptationEvidence .
+ms:NonLeakageEvidence a owl:Class ; rdfs:subClassOf ms:AdaptationEvidence .
+ms:HeldoutReplicationEvidence a owl:Class ; rdfs:subClassOf ms:AdaptationEvidence .
+
+ms:RecognitionOrigin a owl:Class .
+ms:NoRecognitionOrigin a ms:RecognitionOrigin .
+ms:OrganicTranscriptDriftOrigin a ms:RecognitionOrigin .
+ms:PeripeteiaInducedOrigin a ms:RecognitionOrigin .
+ms:FalseClosureOrigin a ms:RecognitionOrigin .
+ms:AmbiguousOrigin a ms:RecognitionOrigin .
+
+# -- learned policy memory -------------------------------------------------------
+
+ms:LearnedDiscursivePolicy a owl:Class ;
+  rdfs:comment "Versioned acquired policy memory harvested from replay/evaluation evidence. This is system-level learning without claiming model-weight training." .
+ms:CandidateLearnedPolicy a owl:Class ;
+  rdfs:subClassOf ms:LearnedDiscursivePolicy ;
+  rdfs:comment "A learned policy supported by evidence but not yet validated enough to be treated as a default rule." .
+ms:PromotedLearnedPolicy a owl:Class ;
+  rdfs:subClassOf ms:LearnedDiscursivePolicy ;
+  rdfs:comment "A learned policy whose support/validation threshold has been met and may be injected into future role prompts or checks." .
+ms:RetiredLearnedPolicy a owl:Class ;
+  rdfs:subClassOf ms:LearnedDiscursivePolicy ;
+  rdfs:comment "A previously learned policy retired because counter-evidence or drift made it unsafe." .
+
+ms:DiscursiveFailureMode a owl:Class .
+ms:TemporalLedgerOverclaim a ms:DiscursiveFailureMode .
+ms:IncompleteLearnerSelfReframe a ms:DiscursiveFailureMode .
+ms:WeakPublicEvidence a ms:DiscursiveFailureMode .
+ms:WeakTacticSelection a ms:DiscursiveFailureMode .
+ms:NonLeakageRisk a ms:DiscursiveFailureMode .
+ms:OriginAttributionRisk a ms:DiscursiveFailureMode .
+ms:PanelRecognitionFailure a ms:DiscursiveFailureMode .
+ms:OrganicTranscriptDrift a ms:DiscursiveFailureMode .
+
+ms:ReplayPromptConstruction a ms:DiscursiveGame .
+ms:MoveLedgerConstruction a ms:DiscursiveGame .
+ms:PanelEscalationDecision a ms:DiscursiveGame .
+ms:OriginClaimDiscipline a ms:DiscursiveGame .
+
 # -- object / datatype properties ------------------------------------------------
 
 ms:hasStrategy a owl:ObjectProperty ; rdfs:range ms:DramaticStrategy .
@@ -113,6 +173,29 @@ ms:hasLearnerMove a owl:ObjectProperty ; rdfs:range ms:LearnerPublicMove .
 ms:hasLearnerActionalApplication a owl:ObjectProperty ; rdfs:range ms:LearnerActionalApplication .
 ms:hasLearnerSelfReframe a owl:ObjectProperty ; rdfs:range ms:LearnerSelfReframe .
 ms:hasTutorRevision a owl:ObjectProperty ; rdfs:range ms:TutorRevision .
+ms:hasPanelRecognitionEvidence a owl:ObjectProperty ; rdfs:domain ms:AdaptationClaim ; rdfs:range ms:BlindPanelRecognitionEvidence .
+ms:hasOriginAttributionEvidence a owl:ObjectProperty ; rdfs:domain ms:AdaptationClaim ; rdfs:range ms:BlindPanelOriginAttribution .
+ms:hasRecognitionOrigin a owl:ObjectProperty ; rdfs:domain ms:BlindPanelOriginAttribution ; rdfs:range ms:RecognitionOrigin .
+ms:hasCounterfactualContrast a owl:ObjectProperty ; rdfs:domain ms:AdaptationClaim ; rdfs:range ms:CounterfactualContrastEvidence .
+ms:hasNonLeakageEvidence a owl:ObjectProperty ; rdfs:domain ms:AdaptationClaim ; rdfs:range ms:NonLeakageEvidence .
+ms:hasHeldoutReplicationEvidence a owl:ObjectProperty ; rdfs:domain ms:AdaptationClaim ; rdfs:range ms:HeldoutReplicationEvidence .
+ms:recognitionVoteCount a owl:DatatypeProperty ; rdfs:domain ms:BlindPanelRecognitionEvidence ; rdfs:range xsd:integer .
+ms:requiredRecognitionVotes a owl:DatatypeProperty ; rdfs:domain ms:BlindPanelRecognitionEvidence ; rdfs:range xsd:integer .
+ms:peripeteiaOriginVoteCount a owl:DatatypeProperty ; rdfs:domain ms:BlindPanelOriginAttribution ; rdfs:range xsd:integer .
+ms:requiredOriginVotes a owl:DatatypeProperty ; rdfs:domain ms:BlindPanelOriginAttribution ; rdfs:range xsd:integer .
+ms:routineControlRecognitionVoteCount a owl:DatatypeProperty ; rdfs:domain ms:CounterfactualContrastEvidence ; rdfs:range xsd:integer .
+ms:noneControlRecognitionVoteCount a owl:DatatypeProperty ; rdfs:domain ms:CounterfactualContrastEvidence ; rdfs:range xsd:integer .
+ms:replicationCount a owl:DatatypeProperty ; rdfs:domain ms:HeldoutReplicationEvidence ; rdfs:range xsd:integer .
+ms:derivedFromRun a owl:DatatypeProperty ; rdfs:domain ms:LearnedDiscursivePolicy ; rdfs:range xsd:string .
+ms:derivedFromLoopRoot a owl:DatatypeProperty ; rdfs:domain ms:LearnedDiscursivePolicy ; rdfs:range xsd:string .
+ms:addressesFailure a owl:ObjectProperty ; rdfs:domain ms:LearnedDiscursivePolicy ; rdfs:range ms:DiscursiveFailureMode .
+ms:activatesIn a owl:ObjectProperty ; rdfs:domain ms:LearnedDiscursivePolicy ; rdfs:range ms:DiscursiveGame .
+ms:requiresConstraint a owl:DatatypeProperty ; rdfs:domain ms:LearnedDiscursivePolicy ; rdfs:range xsd:string .
+ms:promotionStatus a owl:DatatypeProperty ; rdfs:domain ms:LearnedDiscursivePolicy ; rdfs:range xsd:string .
+ms:supportingItemCount a owl:DatatypeProperty ; rdfs:domain ms:LearnedDiscursivePolicy ; rdfs:range xsd:integer .
+ms:validationRunCount a owl:DatatypeProperty ; rdfs:domain ms:LearnedDiscursivePolicy ; rdfs:range xsd:integer .
+ms:supportingSourceItem a owl:DatatypeProperty ; rdfs:domain ms:LearnedDiscursivePolicy ; rdfs:range xsd:string .
+ms:counterEvidence a owl:DatatypeProperty ; rdfs:domain ms:LearnedDiscursivePolicy ; rdfs:range xsd:string .
 
 ms:respondsTo a owl:ObjectProperty ; rdfs:domain ms:PublicMove ; rdfs:range ms:LearnerSignal .
 ms:licensedByEvidence a owl:ObjectProperty ;

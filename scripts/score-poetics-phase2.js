@@ -233,6 +233,10 @@ Do the following.
         representation, evidence standard, social condition, counterexample,
         interruption, register, or task that makes the learner do different work.
    If either part is missing, score at most 3 even if the tutor is competent.
+   For scores 4-5, also make the origin link legible: the later learner public
+   reframe or action must be plausibly traceable to this tutor move rather than to
+   organic transcript drift. If the learner could have reached the reframe without
+   the tutor's changed public strategy, score this axis at most 3.
    Score dramatic structure, not archaic style imitation: the mechanism may use
    Aristotelian reversal-recognition, Shakespearean role/phrase turn, Brechtian
    interruption, Miller/social-realist consequence, object work, counterexample,
@@ -246,7 +250,9 @@ Do the following.
    Quote the strongest later tutor adaptive-mechanism move VERBATIM in evidence.
    The evidence quote for scores 4-5 should normally include the stock-taking
    contrast and the new public mechanism. If they are separated across sentences,
-   include enough of the tutor turn to show both.
+   include enough of the tutor turn to show both. In justification, state why the
+   public learner reframe is tutor-induced rather than merely organic when assigning
+   a high score.
 
 8. ADAPTIVE MECHANISM QUALITY (score 1-5). If axis 7 found a later tutor
    adaptive mechanism, judge the QUALITY of that mechanism. This is not another
@@ -263,7 +269,8 @@ Do the following.
      1 = no adaptive mechanism, or the tutor merely repeats/reassures.
    Quote the tutor mechanism VERBATIM in evidence. In justification, name what
    makes it fitted or weak: specificity, route novelty, learner agency,
-   transferability, and economy.
+   transferability, economy, and whether the mechanism explains the learner's
+   later self-reframe better than ordinary transcript drift.
 
 9. RECOGNITION-CONTINGENT TUTOR UPTAKE (score 1-5). If a pivot learner turn exists,
    does a later tutor turn adapt to the learner's revised framing, rather than merely

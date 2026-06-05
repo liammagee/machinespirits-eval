@@ -262,6 +262,7 @@ describe('score-poetics-phase2 role-symmetric adaptation axes', () => {
     assert.doesNotMatch(prompt, /\bclaude\b/i);
     assert.match(prompt, /ordinary scaffolding/);
     assert.match(prompt, /stock-taking contrast/);
+    assert.match(prompt, /organic transcript drift/);
     assert.match(prompt, /ACTIONAL BREAKTHROUGH/);
     assert.match(prompt, /ADAPTIVE MECHANISM QUALITY/);
     assert.deepEqual(BLIND_SCORING_PROTOCOL.hiddenFromCritic, [

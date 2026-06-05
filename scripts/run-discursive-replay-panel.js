@@ -351,6 +351,14 @@ export function buildReplayPanelPackage(rawArgs) {
       adversarial_rule: 'codex->claude, claude->codex, agy->codex',
       visible_to_blind_critic: false,
     },
+    panel_claim_policy: {
+      recognition_is_necessary: true,
+      origin_attribution_required_for_adaptation_claim: true,
+      decisive_origin_class: 'peripeteia_induced',
+      visible_to_blind_critic: false,
+      note:
+        'The blind critic sees only the transcript. The loop gate separately requires peripeteia-induced origin votes before treating a panel survivor as adaptation evidence.',
+    },
     items: keyItems,
   };
   writeYaml(keyPath, key);
@@ -366,6 +374,7 @@ export function buildReplayPanelPackage(rawArgs) {
     scoreConcurrency: args.scoreConcurrency,
     sourceReplayDir: rel(args.replayDir),
     preliminaryCheckPolicy: key.preliminary_check_policy,
+    panelClaimPolicy: key.panel_claim_policy,
     units: [
       {
         id: 'replay-r01',
@@ -395,6 +404,7 @@ export function buildReplayPanelPackage(rawArgs) {
     skipped,
     critics: args.mock ? ['mock'] : args.critics,
     preliminary_check_policy: key.preliminary_check_policy,
+    panel_claim_policy: key.panel_claim_policy,
   };
   writeJson(path.join(outDir, 'manifest.json'), packageManifest);
 

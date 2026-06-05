@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import {
+  originPasses,
   parseArgs,
   recognitionPasses,
   summarizePanelScores,
@@ -26,21 +27,29 @@ test('parseArgs defaults to adversarial local check and all critic concurrency',
   assert.equal(args.itemConcurrency, 2);
   assert.equal(args.criticConcurrency, 'all');
   assert.equal(args.panelThreshold, 'majority');
+  assert.equal(args.originThreshold, 'majority');
+  assert.equal(args.originGate, true);
   assert.equal(args.ingest, true);
 });
 
-test('recognitionPasses handles majority, all, numeric threshold, and coverage', () => {
+test('recognitionPasses and originPasses handle majority, all, numeric threshold, and coverage', () => {
   assert.deepEqual(recognitionPasses({ recognitionVotes: 3, totalCritics: 5 }, 'majority', 5), {
     passes: true,
     requiredRecognitionVotes: 3,
     minimumCoverage: 3,
   });
+  assert.deepEqual(originPasses({ originVotes: 3, totalCritics: 5 }, 'majority', 5), {
+    passes: true,
+    requiredOriginVotes: 3,
+    minimumOriginCoverage: 3,
+  });
   assert.equal(recognitionPasses({ recognitionVotes: 4, totalCritics: 5 }, 'all', 5).passes, false);
   assert.equal(recognitionPasses({ recognitionVotes: 4, totalCritics: 5 }, 4, 5).passes, true);
   assert.equal(recognitionPasses({ recognitionVotes: 3, totalCritics: 2 }, 'majority', 5).passes, false);
+  assert.equal(originPasses({ originVotes: 2, totalCritics: 5 }, 'majority', 5).passes, false);
 });
 
-test('summarizePanelScores maps blind ids to source items and flags failures', () => {
+test('summarizePanelScores requires both recognition and peripeteia-origin votes by default', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'disc-replay-loop-panel-'));
   const scoreDir = path.join(tmp, 'scores');
   writeJson(path.join(tmp, 'manifest.json'), {
@@ -53,22 +62,58 @@ test('summarizePanelScores maps blind ids to source items and flags failures', (
   writeJson(path.join(scoreDir, 'replay-r01-codex.json'), {
     critic: 'codex',
     scored: [
-      { id: 'T01', formClass: 'recognition', recontextualization: 100, actionalBreakthrough: 100 },
-      { id: 'T02', formClass: 'flat', recontextualization: 50, actionalBreakthrough: 100 },
+      {
+        id: 'T01',
+        formClass: 'recognition',
+        recontextualization: 100,
+        actionalBreakthrough: 100,
+        recognitionOrigin: { class: 'peripeteia_induced' },
+      },
+      {
+        id: 'T02',
+        formClass: 'recognition',
+        recontextualization: 75,
+        actionalBreakthrough: 100,
+        recognitionOrigin: { class: 'organic' },
+      },
     ],
   });
   writeJson(path.join(scoreDir, 'replay-r01-qwen.json'), {
     critic: 'qwen',
     scored: [
-      { id: 'T01', formClass: 'recognition', recontextualization: 75, actionalBreakthrough: 75 },
-      { id: 'T02', formClass: 'recognition', recontextualization: 75, actionalBreakthrough: 75 },
+      {
+        id: 'T01',
+        formClass: 'recognition',
+        recontextualization: 75,
+        actionalBreakthrough: 75,
+        recognitionOrigin: { class: 'peripeteia_induced' },
+      },
+      {
+        id: 'T02',
+        formClass: 'recognition',
+        recontextualization: 75,
+        actionalBreakthrough: 75,
+        recognitionOrigin: { class: 'organic' },
+      },
     ],
   });
   writeJson(path.join(scoreDir, 'replay-r01-claude.json'), {
     critic: 'claude',
     scored: [
-      { id: 'T01', formClass: 'recognition', recontextualization: 75, actionalBreakthrough: 75 },
-      { id: 'T02', formClass: 'flat', recontextualization: 25, actionalBreakthrough: 75 },
+      {
+        id: 'T01',
+        formClass: 'recognition',
+        recontextualization: 75,
+        actionalBreakthrough: 75,
+        recognitionOrigin: { class: 'peripeteia_induced' },
+      },
+      {
+        id: 'T02',
+        formClass: 'recognition',
+        recontextualization: 75,
+        actionalBreakthrough: 75,
+        recognitionOrigin: { class: 'organic' },
+      },
     ],
   });
 
@@ -82,5 +127,10 @@ test('summarizePanelScores maps blind ids to source items and flags failures', (
     ['source-b'],
   );
   assert.equal(summary.items[0].recognitionVotes, 3);
+  assert.equal(summary.items[0].originVotes, 3);
+  assert.equal(summary.items[1].recognitionVotes, 3);
+  assert.equal(summary.items[1].originVotes, 0);
+  assert.equal(summary.items[1].status, 'panel_origin_fail');
   assert.equal(summary.items[1].requiredRecognitionVotes, 2);
+  assert.equal(summary.items[1].requiredOriginVotes, 2);
 });

@@ -126,3 +126,68 @@ ms:tutorMove2 rdf:type ms:RepairMove ;
   assertClosureTriple(result.closureText, 'tutorMove2', 'a', 'RepairWithoutUptake');
   assert.doesNotMatch(result.closureText, /ms:tutorMove2 a ms:AccountableRepair\./);
 });
+
+test('adaptation claim layer separates recognitive form from peripeteia-induced origin', async () => {
+  const abox = `${ABOX_PREFIXES}
+ms:episode4 rdf:type ms:DyadicRevision ;
+  ms:hasPanelRecognitionEvidence ms:recognitionPanel4 ;
+  ms:hasOriginAttributionEvidence ms:originPanel4 ;
+  ms:hasCounterfactualContrast ms:contrast4 ;
+  ms:hasNonLeakageEvidence ms:nonLeakage4 .
+
+ms:recognitionPanel4 rdf:type ms:BlindPanelRecognitionEvidence ;
+  ms:recognitionVoteCount 4 ;
+  ms:requiredRecognitionVotes 3 .
+
+ms:originPanel4 rdf:type ms:BlindPanelOriginAttribution ;
+  ms:hasRecognitionOrigin ms:PeripeteiaInducedOrigin ;
+  ms:peripeteiaOriginVoteCount 3 ;
+  ms:requiredOriginVotes 3 .
+
+ms:contrast4 rdf:type ms:CounterfactualContrastEvidence ;
+  ms:routineControlRecognitionVoteCount 0 ;
+  ms:noneControlRecognitionVoteCount 0 .
+
+ms:nonLeakage4 rdf:type ms:NonLeakageEvidence .`;
+
+  const result = await checkAboxConsistency(abox, {
+    modules: ['reasoning', 'poetics', 'discursive', 'consistency'],
+    includeClosure: true,
+  });
+
+  assert.equal(result.consistent, true);
+  assertClosureTriple(result.closureText, 'episode4', 'a', 'RecognitiveFormSurvivor');
+  assertClosureTriple(result.closureText, 'episode4', 'a', 'PeripeteiaOriginSurvivor');
+  assertClosureTriple(result.closureText, 'episode4', 'a', 'PeripeteiaInducedAdaptationCandidate');
+});
+
+test('organic-origin recognition does not derive peripeteia-induced adaptation candidate', async () => {
+  const abox = `${ABOX_PREFIXES}
+ms:episode5 rdf:type ms:DyadicRevision ;
+  ms:hasPanelRecognitionEvidence ms:recognitionPanel5 ;
+  ms:hasOriginAttributionEvidence ms:originPanel5 ;
+  ms:hasCounterfactualContrast ms:contrast5 ;
+  ms:hasNonLeakageEvidence ms:nonLeakage5 .
+
+ms:recognitionPanel5 rdf:type ms:BlindPanelRecognitionEvidence ;
+  ms:recognitionVoteCount 4 ;
+  ms:requiredRecognitionVotes 3 .
+
+ms:originPanel5 rdf:type ms:BlindPanelOriginAttribution ;
+  ms:hasRecognitionOrigin ms:OrganicTranscriptDriftOrigin ;
+  ms:peripeteiaOriginVoteCount 1 ;
+  ms:requiredOriginVotes 3 .
+
+ms:contrast5 rdf:type ms:CounterfactualContrastEvidence .
+ms:nonLeakage5 rdf:type ms:NonLeakageEvidence .`;
+
+  const result = await checkAboxConsistency(abox, {
+    modules: ['reasoning', 'poetics', 'discursive', 'consistency'],
+    includeClosure: true,
+  });
+
+  assert.equal(result.consistent, true);
+  assertClosureTriple(result.closureText, 'episode5', 'a', 'RecognitiveFormSurvivor');
+  assert.doesNotMatch(result.closureText, /ms:episode5 a ms:PeripeteiaOriginSurvivor\./);
+  assert.doesNotMatch(result.closureText, /ms:episode5 a ms:PeripeteiaInducedAdaptationCandidate\./);
+});

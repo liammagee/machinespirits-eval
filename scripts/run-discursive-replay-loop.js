@@ -32,8 +32,9 @@ function usage() {
     [--out-root DIR] [--run-label ID]
     [--item-concurrency N] [--critic-concurrency N|all] [--score-concurrency N]
     [--critics model,model,...]
-    [--panel-threshold majority|all|N] [--min-critics N]
-    [--skip-panel] [--no-ingest] [--retry-rejects]
+    [--panel-threshold majority|all|N] [--origin-threshold majority|all|N] [--min-critics N]
+    [--policy-memory path]
+    [--skip-panel] [--form-only-panel] [--no-ingest] [--retry-rejects]
     [--mock] [--mock-panel] [--dry-run] [--force]
 
 Defaults:
@@ -59,7 +60,10 @@ function defaultArgs() {
     scoreConcurrency: DEFAULT_SCORE_CONCURRENCY,
     critics: null,
     panelThreshold: 'majority',
+    originThreshold: 'majority',
+    originGate: true,
     minCritics: null,
+    policyMemoryFiles: [],
     skipPanel: false,
     ingest: true,
     retryRejects: false,
@@ -99,8 +103,11 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (token === '--score-concurrency') args.scoreConcurrency = positiveInt(argv[++i], '--score-concurrency');
     else if (token === '--critics') args.critics = splitCsv(argv[++i]);
     else if (token === '--panel-threshold') args.panelThreshold = parsePanelThreshold(argv[++i]);
+    else if (token === '--origin-threshold') args.originThreshold = parsePanelThreshold(argv[++i]);
     else if (token === '--min-critics') args.minCritics = positiveInt(argv[++i], '--min-critics');
+    else if (token === '--policy-memory') args.policyMemoryFiles.push(path.resolve(argv[++i]));
     else if (token === '--skip-panel') args.skipPanel = true;
+    else if (token === '--form-only-panel') args.originGate = false;
     else if (token === '--no-ingest') args.ingest = false;
     else if (token === '--retry-rejects') args.retryRejects = true;
     else if (token === '--mock-panel') args.mockPanel = true;
@@ -135,6 +142,9 @@ function finalizeArgs(args) {
     throw new Error('use either DB item/run input or --transcript, not both');
   }
   if (args.critics && !args.critics.length) throw new Error('--critics must name at least one critic');
+  for (const filePath of args.policyMemoryFiles || []) {
+    if (!fs.existsSync(filePath)) throw new Error(`policy memory file not found: ${filePath}`);
+  }
   args.runLabel = args.runLabel || defaultRunLabel(args);
   args.outRoot = args.outRoot || path.join(ROOT, 'exports', 'discursive-replay-loops', args.runLabel);
   return args;
@@ -261,6 +271,7 @@ function buildReplayArgs(args, { outDir, pendingItemIds, feedbackByItem }) {
     publicMaxChars: args.publicMaxChars,
     innerMaxChars: args.innerMaxChars,
     itemConcurrency: args.itemConcurrency,
+    policyMemoryFiles: args.policyMemoryFiles || [],
     feedbackByItem,
     force: args.force,
     dryRun: args.dryRun,
@@ -296,16 +307,39 @@ function buildIngestCommand(args, { panelDir, panelRunId }) {
   return cmd;
 }
 
-export function recognitionPasses({ recognitionVotes, totalCritics }, threshold, expectedCritics, minCritics = null) {
+export function voteThresholdPasses({ votes, totalCritics }, threshold, expectedCritics, minCritics = null) {
   const expected = Math.max(1, Number(expectedCritics) || Number(totalCritics) || 1);
   const required =
     threshold === 'all' ? expected : threshold === 'majority' ? Math.floor(expected / 2) + 1 : Number(threshold);
   if (!Number.isInteger(required) || required < 1) throw new Error(`invalid panel threshold: ${threshold}`);
   const minimumCoverage = minCritics || required;
   return {
-    passes: totalCritics >= minimumCoverage && recognitionVotes >= required,
-    requiredRecognitionVotes: required,
+    passes: totalCritics >= minimumCoverage && votes >= required,
+    requiredVotes: required,
     minimumCoverage,
+  };
+}
+
+export function recognitionPasses({ recognitionVotes, totalCritics }, threshold, expectedCritics, minCritics = null) {
+  const pass = voteThresholdPasses(
+    { votes: recognitionVotes, totalCritics },
+    threshold,
+    expectedCritics,
+    minCritics,
+  );
+  return {
+    passes: pass.passes,
+    requiredRecognitionVotes: pass.requiredVotes,
+    minimumCoverage: pass.minimumCoverage,
+  };
+}
+
+export function originPasses({ originVotes, totalCritics }, threshold, expectedCritics, minCritics = null) {
+  const pass = voteThresholdPasses({ votes: originVotes, totalCritics }, threshold, expectedCritics, minCritics);
+  return {
+    passes: pass.passes,
+    requiredOriginVotes: pass.requiredVotes,
+    minimumOriginCoverage: pass.minimumCoverage,
   };
 }
 
@@ -334,6 +368,8 @@ export function summarizePanelScores(panelDir, options = {}) {
       sourceItemId: selected.sourceItemId,
       totalCritics: 0,
       recognitionVotes: 0,
+      originVotes: 0,
+      originCounts: {},
       critics: {},
       errors: [],
     });
@@ -359,6 +395,9 @@ export function summarizePanelScores(panelDir, options = {}) {
       }
       item.totalCritics += 1;
       if (row.formClass === 'recognition') item.recognitionVotes += 1;
+      const origin = recognitionOriginClass(row) || 'none';
+      item.originCounts[origin] = (item.originCounts[origin] || 0) + 1;
+      if (origin === 'peripeteia_induced') item.originVotes += 1;
       item.critics[critic] = {
         formClass: row.formClass || null,
         recontextualization: row.recontextualization ?? null,
@@ -366,23 +405,41 @@ export function summarizePanelScores(panelDir, options = {}) {
         actionalBreakthrough: row.actionalBreakthrough ?? null,
         tutorAdaptiveMechanism: row.tutorAdaptiveMechanism ?? row.tutorStrategicReversal ?? null,
         adaptiveMechanismQuality: row.adaptiveMechanismQuality ?? null,
-        recognitionOrigin: recognitionOriginClass(row),
+        recognitionOrigin: origin,
       };
     }
   }
 
   const items = [...byTid.values()].map((item) => {
-    const pass = recognitionPasses(
+    const recognition = recognitionPasses(
       item,
       threshold,
       expectedCritics || item.totalCritics,
       options.minCritics ?? null,
     );
+    const origin = options.originGate === false
+      ? {
+          passes: true,
+          requiredOriginVotes: 0,
+          minimumOriginCoverage: 0,
+        }
+      : originPasses(
+          item,
+          options.originThreshold || threshold,
+          expectedCritics || item.totalCritics,
+          options.minCritics ?? null,
+        );
+    const passes = recognition.passes && origin.passes;
+    const status = !recognition.passes ? 'panel_recognition_fail' : passes ? 'panel_pass' : 'panel_origin_fail';
     return {
       ...item,
       expectedCritics,
-      ...pass,
-      status: pass.passes ? 'panel_pass' : 'panel_fail',
+      ...recognition,
+      ...origin,
+      recognitionPass: recognition.passes,
+      originPass: origin.passes,
+      passes,
+      status,
     };
   });
 
@@ -392,6 +449,8 @@ export function summarizePanelScores(panelDir, options = {}) {
     scoreFiles,
     expectedCritics,
     threshold,
+    originThreshold: options.originThreshold || threshold,
+    originGate: options.originGate !== false,
     items,
     passed: items.filter((item) => item.passes),
     failed: items.filter((item) => !item.passes),
@@ -417,8 +476,8 @@ function panelFeedback(panelItem) {
     })
     .join('\n');
   return [
-    `Blind panel failed threshold for this item: ${panelItem.recognitionVotes}/${panelItem.expectedCritics} recognition votes; required ${panelItem.requiredRecognitionVotes}; minimum coverage ${panelItem.minimumCoverage}.`,
-    'Repair the next counterfactual rewrite so learner self-reframe, actional uptake, and tutor strategic reversal are visible in the public transcript without leaking held-out state.',
+    `Blind panel failed strict threshold for this item: ${panelItem.recognitionVotes}/${panelItem.expectedCritics} recognition votes; required ${panelItem.requiredRecognitionVotes}; peripeteia-origin votes ${panelItem.originVotes || 0}/${panelItem.expectedCritics}; required ${panelItem.requiredOriginVotes ?? 'n/a'}; minimum coverage ${panelItem.minimumCoverage}.`,
+    'Repair the next counterfactual rewrite so the public learner self-reframe is traceable to a tutor peripeteia-linked strategic move, not merely to organic transcript drift, while still avoiding held-out-state leakage.',
     forms ? `Critic form summary:\n${forms}` : 'No score rows were available.',
   ].join('\n');
 }
@@ -482,6 +541,8 @@ export async function runLoop(rawArgs) {
       } else {
         panel = summarizePanelScores(panelDir, {
           panelThreshold: args.panelThreshold,
+          originThreshold: args.originThreshold,
+          originGate: args.originGate,
           minCritics: args.minCritics,
         });
         panelFailureIds = panel.failed.map((item) => item.sourceItemId).filter(Boolean);
@@ -516,6 +577,8 @@ export async function runLoop(rawArgs) {
       localNeedsRevision: localRevisionIds,
       localRejected: localRejectIds,
       panelThreshold: args.skipPanel ? null : args.panelThreshold,
+      originThreshold: args.skipPanel || !args.originGate ? null : args.originThreshold,
+      originGate: !args.skipPanel && args.originGate,
       panelPassed: panelPassIds,
       panelFailed: panelFailureIds,
       nextPending,
@@ -551,7 +614,10 @@ export async function runLoop(rawArgs) {
       score_concurrency: args.scoreConcurrency,
       critics: args.critics || 'panel_default',
       panel_threshold: args.panelThreshold,
+      origin_threshold: args.originThreshold,
+      origin_gate: args.originGate,
       min_critics: args.minCritics,
+      policy_memory_files: args.policyMemoryFiles || [],
       ingest: args.ingest,
       retry_rejects: args.retryRejects,
       mock_panel: args.mockPanel,
