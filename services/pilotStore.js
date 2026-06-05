@@ -115,6 +115,26 @@ db.exec(`
   );
 `);
 
+// ── Idempotent column migrations ──────────────────────────────────────────
+// The CREATE TABLE statements above only fire for a fresh DB. Existing pilot
+// DBs (engineering-complete since 2026-04-25) need additive ALTERs, guarded by
+// table_info so re-running is a no-op. Mirrors evaluationStore's migrateAddColumn.
+function ensureColumn(table, column, ddl) {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all();
+  if (!cols.some((c) => c.name === column)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${ddl}`);
+  }
+}
+
+// learner_source: who produces the LEARNER turns in a session —
+//   'human' → a real participant typing (the consented, IRB-gated path)
+//   'llm'   → an ego/superego LLM learner driving the SAME tutor loop
+//             synthetically (no human subject, no consent required).
+// Both feed the identical ego-superego tutor + the same pilot_turns store, so a
+// simulated session and a human session are one instrument with a swapped
+// learner source — the tutor-learner symmetry principle applied to provenance.
+ensureColumn('pilot_sessions', 'learner_source', "learner_source TEXT NOT NULL DEFAULT 'human'");
+
 const PILOT_CONDITIONS = (process.env.PILOT_CONDITIONS || 'cell_1_base_single_unified,cell_5_recog_single_unified')
   .split(',')
   .map((s) => s.trim())
@@ -141,6 +161,22 @@ export const PILOT_STATUSES = Object.freeze({
   TIMED_OUT: 'timed_out',
 });
 
+export const LEARNER_SOURCES = Object.freeze({ HUMAN: 'human', LLM: 'llm' });
+
+// Safe-by-default recruitment gate. A fresh checkout must NOT be able to onboard
+// a real (PID-bearing) participant before IRB approval + final consent text are
+// in place. Self/colleague validation uses pid-less sessions, which stay open;
+// only PID-bearing enrollment (Prolific-style external recruitment) is gated.
+function recruitmentEnabled() {
+  return process.env.PILOT_RECRUITMENT_ENABLED === 'true';
+}
+
+// Public read of the recruitment gate so the admin surface can show whether the
+// real-participant path is open without re-reading process.env itself.
+export function isRecruitmentEnabled() {
+  return recruitmentEnabled();
+}
+
 export function listConditions() {
   return [...PILOT_CONDITIONS];
 }
@@ -161,12 +197,17 @@ function hashPid(pid) {
 // Block-randomization-ish balance: assign next session to whichever active
 // condition currently has fewer enrollments. Tie-break with a per-session
 // random byte so back-to-back ties don't always go to the same arm.
+//
+// Counts ONLY human sessions: synthetic (llm) validation sessions are a separate
+// track and must not skew the human experiment's between-cell balance. Without
+// this filter, spinning up llm sessions on one cell would push real participants
+// toward the other arm.
 function pickCondition() {
   const counts = new Map(PILOT_CONDITIONS.map((c) => [c, 0]));
   const rows = db
     .prepare(
       `SELECT condition_cell, COUNT(*) AS n FROM pilot_sessions
-       WHERE status NOT IN ('abandoned')
+       WHERE status NOT IN ('abandoned') AND learner_source = 'human'
        GROUP BY condition_cell`,
     )
     .all();
@@ -188,7 +229,27 @@ function pickCondition() {
   return candidates[idx];
 }
 
-export function enrollSession({ participantPid = null, scenarioLectureRef = null, forceCondition = null } = {}) {
+export function enrollSession({
+  participantPid = null,
+  scenarioLectureRef = null,
+  forceCondition = null,
+  learnerSource = LEARNER_SOURCES.HUMAN,
+} = {}) {
+  const source = learnerSource === LEARNER_SOURCES.LLM ? LEARNER_SOURCES.LLM : LEARNER_SOURCES.HUMAN;
+
+  // Recruitment gate: PID-bearing human enrollment is the real-participant path
+  // and stays closed until IRB sign-off flips PILOT_RECRUITMENT_ENABLED on.
+  // Pid-less human sessions (self/colleague) and all synthetic llm sessions pass.
+  if (source === LEARNER_SOURCES.HUMAN && participantPid && !recruitmentEnabled()) {
+    const err = new Error(
+      'human recruitment is disabled — set PILOT_RECRUITMENT_ENABLED=true to enroll PID-bearing ' +
+        'participants (gated until IRB approval + final consent text are in place)',
+    );
+    err.code = 'PILOT_RECRUITMENT_DISABLED';
+    err.statusCode = 403;
+    throw err;
+  }
+
   const condition = forceCondition && PILOT_CONDITIONS.includes(forceCondition) ? forceCondition : pickCondition();
   const id = randomUUID();
   const now = nowMs();
@@ -198,9 +259,9 @@ export function enrollSession({ participantPid = null, scenarioLectureRef = null
 
   db.prepare(
     `INSERT INTO pilot_sessions (id, enrolled_at, participant_pid, participant_pid_hash,
-       condition_cell, scenario_lecture_ref, assignment_seed, status, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(id, now, participantPid, pidHash, condition, lectureRef, seed, PILOT_STATUSES.ENROLLED, now, now);
+       condition_cell, scenario_lecture_ref, assignment_seed, status, learner_source, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(id, now, participantPid, pidHash, condition, lectureRef, seed, PILOT_STATUSES.ENROLLED, source, now, now);
 
   return getSession(id);
 }
@@ -262,10 +323,21 @@ const ALLOWED_TRANSITIONS = {
   [PILOT_STATUSES.POSTTEST_DONE]: [PILOT_STATUSES.COMPLETED, PILOT_STATUSES.ABANDONED],
 };
 
-function assertTransition(currentStatus, nextStatus) {
-  const allowed = ALLOWED_TRANSITIONS[currentStatus] || [];
+// Synthetic (llm) sessions skip the human-subject phases — consent, intake, and
+// the pre/post knowledge tests measure a person's learning gain and are
+// meaningless for an LLM learner. The valuable, format-identical artifact is the
+// tutoring transcript, so the llm machine goes straight to/through TUTORING.
+const ALLOWED_TRANSITIONS_LLM = {
+  [PILOT_STATUSES.ENROLLED]: [PILOT_STATUSES.TUTORING, PILOT_STATUSES.ABANDONED],
+  [PILOT_STATUSES.TUTORING]: [PILOT_STATUSES.TUTORING_DONE, PILOT_STATUSES.TIMED_OUT, PILOT_STATUSES.ABANDONED],
+  [PILOT_STATUSES.TUTORING_DONE]: [PILOT_STATUSES.COMPLETED, PILOT_STATUSES.ABANDONED],
+};
+
+function assertTransition(currentStatus, nextStatus, learnerSource = LEARNER_SOURCES.HUMAN) {
+  const table = learnerSource === LEARNER_SOURCES.LLM ? ALLOWED_TRANSITIONS_LLM : ALLOWED_TRANSITIONS;
+  const allowed = table[currentStatus] || [];
   if (!allowed.includes(nextStatus)) {
-    const err = new Error(`illegal pilot status transition: ${currentStatus} → ${nextStatus}`);
+    const err = new Error(`illegal pilot status transition (${learnerSource}): ${currentStatus} → ${nextStatus}`);
     err.code = 'PILOT_BAD_TRANSITION';
     err.statusCode = 409;
     throw err;
@@ -280,7 +352,7 @@ function updateSession(id, patch) {
     err.statusCode = 404;
     throw err;
   }
-  if (patch.status) assertTransition(session.status, patch.status);
+  if (patch.status) assertTransition(session.status, patch.status, session.learner_source);
   const fields = Object.keys(patch);
   if (fields.length === 0) return session;
   const sets = fields.map((f) => `${f} = ?`).join(', ');
@@ -554,19 +626,25 @@ export function appendTurn(sessionId, params) {
 
 // ─── Operational queries ─────────────────────────────────────────────────
 
+// Per-cell enrollment breakdown. `total` and per-status keys count every
+// session (back-compat with the admin UI); `human`/`llm` subtotals let an
+// operator see how much of a cell's volume is real vs synthetic at a glance.
 export function getConditionCounts() {
   const rows = db
     .prepare(
-      `SELECT condition_cell, status, COUNT(*) AS n
-       FROM pilot_sessions GROUP BY condition_cell, status`,
+      `SELECT condition_cell, learner_source, status, COUNT(*) AS n
+       FROM pilot_sessions GROUP BY condition_cell, learner_source, status`,
     )
     .all();
   const out = {};
-  for (const cell of PILOT_CONDITIONS) out[cell] = { total: 0 };
+  for (const cell of PILOT_CONDITIONS) out[cell] = { total: 0, human: 0, llm: 0 };
   for (const row of rows) {
-    if (!out[row.condition_cell]) out[row.condition_cell] = { total: 0 };
-    out[row.condition_cell][row.status] = row.n;
-    out[row.condition_cell].total += row.n;
+    if (!out[row.condition_cell]) out[row.condition_cell] = { total: 0, human: 0, llm: 0 };
+    const cell = out[row.condition_cell];
+    cell[row.status] = (cell[row.status] || 0) + row.n;
+    cell.total += row.n;
+    const src = row.learner_source === 'llm' ? 'llm' : 'human';
+    cell[src] += row.n;
   }
   return out;
 }
@@ -603,6 +681,8 @@ export default {
   listSessions,
   listConditions,
   getDefaultLectureRef,
+  isRecruitmentEnabled,
   PILOT_TUTORING_CAP_MS,
   PILOT_STATUSES,
+  LEARNER_SOURCES,
 };

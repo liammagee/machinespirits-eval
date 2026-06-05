@@ -164,6 +164,37 @@
   .cond--cell_5_recog_single_unified { color: var(--accent); font-weight: 600; }
   .cond--cell_1_base_single_unified  { color: var(--ink-2); }
 
+  /* learner-source badge */
+  .badge--human { background: rgba(45,93,110,0.12); color: var(--accent); }
+  .badge--llm   { background: rgba(179,92,26,0.14); color: var(--warn); }
+
+  /* operator panels */
+  .op-panel {
+    background: white; border: 1px solid var(--rule); border-radius: 4px;
+    padding: 0.85rem 1rem; margin: 0.5rem 0 1rem;
+  }
+  .op-panel .row { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+  .op-panel label { font-size: 0.78rem; color: var(--ink-3); }
+  .op-panel select, .op-panel input[type="number"], .op-panel input[type="text"] {
+    padding: 0.35rem 0.5rem; border: 1px solid var(--rule); border-radius: 3px;
+    font: inherit; background: white;
+  }
+  .op-panel input[type="number"] { width: 5rem; }
+  .metered-warn {
+    background: rgba(179,92,26,0.08); border: 1px solid var(--warn);
+    color: var(--warn); padding: 0.5rem 0.75rem; border-radius: 4px;
+    margin: 0.5rem 0; font-size: 0.82rem;
+  }
+  .cost-pill {
+    display: inline-block; padding: 0.1rem 0.5rem; border-radius: 99px;
+    font-size: 0.72rem; font-weight: 600;
+  }
+  .cost-pill--free    { background: rgba(58,106,58,0.15); color: var(--good); }
+  .cost-pill--metered { background: rgba(179,92,26,0.15); color: var(--warn); }
+  .recruit-line { font-size: 0.8rem; color: var(--ink-3); margin: 0.25rem 0 0.75rem; }
+  .recruit-line .on  { color: var(--bad); font-weight: 600; }
+  .recruit-line .off { color: var(--good); font-weight: 600; }
+
   /* session detail panel */
   .detail {
     margin-top: 1.5rem; background: white; border: 1px solid var(--rule);
@@ -229,18 +260,50 @@
     <!-- COUNTS -->
     <section x-show="counts" x-cloak>
       <h2>Condition counts</h2>
+      <div class="recruit-line">
+        Real-participant recruitment (PID-bearing enrollment):
+        <span x-show="recruitmentEnabled === true" class="on">ON</span>
+        <span x-show="recruitmentEnabled === false" class="off">OFF — blocked pre-IRB</span>
+        <span x-show="recruitmentEnabled === null">—</span>
+        <span class="small"> · pid-less self/colleague + synthetic llm sessions always allowed</span>
+      </div>
       <div class="counts">
         <template x-for="[cell, stats] in Object.entries(counts || {})" :key="cell">
           <div class="count-card">
             <div class="name" x-text="cell"></div>
             <div class="total" x-text="stats.total ?? 0"></div>
             <div class="breakdown">
-              <template x-for="[k, n] in Object.entries(stats || {}).filter(([k]) => k !== 'total')" :key="k">
+              <span><strong x-text="stats.human ?? 0"></strong> human</span>
+              <span><strong x-text="stats.llm ?? 0"></strong> llm</span>
+            </div>
+            <div class="breakdown" style="margin-top: 0.2rem;">
+              <template x-for="[k, n] in Object.entries(stats || {}).filter(([k]) => !['total','human','llm'].includes(k))" :key="k">
                 <span><strong x-text="n"></strong> <span x-text="k"></span></span>
               </template>
             </div>
           </div>
         </template>
+      </div>
+
+      <!-- Synthetic-session creator -->
+      <div class="op-panel">
+        <div class="row">
+          <strong style="font-size: 0.85rem;">Synthetic (llm-learner) session</strong>
+          <span class="cost-pill cost-pill--free">enrollment is free</span>
+        </div>
+        <div class="row" style="margin-top: 0.5rem;">
+          <label>condition</label>
+          <select x-model="newLlm.condition">
+            <option value="">balanced (auto)</option>
+            <template x-for="cell in conditionList" :key="cell">
+              <option :value="cell" x-text="cell"></option>
+            </template>
+          </select>
+          <label>lecture</label>
+          <input type="text" x-model="newLlm.lecture" placeholder="(default)" style="width: 12rem;" />
+          <button @click="createLlmSession()" :disabled="loading">Create llm session</button>
+          <span class="small" x-show="newLlm.lastCreated" x-text="newLlm.lastCreated"></span>
+        </div>
       </div>
     </section>
 
@@ -262,6 +325,7 @@
         <thead><tr>
           <th>id</th>
           <th>condition</th>
+          <th>learner</th>
           <th>status</th>
           <th>enrolled</th>
           <th>tutoring</th>
@@ -273,6 +337,7 @@
             <tr @click="loadSession(s.id)" :class="{'is-selected': selectedSessionId === s.id}">
               <td class="mono" x-text="s.id.slice(0, 8)"></td>
               <td><span class="cond" :class="`cond--${s.condition_cell}`" x-text="conditionLabel(s.condition_cell)"></span></td>
+              <td><span class="badge" :class="`badge--${s.learner_source || 'human'}`" x-text="s.learner_source || 'human'"></span></td>
               <td><span class="badge" :class="`badge--${s.status}`" x-text="s.status"></span></td>
               <td class="mono" x-text="fmtTime(s.enrolled_at)"></td>
               <td class="mono" x-text="s.tutoring_started_at ? fmtTime(s.tutoring_started_at) : '—'"></td>
@@ -281,7 +346,7 @@
             </tr>
           </template>
           <template x-if="filteredSessions.length === 0">
-            <tr><td colspan="7" class="empty">no sessions match filter</td></tr>
+            <tr><td colspan="8" class="empty">no sessions match filter</td></tr>
           </template>
         </tbody>
       </table>
@@ -298,6 +363,7 @@
         <dl class="meta-grid" x-show="selectedSession">
           <dt>id</dt>           <dd class="mono" x-text="selectedSession?.session?.id"></dd>
           <dt>condition</dt>    <dd class="mono" x-text="selectedSession?.session?.condition_cell"></dd>
+          <dt>learner</dt>      <dd><span class="badge" :class="`badge--${selectedSession?.session?.learner_source || 'human'}`" x-text="selectedSession?.session?.learner_source || 'human'"></span></dd>
           <dt>status</dt>       <dd><span class="badge" :class="`badge--${selectedSession?.session?.status}`" x-text="selectedSession?.session?.status"></span></dd>
           <dt>scenario</dt>     <dd x-text="selectedSession?.session?.scenario_lecture_ref"></dd>
           <dt>enrolled</dt>     <dd class="mono" x-text="fmtTime(selectedSession?.session?.enrolled_at)"></dd>
@@ -305,6 +371,42 @@
           <dt>duration</dt>     <dd class="mono" x-text="fmtMs(selectedSession?.session?.total_tutoring_ms)"></dd>
           <dt>completed</dt>    <dd class="mono" x-text="fmtTime(selectedSession?.session?.exit_completed_at)"></dd>
         </dl>
+
+        <!-- Autoplay control: llm sessions only -->
+        <div class="op-panel" x-show="selectedSession?.session?.learner_source === 'llm'">
+          <div class="row">
+            <strong style="font-size: 0.85rem;">Autoplay (drive the tutor loop with the llm learner)</strong>
+            <span class="cost-pill" :class="autoplay.mock ? 'cost-pill--free' : 'cost-pill--metered'"
+                  x-text="autoplay.mock ? 'mock · free' : 'metered · OpenRouter $'"></span>
+          </div>
+          <div class="row" style="margin-top: 0.5rem;">
+            <label>turn pairs</label>
+            <input type="number" x-model.number="autoplay.turnPairs" min="1" max="12" />
+            <label><input type="checkbox" x-model="autoplay.mock" /> mock (no API calls)</label>
+            <span class="small">cell uses its configured ego/superego models</span>
+          </div>
+          <template x-if="!autoplay.mock">
+            <div class="metered-warn">
+              ⚠ This will make <strong>real, paid</strong> OpenRouter calls (≈ 2 per turn pair).
+              Type <span class="mono">SPEND</span> to confirm:
+              <input type="text" x-model="autoplay.confirmText" placeholder="SPEND" style="width: 7rem; margin-left: 0.4rem;" />
+            </div>
+          </template>
+          <div class="row" style="margin-top: 0.4rem;">
+            <button @click="runAutoplay()"
+                    :disabled="autoplay.running || !canRunAutoplay"
+                    x-text="autoplay.running ? 'running…' : 'Run autoplay'"></button>
+            <span class="small" x-show="!autoplayRunnable">session must be 'enrolled' or 'tutoring'</span>
+            <template x-if="autoplay.lastResult">
+              <span class="small">
+                ✓ <strong x-text="autoplay.lastResult.turnPairs"></strong> pairs ·
+                <span x-text="autoplay.lastResult.stoppedReason"></span> ·
+                <span x-text="`${autoplay.lastResult.spend.inputTokens}→${autoplay.lastResult.spend.outputTokens} tok`"></span> ·
+                <span x-text="`~$${(autoplay.lastResult.spend.estimatedCostUsd || 0).toFixed(4)}`"></span>
+              </span>
+            </template>
+          </div>
+        </div>
 
         <h3>Pretest <span class="small" x-text="testSummary('pretest')"></span></h3>
         <table class="items">
@@ -327,7 +429,7 @@
           <div class="turn" :class="`turn--${turn.role}`">
             <div class="turn-header">
               <span x-text="`turn ${turn.turn_index} · ${turn.role}`"></span>
-              <span class="mono" x-text="turn.role === 'tutor' ? `${fmtMs(turn.latency_ms)} · ${turn.input_tokens}→${turn.output_tokens} tok` : ''"></span>
+              <span class="mono" x-text="turn.input_tokens != null ? `${turn.latency_ms != null ? fmtMs(turn.latency_ms) + ' · ' : ''}${turn.input_tokens}→${turn.output_tokens} tok${turn.deliberation ? ' · ⚙' : ''}` : (turn.deliberation ? '⚙ deliberation' : '')"></span>
             </div>
             <div class="turn-content" x-html="renderTurnContent(turn)"></div>
           </div>
@@ -371,7 +473,10 @@ function adminApp() {
     errorMessage: '',
     lastFetched: null,
     statusFilter: '',
-    statusOptions: ['', 'completed', 'tutoring', 'enrolled', 'abandoned', 'timed_out'],
+    statusOptions: ['', 'completed', 'tutoring', 'tutoring_done', 'enrolled', 'abandoned', 'timed_out'],
+    recruitmentEnabled: null,
+    newLlm: { condition: '', lecture: '', lastCreated: '' },
+    autoplay: { turnPairs: 4, mock: true, confirmText: '', running: false, lastResult: null },
 
     async init() {
       const stored = localStorage.getItem('pilot_admin_token');
@@ -392,12 +497,77 @@ function adminApp() {
       return `${Math.floor(s/3600)}h ago`;
     },
 
+    // Pilot conditions, derived from the counts payload (no extra fetch).
+    get conditionList() {
+      return Object.keys(this.counts || {});
+    },
+
+    // The selected session can be autoplayed only from a pre-tutoring state.
+    get autoplayRunnable() {
+      const st = this.selectedSession?.session?.status;
+      return st === 'enrolled' || st === 'tutoring';
+    },
+
+    // Gate the run button: runnable state AND (mock OR an explicit SPEND confirm).
+    get canRunAutoplay() {
+      if (!this.autoplayRunnable) return false;
+      return this.autoplay.mock || this.autoplay.confirmText.trim().toUpperCase() === 'SPEND';
+    },
+
     async fetchJson(url) {
       if (!this.token) throw new Error('Token required');
       const res = await fetch(url, { headers: { 'x-pilot-admin-token': this.token } });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || `${res.status}`);
       return data;
+    },
+
+    async postJson(url, body) {
+      if (!this.token) throw new Error('Token required');
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'x-pilot-admin-token': this.token, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body || {}),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `${res.status}`);
+      return data;
+    },
+
+    async createLlmSession() {
+      this.loading = true;
+      try {
+        const body = {};
+        if (this.newLlm.condition) body.condition = this.newLlm.condition;
+        if (this.newLlm.lecture) body.scenario_lecture_ref = this.newLlm.lecture;
+        const data = await this.postJson('/api/pilot/admin/enroll-llm', body);
+        this.newLlm.lastCreated = `created ${data.session.id.slice(0, 8)} · ${data.session.condition_cell}`;
+        await this.reloadAll();
+        await this.loadSession(data.session.id);
+      } catch (err) {
+        this.setError(err.message);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async runAutoplay() {
+      if (!this.selectedSessionId || !this.canRunAutoplay) return;
+      this.autoplay.running = true;
+      try {
+        const data = await this.postJson(`/api/pilot/admin/session/${this.selectedSessionId}/autoplay`, {
+          max_turn_pairs: this.autoplay.turnPairs,
+          mock: this.autoplay.mock,
+        });
+        this.autoplay.lastResult = data.autoplay;
+        this.autoplay.confirmText = '';
+        await this.loadSession(this.selectedSessionId);
+        await this.reloadAll();
+      } catch (err) {
+        this.setError(err.message);
+      } finally {
+        this.autoplay.running = false;
+      }
     },
 
     setError(msg) {
@@ -430,6 +600,7 @@ function adminApp() {
           this.fetchJson('/api/pilot/admin/sessions?limit=200'),
         ]);
         this.counts = c.counts;
+        this.recruitmentEnabled = c.recruitmentEnabled ?? null;
         // attach turn_count for the table — admin sessions endpoint doesn't
         // include it natively, but the detail endpoint does. For overview,
         // leave undefined; user can drill in.
@@ -454,6 +625,13 @@ function adminApp() {
     },
 
     async loadSession(id) {
+      // Switching to a different session clears the prior autoplay form/result;
+      // a same-session refresh (post-run) preserves the result we just set.
+      if (id !== this.selectedSessionId) {
+        this.autoplay.lastResult = null;
+        this.autoplay.confirmText = '';
+        this.autoplay.mock = true;
+      }
       this.selectedSessionId = id;
       this.loading = true;
       try {

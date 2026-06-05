@@ -104,12 +104,27 @@ describe('pilot routes', () => {
     assert.strictEqual(body.session.participant_pid, undefined, 'blinded view must NOT include participant_pid');
   });
 
-  it('POST /api/pilot/enroll with PID is idempotent for active session', async () => {
-    const pid = `test-pid-${Date.now()}`;
-    const first = await request(baseUrl, 'POST', '/api/pilot/enroll', { participant_pid: pid });
-    const second = await request(baseUrl, 'POST', '/api/pilot/enroll', { participant_pid: pid });
-    assert.strictEqual(first.body.session.id, second.body.session.id, 'same PID should return same session');
-    assert.strictEqual(second.body.resumed, true);
+  it('POST /api/pilot/enroll with PID is gated when recruitment is disabled', async () => {
+    // PID-bearing enrollment is the real-participant (Prolific) path, closed by
+    // default until IRB sign-off flips PILOT_RECRUITMENT_ENABLED on.
+    const r = await request(baseUrl, 'POST', '/api/pilot/enroll', { participant_pid: `gated-${Date.now()}` });
+    assert.strictEqual(r.status, 403);
+    assert.strictEqual(r.body.code, 'PILOT_RECRUITMENT_DISABLED');
+  });
+
+  it('POST /api/pilot/enroll with PID is idempotent for active session (recruitment enabled)', async () => {
+    // Idempotency only matters once the gated real-participant path is open, so
+    // exercise it in the recruitment-enabled regime and restore the gate after.
+    process.env.PILOT_RECRUITMENT_ENABLED = 'true';
+    try {
+      const pid = `test-pid-${Date.now()}`;
+      const first = await request(baseUrl, 'POST', '/api/pilot/enroll', { participant_pid: pid });
+      const second = await request(baseUrl, 'POST', '/api/pilot/enroll', { participant_pid: pid });
+      assert.strictEqual(first.body.session.id, second.body.session.id, 'same PID should return same session');
+      assert.strictEqual(second.body.resumed, true);
+    } finally {
+      delete process.env.PILOT_RECRUITMENT_ENABLED;
+    }
   });
 
   it('full phase walk: enroll → consent → intake → pretest → tutoring → posttest → exit', async () => {
@@ -416,5 +431,277 @@ describe('pilotStore — turn persistence + hashing', () => {
     });
     assert.strictEqual(a, b, 'identical inputs must produce identical hash');
     assert.notStrictEqual(a, c, 'changed prompt text must change hash');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// learner_source seam — the swappable human|llm provenance column. Both sources
+// feed the identical tutor engine + the same pilot_turns store; these tests pin
+// the three places the seam changes behaviour: enrollment defaults, the
+// recruitment gate, and the llm fast-path transition table.
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('pilotStore — learner_source seam', () => {
+  const { LEARNER_SOURCES } = pilotStore;
+
+  it('enrollSession defaults learner_source to human', () => {
+    const s = pilotStore.enrollSession({ forceCondition: 'cell_1_base_single_unified' });
+    assert.strictEqual(s.learner_source, 'human');
+  });
+
+  it('enrollSession with LLM source persists learner_source=llm', () => {
+    const s = pilotStore.enrollSession({
+      learnerSource: LEARNER_SOURCES.LLM,
+      forceCondition: 'cell_5_recog_single_unified',
+    });
+    assert.strictEqual(s.learner_source, 'llm');
+  });
+
+  it('blinded view exposes learner_source but still hides condition_cell', () => {
+    // learner_source is not an assignment leak (it says nothing about which arm),
+    // so it passes through the blind — but condition_cell must stay stripped.
+    const s = pilotStore.enrollSession({
+      learnerSource: LEARNER_SOURCES.LLM,
+      forceCondition: 'cell_1_base_single_unified',
+    });
+    const blinded = pilotStore.getBlindedSessionView(s.id);
+    assert.strictEqual(blinded.learner_source, 'llm');
+    assert.strictEqual(blinded.condition_cell, undefined, 'condition_cell still stripped');
+  });
+
+  it('recruitment gate: PID-bearing human enrollment throws 403 when disabled', () => {
+    // Default test env leaves PILOT_RECRUITMENT_ENABLED unset → gate is closed.
+    assert.strictEqual(pilotStore.isRecruitmentEnabled(), false);
+    assert.throws(
+      () =>
+        pilotStore.enrollSession({
+          participantPid: 'real-participant-1',
+          forceCondition: 'cell_1_base_single_unified',
+        }),
+      (err) => err.code === 'PILOT_RECRUITMENT_DISABLED' && err.statusCode === 403,
+    );
+  });
+
+  it('recruitment gate: pid-less human (self/colleague) enrollment passes when disabled', () => {
+    const s = pilotStore.enrollSession({ forceCondition: 'cell_1_base_single_unified' });
+    assert.strictEqual(s.status, 'enrolled');
+    assert.strictEqual(s.learner_source, 'human');
+  });
+
+  it('recruitment gate: llm enrollment bypasses the gate even with a PID', () => {
+    // Synthetic sessions are not human subjects — the IRB gate must not apply.
+    const s = pilotStore.enrollSession({
+      participantPid: 'synthetic-1',
+      learnerSource: LEARNER_SOURCES.LLM,
+      forceCondition: 'cell_1_base_single_unified',
+    });
+    assert.strictEqual(s.learner_source, 'llm');
+    assert.strictEqual(s.status, 'enrolled');
+  });
+
+  it('recruitment gate: PID-bearing human passes when PILOT_RECRUITMENT_ENABLED=true', () => {
+    process.env.PILOT_RECRUITMENT_ENABLED = 'true';
+    try {
+      assert.strictEqual(pilotStore.isRecruitmentEnabled(), true);
+      const s = pilotStore.enrollSession({
+        participantPid: `irb-approved-${Date.now()}`,
+        forceCondition: 'cell_1_base_single_unified',
+      });
+      assert.strictEqual(s.status, 'enrolled');
+    } finally {
+      delete process.env.PILOT_RECRUITMENT_ENABLED;
+    }
+  });
+
+  it('llm fast-path: enrolled → tutoring is legal (skips consent/intake/pretest)', () => {
+    const s = pilotStore.enrollSession({
+      learnerSource: LEARNER_SOURCES.LLM,
+      forceCondition: 'cell_1_base_single_unified',
+    });
+    const t = pilotStore.startTutoring(s.id);
+    assert.strictEqual(t.status, 'tutoring');
+  });
+
+  it('human path: enrolled → tutoring is illegal (must consent first)', () => {
+    // Same transition, different source → the asymmetry the LLM table encodes.
+    const s = pilotStore.enrollSession({ forceCondition: 'cell_1_base_single_unified' });
+    assert.throws(
+      () => pilotStore.startTutoring(s.id),
+      (err) => err.code === 'PILOT_BAD_TRANSITION' && err.statusCode === 409,
+    );
+  });
+
+  it('getConditionCounts splits human / llm subtotals per cell', () => {
+    const cell = 'cell_5_recog_single_unified';
+    const before = pilotStore.getConditionCounts()[cell];
+    pilotStore.enrollSession({ forceCondition: cell });
+    pilotStore.enrollSession({ learnerSource: LEARNER_SOURCES.LLM, forceCondition: cell });
+    const after = pilotStore.getConditionCounts()[cell];
+    assert.strictEqual(after.human, before.human + 1, 'human subtotal must increment');
+    assert.strictEqual(after.llm, before.llm + 1, 'llm subtotal must increment');
+    assert.strictEqual(after.total, before.total + 2, 'total must include both sources');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Autoplay mock smoke. The whole point of the mock dep set is a wiring test that
+// spends nothing: it drives the real orchestration (enrolled → N pairs →
+// tutoring_done, real config_hash + cumulative dialogue_content_hash) while the
+// only two paid calls — the learner and the tutor — are swapped for deterministic
+// stubs. A regression here that reached the network would surface as a non-zero
+// spend, which we assert is exactly 0.
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('pilotAutoplay — mock smoke (no paid calls)', () => {
+  let runAutoplay;
+  let buildMockDeps;
+  let MAX_TURN_PAIRS_CEILING;
+
+  before(async () => {
+    const mod = await import('../services/pilotAutoplay.js');
+    runAutoplay = mod.runAutoplay;
+    buildMockDeps = mod.buildMockDeps;
+    MAX_TURN_PAIRS_CEILING = mod.MAX_TURN_PAIRS_CEILING;
+  });
+
+  it('drives an llm session to tutoring_done with a format-identical transcript and zero spend', async () => {
+    const session = pilotStore.enrollSession({
+      learnerSource: pilotStore.LEARNER_SOURCES.LLM,
+      forceCondition: 'cell_1_base_single_unified',
+    });
+
+    const result = await runAutoplay({ sessionId: session.id, maxTurnPairs: 2 }, buildMockDeps());
+
+    assert.strictEqual(result.mock, true, 'mock dep set must mark the run as mock');
+    assert.strictEqual(result.learnerSource, 'llm');
+    assert.strictEqual(result.turnPairs, 2, 'should run exactly the requested pair budget');
+    assert.strictEqual(result.status, 'tutoring_done', 'autoplay must end the tutoring phase');
+    assert.strictEqual(result.stoppedReason, 'max_turn_pairs');
+
+    // ZERO SPEND — the safety invariant of the mock path.
+    assert.strictEqual(result.spend.inputTokens, 0);
+    assert.strictEqual(result.spend.outputTokens, 0);
+    assert.strictEqual(result.spend.estimatedCostUsd, 0);
+
+    // Persisted transcript is format-identical to a human session: alternating
+    // learner→tutor turns with a monotonically advancing cumulative hash.
+    const turns = pilotStore.listTurns(session.id);
+    assert.strictEqual(turns.length, 4, '2 pairs = 4 turns');
+    assert.deepStrictEqual(
+      turns.map((t) => t.role),
+      ['learner', 'tutor', 'learner', 'tutor'],
+    );
+    const hashes = new Set(turns.map((t) => t.dialogue_content_hash));
+    assert.strictEqual(hashes.size, 4, 'cumulative hash must advance every turn');
+
+    // The learner turns carry their ego/superego deliberation — the one artifact
+    // a human session has no analogue for.
+    for (const lt of turns.filter((t) => t.role === 'learner')) {
+      assert.ok(lt.deliberation, 'llm learner turn must persist deliberation');
+      const delib = JSON.parse(lt.deliberation);
+      assert.ok(Array.isArray(delib) && delib.length >= 1);
+    }
+  });
+
+  it('rejects a human session with 409 PILOT_NOT_LLM_SESSION', async () => {
+    const human = pilotStore.enrollSession({ forceCondition: 'cell_1_base_single_unified' });
+    await assert.rejects(
+      () => runAutoplay({ sessionId: human.id }, buildMockDeps()),
+      (err) => err.code === 'PILOT_NOT_LLM_SESSION' && err.statusCode === 409,
+    );
+  });
+
+  it('clamps maxTurnPairs to the ceiling', async () => {
+    const session = pilotStore.enrollSession({
+      learnerSource: pilotStore.LEARNER_SOURCES.LLM,
+      forceCondition: 'cell_1_base_single_unified',
+    });
+    const result = await runAutoplay({ sessionId: session.id, maxTurnPairs: 999 }, buildMockDeps());
+    assert.strictEqual(result.turnPairs, MAX_TURN_PAIRS_CEILING, 'pair budget must be clamped to the ceiling');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Admin surface for the llm-learner track: synthetic enrollment, the recruitment
+// flag the operator UI reads, and the metered autoplay endpoint driven in its
+// safe-by-default mock mode (zero spend).
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('pilot routes — llm-learner admin surface', () => {
+  let server;
+  let baseUrl;
+  const ADMIN = { 'x-pilot-admin-token': 'test-admin-token' };
+
+  before(async () => {
+    await new Promise((resolve) => {
+      server = app.listen(0, '127.0.0.1', () => {
+        baseUrl = `http://127.0.0.1:${server.address().port}`;
+        resolve();
+      });
+    });
+  });
+
+  after(async () => {
+    if (server) await new Promise((r) => server.close(r));
+  });
+
+  it('POST /admin/enroll-llm requires a valid admin token', async () => {
+    const noAuth = await request(baseUrl, 'POST', '/api/pilot/admin/enroll-llm', {});
+    assert.strictEqual(noAuth.status, 401);
+  });
+
+  it('POST /admin/enroll-llm creates an unblinded llm session', async () => {
+    const r = await request(
+      baseUrl,
+      'POST',
+      '/api/pilot/admin/enroll-llm',
+      { condition: 'cell_5_recog_single_unified' },
+      ADMIN,
+    );
+    assert.strictEqual(r.status, 200);
+    assert.strictEqual(r.body.session.learner_source, 'llm');
+    // The operator (admin) view is UNBLINDED — condition is visible by design.
+    assert.strictEqual(r.body.session.condition_cell, 'cell_5_recog_single_unified');
+  });
+
+  it('GET /admin/counts surfaces the recruitmentEnabled flag', async () => {
+    const r = await request(baseUrl, 'GET', '/api/pilot/admin/counts', null, ADMIN);
+    assert.strictEqual(r.status, 200);
+    assert.strictEqual(r.body.recruitmentEnabled, false);
+    assert.ok(r.body.counts);
+  });
+
+  it('POST /admin/session/:id/autoplay (mock) drives the session with zero spend', async () => {
+    const enroll = await request(
+      baseUrl,
+      'POST',
+      '/api/pilot/admin/enroll-llm',
+      { condition: 'cell_1_base_single_unified' },
+      ADMIN,
+    );
+    const id = enroll.body.session.id;
+
+    const r = await request(
+      baseUrl,
+      'POST',
+      `/api/pilot/admin/session/${id}/autoplay`,
+      { max_turn_pairs: 2, mock: true },
+      ADMIN,
+    );
+    assert.strictEqual(r.status, 200);
+    assert.strictEqual(r.body.autoplay.turnPairs, 2);
+    assert.strictEqual(r.body.autoplay.mock, true);
+    assert.strictEqual(r.body.autoplay.status, 'tutoring_done');
+    assert.strictEqual(r.body.autoplay.spend.estimatedCostUsd, 0);
+  });
+
+  it('POST /admin/session/:id/autoplay rejects a human session (409)', async () => {
+    const enroll = await request(baseUrl, 'POST', '/api/pilot/enroll', {
+      force_condition: 'cell_1_base_single_unified',
+    });
+    const id = enroll.body.session.id;
+    const r = await request(baseUrl, 'POST', `/api/pilot/admin/session/${id}/autoplay`, { mock: true }, ADMIN);
+    assert.strictEqual(r.status, 409);
+    assert.strictEqual(r.body.code, 'PILOT_NOT_LLM_SESSION');
   });
 });

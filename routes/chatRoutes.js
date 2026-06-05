@@ -1410,3 +1410,11 @@ IMPROVED: [refined response, or "APPROVED"]`;
 }
 
 export default router;
+
+// Re-exported for in-process reuse by the pilot autoplay engine
+// (services/pilotAutoplay.js), which drives an llm learner through the SAME
+// tutor loop a human participant drives. These are domain functions — an
+// ego/superego tutor turn and the prompt/curriculum loaders — that live in this
+// route module for historical reasons; the export shares the exact same code
+// path the human /pilot turn uses, so the two learner sources cannot drift.
+export { runTutorTurn, loadCurriculumContext, loadPromptFile };
