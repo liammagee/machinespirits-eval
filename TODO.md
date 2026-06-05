@@ -534,6 +534,70 @@ Decisive contrast = **S1 vs S0** (byte-identical edit-rights channel; sole diffe
 
 ---
 
+### A18. Recursive Tutor-Learning Adaptation Benchmark (HIGH - recorded 2026-06-05; teacher-as-learner design)
+
+**Origin**: 2026-06-05 decision checkpoint after the timing-pair pilot. The timing-pair result is a controlled negative: the pooled public-timing attribution effect dissolved under the coherence gate, while the coherence-clean subset had no headroom. Combined with §6.10's failed hidden-interior separability gate and the poetics replay/control failures, this shifts the next serious move away from polishing single transcripts and toward testing whether the tutor can revise its own strategy policy across resistant learner episodes.
+
+**Reframe**: the tutor is the learner. The simulated learner is the environment that teaches the tutor which teaching strategies survive resistance. Adaptation is therefore not "this transcript looks responsive" but "after a failed attempt, the tutor records a bounded strategy lesson and uses it to improve on a held-out sibling case."
+
+**Claim discipline**:
+- This does **not** claim human learning, deployed tutoring, hidden-interior measurement, or causal learning from a single transcript.
+- It asks whether a fixed-weight tutor pipeline can externalize policy revision in a reproducible apparatus: resistance -> diagnosis -> strategy revision -> held-out transfer.
+- The decisive evidence unit is a contrastive before/after family, not a single polished replay.
+- Any positive result is a claim about **observable tutor policy revision under simulated learner resistance**, not about real student learning.
+
+**Five-step experimental spine**:
+
+- [ ] **Step 1 - Build 3-5 resistant scenario families.** Each family has an artificial/local obstruction that is not a standard curricular misconception already solved by generic pedagogy. Each family needs at least one training seed and one held-out sibling with the same obstruction grammar but different surface content.
+  - [ ] Define the scenario-family schema: `family_id`, `obstruction_type`, `local_rule`, `training_seed`, `heldout_siblings`, `success_criterion`, `forbidden_shortcuts`.
+  - [ ] Prefer invented/local relations over familiar school distinctions so "organic curriculum drift" is less available as an explanation.
+  - [ ] Add cheap static validators for leakage: no explicit final reframe in the setup; no tutor cue that simply states the rule; no held-out sibling sharing verbatim answer phrases.
+
+- [ ] **Step 2 - Run attempt 1 and score the failure mode.** The initial tutor attempt should be judged for what kind of resistance it failed to overcome, not merely whether the transcript was fluent.
+  - [ ] Reuse existing replay/local-critic machinery where possible before adding new scorers.
+  - [ ] Capture a structured failure record: `missed_obstruction`, `wrong_strategy_family`, `overhelped`, `underconstrained`, `learner_polish_without_uptake`, `coherence_artifact`, or `success`.
+  - [ ] Store public transcript, held-out tutor/learner deliberation, and scorer rationale separately with explicit provenance.
+
+- [ ] **Step 3 - Produce a bounded tutor strategy revision.** The tutor writes a reusable lesson from the failure, constrained to a finite policy vocabulary.
+  - [ ] Strategy revision must cite the failed learner evidence and name the old strategy, the repair strategy, and the transfer condition.
+  - [ ] Revision may update a policy ledger or director plan; it may not rewrite the held-out scenario answer or smuggle the target reframe.
+  - [ ] Candidate policy fields: `diagnostic_trigger`, `avoid_move`, `preferred_move`, `material_constraint`, `uptake_test`, `transfer_warning`, `expiry_condition`.
+
+- [ ] **Step 4 - Test attempt 2 on a held-out sibling.** The revised policy is applied to a new sibling case, not the same transcript.
+  - [ ] Compare revised tutor vs unrevised baseline on the same held-out sibling.
+  - [ ] Keep the learner generation path fixed or paired where possible so the contrast is policy revision, not learner-draw luck.
+  - [ ] Require public uptake tied to the revised strategy, not just higher coherence or recognitive wording.
+
+- [ ] **Step 5 - Evaluate transfer with a gated panel only after local survival.** Panel spending waits until a family passes cheap structural and local-critic gates.
+  - [ ] Local survival gate: baseline fails or remains weak; revised policy improves on held-out sibling; no leakage warnings; no coherence-confound warning.
+  - [ ] Panel question: "Did the revised tutor strategy address the learner resistance in a way the baseline did not?"
+  - [ ] Report family-level pass/fail plus failure taxonomy. Do not pool across families until at least two families survive the local gate.
+
+**Implementation plan**:
+
+- [ ] **A18.0 - Design note** (zero API). Create `notes/poetics/recursive-tutor-learning-benchmark.md` with the above claim boundary, scenario-family schema, stop rules, and success criteria.
+- [ ] **A18.1 - Scenario-family fixture** (zero API). Add a small config under `config/poetics-calibration/` or `config/recursive-tutor-learning/` with 3 pilot families and held-out siblings.
+- [ ] **A18.2 - Replay harness extension** (zero/low API). Extend existing replay scripts to support `attempt1 -> failure_record -> policy_revision -> attempt2_heldout`, preserving separate public transcript and held-out deliberation artifacts.
+- [ ] **A18.3 - Local gate** (cheap local critics first). Add a local scoring/report script that emits per-family status: `clean_survivor`, `revise_again`, `coherence_confound`, `leakage`, `organic_drift`, `no_headroom`.
+- [ ] **A18.4 - Minimal run** (attended). Run 3 families x 1 attempt chain with local critics only. Stop if all three fail for the same structural reason.
+- [ ] **A18.5 - Panel only on survivors** (paid, explicit go-ahead). If at least one family is a clean survivor, run a small adversarial panel on only those families.
+
+**Stop rules**:
+- Stop before panel if fewer than one family survives the local gate.
+- Stop and redesign scenario families if failures are dominated by `no_headroom` or `organic_drift`.
+- Stop and redesign the policy ledger if revisions are mostly generic slogans rather than evidence-bound strategy changes.
+- Stop and record a negative if revised and unrevised tutors converge on the same held-out move despite distinct ledgers.
+
+**Relation to prior arcs**:
+- A14 tested evidence-bound action selection inside a trap-suite controller and found apparatus-positive but graded-outcome weak results.
+- A15 sketches cross-dialogue retrieval from prior policy/outcome tuples.
+- A16 asks whether cumulative rewrite statefulness can produce a rate effect.
+- A18 is narrower than all three: a small recursive teacher-as-learner benchmark where the tutor must demonstrate bounded policy revision across a training/held-out pair.
+
+**Decision gate**: start with A18.0-A18.2 only. No paid panel and no paper claim until a local-gated held-out survivor exists.
+
+---
+
 ## B. Code Quality & Infrastructure
 
 ### ~~B1. Test Coverage Gaps~~ (DONE)
