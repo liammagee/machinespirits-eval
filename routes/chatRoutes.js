@@ -47,6 +47,26 @@ function loadPromptFile(filename) {
   return '';
 }
 
+// Interface affordance prepended to every chat/pilot tutor turn at RUNTIME — it
+// is deliberately NOT baked into the canonical cell prompt files, so the eval
+// factorial's prompt_content_hash / config_hash stay untouched (this only shapes
+// the live chat + pilot surfaces, not scored eval runs). Without it, tutors
+// routinely say "watch this simulation" / "see the animation below" and then
+// render nothing — actively unhelpful in a plain-text chat. Steer them to make
+// ideas concrete in text instead.
+const INTERFACE_AFFORDANCE = `==============================
+INTERFACE CONSTRAINTS (read carefully)
+==============================
+You are speaking in a plain-text chat. Your reply is rendered as text with inline
+math only. You CANNOT display interactive simulations, animations, applets,
+sliders, graphs, videos, or images — there is no canvas the learner can watch.
+Never tell the learner to "watch the simulation", "see the animation", "drag the
+slider", or refer to any visual the interface cannot actually show; promising a
+visual you can't render is worse than not mentioning one. Instead make the idea
+concrete in text: worked numeric examples, step-by-step reasoning, and small
+figures drawn with characters (e.g. a number line 0 --|--|--|-- 1, or 3/8 as
+[##....] ) when a picture would help.`;
+
 function cellSortKey(name) {
   const m = name.match(/^cell_(\d+)/);
   return m ? Number(m[1]) : Number.POSITIVE_INFINITY;
@@ -1152,6 +1172,8 @@ ${curriculum.text}
     : '';
 
   const egoSystem = `${egoPromptBody || 'You are a thoughtful AI tutor.'}
+
+${INTERFACE_AFFORDANCE}
 ${curriculumBlock}
 Topic: ${topic}
 
@@ -1283,6 +1305,8 @@ ${curriculum.text}
     : '';
 
   const egoSystem = `${egoPromptBody || 'You are a thoughtful AI tutor.'}
+
+${INTERFACE_AFFORDANCE}
 ${curriculumBlock}
 Topic: ${topic}
 

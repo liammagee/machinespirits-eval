@@ -259,8 +259,24 @@
     gap: 0.6rem;
     align-items: flex-end;
   }
-  .composer textarea { min-height: 56px; max-height: 200px; }
+  .composer textarea {
+    min-height: 2.7rem;     /* one line; autoGrow() expands it up to max-height */
+    max-height: 160px;
+    resize: none;           /* height tracks content, not a drag handle */
+    overflow-y: auto;
+    line-height: 1.45;
+  }
   .composer button { padding: 0.6rem 1.4rem; }
+
+  .composer-hint { margin-top: 0.35rem; }
+  .composer-hint kbd {
+    font-family: inherit;
+    font-size: 0.82em;
+    background: rgba(0,0,0,0.06);
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 4px;
+    padding: 0.05em 0.4em;
+  }
 
   .pending {
     color: var(--ink-3);
@@ -535,11 +551,16 @@
       </div>
 
       <form @submit.prevent="sendMessage()" class="composer">
-        <textarea x-model="input" placeholder="Type your message…"
+        <textarea x-model="input" x-ref="composer" rows="1"
+                  placeholder="Message the tutor…"
+                  @input="autoGrow($refs.composer)"
                   @keydown.enter.exact.prevent="sendMessage()"
                   :disabled="pending || timerSeconds <= 0"></textarea>
         <button type="submit" :disabled="pending || !input.trim() || timerSeconds <= 0">Send</button>
       </form>
+      <div class="composer-hint small muted">
+        <kbd>Enter</kbd> to send · <kbd>Shift</kbd>+<kbd>Enter</kbd> for a new line
+      </div>
 
       <div class="actions" style="margin-top: 0.75rem; justify-content: space-between;">
         <span class="small muted" x-show="timerSeconds > 0">
@@ -1098,10 +1119,20 @@ function pilotApp() {
       this.renderMath();
     },
 
+    autoGrow(el) {
+      // Single-row composer that grows with content up to .composer textarea's
+      // max-height (160px), after which it scrolls. Mirror this cap if the CSS changes.
+      if (!el) return;
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+    },
+
     async sendMessage() {
       const msg = (this.input || '').trim();
       if (!msg || this.pending || this.timerSeconds <= 0) return;
       this.input = '';
+      // Collapse back to one row once x-model has cleared the textarea value.
+      this.$nextTick(() => this.autoGrow(this.$refs.composer));
       this.turns.push({ role: 'learner', content: msg });
       // Reserve the tutor bubble up front and append deltas as they arrive.
       const tutorIdx = this.turns.length;
