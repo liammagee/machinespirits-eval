@@ -33,13 +33,14 @@ The two failures reached recognitive form but lacked the same causal bridge:
 
 ## Criterion
 
-A transcript may be treated as a peripeteia-origin candidate only when the public transcript contains all five bridge components:
+A transcript may be treated as a peripeteia-origin candidate only when the public transcript contains all six bridge components:
 
 1. Public obstruction: a visible event, constraint, or learner pressure makes the old warrant/check unusable or insufficient.
 2. Old-check blockage: the transcript names why the old check no longer settles the case.
 3. Tutor mechanism change: the tutor responds by changing the public task, device, test, representation, or material arrangement, not merely by reminding, restating, or smoothing the same check.
 4. Learner use of changed test: the learner then uses that changed public test and connects it to the final self-reframe.
 5. Device specificity: the changed test is publicly necessitated by the obstruction, not merely a useful generic scaffold the tutor could have introduced at any time.
+6. Old-warrant misclassification: the old public warrant visibly misclassifies, wrongly predicts, or contradicts at least one public case before the tutor's new relation becomes available.
 
 Recognition without this bridge is not origin evidence. It remains recognitive-form evidence and should be labelled as organic or ambiguous until the bridge is repaired.
 
@@ -58,6 +59,13 @@ Future replay generations should include a `public_causal_bridge` ledger object 
     "why_this_device_not_generic": "why this changed test/device is forced by this obstruction rather than merely helpful",
     "critic_visible_link": "public text that lets a blind critic see the necessity link"
   },
+  "old_warrant_misclassification": {
+    "old_public_rule": "the public rule/check the learner was relying on",
+    "counterexample": "the public case/event that exposes the old rule as wrong or contradictory",
+    "wrong_prediction_or_contradiction": "what the old rule would misclassify or fail to predict",
+    "new_relation_required": "the new relation/test required to resolve the counterexample",
+    "learner_acknowledges_rule_failure": "public learner utterance/action that owns the old rule's failure"
+  },
   "bridge_failure_risk": "none|low|medium|high"
 }
 ```
@@ -66,8 +74,8 @@ The local checker should score both `public_causal_bridge` and `device_specifici
 
 ## Ontology Status
 
-The discursive-game ontology now represents this as `ms:PublicCausalBridgeEvidence`. `ms:PeripeteiaOriginSurvivor` requires recognitive form, blind origin attribution, public causal bridge evidence, and non-generic device-specificity evidence. This prevents the ontology from treating recognitive form plus critic origin votes as sufficient when the public mechanism is merely a useful scaffold.
+The discursive-game ontology now represents this as `ms:PublicCausalBridgeEvidence`. `ms:PeripeteiaOriginSurvivor` requires recognitive form, blind origin attribution, public causal bridge evidence, non-generic device-specificity evidence, and old-warrant misclassification evidence. This prevents the ontology from treating recognitive form plus critic origin votes as sufficient when the public mechanism is merely a useful scaffold or stock domain relation.
 
 ## Next Generation Rule
 
-Before generating again, update prompts or policy memory so Codex/Claude/Gemini rewrites are instructed to create a public obstruction and changed test rather than a smoother tutor reminder, and to show why the changed test is forced by that obstruction rather than generically helpful. The two final failures should be rerun only after this bridge and specificity gate is active.
+Before generating again, update prompts or policy memory so Codex/Claude/Gemini rewrites are instructed to create a public obstruction and changed test rather than a smoother tutor reminder, and to show why the changed test is forced by that obstruction rather than generically helpful. For hard-negative items such as `none / T18`, the redesign additionally requires a public counterexample where the old warrant makes the wrong call. The two final failures should be rerun only after this bridge, specificity, and old-warrant misclassification gate is active.

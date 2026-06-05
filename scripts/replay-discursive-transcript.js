@@ -43,6 +43,7 @@ const DEFAULT_GATE_THRESHOLDS = Object.freeze({
   public_evidence: 0.7,
   public_causal_bridge: 0.7,
   device_specificity: 0.7,
+  old_warrant_misclassification: 0.7,
   tactic_selection: 0.7,
   learner_actional_uptake: 0.7,
   learner_self_reframe: 0.7,
@@ -54,12 +55,14 @@ const GATE_SCORE_KEYS = Object.freeze(Object.keys(DEFAULT_GATE_THRESHOLDS));
 const REVISION_ONLY_GATE_SCORE_KEYS = new Set([
   'public_causal_bridge',
   'device_specificity',
+  'old_warrant_misclassification',
   'learner_self_reframe',
 ]);
 const CRITICAL_WARNING_CRITERIA = new Set([
   'claim_boundary',
   'checker_passes',
   'device_specificity',
+  'old_warrant_misclassification',
   'non_leakage',
   'public_causal_bridge',
   'public_evidence',
@@ -79,7 +82,8 @@ function usage() {
     [--adversarial-check]
     [--no-local-gate]
     [--min-public-evidence N] [--min-public-causal-bridge N]
-    [--min-device-specificity N] [--min-tactic-selection N]
+    [--min-device-specificity N] [--min-old-warrant-misclassification N]
+    [--min-tactic-selection N]
     [--min-learner-actional-uptake N] [--min-learner-self-reframe N]
     [--min-dyadic-revision N]
     [--min-non-leakage N] [--min-prose-preservation N]
@@ -125,6 +129,9 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (t === '--min-public-evidence') args.gateThresholds.public_evidence = Number(argv[++i]);
     else if (t === '--min-public-causal-bridge') args.gateThresholds.public_causal_bridge = Number(argv[++i]);
     else if (t === '--min-device-specificity') args.gateThresholds.device_specificity = Number(argv[++i]);
+    else if (t === '--min-old-warrant-misclassification') {
+      args.gateThresholds.old_warrant_misclassification = Number(argv[++i]);
+    }
     else if (t === '--min-tactic-selection') args.gateThresholds.tactic_selection = Number(argv[++i]);
     else if (
       t === '--min-learner-uptake' ||
@@ -642,6 +649,7 @@ function buildOntologySummary({ policyMemoryText = '' } = {}) {
 - Make learner signal -> tutor hypothesis -> selected tactic -> public tutor move -> learner uptake/contest -> later tutor revision inspectable.
 - Public causal bridge criterion: a peripeteia-origin claim needs an inspectable public chain. A public obstruction or pressure must make the old check/warrant unusable or insufficient; the tutor must respond by changing the public task, device, test, or representation; the learner must then use that changed public test while naming why the old check no longer settles the case.
 - Device specificity criterion: the changed public test must be necessitated by the particular obstruction, not merely be a useful generic scaffold the tutor could have introduced at any time. Name what the obstruction makes unavailable and why this device/test answers that exact unavailability.
+- Counterexample-necessity criterion: the old public warrant should visibly misclassify, wrongly predict, or contradict at least one public case before the tutor's new relation becomes available. If the changed device merely gives a better explanation without making the old warrant fail, revise.
 - Mere reminder, restatement, smoother prompting, or continuation of the same check is not enough for origin attribution. If the learner reframe could be read as organic transcript drift, revise before panel escalation.
 - Do not let learner action alone count as recognition. The final learner move must own a self-reframe in ordinary domain language: name the old warrant/check, name why it no longer settles the case, name the new warrant/check, and apply it.
 - Keep the four-part self-reframe natural in the public transcript. Do not use checklist phrases such as "my old check was", "the new check is", "old warrant", or "new warrant" in the learner's public speech; reserve that structure for the JSON ledger.
@@ -691,6 +699,13 @@ Required JSON shape:
           "obstruction_specific_constraint": "what this obstruction makes unavailable that a generic scaffold would not address",
           "why_this_device_not_generic": "why this changed test/device is forced by this obstruction rather than merely helpful",
           "critic_visible_link": "public text that lets a blind critic see the necessity link"
+        },
+        "old_warrant_misclassification": {
+          "old_public_rule": "the public rule/check the learner was relying on",
+          "counterexample": "the public case/event that exposes the old rule as wrong or contradictory",
+          "wrong_prediction_or_contradiction": "what the old rule would misclassify or fail to predict",
+          "new_relation_required": "the new relation/test required to resolve the counterexample",
+          "learner_acknowledges_rule_failure": "public learner utterance/action that owns the old rule's failure"
         },
         "bridge_failure_risk": "none|low|medium|high"
       },
@@ -785,6 +800,7 @@ Required JSON shape:
     "public_evidence": 0,
     "public_causal_bridge": 0,
     "device_specificity": 0,
+    "old_warrant_misclassification": 0,
     "tactic_selection": 0,
     "learner_actional_uptake": 0,
     "learner_self_reframe": 0,
@@ -805,10 +821,12 @@ Scoring guidance:
 - Score each criterion on 0.0-1.0 when possible. If you use whole-number scoring, use 0-10; percentages are accepted but not preferred.
 - public_causal_bridge: score high only when obstruction -> tutor mechanism change -> learner use of changed public test is explicit and public. Score <=0.5 when the tutor merely reminds, repeats, rephrases, or continues the same check while the learner self-reframes organically.
 - device_specificity: score high only when the changed public test/device is visibly necessitated by this obstruction. Score <=0.5 when the device is a plausible generic scaffold, ordinary helpful representation, or test the tutor could have introduced before the obstruction.
+- old_warrant_misclassification: score high only when the old public rule/check visibly makes a wrong prediction, misclassifies a public case, or creates a contradiction, and the learner later acknowledges that failure before applying the new relation. Score <=0.5 when the old rule is merely incomplete, hidden, occluded, or replaced by a helpful scaffold without public error.
 - learner_actional_uptake: learner performs or contests the new public test.
 - learner_self_reframe: learner explicitly contrasts old check, limit/failure, new check, and application in domain language.
 - If public_causal_bridge is low or missing but the transcript is otherwise coherent, recommend revise_again rather than accept_for_blind_panel.
 - If device_specificity is low or missing but the transcript is otherwise coherent, recommend revise_again rather than accept_for_blind_panel.
+- If old_warrant_misclassification is low or missing but the transcript is otherwise coherent, recommend revise_again rather than accept_for_blind_panel.
 - If actional uptake is high but learner_self_reframe is missing or implicit, recommend revise_again rather than accept_for_blind_panel.
 - Use severity="warning" for advisory issues that should be recorded but should not block panel escalation.
 - Use severity="fail" or blocking=true only for issues that should prevent panel escalation: leakage, broken claim boundary, absent public causal bridge, absent device specificity, absent self-reframe, absent actional uptake, genuinely false temporal ownership, or incoherent public evidence.
@@ -846,6 +864,13 @@ function mockRevision({ publicTranscript }) {
             why_this_device_not_generic: 'the scope test directly checks the blocked relation rather than adding generic structure',
             critic_visible_link: 'the public transcript names the old pressure immediately before the changed test',
           },
+          old_warrant_misclassification: {
+            old_public_rule: 'learner had been using the old visible arrangement as the check',
+            counterexample: 'the public scope test produces a case the old arrangement cannot classify',
+            wrong_prediction_or_contradiction: 'the old rule predicts the same answer for cases the new relation separates',
+            new_relation_required: 'the changed public test names the relation that separates those cases',
+            learner_acknowledges_rule_failure: 'learner says the old visible arrangement does not settle this case',
+          },
           bridge_failure_risk: 'none',
         },
         learner_actional_uptake: 'learner performs or contests the test',
@@ -880,6 +905,7 @@ function mockCheck() {
       public_evidence: 0.8,
       public_causal_bridge: 0.8,
       device_specificity: 0.8,
+      old_warrant_misclassification: 0.8,
       tactic_selection: 0.8,
       learner_actional_uptake: 0.8,
       learner_self_reframe: 0.8,

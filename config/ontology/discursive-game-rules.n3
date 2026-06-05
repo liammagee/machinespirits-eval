@@ -77,7 +77,12 @@
      ms:hasLearnerUseOfChangedTest ?use ;
      ms:hasObstructionSpecificConstraint ?constraint ;
      ms:hasNonGenericMechanismJustification ?specificity ;
-     ms:hasCriticVisibleNecessityLink ?visibleLink }
+     ms:hasCriticVisibleNecessityLink ?visibleLink ;
+     ms:hasOldPublicRule ?oldRule ;
+     ms:hasCounterexampleToOldWarrant ?counterexample ;
+     ms:hasOldWarrantWrongPrediction ?wrongPrediction ;
+     ms:hasNewRelationRequiredByCounterexample ?newRelation ;
+     ms:hasLearnerAcknowledgementOfOldWarrantFailure ?learnerAcknowledgement }
   => { ?e a ms:PeripeteiaOriginSurvivor } .
 
 { ?e a ms:PeripeteiaOriginSurvivor ;
