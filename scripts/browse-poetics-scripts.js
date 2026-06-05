@@ -1241,28 +1241,39 @@ function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = ''
 }
 
 // ── Shared page chrome ────────────────────────────────────────────────────────
-// One source of truth for the theme tokens, resets, and the rail (nav) styling
-// that every dashboard page shares. Before this, each render*Html() inlined its
-// own copy of these ~13 lines and they had quietly drifted (e.g. body
-// line-height 1.6 vs 1.5). Centralising them here means the rail/menu looks
-// identical across home · compose · ontology · rubric · replays · runs, and any
-// future chrome change is a one-line edit. Page-specific CSS is passed in via
-// `css`. (The richer /browse page predates this and keeps its own bespoke
-// chrome — levelling the others up to it is the polish pass, not this refactor.)
-const BASE_CSS = `:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
+// One source of truth for the theme tokens, type, resets, and the rail (nav)
+// styling that every dashboard page shares. Before this, each render*Html()
+// inlined its own copy and they had quietly drifted (e.g. body line-height
+// 1.6 vs 1.5). Centralising them here means home · compose · ontology · rubric ·
+// replays · runs are byte-identical in their chrome, and any future change is a
+// one-line edit. The design lineage is levelled up to match the richer /browse
+// page: Fraunces (display) / Source Serif 4 (body) / JetBrains Mono (rail +
+// code), a faint paper-grain wash, and a frosted rail with the ▸ brand mark.
+// The token set is a superset of /browse's (incl. --ease + legacy aliases), so
+// /browse could later drop its bespoke copy and adopt pageHead() too.
+// Page-specific CSS is passed in via `css` and appended after this.
+const BASE_CSS = `@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap");
+:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); --ease:cubic-bezier(.22,.61,.36,1); --bg:var(--paper); --panel:var(--paper-4); --muted:var(--ink-3); --line:var(--rule); --accent:var(--moss-deep); --accent-soft:var(--moss-soft); --warn:var(--ochre-d); --trap:var(--brick-d); --flat:var(--ink-3); }
 [data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
-body{ background:var(--paper); color:var(--ink); font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
+html{ background:var(--paper); -webkit-text-size-adjust:100%; }
+body{ background:var(--paper); color:var(--ink-2); font-family:"Source Serif 4","Source Serif Pro",Cambria,Georgia,serif; font-feature-settings:"ss01","kern","liga"; font-optical-sizing:auto; font-size:14.5px; line-height:1.5; letter-spacing:.003em; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; position:relative; min-height:100vh; }
+body::after{ content:""; position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.14; background-image:radial-gradient(rgba(20,16,12,.55) .5px, transparent .5px); background-size:3px 3px; mix-blend-mode:multiply; }
+[data-theme="dark"] body::after{ opacity:.08; background-image:radial-gradient(rgba(244,238,221,.45) .5px, transparent .5px); mix-blend-mode:screen; }
+button,input,select,textarea{ font:inherit; color:inherit; }
 em{ font-style:italic; }
-code,pre{ font-family: ui-monospace,'SF Mono',Menlo,monospace; }
-.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
-.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
-.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
-.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
-.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
-.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
-[data-theme="dark"] .rail__arc{ color:var(--paper); }`;
+code,pre{ font-family:"JetBrains Mono",ui-monospace,'SF Mono',Menlo,monospace; }
+::selection{ background:color-mix(in srgb, var(--ochre) 50%, transparent); color:var(--ink); }
+.rail{ position:sticky; top:0; z-index:30; background:color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid var(--rule); font-family:"JetBrains Mono","SFMono-Regular",Consolas,monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); }
+.rail__inner{ display:flex; align-items:center; gap:.9em; padding:.55em clamp(.8rem,2vw,1.2rem); }
+.rail__brand{ font-family:"Fraunces","Source Serif 4",Georgia,serif; font-style:italic; font-variation-settings:"SOFT" 50,"WONK" 1,"opsz" 96; font-size:17px; letter-spacing:-.005em; text-transform:none; color:var(--ink); flex:0 0 auto; }
+.rail__brand::before{ content:"▸ "; color:var(--brick); font-style:normal; }
+.rail__sub{ flex:1 1 auto; color:var(--ink-3); text-transform:none; letter-spacing:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rail__btn{ display:inline-flex; align-items:center; gap:.45em; border:1px solid var(--rule); background:transparent; color:var(--ink-3); font:inherit; padding:.32em .8em; cursor:pointer; text-decoration:none; flex:0 0 auto; transition:color .15s var(--ease), border-color .15s var(--ease); }
+.rail__btn:hover{ color:var(--ink); border-color:var(--ink-3); }
+.rail__arc{ display:inline-flex; align-items:center; gap:.45em; padding:.4em .95em; background:var(--brick); color:var(--paper); border:1px solid var(--brick); text-decoration:none; font-weight:600; letter-spacing:.14em; flex:0 0 auto; white-space:nowrap; transition:background .15s var(--ease), border-color .15s var(--ease), transform .15s var(--ease); }
+.rail__arc:hover{ background:var(--brick-d); border-color:var(--brick-d); transform:translateY(-1px); }`;
 
 // Emit the <!doctype>…</head> shell with the shared chrome + this page's own CSS.
 // Each render*Html() then continues with its <body>. Keeps every page's <head>
