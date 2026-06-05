@@ -33,6 +33,13 @@ import {
   describeKinds,
   COST_CLASSES,
 } from '../services/poetics/jobRunner.js';
+import {
+  startSession as liveStartSession,
+  humanTurn as liveHumanTurn,
+  viewSession as liveViewSession,
+  saveSession as liveSaveSession,
+  buildMockDeps as liveBuildMockDeps,
+} from '../services/poetics/liveCompose.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -946,6 +953,49 @@ function createPoeticsBrowserApp({ dbPath = null } = {}) {
       return res.status(400).json({ error: error.message || String(error) });
     }
   });
+  // ── Live "sit-in" compose (human plays one seat, AI plays the other) ────────
+  // METERED + localhost-only, same posture as the /runs launcher below: every AI
+  // turn is a real LLM call UNLESS the request opts into mock deps (free, canned
+  // logarithm lines — for trialling the UI). Session state is in-memory in
+  // services/poetics/liveCompose.js; nothing touches the eval DB. The client is
+  // authoritative for the mock flag and re-sends it on every turn.
+  app.get('/compose/live', (_req, res) => res.type('html').send(renderComposeLiveHtml()));
+  app.post('/api/compose/live/start', async (req, res) => {
+    try {
+      const body = req.body || {};
+      const deps = body.mock ? liveBuildMockDeps() : {};
+      const out = await liveStartSession(body.spec || {}, deps);
+      return res.status(201).json(out);
+    } catch (error) {
+      return res.status(error.statusCode || 400).json({ error: error.message || String(error), code: error.code });
+    }
+  });
+  app.post('/api/compose/live/turn', async (req, res) => {
+    try {
+      const body = req.body || {};
+      const deps = body.mock ? liveBuildMockDeps() : {};
+      const out = await liveHumanTurn(body.id, body.text, deps);
+      return res.json(out);
+    } catch (error) {
+      return res.status(error.statusCode || 400).json({ error: error.message || String(error), code: error.code });
+    }
+  });
+  app.get('/api/compose/live/:id', (req, res) => {
+    try {
+      return res.json({ session: liveViewSession(req.params.id) });
+    } catch (error) {
+      return res.status(error.statusCode || 404).json({ error: error.message || String(error), code: error.code });
+    }
+  });
+  app.post('/api/compose/live/save', (req, res) => {
+    try {
+      const body = req.body || {};
+      const out = liveSaveSession(body.id, { filename: body.filename });
+      return res.json({ ok: true, ...out });
+    } catch (error) {
+      return res.status(error.statusCode || 400).json({ error: error.message || String(error), code: error.code });
+    }
+  });
   app.get('/ontology', (_req, res) => res.type('html').send(renderOntologyHtml()));
   app.get('/rubric', (_req, res) => res.type('html').send(renderRubricHtml()));
   app.get('/api/ontology', (req, res) => {
@@ -1624,10 +1674,12 @@ label.mini .t-turn{ width:56px; }
 .write-result code,.run-hint code{ background:rgba(127,127,127,.15); padding:0 3px; color:var(--moss-deep); }
 .run-hint{ font:11px/1.5 ui-monospace,monospace; color:var(--ink-4); border-top:1px dashed var(--rule); padding-top:8px; }
 .muted{ color:var(--ink-4); font-style:italic; font-size:11px; }
+${MODETABS_CSS}
 </style>
 </head>
 <body>
 ${railHtml({ active: 'compose', brand: 'drama composer', sub: 'assemble a drama-machine spec · validated live against the poetics ontology' })}
+${modeTabsHtml('spec')}
 <div class="compose">
   <form class="cform" id="cform" onsubmit="return false">
     <section class="sec"><h3>Drama · mythos / melos</h3><div class="body">
@@ -1857,6 +1909,289 @@ $('themeToggle').addEventListener('click', function(){
 try { if (localStorage.getItem('poetics-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); } catch (_e) {}
 renderTurns();
 validate();
+</script>
+</body>
+</html>`;
+}
+
+// ── Compose mode tabs (shared between Spec + Live) ────────────────────────────
+// Two ways to compose: Spec (batch — write a full .drama.yaml) and Live (sit-in —
+// play one seat in real time). One markup+CSS source so the two pages can't drift.
+function modeTabsHtml(active) {
+  const tab = (key, href, label, hint) =>
+    `<a class="modetab${key === active ? ' on' : ''}" href="${href}"${
+      key === active ? ' aria-current="page"' : ''
+    } title="${hint}">${label}</a>`;
+  return `<nav class="modetabs" aria-label="compose mode">
+    ${tab('spec', '/compose', '◐ Spec · batch', 'Assemble a full drama spec and write it as YAML for batch generation')}
+    ${tab('live', '/compose/live', '● Live · sit-in', 'Sit in: you play one seat, the AI plays the other, turn by turn')}
+  </nav>`;
+}
+const MODETABS_CSS = `.modetabs{ display:flex; gap:3px; padding:9px 18px 0; background:var(--paper-3); border-bottom:1px solid var(--rule); }
+.modetab{ font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-3); padding:7px 14px; border:1px solid var(--rule); border-bottom:none; background:var(--paper-2); border-radius:7px 7px 0 0; }
+.modetab:hover{ color:var(--ink); }
+.modetab.on{ color:var(--moss-deep); background:var(--paper-4); font-weight:600; position:relative; top:1px; }`;
+
+// ── Live "sit-in" compose (GET /compose/live) ─────────────────────────────────
+// A real-time chat where the human takes one chair (tutor or learner) and the AI
+// takes the other, driven by the SAME turn engines the scored runs use (so the
+// sit-in can't drift from them). METERED: each AI turn is a real LLM call unless
+// "free preview" (mock deps) is on. Server engine: services/poetics/liveCompose.js.
+function renderComposeLiveHtml() {
+  const V = COMPOSER_VOCAB;
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Live Compose · poetics</title>
+<style>
+:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
+[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{ background:var(--paper); color:var(--ink); font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
+code{ font-family: ui-monospace,'SF Mono',Menlo,monospace; background:rgba(127,127,127,.15); padding:0 3px; border-radius:3px; }
+kbd{ font:11px ui-monospace,monospace; background:var(--paper-2); border:1px solid var(--rule); border-bottom-width:2px; border-radius:4px; padding:1px 5px; color:var(--ink-2); }
+.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
+.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
+.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
+.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
+.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
+.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
+[data-theme="dark"] .rail__arc{ color:var(--paper); }
+${MODETABS_CSS}
+.live{ display:grid; grid-template-columns: minmax(0,1fr) 270px; align-items:start; max-width:1180px; margin:0 auto; }
+@media (max-width:900px){ .live{ grid-template-columns:1fr; } }
+.stage{ display:flex; flex-direction:column; min-height:calc(100vh - 95px); padding:18px 20px; }
+/* setup card */
+.setup{ border:1px solid var(--rule); background:var(--paper-4); padding:18px; display:flex; flex-direction:column; gap:16px; }
+.setup--min{ display:none; }
+.setup__head h2{ margin:0 0 4px; font:600 19px/1.2 Georgia,serif; color:var(--moss-deep); }
+.setup__lede{ margin:0; color:var(--ink-3); font-size:13px; max-width:62ch; }
+.seatpick{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media (max-width:560px){ .seatpick{ grid-template-columns:1fr; } }
+.seat{ text-align:left; border:1px solid var(--rule); background:var(--paper-3); padding:13px 15px; cursor:pointer; display:flex; flex-direction:column; gap:2px; border-radius:8px; transition:border-color .12s,background .12s; }
+.seat:hover{ border-color:var(--moss); }
+.seat--on{ border-color:var(--moss-deep); background:var(--moss-soft); box-shadow:inset 3px 0 0 var(--moss-deep); }
+.seat__k{ font:10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-4); }
+.seat__v{ font:600 17px/1.1 Georgia,serif; color:var(--ink); }
+.seat__d{ font-size:11.5px; color:var(--ink-3); margin-top:3px; }
+.setgrid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:11px 14px; }
+.grp{ display:contents; }
+label.fld{ display:flex; flex-direction:column; gap:4px; font:11px ui-monospace,monospace; color:var(--ink-3); text-transform:uppercase; letter-spacing:.04em; }
+label.fld.wide{ grid-column:1 / -1; }
+input[type=text],input[type=number],select{ width:100%; font:13px ui-monospace,monospace; color:var(--ink); background:var(--paper); border:1px solid var(--rule); padding:6px 8px; border-radius:5px; }
+.dry{ display:inline-flex; align-items:center; gap:7px; font:12px ui-monospace,monospace; color:var(--ink-2); cursor:pointer; }
+.setup__go{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.btn{ font:12px ui-monospace,monospace; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink); padding:8px 14px; cursor:pointer; border-radius:6px; }
+.btn:disabled{ opacity:.5; cursor:default; }
+.btn.primary{ background:var(--moss-deep); color:var(--paper); border-color:var(--moss-deep); font-weight:600; }
+.metered{ font:11px ui-monospace,monospace; color:var(--brick-d); }
+.metered--free{ color:var(--moss); }
+.err{ color:var(--brick-d); font:12px ui-monospace,monospace; min-height:15px; }
+/* transcript */
+.transcript{ flex:1; display:flex; flex-direction:column; gap:13px; padding:6px 2px 16px; overflow-y:auto; }
+.t-empty{ color:var(--ink-4); font-style:italic; text-align:center; padding:40px 0; }
+.line{ display:flex; flex-direction:column; gap:3px; max-width:78%; }
+.line--tutor{ align-self:flex-start; align-items:flex-start; }
+.line--learner{ align-self:flex-end; align-items:flex-end; }
+.who{ font:10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-4); padding:0 4px; }
+.bubble{ padding:9px 13px; border-radius:13px; font-size:13.5px; line-height:1.5; border:1px solid var(--rule); white-space:normal; }
+.line--tutor .bubble{ background:var(--moss-soft); border-color:var(--moss); border-bottom-left-radius:4px; }
+.line--learner .bubble{ background:var(--ochre-soft); border-color:var(--ochre); border-bottom-right-radius:4px; }
+.line--mine .bubble{ box-shadow:0 1px 0 rgba(0,0,0,.05); outline:2px solid var(--ink); outline-offset:-2px; }
+.line--ghost .bubble{ opacity:.7; }
+.dots{ display:inline-flex; gap:4px; align-items:center; height:18px; }
+.dots i{ width:6px; height:6px; border-radius:50%; background:var(--ink-3); animation:blink 1.2s infinite ease-in-out; }
+.dots i:nth-child(2){ animation-delay:.2s; } .dots i:nth-child(3){ animation-delay:.4s; }
+@keyframes blink{ 0%,80%,100%{ opacity:.25; } 40%{ opacity:1; } }
+/* composer */
+.composer{ position:sticky; bottom:0; background:var(--paper); border-top:1px solid var(--rule); padding:12px 2px 10px; }
+.composer__row{ display:flex; gap:9px; align-items:flex-end; }
+.composer textarea{ flex:1; font:14px/1.5 -apple-system,system-ui,sans-serif; color:var(--ink); background:var(--paper-4); border:1px solid var(--rule); border-radius:9px; padding:9px 12px; min-height:2.6rem; max-height:180px; resize:none; overflow-y:auto; }
+.composer textarea:disabled{ opacity:.55; }
+.composer__hint{ font:11px ui-monospace,monospace; color:var(--ink-4); padding:6px 4px 0; }
+/* side rail */
+.liveside{ position:sticky; top:95px; padding:18px 16px; display:flex; flex-direction:column; gap:13px; border-left:1px solid var(--rule); background:var(--paper-3); min-height:calc(100vh - 95px); }
+.lpanel{ border:1px solid var(--rule); background:var(--paper-4); border-radius:7px; overflow:hidden; }
+.lpanel__h{ padding:7px 11px; font:600 10px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-2); background:var(--paper-2); border-bottom:1px solid var(--rule); }
+.lpanel__b{ padding:11px; font:12px/1.5 ui-monospace,monospace; color:var(--ink-2); }
+.lpanel__b--col{ display:flex; flex-direction:column; gap:8px; }
+.spend{ display:flex; flex-direction:column; gap:2px; }
+.spend__usd{ font:600 22px/1 Georgia,serif; color:var(--moss-deep); }
+.spend__sub{ font:11px ui-monospace,monospace; color:var(--ink-4); }
+.saveres{ font:11px ui-monospace,monospace; color:var(--ink-3); min-height:14px; }
+.muted{ color:var(--ink-4); font-style:italic; }
+</style>
+</head>
+<body>
+${railHtml({
+  active: 'compose',
+  brand: 'live compose',
+  sub: 'sit in · you play one seat, the AI plays the other, turn by turn',
+})}
+${modeTabsHtml('live')}
+<div class="live">
+  <main class="stage">
+    <section class="setup" id="setup">
+      <div class="setup__head">
+        <h2>Sit in on a scene</h2>
+        <p class="setup__lede">Take one chair — Learner or Tutor — and the AI takes the other, driven by the same engines the scored runs use. Drive the tempo turn by turn, then save the transcript to run through the critics later.</p>
+      </div>
+      <div class="seatpick">
+        <button type="button" class="seat seat--on" id="seatLearner">
+          <span class="seat__k">I play the</span><span class="seat__v">Learner</span>
+          <span class="seat__d">the AI is the tutor — probe how it teaches under pressure</span>
+        </button>
+        <button type="button" class="seat" id="seatTutor">
+          <span class="seat__k">I play the</span><span class="seat__v">Tutor</span>
+          <span class="seat__d">the AI is the learner — stage a recognition, test a persona</span>
+        </button>
+      </div>
+      <div class="setgrid">
+        <label class="fld wide">topic<input id="f-topic" type="text" value="logarithms as the inverse of exponentiation"></label>
+        <label class="fld wide">hamartia — the misconception in play (optional)<input id="f-hamartia" type="text" value="treats log(a+b) as log a + log b"></label>
+        <div class="grp" id="grpTutor">
+          <label class="fld">AI tutor · prompt<select id="f-prompt">${composeOptions(['recognition', 'base'], 'recognition')}</select></label>
+          <label class="fld">AI tutor · architecture<select id="f-tarch">${composeOptions(['ego_superego', 'ego_only'], 'ego_superego')}</select></label>
+        </div>
+        <div class="grp" id="grpLearner" hidden>
+          <label class="fld">AI learner · persona<select id="f-persona">${composeOptions(V.personas, 'struggling_anxious')}</select></label>
+          <label class="fld">AI learner · architecture<select id="f-larch">${composeOptions(V.learnerArch, 'ego_superego_recognition_authentic')}</select></label>
+        </div>
+        <label class="fld">opening speaker<select id="f-open">${composeOptions(['tutor', 'learner'], 'tutor')}</select></label>
+        <label class="fld">max turns<input id="f-max" type="number" min="2" max="40" value="16"></label>
+      </div>
+      <label class="dry"><input type="checkbox" id="f-mock"> ✦ free preview — canned AI lines, no spend (logarithms demo)</label>
+      <div class="setup__go">
+        <button type="button" class="btn primary" id="beginBtn">Begin the scene →</button>
+        <span class="metered" id="meterNote">metered · real LLM calls per AI turn · localhost only</span>
+      </div>
+      <div class="err" id="setupErr"></div>
+    </section>
+
+    <div class="transcript" id="transcript" hidden></div>
+
+    <form class="composer" id="composerForm" hidden onsubmit="return false">
+      <div class="composer__row">
+        <textarea id="composerInput" rows="1" placeholder="your line…"></textarea>
+        <button type="button" class="btn primary" id="sendBtn">send</button>
+      </div>
+      <div class="composer__hint" id="composerHint"></div>
+    </form>
+  </main>
+
+  <aside class="liveside" id="liveside" hidden>
+    <div class="lpanel"><div class="lpanel__h">scene</div><div class="lpanel__b" id="sceneMeta"></div></div>
+    <div class="lpanel"><div class="lpanel__h">spend</div><div class="lpanel__b"><div class="spend"><span class="spend__usd" id="spendUsd">$0.0000</span><span class="spend__sub" id="spendTok">0 tokens</span></div></div></div>
+    <div class="lpanel"><div class="lpanel__h">save transcript</div><div class="lpanel__b lpanel__b--col">
+      <input id="saveName" type="text" placeholder="filename (optional)">
+      <button type="button" class="btn" id="saveBtn">Save to exports/</button>
+      <div class="saveres" id="saveRes"></div>
+    </div></div>
+    <div class="lpanel"><div class="lpanel__h">what is this</div><div class="lpanel__b"><span class="muted">Hand-probing the instrument. Human-as-learner tests how the tutor teaches; human-as-tutor lets you stage a recognition to test judge-gullibility (paper §D6).</span></div></div>
+  </aside>
+</div>
+<script>
+var $ = function(id){ return document.getElementById(id); };
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function nl2br(s){ return esc(s).replace(/\\n/g, '<br>'); }
+var S = { id:null, mock:false, humanRole:'learner', aiRole:'tutor', status:'idle', nextSpeaker:null };
+
+function pickSeat(role){
+  S.humanRole = role; S.aiRole = role==='learner' ? 'tutor' : 'learner';
+  $('seatLearner').classList.toggle('seat--on', role==='learner');
+  $('seatTutor').classList.toggle('seat--on', role==='tutor');
+  $('grpTutor').hidden = role!=='learner';
+  $('grpLearner').hidden = role!=='tutor';
+}
+function autoGrow(el){ if(!el) return; el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,180)+'px'; }
+
+async function postJson(url, body){
+  var res = await fetch(url, { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body) });
+  var data = {}; try { data = await res.json(); } catch(_e){}
+  if(!res.ok){ var err = new Error(data.error || res.statusText); Object.assign(err, data); throw err; }
+  return data;
+}
+function whoLabel(role, by){ return role + ' · ' + (by==='human' ? 'you' : 'ai'); }
+
+function renderSession(sess){
+  S.id = sess.id; S.status = sess.status; S.nextSpeaker = sess.nextSpeaker;
+  S.humanRole = sess.humanRole; S.aiRole = sess.aiRole;
+  $('setup').classList.add('setup--min');
+  $('transcript').hidden = false; $('liveside').hidden = false; $('composerForm').hidden = false;
+  var html = '';
+  sess.transcript.forEach(function(t){
+    html += '<div class="line line--'+t.role+(t.by==='human'?' line--mine':'')+'">'
+      + '<div class="who">'+esc(whoLabel(t.role, t.by))+'</div>'
+      + '<div class="bubble">'+nl2br(t.text)+'</div></div>';
+  });
+  $('transcript').innerHTML = html || '<div class="t-empty">the stage is set — make the first move</div>';
+  $('transcript').scrollTop = $('transcript').scrollHeight;
+  var tok = (Number(sess.spend.inputTokens||0)+Number(sess.spend.outputTokens||0));
+  $('spendUsd').textContent = '$'+Number(sess.spend.estimatedCostUsd||0).toFixed(4);
+  $('spendTok').textContent = tok.toLocaleString()+' tokens · '+sess.turnCount+'/'+sess.maxTurns+' turns';
+  $('sceneMeta').innerHTML = 'you are the <b>'+esc(sess.humanRole)+'</b><br>AI is the <b>'+esc(sess.aiRole)+'</b><br>'
+    + (sess.aiRole==='tutor' ? ('cell <code>'+esc(sess.tutorCell)+'</code>') : ('persona <code>'+esc(sess.persona)+'</code>'))
+    + (S.mock ? '<br><span class="metered--free">free preview</span>' : '');
+  var done = sess.status!=='live';
+  var yours = sess.nextSpeaker===sess.humanRole && !done;
+  $('composerInput').disabled = !yours; $('sendBtn').disabled = !yours;
+  if(done){ $('composerHint').innerHTML = 'scene ended ('+esc(sess.stoppedReason||sess.status)+') — save it, or reload to start another'; }
+  else if(yours){ $('composerHint').innerHTML = '<kbd>Enter</kbd> send · <kbd>Shift</kbd>+<kbd>Enter</kbd> newline · you are the <b>'+esc(sess.humanRole)+'</b>'; setTimeout(function(){ $('composerInput').focus(); }, 0); }
+  else { $('composerHint').textContent = 'the '+sess.aiRole+' is thinking…'; }
+}
+function appendOptimistic(text){
+  var t = $('transcript');
+  t.insertAdjacentHTML('beforeend',
+    '<div class="line line--'+S.humanRole+' line--mine"><div class="who">'+esc(whoLabel(S.humanRole,'human'))+'</div><div class="bubble">'+nl2br(text)+'</div></div>'
+    + '<div class="line line--'+S.aiRole+' line--ghost"><div class="who">'+esc(whoLabel(S.aiRole,'ai'))+'</div><div class="bubble"><span class="dots"><i></i><i></i><i></i></span></div></div>');
+  t.scrollTop = t.scrollHeight;
+}
+async function refresh(){ try { var r = await fetch('/api/compose/live/'+S.id); var d = await r.json(); if(d.session) renderSession(d.session); } catch(_e){} }
+
+async function begin(){
+  $('setupErr').textContent=''; S.mock = $('f-mock').checked;
+  var spec = { humanRole:S.humanRole, topic:$('f-topic').value, hamartia:$('f-hamartia').value,
+    promptType:$('f-prompt').value, tutorArchitecture:$('f-tarch').value,
+    persona:$('f-persona').value, learnerArchitecture:$('f-larch').value,
+    openingSpeaker:$('f-open').value, maxTurns:Number($('f-max').value)||16 };
+  $('beginBtn').disabled=true; $('beginBtn').textContent='setting the scene…';
+  try { var r = await postJson('/api/compose/live/start', { spec:spec, mock:S.mock }); renderSession(r.session); }
+  catch(e){ $('setupErr').textContent='could not start: '+(e.message||e); $('beginBtn').disabled=false; $('beginBtn').textContent='Begin the scene →'; }
+}
+async function send(){
+  var text = $('composerInput').value.trim();
+  if(!text || S.status!=='live') return;
+  $('composerInput').disabled=true; $('sendBtn').disabled=true;
+  appendOptimistic(text); $('composerHint').textContent='the '+S.aiRole+' is thinking…';
+  try { var r = await postJson('/api/compose/live/turn', { id:S.id, text:text, mock:S.mock });
+    $('composerInput').value=''; autoGrow($('composerInput')); renderSession(r.session); }
+  catch(e){ $('composerHint').innerHTML='<span class="metered">turn failed: '+esc(e.message||String(e))+'</span>'; await refresh(); }
+}
+async function save(){
+  if(!S.id) return; $('saveRes').textContent='saving…';
+  try { var r = await postJson('/api/compose/live/save', { id:S.id, filename:$('saveName').value.trim() });
+    $('saveRes').innerHTML='saved <code>'+esc(r.path)+'</code> · '+r.bytes+' bytes'; }
+  catch(e){ $('saveRes').textContent='save failed: '+(e.message||e); }
+}
+
+$('seatLearner').addEventListener('click', function(){ pickSeat('learner'); });
+$('seatTutor').addEventListener('click', function(){ pickSeat('tutor'); });
+$('beginBtn').addEventListener('click', begin);
+$('sendBtn').addEventListener('click', send);
+$('saveBtn').addEventListener('click', save);
+$('composerInput').addEventListener('input', function(){ autoGrow($('composerInput')); });
+$('composerInput').addEventListener('keydown', function(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send(); } });
+$('f-mock').addEventListener('change', function(){
+  var on = $('f-mock').checked;
+  $('meterNote').textContent = on ? 'free preview · canned AI lines · no spend' : 'metered · real LLM calls per AI turn · localhost only';
+  $('meterNote').classList.toggle('metered--free', on);
+});
+$('themeToggle').addEventListener('click', function(){ var d=document.documentElement; var nx=d.getAttribute('data-theme')==='dark'?'':'dark'; if(nx)d.setAttribute('data-theme','dark'); else d.removeAttribute('data-theme'); try{ localStorage.setItem('poetics-theme',nx); }catch(_e){} });
+try { if(localStorage.getItem('poetics-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); } catch(_e){}
+pickSeat('learner');
 </script>
 </body>
 </html>`;
