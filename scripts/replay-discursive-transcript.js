@@ -51,7 +51,15 @@ const DEFAULT_GATE_THRESHOLDS = Object.freeze({
   non_leakage: 0.9,
   prose_preservation: 0.5,
 });
+const DEFAULT_RECURSIVE_TUTOR_THRESHOLDS = Object.freeze({
+  tutor_learning_signal: 0.7,
+  resistance_diagnosis: 0.7,
+  strategy_revision_accountability: 0.7,
+  strategic_timing: 0.7,
+  recursive_dyadic_update: 0.7,
+});
 const GATE_SCORE_KEYS = Object.freeze(Object.keys(DEFAULT_GATE_THRESHOLDS));
+const RECURSIVE_TUTOR_SCORE_KEYS = Object.freeze(Object.keys(DEFAULT_RECURSIVE_TUTOR_THRESHOLDS));
 const REVISION_ONLY_GATE_SCORE_KEYS = new Set([
   'public_causal_bridge',
   'device_specificity',
@@ -87,6 +95,10 @@ function usage() {
     [--min-learner-actional-uptake N] [--min-learner-self-reframe N]
     [--min-dyadic-revision N]
     [--min-non-leakage N] [--min-prose-preservation N]
+    [--recursive-tutor-learning-gate]
+    [--min-tutor-learning-signal N] [--min-resistance-diagnosis N]
+    [--min-strategy-revision-accountability N]
+    [--min-strategic-timing N] [--min-recursive-dyadic-update N]
     [--item-concurrency N] [--feedback-file path] [--policy-memory path]
     [--timeout-ms N]
     [--force] [--dry-run]
@@ -144,6 +156,18 @@ export function parseArgs(argv = process.argv.slice(2)) {
     } else if (t === '--min-dyadic-revision') args.gateThresholds.dyadic_revision = Number(argv[++i]);
     else if (t === '--min-non-leakage') args.gateThresholds.non_leakage = Number(argv[++i]);
     else if (t === '--min-prose-preservation') args.gateThresholds.prose_preservation = Number(argv[++i]);
+    else if (t === '--recursive-tutor-learning-gate') args.recursiveTutorGate = true;
+    else if (t === '--min-tutor-learning-signal') {
+      args.recursiveTutorThresholds.tutor_learning_signal = Number(argv[++i]);
+    } else if (t === '--min-resistance-diagnosis') {
+      args.recursiveTutorThresholds.resistance_diagnosis = Number(argv[++i]);
+    } else if (t === '--min-strategy-revision-accountability') {
+      args.recursiveTutorThresholds.strategy_revision_accountability = Number(argv[++i]);
+    } else if (t === '--min-strategic-timing') {
+      args.recursiveTutorThresholds.strategic_timing = Number(argv[++i]);
+    } else if (t === '--min-recursive-dyadic-update') {
+      args.recursiveTutorThresholds.recursive_dyadic_update = Number(argv[++i]);
+    }
     else if (t === '--public-max-chars') args.publicMaxChars = Number(argv[++i]);
     else if (t === '--inner-max-chars') args.innerMaxChars = Number(argv[++i]);
     else if (t === '--item-concurrency') args.itemConcurrency = Number(argv[++i]);
@@ -177,7 +201,9 @@ function defaultArgs() {
     agyBin: DEFAULT_AGY_BIN,
     agyModelLabel: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
     localGate: true,
+    recursiveTutorGate: false,
     gateThresholds: { ...DEFAULT_GATE_THRESHOLDS },
+    recursiveTutorThresholds: { ...DEFAULT_RECURSIVE_TUTOR_THRESHOLDS },
     publicMaxChars: 30_000,
     innerMaxChars: 18_000,
     itemConcurrency: DEFAULT_ITEM_CONCURRENCY,
@@ -198,6 +224,10 @@ function finalizeArgs(rawArgs) {
     gateThresholds: {
       ...DEFAULT_GATE_THRESHOLDS,
       ...(rawArgs.gateThresholds || {}),
+    },
+    recursiveTutorThresholds: {
+      ...DEFAULT_RECURSIVE_TUTOR_THRESHOLDS,
+      ...(rawArgs.recursiveTutorThresholds || {}),
     },
     feedbackByItem: rawArgs.feedbackByItem || {},
   };
@@ -222,6 +252,7 @@ function finalizeArgs(rawArgs) {
     if (!fs.existsSync(filePath)) throw new Error(`policy memory file not found: ${filePath}`);
   }
   validateGateThresholds(args.gateThresholds);
+  validateRecursiveTutorThresholds(args.recursiveTutorThresholds);
   return args;
 }
 
@@ -259,10 +290,26 @@ function validateGateThresholds(thresholds) {
   }
 }
 
+function validateRecursiveTutorThresholds(thresholds) {
+  for (const key of RECURSIVE_TUTOR_SCORE_KEYS) {
+    const value = Number(thresholds?.[key]);
+    if (!Number.isFinite(value) || value < 0 || value > 1) {
+      throw new Error(`recursive tutor threshold ${key} must be a number between 0 and 1`);
+    }
+  }
+}
+
 function resolvedGateThresholds(args = {}) {
   return {
     ...DEFAULT_GATE_THRESHOLDS,
     ...(args.gateThresholds || {}),
+  };
+}
+
+function resolvedRecursiveTutorThresholds(args = {}) {
+  return {
+    ...DEFAULT_RECURSIVE_TUTOR_THRESHOLDS,
+    ...(args.recursiveTutorThresholds || {}),
   };
 }
 
@@ -321,7 +368,10 @@ function pushScoreGateProblem({ key, normalized, threshold, failures, warnings }
 export function evaluateLocalGate(check, revision = null, args = {}) {
   const enabled = args.localGate !== false;
   const thresholds = resolvedGateThresholds(args);
+  const recursiveTutorGateEnabled = args.recursiveTutorGate === true;
+  const recursiveTutorThresholds = resolvedRecursiveTutorThresholds(args);
   validateGateThresholds(thresholds);
+  validateRecursiveTutorThresholds(recursiveTutorThresholds);
 
   if (!enabled) {
     return {
@@ -329,6 +379,11 @@ export function evaluateLocalGate(check, revision = null, args = {}) {
       status: 'disabled',
       escalate: false,
       thresholds,
+      recursive_tutor_learning_gate: {
+        enabled: recursiveTutorGateEnabled,
+        thresholds: recursiveTutorThresholds,
+        scores: {},
+      },
       failures: [],
       warnings: [],
       recommended_action: normalizeAction(check?.recommended_action) || null,
@@ -342,6 +397,11 @@ export function evaluateLocalGate(check, revision = null, args = {}) {
       status: 'unchecked',
       escalate: false,
       thresholds,
+      recursive_tutor_learning_gate: {
+        enabled: recursiveTutorGateEnabled,
+        thresholds: recursiveTutorThresholds,
+        scores: {},
+      },
       failures: [
         {
           criterion: 'checker',
@@ -420,6 +480,35 @@ export function evaluateLocalGate(check, revision = null, args = {}) {
     }
   }
 
+  const recursiveTutorScoreReport = {};
+  for (const key of RECURSIVE_TUTOR_SCORE_KEYS) {
+    const { raw, normalized, scale } = scoreValue(check, key);
+    const threshold = recursiveTutorThresholds[key];
+    recursiveTutorScoreReport[key] = {
+      raw,
+      value: normalized,
+      scale,
+      threshold,
+      passes: normalized !== null && normalized >= threshold,
+    };
+    if (!recursiveTutorGateEnabled) continue;
+    if (normalized === null) {
+      warnings.push({
+        criterion: key,
+        evidence: 'checker score is missing or non-numeric',
+        recommendation: `Revise until ${key} is explicit enough to score recursive tutor learning.`,
+        blocking: true,
+      });
+    } else if (normalized < threshold) {
+      warnings.push({
+        criterion: key,
+        evidence: `${normalized} < ${threshold}`,
+        recommendation: `Revise until ${key} meets the recursive tutor-learning threshold.`,
+        blocking: true,
+      });
+    }
+  }
+
   const findings = Array.isArray(check.findings) ? check.findings : [];
   for (const finding of findings) {
     const severity = normalizeFindingSeverity(finding?.severity);
@@ -449,6 +538,11 @@ export function evaluateLocalGate(check, revision = null, args = {}) {
     escalate: status === 'survivor',
     thresholds,
     scores: scoreReport,
+    recursive_tutor_learning_gate: {
+      enabled: recursiveTutorGateEnabled,
+      thresholds: recursiveTutorThresholds,
+      scores: recursiveTutorScoreReport,
+    },
     failures,
     warnings,
     blockingWarnings,
@@ -652,6 +746,9 @@ function buildOntologySummary({ policyMemoryText = '' } = {}) {
 - Counterexample-necessity criterion: the old public warrant should visibly misclassify, wrongly predict, or contradict at least one public case before the tutor's new relation becomes available. If the changed device merely gives a better explanation without making the old warrant fail, revise.
 - Mere reminder, restatement, smoother prompting, or continuation of the same check is not enough for origin attribution. If the learner reframe could be read as organic transcript drift, revise before panel escalation.
 - Do not let learner action alone count as recognition. The final learner move must own a self-reframe in ordinary domain language: name the old warrant/check, name why it no longer settles the case, name the new warrant/check, and apply it.
+- Recursive tutor-learning criterion: treat learner resistance as feedback that teaches the tutor what teaching now requires. The tutor must have an accountable learning arc: prior strategy, public learner resistance that contradicts or limits it, diagnosis of why the prior strategy fails, rejected continuation, revised strategy/device/test, and later update from learner uptake or contest.
+- The tutor's changed strategy must be temporally earned. Score recursive tutor learning low if the tutor simply starts with the right scaffold, if the device is scene furniture doing the work, or if the public transcript lacks a visible moment where learner resistance changes the tutor's teaching policy.
+- Keep learner outcome and tutor learning distinct. Learner repair is downstream evidence; it is not by itself proof that the tutor learned to teach differently.
 - Keep the four-part self-reframe natural in the public transcript. Do not use checklist phrases such as "my old check was", "the new check is", "old warrant", or "new warrant" in the learner's public speech; reserve that structure for the JSON ledger.
 - Keep learner-owned reframes compact. Prefer one short domain utterance that does the contrast and application over a polished explanatory paragraph.
 - Keep the move ledger temporally honest. Do not copy the final self-reframe backward into earlier turns; for each ledger entry, record only what is publicly owned by that turn, and write "not yet owned by the learner" for self-reframe parts that emerge later.
@@ -718,6 +815,27 @@ Required JSON shape:
       },
       "tutor_revision": "later tutor revision accountable to uptake/contest",
       "ontology_terms": ["ResponsiveMove", "AccountableRepair", "DyadicRevision"]
+    }
+  ],
+  "tutor_learning_ledger": [
+    {
+      "turn": "short locator",
+      "tutor_prior_strategy": "what the tutor appeared to be trying before resistance taught against it",
+      "learner_resistance_as_feedback": {
+        "public_signal": "public learner resistance/uptake/contest that teaches the tutor something",
+        "evidence_quote": "quote or action from the public transcript",
+        "why_it_challenges_prior_strategy": "why the prior teaching route is now inadequate"
+      },
+      "tutor_diagnosis": "what the tutor learns about how this learner is construing the task",
+      "rejected_continuation": "what generic continuation/reminder/explanation the tutor does not merely repeat",
+      "revised_strategy": {
+        "strategy_name": "finite tactic or strategy",
+        "new_public_test_or_device": "changed task/device/test/criterion/role/representation",
+        "why_this_strategy_now": "why the learner's resistance makes this strategy accountable now"
+      },
+      "strategic_timing": "how the revised strategy is introduced after the resistance rather than before it",
+      "learner_feedback_on_revision": "later learner uptake/contest that confirms, resists, or modifies the tutor hypothesis",
+      "recursive_update": "what the tutor would now carry forward about teaching this learner"
     }
   ],
   "hidden_state_use_ledger": [
@@ -805,8 +923,20 @@ Required JSON shape:
     "learner_actional_uptake": 0,
     "learner_self_reframe": 0,
     "dyadic_revision": 0,
+    "tutor_learning_signal": 0,
+    "resistance_diagnosis": 0,
+    "strategy_revision_accountability": 0,
+    "strategic_timing": 0,
+    "recursive_dyadic_update": 0,
     "non_leakage": 0,
     "prose_preservation": 0
+  },
+  "recursive_tutor_learning": {
+    "tutor_prior_strategy": "what the tutor was doing before learner resistance changed the route",
+    "learner_as_teacher": "how the learner's resistance taught the tutor what needed repair",
+    "strategy_revision": "what strategy the tutor rejected and what it chose instead",
+    "timing_evidence": "public evidence that revision happened after resistance",
+    "downstream_feedback": "learner uptake/contest that updates the tutor's next commitment"
   },
   "findings": [
     {"severity": "info|warning|fail", "criterion": "...", "evidence": "...", "recommendation": "...", "blocking": false}
@@ -824,10 +954,16 @@ Scoring guidance:
 - old_warrant_misclassification: score high only when the old public rule/check visibly makes a wrong prediction, misclassifies a public case, or creates a contradiction, and the learner later acknowledges that failure before applying the new relation. Score <=0.5 when the old rule is merely incomplete, hidden, occluded, or replaced by a helpful scaffold without public error.
 - learner_actional_uptake: learner performs or contests the new public test.
 - learner_self_reframe: learner explicitly contrasts old check, limit/failure, new check, and application in domain language.
+- tutor_learning_signal: score high only when the tutor's prior strategy, its breakdown, and the revised teaching policy are explicit enough for an external critic to inspect.
+- resistance_diagnosis: score high only when a public learner signal teaches the tutor something specific about this learner's misconstrual/resistance. Score low when the tutor's diagnosis could have been made before the learner acted.
+- strategy_revision_accountability: score high only when the tutor rejects a plausible continuation and chooses a different strategy/device/test because of the resistance. Score low for a smoother version of the same explanation.
+- strategic_timing: score high only when the revised strategy is visibly introduced after the learner resistance/failure, not as scene-initial apparatus or preemptive explanation.
+- recursive_dyadic_update: score high only when later learner uptake/contest updates what the tutor is now committed to doing next; learner repair alone is not enough.
 - If public_causal_bridge is low or missing but the transcript is otherwise coherent, recommend revise_again rather than accept_for_blind_panel.
 - If device_specificity is low or missing but the transcript is otherwise coherent, recommend revise_again rather than accept_for_blind_panel.
 - If old_warrant_misclassification is low or missing but the transcript is otherwise coherent, recommend revise_again rather than accept_for_blind_panel.
 - If actional uptake is high but learner_self_reframe is missing or implicit, recommend revise_again rather than accept_for_blind_panel.
+- If recursive tutor-learning scores are low but the learner outcome scores are high, mark the origin risk clearly: the transcript may show learner recognition without evidence that learner resistance taught the tutor to revise its strategy.
 - Use severity="warning" for advisory issues that should be recorded but should not block panel escalation.
 - Use severity="fail" or blocking=true only for issues that should prevent panel escalation: leakage, broken claim boundary, absent public causal bridge, absent device specificity, absent self-reframe, absent actional uptake, genuinely false temporal ownership, or incoherent public evidence.
 - Set passes=false only for discard-level problems such as leakage, broken claim boundary, unusable JSON/prose, or a fundamentally incoherent revision.
@@ -884,6 +1020,27 @@ function mockRevision({ publicTranscript }) {
         ontology_terms: ['ResponsiveMove', 'AccountableScorekeepingEpisode', 'DyadicRevision'],
       },
     ],
+    tutor_learning_ledger: [
+      {
+        turn: 'mock-turn',
+        tutor_prior_strategy: 'continue the original explanation route',
+        learner_resistance_as_feedback: {
+          public_signal: 'visible learner pressure or uptake',
+          evidence_quote: 'mock public quote',
+          why_it_challenges_prior_strategy: 'the original route no longer settles the learner pressure',
+        },
+        tutor_diagnosis: 'the learner needs a public test rather than another reminder',
+        rejected_continuation: 'repeat the same explanation with warmer wording',
+        revised_strategy: {
+          strategy_name: 'scope_test',
+          new_public_test_or_device: 'explicit public scope test',
+          why_this_strategy_now: 'the learner signal makes the old route accountable to a concrete test',
+        },
+        strategic_timing: 'the scope test follows the learner pressure',
+        learner_feedback_on_revision: 'learner performs or contests the test',
+        recursive_update: 'carry forward that this learner needs public tests before explanation credit',
+      },
+    ],
     hidden_state_use_ledger: [
       {
         private_fact: 'mock held-out state cue',
@@ -910,8 +1067,20 @@ function mockCheck() {
       learner_actional_uptake: 0.8,
       learner_self_reframe: 0.8,
       dyadic_revision: 0.75,
+      tutor_learning_signal: 0.8,
+      resistance_diagnosis: 0.8,
+      strategy_revision_accountability: 0.8,
+      strategic_timing: 0.8,
+      recursive_dyadic_update: 0.8,
       non_leakage: 1,
       prose_preservation: 0.7,
+    },
+    recursive_tutor_learning: {
+      tutor_prior_strategy: 'continue the original explanation route',
+      learner_as_teacher: 'learner pressure teaches the tutor to switch to a public test',
+      strategy_revision: 'reject repetition and choose scope_test',
+      timing_evidence: 'revision follows the learner signal',
+      downstream_feedback: 'learner performs or contests the test',
     },
     findings: [
       {
@@ -925,7 +1094,7 @@ function mockCheck() {
   };
 }
 
-async function callBackend(backend, prompts, options, role) {
+export async function callBackend(backend, prompts, options, role) {
   if (backend === 'mock') {
     return {
       content: JSON.stringify(role === 'checker' ? mockCheck() : mockRevision({ publicTranscript: options.publicTranscript }), null, 2),
@@ -1147,11 +1316,18 @@ function callAgy({ systemPrompt, userPrompt }, options, role) {
 }
 
 function validateRevisionPayload(payload) {
-  const required = ['revised_public_transcript', 'move_ledger', 'hidden_state_use_ledger', 'non_leakage_check'];
+  const required = [
+    'revised_public_transcript',
+    'move_ledger',
+    'tutor_learning_ledger',
+    'hidden_state_use_ledger',
+    'non_leakage_check',
+  ];
   for (const key of required) {
     if (!(key in payload)) throw new Error(`revision JSON missing ${key}`);
   }
   if (!Array.isArray(payload.move_ledger)) throw new Error('revision.move_ledger must be an array');
+  if (!Array.isArray(payload.tutor_learning_ledger)) throw new Error('revision.tutor_learning_ledger must be an array');
   if (!Array.isArray(payload.hidden_state_use_ledger)) throw new Error('revision.hidden_state_use_ledger must be an array');
   return payload;
 }

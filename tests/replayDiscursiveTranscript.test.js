@@ -84,6 +84,31 @@ test('parseArgs accepts explicit replay item concurrency and feedback file', () 
   assert.equal(args.gateThresholds.old_warrant_misclassification, 0.9);
 });
 
+test('parseArgs accepts recursive tutor-learning gate thresholds', () => {
+  const args = parseArgs([
+    '--transcript',
+    '/tmp/T01.txt',
+    '--recursive-tutor-learning-gate',
+    '--min-tutor-learning-signal',
+    '0.85',
+    '--min-resistance-diagnosis',
+    '0.8',
+    '--min-strategy-revision-accountability',
+    '0.9',
+    '--min-strategic-timing',
+    '0.95',
+    '--min-recursive-dyadic-update',
+    '0.75',
+  ]);
+
+  assert.equal(args.recursiveTutorGate, true);
+  assert.equal(args.recursiveTutorThresholds.tutor_learning_signal, 0.85);
+  assert.equal(args.recursiveTutorThresholds.resistance_diagnosis, 0.8);
+  assert.equal(args.recursiveTutorThresholds.strategy_revision_accountability, 0.9);
+  assert.equal(args.recursiveTutorThresholds.strategic_timing, 0.95);
+  assert.equal(args.recursiveTutorThresholds.recursive_dyadic_update, 0.75);
+});
+
 test('evaluateLocalGate accepts a clean local checker result', () => {
   const gate = evaluateLocalGate(
     {
@@ -112,6 +137,49 @@ test('evaluateLocalGate accepts a clean local checker result', () => {
 
   assert.equal(gate.status, 'survivor');
   assert.equal(gate.escalate, true);
+  assert.equal(gate.recursive_tutor_learning_gate.enabled, false);
+  assert.equal(gate.recursive_tutor_learning_gate.scores.tutor_learning_signal.value, null);
+});
+
+test('evaluateLocalGate blocks weak recursive tutor learning only when gate is enabled', () => {
+  const checker = {
+    passes: true,
+    claim_boundary_ok: true,
+    scores: {
+      public_evidence: 0.9,
+      public_causal_bridge: 0.9,
+      device_specificity: 0.9,
+      old_warrant_misclassification: 0.9,
+      tactic_selection: 0.9,
+      learner_actional_uptake: 0.9,
+      learner_self_reframe: 0.9,
+      dyadic_revision: 0.9,
+      tutor_learning_signal: 0.4,
+      resistance_diagnosis: 0.45,
+      strategy_revision_accountability: 0.5,
+      strategic_timing: 0.3,
+      recursive_dyadic_update: 0.4,
+      non_leakage: 1,
+      prose_preservation: 0.9,
+    },
+    findings: [],
+    recommended_action: 'accept_for_blind_panel',
+  };
+  const revision = {
+    non_leakage_check: { passes: true },
+    claim_boundary: 'counterfactual_revision_not_online_adaptation',
+  };
+
+  const withoutRecursiveGate = evaluateLocalGate(checker, revision);
+  assert.equal(withoutRecursiveGate.status, 'survivor');
+  assert.equal(withoutRecursiveGate.recursive_tutor_learning_gate.scores.strategic_timing.value, 0.3);
+
+  const withRecursiveGate = evaluateLocalGate(checker, revision, { recursiveTutorGate: true });
+  assert.equal(withRecursiveGate.status, 'revise_again');
+  assert.equal(withRecursiveGate.escalate, false);
+  assert.equal(withRecursiveGate.recursive_tutor_learning_gate.enabled, true);
+  assert.ok(withRecursiveGate.blockingWarnings.some((warning) => warning.criterion === 'strategic_timing'));
+  assert.equal(withRecursiveGate.failures.length, 0);
 });
 
 test('evaluateLocalGate rejects low non-leakage and failed checker results', () => {
