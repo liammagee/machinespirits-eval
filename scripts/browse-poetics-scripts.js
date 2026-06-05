@@ -232,6 +232,28 @@ function distinctDisciplines(db) {
     .map((row) => row.discipline);
 }
 
+// Corpus-level counts for the dashboard's orientation strip + feature cards. Pure
+// DB reads (replay-bundle count is layered on in the route, since that's filesystem).
+function corpusStats(db) {
+  const scalar = (sql) => db.prepare(sql).get().n;
+  return {
+    scripts: scalar('SELECT COUNT(*) AS n FROM poetics_items'),
+    runs: scalar('SELECT COUNT(DISTINCT run_id) AS n FROM poetics_items'),
+    scored: scalar('SELECT COUNT(DISTINCT item_id) AS n FROM poetics_scores'),
+    scores: scalar('SELECT COUNT(*) AS n FROM poetics_scores'),
+    critics: scalar('SELECT COUNT(DISTINCT critic_model) AS n FROM poetics_scores'),
+    labels: scalar('SELECT COUNT(*) AS n FROM poetics_labels'),
+    openFlags: scalar('SELECT COUNT(*) AS n FROM poetics_review_flags WHERE resolved_at IS NULL'),
+    disciplines: db
+      .prepare(
+        `SELECT discipline AS name, COUNT(*) AS n FROM poetics_items
+         WHERE discipline IS NOT NULL AND discipline <> ''
+         GROUP BY discipline ORDER BY n DESC, name`,
+      )
+      .all(),
+  };
+}
+
 function listItems(db, filters = {}) {
   const where = [];
   const params = {};
@@ -805,6 +827,7 @@ function createPoeticsBrowserApp({ dbPath = null } = {}) {
   app.locals.db = db;
   app.get('/favicon.ico', (_req, res) => res.status(204).end());
   app.get('/api/runs', (_req, res) => res.json({ runs: listRuns(db), disciplines: distinctDisciplines(db) }));
+  app.get('/api/stats', (_req, res) => res.json({ ...corpusStats(db), replays: listReplayBundles().length }));
   app.get('/api/items', (req, res) => {
     const runIds = String(req.query.runIds || '')
       .split(',')
@@ -963,7 +986,18 @@ function createPoeticsBrowserApp({ dbPath = null } = {}) {
     if (!fs.existsSync(arcPath)) return res.status(404).type('text').send('arc note not found');
     res.type('html').sendFile(arcPath);
   });
-  app.get('/', (_req, res) => res.type('html').send(renderBrowserHtml()));
+  app.get('/browse', (_req, res) => res.type('html').send(renderBrowserHtml()));
+  app.get('/', (req, res) => {
+    // Deep links from before the browser moved to /browse (e.g. /?runId=…,
+    // /?itemId=…) still arrive at /. Preserve them by forwarding the query.
+    const keys = Object.keys(req.query || {});
+    if (keys.length) {
+      const qs = new URLSearchParams(req.query).toString();
+      return res.redirect(302, '/browse' + (qs ? '?' + qs : ''));
+    }
+    const stats = { ...corpusStats(db), replays: listReplayBundles().length };
+    return res.type('html').send(renderDashboardHtml(stats));
+  });
   return app;
 }
 
@@ -1094,6 +1128,408 @@ function escapeHtml(value) {
   );
 }
 
+// Single source of truth for the top nav. Every page already ships identical
+// .rail*/.rail__btn CSS, so this stays markup-only; the active link gets
+// aria-current + an inline accent (theme vars exist on every page) so no page
+// needs a bespoke active-state rule. Replaces five hand-maintained, divergent rails.
+function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = '' } = {}) {
+  const NAV = [
+    ['home', '/', 'home', 'Dashboard — overview, live stats &amp; guided first steps'],
+    ['browse', '/browse', 'browse', 'Browse generated scripts, full traces, critic scores &amp; labels'],
+    ['compose', '/compose', 'compose', 'Assemble a drama-machine spec, validated live against the ontology'],
+    ['ontology', '/ontology', 'ontology', 'The shared ontology — system, tutor &amp; learner lenses'],
+    ['replays', '/replays', 'replays', 'Counterfactual replays diffed against their originals'],
+    ['runs', '/runs', 'runs', 'Launch runs — generative · replay · adversarial-CLI · online scoring'],
+  ];
+  const links = NAV.map(([key, href, label, title]) => {
+    const on = key === active;
+    const attrs = on
+      ? ' aria-current="page" style="color:var(--moss-deep);border-color:var(--moss);background:var(--moss-soft)"'
+      : '';
+    return `<a class="rail__btn" href="${href}" title="${title}"${attrs}>${label}</a>`;
+  }).join('\n    ');
+  return `<header class="rail">
+  <div class="rail__inner">
+    <span class="rail__brand">${brand}</span>
+    <span class="rail__sub">${sub}</span>
+    ${links}
+    <a class="rail__arc" href="/arc" title="The dramatic-recognition arc synthesis note"><span>arc</span><span aria-hidden="true">→</span></a>
+    ${extra}<button class="rail__btn" id="themeToggle" type="button">theme</button>
+  </div>
+</header>`;
+}
+
+// ── Dashboard front door (GET /) ──────────────────────────────────────────────
+// The app's introduction + onboarding. Renders live corpus stats server-side
+// (no fetch flash, works JS-off), a first-visit recognition banner, a five-rung
+// scaffolding tour with localStorage progress, the full feature map grouped into
+// three acts (understand → create → recognize), and a reflexive note naming the
+// pedagogy the UI itself borrows. Takes the corpusStats() object + replay count.
+function renderDashboardHtml(stats = {}) {
+  const s = {
+    scripts: 0,
+    runs: 0,
+    scored: 0,
+    scores: 0,
+    critics: 0,
+    labels: 0,
+    openFlags: 0,
+    replays: 0,
+    disciplines: [],
+    ...stats,
+  };
+  const fmt = (n) => Number(n || 0).toLocaleString('en-US');
+  const disciplines = s.disciplines || [];
+  const disciplineChips = disciplines.length
+    ? disciplines
+        .map((d) => {
+          const label = escapeHtml(String(d.name).replace(/_/g, ' '));
+          const href = '/browse?discipline=' + encodeURIComponent(d.name);
+          return `<a class="chip" href="${href}"><span>${label}</span><span class="chip__n">${fmt(d.n)}</span></a>`;
+        })
+        .join('')
+    : '<span class="muted">no disciplines tagged yet — generate a run to populate the corpus</span>';
+
+  const statCell = (n, label) =>
+    `<div class="stat"><div class="stat__n">${fmt(n)}</div><div class="stat__l">${label}</div></div>`;
+  const statStrip = [
+    statCell(s.scripts, 'scripts'),
+    statCell(s.runs, 'runs'),
+    statCell(disciplines.length, 'disciplines'),
+    statCell(s.scores, 'critic scores'),
+    statCell(s.critics, 'critics'),
+    statCell(s.replays, 'replays'),
+  ].join('');
+  const statSub =
+    `${fmt(s.scored)} of ${fmt(s.scripts)} scripts scored · ${fmt(s.labels)} human labels · ` +
+    (s.openFlags
+      ? `<strong class="flag">${fmt(s.openFlags)} open review flag${s.openFlags === 1 ? '' : 's'}</strong>`
+      : '0 open review flags');
+
+  const RUNGS = [
+    [
+      1,
+      'Read a finished drama',
+      'Open the browser and read one generated script end to end — a tutoring dialogue staged as a short play, turn by turn.',
+      '/browse',
+      'browse',
+    ],
+    [
+      2,
+      'Learn the shared vocabulary',
+      'Open the ontology to see the terms the whole system reasons in — moves, agencies, recognition — through system, tutor &amp; learner lenses.',
+      '/ontology',
+      'ontology',
+    ],
+    [
+      3,
+      'Compose your own spec',
+      'Assemble a drama-machine spec in the composer; it validates live against the ontology as you build the turn plan.',
+      '/compose',
+      'compose',
+    ],
+    [
+      4,
+      'Stage a run',
+      'Launch a generation from the runs console — free/mock by default, with every cost class shown before you ever commit a paid call.',
+      '/runs',
+      'runs',
+    ],
+    [
+      5,
+      'Read a recognition',
+      'Open a counterfactual replay diffed against its original — where a single changed move reshapes the drama.',
+      '/replays',
+      'replays',
+    ],
+  ];
+  const rungsHtml = RUNGS.map(
+    ([n, title, desc, href, label]) => `
+      <div class="rung" id="rung-${n}">
+        <button class="rung__check" data-rung="${n}" type="button" aria-label="mark step ${n} complete"><span class="rung__num">${n}</span><span class="rung__tick" aria-hidden="true">✓</span></button>
+        <div class="rung__body">
+          <div class="rung__title">${title}</div>
+          <div class="rung__desc">${desc}</div>
+        </div>
+        <a class="rung__go" data-rung="${n}" href="${href}">${label} →</a>
+      </div>`,
+  ).join('');
+
+  const ACTS = [
+    [
+      'act--moss',
+      'Understand',
+      [
+        [
+          'Browse scripts',
+          'Every generated drama with its full trace, critic scores &amp; human labels — filter by run, discipline or free text.',
+          '/browse',
+          'open browser',
+        ],
+        [
+          'Ontology atlas',
+          'The shared TBox the system reasons in, projected into system, tutor &amp; learner lenses with the raw rules per module.',
+          '/ontology',
+          'open atlas',
+        ],
+      ],
+    ],
+    [
+      'act--ochre',
+      'Create',
+      [
+        [
+          'Drama composer',
+          'Assemble an Aristotelian spec — mythos, ethos, turn plan — validated live against the poetics ontology as you go.',
+          '/compose',
+          'open composer',
+        ],
+        [
+          'Runs console',
+          'Launch generative · replay · adversarial-CLI · online-scoring runs, with cost classes shown and a dry-run default.',
+          '/runs',
+          'open console',
+        ],
+      ],
+    ],
+    [
+      'act--indigo',
+      'Recognize',
+      [
+        [
+          'Replays',
+          'Counterfactual revisions diffed against their originals — see where one changed move reshapes the recognition.',
+          '/replays',
+          'open replays',
+        ],
+        [
+          'The arc',
+          'The synthesis note tracing the whole dramatic-recognition arc, from the paper through to this workbench.',
+          '/arc',
+          'read the arc',
+        ],
+      ],
+    ],
+  ];
+  const actsHtml = ACTS.map(
+    ([cls, name, cards]) => `
+      <section class="act ${cls}">
+        <h3 class="act__h">${name}</h3>
+        <div class="act__cards">
+          ${cards
+            .map(
+              ([t, d, href, cta]) =>
+                `<a class="card" href="${href}"><div class="card__t">${t}</div><div class="card__d">${d}</div><div class="card__cta">${cta} →</div></a>`,
+            )
+            .join('')}
+        </div>
+      </section>`,
+  ).join('');
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>machine spirits · poetics workbench</title>
+<style>
+:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
+[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{ background:var(--paper); color:var(--ink); font:14px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
+em{ font-style:italic; }
+.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
+.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
+.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
+.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
+.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
+.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
+[data-theme="dark"] .rail__arc{ color:var(--paper); }
+.wrap{ max-width:1080px; margin:0 auto; padding:0 22px 64px; }
+.welcome{ margin:18px 0 0; border:1px solid var(--moss); background:var(--moss-soft); padding:16px 18px; }
+.welcome__k{ font:600 11px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.08em; color:var(--moss-deep); }
+.welcome h2{ margin:7px 0 6px; font:italic 22px/1.2 Georgia,serif; color:var(--ink); }
+.welcome p{ margin:0; color:var(--ink-2); max-width:66ch; }
+.welcome__btns{ display:flex; gap:10px; margin-top:13px; flex-wrap:wrap; }
+.hero{ padding:40px 0 10px; }
+.hero__k{ font:600 11px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-4); }
+.hero h1{ margin:10px 0 12px; font:italic 40px/1.05 Georgia,serif; color:var(--ink); }
+.hero p{ margin:0 0 20px; font-size:16px; color:var(--ink-2); max-width:70ch; }
+.hero__cta{ display:flex; gap:12px; flex-wrap:wrap; }
+.btn{ display:inline-flex; align-items:center; gap:7px; font:13px ui-monospace,monospace; text-decoration:none; cursor:pointer; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink); padding:9px 15px; }
+.btn.primary{ background:var(--moss-deep); color:var(--paper); border-color:var(--moss-deep); }
+.btn.ghost{ background:transparent; }
+.stats{ display:grid; grid-template-columns:repeat(6,1fr); gap:1px; background:var(--rule); border:1px solid var(--rule); margin:30px 0 8px; }
+@media(max-width:760px){ .stats{ grid-template-columns:repeat(3,1fr); } .hero h1{ font-size:32px; } }
+.stat{ background:var(--paper-4); padding:16px 14px; }
+.stat__n{ font:600 26px/1 Georgia,serif; color:var(--moss-deep); }
+.stat__l{ font:11px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-4); margin-top:8px; }
+.stats__sub{ font:12px/1.6 ui-monospace,monospace; color:var(--ink-4); margin:0 0 30px; }
+.stats__sub .flag{ color:var(--brick-d); }
+.chips__lead{ font:13px/1.5 ui-monospace,monospace; color:var(--ink-3); margin:0 0 10px; }
+.chips{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 8px; }
+.chip{ display:inline-flex; align-items:center; gap:8px; text-decoration:none; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink-2); padding:5px 11px; font:12px ui-monospace,monospace; }
+.chip:hover{ border-color:var(--moss); color:var(--moss-deep); }
+.chip__n{ color:var(--ink-4); }
+h2.section{ font:600 13px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-3); margin:46px 0 5px; }
+.section__sub{ color:var(--ink-4); margin:0 0 16px; font-size:13px; max-width:74ch; }
+.ladder{ border:1px solid var(--rule); background:var(--paper-3); }
+.ladder__head{ display:flex; align-items:center; gap:14px; padding:12px 16px; border-bottom:1px solid var(--rule); }
+.prog{ flex:1; height:6px; background:var(--rule-soft); position:relative; overflow:hidden; border-radius:3px; }
+.prog__fill{ position:absolute; inset:0 auto 0 0; width:0; background:var(--moss); transition:width .35s ease; }
+.prog__label{ font:11px ui-monospace,monospace; color:var(--ink-4); white-space:nowrap; }
+.ladder__reset{ font:11px ui-monospace,monospace; color:var(--ink-4); text-decoration:none; border:1px solid var(--rule); padding:4px 9px; }
+.ladder__reset:hover{ color:var(--brick-d); border-color:var(--brick); }
+.rung{ display:flex; align-items:flex-start; gap:14px; padding:14px 16px; border-bottom:1px solid var(--rule-soft); }
+.rung:last-child{ border-bottom:0; }
+.rung__check{ flex:none; width:30px; height:30px; border-radius:50%; border:1px solid var(--rule); background:var(--paper); color:var(--ink-3); cursor:pointer; display:grid; place-items:center; font:600 13px ui-monospace,monospace; padding:0; }
+.rung__tick{ display:none; font-size:15px; }
+.rung--done .rung__check{ background:var(--moss); border-color:var(--moss-deep); color:#fff; }
+[data-theme="dark"] .rung--done .rung__check{ color:var(--paper); }
+.rung--done .rung__num{ display:none; }
+.rung--done .rung__tick{ display:block; }
+.rung--done .rung__title{ color:var(--ink-4); }
+.rung--next{ background:var(--ochre-soft); }
+.rung--next .rung__check{ border-color:var(--ochre); color:var(--ochre-d); box-shadow:0 0 0 3px var(--ochre-soft); }
+.rung__body{ flex:1; }
+.rung__title{ font:600 14px/1.3 -apple-system,system-ui,sans-serif; color:var(--ink); }
+.rung__desc{ color:var(--ink-3); font-size:13px; margin-top:3px; max-width:74ch; }
+.rung__go{ flex:none; align-self:center; text-decoration:none; font:12px ui-monospace,monospace; border:1px solid var(--rule); background:var(--paper-4); color:var(--ink-2); padding:7px 12px; }
+.rung__go:hover{ border-color:var(--moss); color:var(--moss-deep); }
+.acts{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+@media(max-width:820px){ .acts{ grid-template-columns:1fr; } }
+.act{ border:1px solid var(--rule); background:var(--paper-3); border-top:3px solid var(--ink-4); }
+.act--moss{ border-top-color:var(--moss); }
+.act--ochre{ border-top-color:var(--ochre); }
+.act--indigo{ border-top-color:var(--indigo); }
+.act__h{ margin:0; padding:12px 14px 4px; font:italic 18px Georgia,serif; color:var(--ink); }
+.act__cards{ padding:6px 12px 13px; display:flex; flex-direction:column; gap:8px; }
+.card{ display:block; text-decoration:none; border:1px solid var(--rule); background:var(--paper-4); padding:11px 12px; }
+.card:hover{ border-color:var(--ink-3); }
+.card__t{ font:600 13px/1.3 -apple-system,system-ui,sans-serif; color:var(--ink); }
+.card__d{ color:var(--ink-3); font-size:12px; margin:4px 0 8px; }
+.card__cta{ font:11px ui-monospace,monospace; color:var(--moss-deep); }
+.reflect{ margin-top:46px; border:1px dashed var(--rule); background:var(--paper-3); padding:18px 20px; }
+.reflect__k{ font:600 11px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.08em; color:var(--ochre-d); }
+.reflect h3{ margin:9px 0 13px; font:italic 19px Georgia,serif; color:var(--ink); }
+.reflect ul{ margin:0; padding:0; list-style:none; display:grid; gap:11px; }
+.reflect li{ color:var(--ink-2); font-size:13px; max-width:80ch; padding-left:14px; border-left:2px solid var(--rule); }
+.reflect li b{ color:var(--moss-deep); }
+.muted{ color:var(--ink-4); font-style:italic; }
+.foot{ margin-top:32px; color:var(--ink-4); font:11px ui-monospace,monospace; }
+</style>
+</head>
+<body>
+${railHtml({ active: 'home', brand: 'machine spirits', sub: 'a drama-machine for tutoring — generate · score · recognize' })}
+<div class="wrap">
+
+  <div class="welcome" id="welcome" hidden>
+    <div class="welcome__k">new here · welcome</div>
+    <h2>First time at the workbench?</h2>
+    <p>This is a research instrument that stages tutoring dialogues as <em>drama</em> and reads them the way a literary critic would — for dramatic form, not for what is in anyone's head. You don't need to know the codebase. The five-step tour below walks the whole surface; take it at your own pace.</p>
+    <div class="welcome__btns">
+      <button class="btn primary" id="welcomeBegin" type="button">begin the tour ↓</button>
+      <button class="btn ghost" id="welcomeDismiss" type="button">I'll explore on my own</button>
+    </div>
+  </div>
+
+  <header class="hero">
+    <div class="hero__k">machine spirits · poetics workbench</div>
+    <h1>Tutoring, staged as drama.</h1>
+    <p>Generate tutoring dialogues that turn on a <em>peripeteia</em> — a reversal of understanding — score them as a literary critic would on dramatic form, and study where recognition does and doesn't cohere. Browse what's been made, compose something new, or replay a single changed move.</p>
+    <div class="hero__cta">
+      <a class="btn primary" href="/browse">Read a script →</a>
+      <a class="btn ghost" href="/compose">Compose one →</a>
+    </div>
+  </header>
+
+  <div class="stats">${statStrip}</div>
+  <p class="stats__sub">${statSub}</p>
+
+  <p class="chips__lead">The corpus spans ${disciplines.length} field${disciplines.length === 1 ? '' : 's'} — jump straight into one:</p>
+  <div class="chips">${disciplineChips}</div>
+
+  <h2 class="section">Start here · a five-step tour</h2>
+  <p class="section__sub">Each step assumes only the one before it. Tick what you already know; your progress is remembered on this device.</p>
+  <div class="ladder" id="ladder">
+    <div class="ladder__head">
+      <div class="prog"><div class="prog__fill" id="progFill"></div></div>
+      <span class="prog__label" id="progLabel">not started</span>
+      <a class="ladder__reset" id="resetTour" href="#">reset</a>
+    </div>
+    ${rungsHtml}
+  </div>
+
+  <h2 class="section">Everything, in three acts</h2>
+  <p class="section__sub">The workbench falls into the shape it studies: understand the material, create something new, recognize what changed.</p>
+  <div class="acts">${actsHtml}</div>
+
+  <div class="reflect">
+    <div class="reflect__k">applying our own lessons</div>
+    <h3>This workbench is built from the pedagogy it studies.</h3>
+    <ul>
+      <li><b>Recognition.</b> It greets a first-time visitor and names where they are before instructing — the mutual recognition the tutor is asked to extend the learner.</li>
+      <li><b>Scaffolding.</b> The tour is a zone-of-proximal-development ladder: one rung at a time, you set the pace, and you can mark what you already command.</li>
+      <li><b>Dramatic form.</b> The features group into three acts — understand, create, recognize — the arc of an <em>anagnorisis</em>, the same shape the critic looks for in a script.</li>
+    </ul>
+  </div>
+
+  <p class="foot">machine spirits · poetics — localhost workbench · read-only dashboard</p>
+</div>
+<script>
+(function(){
+  function $(id){ return document.getElementById(id); }
+  try { if (localStorage.getItem('poetics-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); } catch (_e) {}
+  var tb = $('themeToggle');
+  if (tb) tb.addEventListener('click', function(){
+    var d = document.documentElement; var nx = d.getAttribute('data-theme')==='dark' ? '' : 'dark';
+    if (nx) d.setAttribute('data-theme','dark'); else d.removeAttribute('data-theme');
+    try { localStorage.setItem('poetics-theme', nx); } catch (_e) {}
+  });
+
+  var welcomed = false;
+  try { welcomed = localStorage.getItem('poetics-welcomed')==='1'; } catch (_e) {}
+  var banner = $('welcome');
+  if (banner && !welcomed) banner.hidden = false;
+  function dismissWelcome(){ if (banner) banner.hidden = true; try { localStorage.setItem('poetics-welcomed','1'); } catch (_e) {} }
+  var wd = $('welcomeDismiss'); if (wd) wd.addEventListener('click', dismissWelcome);
+  var wb = $('welcomeBegin'); if (wb) wb.addEventListener('click', function(){ dismissWelcome(); var l = $('ladder'); if (l) l.scrollIntoView({ behavior:'smooth', block:'start' }); });
+
+  var TOTAL = 5;
+  function isDone(n){ try { return localStorage.getItem('poetics-rung-'+n)==='1'; } catch (_e) { return false; } }
+  function setDone(n, v){ try { localStorage.setItem('poetics-rung-'+n, v ? '1' : '0'); } catch (_e) {} }
+  function paint(){
+    var count = 0, next = 0;
+    for (var i = 1; i <= TOTAL; i++){
+      var row = $('rung-'+i); if (!row) continue;
+      var d = isDone(i); if (d) count++;
+      row.classList.toggle('rung--done', d);
+      row.classList.remove('rung--next');
+      if (!d && !next) next = i;
+    }
+    if (next){ var nr = $('rung-'+next); if (nr) nr.classList.add('rung--next'); }
+    var fill = $('progFill'); if (fill) fill.style.width = Math.round(count/TOTAL*100)+'%';
+    var lbl = $('progLabel');
+    if (lbl) lbl.textContent = count===0 ? 'not started' : count===TOTAL ? 'tour complete — you have seen the whole surface' : count+' of '+TOTAL+' done';
+  }
+  var checks = document.querySelectorAll('.rung__check');
+  for (var c = 0; c < checks.length; c++){
+    checks[c].addEventListener('click', function(){ var n = +this.getAttribute('data-rung'); setDone(n, !isDone(n)); paint(); });
+  }
+  var gos = document.querySelectorAll('.rung__go');
+  for (var g = 0; g < gos.length; g++){
+    gos[g].addEventListener('click', function(){ setDone(+this.getAttribute('data-rung'), true); });
+  }
+  var reset = $('resetTour');
+  if (reset) reset.addEventListener('click', function(e){ e.preventDefault(); for (var i = 1; i <= TOTAL; i++) setDone(i, false); paint(); });
+  paint();
+})();
+</script>
+</body>
+</html>`;
+}
+
 function renderComposeHtml() {
   const V = COMPOSER_VOCAB;
   return `<!doctype html>
@@ -1160,18 +1596,7 @@ label.mini .t-turn{ width:56px; }
 </style>
 </head>
 <body>
-<header class="rail">
-  <div class="rail__inner">
-    <span class="rail__brand">drama composer</span>
-    <span class="rail__sub">assemble a drama-machine spec · validated live against the poetics ontology</span>
-    <a class="rail__arc" href="/" title="Back to the poetics script browser"><span>browser</span><span aria-hidden="true">→</span></a>
-    <a class="rail__btn" href="/ontology" title="View the shared ontology — system, tutor &amp; learner lenses">ontology</a>
-    <a class="rail__btn" href="/replays" title="Discursive replays — counterfactual revisions diffed against the originals">replays</a>
-    <a class="rail__btn" href="/runs" title="Launch runs — generative · replay · adversarial-CLI · online scoring">runs</a>
-    <a class="rail__btn" href="/arc">arc</a>
-    <button class="rail__btn" id="themeToggle" type="button">theme</button>
-  </div>
-</header>
+${railHtml({ active: 'compose', brand: 'drama composer', sub: 'assemble a drama-machine spec · validated live against the poetics ontology' })}
 <div class="compose">
   <form class="cform" id="cform" onsubmit="return false">
     <section class="sec"><h3>Drama · mythos / melos</h3><div class="body">
@@ -1488,18 +1913,7 @@ section.sec{ border:1px solid var(--rule); background:var(--paper-4); margin-bot
 </style>
 </head>
 <body>
-<header class="rail">
-  <div class="rail__inner">
-    <span class="rail__brand">ontology atlas</span>
-    <span class="rail__sub">the shared TBox · system-wide, and the tutor &amp; learner role projections</span>
-    <a class="rail__btn" href="/" title="Back to the poetics script browser">browser</a>
-    <a class="rail__btn" href="/compose" title="Drama composer">compose</a>
-    <a class="rail__btn" href="/replays" title="Discursive replays — counterfactual revisions diffed against the originals">replays</a>
-    <a class="rail__btn" href="/runs" title="Launch runs — generative · replay · adversarial-CLI · online scoring">runs</a>
-    <a class="rail__arc" href="/arc"><span>arc</span><span aria-hidden="true">→</span></a>
-    <button class="rail__btn" id="themeToggle" type="button">theme</button>
-  </div>
-</header>
+${railHtml({ active: 'ontology', brand: 'ontology atlas', sub: 'the shared TBox · system-wide, and the tutor &amp; learner role projections' })}
 <div class="controls">
   <div class="lenses" id="lenses">
     <button class="lens active" data-view="system">system-wide</button>
@@ -1768,18 +2182,7 @@ section.sec{ border:1px solid var(--rule); background:var(--paper-4); margin-bot
 </style>
 </head>
 <body>
-<header class="rail">
-  <div class="rail__inner">
-    <span class="rail__brand">discursive replays</span>
-    <span class="rail__sub">counterfactual revisions of public transcripts · diffed against the originals &amp; locally gated</span>
-    <a class="rail__btn" href="/" title="Back to the poetics script browser">browser</a>
-    <a class="rail__btn" href="/compose" title="Drama composer">compose</a>
-    <a class="rail__btn" href="/ontology" title="Ontology atlas">ontology</a>
-    <a class="rail__btn" href="/runs" title="Launch runs — generative · replay · adversarial-CLI · online scoring">runs</a>
-    <a class="rail__arc" href="/arc"><span>arc</span><span aria-hidden="true">→</span></a>
-    <button class="rail__btn" id="themeToggle" type="button">theme</button>
-  </div>
-</header>
+${railHtml({ active: 'replays', brand: 'discursive replays', sub: 'counterfactual revisions of public transcripts · diffed against the originals &amp; locally gated' })}
 <div class="controls">
   <label>bundle <select id="bundleSel"></select></label>
   <span class="meta" id="bundleMeta"></span>
@@ -2095,17 +2498,7 @@ code,pre{ font-family: ui-monospace,'SF Mono',Menlo,monospace; }
 </style>
 </head>
 <body>
-<header class="rail">
-  <div class="rail__inner">
-    <span class="rail__brand">run launcher</span>
-    <span class="rail__sub">spawn generative · replay · adversarial-CLI · online-score runs — localhost only, no auth (deferred)</span>
-    <a class="rail__btn" href="/" title="Back to the poetics script browser">browser</a>
-    <a class="rail__btn" href="/replays" title="Discursive replays">replays</a>
-    <a class="rail__btn" href="/ontology" title="Ontology atlas">ontology</a>
-    <a class="rail__arc" href="/arc"><span>arc</span><span aria-hidden="true">→</span></a>
-    <button class="rail__btn" id="themeToggle" type="button">theme</button>
-  </div>
-</header>
+${railHtml({ active: 'runs', brand: 'run launcher', sub: 'spawn generative · replay · adversarial-CLI · online-score runs — localhost only, no auth (deferred)' })}
 <div class="controls">
   <div class="tabs" id="tabs"></div>
   <div class="spacer"></div>
@@ -3281,25 +3674,13 @@ tbody th {
 </style>
 </head>
 <body>
-<header class="rail">
-  <div class="rail__inner">
-    <span class="rail__brand">poetics</span>
-    <span class="rail__sub" id="railSub">sidecar browser · public scripts, full traces, critic scores, labels as perspective</span>
-    <a class="rail__btn" href="/compose" title="Assemble a drama spec — the drama composer">compose</a>
-    <a class="rail__btn" href="/ontology" title="View the shared ontology — system, tutor &amp; learner lenses">ontology</a>
-    <a class="rail__btn" href="/replays" title="Discursive replays — counterfactual revisions diffed against the originals">replays</a>
-    <a class="rail__btn" href="/runs" title="Launch runs — generative · replay · adversarial-CLI · online scoring">runs</a>
-    <a class="rail__arc" href="/arc" title="Open the dramatic-recognition arc synthesis note">
-      <span>recognition arc</span>
-      <span class="rail__arc__arrow" aria-hidden="true">→</span>
-    </a>
-    <span class="rail__beacon" id="railBeacon" data-state="checking" title="Sidecar database connection">
-      <span class="rail__dot"></span>
-      <span id="railBeaconText">checking</span>
-    </span>
-    <button class="rail__btn" id="themeToggle" type="button" aria-label="Toggle dark mode">theme</button>
-  </div>
-</header>
+${railHtml({
+  active: 'browse',
+  brand: 'poetics',
+  sub: 'sidecar browser · public scripts, full traces, critic scores, labels as perspective',
+  extra:
+    '<span class="rail__beacon" id="railBeacon" data-state="checking" title="Sidecar database connection"><span class="rail__dot"></span><span id="railBeaconText">checking</span></span>',
+})}
 <div id="app" class="app">
   <aside class="sidebar">
     <div class="mast">
@@ -3432,7 +3813,7 @@ function previewHref(item) {
   params.set('runId', item.runId);
   params.set('itemId', item.id);
   params.set('tab', 'preview');
-  return '/?' + params.toString();
+  return '/browse?' + params.toString();
 }
 
 function sceneCardHtml(block) {
@@ -3564,10 +3945,16 @@ function renderConsensusPanel(consensus) {
 
 function renderRuns() {
   const select = el('runSelect');
-  select.innerHTML = state.runs.map((run, idx) =>
-    '<option value="' + esc(run.id) + '"' + (idx === 0 ? ' selected' : '') + '>' +
-    esc(run.id + ' · ' + formatTimestamp(run.createdAt) + ' · ' + run.itemCount + ' items · ' + run.scoreCount + ' scores' + (run.reviewFlagCount ? ' · ' + run.reviewFlagCount + ' flags' : '')) + '</option>'
-  ).join('');
+  const totalItems = state.runs.reduce((sum, run) => sum + (Number(run.itemCount) || 0), 0);
+  // "all runs" default so cross-cutting filters (discipline, search) span the whole
+  // corpus. Without it, runSelect pins to the most-recent run — which may be narrow
+  // (e.g. replay-only), making a discipline pick silently AND to zero results.
+  select.innerHTML =
+    '<option value="">all runs · ' + totalItems + ' scripts</option>' +
+    state.runs.map((run) =>
+      '<option value="' + esc(run.id) + '">' +
+      esc(run.id + ' · ' + formatTimestamp(run.createdAt) + ' · ' + run.itemCount + ' items · ' + run.scoreCount + ' scores' + (run.reviewFlagCount ? ' · ' + run.reviewFlagCount + ' flags' : '')) + '</option>'
+    ).join('');
   if (state.runIds.length) {
     const label = state.runIds.join(', ');
     select.innerHTML = '<option value="">' + esc(label + ' · focused queue') + '</option>' + select.innerHTML;
@@ -3969,6 +4356,7 @@ if (path.resolve(process.argv[1] || '') === __filename) {
 }
 
 export {
+  corpusStats,
   createPoeticsBrowserApp,
   endingShapeDiagnosticsForScores,
   originDiagnosticsForScores,
@@ -3978,6 +4366,7 @@ export {
   listRuns,
   parseTranscriptPreview,
   renderBrowserHtml,
+  renderDashboardHtml,
   saveBrowserLabel,
   saveBrowserReviewFlag,
 };

@@ -5,6 +5,7 @@ import path from 'node:path';
 import { describe, it } from 'node:test';
 import { loadAuditRows } from '../scripts/audit-poetics-disagreements.js';
 import {
+  corpusStats,
   getBlindItem,
   getItem,
   endingShapeDiagnosticsForScores,
@@ -13,6 +14,7 @@ import {
   listRuns,
   parseTranscriptPreview,
   renderBrowserHtml,
+  renderDashboardHtml,
   saveBrowserLabel,
   saveBrowserReviewFlag,
 } from '../scripts/browse-poetics-scripts.js';
@@ -637,5 +639,64 @@ LEARNER: "The arrow names who acts on the cart. [moves the motion strip aside] T
       assert.equal(rows.length, 1);
       assert.equal(rows[0].item.drama_id, 'D25');
       assert.equal(rows[0].scores.find((score) => score.critic === 'deepseek/deepseek-v4-pro').form, 'recognition');
+    }));
+});
+
+describe('dashboard front door', () => {
+  it('corpusStats summarises the whole corpus, disciplines ranked', () =>
+    withDb((db) => {
+      const stats = corpusStats(db);
+      assert.equal(stats.scripts, 5);
+      assert.equal(stats.runs, 3);
+      // every seeded discipline appears once; equal counts fall back to name order
+      assert.deepEqual(
+        stats.disciplines.map((d) => d.name),
+        ['biology', 'chemistry', 'history', 'medicine', 'statistics'],
+      );
+      assert.ok(stats.disciplines.every((d) => d.n === 1));
+      assert.ok(stats.scored <= stats.scripts);
+      assert.ok(stats.scores >= stats.scored);
+      assert.ok(stats.critics >= 1);
+      assert.equal(stats.openFlags, 1);
+    }));
+
+  it('renders onboarding scaffolding, live stats and discipline deep-links', () =>
+    withDb((db) => {
+      const html = renderDashboardHtml({ ...corpusStats(db), replays: 0 });
+      // hero + reflexive pedagogy note
+      assert.match(html, /Tutoring, staged as drama\./);
+      assert.match(html, /applying our own lessons/);
+      // five-rung scaffolding ladder
+      assert.match(html, /class="ladder"/);
+      for (let n = 1; n <= 5; n += 1) assert.match(html, new RegExp(`id="rung-${n}"`));
+      // the three acts
+      for (const act of ['Understand', 'Create', 'Recognize']) {
+        assert.match(html, new RegExp(`>${act}<`));
+      }
+      // discipline chips deep-link into the (now corpus-wide) filter
+      assert.match(html, /\/browse\?discipline=chemistry/);
+      // shared rail with the home tab marked active
+      assert.match(html, /aria-current="page"/);
+      // first-visit recognition banner ships hidden until the client clears it
+      assert.match(html, /id="welcome"[^>]*hidden/);
+    }));
+
+  it('tolerates an empty corpus (called with no stats)', () => {
+    const html = renderDashboardHtml();
+    assert.match(html, /no disciplines tagged yet/);
+    assert.match(html, /Tutoring, staged as drama\./);
+  });
+
+  it('filters by discipline independently of run — the fix for the empty-result bug', () =>
+    withDb((db) => {
+      // discipline alone (no run pin) returns the matching script wherever it lives
+      const chem = listItems(db, { discipline: 'chemistry' });
+      assert.equal(chem.length, 1);
+      assert.equal(chem[0].discipline, 'chemistry');
+      assert.equal(chem[0].runId, 'poetics-test-run');
+      // the regression: a discipline AND-ed with a run that does not contain it -> empty.
+      // The dashboard/browser now default to "all runs", so this AND never silently fires.
+      assert.equal(listItems(db, { discipline: 'chemistry', runId: 'poetics-second-run' }).length, 0);
+      assert.equal(listItems(db, { discipline: 'chemistry', runId: 'poetics-test-run' }).length, 1);
     }));
 });
