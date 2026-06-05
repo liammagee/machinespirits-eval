@@ -68,6 +68,18 @@ test('detectRepair llm mode without an injected callLLM throws a clear error', a
   await assert.rejects(() => detectRepair('h', 't', { mode: 'llm' }), /requires an injected opts\.callLLM/);
 });
 
+test('detectRepair llm mode refuses an empty/undefined hamartia (no paid judge on empty misconception)', async () => {
+  let called = 0;
+  const callLLM = async () => {
+    called += 1;
+    return 'YES';
+  };
+  for (const h of ['', '   ', undefined, null]) {
+    await assert.rejects(() => detectRepair(h, 't', { mode: 'llm', callLLM }), /empty\/undefined hamartia/);
+  }
+  assert.equal(called, 0, 'the judge must never be called when the misconception is empty');
+});
+
 test('buildRepairPrompt embeds the hamartia and demands a YES/NO verdict', () => {
   const p = buildRepairPrompt('treats X as Y', 'learner said Z');
   assert.match(p, /treats X as Y/);

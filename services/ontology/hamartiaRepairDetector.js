@@ -85,6 +85,15 @@ export async function detectRepair(hamartia, text, opts = {}) {
         'repair detector mode "llm" requires an injected opts.callLLM (set an API key + wire the provider)',
       );
     }
+    // Fail closed at the judge boundary: never spend a paid judge call on an empty/undefined
+    // misconception — buildRepairPrompt would ask the judge to assess repair of "" (the bug
+    // that invalidated the 4438d4b run). Guarding HERE means no caller can trigger it, not
+    // just this probe; the misconception must be present before any LLM repair verdict.
+    if (!hamartia || !String(hamartia).trim()) {
+      throw new Error(
+        'repair detector mode "llm": refusing to judge an empty/undefined hamartia (misconception); provide a non-empty misconception or skip the cell',
+      );
+    }
     const reply = await opts.callLLM(buildRepairPrompt(hamartia, text));
     return /^\s*yes\b/i.test(String(reply || ''));
   }
