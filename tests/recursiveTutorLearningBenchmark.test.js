@@ -47,6 +47,7 @@ test('attempt-chain plan includes training and held-out replay commands', () => 
     assert.match(family.attempt1_replay_command_text, /--out-dir/);
     assert.ok(family.heldout.length >= 1);
     assert.match(family.heldout[0].baseline_replay_command_text, /heldout-baseline-replay/);
+    assert.match(family.heldout[0].baseline_replay_command_text, /--generator none/);
     assert.match(family.heldout[0].revised_replay_command_text, /--policy-memory/);
   }
 });

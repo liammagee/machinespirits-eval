@@ -36,11 +36,11 @@ families:
         toward the brass tile. The learner has been asked to say which tile the
         link belongs to.
       learner_resistance: >-
-        The learner keeps naming the brass tile because the point of the mark
-        faces it. They say the pointed end feels like the active part.
+        I keep wanting to call it brass because the point faces brass. The
+        pointed end feels like the active part.
       baseline_tutor_attempt: >-
-        The tutor asks the learner to look carefully at both ends of the mark
-        and compare the red and brass tiles before answering.
+        Look carefully at both ends of the mark. Compare the red tile and the
+        brass tile before you answer.
       expected_failure: underconstrained
     heldout_siblings:
       - sibling_id: glyph_holdout_blue_gate
@@ -49,11 +49,10 @@ families:
           link mark touches the blue tile at its ring end and points toward the
           white tile. The learner has to name which tile the link belongs to.
         learner_resistance: >-
-          The learner names the white tile because the point looks like the
-          destination and destination seems like ownership.
+          I want to name white because the point lands there. It feels like the
+          destination should be the owner.
         baseline_tutor_attempt: >-
-          The tutor asks the learner to slow down and compare where the mark
-          starts and where it points.
+          Slow down and compare where the mark starts with where it points.
         expected_baseline_failure: underconstrained
 
   - family_id: window_scope_claim
@@ -81,11 +80,11 @@ families:
         five. The learner has to say which delta can be used as the reason for
         the mark at the end of the strip.
       learner_resistance: >-
-        The learner points to both delta labels and says the same word should
-        count the same way wherever it appears.
+        Both say delta. I do not see why the same word would count differently
+        just because it is printed in two places.
       baseline_tutor_attempt: >-
-        The tutor asks the learner to read the strip from left to right and
-        compare the two appearances of the word before choosing.
+        Read the strip from left to right and compare the two appearances of the
+        word before choosing.
       expected_failure: wrong_strategy_family
     heldout_siblings:
       - sibling_id: window_holdout_mira_label
@@ -95,11 +94,11 @@ families:
           six. The learner has to choose which mira can justify the final check
           mark.
         learner_resistance: >-
-          The learner chooses both appearances because identical labels feel
-          like identical evidence.
+          I would choose both. If the label is identical, it feels like the same
+          evidence.
         baseline_tutor_attempt: >-
-          The tutor asks the learner to compare the two mira labels and look for
-          any nearby marks that make one more relevant.
+          Compare the two mira labels and look for any nearby marks that make
+          one more relevant.
         expected_baseline_failure: underconstrained
 
   - family_id: peg_lane_modifier
@@ -126,10 +125,10 @@ families:
         against the top card, but its peg is planted in the middle lane. The
         learner has to say which lane the token changes.
       learner_resistance: >-
-        The learner names the top card because the token is visibly touching it.
+        I am naming the top one because the token is visibly touching that card.
       baseline_tutor_attempt: >-
-        The tutor asks the learner to inspect both the leaning token and the peg
-        before deciding what the token changes.
+        Inspect both the leaning token and the peg before deciding what the
+        token changes.
       expected_failure: missed_obstruction
     heldout_siblings:
       - sibling_id: peg_holdout_black_soft
@@ -138,10 +137,8 @@ families:
           card while its peg sits in the second lane. The learner has to say
           which lane the token changes.
         learner_resistance: >-
-          The learner names the bottom card because the token is touching it and
-          touch feels like attachment.
+          I name the bottom card because the token is touching it. Touch feels
+          like attachment.
         baseline_tutor_attempt: >-
-          The tutor asks the learner to inspect the whole token carefully before
-          answering.
+          Inspect the whole token carefully before answering.
         expected_baseline_failure: missed_obstruction
-

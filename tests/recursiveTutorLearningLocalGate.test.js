@@ -110,3 +110,51 @@ test('local gate reports no_headroom when baseline and revised both pass', () =>
   const row = report.families.find((entry) => entry.family_id === family.family_id);
   assert.equal(row.status, 'no_headroom');
 });
+
+test('local gate ignores non-blocking info naturalness findings for coherence confound', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'a18-gate-info-naturalness-'));
+  const outDir = path.join(tmp, 'chain');
+  const plan = materializeAttemptChain(loadFixture(), { outDir, force: false });
+  const family = plan.families[0];
+  completePolicy(family.policy_revision_template);
+  writeJson(path.join(family.attempt1_replay_dir, 'manifest.json'), replayManifest('survivor', passingScores));
+  writeJson(path.join(family.heldout[0].baseline_replay_dir, 'manifest.json'), replayManifest('reject', failingScores));
+  const revised = replayManifest('survivor', passingScores);
+  revised.records[0].check.findings = [
+    {
+      severity: 'info',
+      criterion: 'learner_self_reframe_naturalness',
+      evidence: 'naturalness preserved',
+      recommendation: 'none',
+      blocking: false,
+    },
+  ];
+  writeJson(path.join(family.heldout[0].revised_replay_dir, 'manifest.json'), revised);
+  const report = buildLocalGateReport({ chainDir: outDir });
+  const row = report.families.find((entry) => entry.family_id === family.family_id);
+  assert.equal(row.status, 'clean_survivor');
+});
+
+test('local gate treats warning-level coherence findings as coherence confounds', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'a18-gate-coherence-warning-'));
+  const outDir = path.join(tmp, 'chain');
+  const plan = materializeAttemptChain(loadFixture(), { outDir, force: false });
+  const family = plan.families[0];
+  completePolicy(family.policy_revision_template);
+  writeJson(path.join(family.attempt1_replay_dir, 'manifest.json'), replayManifest('survivor', passingScores));
+  writeJson(path.join(family.heldout[0].baseline_replay_dir, 'manifest.json'), replayManifest('reject', failingScores));
+  const revised = replayManifest('survivor', passingScores);
+  revised.records[0].check.findings = [
+    {
+      severity: 'warning',
+      criterion: 'coherence',
+      evidence: 'revision repairs scores by making the scene less coherent',
+      recommendation: 'revise before panel',
+      blocking: false,
+    },
+  ];
+  writeJson(path.join(family.heldout[0].revised_replay_dir, 'manifest.json'), revised);
+  const report = buildLocalGateReport({ chainDir: outDir });
+  const row = report.families.find((entry) => entry.family_id === family.family_id);
+  assert.equal(row.status, 'coherence_confound');
+});

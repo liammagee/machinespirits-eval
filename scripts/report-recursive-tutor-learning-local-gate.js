@@ -133,9 +133,22 @@ function bridgeScoresLow(record) {
   });
 }
 
-function replayHasWarning(replay, pattern) {
-  const haystack = JSON.stringify(replay.records || []);
-  return pattern.test(haystack);
+function replayProblems(replay) {
+  const records = replay.records || [];
+  const problems = [];
+  for (const record of records) {
+    problems.push(...(record?.gate?.failures || []));
+    problems.push(...(record?.gate?.warnings || []));
+    for (const finding of record?.check?.findings || []) {
+      const severity = String(finding?.severity || '').toLowerCase();
+      if (finding?.blocking === true || severity === 'warning' || severity === 'fail') problems.push(finding);
+    }
+  }
+  return problems;
+}
+
+function replayHasProblem(replay, pattern) {
+  return replayProblems(replay).some((problem) => pattern.test(JSON.stringify(problem)));
 }
 
 function loadPolicy(policyPath) {
@@ -195,10 +208,10 @@ function classifyFamily({ family, staticValidation }) {
 
     if (!baseline.present) siblingReasons.push({ code: 'missing_heldout_baseline_replay', path: repoRel(baseline.manifest_path) });
     if (!revised.present) siblingReasons.push({ code: 'missing_heldout_revised_replay', path: repoRel(revised.manifest_path) });
-    if (revised.present && replayHasWarning(revised, /\bcoherence\b|\bnaturalness\b/i)) {
+    if (revised.present && replayHasProblem(revised, /\bcoherence\b|\bnaturalness\b/i)) {
       siblingReasons.push({ code: 'coherence_confound_warning', path: repoRel(revised.manifest_path) });
     }
-    if (revised.present && (bridgeScoresLow(revised.first_record) || replayHasWarning(revised, /\borganic\b|\bdrift\b/i))) {
+    if (revised.present && (bridgeScoresLow(revised.first_record) || replayHasProblem(revised, /\borganic\b|\bdrift\b/i))) {
       siblingReasons.push({ code: 'organic_drift_or_weak_bridge', path: repoRel(revised.manifest_path) });
     }
     if (baselinePasses && revisedPasses) {
@@ -312,4 +325,3 @@ function main() {
 }
 
 if (process.argv[1] === __filename) main();
-

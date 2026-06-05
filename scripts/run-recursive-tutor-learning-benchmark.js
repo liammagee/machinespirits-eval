@@ -192,16 +192,19 @@ ${JSON.stringify(
 `;
 }
 
-function replayCommandFor(transcriptPath, { outDir = null, policyMemoryPath = null } = {}) {
+function replayCommandFor(
+  transcriptPath,
+  { outDir = null, policyMemoryPath = null, generator = 'mock', checker = 'mock' } = {},
+) {
   const cmd = [
     'node',
     'scripts/replay-discursive-transcript.js',
     '--transcript',
     repoRel(transcriptPath),
     '--generator',
-    'mock',
+    generator,
     '--checker',
-    'mock',
+    checker,
     '--recursive-tutor-learning-gate',
   ];
   if (outDir) cmd.push('--out-dir', repoRel(outDir));
@@ -244,8 +247,10 @@ export function buildAttemptChainPlan(config, { outDir = DEFAULT_OUT_DIR } = {})
         transcript,
         baseline_replay_dir: heldoutBaselineReplayDir,
         revised_replay_dir: heldoutRevisedReplayDir,
-        baseline_replay_command: replayCommandFor(transcript, { outDir: heldoutBaselineReplayDir }),
-        baseline_replay_command_text: commandString(replayCommandFor(transcript, { outDir: heldoutBaselineReplayDir })),
+        baseline_replay_command: replayCommandFor(transcript, { outDir: heldoutBaselineReplayDir, generator: 'none' }),
+        baseline_replay_command_text: commandString(
+          replayCommandFor(transcript, { outDir: heldoutBaselineReplayDir, generator: 'none' }),
+        ),
         revised_replay_command: replayCommandFor(transcript, { outDir: heldoutRevisedReplayDir, policyMemoryPath: policyRevision }),
         revised_replay_command_text: commandString(
           replayCommandFor(transcript, { outDir: heldoutRevisedReplayDir, policyMemoryPath: policyRevision }),

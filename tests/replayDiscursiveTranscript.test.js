@@ -109,6 +109,20 @@ test('parseArgs accepts recursive tutor-learning gate thresholds', () => {
   assert.equal(args.recursiveTutorThresholds.recursive_dyadic_update, 0.75);
 });
 
+test('parseArgs accepts checker-only generator mode for baseline scoring', () => {
+  const args = parseArgs([
+    '--transcript',
+    '/tmp/T01.txt',
+    '--generator',
+    'none',
+    '--checker',
+    'mock',
+  ]);
+
+  assert.equal(args.generator, 'none');
+  assert.equal(args.checker, 'mock');
+});
+
 test('evaluateLocalGate accepts a clean local checker result', () => {
   const gate = evaluateLocalGate(
     {
@@ -644,4 +658,61 @@ The tutor privately notices a repair opportunity.`,
     fs.readFileSync(path.join(outDir, 'T01.full', 'rewrite.prompt.txt'), 'utf8'),
     /Policy memory: keep ledger entries temporally scoped/,
   );
+});
+
+test('checker-only replay preserves public transcript and runs local checker', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'disc-replay-baseline-'));
+  const transcript = path.join(tmp, 'T01.full.md');
+  const outDir = path.join(tmp, 'out');
+  fs.writeFileSync(
+    transcript,
+    `# Full held-out role transcript
+
+## Public Performance
+
+\`\`\`text
+LEARNER: "The active-looking part decides it."
+TUTOR: "Compare the two visible parts."
+\`\`\`
+
+## Held-Out Metadata
+
+Private target relation stays hidden.`,
+  );
+
+  const result = await runReplay({
+    transcript,
+    outDir,
+    generator: 'none',
+    checker: 'mock',
+    limit: 1,
+    timeoutMs: 1000,
+    publicMaxChars: 5000,
+    innerMaxChars: 5000,
+    force: false,
+    dryRun: false,
+    codexEffort: 'xhigh',
+    codexModel: null,
+    claudeModel: null,
+    claudeEffort: null,
+    agyBin: 'agy',
+    agyModelLabel: 'mock',
+    itemIds: [],
+    runId: null,
+    db: path.join(tmp, 'missing.db'),
+    feedbackByItem: {},
+    policyMemoryFiles: [],
+  });
+
+  const record = result.manifest.records[0];
+  assert.equal(record.generator.backend, 'none');
+  assert.equal(record.generator.skipped, true);
+  assert.equal(record.gate.status, 'survivor');
+  assert.equal(
+    fs.readFileSync(record.paths.revisedPublic, 'utf8'),
+    'LEARNER: "The active-looking part decides it."\nTUTOR: "Compare the two visible parts."',
+  );
+  const revision = JSON.parse(fs.readFileSync(record.paths.revisionJson, 'utf8'));
+  assert.deepEqual(revision.move_ledger, []);
+  assert.equal(revision.non_leakage_check.passes, true);
 });

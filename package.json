@@ -101,6 +101,7 @@
     "poetics:replay-loop": "node scripts/run-discursive-replay-loop.js",
     "poetics:harvest-replay-lessons": "node scripts/harvest-discursive-replay-lessons.js",
     "poetics:recursive-tutor-learning": "node scripts/run-recursive-tutor-learning-benchmark.js",
+    "poetics:recursive-tutor-policy": "node scripts/fill-recursive-tutor-policy.js",
     "poetics:recursive-tutor-gate": "node scripts/report-recursive-tutor-learning-local-gate.js",
     "poetics:arc-images": "node scripts/generate-poetics-arc-images.js",
     "poetics:package-arc": "node notes/poetics/package-standalone.js notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html",

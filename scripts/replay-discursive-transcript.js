@@ -85,7 +85,7 @@ function usage() {
   node scripts/replay-discursive-transcript.js [--mock]
     (--item-id <id>[,<id>...] | --run-id <runId> [--limit N] | --transcript <path>)
     [--key <path>] [--out-dir <dir>]
-    [--generator mock|codex|claude|agy|gemini]
+    [--generator none|mock|codex|claude|agy|gemini]
     [--checker none|mock|codex|claude|agy|gemini|adversarial]
     [--adversarial-check]
     [--no-local-gate]
@@ -104,6 +104,7 @@ function usage() {
     [--force] [--dry-run]
 
 Defaults are cost-safe: --generator mock --checker none.
+Use --generator none for checker-only baseline scoring without rewriting.
 Use --checker adversarial to default to claude for codex rewrites, and codex for claude rewrites.`;
 }
 
@@ -234,8 +235,8 @@ function finalizeArgs(rawArgs) {
   if (args.help) return args;
   args.generator = normalizeBackend(args.generator);
   args.checker = normalizeBackend(args.checker);
-  if (args.generator === 'none' || args.generator === 'adversarial') {
-    throw new Error('--generator must be mock|codex|claude|agy|gemini');
+  if (args.generator === 'adversarial') {
+    throw new Error('--generator must be none|mock|codex|claude|agy|gemini');
   }
   if (args.checker === 'adversarial') {
     args.checker = adversarialCheckerFor(args.generator);
@@ -1054,6 +1055,20 @@ function mockRevision({ publicTranscript }) {
   };
 }
 
+function checkerOnlyRevision({ publicTranscript }) {
+  return {
+    revised_public_transcript: publicTranscript.trim(),
+    move_ledger: [],
+    tutor_learning_ledger: [],
+    hidden_state_use_ledger: [],
+    non_leakage_check: {
+      passes: true,
+      notes: ['checker-only baseline: public transcript preserved without counterfactual rewrite'],
+    },
+    claim_boundary: 'counterfactual_revision_not_online_adaptation',
+  };
+}
+
 function mockCheck() {
   return {
     passes: true,
@@ -1388,9 +1403,29 @@ async function replayOne(item, args, outDir) {
     };
   }
 
-  const generatorCall = await callBackend(args.generator, rewritePrompt, { ...args, publicTranscript }, 'generator');
-  fs.writeFileSync(path.join(itemDir, 'rewrite.raw.txt'), generatorCall.content);
-  const revision = validateRevisionPayload(parseJsonResponse(generatorCall.content));
+  let generatorCall = null;
+  let revision = null;
+  if (args.generator === 'none') {
+    revision = checkerOnlyRevision({ publicTranscript });
+    generatorCall = {
+      provenance: {
+        backend: 'none',
+        role: 'generator',
+        latencyMs: 0,
+        model: 'checker-only-baseline',
+        promptHashes: {
+          system: sha256Short(rewritePrompt.systemPrompt),
+          user: sha256Short(rewritePrompt.userPrompt),
+        },
+        skipped: true,
+      },
+    };
+    fs.writeFileSync(path.join(itemDir, 'rewrite.raw.txt'), JSON.stringify(revision, null, 2));
+  } else {
+    generatorCall = await callBackend(args.generator, rewritePrompt, { ...args, publicTranscript }, 'generator');
+    fs.writeFileSync(path.join(itemDir, 'rewrite.raw.txt'), generatorCall.content);
+    revision = validateRevisionPayload(parseJsonResponse(generatorCall.content));
+  }
   fs.writeFileSync(path.join(itemDir, 'revision.json'), JSON.stringify(revision, null, 2));
   fs.writeFileSync(path.join(itemDir, 'revised-public.txt'), revision.revised_public_transcript || '');
 
