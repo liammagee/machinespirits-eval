@@ -122,16 +122,16 @@ ms:ActionGate a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegi
 ms:UptakeMove a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Peripeteia .
 ms:Meter a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Anagnorisis .
 ms:RecognitionPress a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Dramaturgical ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Anagnorisis .
-ms:Withhold a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Rhetorical .
-ms:Reveal a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Dramaturgical .
+ms:Withhold a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Anagnorisis .
+ms:Reveal a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Dramaturgical ; ms:aimsAtForm ms:Catharsis .
 ms:Hold a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:contraindicatesForm ms:Peripeteia .
 ms:RegisterShift a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Dramaturgical ; ms:aimsAtForm ms:Catharsis .
 ms:StatusShift a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Dramaturgical ; ms:aimsAtForm ms:Peripeteia .
 ms:Foreshadow a ms:AdaptationMove ; ms:performedByRole ms:TutorRole ; ms:hasRegister ms:Dramaturgical ; ms:aimsAtForm ms:SurpriseInevitability .
 
 # Learner moves
-ms:Revoice a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Rhetorical .
-ms:Reconsider a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Rhetorical .
+ms:Revoice a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Anagnorisis .
+ms:Reconsider a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Peripeteia .
 ms:Reframe a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Dramaturgical ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Peripeteia ; ms:requiresAgency ms:Superego .
 ms:PerformDevice a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Dramaturgical ; ms:aimsAtForm ms:Anagnorisis ; ms:requiresAgency ms:Superego .
 ms:VoiceMisfit a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Dramaturgical ; ms:aimsAtForm ms:HamartiaIntegration .

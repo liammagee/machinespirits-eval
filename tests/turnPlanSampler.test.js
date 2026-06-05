@@ -49,7 +49,7 @@ test('a learner+anagnorisis plan round-trips and uses only learner anagnorisis m
   const entry = await sampleTurnPlan(['anagnorisis'], 'learner', { seed: 'L' });
   const v = await validateTurnPlan([entry], ['anagnorisis']);
   assert.equal(v.ok, true);
-  assert.ok(entry.moves.every((m) => ['perform_device', 'genuine_anagnorisis'].includes(m)));
+  assert.ok(entry.moves.every((m) => ['perform_device', 'genuine_anagnorisis', 'revoice'].includes(m)));
 });
 
 test('director moves are now form-typed: cue/pressure -> Peripeteia, interruption -> SurpriseInevitability, and a director plan round-trips', async () => {
