@@ -7,7 +7,7 @@ import { n3reasoner } from 'eyereasoner';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '..', '..');
 const ONTOLOGY_DIR = path.join(ROOT_DIR, 'config', 'ontology');
-const NS = 'https://machinespirits.dev/ontology/reasoning#';
+export const NS = 'https://machinespirits.dev/ontology/reasoning#';
 
 // The shared TBox is modular but ONE vocabulary in ONE namespace, co-loaded into a
 // single EYE pipeline. The runtime previously loaded only `reasoning`, so the drama
@@ -16,6 +16,11 @@ const NS = 'https://machinespirits.dev/ontology/reasoning#';
 const TBOX_MODULES = Object.freeze({
   reasoning: { tbox: 'reasoning-core.ttl', rules: 'reasoning-rules.n3' },
   poetics: { tbox: 'poetics-core.ttl', rules: 'poetics-rules.n3' },
+  // Language-game / scorekeeping bridge: strategy -> tactic -> public move ->
+  // learner uptake/contest -> accountable dyadic revision. Kept small and
+  // monotonic so it remains a construct-boundary layer rather than a hidden
+  // quality rubric.
+  discursive: { tbox: 'discursive-game-core.ttl', rules: 'discursive-game-rules.n3' },
   // Adaptation / recognition / correction decomposition (v0.1, draft). Lifts the
   // run-poetics-adaptation-loop gate-struct into declarative facts: the 8-stage
   // pipeline, recognition-origin (organic vs peripeteia_induced), correction-origin
@@ -29,7 +34,11 @@ const TBOX_MODULES = Object.freeze({
   // only; the generic disjointness rule lives in the consistency module.
   casting: { tbox: 'casting-axioms.ttl' },
 });
-const DEFAULT_MODULES = Object.freeze(['reasoning', 'poetics', 'consistency']);
+export const DEFAULT_MODULES = Object.freeze(['reasoning', 'poetics', 'discursive', 'consistency']);
+
+// The full set of registered TBox module names, in declaration order — for tooling
+// (e.g. the ontology viewer) that lets a caller toggle modules on/off.
+export const ALL_MODULES = Object.freeze(Object.keys(TBOX_MODULES));
 
 const TAG_ALIASES = Object.freeze({
   affirming_consequent: 'AffirmingConsequent',
@@ -83,6 +92,25 @@ export function loadSharedTBox(modules = DEFAULT_MODULES) {
     if (mod.rules) rules.push(readModuleFile(mod.rules));
   }
   return [...tbox, ...rules].join('\n\n');
+}
+
+// Per-module source texts (TBox + rules kept SEPARATE), for tooling that wants to
+// parse the structural TBox without the N3 rule bodies, or show the raw source.
+// Returns [{ name, tbox: { file, text }, rules: { file, text } | null }]. Same
+// validation + default as loadSharedTBox; the order follows the requested modules.
+export function loadModuleSources(modules = DEFAULT_MODULES) {
+  const names = Array.isArray(modules) && modules.length ? modules : DEFAULT_MODULES;
+  return names.map((name) => {
+    const mod = TBOX_MODULES[name];
+    if (!mod) {
+      throw new Error(`Unknown ontology module "${name}". Known: ${Object.keys(TBOX_MODULES).join(', ')}`);
+    }
+    return {
+      name,
+      tbox: { file: mod.tbox, text: readModuleFile(mod.tbox) },
+      rules: mod.rules ? { file: mod.rules, text: readModuleFile(mod.rules) } : null,
+    };
+  });
 }
 
 function escapeLiteral(value) {

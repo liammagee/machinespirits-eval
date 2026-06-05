@@ -124,6 +124,7 @@ async function callCodex(prompt) {
         'exec',
         '--skip-git-repo-check',
         '--ephemeral',
+        '--ignore-user-config',
         '-s',
         'read-only',
         '-C',

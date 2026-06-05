@@ -1,0 +1,43 @@
+@prefix ms: <https://machinespirits.dev/ontology/reasoning#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# Discursive-game inference rules. Monotonic only: negative cases are represented
+# by positive markers such as ms:lacksUptake true.
+
+# Subclass + type transitivity, repeated so this file can run with the module alone.
+{ ?a rdfs:subClassOf ?b. ?b rdfs:subClassOf ?c } => { ?a rdfs:subClassOf ?c } .
+{ ?x rdf:type ?c. ?c rdfs:subClassOf ?d } => { ?x rdf:type ?d } .
+
+# Bridge policy commitments to concrete public tactics and games.
+{ ?p ms:selectsTactic ?t. ?m ms:enactsPolicy ?p } => { ?m ms:realizesTactic ?t } .
+{ ?m ms:realizesTactic ?t. ?t ms:belongsToGame ?g } => { ?m ms:participatesInGame ?g } .
+
+# A move is locally responsive when it answers a learner signal and is evidence-bound.
+{ ?m a ms:TutorPublicMove ; ms:respondsTo ?s ; ms:licensedByEvidence ?s }
+  => { ?m a ms:ResponsiveMove } .
+
+# A repair move is accountable when it addresses a breakdown and gets uptake/contest.
+{ ?m a ms:RepairMove ; ms:addressesBreakdown ?b ; ms:elicitsUptake ?u. ?u a ms:LearnerUptake }
+  => { ?m a ms:AccountableRepair } .
+
+# Positive no-credit marker: a repair that lacks uptake is repair, not adaptation.
+{ ?m a ms:RepairMove ; ms:lacksUptake true }
+  => { ?m a ms:RepairWithoutUptake } .
+
+# Signal -> hypothesis -> selected tactic -> public action -> learner uptake/contest.
+{ ?e ms:hasLearnerSignal ?s ;
+     ms:hasTutorHypothesis ?h ;
+     ms:hasTutorAction ?m .
+  ?h a ms:EvidenceBoundHypothesis ; ms:licensedByEvidence ?s .
+  ?m a ms:TutorPublicMove ; ms:respondsTo ?s ; ms:licensedByEvidence ?s ; ms:elicitsUptake ?u .
+  ?u a ms:LearnerUptake }
+  => { ?e a ms:AccountableScorekeepingEpisode } .
+
+# Dyadic revision requires the accountable episode plus a later tutor revision
+# accountable to learner uptake/contest and a public role-view delta.
+{ ?e a ms:AccountableScorekeepingEpisode ;
+     ms:observesUptake ?u ;
+     ms:hasTutorRevision ?r .
+  ?r a ms:TutorRevision ; ms:accountableTo ?u ; ms:changesRoleView ?rv }
+  => { ?e a ms:DyadicRevision . ?r a ms:AccountableTutorRevision } .

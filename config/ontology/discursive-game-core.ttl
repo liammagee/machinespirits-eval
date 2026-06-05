@@ -1,0 +1,166 @@
+@prefix ms: <https://machinespirits.dev/ontology/reasoning#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# ==============================================================================
+# discursive-game-core.ttl -- Language-game / scorekeeping bridge module.
+#
+# SAME namespace as reasoning-core.ttl + poetics-core.ttl + adaptation-core.ttl.
+# This module connects three layers that were previously adjacent but not explicit:
+#   - Aristotelian poetics: macro dramatic strategy / form.
+#   - late-Wittgensteinian language games: local public move grammar.
+#   - Brandomian scorekeeping: commitments, entitlements, uptake, contest, repair.
+#
+# This is a traceability / construct-boundary vocabulary, not a claim that a tutor
+# is deployed, human-validated, or reliably adaptive. It says what facts must be
+# present before the system may call a transcript "accountably adaptive".
+# ==============================================================================
+
+ms:DiscursiveGameOntology
+  a owl:Ontology ;
+  rdfs:label "Machine Spirits discursive-game / scorekeeping ontology" ;
+  rdfs:comment "Bridge vocabulary for dramatic strategy, language-game tactics, Brandomian scorekeeping, and accountable dyadic revision." .
+
+# -- strategy/tactic hierarchy ---------------------------------------------------
+
+ms:DramaticStrategy a owl:Class ;
+  rdfs:comment "Macro-level dramatic strategy: the shape the dialogue is trying to become, e.g. compliance-to-ownership or misrecognition repair." .
+
+ms:DiscursiveGame a owl:Class ;
+  rdfs:comment "A local language game: a rule-governed public activity such as asking for reasons, repairing misrecognition, object-checking, or inviting objection." .
+
+ms:DiscursiveTactic a owl:Class ;
+  rdfs:subClassOf ms:PolicyAction ;
+  rdfs:comment "A selectable local tactic inside a discursive game. Existing tutor policy actions can be typed as tactics." .
+
+ms:PublicMove a owl:Class ;
+  rdfs:subClassOf ms:ReasoningMove ;
+  rdfs:comment "An externally visible move in the public transcript." .
+ms:TutorPublicMove a owl:Class ; rdfs:subClassOf ms:PublicMove .
+ms:LearnerPublicMove a owl:Class ; rdfs:subClassOf ms:PublicMove .
+
+ms:ResponsiveMove a owl:Class ; rdfs:subClassOf ms:TutorPublicMove .
+ms:RepairMove a owl:Class ; rdfs:subClassOf ms:TutorPublicMove .
+ms:AccountableRepair a owl:Class ; rdfs:subClassOf ms:RepairMove .
+ms:RepairWithoutUptake a owl:Class ; rdfs:subClassOf ms:RepairMove .
+
+# -- scorekeeping layer ----------------------------------------------------------
+
+ms:ScorekeepingEvent a owl:Class ;
+  rdfs:comment "A public episode in which commitments or entitlements are created, challenged, repaired, or revised." .
+
+ms:Commitment a owl:Class .
+ms:Entitlement a owl:Class .
+ms:NormativeDelta a owl:Class .
+
+ms:CommitmentDelta a owl:Class ; rdfs:subClassOf ms:NormativeDelta .
+ms:EntitlementDelta a owl:Class ; rdfs:subClassOf ms:NormativeDelta .
+ms:RoleViewDelta a owl:Class ; rdfs:subClassOf ms:NormativeDelta .
+
+ms:LearnerSignal a owl:Class ;
+  rdfs:comment "A learner-side public signal: confusion, resistance, false closure, pressure, uptake, or contest." .
+ms:BreakdownSignal a owl:Class ; rdfs:subClassOf ms:LearnerSignal .
+ms:LearnerUptake a owl:Class ; rdfs:subClassOf ms:LearnerSignal .
+ms:LearnerContest a owl:Class ; rdfs:subClassOf ms:LearnerUptake .
+ms:LearnerExtension a owl:Class ; rdfs:subClassOf ms:LearnerUptake .
+
+ms:EvidenceBoundHypothesis a owl:Class ;
+  rdfs:comment "A tutor hypothesis licensed by quoted or otherwise inspectable evidence from the public transcript or allowed held-out state." .
+
+ms:PolicyCommitment a owl:Class ;
+  rdfs:comment "A declared commitment to use a finite pedagogical tactic because of a learner signal and hypothesis." .
+
+ms:SelectedPolicyAction a owl:Class ;
+  rdfs:subClassOf ms:PolicyCommitment .
+
+ms:TutorRevision a owl:Class ;
+  rdfs:comment "A later tutor update that is accountable to learner uptake or contest rather than merely to private self-reflection." .
+ms:AccountableTutorRevision a owl:Class ; rdfs:subClassOf ms:TutorRevision .
+
+ms:AccountableScorekeepingEpisode a owl:Class ;
+  rdfs:subClassOf ms:ScorekeepingEvent ;
+  rdfs:comment "Episode with signal -> hypothesis -> selected tactic -> public action -> learner uptake/contest." .
+
+ms:DyadicRevision a owl:Class ;
+  rdfs:subClassOf ms:ScorekeepingEvent ;
+  rdfs:comment "A scorekeeping episode in which both the tutor policy/role view and learner position are revised in relation to one another." .
+
+# -- object / datatype properties ------------------------------------------------
+
+ms:hasStrategy a owl:ObjectProperty ; rdfs:range ms:DramaticStrategy .
+ms:usesTactic a owl:ObjectProperty ; rdfs:domain ms:DramaticStrategy ; rdfs:range ms:DiscursiveTactic .
+ms:belongsToGame a owl:ObjectProperty ; rdfs:domain ms:DiscursiveTactic ; rdfs:range ms:DiscursiveGame .
+ms:realizesTactic a owl:ObjectProperty ; rdfs:domain ms:PublicMove ; rdfs:range ms:DiscursiveTactic .
+ms:enactsPolicy a owl:ObjectProperty ; rdfs:domain ms:PublicMove ; rdfs:range ms:PolicyCommitment .
+ms:selectsTactic a owl:ObjectProperty ; rdfs:domain ms:PolicyCommitment ; rdfs:range ms:DiscursiveTactic .
+ms:participatesInGame a owl:ObjectProperty ; rdfs:domain ms:PublicMove ; rdfs:range ms:DiscursiveGame .
+
+ms:hasLearnerSignal a owl:ObjectProperty ; rdfs:range ms:LearnerSignal .
+ms:hasTutorHypothesis a owl:ObjectProperty ; rdfs:range ms:EvidenceBoundHypothesis .
+ms:hasTutorAction a owl:ObjectProperty ; rdfs:range ms:TutorPublicMove .
+ms:hasLearnerMove a owl:ObjectProperty ; rdfs:range ms:LearnerPublicMove .
+ms:hasTutorRevision a owl:ObjectProperty ; rdfs:range ms:TutorRevision .
+
+ms:respondsTo a owl:ObjectProperty ; rdfs:domain ms:PublicMove ; rdfs:range ms:LearnerSignal .
+ms:licensedByEvidence a owl:ObjectProperty ;
+  rdfs:comment "Connects a hypothesis, policy, or move to the learner signal/evidence that licenses it." .
+ms:supportedByQuote a owl:DatatypeProperty ; rdfs:range xsd:string .
+ms:selectedBecauseOf a owl:ObjectProperty .
+ms:elicitsUptake a owl:ObjectProperty ; rdfs:domain ms:TutorPublicMove ; rdfs:range ms:LearnerUptake .
+ms:observesUptake a owl:ObjectProperty ; rdfs:range ms:LearnerUptake .
+ms:accountableTo a owl:ObjectProperty ; rdfs:domain ms:TutorRevision ; rdfs:range ms:LearnerUptake .
+
+ms:asksForReason a owl:ObjectProperty ; rdfs:domain ms:PublicMove ; rdfs:range ms:Commitment .
+ms:offersReasonFor a owl:ObjectProperty ; rdfs:domain ms:PublicMove ; rdfs:range ms:Commitment .
+ms:challengesCommitment a owl:ObjectProperty ; rdfs:domain ms:PublicMove ; rdfs:range ms:Commitment .
+ms:revisesCommitment a owl:ObjectProperty ; rdfs:range ms:Commitment .
+ms:grantsEntitlement a owl:ObjectProperty ; rdfs:range ms:Entitlement .
+ms:withdrawsEntitlement a owl:ObjectProperty ; rdfs:range ms:Entitlement .
+ms:hasNormativeDelta a owl:ObjectProperty ; rdfs:range ms:NormativeDelta .
+ms:changesRoleView a owl:ObjectProperty ; rdfs:range ms:RoleView .
+ms:addressesBreakdown a owl:ObjectProperty ; rdfs:domain ms:RepairMove ; rdfs:range ms:BreakdownSignal .
+ms:lacksUptake a owl:DatatypeProperty ; rdfs:domain ms:RepairMove ; rdfs:range xsd:boolean .
+
+# -- named games ----------------------------------------------------------------
+
+ms:GivingAndAskingForReasons a ms:DiscursiveGame ;
+  rdfs:label "game of giving and asking for reasons" .
+ms:MisrecognitionRepairGame a ms:DiscursiveGame ;
+  rdfs:label "game of repairing misrecognition" .
+ms:ObjectCheckGame a ms:DiscursiveGame ;
+  rdfs:label "game of material or object-led checking" .
+ms:RevoiceGame a ms:DiscursiveGame ;
+  rdfs:label "game of revoicing and revising a prior claim" .
+
+# -- named dramatic strategies --------------------------------------------------
+
+ms:ConvertComplianceToOwnership a ms:DramaticStrategy ;
+  ms:aimsAtForm ms:Anagnorisis ;
+  ms:usesTactic ms:request_elaboration, ms:invite_objection, ms:withhold_answer .
+
+ms:RepairMisrecognitionStrategy a ms:DramaticStrategy ;
+  ms:aimsAtForm ms:Peripeteia ;
+  ms:usesTactic ms:repair_misrecognition, ms:name_the_disagreement, ms:invite_objection .
+
+ms:ExposeHiddenDependence a ms:DramaticStrategy ;
+  ms:aimsAtForm ms:Peripeteia ;
+  ms:usesTactic ms:scope_test, ms:pose_counterexample, ms:withhold_answer .
+
+ms:ShiftAuthorityToReasonGiving a ms:DramaticStrategy ;
+  ms:aimsAtForm ms:Anagnorisis ;
+  ms:usesTactic ms:request_elaboration, ms:ask_diagnostic_question, ms:invite_objection .
+
+# -- existing policy actions typed as discursive tactics ------------------------
+
+ms:request_elaboration a ms:DiscursiveTactic ; ms:belongsToGame ms:GivingAndAskingForReasons .
+ms:ask_diagnostic_question a ms:DiscursiveTactic ; ms:belongsToGame ms:GivingAndAskingForReasons .
+ms:name_the_disagreement a ms:DiscursiveTactic ; ms:belongsToGame ms:GivingAndAskingForReasons .
+ms:pose_counterexample a ms:DiscursiveTactic ; ms:belongsToGame ms:GivingAndAskingForReasons .
+ms:invite_objection a ms:DiscursiveTactic ; ms:belongsToGame ms:GivingAndAskingForReasons, ms:MisrecognitionRepairGame .
+ms:repair_misrecognition a ms:DiscursiveTactic ; ms:belongsToGame ms:MisrecognitionRepairGame .
+ms:withhold_answer a ms:DiscursiveTactic ; ms:belongsToGame ms:GivingAndAskingForReasons .
+ms:scope_test a ms:DiscursiveTactic ; ms:belongsToGame ms:ObjectCheckGame, ms:GivingAndAskingForReasons .
+ms:summarize_and_check a ms:DiscursiveTactic ; ms:belongsToGame ms:ObjectCheckGame .
+ms:mirror_and_extend a ms:DiscursiveTactic ; ms:belongsToGame ms:RevoiceGame .
