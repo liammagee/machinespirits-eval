@@ -284,8 +284,15 @@ function listItems(db, filters = {}) {
     }
   }
   if (filters.q) {
+    // Free-text across the item's own queryable columns plus the critic's
+    // form verdict (recognition / trap / flat). Transcript *body* lives on
+    // disk (sample_path / full_transcript_path), not the DB, so it is not
+    // searched here — the placeholder reflects exactly what is matchable.
     where.push(
-      `(i.id LIKE @q OR i.tid LIKE @q OR i.drama_id LIKE @q OR i.discipline LIKE @q OR i.unit_id LIKE @q OR i.intended_lean LIKE @q)`,
+      `(i.id LIKE @q OR i.tid LIKE @q OR i.drama_id LIKE @q OR i.discipline LIKE @q ` +
+        `OR i.unit_id LIKE @q OR i.intended_lean LIKE @q OR i.condition_name LIKE @q ` +
+        `OR i.control_family LIKE @q OR i.arm LIKE @q ` +
+        `OR EXISTS (SELECT 1 FROM poetics_scores sq WHERE sq.item_id = i.id AND sq.form_class LIKE @q))`,
     );
     params.q = `%${filters.q}%`;
   }
@@ -918,6 +925,7 @@ function createPoeticsBrowserApp({ dbPath = null } = {}) {
     }
   });
   app.get('/ontology', (_req, res) => res.type('html').send(renderOntologyHtml()));
+  app.get('/rubric', (_req, res) => res.type('html').send(renderRubricHtml()));
   app.get('/api/ontology', (req, res) => {
     try {
       const view = ['system', 'tutor', 'learner'].includes(req.query.view) ? req.query.view : 'system';
@@ -1138,6 +1146,7 @@ function railHtml({ active = '', brand = 'machine spirits', sub = '', extra = ''
     ['browse', '/browse', 'browse', 'Browse generated scripts, full traces, critic scores &amp; labels'],
     ['compose', '/compose', 'compose', 'Assemble a drama-machine spec, validated live against the ontology'],
     ['ontology', '/ontology', 'ontology', 'The shared ontology — system, tutor &amp; learner lenses'],
+    ['rubric', '/rubric', 'rubric', 'The poetics rubric — the 6 dramatic-form dimensions critics score against'],
     ['replays', '/replays', 'replays', 'Counterfactual replays diffed against their originals'],
     ['runs', '/runs', 'runs', 'Launch runs — generative · replay · adversarial-CLI · online scoring'],
   ];
@@ -1892,6 +1901,13 @@ section.sec{ border:1px solid var(--rule); background:var(--paper-4); margin-bot
 .chip.anti{ color:var(--brick-d); border-color:var(--brick); background:var(--brick-soft); }
 .chip.reg{ color:var(--indigo); background:var(--indigo-soft); border-color:var(--indigo); }
 .chip.agency{ color:var(--ochre-d); background:var(--ochre-soft); border-color:var(--ochre); }
+button.chip{ font:12px ui-monospace,monospace; cursor:default; }
+.chip.rolelink{ cursor:pointer; color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
+.chip.rolelink:hover{ background:var(--moss-deep); color:var(--paper); }
+.legend{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 10px; padding:6px 22px; border-bottom:1px solid var(--rule-soft); background:var(--paper-3); }
+.legend .lbl{ font:11px ui-monospace,monospace; color:var(--ink-4); text-transform:uppercase; letter-spacing:.05em; }
+.legend .chip{ font-size:11px; }
+.legend-x{ color:var(--ink-4); font-style:italic; font-size:11px; margin-right:4px; }
 .tbl{ width:100%; border-collapse:collapse; font:12px ui-monospace,monospace; }
 .tbl th,.tbl td{ text-align:left; padding:6px 8px; border-bottom:1px solid var(--rule-soft); vertical-align:top; }
 .tbl th{ color:var(--ink-4); text-transform:uppercase; font-size:10px; letter-spacing:.05em; }
@@ -1925,6 +1941,14 @@ ${railHtml({ active: 'ontology', brand: 'ontology atlas', sub: 'the shared TBox 
   <label class="mod"><input type="checkbox" id="srcToggle"> source</label>
   <span class="counts" id="counts"></span>
 </div>
+<div class="legend" id="legend">
+  <span class="lbl">chips</span>
+  <span class="chip form">form</span><span class="legend-x">aims at a dramatic form</span>
+  <span class="chip anti">form</span><span class="legend-x">contraindicates one</span>
+  <span class="chip reg">register</span><span class="legend-x">the voice a move speaks in</span>
+  <span class="chip agency">agency</span><span class="legend-x">an interior deliberation seat</span>
+  <span class="chip">plain</span><span class="legend-x">a class or named individual</span>
+</div>
 <main id="content"><div class="loading">loading…</div></main>
 <script>
 const ALL_MODULES = ${JSON.stringify(ALL_MODULES)};
@@ -1934,6 +1958,14 @@ const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({'&':'
 const state = { view:'system', modules:new Set(DEFAULT_MODULES), source:false };
 
 function chips(list, cls){ return '<div class="chips">'+(list&&list.length?list.map(function(x){ return '<span class="chip '+(cls||'')+'">'+esc(x)+'</span>'; }).join(''):'<span class="muted">none</span>')+'</div>'; }
+// Role-view chips double as lens jumps: tutor_* → tutor lens, learner_* → learner lens.
+function roleViewChips(list){
+  return '<div class="chips">'+(list&&list.length?list.map(function(v){
+    var lens = v.indexOf('tutor')===0 ? 'tutor' : (v.indexOf('learner')===0 ? 'learner' : '');
+    return lens ? '<button type="button" class="chip rolelink" data-lens="'+lens+'" title="open the '+lens+' lens">'+esc(v)+' ↗</button>'
+                : '<span class="chip">'+esc(v)+'</span>';
+  }).join(''):'<span class="muted">none</span>')+'</div>';
+}
 function formChips(aims, contra){
   var out = (aims||[]).map(function(f){ return '<span class="chip form">'+esc(f)+'</span>'; });
   out = out.concat((contra||[]).map(function(f){ return '<span class="chip anti">⊣ '+esc(f)+'</span>'; }));
@@ -1970,7 +2002,7 @@ function movesTable(moves){
 }
 
 function renderSystem(d){
-  var html = '';
+  var html = '<div class="blurb">The <strong>system lens</strong> shows the whole TBox at once: <strong>classes</strong> (the type taxonomy), <strong>object properties</strong> (relations between individuals), <strong>datatype properties</strong> (literal-valued attributes — booleans, scores, counts), and <strong>named individuals</strong> (concrete instances). Switch to the tutor / learner lenses for each role&rsquo;s slice.</div>';
   html += section('Loaded ontologies', d.modules.map(function(m){return m.name;}).join(' ⊕ '),
     d.ontologies.map(function(o){ return '<div class="grp"><div class="grp__h">'+esc(o.label||o.id)+' <span class="muted">('+esc(o.module)+')</span></div>'+(o.comment?'<div class="cmt-inline">'+esc(o.comment)+'</div>':'')+'</div>'; }).join(''));
   html += section('Class taxonomy', d.counts.classes+' classes', tree(d.classTree));
@@ -1980,12 +2012,18 @@ function renderSystem(d){
       var dr = (p.domain.join(', ')||'·')+' → '+(p.range.join(', ')||'·');
       return '<tr><td><code>'+esc(p.id)+'</code></td><td>'+esc(dr)+'</td><td class="cmt-inline">'+esc(p.comment||'')+'</td></tr>';
     }).join('')+'</tbody></table>');
+  html += section('Datatype properties', d.datatypeProperties.length+' properties',
+    d.datatypeProperties.length ? '<table class="tbl"><thead><tr><th>property</th><th>domain → range</th><th>comment</th></tr></thead><tbody>'+
+    d.datatypeProperties.map(function(p){
+      var dr = (p.domain.join(', ')||'·')+' → '+(p.range.join(', ')||'·');
+      return '<tr><td><code>'+esc(p.id)+'</code></td><td>'+esc(dr)+'</td><td class="cmt-inline">'+esc(p.comment||'')+'</td></tr>';
+    }).join('')+'</tbody></table>' : '<div class="muted">no datatype properties in the loaded modules</div>');
   html += section('Named individuals', d.counts.individuals+' individuals, grouped by type',
     d.individualGroups.map(function(g){
       return '<div class="grp"><div class="grp__h">'+esc(g.type)+' <span class="muted">('+g.items.length+')</span></div>'+
         '<div class="chips">'+g.items.map(function(it){ return '<span class="chip">'+esc(it.id)+'</span>'; }).join('')+'</div></div>';
     }).join(''));
-  html += section('Role views', 'the four ego/superego deliberation seats', chips(d.roleViews));
+  html += section('Role views', 'the four ego/superego deliberation seats — click to open a role lens', roleViewChips(d.roleViews));
   return html;
 }
 
@@ -2055,11 +2093,20 @@ async function load(){
   }
 }
 
+function gotoLens(view){
+  if (state.view === view) return;
+  state.view = view;
+  [].forEach.call($('lenses').children, function(x){ x.classList.toggle('active', x.getAttribute('data-view')===view); });
+  load();
+}
 $('lenses').addEventListener('click', function(e){
   var b = e.target.closest('.lens'); if(!b) return;
-  state.view = b.getAttribute('data-view');
-  [].forEach.call($('lenses').children, function(x){ x.classList.toggle('active', x===b); });
-  load();
+  gotoLens(b.getAttribute('data-view'));
+});
+// Role-view chips inside the rendered content jump to the matching role lens.
+$('content').addEventListener('click', function(e){
+  var b = e.target.closest('.rolelink'); if(!b) return;
+  gotoLens(b.getAttribute('data-lens'));
 });
 $('modbar').addEventListener('change', function(e){
   var m = e.target.getAttribute('data-mod'); if(!m) return;
@@ -2078,6 +2125,121 @@ load();
 </script>
 </body>
 </html>`;
+}
+
+// ── Poetics rubric reference (GET /rubric) ────────────────────────────────────
+// A read-only reference page for config/evaluation-rubric-poetics.yaml — the 6
+// dramatic-form dimensions every critic scores against. The browse "scores" tab
+// links here so a reader can move transcript → its scores → the dimension that
+// defines each axis. Parsed at request time so rubric edits show live.
+function loadPoeticsRubric() {
+  const raw = fs.readFileSync(path.resolve(ROOT, 'config/evaluation-rubric-poetics.yaml'), 'utf8');
+  return YAML.parse(raw) || {};
+}
+
+function renderRubricHtml() {
+  let rubric;
+  try {
+    rubric = loadPoeticsRubric();
+  } catch (err) {
+    rubric = { __error: err.message };
+  }
+  const dims = rubric.dimensions || {};
+  const scale = rubric.scale || {};
+  const labels = scale.labels || {};
+  const e = escapeHtml;
+
+  const scaleRows = Object.keys(labels)
+    .sort((a, b) => Number(a) - Number(b))
+    .map((k) => `<tr><td class="lv">${e(k)}</td><td>${e(labels[k])}</td></tr>`)
+    .join('');
+
+  const dimCards = Object.keys(dims)
+    .map((key) => {
+      const d = dims[key] || {};
+      const crit = d.criteria || {};
+      const critRows = [5, 4, 3, 2, 1]
+        .filter((n) => crit[n] != null)
+        .map((n) => `<tr><td class="lv">${n}</td><td>${e(crit[n])}</td></tr>`)
+        .join('');
+      const pct = d.weight != null ? Math.round(Number(d.weight) * 100) + '%' : '';
+      return `<section class="dim" id="dim-${e(key)}">
+      <div class="dim__h">
+        <h3>${e(d.name || key)}</h3>
+        ${pct ? `<span class="wt" title="weight in the composite">${e(pct)}</span>` : ''}
+      </div>
+      <p class="dim__desc">${e(d.description || '')}</p>
+      ${critRows ? `<table class="tbl crit"><thead><tr><th>level</th><th>anchor</th></tr></thead><tbody>${critRows}</tbody></table>` : ''}
+    </section>`;
+    })
+    .join('');
+
+  const errBanner = rubric.__error
+    ? `<div class="blurb" style="border-left-color:var(--brick);background:var(--brick-soft)">could not load the rubric: ${e(rubric.__error)}</div>`
+    : '';
+
+  return `<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>poetics rubric · machine spirits</title>
+<style>
+:root{ color-scheme: light dark; --paper:#F4EEDD; --paper-2:#ECE3CB; --paper-3:#F8F2E2; --paper-4:#FBF6E8; --ink:#14100C; --ink-2:#2C241B; --ink-3:#5C5040; --ink-4:#8C7E6A; --linen:#D8C7A9; --moss:#56683A; --moss-deep:#3A4824; --moss-soft:#E3E6CE; --brick:#A53E2E; --brick-d:#7C2C1F; --brick-soft:#F3DDD6; --ochre:#C08A3E; --ochre-d:#8C5F1F; --ochre-soft:#F5E6C2; --indigo:#5A6797; --indigo-soft:#E2E5F0; --rule:rgba(28,22,16,.18); --rule-soft:rgba(28,22,16,.10); }
+[data-theme="dark"]{ --paper:#14100C; --paper-2:#1B1612; --paper-3:#1F1A14; --paper-4:#221C16; --ink:#F4EEDD; --ink-2:#E0D8C3; --ink-3:#B9AD96; --ink-4:#8C7E6A; --linen:#3A322A; --moss:#8DA868; --moss-deep:#B5CD92; --moss-soft:#2C3520; --brick:#E36953; --brick-d:#F08A75; --brick-soft:#3A1C16; --ochre:#E6B265; --ochre-d:#F3CB88; --ochre-soft:#3A2C12; --indigo:#98A6D4; --indigo-soft:#1F2434; --rule:rgba(244,238,221,.18); --rule-soft:rgba(244,238,221,.08); }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{ background:var(--paper); color:var(--ink); font:14px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; }
+em{ font-style:italic; }
+.rail{ position:sticky; top:0; z-index:10; background:var(--paper-3); border-bottom:1px solid var(--rule); }
+.rail__inner{ display:flex; align-items:center; gap:14px; padding:10px 18px; }
+.rail__brand{ font-family:Georgia,serif; font-style:italic; font-size:18px; color:var(--moss-deep); }
+.rail__sub{ color:var(--ink-3); font-size:12px; flex:1; }
+.rail__arc,.rail__btn{ display:inline-flex; align-items:center; gap:6px; font:12px ui-monospace,monospace; text-decoration:none; color:var(--ink-2); border:1px solid var(--rule); padding:5px 10px; background:var(--paper-4); cursor:pointer; }
+.rail__arc{ color:#fff; background:var(--brick); border-color:var(--brick-d); }
+[data-theme="dark"] .rail__arc{ color:var(--paper); }
+main{ max-width:900px; margin:0 auto; padding:22px 22px 64px; }
+.blurb{ font-size:13px; color:var(--ink-3); border-left:3px solid var(--moss); background:var(--moss-soft); padding:10px 14px; margin:0 0 18px; }
+.blurb a{ color:var(--moss-deep); }
+.meta{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; }
+.meta .chip{ font:12px ui-monospace,monospace; padding:3px 9px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); }
+h2.sec-h{ font:600 12px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); margin:22px 0 10px; }
+.tbl{ width:100%; border-collapse:collapse; font-size:13px; background:var(--paper-4); border:1px solid var(--rule); }
+.tbl th,.tbl td{ text-align:left; padding:7px 10px; border-bottom:1px solid var(--rule-soft); vertical-align:top; }
+.tbl th{ color:var(--ink-4); text-transform:uppercase; font-size:10px; letter-spacing:.05em; }
+.tbl td.lv{ font:600 13px ui-monospace,monospace; color:var(--moss-deep); width:48px; text-align:center; }
+.dim{ border:1px solid var(--rule); background:var(--paper-4); margin-bottom:14px; }
+.dim__h{ display:flex; align-items:baseline; gap:10px; padding:10px 14px; background:var(--paper-2); border-bottom:1px solid var(--rule); }
+.dim__h h3{ margin:0; font:600 15px Georgia,serif; font-style:italic; color:var(--ink); }
+.dim__h .wt{ font:600 11px ui-monospace,monospace; color:var(--moss-deep); background:var(--moss-soft); border:1px solid var(--moss); padding:1px 7px; border-radius:9px; }
+.dim__desc{ margin:0; padding:11px 14px; color:var(--ink-2); }
+.crit{ border:0; border-top:1px solid var(--rule-soft); }
+</style></head>
+<body>
+${railHtml({ active: 'rubric', brand: 'poetics rubric', sub: 'the 6 dramatic-form dimensions critics score against' })}
+<main>
+  ${errBanner}
+  <div class="blurb">Whole-transcript rubric for <em>dramatic form</em> — it classifies the shape of the dialogue (reversal, recognition, surprise-yet-inevitability), <strong>not</strong> what is in anyone's head. Each browse <a href="/browse">scores</a> row is a critic applying these dimensions; the vocabulary they formalise lives in the <a href="/ontology">ontology atlas</a>.</div>
+  <div class="meta">
+    ${rubric.name ? `<span class="chip">${e(rubric.name)}</span>` : ''}
+    ${rubric.version ? `<span class="chip">v${e(rubric.version)}</span>` : ''}
+    ${rubric.unit_of_analysis ? `<span class="chip">unit: ${e(rubric.unit_of_analysis)}</span>` : ''}
+    ${scale.min != null ? `<span class="chip">scale ${e(scale.min)}–${e(scale.max)}</span>` : ''}
+  </div>
+  ${scaleRows ? `<h2 class="sec-h">Scale anchors</h2><table class="tbl"><thead><tr><th>level</th><th>meaning</th></tr></thead><tbody>${scaleRows}</tbody></table>` : ''}
+  <h2 class="sec-h">Dimensions${Object.keys(dims).length ? ' · ' + Object.keys(dims).length : ''}</h2>
+  ${dimCards || '<div class="blurb">no dimensions found in the rubric file</div>'}
+</main>
+<script>
+(function(){
+  var btn = document.getElementById('themeToggle');
+  try { if (localStorage.getItem('poetics-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); } catch (_e) {}
+  if (btn) btn.addEventListener('click', function(){
+    var dd = document.documentElement; var nx = dd.getAttribute('data-theme')==='dark' ? '' : 'dark';
+    if (nx) dd.setAttribute('data-theme','dark'); else dd.removeAttribute('data-theme');
+    try { localStorage.setItem('poetics-theme', nx); } catch (_e) {}
+  });
+})();
+</script>
+</body></html>`;
 }
 
 // ── Discursive replays (GET /replays) ─────────────────────────────────────────
@@ -3488,6 +3650,20 @@ tbody th {
   letter-spacing: -0.005em;
   margin-right: 0.25em;
 }
+.score-xref {
+  display: inline;
+  color: var(--ink-3);
+}
+.score-note a {
+  color: var(--moss-deep);
+  text-decoration: none;
+  border-bottom: 1px solid var(--moss);
+  white-space: nowrap;
+}
+.score-note a:hover {
+  color: var(--brick-d);
+  border-color: var(--brick);
+}
 .diagnostic-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -3558,6 +3734,14 @@ tbody th {
   text-align: center;
   font-size: 14px;
 }
+.empty--scaffold { padding: 40px 28px; }
+.empty__lead { font-style: normal; font-family: inherit; font-size: 15px; color: var(--ink); margin: 0 0 6px; line-height: 1.45; }
+.empty__lead strong { color: var(--moss-deep); font-weight: 600; }
+.empty__help { font-style: italic; margin: 0 0 16px; color: var(--ink-3); }
+.empty__actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; font-style: normal; font-family: inherit; }
+.empty__btn { display: inline-block; padding: 7px 14px; border: 1px solid var(--rule); border-radius: 7px; background: var(--paper-3); color: var(--ink-2); font-size: 13px; cursor: pointer; text-decoration: none; }
+.empty__btn:hover { border-color: var(--moss); color: var(--moss-deep); }
+.empty__btn--go { background: var(--moss-soft); border-color: var(--moss); color: var(--moss-deep); }
 
 /* ═══════ blind mode ═══════ */
 .blind .score-only,
@@ -3689,7 +3873,7 @@ ${railHtml({
     </div>
     <div class="filters">
       <select id="runSelect"></select>
-      <input id="searchInput" placeholder="Filter by T id, drama id, unit, discipline">
+      <input id="searchInput" placeholder="Search id · drama · discipline · condition · arm · critic form (recognition/trap/flat)">
       <select id="disciplineSelect"><option value="">all disciplines</option></select>
       <input id="labellerInput" class="blind-only" placeholder="Labeller id">
       <div class="filter-row score-only">
@@ -3963,10 +4147,53 @@ function renderRuns() {
   }
 }
 
+function activeFilterSummary() {
+  const parts = [];
+  const get = (id) => (el(id) ? el(id).value : '');
+  const disc = get('disciplineSelect');
+  const q = el('searchInput') ? el('searchInput').value : '';
+  const run = get('runSelect');
+  const role = get('roleSelect');
+  const form = get('formSelect');
+  if (disc) parts.push('discipline <strong>' + esc(disc) + '</strong>');
+  if (q) parts.push('search <strong>&ldquo;' + esc(q) + '&rdquo;</strong>');
+  if (run) parts.push('run <strong>' + esc(run) + '</strong>');
+  if (role) parts.push('role <strong>' + esc(role) + '</strong>');
+  if (form) parts.push('form <strong>' + esc(form) + '</strong>');
+  return parts;
+}
+
+function renderEmptyState() {
+  const parts = activeFilterSummary();
+  const hasFilters = parts.length > 0;
+  const lead = hasFilters
+    ? 'No scripts match ' + parts.join(' · ') + '.'
+    : 'No scripts in the corpus yet.';
+  const help = hasFilters
+    ? 'Loosen a filter, or generate a transcript for this slice.'
+    : 'Generate the first drama transcript to populate the workbench.';
+  return '<div class="empty empty--scaffold">' +
+    '<p class="empty__lead">' + lead + '</p>' +
+    '<p class="empty__help">' + help + '</p>' +
+    '<div class="empty__actions">' +
+    (hasFilters ? '<button type="button" id="clearFilters" class="empty__btn">Clear filters</button>' : '') +
+    '<a class="empty__btn empty__btn--go" href="/compose">Generate a script &rarr;</a>' +
+    '</div></div>';
+}
+
+function clearBrowseFilters() {
+  ['disciplineSelect', 'runSelect', 'roleSelect', 'formSelect'].forEach((id) => { const e = el(id); if (e) e.value = ''; });
+  if (el('searchInput')) el('searchInput').value = '';
+  state.selected = null;
+  loadItems();
+}
+
 function renderItems() {
   const root = el('items');
   if (!state.items.length) {
-    root.innerHTML = '<div class="empty">No scripts match the current filters.</div>';
+    root.innerHTML = renderEmptyState();
+    const clear = el('clearFilters');
+    if (clear) clear.addEventListener('click', clearBrowseFilters);
     return;
   }
   root.innerHTML = state.items.map((item) => {
@@ -4076,7 +4303,7 @@ function renderPane() {
     pane.innerHTML = renderConsensusPanel(detail.consensus) +
       renderOriginDiagnostics(detail) +
       renderEndingShapeDiagnostics(detail) +
-      '<div class="score-note"><strong>LLM critic scores.</strong> Each row is one critic model judging the same public transcript. Learner self-reframe is the existing recontextualization axis. Actional breakthrough is separate: did the learner perform a new device or criterion even without narrating self-reframe? Peripeteia tutor adaptation asks whether the tutor visibly changed mechanism after pressure. Adaptive mechanism quality asks whether that new public device is fitted and usable, not just different. Recognition-contingent uptake is a secondary closure axis after a learner reframe. New axes show n/a for older scorer artifacts.</div>' +
+      '<div class="score-note"><strong>LLM critic scores.</strong> Each row is one critic model judging the same public transcript. Learner self-reframe is the existing recontextualization axis. Actional breakthrough is separate: did the learner perform a new device or criterion even without narrating self-reframe? Peripeteia tutor adaptation asks whether the tutor visibly changed mechanism after pressure. Adaptive mechanism quality asks whether that new public device is fitted and usable, not just different. Recognition-contingent uptake is a secondary closure axis after a learner reframe. New axes show n/a for older scorer artifacts. <span class="score-xref">Each axis is defined in the <a href="/rubric">poetics rubric &rarr;</a>; the dramatic-form vocabulary lives in the <a href="/ontology">ontology atlas &rarr;</a>.</span></div>' +
       '<table class="score-table"><thead><tr><th>Critic</th><th>Form</th><th>Origin</th><th>Learner reframe (LLM)</th><th>Actional breakthrough (LLM)</th><th>Peripeteia tutor adaptation (LLM)</th><th>Adaptive mechanism quality (LLM)</th><th>Recognition-contingent uptake (LLM)</th><th>Insight</th><th>Pivot</th><th>Evidence</th></tr></thead><tbody>' +
       detail.scores.map((s) => {
         const role = s.roleScores || {};
@@ -4367,6 +4594,8 @@ export {
   parseTranscriptPreview,
   renderBrowserHtml,
   renderDashboardHtml,
+  renderOntologyHtml,
+  renderRubricHtml,
   saveBrowserLabel,
   saveBrowserReviewFlag,
 };

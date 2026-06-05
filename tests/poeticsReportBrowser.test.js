@@ -15,6 +15,8 @@ import {
   parseTranscriptPreview,
   renderBrowserHtml,
   renderDashboardHtml,
+  renderOntologyHtml,
+  renderRubricHtml,
   saveBrowserLabel,
   saveBrowserReviewFlag,
 } from '../scripts/browse-poetics-scripts.js';
@@ -699,4 +701,72 @@ describe('dashboard front door', () => {
       assert.equal(listItems(db, { discipline: 'chemistry', runId: 'poetics-second-run' }).length, 0);
       assert.equal(listItems(db, { discipline: 'chemistry', runId: 'poetics-test-run' }).length, 1);
     }));
+});
+
+describe('usability: browse search, empty scaffold, atlas legend, rubric page', () => {
+  it('broadens free-text search beyond the script id (condition, arm, critic form_class)', () =>
+    withDb((db) => {
+      // 'base' appears only in condition_name across the seed — the old id-only
+      // search returned 0; the broadened search returns the three base-condition items.
+      assert.equal(listItems(db, { q: 'base' }).length, 3);
+      // 'recognition' matches T03 + T04bio by condition/intended_lean, AND the
+      // medicine trap-control T02 *only* through a critic's form_class verdict
+      // (the EXISTS subquery) — T02 carries the string in no other column, so its
+      // presence is positive proof the critic-form search path fires.
+      const recog = listItems(db, { q: 'recognition' });
+      assert.equal(recog.length, 3);
+      assert.ok(
+        recog.some((i) => i.id === 'poetics-test-run:control-r01-d25-hard-trap:default:T02'),
+        'T02 should match via its deepseek form_class=recognition score',
+      );
+      // a string in no column at all returns nothing (negative control)
+      assert.equal(listItems(db, { q: 'zzznope' }).length, 0);
+    }));
+
+  it('ships the scaffolded empty state and the broadened search affordance', () => {
+    const html = renderBrowserHtml();
+    // the dead-end "no results" branch is replaced by an actionable scaffold
+    assert.match(html, /empty--scaffold/);
+    assert.match(html, /renderEmptyState/);
+    assert.match(html, /activeFilterSummary/);
+    assert.match(html, /clearBrowseFilters/);
+    // the placeholder advertises exactly what the broadened query matches
+    assert.match(html, /critic form \(recognition\/trap\/flat\)/);
+    // every scores row cross-links into the new rubric page
+    assert.match(html, /href="\/rubric"/);
+    assert.match(html, /score-xref/);
+  });
+
+  it('renders the atlas legend, clickable role chips, and the datatype-properties section', () => {
+    const html = renderOntologyHtml();
+    // datatype properties were computed but never rendered before the fix
+    assert.match(html, /Datatype properties/);
+    assert.match(html, /datatypeProperties/);
+    // role-view chips are buttons that jump to the matching lens
+    assert.match(html, /roleViewChips/);
+    assert.match(html, /rolelink/);
+    assert.match(html, /gotoLens/);
+    // the colour key for the form/agency chips
+    assert.match(html, /class="legend"/);
+  });
+
+  it('renders the /rubric page: six dramatic-form dimensions, scale anchors, cross-links', () => {
+    const html = renderRubricHtml();
+    for (const dim of [
+      'Peripeteia (Reversal)',
+      'Anagnorisis (Recognition)',
+      'Surprise and Inevitability',
+      'Unity of Action',
+      'Hamartia Integration',
+      'Cathartic Closure',
+    ]) {
+      assert.match(html, new RegExp(dim.replace(/[()]/g, '\\$&')));
+    }
+    assert.match(html, /Scale anchors/);
+    // the page is woven into the cross-link triangle (scores ↔ rubric ↔ ontology)
+    assert.match(html, /href="\/browse"/);
+    assert.match(html, /href="\/ontology"/);
+    // shared rail with the rubric tab marked active
+    assert.match(html, /aria-current="page"/);
+  });
 });
