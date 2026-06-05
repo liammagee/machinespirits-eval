@@ -1644,8 +1644,17 @@ function renderComposeHtml() {
 @media (max-width:900px){ .compose{ grid-template-columns:1fr; } }
 .cform{ padding:18px 20px; display:flex; flex-direction:column; gap:16px; max-height:calc(100vh - 52px); overflow:auto; }
 .cside{ position:sticky; top:52px; padding:16px 16px; display:flex; flex-direction:column; gap:14px; border-left:1px solid var(--rule); max-height:calc(100vh - 52px); overflow:auto; background:var(--paper-3); }
-section.sec{ border:1px solid var(--rule); background:var(--paper-4); }
+.sec{ border:1px solid var(--rule); background:var(--paper-4); }
 .sec > h3{ margin:0; padding:9px 12px; font:600 12px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-2); background:var(--paper-2); border-bottom:1px solid var(--rule); }
+details.sec > summary{ margin:0; padding:9px 12px; font:600 12px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-2); background:var(--paper-2); border-bottom:1px solid var(--rule); cursor:pointer; list-style:none; display:flex; align-items:center; gap:8px; user-select:none; }
+details.sec:not([open]) > summary{ border-bottom:none; }
+details.sec > summary::-webkit-details-marker{ display:none; }
+details.sec > summary::before{ content:'▸'; color:var(--ink-4); font-size:9px; transition:transform .12s ease; }
+details.sec[open] > summary::before{ transform:rotate(90deg); }
+details.sec > summary:hover{ color:var(--ink); }
+.sec .opt{ margin-left:auto; font-weight:400; text-transform:none; letter-spacing:0; color:var(--ink-4); font:11px ui-monospace,monospace; }
+.advnote{ font:10px ui-monospace,monospace; color:var(--ink-4); text-transform:uppercase; letter-spacing:.05em; display:flex; align-items:center; gap:12px; padding:2px 0; }
+.advnote::before,.advnote::after{ content:''; height:1px; background:var(--rule); flex:1; }
 .sec > .body{ padding:12px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 14px; }
 .sec > .body.one{ grid-template-columns:1fr; }
 label.fld,.fld{ display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.04em; }
@@ -1710,12 +1719,13 @@ ${modeTabsHtml('spec')}
       <label class="fld">superego_disposition<input type="text" id="l-superego" value="recognition_authentic"></label>
       <label class="fld wide">start_state<textarea id="l-start">wants the rule memorised before the quiz; mistrusts 'inverse' as hand-waving</textarea></label>
     </div></section>
-    <section class="sec"><h3>Thought &amp; diction · dianoia / lexis</h3><div class="body">
+    <div class="advnote">advanced · sensible defaults already set — open only what you want to shape</div>
+    <details class="sec"><summary>Thought &amp; diction · dianoia / lexis<span class="opt">socratic · aristotelian reversal</span></summary><div class="body">
       <label class="fld">pedagogical_approach<input type="text" id="d-pedagogical" value="socratic_elenchus"></label>
       <label class="fld">dialogue_approach<input type="text" id="d-dialogue" value="aristotelian_reversal"></label>
       <label class="fld wide">voice.register<input type="text" id="v-register" value="plain; the learner a little defensive"></label>
-    </div></section>
-    <section class="sec"><h3>Spectacle · opsis</h3><div class="body">
+    </div></details>
+    <details class="sec"><summary>Spectacle · opsis<span class="opt">library booth · before the quiz</span></summary><div class="body">
       <label class="fld wide">scene.setting<input type="text" id="s-setting" value="a library tutoring booth, the evening before a quiz"></label>
       <label class="fld">relationship<input type="text" id="s-relationship" value="a paid tutor and a resentful teenager"></label>
       <label class="fld">stakes<input type="text" id="s-stakes" value="the quiz is tomorrow morning"></label>
@@ -1724,26 +1734,26 @@ ${modeTabsHtml('spec')}
       <label class="fld wide">object<input type="text" id="s-object" value="a half-finished worksheet with log(a+b) = log a + log b circled"></label>
       <label class="fld">stage_direction_policy<select id="s-stagepolicy">${composeOptions(V.stagePolicy, 'short')}</select></label>
       <label class="fld">stage_direction_style<select id="s-stagestyle">${composeOptions(V.stageStyle, 'object_business')}</select></label>
-    </div></section>
-    <section class="sec"><h3>Cast · who plays each role</h3><div class="body">
+    </div></details>
+    <details class="sec"><summary>Cast · who plays each role<span class="opt">sonnet cast · gpt critic</span></summary><div class="body">
       <label class="fld">director<input type="text" id="c-director" list="castList" value="llm:api:sonnet"></label>
       <label class="fld">tutor<input type="text" id="c-tutor" list="castList" value="llm:api:sonnet"></label>
       <label class="fld">learner<input type="text" id="c-learner" list="castList" value="llm:api:sonnet"></label>
       <label class="fld">critic<input type="text" id="c-critic" list="castList" value="llm:api:gpt"></label>
       <label class="fld">default_backend<input type="text" id="c-backend" value="api"></label>
       <div class="muted" style="grid-column:1/-1">grammar: <code>human</code> · <code>llm:&lt;backend&gt;:&lt;model&gt;</code> · <code>mock</code> — backends claude · codex · gemini · api</div>
-    </div></section>
-    <section class="sec"><h3>Audience · critic config</h3><div class="body">
+    </div></details>
+    <details class="sec"><summary>Audience · critic config<span class="opt">4-judge panel · 3-of-4</span></summary><div class="body">
       <label class="fld wide">panel — comma-separated judge models<input type="text" id="a-panel" list="panelList" value="gpt, deepseek-v4-pro, qwen3.7-max, gemini-3.5-flash"></label>
       <label class="fld">consensus<input type="text" id="a-consensus" value="3-of-4"></label>
       <label class="fld">grading<select id="a-grading">${composeOptions(V.grading, 'graded')}</select></label>
       <label class="fld">blinding<select id="a-blinding">${composeOptions(V.blinding, 'arm-blind')}</select></label>
       <label class="fld">rubric<input type="text" id="a-rubric" value="poetics-v1.0"></label>
-    </div></section>
-    <section class="sec"><h3>Turn plan · per-turn adaptation moves</h3><div class="body one">
+    </div></details>
+    <details class="sec"><summary>Turn plan · per-turn adaptation moves<span class="opt"><span id="turnPlanCount">4 turns</span> · live-validated</span></summary><div class="body one">
       <div id="turnPlan"></div>
       <div class="addbar"><button type="button" class="btn" id="addTurn">+ add turn</button><button type="button" class="btn" id="suggestTurn" title="Sample a valid turn from the ontology, conditioned on the tutor architecture (alter-egos)">✨ suggest a turn</button><span class="muted">⚠ anti-pattern moves are checked against the turn's target form by the ontology, live.</span></div>
-    </div></section>
+    </div></details>
   </form>
   <aside class="cside">
     <div class="panel"><div class="panel-head">ontology validation · live</div><div id="validationPanel"></div></div>
@@ -1795,7 +1805,7 @@ function turnRowHtml(t){
     + '<div class="moves">'+moveChecks+'</div>'
     + '</div>';
 }
-function renderTurns(){ $('turnPlan').innerHTML = turns.length ? turns.map(turnRowHtml).join('') : '<div class="muted">No turns. Add one.</div>'; }
+function renderTurns(){ $('turnPlan').innerHTML = turns.length ? turns.map(turnRowHtml).join('') : '<div class="muted">No turns. Add one.</div>'; var c=$('turnPlanCount'); if(c) c.textContent = turns.length + ' turn' + (turns.length===1?'':'s'); }
 function readTurnsFromDom(){
   var next = [];
   document.querySelectorAll('#turnPlan .turn-row').forEach(function(row){
