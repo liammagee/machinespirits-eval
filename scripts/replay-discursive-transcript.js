@@ -50,6 +50,16 @@ const DEFAULT_GATE_THRESHOLDS = Object.freeze({
 });
 const GATE_SCORE_KEYS = Object.freeze(Object.keys(DEFAULT_GATE_THRESHOLDS));
 const REVISION_ONLY_GATE_SCORE_KEYS = new Set(['learner_self_reframe']);
+const CRITICAL_WARNING_CRITERIA = new Set([
+  'claim_boundary',
+  'checker_passes',
+  'non_leakage',
+  'public_evidence',
+  'revision_claim_boundary',
+  'revision_non_leakage',
+]);
+const ADVISORY_WARNING_RE = /\b(?:acceptable as is|within natural-speech tolerance|minor|borderline acceptable|does not affect|does not block|does not rise to revise_again|no change needed|none;|consider marking|would strengthen|could strengthen)\b/i;
+const BLOCKING_WARNING_RE = /\b(?:do not panel|do not send|prevent(?:s)? panel|block(?:s|ing)?|revise before|revise locally|must revise|missing|absent|not present|not yet owned|not yet public|hidden-only|leak(?:ed|age)?|broken claim boundary|fundamentally incoherent)\b/i;
 
 function usage() {
   return `Usage:
@@ -246,6 +256,19 @@ function normalizeFindingSeverity(value) {
   return String(value || '').trim().toLowerCase();
 }
 
+function warningText(problem = {}) {
+  return `${problem.criterion || ''}\n${problem.evidence || ''}\n${problem.recommendation || ''}`;
+}
+
+function isBlockingWarning(problem = {}) {
+  if (problem.blocking === true) return true;
+  if (problem.blocking === false) return false;
+  const text = warningText(problem);
+  if (ADVISORY_WARNING_RE.test(text)) return false;
+  if (BLOCKING_WARNING_RE.test(text)) return true;
+  return CRITICAL_WARNING_CRITERIA.has(String(problem.criterion || '').trim());
+}
+
 function scoreValue(check, key) {
   const fallbackKey = key === 'learner_actional_uptake' ? 'learner_uptake_or_contest' : key;
   const raw = Number(check?.scores?.[key] ?? check?.scores?.[fallbackKey]);
@@ -259,17 +282,21 @@ function scoreValue(check, key) {
 function pushScoreGateProblem({ key, normalized, threshold, failures, warnings }) {
   const target = REVISION_ONLY_GATE_SCORE_KEYS.has(key) ? warnings : failures;
   if (normalized === null) {
-    target.push({
+    const problem = {
       criterion: key,
       evidence: 'checker score is missing or non-numeric',
       recommendation: `Revise until ${key} is explicit enough to score before escalation.`,
-    });
+    };
+    if (target === warnings) problem.blocking = true;
+    target.push(problem);
   } else if (normalized < threshold) {
-    target.push({
+    const problem = {
       criterion: key,
       evidence: `${normalized} < ${threshold}`,
       recommendation: `Revise until ${key} meets the local threshold.`,
-    });
+    };
+    if (target === warnings) problem.blocking = true;
+    target.push(problem);
   }
 }
 
@@ -353,6 +380,7 @@ export function evaluateLocalGate(check, revision = null, args = {}) {
       criterion: 'recommended_action',
       evidence: 'checker recommended revise_again',
       recommendation: 'Keep this in local iteration unless the warning is knowingly overridden.',
+      blocking: true,
     });
   }
 
@@ -384,15 +412,19 @@ export function evaluateLocalGate(check, revision = null, args = {}) {
         recommendation: finding.recommendation || 'Revise locally before escalation.',
       });
     } else if (severity === 'warning') {
-      warnings.push({
+      const warning = {
         criterion: finding.criterion || 'checker_finding',
         evidence: finding.evidence || 'checker reported a warning',
         recommendation: finding.recommendation || 'Review before escalation.',
-      });
+        blocking: isBlockingWarning(finding),
+      };
+      warnings.push(warning);
     }
   }
 
-  const status = failures.length ? 'reject' : warnings.length ? 'revise_again' : 'survivor';
+  const blockingWarnings = warnings.filter((warning) => warning.blocking === true);
+  const advisoryWarnings = warnings.filter((warning) => warning.blocking !== true);
+  const status = failures.length ? 'reject' : blockingWarnings.length ? 'revise_again' : 'survivor';
   return {
     enabled,
     status,
@@ -401,6 +433,8 @@ export function evaluateLocalGate(check, revision = null, args = {}) {
     scores: scoreReport,
     failures,
     warnings,
+    blockingWarnings,
+    advisoryWarnings,
     recommended_action: action || null,
     claim_boundary: revision?.claim_boundary || null,
   };
@@ -731,7 +765,7 @@ Required JSON shape:
     "prose_preservation": 0
   },
   "findings": [
-    {"severity": "info|warning|fail", "criterion": "...", "evidence": "...", "recommendation": "..."}
+    {"severity": "info|warning|fail", "criterion": "...", "evidence": "...", "recommendation": "...", "blocking": false}
   ],
   "recommended_action": "accept_for_blind_panel|revise_again|discard"
 }
@@ -744,6 +778,8 @@ Scoring guidance:
 - learner_actional_uptake: learner performs or contests the new public test.
 - learner_self_reframe: learner explicitly contrasts old check, limit/failure, new check, and application in domain language.
 - If actional uptake is high but learner_self_reframe is missing or implicit, recommend revise_again rather than accept_for_blind_panel.
+- Use severity="warning" for advisory issues that should be recorded but should not block panel escalation.
+- Use severity="fail" or blocking=true only for issues that should prevent panel escalation: leakage, broken claim boundary, absent self-reframe, absent actional uptake, genuinely false temporal ownership, or incoherent public evidence.
 - Set passes=false only for discard-level problems such as leakage, broken claim boundary, unusable JSON/prose, or a fundamentally incoherent revision.
 
 Item: ${JSON.stringify({ id: item.id, run_id: item.run_id }, null, 2)}
@@ -1219,7 +1255,8 @@ export async function runReplay(rawArgs) {
       enabled: args.localGate !== false,
       thresholds: resolvedGateThresholds(args),
       summary: gateSummary,
-      next_stage_rule: 'Only gate.status=survivor artifacts should move to OpenRouter or human panels without another local pass.',
+      next_stage_rule:
+        'Only gate.status=survivor artifacts should move to OpenRouter or human panels without another local pass. Survivor artifacts may carry advisory warnings; blocking warnings stay revise_again.',
     },
     count: records.length,
     records,

@@ -244,7 +244,83 @@ test('evaluateLocalGate blocks actional-only uptake as revise_again, not survivo
   assert.equal(gate.status, 'revise_again');
   assert.equal(gate.escalate, false);
   assert.ok(gate.warnings.some((warning) => warning.criterion === 'learner_self_reframe'));
+  assert.ok(gate.blockingWarnings.some((warning) => warning.criterion === 'learner_self_reframe'));
   assert.equal(gate.failures.length, 0);
+});
+
+test('evaluateLocalGate records advisory warnings without blocking panel escalation', () => {
+  const gate = evaluateLocalGate(
+    {
+      passes: true,
+      claim_boundary_ok: true,
+      scores: {
+        public_evidence: 0.9,
+        tactic_selection: 0.9,
+        learner_actional_uptake: 0.9,
+        learner_self_reframe: 0.85,
+        dyadic_revision: 0.85,
+        non_leakage: 0.95,
+        prose_preservation: 0.9,
+      },
+      findings: [
+        {
+          severity: 'warning',
+          criterion: 'learner_self_reframe',
+          evidence: 'The connection is inferentially present but not syntactically joined.',
+          recommendation: 'Acceptable as is; tightening the link would strengthen it, but current phrasing is within natural-speech tolerance.',
+        },
+      ],
+      recommended_action: 'accept_for_blind_panel',
+    },
+    {
+      non_leakage_check: { passes: true },
+      claim_boundary: 'counterfactual_revision_not_online_adaptation',
+    },
+  );
+
+  assert.equal(gate.status, 'survivor');
+  assert.equal(gate.escalate, true);
+  assert.equal(gate.warnings.length, 1);
+  assert.equal(gate.warnings[0].blocking, false);
+  assert.equal(gate.advisoryWarnings.length, 1);
+  assert.equal(gate.blockingWarnings.length, 0);
+});
+
+test('evaluateLocalGate keeps explicitly blocking warnings in revise_again', () => {
+  const gate = evaluateLocalGate(
+    {
+      passes: true,
+      claim_boundary_ok: true,
+      scores: {
+        public_evidence: 0.9,
+        tactic_selection: 0.9,
+        learner_actional_uptake: 0.9,
+        learner_self_reframe: 0.85,
+        dyadic_revision: 0.85,
+        non_leakage: 0.95,
+        prose_preservation: 0.9,
+      },
+      findings: [
+        {
+          severity: 'warning',
+          criterion: 'temporal-ledger-scope',
+          evidence: 'The ledger assigns a final self-reframe to a turn where it is not yet public.',
+          recommendation: 'Do not panel until the false temporal ownership is repaired.',
+        },
+      ],
+      recommended_action: 'accept_for_blind_panel',
+    },
+    {
+      non_leakage_check: { passes: true },
+      claim_boundary: 'counterfactual_revision_not_online_adaptation',
+    },
+  );
+
+  assert.equal(gate.status, 'revise_again');
+  assert.equal(gate.escalate, false);
+  assert.equal(gate.warnings.length, 1);
+  assert.equal(gate.warnings[0].blocking, true);
+  assert.equal(gate.blockingWarnings.length, 1);
 });
 
 test('evaluateLocalGate accepts legacy learner uptake score only for actional uptake', () => {
