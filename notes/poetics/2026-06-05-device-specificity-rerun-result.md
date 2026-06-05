@@ -57,6 +57,24 @@ So the updated conclusion is:
 
 > Public causal bridge and device specificity are necessary pre-panel screens, but not sufficient origin predictors. For T18-like force-source cases, repeated source-strip/source-mark repairs have diminishing returns unless the mechanism changes qualitatively.
 
+## Hard Negative Record
+
+`phase2-adaptation-recognition-loop-20260527T044802Z-i02:target-r01:none:T18` is now a hard negative for the current replay mechanism.
+
+This means:
+
+- Do not keep rerunning source-strip, source-mark, arrowhead-covering, or source-first variants of this item as prompt-polish repairs.
+- Do not treat local `public_causal_bridge` or `device_specificity` survival as sufficient reason to panel further variants of this same mechanism family.
+- Use this item as a boundary specimen: it can produce recognitive form, but blind critics do not reliably attribute the learner's reframe to a tutor peripeteia-linked mechanism.
+- Any future attempt must be labelled as a mechanism redesign, not another replay-loop continuation.
+
+Evidence for hard-negative status:
+
+- Bridge-gated rerun: local survivor, final panel recognition 5/5, origin 2/5.
+- Device-specificity rerun `i01`: local `revise_again`, `device_specificity = 0.68`.
+- Device-specificity rerun `i02`: local survivor, `device_specificity = 0.80`, final panel recognition 4/5, origin 2/5.
+- The repeated failure mode is stable: critics can read source-first force naming as ordinary physics pedagogy even when the public obstruction is visible.
+
 ## Policy Capture
 
 Negative lessons were captured as policy memory:
@@ -78,3 +96,5 @@ The planned fresh held-out batch was not run. The precondition was that the targ
 ## Next Move
 
 Stop prompt-polishing `none / T18`. Either retire it as a hard negative stress case for the current replay mechanism, or redesign the scenario mechanism so the old warrant becomes causally unavailable in a way that source-first force naming cannot be read as ordinary stock pedagogy.
+
+A redesign would need a qualitatively different mechanism family, such as changing the task so the learner's old warrant actively misclassifies an object under a public counterexample, or changing the representational game so the tutor introduces a new relation that was not already ordinary domain pedagogy. The redesign target is not "make source marks clearer"; it is "make the previous public rule fail and make the new rule necessary."
