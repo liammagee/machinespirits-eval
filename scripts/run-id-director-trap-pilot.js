@@ -39,6 +39,7 @@ import * as idDirectorEngine from '../services/idDirectorEngine.js';
 import * as realLLM from '../services/adaptiveTutor/realLLM.js';
 import { createAdaptiveRun } from '../services/adaptiveTutor/persistence.js';
 import { createBudgetTracker } from '../services/adaptiveTutor/budgetTracker.js';
+import { learnerTurnIndexForTutorTurn } from './lib/trapTurnConvention.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -143,19 +144,22 @@ async function runScenario({ runId, scenario, profile, profileName, agentConfig,
     if (turn + 1 >= maxTurns) break;
 
     // 3. Synthetic learner turn — same callRole the adaptive runner uses for
-    //    cell_110/115. Anchored to the trap scenario via `hidden`.
+    //    cell_110/115. Anchored to the trap scenario via `hidden`. The learner
+    //    turn index is the tutor turn just answered; a trigger at learner turn
+    //    t is first answerable by tutor turn t+1.
+    const learnerTurnIndex = learnerTurnIndexForTutorTurn(turn);
     const learnerText = await realLLM.callRole('learnerTurn', {
       tutorLastMessage: tutorMessage,
       hidden,
-      turn: turn + 1,
+      turn: learnerTurnIndex,
     });
     const learnerTrim = (learnerText || '').trim();
     if (!learnerTrim) {
-      throw new Error(`learnerTurn returned empty at turn ${turn + 1}`);
+      throw new Error(`learnerTurn returned empty at turn ${learnerTurnIndex}`);
     }
     messageHistory.push({ role: 'user', content: learnerTrim });
     if (verbose) {
-      console.log(`[id-director-trap]   t${turn + 1} learner (${learnerTrim.length} chars)`);
+      console.log(`[id-director-trap]   t${learnerTurnIndex} learner (${learnerTrim.length} chars)`);
     }
   }
   const latencyMs = Date.now() - startMs;
