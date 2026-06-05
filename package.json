@@ -84,6 +84,7 @@
     "poetics:reconcile-adaptation": "node scripts/reconcile-adaptation-ontology.js",
     "poetics:probe-repair": "node scripts/probe-repair-divergence.js",
     "poetics:sample-turn-plan": "node scripts/sample-turn-plan.js",
+    "poetics:sampler-vs-baseline": "node scripts/sampler-diversity-vs-baseline.js",
     "poetics:audit-quality": "node scripts/audit-poetics-adaptive-quality.js",
     "poetics:prefix-baseline": "node scripts/extract-poetics-prefix-baselines.js",
     "poetics:structure-critic": "node scripts/critic-poetics-structure.js",
