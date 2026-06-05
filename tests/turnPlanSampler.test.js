@@ -47,8 +47,14 @@ test('a learner+anagnorisis plan round-trips and uses only learner anagnorisis m
   assert.ok(entry.moves.every((m) => ['perform_device', 'genuine_anagnorisis'].includes(m)));
 });
 
-test('director moves have no aimsAtForm in the ontology — pool is empty (documents the gap)', async () => {
-  // A real limitation to surface, not paper over: director moves (inject_revisit_cue, …) are
-  // not form-typed, so they cannot be sampled by form. Form-typing them is a follow-up.
-  assert.deepEqual(await validMovesFor('director', ['peripeteia']), []);
+test('director moves are now form-typed: cue/pressure -> Peripeteia, interruption -> SurpriseInevitability, and a director plan round-trips', async () => {
+  const peri = await validMovesFor('director', ['peripeteia']);
+  assert.ok(peri.includes('inject_revisit_cue'));
+  assert.ok(peri.includes('inject_reversal_pressure'));
+  assert.ok(!peri.includes('scene_interruption')); // aimsAtForm SurpriseInevitability, not Peripeteia
+  const surprise = await validMovesFor('director', ['surprise_inevitability']);
+  assert.ok(surprise.includes('scene_interruption'));
+  const entry = await sampleTurnPlan(['peripeteia'], 'director', { seed: 'D' });
+  assert.ok(entry.moves.length >= 1);
+  assert.equal((await validateTurnPlan([entry], ['peripeteia'])).ok, true);
 });

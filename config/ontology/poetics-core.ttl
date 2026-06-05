@@ -136,10 +136,12 @@ ms:VoiceMisfit a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasR
 ms:GenuineAnagnorisis a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Dramaturgical ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:Anagnorisis .
 ms:Aporia a ms:AdaptationMove ; ms:performedByRole ms:LearnerRole ; ms:hasRegister ms:Rhetorical ; ms:aimsAtForm ms:HamartiaIntegration .
 
-# Director moves
-ms:InjectRevisitCue a ms:AdaptationMove ; ms:performedByRole ms:DirectorRole ; ms:hasRegister ms:Dramaturgical .
-ms:InjectReversalPressure a ms:AdaptationMove ; ms:performedByRole ms:DirectorRole ; ms:hasRegister ms:Dramaturgical .
-ms:SceneInterruption a ms:AdaptationMove ; ms:performedByRole ms:DirectorRole ; ms:hasRegister ms:Dramaturgical .
+# Director moves. The director STAGES the form: the cue/pressure moves set up the reversal
+# (aimsAtForm Peripeteia); the structural interruption is a surprising-yet-inevitable turn
+# (aimsAtForm SurpriseInevitability). Form-typing makes them sampleable by the turn-plan sampler.
+ms:InjectRevisitCue a ms:AdaptationMove ; ms:performedByRole ms:DirectorRole ; ms:hasRegister ms:Dramaturgical ; ms:aimsAtForm ms:Peripeteia .
+ms:InjectReversalPressure a ms:AdaptationMove ; ms:performedByRole ms:DirectorRole ; ms:hasRegister ms:Dramaturgical ; ms:aimsAtForm ms:Peripeteia .
+ms:SceneInterruption a ms:AdaptationMove ; ms:performedByRole ms:DirectorRole ; ms:hasRegister ms:Dramaturgical ; ms:aimsAtForm ms:SurpriseInevitability .
 
 # Interior-agency facts (the asymmetry: tutor has an Id, learner does not — yet)
 ms:TutorCharacter ms:hasInteriorAgency ms:Ego , ms:Superego , ms:Id .
