@@ -561,6 +561,8 @@ function buildOntologySummary() {
 - Make learner signal -> tutor hypothesis -> selected tactic -> public tutor move -> learner uptake/contest -> later tutor revision inspectable.
 - Do not let learner action alone count as recognition. The final learner move must own a self-reframe in ordinary domain language: name the old warrant/check, name why it no longer settles the case, name the new warrant/check, and apply it.
 - Keep the four-part self-reframe natural in the public transcript. Do not use checklist phrases such as "my old check was", "the new check is", "old warrant", or "new warrant" in the learner's public speech; reserve that structure for the JSON ledger.
+- Keep learner-owned reframes compact. Prefer one short domain utterance that does the contrast and application over a polished explanatory paragraph.
+- Keep the move ledger temporally honest. Do not copy the final self-reframe backward into earlier turns; for each ledger entry, record only what is publicly owned by that turn, and write "not yet owned by the learner" for self-reframe parts that emerge later.
 - Every tutor shift must be licensed by public evidence or by held-out state that is also publicly licensable; do not leak hidden-only facts as tutor knowledge.
 - Repair without learner uptake is repair, not adaptation credit.
 - Prefer finite tactics: request_elaboration, invite_objection, name_the_disagreement, scope_test, pose_counterexample, withhold_answer, repair_misrecognition, summarize_and_check, mirror_and_extend.

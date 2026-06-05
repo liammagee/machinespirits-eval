@@ -9,7 +9,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import yaml from 'yaml';
@@ -30,17 +30,18 @@ function usage() {
   node scripts/run-discursive-replay-panel.js --replay-dir DIR [--force]
     [--out-dir DIR] [--run-id ID]
     [--critics codex,anthropic/claude-sonnet-4.6,...]
+    [--critic-concurrency N|all] [--score-concurrency N]
     [--include-status survivor[,revise_again|reject|unchecked]]
     [--allow-needs-revision] [--allow-non-adversarial-precheck]
     [--skip-score] [--mock] [--dry-run]
 
 Default behavior requires an adversarial precheck and includes only survivors.
 Use --allow-needs-revision for cases where the precheck passed but the local gate
-kept a warning for local review.`;
+kept a warning for local review. Critics run concurrently by default.`;
 }
 
-export function parseArgs(argv = process.argv.slice(2)) {
-  const args = {
+function defaultArgs() {
+  return {
     replayDir: null,
     outDir: null,
     runId: null,
@@ -52,7 +53,12 @@ export function parseArgs(argv = process.argv.slice(2)) {
     dryRun: false,
     force: false,
     scoreConcurrency: 1,
+    criticConcurrency: 'all',
   };
+}
+
+export function parseArgs(argv = process.argv.slice(2)) {
+  const args = defaultArgs();
 
   for (let i = 0; i < argv.length; i++) {
     const t = argv[i];
@@ -70,10 +76,21 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (t === '--dry-run') args.dryRun = true;
     else if (t === '--force') args.force = true;
     else if (t === '--score-concurrency') args.scoreConcurrency = Number(argv[++i]);
+    else if (t === '--critic-concurrency') {
+      const value = argv[++i];
+      args.criticConcurrency = value === 'all' ? 'all' : Number(value);
+    }
     else throw new Error(`unknown arg: ${t}\n\n${usage()}`);
   }
 
+  return finalizeArgs(args);
+}
+
+function finalizeArgs(rawArgs) {
+  const args = { ...rawArgs };
   if (args.help) return args;
+  if (args.replayDir) args.replayDir = path.resolve(args.replayDir);
+  if (args.outDir) args.outDir = path.resolve(args.outDir);
   if (!args.replayDir) throw new Error(`--replay-dir is required\n\n${usage()}`);
   if (!fs.existsSync(path.join(args.replayDir, 'manifest.json'))) {
     throw new Error(`replay manifest not found: ${path.join(args.replayDir, 'manifest.json')}`);
@@ -82,6 +99,14 @@ export function parseArgs(argv = process.argv.slice(2)) {
   if (!Number.isInteger(args.scoreConcurrency) || args.scoreConcurrency < 1) {
     throw new Error('--score-concurrency must be a positive integer');
   }
+  const criticCount = args.mock ? 1 : args.critics.length;
+  if (args.criticConcurrency === 'all' || args.criticConcurrency == null) {
+    args.criticConcurrency = criticCount;
+  }
+  if (!Number.isInteger(args.criticConcurrency) || args.criticConcurrency < 1) {
+    throw new Error('--critic-concurrency must be a positive integer or "all"');
+  }
+  args.criticConcurrency = Math.min(args.criticConcurrency, criticCount);
   args.runId = args.runId || `discursive-replay-panel-${safeSlug(path.basename(args.replayDir))}`;
   args.outDir = args.outDir || path.join(ROOT, 'exports', 'discursive-replay-panels', args.runId);
   return args;
@@ -200,7 +225,7 @@ function selectRecords(manifest, args) {
 export function buildReplayPanelPackage(rawArgs) {
   const args =
     typeof rawArgs?.replayDir === 'string'
-      ? { ...parseArgs(['--replay-dir', rawArgs.replayDir]), ...rawArgs }
+      ? finalizeArgs({ ...defaultArgs(), ...rawArgs })
       : parseArgs(rawArgs);
   const replayManifestPath = path.join(args.replayDir, 'manifest.json');
   const replayManifest = readJson(replayManifestPath);
@@ -337,6 +362,8 @@ export function buildReplayPanelPackage(rawArgs) {
     checker: replayManifest.checker || null,
     checkerPolicy: replayManifest.checker_policy || null,
     critics: args.mock ? ['mock'] : args.critics,
+    criticConcurrency: args.criticConcurrency,
+    scoreConcurrency: args.scoreConcurrency,
     sourceReplayDir: rel(args.replayDir),
     preliminaryCheckPolicy: key.preliminary_check_policy,
     units: [
@@ -406,16 +433,34 @@ function scoreCommands(args, { sampleDir, keyPath, scoreDir }) {
   });
 }
 
-function runScores(commands, { dryRun = false } = {}) {
-  const results = [];
-  for (const job of commands) {
-    if (dryRun) {
-      results.push({ critic: job.critic, outPath: job.outPath, status: 'dry_run', cmd: job.cmd });
-      continue;
+function runScoreJob(job, { dryRun = false } = {}) {
+  if (dryRun) return Promise.resolve({ critic: job.critic, outPath: job.outPath, status: 'dry_run', cmd: job.cmd });
+  return new Promise((resolve) => {
+    const child = spawn(job.cmd[0], job.cmd.slice(1), { cwd: ROOT, stdio: 'inherit' });
+    child.on('error', (error) => {
+      resolve({ critic: job.critic, outPath: job.outPath, status: 'failed', error: error.message });
+    });
+    child.on('close', (code) => {
+      resolve({ critic: job.critic, outPath: job.outPath, status: code === 0 ? 'ok' : 'failed', exitCode: code });
+    });
+  });
+}
+
+async function runScores(commands, { dryRun = false, criticConcurrency = commands.length } = {}) {
+  const results = new Array(commands.length);
+  let next = 0;
+  const workerCount = Math.min(Math.max(1, criticConcurrency), commands.length || 1);
+  console.log(`Scoring ${commands.length} critic${commands.length === 1 ? '' : 's'} with critic concurrency ${workerCount}...`);
+  const workers = Array.from({ length: workerCount }, async () => {
+    while (next < commands.length) {
+      const index = next++;
+      results[index] = await runScoreJob(commands[index], { dryRun });
     }
-    const res = spawnSync(job.cmd[0], job.cmd.slice(1), { cwd: ROOT, stdio: 'inherit', encoding: 'utf8' });
-    results.push({ critic: job.critic, outPath: job.outPath, status: res.status === 0 ? 'ok' : 'failed' });
-    if (res.status !== 0) throw new Error(`score job failed for ${job.critic} (exit ${res.status})`);
+  });
+  await Promise.all(workers);
+  const failures = results.filter((result) => result?.status === 'failed');
+  if (failures.length) {
+    throw new Error(`score job failures: ${failures.map((failure) => `${failure.critic}:${failure.exitCode ?? failure.error}`).join(', ')}`);
   }
   return results;
 }
@@ -427,7 +472,9 @@ async function main() {
     return;
   }
   const packaged = buildReplayPanelPackage(args);
-  const scoreResults = args.skipScore ? [] : runScores(packaged.scoreCommands, { dryRun: args.dryRun });
+  const scoreResults = args.skipScore
+    ? []
+    : await runScores(packaged.scoreCommands, { dryRun: args.dryRun, criticConcurrency: args.criticConcurrency });
   console.log(
     JSON.stringify(
       {

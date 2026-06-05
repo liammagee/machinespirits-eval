@@ -23,6 +23,15 @@ test('parseArgs defaults to survivor-only adversarial precheck requirement', () 
   assert.deepEqual(args.includeStatus, ['survivor']);
   assert.equal(args.requireAdversarialPrecheck, true);
   assert.equal(args.critics.includes('codex'), true);
+  assert.equal(args.criticConcurrency, args.critics.length);
+});
+
+test('parseArgs accepts explicit critic concurrency throttling', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'replay-panel-args-'));
+  writeJson(path.join(tmp, 'manifest.json'), { records: [] });
+
+  const args = parseArgs(['--replay-dir', tmp, '--critic-concurrency', '2']);
+  assert.equal(args.criticConcurrency, 2);
 });
 
 test('buildReplayPanelPackage writes blind sample and held-out precheck link', () => {
@@ -97,7 +106,7 @@ test('buildReplayPanelPackage writes blind sample and held-out precheck link', (
 
   const plan = JSON.parse(fs.readFileSync(batchPlanPath, 'utf8'));
   assert.equal(plan.preliminaryCheckPolicy.linked, true);
+  assert.equal(plan.criticConcurrency, 1);
   assert.equal(result.scoreCommands[0].critic, 'codex');
   assert.ok(result.scoreCommands[0].cmd.includes('scripts/score-poetics-phase2.js'));
 });
-
