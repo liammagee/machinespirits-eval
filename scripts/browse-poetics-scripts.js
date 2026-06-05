@@ -219,6 +219,19 @@ function listRuns(db) {
     .all();
 }
 
+// Distinct, non-empty disciplines present in poetics_items, for the browser's
+// discipline filter dropdown (sourced live so new disciplines need no code edit).
+function distinctDisciplines(db) {
+  return db
+    .prepare(
+      `SELECT DISTINCT discipline FROM poetics_items
+       WHERE discipline IS NOT NULL AND discipline <> ''
+       ORDER BY discipline`,
+    )
+    .all()
+    .map((row) => row.discipline);
+}
+
 function listItems(db, filters = {}) {
   const where = [];
   const params = {};
@@ -236,6 +249,10 @@ function listItems(db, filters = {}) {
   if (filters.arm) {
     where.push('i.arm = @arm');
     params.arm = filters.arm;
+  }
+  if (filters.discipline) {
+    where.push('i.discipline = @discipline');
+    params.discipline = filters.discipline;
   }
   if (filters.role) {
     if (filters.role === 'target') where.push("i.unit_id LIKE 'target-%'");
@@ -787,7 +804,7 @@ function createPoeticsBrowserApp({ dbPath = null } = {}) {
   app.use('/docs/research', express.static(path.resolve(ROOT, 'docs/research'), { index: false }));
   app.locals.db = db;
   app.get('/favicon.ico', (_req, res) => res.status(204).end());
-  app.get('/api/runs', (_req, res) => res.json({ runs: listRuns(db) }));
+  app.get('/api/runs', (_req, res) => res.json({ runs: listRuns(db), disciplines: distinctDisciplines(db) }));
   app.get('/api/items', (req, res) => {
     const runIds = String(req.query.runIds || '')
       .split(',')
@@ -799,6 +816,7 @@ function createPoeticsBrowserApp({ dbPath = null } = {}) {
         runIds,
         q: req.query.q || null,
         arm: req.query.arm || null,
+        discipline: req.query.discipline || null,
         role: req.query.role || null,
         form: req.query.form || null,
         critic: req.query.critic || null,
@@ -3291,6 +3309,7 @@ tbody th {
     <div class="filters">
       <select id="runSelect"></select>
       <input id="searchInput" placeholder="Filter by T id, drama id, unit, discipline">
+      <select id="disciplineSelect"><option value="">all disciplines</option></select>
       <input id="labellerInput" class="blind-only" placeholder="Labeller id">
       <div class="filter-row score-only">
         <select id="roleSelect">
@@ -3780,6 +3799,7 @@ async function loadItems() {
   if (el('searchInput').value) params.set('q', el('searchInput').value);
   if (state.queue) params.set('queue', state.queue);
   if (state.unlabelled) params.set('unlabelled', '1');
+  if (el('disciplineSelect') && el('disciplineSelect').value) params.set('discipline', el('disciplineSelect').value);
   if (state.blind) {
     params.set('blind', '1');
   } else {
@@ -3853,6 +3873,11 @@ async function init() {
     throw err;
   }
   state.runs = runs.runs;
+  const discSel = el('disciplineSelect');
+  if (discSel)
+    discSel.innerHTML =
+      '<option value="">all disciplines</option>' +
+      (runs.disciplines || []).map((d) => '<option value="' + esc(d) + '">' + esc(d) + '</option>').join('');
   setBeacon('live', 'live · ' + state.runs.length + ' run' + (state.runs.length === 1 ? '' : 's'));
   const url = new URL(window.location.href);
   state.blind = url.searchParams.get('mode') === 'label' || url.searchParams.get('blind') === '1';
@@ -3890,7 +3915,7 @@ async function init() {
   if (runId && !state.runIds.length) el('runSelect').value = runId;
   document.querySelectorAll('.tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === state.tab));
   await loadItems();
-  ['runSelect', 'roleSelect', 'formSelect'].forEach((id) => el(id).addEventListener('change', () => { state.selected = null; loadItems(); }));
+  ['runSelect', 'roleSelect', 'formSelect', 'disciplineSelect'].forEach((id) => el(id).addEventListener('change', () => { state.selected = null; loadItems(); }));
   el('labellerInput').addEventListener('input', () => { state.labeller = el('labellerInput').value.replace(/[^\\w-]/g, ''); if (state.selected) selectItem(state.selected); });
   el('searchInput').addEventListener('input', () => { clearTimeout(window.__q); window.__q = setTimeout(() => { state.selected = null; loadItems(); }, 160); });
   document.querySelectorAll('.tab').forEach((tab) => tab.addEventListener('click', () => {
